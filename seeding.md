@@ -1,0 +1,102 @@
+# Database: Seeding
+
+- [Giới thiệu](#introduction)
+- [Viết Seeder](#writing-seeders)
+    - [Dùng Model Factory](#using-model-factories)
+    - [Gọi thêm file Seeder](#calling-additional-seeders)
+- [Chạy Seeder](#running-seeders)
+
+<a name="introduction"></a>
+## Giới thiệu
+
+Laravel có chứa một phương thức đơn giản để tạo cơ sở dữ liệu với dữ liệu test bằng các class Seed. Tất cả các class Seed được lưu trữ trong thư mục `database/seeds`. Các class Seed có thể có bất kỳ tên nào bạn muốn, nhưng có lẽ nên tuân theo một số quy ước hợp lý, chẳng hạn như `UsersTableSeeder`, vv... Mặc định, một class `DatabaseSeeder` được định sẵn cho bạn. Từ class này, bạn có thể sử dụng phương thức `call` để chạy các class seed khác, cho phép bạn kiểm soát thứ tự tạo.
+
+<a name="writing-seeders"></a>
+## Viết Seeder
+
+Để tạo một file seed, hãy chạy [Lệnh Artisan](/docs/{{version}}/artisan) `make:seeder`. Tất cả các seeder được tạo bởi lệnh này sẽ được đặt trong thư mục `database/seeds`:
+
+    php artisan make:seeder UsersTableSeeder
+
+Một class seeder chỉ chứa một phương thức mặc định là: `run`. Phương thức này được gọi khi [Lệnh Artisan](/docs/{{version}}/artisan) `db:seed` được chạy. Trong phương thức `run`, bạn có thể thêm dữ liệu vào cơ sở dữ liệu của bạn theo cách bạn muốn. Bạn có thể sử dụng [query builder](/docs/{{version}}/queries) để thêm dữ liệu theo cách thủ công hoặc bạn có thể sử dụng [Eloquent model factories](/docs/{{version}}/database-testing#writing-factories).
+
+> {tip} [Chế độ bảo vệ mass assignment](/docs/{{version}}/eloquent#mass-assignment) sẽ được tự động vô hiệu hóa trong quá trình tạo cơ sở dữ liệu.
+
+Ví dụ, hãy sửa class mặc định `DatabaseSeeder` và thêm một câu lệnh thêm cơ sở dữ liệu vào phương thức `run`:
+
+    <?php
+
+    use Illuminate\Database\Seeder;
+    use Illuminate\Support\Facades\DB;
+
+    class DatabaseSeeder extends Seeder
+    {
+        /**
+         * Run the database seeds.
+         *
+         * @return void
+         */
+        public function run()
+        {
+            DB::table('users')->insert([
+                'name' => str_random(10),
+                'email' => str_random(10).'@gmail.com',
+                'password' => bcrypt('secret'),
+            ]);
+        }
+    }
+
+<a name="using-model-factories"></a>
+### Dùng Model Factory
+
+Tất nhiên, việc khai báo thủ công các thuộc tính cho từng model seed rất cồng kềnh. Thay vào đó, bạn có thể sử dụng [model factories](/docs/{{version}}/database-testing#writing-factories) để tạo ra một lượng lớn các bản ghi cơ sở dữ liệu. Trước tiên, hãy xem lại [tài liệu model factory](/docs/{{version}}/database-testing#writing-factories) để tìm hiểu cách định nghĩa factory của bạn. Khi bạn đã định nghĩa các factory của bạn rồi, bạn có thể sử dụng hàm helper `factory` để thêm các bản ghi vào cơ sở dữ liệu của bạn.
+
+Ví dụ: hãy tạo 50 người dùng và gán một quan hệ với mỗi người dùng đó:
+
+    /**
+     * Run the database seeds.
+     *
+     * @return void
+     */
+    public function run()
+    {
+        factory(App\User::class, 50)->create()->each(function ($u) {
+            $u->posts()->save(factory(App\Post::class)->make());
+        });
+    }
+
+<a name="calling-additional-seeders"></a>
+### Gọi thêm file Seeder
+
+Trong class `DatabaseSeeder`, bạn có thể sử dụng phương thức `call` để có thể chạy thêm các class seed bổ sung. Sử dụng phương thức `call` cho phép bạn chia nhỏ cơ sở dữ liệu của bạn thành nhiều file, để không một class seeder nào trở nên quá lớn. Pass một tên của class seeder mà bạn muốn chạy:
+
+    /**
+     * Run the database seeds.
+     *
+     * @return void
+     */
+    public function run()
+    {
+        $this->call([
+            UsersTableSeeder::class,
+            PostsTableSeeder::class,
+            CommentsTableSeeder::class,
+        ]);
+    }
+
+<a name="running-seeders"></a>
+## Chạy Seeder
+
+Khi bạn đã viết seeder của bạn, bạn có thể cần phải tạo lại autoloader của Composer bằng lệnh `dump-autoload`:
+
+    composer dump-autoload
+
+Bây giờ bạn có thể sử dụng lệnh Artisan `db:seed` để tạo cơ sở dữ liệu của bạn. Mặc định, lệnh `db:seed` sẽ chạy class `DatabaseSeeder` để gọi các class seed khác. Tuy nhiên, bạn có thể sử dụng tùy chọn `--class` để chỉ định cụ thể một class seeder sẽ được chạy:
+
+    php artisan db:seed
+
+    php artisan db:seed --class=UsersTableSeeder
+
+Bạn cũng có thể tạo cơ sở dữ liệu của bạn bằng lệnh `migrate:refresh`, nó cũng sẽ rollback và chạy lại tất cả các migration của bạn. Lệnh này hữu ích khi building lại hoàn toàn cơ sở dữ liệu của bạn:
+
+    php artisan migrate:refresh --seed
