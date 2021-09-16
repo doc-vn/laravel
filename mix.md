@@ -30,7 +30,7 @@
     mix.js('resources/assets/js/app.js', 'public/js')
        .sass('resources/assets/sass/app.scss', 'public/css');
 
-Nếu bạn đã từng bối rối và choáng ngợp khi bắt đầu với Webpack và biên dịch asset, bạn sẽ thích Laravel Mix. Tuy nhiên, bạn không bắt buộc phải sử dụng nó trong khi phát triển application của mình. Tất nhiên, bạn có thể thoải mái sử dụng bất kỳ công cụ asset pipeline nào bạn muốn, hoặc thậm chí không dùng gì cả.
+Nếu bạn đã từng bối rối và choáng ngợp khi bắt đầu với Webpack và biên dịch asset, bạn sẽ thích Laravel Mix. Tuy nhiên, bạn không bắt buộc phải sử dụng nó trong khi phát triển application của bạn. Tất nhiên, bạn có thể thoải mái sử dụng bất kỳ công cụ asset pipeline nào bạn muốn, hoặc thậm chí không dùng gì cả.
 
 <a name="installation"></a>
 ## Installation và setup
@@ -46,7 +46,7 @@ Mặc định, Laravel Homestead đã chứa mọi thứ bạn cần; tuy nhiên
 
 #### Laravel Mix
 
-Bước duy nhất còn lại là cài đặt Laravel Mix. Trong bản cài đặt đầu tiên của Laravel, bạn sẽ tìm thấy file `package.json`  trong thư mục gốc của bạn. File `package.json`  mặc định sẽ có mọi thứ bạn cần để bắt đầu. Hãy nghĩ điều này giống như file `composer.json` của bạn, ngoại trừ việc nó định nghĩa các library Node thay vì PHP. Bạn có thể cài đặt các library mà nó khai báo bằng cách chạy:
+Bước duy nhất còn lại là cài đặt Laravel Mix. Trong bản cài đặt đầu tiên của Laravel, bạn sẽ tìm thấy file `package.json`  trong thư mục gốc của bạn. File `package.json` mặc định sẽ có mọi thứ bạn cần để bắt đầu. Hãy nghĩ điều này giống như file `composer.json` của bạn, ngoại trừ việc nó định nghĩa các library Node thay vì PHP. Bạn có thể cài đặt các library mà nó khai báo bằng cách chạy:
 
     npm install
 
@@ -88,11 +88,11 @@ Có thể gọi nhiều lần phương thức `less` để biên dịch nhiều 
     mix.less('resources/assets/less/app.less', 'public/css')
        .less('resources/assets/less/admin.less', 'public/css');
 
-Nếu bạn muốn tùy chỉnh tên file của CSS đã biên dịch, bạn có thể pass một đường dẫn file đầy đủ làm tham số thứ hai cho phương thức `less`:
+Nếu bạn muốn tùy chỉnh tên file của CSS đã biên dịch, bạn có thể truyền một đường dẫn file đầy đủ làm tham số thứ hai cho phương thức `less`:
 
     mix.less('resources/assets/less/app.less', 'public/stylesheets/styles.css');
 
-Nếu bạn cần ghi đè [tùy chọn Less plug-in](https://github.com/webpack-contrib/less-loader#options), bạn có thể pass một đối tượng làm tham số thứ ba cho `mix.less()`:
+Nếu bạn cần ghi đè [tùy chọn Less plug-in](https://github.com/webpack-contrib/less-loader#options), bạn có thể truyền một đối tượng làm tham số thứ ba cho `mix.less()`:
 
     mix.less('resources/assets/less/app.less', 'public/css', {
         strictMath: true
@@ -122,7 +122,7 @@ Một lần nữa, giống như phương thức `less`, bạn có thể biên d�
 Tương tự như Less và Sass, phương thức `stylus` cho phép bạn biên dịch [Stylus](http://stylus-lang.com/) thành CSS:
     mix.stylus('resources/assets/stylus/app.styl', 'public/css');
 
-Bạn cũng có thể cài đặt thêm các Stylus plug-in, chẳng hạn như [Rupture](https://github.com/jescalan/rupture). Đầu tiên, cài đặt plug-in thông qua NPM (`npm install rupture`) và sau đó require nó trong lệnh gọi của bạn  `mix.stylus()`:
+Bạn cũng có thể cài đặt thêm các Stylus plug-in, chẳng hạn như [Rupture](https://github.com/jescalan/rupture). Đầu tiên, cài đặt plug-in thông qua NPM (`npm install rupture`) và sau đó require nó trong lệnh gọi của bạn `mix.stylus()`:
 
     mix.stylus('resources/assets/stylus/app.styl', 'public/css', {
         use: [
@@ -133,7 +133,7 @@ Bạn cũng có thể cài đặt thêm các Stylus plug-in, chẳng hạn như 
 <a name="postcss"></a>
 ### PostCSS
 
-[PostCSS] (http://postcss.org/), một công cụ mạnh mẽ để chuyển đổi CSS của bạn, được thêm vào trong Laravel Mix. Mặc định, Mix sử dụng plug-in phổ biến [Autoprefixer](https://github.com/postcss/autoprefixer) để tự động áp dụng tất cả các tiền tố CSS3 vendor cần thiết. Tuy nhiên, bạn có thể thoải mái thêm bất kỳ plug-in nào phù hợp với ứng dụng của mình. Đầu tiên, cài đặt plug-in mong muốn thông qua NPM và sau đó tham chiếu nó trong file `webpack.mix.js` của bạn:
+[PostCSS] (http://postcss.org/), một công cụ mạnh mẽ để chuyển đổi CSS của bạn, được thêm vào trong Laravel Mix. Mặc định, Mix sử dụng plug-in [Autoprefixer](https://github.com/postcss/autoprefixer) phổ biến để tự động áp dụng tất cả các tiền tố CSS3 vendor cần thiết. Tuy nhiên, bạn có thể thoải mái thêm bất kỳ plug-in nào phù hợp với ứng dụng của mình. Đầu tiên, cài đặt plug-in mong muốn thông qua NPM và sau đó tham chiếu nó trong file `webpack.mix.js` của bạn:
 
     mix.sass('resources/assets/sass/app.scss', 'public/css')
        .options({
@@ -155,15 +155,15 @@ Nếu bạn chỉ muốn ghép một số code CSS stylesheet thành một file 
 <a name="url-processing"></a>
 ### Xử lý URL
 
-Bởi vì Laravel Mix được xây dựng dựa trên Webpack, điều quan trọng là phải hiểu một vài khái niệm về Webpack. Để biên dịch CSS, Webpack sẽ viết lại và tối ưu hóa mọi lệnh gọi `url()` trong code css của bạn. Mặc dù điều này ban đầu nghe có vẻ lạ, nhưng đây là một chức năng cực kỳ mạnh mẽ. Hãy tưởng tượng rằng chúng ta muốn biên dịch Sass có chứa một URL liên kết với một hình ảnh:
+Bởi vì Laravel Mix được xây dựng dựa trên Webpack, điều quan trọng là phải hiểu một vài khái niệm về Webpack. Để biên dịch CSS, Webpack sẽ viết lại và tối ưu hóa mọi lệnh gọi `url()` trong code css của bạn. Mặc dù điều này ban đầu nghe có vẻ lạ, nhưng đây là một chức năng cực kỳ mạnh mẽ. Hãy tưởng tượng rằng chúng ta muốn biên dịch code Sass có chứa một URL liên kết với một hình ảnh:
 
     .example {
         background: url('../images/example.png');
     }
 
-> {note} Đường dẫn tuyệt đối cho mọi `url()` sẽ bị bỏ qua khỏi việc viết lại URL. Ví dụ: `url('/images/thing.png')` hoặc `url('http://example.com/images/thing.png')` sẽ không bị sửa.
+> {note} Đường dẫn tuyệt đối cho mọi `url()` sẽ được bỏ qua khỏi việc viết lại URL. Ví dụ: `url('/images/thing.png')` hoặc `url('http://example.com/images/thing.png')` sẽ không bị sửa.
 
-Mặc định, Laravel Mix và Webpack sẽ tìm `example.png`, sao chép nó vào thư mục `public/images` của bạn, sau đó viết lại `url()` trong file css được tạo. Như vậy, CSS đã biên dịch của bạn sẽ là:
+Mặc định, Laravel Mix và Webpack sẽ tìm file `example.png`, và sao chép nó vào thư mục `public/images` của bạn, sau đó viết lại `url()` trong file css được tạo. Như vậy, CSS đã biên dịch của bạn sẽ là:
 
     .example {
       background: url(/images/example.png?d41d8cd98f00b204e9800998ecf8427e);
@@ -176,7 +176,7 @@ Tính năng này rất hữu ích, nhưng có thể cấu trúc thư mục hiệ
           processCssUrls: false
        });
 
-Với phần thêm này vào file `webpack.mix.js` của bạn, Mix sẽ không còn match với bất kỳ `url()` hoặc sao chép assets nào vào thư mục public của bạn. Nói cách khác, CSS được biên dịch ra sẽ trông giống như cách bạn gõ ban đầu:
+Với phần thêm này vào file `webpack.mix.js` của bạn, Mix sẽ không còn match với bất kỳ `url()` hoặc sao chép assets nào vào thư mục public của bạn. Nói cách khác, CSS được biên dịch ra sẽ trông giống như cách bạn khai báo ban đầu:
 
     .example {
         background: url("../images/thing.png");
@@ -185,7 +185,7 @@ Với phần thêm này vào file `webpack.mix.js` của bạn, Mix sẽ không 
 <a name="css-source-maps"></a>
 ### Source Maps
 
-Mặc dù mặc định bị disabled, nhưng source map có thể được kích hoạt bằng cách gọi phương thức `mix.sourceMaps()` trong file `webpack.mix.js` của bạn. Mặc dù nó có thể làm tăng thêm thời gian biên dịch và hiệu năng, nhưng điều này sẽ cung cấp thêm thông tin gỡ lỗi cho các tool develope trên trình duyệt của bạn khi sử dụng các assets được biên dịch.
+Mặc dù mặc định bị disabled, nhưng source map có thể được kích hoạt bằng cách gọi phương thức `mix.sourceMaps()` trong file `webpack.mix.js` của bạn. Mặc dù nó có thể làm tăng thêm thời gian biên dịch và hiệu năng, nhưng điều này sẽ cung cấp thêm thông tin gỡ lỗi cho các tool develop trên trình duyệt của bạn khi sử dụng các assets đã được biên dịch.
 
     mix.js('resources/assets/js/app.js', 'public/js')
        .sourceMaps();
@@ -193,7 +193,7 @@ Mặc dù mặc định bị disabled, nhưng source map có thể được kíc
 <a name="working-with-scripts"></a>
 ## Làm việc cùng javaScript
 
-Mix cung cấp một số tính năng để giúp bạn làm việc với các file JavaScript của mình, chẳng hạn như biên dịch ECMAScript 2015, module bundling, thu nhỏ và nối các file JavaScript. Thậm chí, tất cả đều hoạt động trơn tru, không đòi hỏi bất kỳ một cấu hình tùy chỉnh nào:
+Mix cung cấp một số tính năng để giúp bạn làm việc với các file JavaScript của bạn, chẳng hạn như biên dịch ECMAScript 2015, module bundling, thu nhỏ và nối các file JavaScript. Thậm chí, tất cả đều hoạt động trơn tru, không đòi hỏi bất kỳ một cấu hình tùy chỉnh nào:
 
     mix.js('resources/assets/js/app.js', 'public/js');
 
@@ -203,20 +203,20 @@ Với chỉ một dòng code duy nhất, giờ đây bạn có thể làm:
 - Cú pháp ES2015.
 - Modules
 - Biên dịch các file `.vue`.
-- Thu nhỏ cho môi trương product.
+- Thu nhỏ cho môi trương production.
 </div>
 
 <a name="vendor-extraction"></a>
 ### Vendor Extraction
 
-Một nhược điểm tiềm ẩn trong việc kết hợp tất cả JavaScript dành riêng cho application với các vendor library của bạn là nó khiến cho việc lưu trữ lâu dài trở nên khó khăn hơn. Ví dụ: một bản cập nhật nhỏ trong code application của bạn cũng sẽ buộc trình duyệt tải xuống lại tất cả các vendor library của bạn ngay cả khi chúng không thay đổi.
+Một nhược điểm tiềm ẩn trong việc kết hợp tất cả JavaScript dành riêng cho application với các vendor library của bạn là nó khiến cho việc lưu trữ lâu dài trở nên khó khăn hơn. Ví dụ: một bản cập nhật nhỏ trong code application của bạn cũng sẽ buộc trình duyệt phải tải lại tất cả các vendor library của bạn ngay cả khi chúng không thay đổi.
 
-Nếu bạn thương xuyên cập nhật JavaScript của application, bạn nên xem xét lấy tất cả các vendor library vào một file của riêng. Theo cách này, một thay đổi đối với code application của bạn sẽ không ảnh hưởng đến cache của file `vendor.js` rất lớn của bạn. Phương thức `extract` của Mix làm cho điều này trở nên dễ dàng:
+Nếu bạn thường xuyên cập nhật JavaScript của application, bạn nên xem xét lấy tất cả các vendor library vào một file của riêng. Theo cách này, một thay đổi đối với code application của bạn sẽ không ảnh hưởng đến cache của file `vendor.js` rất lớn của bạn. Phương thức `extract` của Mix làm cho điều này trở nên dễ dàng:
 
     mix.js('resources/assets/js/app.js', 'public/js')
        .extract(['vue'])
 
-Phương thức `extract` chấp nhận một mảng của tất cả các thư viện hoặc modules mà bạn muốn lấy thành một file `vendor.js. Sử dụng đoạn code trên làm ví dụ, Mix sẽ tạo các file sau:
+Phương thức `extract` chấp nhận một mảng của tất cả các thư viện hoặc modules mà bạn muốn làm thành một file `vendor.js. Sử dụng đoạn code trên làm ví dụ, Mix sẽ tạo các file sau:
 
 <div class="content-list" markdown="1">
 - `public/js/manifest.js`: *The Webpack manifest runtime*
@@ -233,7 +233,7 @@ Phương thức `extract` chấp nhận một mảng của tất cả các thư 
 <a name="react"></a>
 ### React
 
-Mix có thể tự động cài đặt các plug-in cần thiết Babel cho hỗ trợ React. Để bắt đầu, hãy thay thế gọi `mix.js()` của bạn bằng `mix.react()`:
+Mix có thể tự động cài đặt các plug-in Babel cần thiết để hỗ trợ React. Để bắt đầu, hãy thay phương thức `mix.js()` của bạn bằng `mix.react()`:
 
     mix.react('resources/assets/js/app.jsx', 'public/js');
 
@@ -242,7 +242,7 @@ Sau đó, Mix sẽ download và thêm plug-in Babel `babel-preset-react` thích 
 <a name="vanilla-js"></a>
 ### Vanilla JS
 
-Tương tự như việc kết hợp các code css với `mix.styles()`, bạn cũng có thể kết hợp và thu nhỏ bất kỳ file JavaScript nào với phương thức`scripts()`:
+Tương tự như việc kết hợp các code css với `mix.styles()`, bạn cũng có thể kết hợp và thu nhỏ bất kỳ file JavaScript nào với phương thức `scripts()`:
 
     mix.scripts([
         'public/js/admin.js',
@@ -251,7 +251,7 @@ Tương tự như việc kết hợp các code css với `mix.styles()`, bạn c
 
 Tùy chọn này đặc biệt hữu ích cho các dự án cũ, nơi mà bạn không dùng biên dịch Webpack cho JavaScript của mình.
 
-> {tip} Một biến thể nhỏ của `mix.scripts()` là `mix.babel()`. Chức năng của nó giống hệt với `scripts`; tuy nhiên, file được nối lại sẽ nhận được trình biên dịch Babel, trình biên dịch này sẽ dịch bất kỳ code ES2015 nào sang JavaScript vanilla mà tất cả các trình duyệt sẽ đọc được.
+> {tip} Một biến thể nhỏ của `mix.scripts()` là `mix.babel()`. Chức năng của nó giống hệt với `scripts`; tuy nhiên, file được nối lại sẽ nhận được trình biên dịch Babel, trình biên dịch này sẽ dịch bất kỳ code ES2015 nào sang JavaScript vanilla mà tất cả các trình duyệt có thể đọc được.
 
 <a name="custom-webpack-configuration"></a>
 ### Tuỳ biến cấu hình webpack
@@ -288,18 +288,18 @@ Khi sao chép một thư mục, phương thức `copy` sẽ xoá hết thư mụ
 <a name="versioning-and-cache-busting"></a>
 ## Versioning / Cache Busting
 
-Nhiều developer muốn thêm hậu tố vào sau assets đã được biên dịch của họ bằng một timestamp hoặc unique token để buộc các trình duyệt tải assets mới thay vì lấy các bản cũ của assets. Mix có thể xử lý việc này cho bạn bằng cách sử dụng phương thức `version`.
+Nhiều developer muốn thêm hậu tố vào sau assets đã được biên dịch của họ bằng một timestamp hoặc unique token để buộc các trình duyệt tải lại assets mới thay vì lấy các bản cũ của assets. Mix có thể xử lý việc này cho bạn bằng cách sử dụng phương thức `version`.
 
 Phương thức `version` sẽ tự động nối một hàm hash duy nhất vào tên file của tất cả các file được biên dịch, cho phép tạo bộ đệm cache thuận tiện hơn:
 
     mix.js('resources/assets/js/app.js', 'public/js')
        .version();
 
-Sau khi tạo file đã được version, bạn sẽ không biết chính xác tên file là gì. Vì vậy, bạn có thể sử dụng hàm global helper `mix` của Laravel trong [views](/docs/{{version}}/views) để load asset được hash. Hàm `mix` sẽ tự động xác định tên hiện tại của file đã được hash:
+Sau khi tạo file đã được version, bạn sẽ không biết chính xác tên file là gì. Vì vậy, bạn có thể sử dụng hàm global helper `mix` của Laravel trong [views](/docs/{{version}}/views) để load asset đã được hash. Hàm `mix` sẽ tự động xác định tên hiện tại của file đã được hash:
 
     <link rel="stylesheet" href="{{ mix('/css/app.css') }}">
 
-Vì các file đã được version thường không cần thiết trong quá trình phát triển, bạn có thể thêm điều kiện để tạo version là chỉ chạy trong khi `npm run production`:
+Vì các file đã được version thường không cần thiết trong quá trình phát triển, nên bạn có thể thêm điều kiện để tạo version là chỉ chạy trong khi `npm run production`:
 
     mix.js('resources/assets/js/app.js', 'public/js');
 
@@ -310,7 +310,7 @@ Vì các file đã được version thường không cần thiết trong quá tr
 <a name="browsersync-reloading"></a>
 ## Browsersync Reloading
 
-[BrowserSync](https://browsersync.io/) có thể tự động theo dõi các file của bạn để thay đổi và đưa các thay đổi của bạn vào trình duyệt mà không yêu cầu refresh thủ công. Bạn có thể kích hoạt hỗ trợ bằng cách gọi phương thức `mix.browserSync()`:
+[BrowserSync](https://browsersync.io/) có thể tự động theo dõi các file của bạn để thay đổi và đưa các thay đổi của bạn vào trình duyệt mà không yêu cầu bạn phải refresh thủ công. Bạn có thể kích hoạt hỗ trợ bằng cách gọi phương thức `mix.browserSync()`:
 
     mix.browserSync('my-domain.test');
 
@@ -321,7 +321,7 @@ Vì các file đã được version thường không cần thiết trong quá tr
         proxy: 'my-domain.test'
     });
 
-Bạn có thể pass một chuỗi (proxy) hoặc đối tượng (BrowserSync settings) cho phương thức này. Tiếp theo, khởi động server dev của Webpack bằng lệnh `npm run watch`. Bây giờ, khi bạn sửa đổi một script hoặc file PHP, trình duyệt sẽ tự động refresh trang ngay lập tức để phản ánh các thay đổi của bạn.
+Bạn có thể truyền một chuỗi (proxy) hoặc đối tượng (BrowserSync settings) cho phương thức này. Tiếp theo, khởi động server dev của Webpack bằng lệnh `npm run watch`. Bây giờ, khi bạn sửa đổi một script hoặc một file PHP, trình duyệt sẽ tự động refresh trang ngay lập tức để phản ánh các thay đổi của bạn.
 
 <a name="environment-variables"></a>
 ## Environment Variables
@@ -330,13 +330,13 @@ Bạn có thể đưa các biến môi trường vào Mix bằng cách thêm ti�
 
     MIX_SENTRY_DSN_PUBLIC=http://example.com
 
-Sau khi biến đã được định nghĩa trong file `.env` của bạn, bạn có thể truy cập thông qua đối tượng `process.env`. Nếu giá trị thay đổi trong khi bạn đang chạy một tác vụ `watch`, bạn sẽ cần khởi động lại tác vụ:
+Sau khi biến đã được định nghĩa trong file `.env` của bạn, bạn có thể truy cập thông qua đối tượng `process.env`. Nếu giá trị thay đổi trong khi bạn đang chạy một tác vụ `watch`, thì bạn sẽ cần khởi động lại tác vụ này:
 
     process.env.MIX_SENTRY_DSN_PUBLIC
 
 <a name="notifications"></a>
 ## Thông báo
 
-Khi sẵn sàng, Mix sẽ tự động hiển thị thông báo của hệ điều hành cho mỗi lần biên dịch. Điều này sẽ cung cấp cho bạn thông tin rằng liệu việc biên dịch có thành công hay không. Tuy nhiên, có thể có trường hợp bạn muốn vô hiệu hóa các thông báo này. Một ví dụ như vậy có thể kích hoạt Mix trên server production của bạn. Thông báo có thể bị vô hiệu hóa, thông qua phương thức `disableNotifications`.
+Khi sẵn sàng, Mix sẽ tự động hiển thị một thông báo của hệ điều hành cho mỗi lần biên dịch. Điều này sẽ cung cấp cho bạn những thông tin rằng liệu việc biên dịch có thành công hay không. Tuy nhiên, có thể có trường hợp bạn muốn vô hiệu hóa các thông báo này. Một ví dụ như vậy có thể kích hoạt Mix trên server production của bạn. Thông báo có thể bị vô hiệu hóa, thông qua phương thức `disableNotifications`.
 
     mix.disableNotifications();

@@ -14,9 +14,9 @@
 <a name="introduction"></a>
 ## Giới thiệu
 
-Trước đây, có thể bạn đã tạo một Cron cho một task mà bạn cần để lên schedule cho server của bạn chạy. Tuy nhiên, điều này có thể nhanh chóng sẽ trở thành một vấn đề lớn, bởi vì task schedule của bạn không còn trong source control và bạn phải SSH vào server của bạn để thêm các Cron.
+Trong quá khứ, có thể bạn đã tạo Cron cho mỗi task mà bạn cần, để schedule cho server bạn chạy. Tuy nhiên, điều này có thể nhanh chóng sẽ trở thành một vấn đề lớn, bởi vì task schedule của bạn không có trong source code control và bạn phải SSH vào server của bạn để thêm các Cron.
 
-Lệnh schedule của Laravel cho phép bạn định nghĩa một cách đơn giản và rõ ràng lệnh schedule của bạn trong chính Laravel. Khi sử dụng schedule, chỉ cần một Cron duy nhất trên server của bạn. Task schedule của bạn sẽ được định nghĩa trong phương thức `schedule` trong file `app/Console/Kernel.php`. Để giúp bạn bắt đầu, một ví dụ đơn giản được định nghĩa sẵn trong phương thức đó.
+Lệnh schedule của Laravel cho phép bạn định nghĩa một cách đơn giản và rõ ràng các lệnh schedule trong chính Laravel. Khi sử dụng schedule, chỉ cần một Cron duy nhất trên server của bạn. Task schedule của bạn sẽ được định nghĩa trong phương thức `schedule` trong file `app/Console/Kernel.php`. Để giúp bạn bắt đầu, một ví dụ đơn giản được định nghĩa sẵn trong phương thức đó.
 
 ### Starting The Scheduler
 
@@ -76,7 +76,7 @@ Ngoài việc tạo schedule cho các Closure, bạn cũng có thể tạo sched
 <a name="scheduling-queued-jobs"></a>
 ### Schedule Queued Job
 
-Phương thức `job` có thể được sử dụng để tạo schedule cho một [queued job](/docs/{{version}}/queues). Phương thức này cung cấp một cách thuận tiện để tạo schedule job mà không cần sử dụng phương thức `call` để tự tạo Closure để queue job:
+Phương thức `job` có thể được sử dụng để tạo schedule cho một [queued job](/docs/{{version}}/queues). Phương thức này cung cấp một cách thuận tiện để tạo schedule job mà không cần phải sử dụng phương thức `call` để tạo Closure cho queue job:
 
     $schedule->job(new Heartbeat)->everyFiveMinutes();
 
@@ -112,7 +112,7 @@ Method  | Description
 `->yearly();`  | Run task hàng năm
 `->timezone('America/New_York');` | Set timezone
 
-Các phương thức này có thể được kết hợp với thêm các ràng buộc để tạo ra các schedule có thể được điều chỉnh tốt hơn, chỉ chạy vào một số ngày nhất định trong tuần. Ví dụ: để schedule một lệnh chạy hàng tuần vào Thứ Hai:
+Các phương thức này có thể được kết hợp thêm các ràng buộc để tạo ra các schedule có thể được điều chỉnh tốt hơn, chỉ chạy vào một số ngày nhất định trong tuần. Ví dụ: để schedule một lệnh chạy vào thứ hai hàng tuần:
 
     // Run once per week on Monday at 1 PM...
     $schedule->call(function () {
@@ -126,7 +126,7 @@ Các phương thức này có thể được kết hợp với thêm các ràng 
               ->timezone('America/Chicago')
               ->between('8:00', '17:00');
 
-Dưới đây là danh sách các ràng buộc schedule bổ sung:
+Dưới đây là danh sách các ràng buộc schedule có thể được bổ sung:
 
 Method  | Description
 ------------- | -------------
@@ -157,13 +157,13 @@ Tương tự, phương thức `unlessBetween` có thể được sử dụng đ�
 
 #### Truth Test Constraints
 
-Phương thức `when` có thể được sử dụng để hạn chế việc thực hiện một task dựa trên kết quả của một điều kiện nhất định. Nói cách khác, nếu `Closure` đã cho trả về giá trị `true`, tác vụ sẽ thực thi, miễn là không có điều kiện ràng buộc nào khác ngăn tác vụ chạy:
+Phương thức `when` có thể được sử dụng để hạn chế việc thực hiện một task dựa trên kết quả của một điều kiện nhất định. Nói cách khác, nếu `Closure` đã cho trả về giá trị `true`, tác vụ sẽ thực thi, miễn là không có điều kiện ràng buộc nào khác ngăn task chạy:
 
     $schedule->command('emails:send')->daily()->when(function () {
         return true;
     });
 
-Phương thức `skip` có thể được xem là ngược của phương thức `when`. Nếu phương thức `skip` trả về `true`, scheduled task sẽ không được thực thi:
+Phương thức `skip` có thể được xem là ngược với phương thức `when`. Nếu phương thức `skip` trả về `true`, scheduled task sẽ không được thực thi:
 
     $schedule->command('emails:send')->daily()->skip(function () {
         return true;
@@ -178,23 +178,23 @@ Mặc định, các task đã được schedule sẽ được chạy ngay cả k
 
     $schedule->command('emails:send')->withoutOverlapping();
 
-Trong ví dụ trên, [Lệnh Artisan](/docs/{{version}}/artisan) `emails:send` sẽ được chạy mỗi phút nếu nó chưa được chạy. Phương thức `withoutOverlapping` đặc biệt hữu ích nếu bạn có các task phức tạp cần nhiều thời gian để thực hiện của chúng, và bạn không thể dự đoán chính xác một task có thể sẽ mất bao nhiêu thời gian.
+Trong ví dụ trên, [Lệnh Artisan](/docs/{{version}}/artisan) `emails:send` sẽ được chạy mỗi phút nếu nó chưa được chạy. Phương thức `withoutOverlapping` đặc biệt hữu ích nếu bạn có các task phức tạp cần nhiều thời gian để thực hiện chúng, và bạn không thể dự đoán chính xác một task có thể sẽ mất bao nhiêu thời gian.
 
-Nếu cần, bạn có thể chỉ định bao nhiêu phút sau khi thực hiện thì khóa "chống chồng" hết hạn. Mặc định, khóa này sẽ hết hạn sau 24 giờ:
+Nếu cần, bạn có thể chỉ định bao nhiêu phút sau khi thực hiện thì khóa "chống lặp" hết hạn. Mặc định, khóa này sẽ hết hạn sau 24 giờ:
 
     $schedule->command('emails:send')->withoutOverlapping(10);
 
 <a name="maintenance-mode"></a>
 ### Chế độ bảo trì
 
-Các scheduled task của Laravel sẽ không được chạy khi Laravel ở [chế độ bảo trì](/docs/{{version}}/configuration#maintenance-mode), vì chúng tôi không muốn các task của bạn gây trở ngại với bất kỳ bảo trì nào chưa được hoàn thành mà bạn có thể đang thực hiện trên server của bạn. Tuy nhiên, nếu bạn muốn một task chạy ngay cả trong chế độ bảo trì, bạn có thể sử dụng phương thức `evenInMaintenanceMode`:
+Các scheduled task của Laravel sẽ không được chạy khi Laravel ở [trong chế độ bảo trì](/docs/{{version}}/configuration#maintenance-mode), vì chúng tôi không muốn các task của bạn gây trở ngại với bất kỳ bảo trì nào mà bạn có thể đang thực hiện trên server chưa được hoàn thành. Tuy nhiên, nếu bạn muốn một task chạy ngay cả trong chế độ bảo trì, bạn có thể sử dụng phương thức `evenInMaintenanceMode`:
 
     $schedule->command('emails:send')->evenInMaintenanceMode();
 
 <a name="task-output"></a>
 ## Task Output
 
-Laravel schedule cung cấp một số phương thức thuận tiện để làm việc với output được tạo bởi các scheduled tas. Đầu tiên, bằng cách sử dụng phương thức `sendOutputTo`, bạn có thể gửi output tới một file để kiểm tra sau:
+Laravel schedule cung cấp một số phương thức thuận tiện để làm việc với output được tạo bởi các schedule task. Đầu tiên, bằng cách sử dụng phương thức `sendOutputTo`, bạn có thể gửi output tới một file để kiểm tra sau:
 
     $schedule->command('emails:send')
              ->daily()
@@ -213,7 +213,7 @@ Sử dụng phương thức `emailOutputTo`, bạn có thể gửi email output 
              ->sendOutputTo($filePath)
              ->emailOutputTo('foo@example.com');
 
-> {note} Các phương thức `emailOutputTo`, `sendOutputTo` và `appendOutputTo` là chỉ được dùng với phương thức `command` và không hỗ trợ cho  phương thức `call`.
+> {note} Các phương thức `emailOutputTo`, `sendOutputTo` và `appendOutputTo` sẽ chỉ được dùng với phương thức `command` và không hỗ trợ cho  phương thức `call`.
 
 <a name="task-hooks"></a>
 ## Task Hook
@@ -238,6 +238,6 @@ Sử dụng các phương thức `pingBefore` và `thenPing`, schedule có thể
              ->pingBefore($url)
              ->thenPing($url);
 
-Sử dụng tính năng `pingBefore($url)` hoặc `thenPing($url)` sẽ yêu cầu thư viện Guzzle HTTP. Bạn có thể thêm Guzzle vào dự án của bạn bằng trình quản lý package Composer:
+Sử dụng tính năng `pingBefore($url)` hoặc `thenPing($url)` sẽ cần thư viện Guzzle HTTP. Bạn có thể thêm thư viện Guzzle vào dự án của bạn bằng trình quản lý package Composer:
 
     composer require guzzlehttp/guzzle

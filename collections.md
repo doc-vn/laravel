@@ -9,7 +9,7 @@
 <a name="introduction"></a>
 ## Giới thiệu
 
-Class `Illuminate\Support\Collection` cung cấp wrapper dễ dàng, thuận tiện để làm việc với các mảng dữ liệu. Ví dụ, kiểm tra code sau đây. Chúng tôi sẽ sử dụng helper `collect` để tạo một instance collection mới từ mảng, chạy hàm `strtoupper` trên mỗi phần tử và sau đó xóa tất cả các phần tử trống:
+Class `Illuminate\Support\Collection` cung cấp một wrapper dễ dàng, thuận tiện để làm việc với các mảng dữ liệu. Ví dụ, hãy xem code sau đây. Chúng ta sẽ sử dụng helper `collect` để tạo một instance collection mới từ mảng, chạy hàm `strtoupper` cho mỗi phần tử và sau đó xóa đi tất cả các phần tử trống:
 
     $collection = collect(['taylor', 'abigail', null])->map(function ($name) {
         return strtoupper($name);
@@ -18,21 +18,21 @@ Class `Illuminate\Support\Collection` cung cấp wrapper dễ dàng, thuận ti�
         return empty($name);
     });
 
-Như bạn có thể thấy, class `Collection` cho phép bạn tạo kết hợp các phương thức của nó để dễ dàng thực hiện mapping và reject phần tử khỏi mảng. Nói chung, các collection là bất biến, có nghĩa là mọi phương thức `Collection` trả về một instance `Collection` hoàn toàn mới.
+Như các bạn có thể thấy, class `Collection` cho phép bạn kết hợp các phương thức của nó để bạn dễ dàng thực hiện mapping và reject phần tử đó ra khỏi mảng. Nói chung, các collection là bất biến, điều này có nghĩa là mọi phương thức của `Collection` đều trả về một instance `Collection` mới.
 
 <a name="creating-collections"></a>
 ### Tạo collection
 
-Như đã đề cập ở trên, helper `collect` trả về một instance `Illuminate\Support\Collection`  mới cho mảng đã cho. Vì vậy, việc tạo ra một collection đơn giản như:
+Như đã đề cập ở trên, helper `collect` sẽ trả về một instance `Illuminate\Support\Collection`  mới cho mảng đã được cho. Vì vậy, việc tạo ra một collection rất đơn giản như sau:
 
     $collection = collect([1, 2, 3]);
 
-> {tip} Kết quả của các truy vấn [Eloquent](/docs/{{version}}/eloquent) luôn được trả về dưới dạng các instances `Collection`.
+> {tip} Kết quả của các truy vấn [Eloquent](/docs/{{version}}/eloquent) cũng luôn được trả về dưới dạng các instances `Collection`.
 
 <a name="extending-collections"></a>
 ### Extend collection
 
-Các collection là "macroable", cho phép bạn thêm các phương thức bổ sung vào class `Collection` trong thời gian chạy. Ví dụ, đoạn mã sau thêm một phương thức `toUpper` vào class `Collection`:
+Các collection là các "macroable", do đó nó cho phép bạn bổ sung các phương thức vào các class `Collection` trong thời gian chạy. Ví dụ, đoạn mã sau sẽ thêm một phương thức `toUpper` vào các class `Collection`:
 
     use Illuminate\Support\Str;
 
@@ -53,7 +53,7 @@ Thông thường, bạn nên khai báo các collection macro trong một [servic
 <a name="available-methods"></a>
 ## Các phương thức có sẵn
 
-Trong phần còn lại của tài liệu này, chúng ta sẽ thảo luận về từng phương thức có sẵn trên class `Collection`. Hãy nhớ rằng, tất cả các phương thức này đều có thể được kết hợp cùng nhau để xử lý dễ dàng mảng. Hơn nữa, hầu hết mọi phương thức đều trả về một instance `Collection` mới, cho phép bạn giữ bản sao gốc của collection khi cần thiết:
+Trong phần còn lại của tài liệu này, chúng ta sẽ thảo luận về từng phương thức có sẵn trên class `Collection`. Hãy nhớ rằng, tất cả các phương thức này đều có thể được kết hợp cùng nhau để xử lý một mảng dễ dàng. Hơn nữa, hầu hết mọi phương thức đều trả về một instance `Collection` mới, nên bạn giữ bản sao gốc của collection đó khi cần thiết:
 
 <style>
     #collection-method-list > p {
@@ -184,7 +184,7 @@ Trong phần còn lại của tài liệu này, chúng ta sẽ thảo luận v�
 <a name="method-all"></a>
 #### `all()` {#collection-method .first-collection-method}
 
-Phương thức `all` trả về mảng cơ bản được biểu thị bởi collection:
+Phương thức `all` sẽ trả về một mảng được biểu thị bởi collection:
 
     collect([1, 2, 3])->all();
 
@@ -193,7 +193,7 @@ Phương thức `all` trả về mảng cơ bản được biểu thị bởi co
 <a name="method-average"></a>
 #### `average()` {#collection-method}
 
-Cách gọi khác cho phương thức [`avg`](#method-avg).
+Cách gọi khác của phương thức [`avg`](#method-avg).
 
 <a name="method-avg"></a>
 #### `avg()` {#collection-method}
@@ -221,7 +221,7 @@ Phương thức `chunk` chia collection thành nhiều collection nhỏ hơn v�
 
     // [[1, 2, 3, 4], [5, 6, 7]]
 
-Phương thức này đặc biệt hữu ích trong [views](/docs/{{version}}/views) khi làm việc với hệ thống grid như [Bootstrap](https://getbootstrap.com/css/#grid). Hãy tưởng tượng bạn có một collection các model [Eloquent](/docs/{{version}}/eloquent) mà bạn muốn hiển thị trong một grid:
+Phương thức này đặc biệt hữu ích trong [views](/docs/{{version}}/views) khi làm việc với các hệ thống grid như [Bootstrap](https://getbootstrap.com/css/#grid). Hãy tưởng tượng bạn có một collection các model [Eloquent](/docs/{{version}}/eloquent) mà bạn muốn hiển thị trong một grid:
 
     @foreach ($products->chunk(3) as $chunk)
         <div class="row">
@@ -234,7 +234,7 @@ Phương thức này đặc biệt hữu ích trong [views](/docs/{{version}}/vi
 <a name="method-collapse"></a>
 #### `collapse()` {#collection-method}
 
-Phương thức `collapse` sẽ thu gọn một tập hợp các mảng nhỏ thành một collection riêng và ngang hàng:
+Phương thức `collapse` sẽ thu gọn một tập hợp các mảng nhỏ thành một collection chung và ngang hàng với nhau:
 
     $collection = collect([[1, 2, 3], [4, 5, 6], [7, 8, 9]]);
 
@@ -247,7 +247,7 @@ Phương thức `collapse` sẽ thu gọn một tập hợp các mảng nhỏ th
 <a name="method-combine"></a>
 #### `combine()` {#collection-method}
 
-Phương thức `combine` sẽ kết hợp các key của collection với các giá trị của mảng hoặc collection khác:
+Phương thức `combine` sẽ kết hợp các key của collection với các giá trị của một mảng hoặc một collection khác:
 
     $collection = collect(['name', 'age']);
 
@@ -260,7 +260,7 @@ Phương thức `combine` sẽ kết hợp các key của collection với các 
 <a name="method-concat"></a>
 #### `concat()` {#collection-method}
 
-Phương thức `concat` sẽ nối các giá trị `array` hoặc collection đã cho vào cuối của một collection:
+Phương thức `concat` sẽ gắn thêm các giá trị của một `array` hoặc một collection vào cuối của một collection khác:
 
     $collection = collect(['John Doe']);
 
@@ -273,7 +273,7 @@ Phương thức `concat` sẽ nối các giá trị `array` hoặc collection đ
 <a name="method-contains"></a>
 #### `contains()` {#collection-method}
 
-Phương thức `contains` sẽ xác định xem collection có chứa một item đã cho hay không:
+Phương thức `contains` sẽ xác định xem trong collection đó có chứa item đã cho hay không:
 
     $collection = collect(['name' => 'Desk', 'price' => 100]);
 
@@ -285,7 +285,7 @@ Phương thức `contains` sẽ xác định xem collection có chứa một ite
 
     // false
 
-Bạn cũng có thể pass một cặp key / value cho phương thức `contains`, có sẽ xác định xem cặp đã cho có tồn tại trong collection hay không:
+Bạn cũng có thể pass một cặp key và value cho phương thức `contains`, nó sẽ xác định xem cặp key value đó có tồn tại trong collection hay không:
 
     $collection = collect([
         ['product' => 'Desk', 'price' => 200],
@@ -296,7 +296,7 @@ Bạn cũng có thể pass một cặp key / value cho phương thức `contains
 
     // false
 
-Cuối cùng, bạn cũng có thể pass một callback cho phương thức `contains` để thực hiện kiểm tra truth của riêng bạn:
+Cuối cùng, bạn cũng có thể truyền vào một callback cho phương thức `contains` để thực hiện kiểm tra truth của riêng bạn:
 
     $collection = collect([1, 2, 3, 4, 5]);
 
@@ -306,17 +306,17 @@ Cuối cùng, bạn cũng có thể pass một callback cho phương thức `con
 
     // false
 
-Phương thức `contains` sử dụng các phép so sánh "lỏng lẻo" khi kiểm tra các giá trị item, nghĩa là một chuỗi có giá trị integer sẽ được coi là bằng với một số integer có cùng giá trị. Sử dụng phương thức [`containsStrict`](#method-containsstrict) để lọc bằng các so sánh "nghiêm ngặt".
+Phương thức `contains` sử dụng các phép so sánh "lỏng lẻo" khi kiểm tra các giá trị của item, nghĩa là một chuỗi có giá trị integer sẽ được coi là bằng với một số integer có cùng giá trị. Sử dụng phương thức [`containsStrict`](#method-containsstrict) để so sánh "nghiêm ngặt".
 
 <a name="method-containsstrict"></a>
 #### `containsStrict()` {#collection-method}
 
-Phương thức này có cùng signature với phương thức [`contains`](#method-contains); tuy nhiên, tất cả các giá trị được so sánh bằng cách sử dụng so sánh "nghiêm ngặt".
+Phương thức này có cùng dạng với phương thức [`contains`](#method-contains); tuy nhiên, tất cả các giá trị được so sánh đều sử dụng phép so sánh "nghiêm ngặt".
 
 <a name="method-count"></a>
 #### `count()` {#collection-method}
 
-Phương thức `count` trả về tổng số item trong collection:
+Phương thức `count` sẽ trả về tổng số các item trong collection:
 
     $collection = collect([1, 2, 3, 4]);
 
@@ -327,7 +327,7 @@ Phương thức `count` trả về tổng số item trong collection:
 <a name="method-crossjoin"></a>
 #### `crossJoin()` {#collection-method}
 
-Phương thức `crossJoin` sẽ join chéo các giá trị của collection vào trong các mảng hoặc các collection đã cho, trả về một Cartesian product với tất cả các hoán vị có thể có:
+Phương thức `crossJoin` sẽ join chéo các giá trị của collection vào trong các mảng hoặc các collection đã cho, trả về một tích chéo với tất cả các hoán vị có thể có:
 
     $collection = collect([1, 2]);
 
@@ -366,7 +366,7 @@ Phương thức `crossJoin` sẽ join chéo các giá trị của collection và
 <a name="method-dd"></a>
 #### `dd()` {#collection-method}
 
-Phương thức `dd` sẽ dump các item của collection và dừng thực thi:
+Phương thức `dd` sẽ hiển thi các item có trong collection và dừng thực thi lệnh ngay tại đó:
 
     $collection = collect(['John Doe', 'Jane Doe']);
 
@@ -381,12 +381,12 @@ Phương thức `dd` sẽ dump các item của collection và dừng thực thi:
         }
     */
 
-Nếu bạn không muốn dừng thực thi, hãy sử dụng phương thức [`dump`](#method-dump) để thay thế.
+Nếu bạn không muốn dừng thực thi lệnh, thì hãy sử dụng phương thức [`dump`](#method-dump) để thay thế.
 
 <a name="method-diff"></a>
 #### `diff()` {#collection-method}
 
-Phương thức `diff` so sánh collection với collection khác hoặc PHP `array` dựa trên các giá trị của nó. Phương thức này sẽ trả về các giá trị trong collection gốc không có trong collection đã cho:
+Phương thức `diff` so sánh collection với một collection khác hoặc một PHP `array` dựa trên các giá trị của nó. Phương thức này sẽ trả về các giá trị trong collection gốc mà không có giá trị trong collection đã cho:
 
     $collection = collect([1, 2, 3, 4, 5]);
 
@@ -399,7 +399,7 @@ Phương thức `diff` so sánh collection với collection khác hoặc PHP `ar
 <a name="method-diffassoc"></a>
 #### `diffAssoc()` {#collection-method}
 
-Phương thức `diffAssoc` so sánh collection với collection khác hoặc một PHP `array` dựa trên các key và value của nó. Phương thức này sẽ trả về các cặp key / value trong collection gốc không có trong collection đã cho:
+Phương thức `diffAssoc` so sánh collection với một collection khác hoặc một PHP `array` dựa trên các key và value của nó. Phương thức này sẽ trả về các cặp key và value trong collection gốc không có trong collection đã cho:
 
     $collection = collect([
         'color' => 'orange',
@@ -421,7 +421,7 @@ Phương thức `diffAssoc` so sánh collection với collection khác hoặc m�
 <a name="method-diffkeys"></a>
 #### `diffKeys()` {#collection-method}
 
-Phương thức `diffKeys` so sánh collection với collection khác hoặc một PHP `array` dựa trên các key của nó. Phương thức này sẽ trả về các cặp key / value trong collection gốc không có trong collection đã cho:
+Phương thức `diffKeys` so sánh collection với một collection khác hoặc một PHP `array` dựa trên các key của nó. Phương thức này sẽ trả về các cặp key và value trong collection gốc không có trong collection đã cho:
 
     $collection = collect([
         'one' => 10,
@@ -445,7 +445,7 @@ Phương thức `diffKeys` so sánh collection với collection khác hoặc m�
 <a name="method-dump"></a>
 #### `dump()` {#collection-method}
 
-Phương thức `dump` sẽ dump các item của collection:
+Phương thức `dump` sẽ hiển thị các item của collection:
 
     $collection = collect(['John Doe', 'Jane Doe']);
 
@@ -460,12 +460,12 @@ Phương thức `dump` sẽ dump các item của collection:
         }
     */
 
-Nếu bạn muốn dừng thực thi sau khi dump collection, hãy sử dụng phương thức [`dd`](#method-dd) để thay thế.
+Nếu bạn muốn dừng thực thi lệnh sau khi dump collection, hãy sử dụng phương thức [`dd`](#method-dd) để thay thế.
 
 <a name="method-each"></a>
 #### `each()` {#collection-method}
 
-Phương thức `each` sẽ lặp lại các item trong collection và pass từng item vào một callback:
+Phương thức `each` sẽ lặp lại các item trong collection và truyền vào từng item đó một callback:
 
     $collection = $collection->each(function ($item, $key) {
         //
@@ -482,7 +482,7 @@ Nếu bạn muốn dừng lặp qua các item, bạn có thể trả về `false
 <a name="method-eachspread"></a>
 #### `eachSpread()` {#collection-method}
 
-Phương thức `eachSpread` lặp lại các item của collection, pass từng giá trị item bị lồng nhau vào hàm callback đã cho:
+Phương thức `eachSpread` sẽ lặp lại các item của collection, và truyền vào từng giá trị item lồng nhau đó một hàm callback đã cho:
 
     $collection = collect([['John Doe', 35], ['Jane Doe', 33]]);
 
@@ -490,7 +490,7 @@ Phương thức `eachSpread` lặp lại các item của collection, pass từng
         //
     });
 
-Nếu bạn muốn dừng lặp qua các item, bạn có thể trả về `false` từ callback của bạn:
+Nếu bạn muốn dừng lặp qua các item còn lại, bạn có thể trả về `false` từ callback của bạn:
 
     $collection->eachSpread(function ($name, $age) {
         return false;
@@ -499,7 +499,7 @@ Nếu bạn muốn dừng lặp qua các item, bạn có thể trả về `false
 <a name="method-every"></a>
 #### `every()` {#collection-method}
 
-Phương thức `every` có thể được sử dụng để xác minh rằng tất cả các element của collection pass qua một số điều kiện đã cho:
+Phương thức `every` có thể được sử dụng để xác minh rằng tất cả các element của một collection có pass qua một số điều kiện đã cho hay không:
 
     collect([1, 2, 3, 4])->every(function ($value, $key) {
         return $value > 2;
@@ -520,12 +520,12 @@ Phương thức `except` trả về tất cả các item trong collection ngoạ
 
     // ['product_id' => 1]
 
-Đối với ngược với phương thức `except`, hãy xem phương thức [only](#method-only).
+Đối ngược với phương thức `except`, hãy xem phương thức [only](#method-only).
 
 <a name="method-filter"></a>
 #### `filter()` {#collection-method}
 
-Phương thức `filter` sẽ lọc collection bằng cách dùng callback đã cho, chỉ giữ lại những item pass qua một số điều kiện đã cho:
+Phương thức `filter` sẽ lọc các collection bằng cách dùng một callback đã cho, và chỉ giữ lại những item mà đã pass qua một số điều kiện đã cho:
 
     $collection = collect([1, 2, 3, 4]);
 
@@ -537,7 +537,7 @@ Phương thức `filter` sẽ lọc collection bằng cách dùng callback đã 
 
     // [3, 4]
 
-Nếu không có callback nào được cung cấp, tất cả các item trong collection tương đương với `false` sẽ bị xóa:
+Nếu không có callback nào được cung cấp, tất cả các item trong collection tương đương với giá trị `false` sẽ bị xóa:
 
     $collection = collect([1, 2, 3, null, false, '', 0, []]);
 
@@ -545,12 +545,12 @@ Nếu không có callback nào được cung cấp, tất cả các item trong c
 
     // [1, 2, 3]
 
-Đối với ngược với phương thức `filter`, hãy xem phương thức [reject](#method-reject).
+Đối ngược với phương thức `filter`, hãy xem phương thức [reject](#method-reject).
 
 <a name="method-first"></a>
 #### `first()` {#collection-method}
 
-Phương thức `first` trả về phần tử đầu tiên trong collection pass qua một số điều kiện đã cho:
+Phương thức `first` sẽ trả về phần tử đầu tiên có trong collection mà đã pass qua một số điều kiện đã cho:
 
     collect([1, 2, 3, 4])->first(function ($value, $key) {
         return $value > 2;
@@ -558,7 +558,7 @@ Phương thức `first` trả về phần tử đầu tiên trong collection pas
 
     // 3
 
-Bạn cũng có thể gọi phương thức `first` không có tham số để lấy phần tử đầu tiên trong collection. Nếu collection trống, `null` được trả về:
+Bạn cũng có thể gọi phương thức `first` mà không có tham số để lấy ra phần tử đầu tiên có trong collection. Nếu collection là trống, thì `null` sẽ được trả về:
 
     collect([1, 2, 3, 4])->first();
 
@@ -567,8 +567,7 @@ Bạn cũng có thể gọi phương thức `first` không có tham số để l
 <a name="method-first-where"></a>
 #### `firstWhere()` {#collection-method}
 
-Phương thức `firstWhere` trả về phần tử đầu tiên trong collection với cặp key / value đã cho:
-The `firstWhere` method returns the first element in the collection with the given key / value pair:
+Phương thức `firstWhere` sẽ trả về phần tử đầu tiên có trong collection với cặp key value đã cho:
 
     $collection = collect([
         ['name' => 'Regena', 'age' => 12],
@@ -590,7 +589,7 @@ Bạn cũng có thể gọi phương thức `firstWhere` bằng toán tử:
 <a name="method-flatmap"></a>
 #### `flatMap()` {#collection-method}
 
-Phương thức `flatMap` lặp lại qua collection và pass từng giá trị cho callback đã cho. Callback được tự do sửa đổi item và trả lại nó, do đó hình thành một collection mới với các item đã được sửa đổi. Sau đó, mảng được làm ngang hàng ở một mức:
+Phương thức `flatMap` lặp qua collection và truyền từng value vào trong một callback đã cho. Callback sẽ sửa đổi value đó và trả về value mới, do đó sẽ tạo nên một collection mới với các value đã được sửa đổi. Sau đó, mảng được trả về sẽ được làm ngang hàng ở một mức:
 
     $collection = collect([
         ['name' => 'Sally'],
@@ -609,7 +608,7 @@ Phương thức `flatMap` lặp lại qua collection và pass từng giá trị 
 <a name="method-flatten"></a>
 #### `flatten()` {#collection-method}
 
-Phương thức `flatten` làm ngang hàng một collection đa chiều thành một chiều duy nhất:
+Phương thức `flatten` sẽ làm ngang hàng một collection đa chiều thành một chiều duy nhất:
 
     $collection = collect(['name' => 'taylor', 'languages' => ['php', 'javascript']]);
 
@@ -619,7 +618,7 @@ Phương thức `flatten` làm ngang hàng một collection đa chiều thành m
 
     // ['taylor', 'php', 'javascript'];
 
-Bạn có thể tùy ý pass cho hàm với một tham số "depth":
+Bạn có thể tùy ý truyền vào hàm với một tham số "depth":
 
     $collection = collect([
         'Apple' => [
@@ -641,12 +640,12 @@ Bạn có thể tùy ý pass cho hàm với một tham số "depth":
         ]
     */
 
-Trong ví dụ này, gọi `flatten` mà không cung cấp độ sâu cũng sẽ làm ngang hàng các mảng lồng nhau, dẫn đến `['iPhone 6S', 'Apple', 'Galaxy S7', 'Samsung'] `. Cung cấp độ sâu cho phép bạn hạn chế các mức của các mảng lồng nhau sẽ được làm ngang hàng.
+Trong ví dụ trên, nếu gọi `flatten` mà không cung cấp "depth" thì nó cũng sẽ làm ngang hàng đến cả mảng lồng nhau và kết quả sẽ là `['iPhone 6S', 'Apple', 'Galaxy S7', 'Samsung']`. Cung cấp giá trị "depth" cho phép bạn hạn chế các mức của các mảng lồng nhau sẽ được làm ngang hàng.
 
 <a name="method-flip"></a>
 #### `flip()` {#collection-method}
 
-Phương thức `flip` sẽ hoán đổi các key của collection với các giá trị tương ứng của chúng:
+Phương thức `flip` sẽ hoán đổi các key của collection với các giá trị value tương ứng của chúng:
 
     $collection = collect(['name' => 'taylor', 'framework' => 'laravel']);
 
@@ -659,7 +658,7 @@ Phương thức `flip` sẽ hoán đổi các key của collection với các gi
 <a name="method-forget"></a>
 #### `forget()` {#collection-method}
 
-Phương thức `forget` xóa một item khỏi collection bằng key của nó:
+Phương thức `forget` sẽ xóa một item ra khỏi collection bằng key của nó:
 
     $collection = collect(['name' => 'taylor', 'framework' => 'laravel']);
 
@@ -669,12 +668,12 @@ Phương thức `forget` xóa một item khỏi collection bằng key của nó:
 
     // ['framework' => 'laravel']
 
-> {note} Không giống như hầu hết các phương thức collection khác, `forget` không trả về collection đã sửa mới; mà nó sửa trực tiếp lên collection mà nó được gọi.
+> {note} Không giống như hầu hết các phương thức collection khác, `forget` không trả về một collection mới; mà nó sẽ sửa trực tiếp lên collection mà nó được gọi.
 
 <a name="method-forpage"></a>
 #### `forPage()` {#collection-method}
 
-Phương thức `forPage` sẽ trả về một collection mới chứa các item sẽ xuất hiện trên một số trang nhất định. Phương thức chấp nhận số trang làm tham số đầu tiên và số item sẽ hiển thị trong mỗi trang làm tham số thứ hai:
+Phương thức `forPage` sẽ trả về một collection mới chứa các item sẽ xuất hiện trên một số trang nhất định. Phương thức chấp nhận số trang làm tham số đầu tiên và số item sẽ được hiển thị trong mỗi trang làm tham số thứ hai:
 
     $collection = collect([1, 2, 3, 4, 5, 6, 7, 8, 9]);
 
@@ -695,7 +694,7 @@ Phương thức `get` sẽ trả về item tại một key đã cho. Nếu key k
 
     // taylor
 
-Bạn có thể tùy chọn pass một giá trị mặc định làm tham số thứ hai:
+Bạn có thể tùy chọn truyền vào một giá trị mặc định làm tham số thứ hai:
 
     $collection = collect(['name' => 'taylor', 'framework' => 'laravel']);
 
@@ -703,7 +702,7 @@ Bạn có thể tùy chọn pass một giá trị mặc định làm tham số t
 
     // default-value
 
-Bạn thậm chí có thể pass một callback như là giá trị mặc định. Kết quả của callback sẽ được trả về nếu key được chỉ định không tồn tại:
+Bạn thậm chí cũng có thể truyền vào một callback như là một giá trị mặc định. Và kết quả của callback sẽ được trả về nếu key được chỉ định không tồn tại:
 
     $collection->get('email', function () {
         return 'default-value';
@@ -738,7 +737,7 @@ Phương thức `groupBy` sẽ nhóm các item của collection theo một key �
         ]
     */
 
-Ngoài việc pass một chuỗi `key`, bạn cũng có thể pass một callback. Callback sẽ trả về giá trị bạn muốn key cho nhóm bằng cách:
+Ngoài việc truyền vào một chuỗi `key`, bạn cũng có thể truyền vào một callback. Callback sẽ trả về giá trị key mà bạn muốn nhóm bằng cách như sau:
 
     $grouped = $collection->groupBy(function ($item, $key) {
         return substr($item['account_id'], -3);
@@ -758,7 +757,7 @@ Ngoài việc pass một chuỗi `key`, bạn cũng có thể pass một callbac
         ]
     */
 
-Nếu bạn có bhiều tiêu chí nhóm, bạn có thể được pass dưới dạng một mảng. Mỗi phần tử mảng sẽ được áp dụng cho level tương ứng trong một mảng nhiều chiều:
+Nếu bạn có nhiều tiêu chí nhóm, bạn có thể truyền vào dưới dạng một mảng. Mỗi phần tử mảng sẽ được áp dụng cho một level tương ứng trong một mảng nhiều chiều:
 
     $data = new Collection([
         10 => ['user' => 1, 'skill' => 1, 'roles' => ['Role_1', 'Role_3']],
@@ -802,7 +801,7 @@ Nếu bạn có bhiều tiêu chí nhóm, bạn có thể được pass dưới 
 <a name="method-has"></a>
 #### `has()` {#collection-method}
 
-Phương thức `has` xác định nếu một key đã cho tồn tại trong collection hay không:
+Phương thức `has` sẽ xác định nếu một key đã cho có tồn tại trong collection hay không:
 
     $collection = collect(['account_id' => 1, 'product' => 'Desk']);
 
@@ -813,7 +812,7 @@ Phương thức `has` xác định nếu một key đã cho tồn tại trong co
 <a name="method-implode"></a>
 #### `implode()` {#collection-method}
 
-Phương thức `implode` là kết hợp các item trong một collection. Tham số của nó phụ thuộc vào loại item trong collection. Nếu collection chứa các mảng hoặc đối tượng, bạn nên pass key của các thuộc tính bạn muốn join và chuỗi "glue" bạn muốn đặt vào giữa các giá trị:
+Phương thức `implode` là kết hợp các item trong một collection. Tham số của nó phụ thuộc vào loại item trong collection. Nếu collection chứa các mảng hoặc các đối tượng, bạn nên truyền key của các thuộc tính mà bạn muốn join và chuỗi "glue" bạn muốn đặt vào giữa các giá trị:
 
     $collection = collect([
         ['account_id' => 1, 'product' => 'Desk'],
@@ -824,7 +823,7 @@ Phương thức `implode` là kết hợp các item trong một collection. Tham
 
     // Desk, Chair
 
-Nếu collection chứa các chuỗi hoặc giá trị số đơn giản, hãy pass "glue" làm tham số duy nhất cho phương thức:
+Nếu collection chứa các chuỗi hoặc value số đơn giản, hãy truyền chuỗi "glue" làm tham số duy nhất cho phương thức:
 
     collect([1, 2, 3, 4, 5])->implode('-');
 
@@ -833,7 +832,7 @@ Nếu collection chứa các chuỗi hoặc giá trị số đơn giản, hãy p
 <a name="method-intersect"></a>
 #### `intersect()` {#collection-method}
 
-Phương thức `intersect` sẽ loại bỏ bất kỳ giá trị nào khỏi collection ban đầu nếu không có trong `array` hoặc collection đã cho. Collection kết quả sẽ còn lại các key của collection gốc:
+Phương thức `intersect` sẽ loại bỏ bất kỳ value nào ra khỏi collection ban đầu nếu không có trong `array` hoặc collection đã cho. Collection kết quả sẽ còn lại các key của collection gốc:
 
     $collection = collect(['Desk', 'Sofa', 'Chair']);
 
@@ -846,7 +845,7 @@ Phương thức `intersect` sẽ loại bỏ bất kỳ giá trị nào khỏi c
 <a name="method-intersectbykeys"></a>
 #### `intersectByKeys()` {#collection-method}
 
-Phương thức `intersectByKeys` loại bỏ bất kỳ key nào khỏi collection ban đầu nếu không có trong `array` hoặc collection đã cho:
+Phương thức `intersectByKeys` loại bỏ bất kỳ key nào ra khỏi collection ban đầu nếu không có trong `array` hoặc collection đã cho:
 
     $collection = collect([
         'serial' => 'UX301', 'type' => 'screen', 'year' => 2009
@@ -863,7 +862,7 @@ Phương thức `intersectByKeys` loại bỏ bất kỳ key nào khỏi collect
 <a name="method-isempty"></a>
 #### `isEmpty()` {#collection-method}
 
-Phương thức `isEmpty` trả về` true` nếu collection trống; ngược lại, `false` được trả về:
+Phương thức `isEmpty` sẽ trả về` true` nếu collection trống; ngược lại, `false` được trả về:
     collect([])->isEmpty();
 
     // true
@@ -871,7 +870,7 @@ Phương thức `isEmpty` trả về` true` nếu collection trống; ngược l
 <a name="method-isnotempty"></a>
 #### `isNotEmpty()` {#collection-method}
 
-Phương thức `isNotEmpty` trả về `true` nếu collection không trống; ngược lại, `false` được trả về:
+Phương thức `isNotEmpty` sẽ trả về `true` nếu collection không trống; ngược lại, `false` được trả về:
 
     collect([])->isNotEmpty();
 
@@ -880,7 +879,7 @@ Phương thức `isNotEmpty` trả về `true` nếu collection không trống; 
 <a name="method-keyby"></a>
 #### `keyBy()` {#collection-method}
 
-Phương thức `keyBy` sẽ key hoá collection bằng key đã cho. Nếu nhiều item có cùng key, chỉ có item cuối cùng sẽ tạo trong collection mới:
+Phương thức `keyBy` sẽ key hoá collection bằng key đã cho. Nếu nhiều item có cùng key, thì chỉ item cuối cùng sẽ được tạo trong collection mới:
 
     $collection = collect([
         ['product_id' => 'prod-100', 'name' => 'Desk'],
@@ -898,7 +897,7 @@ Phương thức `keyBy` sẽ key hoá collection bằng key đã cho. Nếu nhi�
         ]
     */
 
-Bạn cũng có thể pass một callback cho phương thức. Callback sẽ trả về giá trị cho key collection bằng cách:
+Bạn cũng có thể truyền vào một callback cho phương thức. Callback sẽ trả về giá trị cho key collection bằng cách như sau:
 
     $keyed = $collection->keyBy(function ($item) {
         return strtoupper($item['product_id']);
@@ -932,7 +931,7 @@ Phương thức `keys` sẽ trả về tất cả các key của collection:
 <a name="method-last"></a>
 #### `last()` {#collection-method}
 
-Phương thức `last` sẽ trả về phần tử cuối cùng trong collection pass qua một số điều kiện đã cho:
+Phương thức `last` sẽ trả về phần tử cuối cùng có trong collection nếu pass qua một số điều kiện đã cho:
 
     collect([1, 2, 3, 4])->last(function ($value, $key) {
         return $value < 3;
@@ -940,7 +939,7 @@ Phương thức `last` sẽ trả về phần tử cuối cùng trong collection
 
     // 2
 
-Bạn cũng có thể gọi phương thức `last` không có tham số để lấy phần tử cuối cùng trong collection. Nếu collection trống, `null` được trả về:
+Bạn cũng có thể gọi phương thức `last` không có tham số để lấy phần tử cuối cùng có trong collection. Nếu collection trống, `null` được trả về:
 
     collect([1, 2, 3, 4])->last();
 
@@ -949,7 +948,7 @@ Bạn cũng có thể gọi phương thức `last` không có tham số để l�
 <a name="method-macro"></a>
 #### `macro()` {#collection-method}
 
-Phương thức tĩnh `macro` cho phép bạn thêm các phương thức vào lớp `Collection` trong thời gian chạy. Tham khảo tài liệu về [extending collections](#extending-collections) để biết thêm thông tin.
+Phương thức tĩnh `macro` cho phép bạn thêm các phương thức mới vào lớp `Collection` trong thời gian chạy. Tham khảo tài liệu về [extending collections](#extending-collections) để biết thêm thông tin chi tiết.
 
 <a name="method-make"></a>
 #### `make()` {#collection-method}
@@ -959,7 +958,7 @@ Phương thức tĩnh `make` sẽ tạo ra một instance collection mới. Xem 
 <a name="method-map"></a>
 #### `map()` {#collection-method}
 
-Phương thức `map` lặp lại qua collection và pass từng giá trị cho hàm callback đã cho. Callback cho phép bạn tự do sửa đổi các item và trả lại nó, do đó hình thành một collection mới với các item đã được sửa:
+Phương thức `map` sẽ lặp qua collection và truyền từng item trong collection vào hàm callback đã cho. Hàm callback cho phép bạn có thể sửa đổi các item và trả về item mới, do đó sẽ tạo nên một collection mới với các item đã được sửa:
 
     $collection = collect([1, 2, 3, 4, 5]);
 
@@ -976,7 +975,7 @@ Phương thức `map` lặp lại qua collection và pass từng giá trị cho 
 <a name="method-mapinto"></a>
 #### `mapInto()` {#collection-method}
 
-Phương thức `mapInto()` lặp lại collectionp, tạo một instance mới của class đã cho bằng cách pass giá trị vào hàm khởi tạo:
+Phương thức `mapInto()` sẽ lặp qua collectionp, và tạo một instance mới của một class đã cho bằng cách truyền các giá trị đó vào một hàm khởi tạo:
 
     class Currency
     {
@@ -1003,7 +1002,7 @@ Phương thức `mapInto()` lặp lại collectionp, tạo một instance mới 
 <a name="method-mapspread"></a>
 #### `mapSpread()` {#collection-method}
 
-Phương thức `mapSpread` lặp lại các item của collection, pass từng giá trị item bị lồng vào nhau  vào hàm callback đã cho. Callback cho phép bạn tự do sửa đổi item và trả lại nó, do đó hình thành một collection mới với các item đã được sửa:
+Phương thức `mapSpread` sẽ lặp qua các item của collection, và truyền từng giá trị item bị lồng vào nhau vào hàm callback đã cho. Callback cho phép bạn sửa đổi item và trả về item mới, do đó sẽ tạo thành một collection mới với các item đã được sửa:
 
     $collection = collect([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
 
@@ -1020,7 +1019,7 @@ Phương thức `mapSpread` lặp lại các item của collection, pass từng 
 <a name="method-maptogroups"></a>
 #### `mapToGroups()` {#collection-method}
 
-Phương thức `mapToGroups` sẽ nhóm các item của collection theo hàm callback đã cho. Callback sẽ trả về một mảng kết hợp có chứa một cặp key / giá trị duy nhất, do đó tạo thành một collection của các giá trị được nhóm mới:
+Phương thức `mapToGroups` sẽ nhóm các item của collection theo hàm callback đã cho. Callback sẽ trả về một mảng kết hợp có chứa một cặp key giá trị duy nhất, do đó tạo thành một collection gồm các giá trị được nhóm mới:
 
     $collection = collect([
         [
@@ -1057,7 +1056,7 @@ Phương thức `mapToGroups` sẽ nhóm các item của collection theo hàm ca
 <a name="method-mapwithkeys"></a>
 #### `mapWithKeys()` {#collection-method}
 
-Phương thức `mapWithKeys` lặp qua collection và pass từng giá trị cho hàm callback đã cho. Callback sẽ trả về một mảng kết hợp có chứa một cặp key / giá trị duy nhất:
+Phương thức `mapWithKeys` sẽ lặp qua collection và truyền từng item vào hàm callback đã cho. Hàm callback sẽ trả về một mảng kết hợp có chứa một cặp key value duy nhất:
 
     $collection = collect([
         [
@@ -1088,7 +1087,7 @@ Phương thức `mapWithKeys` lặp qua collection và pass từng giá trị ch
 <a name="method-max"></a>
 #### `max()` {#collection-method}
 
-Phương thức `max` trả về giá trị lớn nhất của một key đã cho:
+Phương thức `max` sẽ trả về giá trị lớn nhất của một key đã cho:
 
     $max = collect([['foo' => 10], ['foo' => 20]])->max('foo');
 
@@ -1101,7 +1100,7 @@ Phương thức `max` trả về giá trị lớn nhất của một key đã ch
 <a name="method-median"></a>
 #### `median()` {#collection-method}
 
-Phương thức `median` trả về [giá trị trung vị](https://vi.wikipedia.org/wiki/S%E1%BB%91_trung_v%E1%BB%8B) của một key đã cho:
+Phương thức `median` sẽ trả về [giá trị trung vị](https://vi.wikipedia.org/wiki/S%E1%BB%91_trung_v%E1%BB%8B) của một key đã cho:
 
     $median = collect([['foo' => 10], ['foo' => 10], ['foo' => 20], ['foo' => 40]])->median('foo');
 
@@ -1114,7 +1113,7 @@ Phương thức `median` trả về [giá trị trung vị](https://vi.wikipedia
 <a name="method-merge"></a>
 #### `merge()` {#collection-method}
 
-Phương thức `merge` sẽ merge mảng hoặc collection đã cho với collection gốc. Nếu key trong các item đã cho khớp với key trong collection gốc, giá trị của các item đã cho sẽ ghi đè lên giá trị trong collection gốc:
+Phương thức `merge` sẽ merge một mảng hoặc một collection đã cho với một collection gốc. Nếu một key trong các item đã cho, khớp với một key trong collection gốc, thì giá trị của item đã cho đó sẽ ghi đè lên giá trị có trong collection gốc:
 
     $collection = collect(['product_id' => 1, 'price' => 100]);
 
@@ -1124,7 +1123,7 @@ Phương thức `merge` sẽ merge mảng hoặc collection đã cho với colle
 
     // ['product_id' => 1, 'price' => 200, 'discount' => false]
 
-Nếu các key của các items đã cho là số, các giá trị sẽ được thêm vào cuối collection:
+Nếu các key của các item đã cho là số, thì các giá trị sẽ được thêm vào cuối collection:
 
     $collection = collect(['Desk', 'Chair']);
 
@@ -1137,7 +1136,7 @@ Nếu các key của các items đã cho là số, các giá trị sẽ được
 <a name="method-min"></a>
 #### `min()` {#collection-method}
 
-Phương thức `min` trả về giá trị nhỏ nhất của một key đã cho:
+Phương thức `min` sẽ trả về giá trị nhỏ nhất của một key đã cho:
 
     $min = collect([['foo' => 10], ['foo' => 20]])->min('foo');
 
@@ -1150,7 +1149,7 @@ Phương thức `min` trả về giá trị nhỏ nhất của một key đã ch
 <a name="method-mode"></a>
 #### `mode()` {#collection-method}
 
-Phương thức `mode` trả về [giá trị yếu vị](https://vi.wikipedia.org/wiki/S%E1%BB%91_y%E1%BA%BFu_v%E1%BB%8B) của một key đã cho:
+Phương thức `mode` sẽ trả về [giá trị yếu vị](https://vi.wikipedia.org/wiki/S%E1%BB%91_y%E1%BA%BFu_v%E1%BB%8B) của một key đã cho:
 
     $mode = collect([['foo' => 10], ['foo' => 10], ['foo' => 20], ['foo' => 40]])->mode('foo');
 
@@ -1163,7 +1162,7 @@ Phương thức `mode` trả về [giá trị yếu vị](https://vi.wikipedia.o
 <a name="method-nth"></a>
 #### `nth()` {#collection-method}
 
-Phương thức `nth` tạo ra một collection mới chứa mọi phần tử (an) với n là vị trí muốn lấy và a là số nguyên tăng dần từ 0:
+Phương thức `nth` sẽ tạo ra một collection mới để chứa các phần tử nằm ở những vị trí (an) với n là khoảng cách muốn lấy của bạn và a là một số nguyên tố tăng dần đều từ 0:
 
     $collection = collect(['a', 'b', 'c', 'd', 'e', 'f']);
 
@@ -1171,7 +1170,7 @@ Phương thức `nth` tạo ra một collection mới chứa mọi phần tử (
 
     // ['a', 'e']
 
-Bạn có thể pass một phần bù làm tham số thứ hai và công thức là (an + b) với b là số bù:
+Bạn có thể truyền vào một phần bù làm tham số thứ hai và công thức sẽ là (an + b) với b là số bù:
 
     $collection->nth(4, 1);
 
@@ -1180,7 +1179,7 @@ Bạn có thể pass một phần bù làm tham số thứ hai và công thức 
 <a name="method-only"></a>
 #### `only()` {#collection-method}
 
-Phương thức `only` trả về các item trong collection với các key được chỉ định:
+Phương thức `only` trả về các item có trong collection với một key được chỉ định:
 
     $collection = collect(['product_id' => 1, 'name' => 'Desk', 'price' => 100, 'discount' => false]);
 
@@ -1190,14 +1189,14 @@ Phương thức `only` trả về các item trong collection với các key đư
 
     // ['product_id' => 1, 'name' => 'Desk']
 
-Đối với ngược với phương thức `only`, hãy xem phương thức [except](#method-except).
+Đối ngược với phương thức `only`, hãy xem phương thức [except](#method-except).
 
 <a name="method-pad"></a>
 #### `pad()` {#collection-method}
 
-Phương thức `pad` sẽ fill vào mảng với giá trị đã cho cho đến khi mảng đạt kích thước đã chỉ định. Phương thức này hoạt động giống như hàm PHP [array_pad](https://secure.php.net/manual/en/function.array-pad.php).
+Phương thức `pad` sẽ thêm vào mảng các giá trị đã cho cho đến khi mảng đạt được kích thước đã chỉ định. Phương thức này hoạt động giống như hàm PHP [array_pad](https://secure.php.net/manual/en/function.array-pad.php).
 
-Để pad sang bên trái, bạn nên khai báo kích thước âm. Sẽ không pad nếu giá trị tuyệt đối của kích thước đã cho nhỏ hơn hoặc bằng độ dài của mảng:
+Để thêm vào bên trái, bạn có thể khai báo một kích thước âm. Và sẽ không thêm nếu giá trị tuyệt đối của kích thước đã cho nhỏ hơn hoặc bằng với độ dài của mảng:
 
     $collection = collect(['A', 'B', 'C']);
 
@@ -1216,7 +1215,7 @@ Phương thức `pad` sẽ fill vào mảng với giá trị đã cho cho đến
 <a name="method-partition"></a>
 #### `partition()` {#collection-method}
 
-Phương thức `partition` có thể được kết hợp với hàm PHP` list` để tách các phần tử pass được điều kiện và các phần tử không pass được điều kiện:
+Phương thức `partition` có thể được kết hợp với hàm PHP `list` để tách ra các phần tử mà đã pass được qua điều kiện và các phần tử không pass được điều kiện:
 
     $collection = collect([1, 2, 3, 4, 5, 6]);
 
@@ -1227,7 +1226,7 @@ Phương thức `partition` có thể được kết hợp với hàm PHP` list`
 <a name="method-pipe"></a>
 #### `pipe()` {#collection-method}
 
-Phương thức `pipe` pass collection đến callback đã cho và trả về kết quả:
+Phương thức `pipe` sẽ truyền collection đến một callback đã cho và trả về kết quả của callback đó:
 
     $collection = collect([1, 2, 3]);
 
@@ -1240,7 +1239,7 @@ Phương thức `pipe` pass collection đến callback đã cho và trả về k
 <a name="method-pluck"></a>
 #### `pluck()` {#collection-method}
 
-Phương thức `pluck` lấy tất cả các giá trị cho một key đã cho:
+Phương thức `pluck` sẽ lấy ra tất cả các giá trị của một key đã cho:
 
     $collection = collect([
         ['product_id' => 'prod-100', 'name' => 'Desk'],
@@ -1253,7 +1252,7 @@ Phương thức `pluck` lấy tất cả các giá trị cho một key đã cho:
 
     // ['Desk', 'Chair']
 
-Bạn cũng có thể khai báo cách bạn muốn collection kết quả dùng key nào từ collection gốc:
+Bạn cũng có thể khai báo thêm key mà bạn muốn dùng từ collection gốc:
 
     $plucked = $collection->pluck('name', 'product_id');
 
@@ -1264,7 +1263,7 @@ Bạn cũng có thể khai báo cách bạn muốn collection kết quả dùng 
 <a name="method-pop"></a>
 #### `pop()` {#collection-method}
 
-Phương thức `pop` xóa và trả về item cuối cùng từ collection:
+Phương thức `pop` sẽ xóa và trả về item cuối cùng từ collection:
 
     $collection = collect([1, 2, 3, 4, 5]);
 
@@ -1279,7 +1278,7 @@ Phương thức `pop` xóa và trả về item cuối cùng từ collection:
 <a name="method-prepend"></a>
 #### `prepend()` {#collection-method}
 
-Phương thức `prepend` thêm một item vào đầu collection:
+Phương thức `prepend` sẽ thêm một item vào đầu collection:
 
     $collection = collect([1, 2, 3, 4, 5]);
 
@@ -1289,7 +1288,7 @@ Phương thức `prepend` thêm một item vào đầu collection:
 
     // [0, 1, 2, 3, 4, 5]
 
-Bạn cũng có thể pass một tham số thứ hai để set key của item được prepend:
+Bạn cũng có thể truyền vào một tham số thứ hai để set key của item được prepend:
 
     $collection = collect(['one' => 1, 'two' => 2]);
 
@@ -1302,7 +1301,7 @@ Bạn cũng có thể pass một tham số thứ hai để set key của item đ
 <a name="method-pull"></a>
 #### `pull()` {#collection-method}
 
-Phương thức `pull` loại bỏ và trả về một item từ collectionp bằng key của nó:
+Phương thức `pull` sẽ loại bỏ và trả về một item từ collectionp bằng key của nó:
 
     $collection = collect(['product_id' => 'prod-100', 'name' => 'Desk']);
 
@@ -1317,7 +1316,7 @@ Phương thức `pull` loại bỏ và trả về một item từ collectionp b�
 <a name="method-push"></a>
 #### `push()` {#collection-method}
 
-Phương thức `push` nối thêm một item vào cuối collection:
+Phương thức `push` sẽ nối thêm một item vào cuối collection:
 
     $collection = collect([1, 2, 3, 4]);
 
@@ -1330,7 +1329,7 @@ Phương thức `push` nối thêm một item vào cuối collection:
 <a name="method-put"></a>
 #### `put()` {#collection-method}
 
-Phương thức `put` sẽ set key và giá trị đã cho vào trong collection:
+Phương thức `put` sẽ set key và giá trị của nó vào trong collection:
 
     $collection = collect(['product_id' => 1, 'name' => 'Desk']);
 
@@ -1343,7 +1342,7 @@ Phương thức `put` sẽ set key và giá trị đã cho vào trong collection
 <a name="method-random"></a>
 #### `random()` {#collection-method}
 
-Phương thức `Random` trả về một item ngẫu nhiên từ collection:
+Phương thức `Random` sẽ trả về một item ngẫu nhiên từ collection:
 
     $collection = collect([1, 2, 3, 4, 5]);
 
@@ -1351,7 +1350,7 @@ Phương thức `Random` trả về một item ngẫu nhiên từ collection:
 
     // 4 - (retrieved randomly)
 
-Bạn có thể tùy chọn pass một số nguyên cho `random` để khai báo số lượng item bạn muốn lấy ngẫu nhiên. Một collection các item sẽ được trả về khi pass một số lượng item bạn muốn nhận:
+Bạn có thể thêm một tùy chọn là một số nguyên tố cho hàm `random` để khai báo số lượng item mà bạn muốn lấy ngẫu nhiên. Một collection các item sẽ được trả về khi bạn truyền vào một số nguyên tố mà bạn muốn nhận:
 
     $random = $collection->random(3);
 
@@ -1364,7 +1363,7 @@ Nếu collection có ít item hơn yêu cầu, phương thức sẽ đưa ra m�
 <a name="method-reduce"></a>
 #### `reduce()` {#collection-method}
 
-Phương thức `reduce` sẽ giảm collection thành một giá trị duy nhất, và sẽ chuyển kết quả của lần lặp trước vào lần lặp tiếp theo:
+Phương thức `reduce` sẽ biến một collection thành một giá trị duy nhất, và nó sẽ chuyển kết quả của lần lặp trước vào trong lần lặp tiếp theo:
 
     $collection = collect([1, 2, 3]);
 
@@ -1374,7 +1373,7 @@ Phương thức `reduce` sẽ giảm collection thành một giá trị duy nh�
 
     // 6
 
-Giá trị cho `$carry` trong lần lặp đầu tiên là `null`; tuy nhiên, bạn có thể khai báo giá trị ban đầu của nó bằng cách pass một tham số thứ hai cho `reduce`:
+Giá trị cho `$carry` trong lần lặp đầu tiên là `null`; tuy nhiên, bạn có thể khai báo giá trị ban đầu của nó bằng cách truyền vào một tham số thứ hai cho `reduce`:
 
     $collection->reduce(function ($carry, $item) {
         return $carry + $item;
@@ -1385,7 +1384,7 @@ Giá trị cho `$carry` trong lần lặp đầu tiên là `null`; tuy nhiên, b
 <a name="method-reject"></a>
 #### `reject()` {#collection-method}
 
-Phương thức `reject` sẽ lọc collection bằng cách sử dụng hàm callback đã cho. Callback sẽ trả về `true` nếu item bị xóa khỏi collection kết quả:
+Phương thức `reject` sẽ lọc một collection bằng cách sử dụng hàm callback đã cho. Hàm callback sẽ trả về `true` nếu item đó sẽ bị xóa bỏ khỏi collection kết quả:
 
     $collection = collect([1, 2, 3, 4]);
 
@@ -1397,7 +1396,7 @@ Phương thức `reject` sẽ lọc collection bằng cách sử dụng hàm cal
 
     // [1, 2]
 
-Đối với ngược với phương thức `reject`, hãy xem phương thức [`filter`](#method-filter).
+Đối ngược với phương thức `reject`, hãy xem phương thức [`filter`](#method-filter).
 
 <a name="method-reverse"></a>
 #### `reverse()` {#collection-method}
@@ -1423,7 +1422,7 @@ Phương thức `reverse` sẽ đảo ngược thứ tự của các item của 
 <a name="method-search"></a>
 #### `search()` {#collection-method}
 
-Phương thức `search` sẽ tìm kiếm collection cho giá trị đã cho và trả về key của nó nếu được tìm thấy. Nếu item không được tìm thấy, `false` được trả về.
+Phương thức `search` sẽ tìm kiếm trong collection với một giá trị đã cho và trả về key của nó nếu được tìm thấy. Nếu item không được tìm thấy, `false` được trả về.
 
     $collection = collect([2, 4, 6, 8]);
 
@@ -1431,13 +1430,13 @@ Phương thức `search` sẽ tìm kiếm collection cho giá trị đã cho và
 
     // 1
 
-Việc tìm kiếm được thực hiện bằng cách sử dụng so sánh "lỏng lẻo", nghĩa là một chuỗi có giá trị integer sẽ được coi là bằng một số integer có cùng giá trị. Để sử dụng so sánh "nghiêm ngặt", hãy pass `true` làm tham số thứ hai cho phương thức:
+Việc tìm kiếm được thực hiện bằng cách sử dụng so sánh "lỏng lẻo", nghĩa là một chuỗi có giá trị integer sẽ được coi là bằng với một số integer có cùng giá trị. Để sử dụng so sánh "nghiêm ngặt", hãy truyền vào một giá trị `true` làm tham số thứ hai cho phương thức:
 
     $collection->search('4', true);
 
     // false
 
-Ngoài ra, bạn có thể pass vào một callback của chính bạn để tìm kiếm item đầu tiên pass qua điều kiện của bạn:
+Ngoài ra, bạn có thể truyền vào một callback của chính bạn để tìm kiếm item đầu tiên mà thoả mãn điều kiện của bạn:
 
     $collection->search(function ($item, $key) {
         return $item > 5;
@@ -1448,7 +1447,7 @@ Ngoài ra, bạn có thể pass vào một callback của chính bạn để tì
 <a name="method-shift"></a>
 #### `shift()` {#collection-method}
 
-Phương thức `shift` loại bỏ và trả về item đầu tiên từ collection:
+Phương thức `shift` sẽ loại bỏ và trả về item đầu tiên của collection:
 
     $collection = collect([1, 2, 3, 4, 5]);
 
@@ -1476,7 +1475,7 @@ Phương thức `shuffle` sẽ xáo trộn ngẫu nhiên các item trong collect
 <a name="method-slice"></a>
 #### `slice()` {#collection-method}
 
-Phương thức `slice` trả về một phần của collection bắt đầu từ index đã cho:
+Phương thức `slice` sẽ trả về các phần của collection bắt đầu từ index đã cho:
 
     $collection = collect([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
 
@@ -1486,7 +1485,7 @@ Phương thức `slice` trả về một phần của collection bắt đầu t�
 
     // [5, 6, 7, 8, 9, 10]
 
-Nếu bạn muốn giới hạn kích thước của phần được trả về, hãy pass tham sô kích thước mong muốn làm tham số thứ hai cho phương thức:
+Nếu bạn muốn giới hạn kích thước của phần được trả về, hãy truyền một tham số kích thước mong muốn làm tham số thứ hai cho phương thức:
 
     $slice = $collection->slice(4, 2);
 
@@ -1499,7 +1498,7 @@ Phần được trả lại sẽ mặc định giữ nguyên các key. Nếu b�
 <a name="method-sort"></a>
 #### `sort()` {#collection-method}
 
-Phương thức `sort` sẽ sắp xếp collection. Collection được sắp xếp giữ nguyên các key mảng gốc, vì vậy trong ví dụ này, chúng ta sẽ sử dụng phương thức [`values`](#method-values) để set lại các key thành các index được đánh số liên tục:
+Phương thức `sort` sẽ giúp sắp xếp collection. Collection được sắp xếp sẽ giữ nguyên các key gốc, vì vậy trong ví dụ này, chúng ta sẽ sử dụng phương thức [`values`](#method-values) để set lại các key thành các index được đánh số theo thứ tự:
 
     $collection = collect([5, 3, 1, 2, 4]);
 
@@ -1509,14 +1508,14 @@ Phương thức `sort` sẽ sắp xếp collection. Collection được sắp x�
 
     // [1, 2, 3, 4, 5]
 
-Nếu bạn cần xắp sếp nâng cao hơn, bạn có thể pass một callback tới `sort` bằng thuật toán của riêng bạn. Tham khảo tài liệu PHP về [`uasort`](https://secure.php.net/manual/en/function.uasort.php#refsect1-function.uasort-parameters), chi tiết hơn thì đây là phương thức `sort` của collection sẽ gọi tới.
+Nếu bạn cần xắp sếp nâng cao hơn, bạn có thể truyền vào một callback tới `sort` bằng một thuật toán của riêng bạn. Tham khảo tài liệu PHP về [`uasort`](https://secure.php.net/manual/en/function.uasort.php#refsect1-function.uasort-parameters), chi tiết hơn thì đây là phương thức `sort` của collection sẽ gọi tới.
 
-> {tip} Nếu bạn cần sắp xếp một collection các mảng hoặc object lồng nhau, hãy xem các phương thức [`sortBy`](#method-sortby) và [`sortByDesc`](#method-sortbydesc).
+> {tip} Nếu bạn cần sắp xếp một collection là các mảng hoặc các object lồng nhau, hãy xem thêm các phương thức [`sortBy`](#method-sortby) và [`sortByDesc`](#method-sortbydesc).
 
 <a name="method-sortby"></a>
 #### `sortBy()` {#collection-method}
 
-Phương thức `sortBy` sẽ sắp xếp collection theo key đã cho. Collection đã được sắp xếp sẽ giữ các key của mảng gốc, vì vậy trong ví dụ này, chúng tôi sẽ sử dụng phương thức [`values`](#method-values) để set lại các key thành các chỉ mục được đánh số liên tục:
+Phương thức `sortBy` sẽ sắp xếp collection theo một key đã cho. Collection đã được sắp xếp sẽ giữ các key gốc, vì vậy trong ví dụ này, chúng tôi sẽ sử dụng phương thức [`values`](#method-values) để set lại các key thành các chỉ mục được đánh số theo thứ tự:
 
     $collection = collect([
         ['name' => 'Desk', 'price' => 200],
@@ -1536,7 +1535,7 @@ Phương thức `sortBy` sẽ sắp xếp collection theo key đã cho. Collecti
         ]
     */
 
-Bạn cũng có thể pass qua một callback của riêng bạn để xác định cách sắp xếp các giá trị collection:
+Bạn cũng có thể truyền vào một callback của riêng bạn để xác định cách sắp xếp các giá trị collection:
 
     $collection = collect([
         ['name' => 'Desk', 'colors' => ['Black', 'Mahogany']],
@@ -1566,7 +1565,7 @@ Phương thức này có cùng chức năng với phương thức [`sortBy`](#me
 <a name="method-splice"></a>
 #### `splice()` {#collection-method}
 
-Phương thức `splice` loại bỏ và trả về một phần các item bắt đầu từ index được khai báo:
+Phương thức `splice` sẽ loại bỏ và trả về một phần các item bắt đầu từ index được khai báo:
 
     $collection = collect([1, 2, 3, 4, 5]);
 
@@ -1580,7 +1579,7 @@ Phương thức `splice` loại bỏ và trả về một phần các item bắt
 
     // [1, 2]
 
-Bạn có thể pass tham số thứ hai để giới hạn kích thước của kết quả:
+Bạn có thể truyền vào tham số thứ hai để giới hạn kích thước của kết quả:
 
     $collection = collect([1, 2, 3, 4, 5]);
 
@@ -1594,7 +1593,7 @@ Bạn có thể pass tham số thứ hai để giới hạn kích thước của
 
     // [1, 2, 4, 5]
 
-Ngoài ra, bạn có thể pass tham số thứ ba có chứa các item mới để thay thế các item bị xóa khỏi collection:
+Ngoài ra, bạn có thể truyền vào tham số thứ ba chứa các item mới để thay thế các item bị xóa khỏi collection:
 
     $collection = collect([1, 2, 3, 4, 5]);
 
@@ -1624,13 +1623,13 @@ Phương thức `split` sẽ chia một collection thành một số nhóm:
 <a name="method-sum"></a>
 #### `sum()` {#collection-method}
 
-Phương thức `sum` trả về tổng của tất cả các item trong collection:
+Phương thức `sum` sẽ trả về tổng của tất cả các item trong collection:
 
     collect([1, 2, 3, 4, 5])->sum();
 
     // 15
 
-Nếu collection chứa các mảng hoặc đối tượng lồng nhau, bạn nên pass key để sử dụng để xác định giá trị nào cần tính tổng:
+Nếu collection chứa các mảng hoặc các đối tượng lồng nhau, bạn có thể truyền vào một key để xác định giá trị nào cần tính tổng:
 
     $collection = collect([
         ['name' => 'JavaScript: The Good Parts', 'pages' => 176],
@@ -1641,7 +1640,7 @@ Nếu collection chứa các mảng hoặc đối tượng lồng nhau, bạn n�
 
     // 127
 
-Ngoài ra, bạn có thể pass một callback của chính bạn để xác định giá trị nào của collection cần tính tổng:
+Ngoài ra, bạn có thể truyền vào một callback của chính bạn để xác định giá trị nào của collection cần tính tổng:
 
     $collection = collect([
         ['name' => 'Chair', 'colors' => ['Black']],
@@ -1658,7 +1657,7 @@ Ngoài ra, bạn có thể pass một callback của chính bạn để xác đ�
 <a name="method-take"></a>
 #### `take()` {#collection-method}
 
-Phương thức `Take`taketrả về một collection mới với số lượng item được chỉ định:
+Phương thức `Take` sẽ trả về một collection mới với một số lượng item được chỉ định:
 
     $collection = collect([0, 1, 2, 3, 4, 5]);
 
@@ -1668,7 +1667,7 @@ Phương thức `Take`taketrả về một collection mới với số lượng 
 
     // [0, 1, 2]
 
-Bạn cũng có thể pass một số âm để lấy số lượng item được chỉ định từ cuối collection:
+Bạn cũng có thể truyền vào một số âm để lấy số lượng item được chỉ định từ cuối collection trở về:
 
     $collection = collect([0, 1, 2, 3, 4, 5]);
 
@@ -1681,7 +1680,7 @@ Bạn cũng có thể pass một số âm để lấy số lượng item đượ
 <a name="method-tap"></a>
 #### `tap()` {#collection-method}
 
-Phương thức `tap` sẽ pass collection đến một callback đã cho, cho phép bạn "tap" vào collection tại một điểm cụ thể và làm một cái gì đó với các item trong khi không ảnh hưởng đến chính collection:
+Phương thức `tap` sẽ truyền collection đến một callback đã cho, cho phép bạn "tap" vào collection tại một điểm cụ thể và làm một cái gì đó với các item trong khi không ảnh hưởng đến chính collection:
 
     collect([2, 4, 3, 1, 5])
         ->sort()
@@ -1695,7 +1694,7 @@ Phương thức `tap` sẽ pass collection đến một callback đã cho, cho p
 <a name="method-times"></a>
 #### `times()` {#collection-method}
 
-Phương thức tĩnh `times` tạo ra một collection mới bằng cách gọi hàm callback một số lần nhất định:
+Phương thức tĩnh `times` sẽ tạo ra một collection mới bằng cách gọi hàm callback với một số lần nhất định:
 
     $collection = Collection::times(10, function ($number) {
         return $number * 9;
@@ -1724,7 +1723,7 @@ Phương pháp này có thể hữu ích khi được kết hợp với các fac
 <a name="method-toarray"></a>
 #### `toArray()` {#collection-method}
 
-Phương thức `toArray` sẽ chuyển đổi collection thành một PHP `array`. Nếu các giá trị của collection là các model [Eloquent](/docs/{{version}}/eloquent), thì các mdoel cũng sẽ được chuyển đổi thành mảng:
+Phương thức `toArray` sẽ chuyển đổi collection thành một PHP `array`. Nếu các giá trị của collection là các model [Eloquent](/docs/{{version}}/eloquent), thì các mdoel này cũng sẽ được chuyển đổi thành mảng:
 
     $collection = collect(['name' => 'Desk', 'price' => 200]);
 
@@ -1736,12 +1735,12 @@ Phương thức `toArray` sẽ chuyển đổi collection thành một PHP `arra
         ]
     */
 
-> {note} `toArray` cũng chuyển đổi tất cả các đối tượng lồng nhau của collection thành một mảng. Nếu bạn muốn lấy raw mảng cơ bản, thay vào đó, hãy sử dụng phương thức [`all`](#method-all).
+> {note} `toArray` cũng sẽ chuyển đổi tất cả các đối tượng có trong collection thành một mảng kể cả các đối tượng nằm sâu bên trong mảng. Nếu bạn muốn lấy một mảng của các đối tượng, thì bạn có thể sử dụng phương thức [`all`](#method-all).
 
 <a name="method-tojson"></a>
 #### `toJson()` {#collection-method}
 
-Phương thức `toJson` chuyển đổi collection thành một chuỗi JSON:
+Phương thức `toJson` sẽ chuyển đổi một collection thành một chuỗi JSON:
 
     $collection = collect(['name' => 'Desk', 'price' => 200]);
 
@@ -1752,7 +1751,7 @@ Phương thức `toJson` chuyển đổi collection thành một chuỗi JSON:
 <a name="method-transform"></a>
 #### `transform()` {#collection-method}
 
-Phương thức `Transform` lặp lại collection và gọi hàm callback đã cho với từng item trong collection. Các item trong collection sẽ được thay thế bằng các giá trị được trả về bởi hàm callback:
+Phương thức `Transform` sẽ lặp collection và gọi hàm callback đã cho với từng item có trong collection. Các item có trong collection sẽ được thay thế bằng một giá trị mới được trả về bởi hàm callback:
 
     $collection = collect([1, 2, 3, 4, 5]);
 
@@ -1764,12 +1763,12 @@ Phương thức `Transform` lặp lại collection và gọi hàm callback đã 
 
     // [2, 4, 6, 8, 10]
 
-> {note} Không giống như hầu hết các phương thức collection khác, `transform` tự sửa transform. Thay vào đó, nếu bạn muốn tạo một transform mới, hãy sử dụng phương thức [`map`](#method-map).
+> {note} Không giống như hầu hết các phương thức collection khác, `transform` sẽ trực tiếp sửa vào collection. Nếu bạn muốn tạo một collection mới, hãy sử dụng phương thức [`map`](#method-map).
 
 <a name="method-union"></a>
 #### `union()` {#collection-method}
 
-Phương thức `union` thêm mảng đã cho vào collection. Nếu mảng đã cho chứa các khóa đã có trong collection gốc, các giá trị của collection gốc sẽ được ưu tiên:
+Phương thức `union` sẽ thêm một mảng đã cho vào collection. Nếu mảng đã cho có chứa các khóa đã có trong collection gốc, thì các giá trị của collection gốc sẽ được ưu tiên:
 
     $collection = collect([1 => ['a'], 2 => ['b']]);
 
@@ -1782,7 +1781,7 @@ Phương thức `union` thêm mảng đã cho vào collection. Nếu mảng đã
 <a name="method-unique"></a>
 #### `unique()` {#collection-method}
 
-Phương thức `unique` trả về tất cả các unique item trong collection. Collection được trả về giữ nguyên các key mảng gốc, vì vậy trong ví dụ này, chúng ta sẽ sử dụng phương thức [`values`](#method-values) để set lại các key thành các index được đánh số liên tục:
+Phương thức `unique` sẽ trả về tất cả các item duy nhất có trong collection. Collection được trả về sẽ giữ nguyên các key gốc, vì vậy trong ví dụ này, chúng ta sẽ sử dụng phương thức [`values`](#method-values) để set lại các key gốc đó thành các index được đánh số theo thứ tự:
 
     $collection = collect([1, 1, 2, 2, 3, 4, 2]);
 
@@ -1792,7 +1791,7 @@ Phương thức `unique` trả về tất cả các unique item trong collection
 
     // [1, 2, 3, 4]
 
-Khi xử lý các mảng hoặc đối tượng lồng nhau, bạn có thể chỉ định key được sử dụng để xác định tính duy nhất:
+Khi xử lý các mảng hoặc các đối tượng lồng nhau, bạn có thể chỉ định key mà được sử dụng để xác định tính duy nhất:
 
     $collection = collect([
         ['name' => 'iPhone 6', 'brand' => 'Apple', 'type' => 'phone'],
@@ -1813,7 +1812,7 @@ Khi xử lý các mảng hoặc đối tượng lồng nhau, bạn có thể ch�
         ]
     */
 
-Bạn cũng có thể pass một callback của chính bạn để xác định tính duy nhất của item:
+Bạn cũng có thể truyền vào một callback của bạn để xác định tính duy nhất của item:
 
     $unique = $collection->unique(function ($item) {
         return $item['brand'].$item['type'];
@@ -1830,17 +1829,17 @@ Bạn cũng có thể pass một callback của chính bạn để xác định 
         ]
     */
 
-Phương thức `unique` sử dụng các phép so sánh "lỏng lẻo" khi kiểm tra các giá trị item, nghĩa là một chuỗi có giá trị integer sẽ được coi là bằng một số integer có cùng giá trị. Sử dụng phương thức [`uniqueStrict`](#method-uniquestrict) để lọc bằng các so sánh "nghiêm ngặt".
+Phương thức `unique` sử dụng các phép so sánh "lỏng lẻo" khi kiểm tra các giá trị item, nghĩa là một chuỗi có giá trị integer sẽ được coi là bằng với một số integer có cùng giá trị. Sử dụng phương thức [`uniqueStrict`](#method-uniquestrict) để lọc bằng các so sánh "nghiêm ngặt".
 
 <a name="method-uniquestrict"></a>
 #### `uniqueStrict()` {#collection-method}
 
-Phương thức này có cùng chức năng với phương thức [`unique`](#method-unique); tuy nhiên, tất cả các giá trị được so sánh bằng cách sử dụng so sánh "nghiêm ngặt".
+Phương thức này có cùng chức năng với phương thức [`unique`](#method-unique); tuy nhiên, tất cả các giá trị được so sánh sẽ sử dụng so sánh "nghiêm ngặt".
 
 <a name="method-unless"></a>
 #### `unless()` {#collection-method}
 
-Phương thức `unless` sẽ chạy hàm callback đã cho ngoại trừ tham số đầu tiên được cung cấp cho phương thức là `true`:
+Phương thức `unless` sẽ chạy hàm callback đã cho nếu như tham số đầu tiên được cung cấp cho phương thức này là khác `true`:
 
     $collection = collect([1, 2, 3]);
 
@@ -1856,12 +1855,12 @@ Phương thức `unless` sẽ chạy hàm callback đã cho ngoại trừ tham s
 
     // [1, 2, 3, 5]
 
-For the inverse of `unless`, see the [`when`](#method-when) method.
+Đối ngược với phương thức `unless`, hãy xem phương thức [`when`](#method-when).
 
 <a name="method-unwrap"></a>
 #### `unwrap()` {#collection-method}
 
-Phương thức tĩnh `unwrap` sẽ trả về các item cơ bản của collection từ giá trị đã cho khi áp dụng:
+Phương thức tĩnh `unwrap` sẽ trả về các item mà không được bao bọc trong collection:
 
     Collection::unwrap(collect('John Doe'));
 
@@ -1878,7 +1877,7 @@ Phương thức tĩnh `unwrap` sẽ trả về các item cơ bản của collect
 <a name="method-values"></a>
 #### `values()` {#collection-method}
 
-Phương thức `value` trả về một collection mới với các key được reset thành các số nguyên liên tiếp:
+Phương thức `value` trả về một collection mới với các key đã được sắp xếp theo thứ tự:
 
     $collection = collect([
         10 => ['product' => 'Desk', 'price' => 200],
@@ -1899,7 +1898,7 @@ Phương thức `value` trả về một collection mới với các key đượ
 <a name="method-when"></a>
 #### `when()` {#collection-method}
 
-Phương thức `when` sẽ chạy callback đã cho khi tham số đầu tiên được cung cấp cho phương thứclà `true`:
+Phương thức `when` sẽ chạy callback đã cho khi mà tham số đầu tiên trả về giá trị `true`:
 
     $collection = collect([1, 2, 3]);
 
@@ -1915,12 +1914,12 @@ Phương thức `when` sẽ chạy callback đã cho khi tham số đầu tiên 
 
     // [1, 2, 3, 4]
 
-Đối với ngược với phương thức `when`, hãy xem phương thức [`unless`](#method-unless).
+Đối ngược với phương thức `when`, hãy xem phương thức [`unless`](#method-unless).
 
 <a name="method-where"></a>
 #### `where()` {#collection-method}
 
-Phương thức `where` sẽ lọc collection theo cặp key / giá trị đã cho:
+Phương thức `where` sẽ lọc collection theo giá trị của cặp key và value:
 
     $collection = collect([
         ['product' => 'Desk', 'price' => 200],
@@ -1940,17 +1939,17 @@ Phương thức `where` sẽ lọc collection theo cặp key / giá trị đã c
         ]
     */
 
-Phương thức `where` sử dụng phép so sánh "lỏng lẻo" khi kiểm tra các giá trị item, nghĩa là một chuỗi có giá trị integer sẽ được coi là bằng một số integer có cùng giá trị. Sử dụng phương thức [`whereStrict`](#method-wherestrict) để lọc bằng các so sánh "nghiêm ngặt".
+Phương thức `where` sẽ sử dụng phép so sánh "lỏng lẻo" khi kiểm tra các giá trị của item, nghĩa là một chuỗi có giá trị integer sẽ bằng với một số integer có cùng giá trị. Sử dụng phương thức [`whereStrict`](#method-wherestrict) để lọc collection bằng các so sánh "nghiêm ngặt".
 
 <a name="method-wherestrict"></a>
 #### `whereStrict()` {#collection-method}
 
-Phương thức này có cùng chức năng với phương thức [`where`](#method-where); tuy nhiên, tất cả các giá trị được so sánh bằng cách sử dụng so sánh "nghiêm ngặt".
+Phương thức này có cùng chức năng với phương thức [`where`](#method-where); tuy nhiên, tất cả các giá trị đều được so sánh bằng cách sử dụng so sánh "nghiêm ngặt".
 
 <a name="method-wherein"></a>
 #### `whereIn()` {#collection-method}
 
-Phương thức `whereIn` sẽ lọc collection theo một key / giá trị có trong mảng đã cho:
+Phương thức `whereIn` sẽ lọc collection theo cặp key và value, trong đó value sẽ phải có trong mảng đã cho:
 
     $collection = collect([
         ['product' => 'Desk', 'price' => 200],
@@ -1970,17 +1969,17 @@ Phương thức `whereIn` sẽ lọc collection theo một key / giá trị có 
         ]
     */
 
-Phương thức `whereIn` sử dụng phép so sánh "lỏng lẻo" khi kiểm tra các giá trị item, nghĩa là một chuỗi có giá trị integer sẽ được coi là bằng một số integer có cùng giá trị. Sử dụng phương thức [`whereInStrict`](#method-whereinstrict) để lọc bằng các so sánh "nghiêm ngặt".
+Phương thức `whereIn` sử dụng phép so sánh "lỏng lẻo" khi kiểm tra các giá trị của item, nghĩa là một chuỗi có giá trị integer sẽ bằng với một số integer có cùng giá trị. Sử dụng phương thức [`whereInStrict`](#method-whereinstrict) để lọc collection bằng các so sánh "nghiêm ngặt".
 
 <a name="method-whereinstrict"></a>
 #### `whereInStrict()` {#collection-method}
 
-Phương thức này có cùng chức năng với phương thức [`whereIn`](#method-wherein); tuy nhiên, tất cả các giá trị được so sánh bằng cách sử dụng so sánh "nghiêm ngặt".
+Phương thức này có cùng chức năng với phương thức [`whereIn`](#method-wherein); tuy nhiên, tất cả các giá trị đều được so sánh bằng cách sử dụng so sánh "nghiêm ngặt".
 
 <a name="method-wherenotin"></a>
 #### `whereNotIn()` {#collection-method}
 
-Phương thức `whereNotIn` sẽ lọc collection theo một key / giá trị không có trong mảng đã cho:
+Phương thức `whereNotIn` sẽ lọc collection theo cặp key và value, trong đó value sẽ không có trong mảng đã cho:
 
     $collection = collect([
         ['product' => 'Desk', 'price' => 200],
@@ -2000,17 +1999,17 @@ Phương thức `whereNotIn` sẽ lọc collection theo một key / giá trị k
         ]
     */
 
-Phương thức `whereNotIn` sử dụng phép so sánh "lỏng lẻo" khi kiểm tra các giá trị item, nghĩa là một chuỗi có giá trị integer sẽ được coi là bằng một số integer có cùng giá trị. Sử dụng phương thức [`whereNotInStrict`](#method-wherenotinstrict) để lọc bằng các so sánh "nghiêm ngặt".
+Phương thức `whereNotIn` sử dụng phép so sánh "lỏng lẻo" khi kiểm tra các giá trị item, nghĩa là một chuỗi có giá trị integer sẽ bằng với một số integer có cùng giá trị. Sử dụng phương thức [`whereNotInStrict`](#method-wherenotinstrict) để lọc collection bằng các so sánh "nghiêm ngặt".
 
 <a name="method-wherenotinstrict"></a>
 #### `whereNotInStrict()` {#collection-method}
 
-Phương thức này có cùng chức năng với phương thức [`whereNotIn`](#method-wherenotin); tuy nhiên, tất cả các giá trị được so sánh bằng cách sử dụng so sánh "nghiêm ngặt".
+Phương thức này có cùng chức năng với phương thức [`whereNotIn`](#method-wherenotin); tuy nhiên, tất cả các giá trị đều được so sánh bằng cách sử dụng so sánh "nghiêm ngặt".
 
 <a name="method-wrap"></a>
 #### `wrap()` {#collection-method}
 
-Phương thức tĩnh `wrap` sẽ wrap giá trị đã cho trong một collection khi áp dụng:
+Phương thức tĩnh `wrap` sẽ bao bọc giá trị đã cho trong một collection khi được áp dụng:
 
     $collection = Collection::wrap('John Doe');
 
@@ -2033,7 +2032,7 @@ Phương thức tĩnh `wrap` sẽ wrap giá trị đã cho trong một collectio
 <a name="method-zip"></a>
 #### `zip()` {#collection-method}
 
-Phương thức `zip` sẽ merge các giá trị của mảng đã cho với các giá trị của collection gốc tại index tương ứng:
+Phương thức `zip` sẽ nối các giá trị của mảng đã cho với các giá trị của collection tại index tương ứng:
 
     $collection = collect(['Chair', 'Desk']);
 
@@ -2046,9 +2045,9 @@ Phương thức `zip` sẽ merge các giá trị của mảng đã cho với cá
 <a name="higher-order-messages"></a>
 ## Higher Order Messages
 
-Collection cũng cung cấp hỗ trợ cho "higher order messages", đó là các cách rút gọn để thực hiện các hành động phổ biến trên các collection. Các phương thức collection cung cấp các higher order message hơn là: `average`, `avg`, `contains`, `each`, `every`, `filter`, `first`, `flatMap`, `map`, `partition`, `reject`, `sortBy`, `sortByDesc`, `sum`, và `unique`.
+Collection cũng cung cấp hỗ trợ cho "higher order messages", đó là các cách rút gọn để thực hiện các hành động phổ biến có trên các collection. Các phương thức collection cung cấp các higher order message như sau: `average`, `avg`, `contains`, `each`, `every`, `filter`, `first`, `flatMap`, `map`, `partition`, `reject`, `sortBy`, `sortByDesc`, `sum`, và `unique`.
 
-Mỗi igher order message có thể được truy cập như một thuộc tính động trên một instance của collection. Chẳng hạn, hãy sử dụng higher order message `each` để gọi một phương thức trên mỗi đối tượng trong một collection:
+Mỗi higher order message có thể được truy cập giống như một thuộc tính động có trên một instance của collection. Chẳng hạn, hãy sử dụng higher order message `each` để gọi một phương thức ở trên mỗi đối tượng có trong một collection:
 
     $users = User::where('votes', '>', 500)->get();
 

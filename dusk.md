@@ -39,7 +39,7 @@
 <a name="introduction"></a>
 ## Giới thiệu
 
-Laravel Dusk cung cấp tự động hóa trình duyệt rõ ràng, dễ sử dụng và API cho testing. Mặc định, Dusk không yêu cầu bạn cài đặt JDK hoặc Selenium trên máy của bạn. Thay vào đó, Dusk sử dụng cài đặt độc lập [ChromeDriver](https://sites.google.com/a/chromium.org/chromedriver/home). Tuy nhiên, bạn có thể tự do sử dụng bất kỳ driver nào tương thích Selenium mà bạn muốn.
+Laravel Dusk cung cấp một các kiểm thử API và tự động hóa trình duyệth nhanh chóng và dễ sử dụng. Mặc định, Dusk không yêu cầu bạn phải cài đặt JDK hay Selenium trên máy của bạn. Thay vào đó, Dusk sử dụng cài đặt độc lập [ChromeDriver](https://sites.google.com/a/chromium.org/chromedriver/home). Tuy nhiên, bạn có thể tự do sử dụng bất kỳ driver nào tương thích Selenium mà bạn muốn.
 
 <a name="installation"></a>
 ## Cài đặt
@@ -48,17 +48,17 @@ Laravel Dusk cung cấp tự động hóa trình duyệt rõ ràng, dễ sử d�
 
     composer require --dev laravel/dusk:"^2.0"
 
-Khi Dusk được cài đặt xong, bạn cần đăng ký service provider `Laravel\Dusk\DuskServiceProvider`. Thông thường, việc này sẽ được thực hiện tự động thông qua đăng ký service provider tự động của Laravel.
+Khi Dusk được cài đặt xong, bạn cần đăng ký service provider `Laravel\Dusk\DuskServiceProvider`. Thông thường, việc này sẽ được thực hiện tự động thông qua đăng ký tự động service provider của Laravel.
 
-> {note} Nếu bạn đang đăng ký thủ công service provider của Dusk, thì bạn đừng **không bao giờ** nên đăng ký nó trong môi trường production của bạn, vì làm như vậy có thể dẫn đến bất kỳ người dùng nào cũng có thể authenticate vào application của bạn.
+> {note} Nếu bạn đang đăng ký thủ công service provider của Dusk, thì bạn **đừng bao giờ** đăng ký nó trong môi trường production của bạn, vì làm như vậy có thể dẫn đến bất kỳ người dùng nào cũng có thể được authenticate vào application của bạn.
 
 Sau khi cài đặt package Dusk, hãy chạy lệnh Artisan `dusk:install`:
 
     php artisan dusk:install
 
-Một thư mục `Browser` sẽ được tạo trong thư mục `tests` của bạn và sẽ chứa một bài test mẫu. Tiếp theo, set biến môi trường `APP_URL` trong file `.env` của bạn. Giá trị này phải giống với URL bạn sử dụng để truy cập vào application của bạn trên trình duyệt.
+Một thư mục `Browser` sẽ được tạo trong thư mục `tests` của bạn và sẽ chứa một bài test mẫu. Tiếp theo, cài đặt biến môi trường `APP_URL` trong file `.env` của bạn. Giá trị này phải giống với URL mà bạn đang sử dụng để truy cập vào application của bạn trên trình duyệt.
 
-Để chạy test của bạn, hãy sử dụng lệnh Artisan `dusk`. Lệnh `dusk` chấp nhận tất cả các tham số mà lệnh `phpunit` cũng chấp nhận:
+Để chạy test của bạn, hãy sử dụng lệnh Artisan `dusk`. Lệnh `dusk` chấp nhận tất cả các tham số mà lệnh `phpunit` chấp nhận:
 
     php artisan dusk
 
@@ -80,7 +80,7 @@ Mặc định, Dusk sử dụng Google Chrome và cài đặt [ChromeDriver](htt
         // static::startChromeDriver();
     }
 
-Tiếp theo, bạn có thể sửa phương thức `driver` để kết nối với URL và cổng bạn chọn. Ngoài ra, bạn có thể sửa "các thông số cho trình duyệt" cần được pass đến WebDriver:
+Tiếp theo, bạn có thể sửa phương thức `driver` để kết nối tới URL và cổng bạn chọn. Ngoài ra, bạn có thể sửa "các thông số cho trình duyệt" mà bạn muốn truyền đến WebDriver:
 
     /**
      * Create the RemoteWebDriver instance.
@@ -111,13 +111,13 @@ Tiếp theo, bạn có thể sửa phương thức `driver` để kết nối v�
 
     php artisan dusk
 
-Lệnh `dusk` chấp nhận tất cả các tham số mà được PHPUnit test chấp nhận, cho phép bạn chỉ chạy các test cho một [group](https://phpunit.de/manual/current/en/appendixes.annotations.html#appendixes.annotations.group) nhất định, vv...:
+Lệnh `dusk` chấp nhận tất cả các tham số mà PHPUnit test chấp nhận, cho phép bạn chỉ chạy các test cho một [group](https://phpunit.de/manual/current/en/appendixes.annotations.html#appendixes.annotations.group) nhất định, vv...:
 
     php artisan dusk --group=foo
 
 #### Manually Starting ChromeDriver
 
-Mặc định, Dusk sẽ tự động thử khởi động ChromeDriver. Nếu điều này không hoạt động cho hệ thống của bạn, bạn có thể khởi động ChromeDriver theo cách thủ công trước khi chạy lệnh `dusk`. Nếu bạn chọn khởi động ChromeDriver theo cách thủ công, bạn nên comment out dòng lệnh sau của file `tests/DuskTestCase.php` của bạn:
+Mặc định, Dusk sẽ tự động thử khởi động ChromeDriver. Nếu nó không hoạt động trong hệ thống của bạn, bạn có thể khởi động ChromeDriver theo cách thủ công trước khi chạy lệnh `dusk`. Nếu bạn chọn khởi động ChromeDriver theo cách thủ công, bạn nên comment out dòng lệnh sau của file `tests/DuskTestCase.php` của bạn:
 
     /**
      * Prepare for Dusk test execution.
@@ -130,7 +130,7 @@ Mặc định, Dusk sẽ tự động thử khởi động ChromeDriver. Nếu �
         // static::startChromeDriver();
     }
 
-Ngoài ra, nếu bạn khởi động ChromeDriver trên một cổng khác, ví dụ là 9515, bạn nên sửa phương thức `driver` của cùng một class:
+Ngoài ra, nếu bạn khởi động ChromeDriver trên một cổng khác, ví dụ là 9515, bạn nên sửa phương thức `driver` trong một class đó:
 
     /**
      * Create the RemoteWebDriver instance.
@@ -147,14 +147,14 @@ Ngoài ra, nếu bạn khởi động ChromeDriver trên một cổng khác, ví
 <a name="environment-handling"></a>
 ### Xử lý file môi trường
 
-Để bắt buộc Dusk sử dụng file môi trường của chính nó khi chạy test, hãy tạo file `.env.dusk.{environment}` trong thư mục root của project của bạn. Ví dụ, nếu bạn sẽ chạy lệnh `dusk` từ môi trường `local` của bạn, bạn nên tạo một file `.env.dusk.local`.
+Để bắt buộc Dusk sử dụng file môi trường của chính nó khi chạy test, hãy tạo file `.env.dusk.{environment}` trong thư mục root của project của bạn. Ví dụ, nếu bạn chạy lệnh `dusk` từ môi trường `local` của bạn, bạn hãy tạo một file `.env.dusk.local`.
 
-Khi chạy test, Dusk sẽ back-up file `.env` gốc của bạn và đổi tên file môi trường của Dusk của bạn thành `.env`. Khi các bài test đã hoàn thành, file `.env` của bạn sẽ được khôi phục.
+Khi chạy test, Dusk sẽ back-up file `.env` gốc của bạn và đổi tên file môi trường của Dusk thành `.env`. Khi các bài test đã hoàn thành, file `.env` của bạn sẽ được khôi phục.
 
 <a name="creating-browsers"></a>
 ### Tạo Browser
 
-Để bắt đầu, hãy viết một bài test để kiểm tra chúng ta có thể đăng nhập vào ứng dụng của bạn hay không. Sau khi tạo bài test, chúng ta có thể sửa nó để điều hướng đến trang đăng nhập, nhập một số thông tin đăng nhập và nhấp vào nút "Đăng nhập". Để tạo một instance browser, hãy gọi phương thức `browse`:
+Để bắt đầu, hãy viết một bài test để kiểm tra xem chúng ta có thể đăng nhập vào ứng dụng của bạn hay không. Sau khi tạo bài test, chúng ta có thể sửa nó để điều hướng đến trang đăng nhập, nhập một số thông tin đăng nhập và nhấp vào nút "Đăng nhập". Để tạo một instance browser, hãy gọi phương thức `browse`:
 
     <?php
 
@@ -190,13 +190,13 @@ Khi chạy test, Dusk sẽ back-up file `.env` gốc của bạn và đổi tên
         }
     }
 
-Như bạn có thể thấy trong ví dụ trên, phương thức `browse` chấp nhận một callback. Một instance browser sẽ tự động được pass đến callback của bạn bởi Dusk và nó là đối tượng chính được sử dụng để tương tác và đưa ra các assertion đối với application của bạn.
+Như bạn có thể thấy trong ví dụ trên, phương thức `browse` chấp nhận một callback. Một instance browser sẽ tự động được truyền đến callback đó của bạn và nó là đối tượng chính được sử dụng để tương tác và đưa ra các yêu cầu đối với application của bạn.
 
 > {tip} Bài test này có thể được sử dụng để kiểm tra màn hình đăng nhập được tạo bởi lệnh Artisan `make:auth`.
 
 #### Creating Multiple Browsers
 
-Thỉnh thoảng bạn có thể cần chạy nhiều trình duyệt để thực hiện test. Ví dụ: có thể cần chạy nhiều trình duyệt để kiểm tra màn hình trò chuyện sử dụng websocket. Để tạo nhiều trình duyệt, hãy khai báo nhiều trình duyệt cho hàm callback được sử dụng cho phương thức `browse`:
+Thỉnh thoảng bạn có thể cần chạy nhiều trình duyệt cùng một lúc để thực hiện test. Ví dụ: có thể cần chạy nhiều trình duyệt để kiểm tra màn hình trò chuyện sử dụng websocket. Để tạo nhiều trình duyệt, hãy khai báo nhiều trình duyệt trong hàm callback được sử dụng cho phương thức `browse`:
 
     $this->browse(function ($first, $second) {
         $first->loginAs(User::find(1))
@@ -226,7 +226,7 @@ Phương thức `maximize` có thể được sử dụng để set browser wind
 <a name="authentication"></a>
 ### Authentication
 
-Thông thường, bạn sẽ cần test các trang mà cần authentication. Bạn có thể sử dụng phương thức `loginAs` của Dusk để tránh tương tác với màn hình đăng nhập trong mỗi lần test. Phương thức `loginAs` chấp nhận ID người dùng hoặc một instance model người dùng:
+Thông thường, bạn sẽ cần test các trang mà cần được authentication. Bạn có thể sử dụng phương thức `loginAs` của Dusk để tránh tương tác với màn hình đăng nhập trong mỗi lần test. Phương thức `loginAs` chấp nhận ID người dùng hoặc một instance model người dùng:
 
     $this->browse(function ($first, $second) {
         $first->loginAs(User::find(1))
@@ -283,11 +283,11 @@ Dusk selector cho phép bạn tập trung vào viết các bài test hiệu qu�
 <a name="clicking-links"></a>
 ### Clicking Link
 
-Để click vào một link, bạn có thể sử dụng phương thức `clickLink` trên instance browser. Phương thức `clickLink` sẽ click vào link có nôi dung đã cho:
+Để click vào một link, bạn có thể sử dụng phương thức `clickLink` trên instance browser. Phương thức `clickLink` sẽ click vào một link mà có nội dung đã cho:
 
     $browser->clickLink($linkText);
 
-> {note} Phương thức này tương tác với jQuery. Nếu jQuery không có sẵn trên trang, Dusk sẽ tự động inject nó vào trang để nó có sẵn trong thời gian test.
+> {note} Phương thức này tương tác với jQuery. Nếu jQuery không có sẵn trên trang, Dusk sẽ tự động tích hợp nó vào trang để nó có sẵn trong thời gian test.
 
 <a name="text-values-and-attributes"></a>
 ### Text, Values, và Attributes
@@ -310,7 +310,7 @@ Phương thức `text` có thể được sử dụng để lấy ra text của 
 
 #### Retrieving Attributes
 
-Cuối cùng, phương thức `attribute` có thể được sử dụng để lấy một thuộc tính của một element giống với selector đã cho:
+Cuối cùng, phương thức `attribute` cũng có thể được sử dụng để lấy ra một thuộc tính của một element giống với selector đã cho:
 
     $attribute = $browser->attribute('selector', 'value');
 
@@ -323,7 +323,7 @@ Dusk cung cấp nhiều phương thức để tương tác với các form và c
 
     $browser->type('email', 'taylor@laravel.com');
 
-Lưu ý rằng, phương thức này chấp nhận một tham số nếu cần thiết, chúng ta không bắt buộc phải pass một CSS selector vào phương thức `type`. Nếu CSS selector không được cung cấp, Dusk sẽ tìm kiếm field input với thuộc tính `name`. Cuối cùng, Dusk sẽ thử tìm một `textarea` với thuộc tính` name`.
+Lưu ý rằng, phương thức này chấp nhận một tham số nếu cần thiết, chúng ta không bắt buộc phải truyền vào một CSS selector cho phương thức `type`. Nếu CSS selector không được cung cấp, Dusk sẽ tìm kiếm field input với thuộc tính `name`. Cuối cùng, Dusk sẽ thử tìm một `textarea` với thuộc tính` name`.
 
 Để nối text vào một field mà không xóa nội dung của nó, bạn có thể sử dụng phương thức `append`:
 
@@ -336,7 +336,7 @@ Bạn có thể xóa giá trị của một input bằng phương thức `clear`
 
 #### Dropdowns
 
-Để select một giá trị trong một dropdown selection box, bạn có thể sử dụng phương thức `select`. Giống như phương thức `type`, phương thức` select` không yêu cầu một CSS selector đầy đủ. Khi pass một giá trị cho phương thức `select`, bạn nên pass giá trị tùy chọn bên dưới thay vì text:
+Để select một giá trị trong một dropdown selection box, bạn có thể sử dụng phương thức `select`. Giống như phương thức `type`, phương thức` select` không yêu cầu một CSS selector đầy đủ. Khi truyền một giá trị cho phương thức `select`, bạn nên truyền giá trị tùy chọn bên dưới thay vì text:
 
     $browser->select('size', 'Large');
 
@@ -346,7 +346,7 @@ Bạn có thể select một random option bằng cách bỏ qua tham số thứ
 
 #### Checkboxes
 
-Để "tích" vào một checkbox, bạn có thể sử dụng phương thức `check`. Giống như nhiều phương thức khác liên quan đến input, bạn không cần phải có CSS selector đầy đủ. Nếu không thể tìm thấy selector chính xác, Dusk sẽ tìm kiếm một checkbox có thuộc tính `name`:
+Để "tích" vào một checkbox, bạn có thể sử dụng phương thức `check`. Giống như nhiều phương thức liên quan đến input khác, bạn không cần phải có CSS selector đầy đủ. Nếu không thể tìm thấy selector chính xác, Dusk sẽ tìm kiếm một checkbox có thuộc tính `name`:
 
     $browser->check('terms');
 
@@ -354,14 +354,14 @@ Bạn có thể select một random option bằng cách bỏ qua tham số thứ
 
 #### Radio Buttons
 
-Để "chọn" một radio button, bạn có thể sử dụng phương thức `radio`. Giống như nhiều phương thức khác liên quan đến input, bạn không cần phải có CSS selector đầy đủ. Nếu không thể tìm thấy selector chính xác, Dusk sẽ tìm kiếm một radio có thuộc tính `name` và `value`:
+Để "chọn" một radio button, bạn có thể sử dụng phương thức `radio`. Giống như nhiều phương thức liên quan đến input khác, bạn không cần phải có CSS selector đầy đủ. Nếu không thể tìm thấy selector chính xác, Dusk sẽ tìm kiếm một radio có thuộc tính `name` và `value`:
 
     $browser->radio('version', 'php7');
 
 <a name="attaching-files"></a>
 ### Đính kèm Files
 
-Phương thức `attach` có thể được sử dụng để đính kèm một file vào một element input `file`. Giống như nhiều phương thức khác liên quan đến input, bạn không cần phải có CSS selector đầy đủ. Nếu không thể tìm thấy selector chính xác, Dusk sẽ tìm kiếm một input file mà có thuộc tính `name`:
+Phương thức `attach` có thể được sử dụng để đính kèm một file vào một element input `file`. Giống như nhiều phương thức liên quan đến input khác, bạn không cần phải có CSS selector đầy đủ. Nếu không thể tìm thấy selector chính xác, Dusk sẽ tìm kiếm một input file mà có thuộc tính `name`:
 
     $browser->attach('photo', __DIR__.'/photos/me.png');
 
@@ -372,11 +372,11 @@ Phương thức `keys` cho phép bạn cung cấp các chuỗi input phức tạ
 
     $browser->keys('selector', ['{shift}', 'taylor'], 'otwell');
 
-Bạn thậm chí có thể gửi "phím nóng" tới CSS selector chính có chứa application của bạn:
+Bạn thậm chí có thể gửi một "hot key" tới CSS selector chính chứa application của bạn:
 
     $browser->keys('.app', ['{command}', 'j']);
 
-> {tip} Tất cả các modifier key được wrap trong các ký tự `{}` và giống với các hằng số đã được định nghĩa trong class `Facebook\WebDriver\WebDriverKeys`, bạn có thể [tìm thấy nó trên GitHub](https://github.com/php-webdriver/php-webdriver/blob/master/lib/WebDriverKeys.php).
+> {tip} Tất cả các modifier key được bao trong các ký tự `{}` và giống với các hằng số đã được định nghĩa trong class `Facebook\WebDriver\WebDriverKeys`, bạn có thể [tìm thấy nó trên GitHub](https://github.com/php-webdriver/php-webdriver/blob/master/lib/WebDriverKeys.php).
 
 <a name="using-the-mouse"></a>
 ### Dùng Mouse
@@ -409,7 +409,7 @@ Hoặc, bạn có thể kéo một element theo một hướng:
 <a name="scoping-selectors"></a>
 ### Scoping Selectors
 
-Đôi khi bạn có thể muốn thực hiện một số thao tác trong khi phạm vi các hoạt động trong một selector đã cho. Ví dụ: bạn có thể muốn yêu cầu rằng một số text chỉ được hiển thị trong một bảng và sau đó click vào một button trong bảng đó. Bạn có thể sử dụng phương thức `with` để thực hiện điều này. Tất cả các hoạt động được thực hiện trong hàm callback được đưa cho phương thức `with` và sẽ thực hiện test trong phạm vi của selector đã chọn:
+Đôi khi bạn có thể muốn thực hiện một số thao tác trong một phạm vi selector đã cho. Ví dụ: bạn có thể muốn kiểm tra rằng có một số text chỉ được hiển thị trong một bảng và sau đó click vào một button trong bảng đó. Bạn có thể sử dụng phương thức `with` để thực hiện điều này. Tất cả các hoạt động được thực hiện trong hàm callback được đưa cho phương thức `with` và sẽ thực hiện test trong phạm vi của selector đã chọn:
 
     $browser->with('.table', function ($table) {
         $table->assertSee('Hello World')
@@ -419,7 +419,7 @@ Hoặc, bạn có thể kéo một element theo một hướng:
 <a name="waiting-for-elements"></a>
 ### Chờ Elements
 
-Khi test các application sử dụng JavaScript chuyên sâu, thường phải "chờ" các element hoặc dữ liệu được sẵn sàng trước khi tiến hành test. Dusk làm cho điều này một cách rất dễ dàng. Sử dụng nhiều phương thức khác nhau, bạn có thể đợi các element hiển thị hoàn toàn trên trang hoặc thậm chí đợi cho đến khi một biểu thức JavaScript trả về kết quả là `true`.
+Khi test các application sử dụng JavaScript chuyên sâu, thường phải "chờ" các element hoặc dữ liệu được load xong trước khi tiến hành test. Dusk thực hiện điều này một cách rất dễ dàng. Sử dụng nhiều phương thức khác nhau, bạn có thể đợi các element hiển thị hoàn toàn trên trang hoặc thậm chí đợi cho đến khi một biểu thức JavaScript trả về kết quả là `true`.
 
 #### Waiting
 
@@ -429,7 +429,7 @@ Nếu bạn cần pause bài test trong một số mili giây nhất định, h�
 
 #### Waiting For Selectors
 
-Phương thức `waitFor` có thể được sử dụng để tạm dừng việc thực hiện test cho đến khi element khớp với CSS selector đã cho được hiển thị trên trang. Mặc định, điều này sẽ tạm dừng bài test trong tối đa năm giây trước khi đưa ra ngoại lệ. Nếu cần, bạn có thể pass một ngưỡng thời gian chờ tùy chỉnh làm tham số thứ hai cho phương thức:
+Phương thức `waitFor` có thể được sử dụng để tạm dừng việc test cho đến khi element mà khớp với CSS selector được hiển thị trên trang. Mặc định, điều này sẽ tạm dừng bài test trong tối đa năm giây trước khi đưa ra một ngoại lệ. Nếu cần, bạn có thể truyền vào một ngưỡng thời gian chờ tùy chỉnh làm tham số thứ hai cho phương thức:
 
     // Wait a maximum of five seconds for the selector...
     $browser->waitFor('.selector');
@@ -474,7 +474,7 @@ Phương thức `waitForLink` có thể được sử dụng để đợi cho đ
 
 #### Waiting On The Page Location
 
-Khi thực hiện kiểm tra đường dẫn, chẳng hạn như `$browser->assertPathIs('/home')`, kiểm tra đó có thể thất bại nếu `window.location.pathname` được cập nhật không đồng bộ với nhau. Bạn có thể sử dụng phương thức `waitForLocation` để đợi cho đến khi window.location là một giá trị nhất định:
+Khi thực hiện kiểm tra đường dẫn, chẳng hạn như `$browser->assertPathIs('/home')`, kiểm tra đó có thể thất bại nếu `window.location.pathname` không đồng bộ với nhau. Bạn có thể sử dụng phương thức `waitForLocation` để đợi cho đến khi window.location là một giá trị nhất định:
 
     $browser->waitForLocation('/secret');
 
@@ -488,7 +488,7 @@ Nếu bạn cần thực hiện các kiểm tra sau khi một trang đã đượ
 
 #### Waiting On JavaScript Expressions
 
-Thỉnh thoảng bạn có thể muốn tạm dừng việc thực hiện kiểm tra cho đến khi một biểu thức JavaScript đã cho trả về giá trị là `true`. Bạn có thể dễ dàng thực hiện điều này bằng cách sử dụng phương thức `waitUntil`. Khi pass một biểu thức cho phương thức này, bạn không cần chứa từ khóa `return` hoặc dấu chấm phẩy kết thúc:
+Thỉnh thoảng bạn có thể muốn tạm dừng việc kiểm tra cho đến khi một biểu thức JavaScript trả về giá trị là `true`. Bạn có thể dễ dàng thực hiện điều này bằng cách sử dụng phương thức `waitUntil`. Khi truyền một biểu thức cho phương thức này, bạn không cần chứa từ khóa `return` hoặc dấu chấm phẩy kết thúc:
 
     // Wait a maximum of five seconds for the expression to be true...
     $browser->waitUntil('App.dataLoaded');
@@ -500,7 +500,7 @@ Thỉnh thoảng bạn có thể muốn tạm dừng việc thực hiện kiểm
 
 #### Waiting With A Callback
 
-Nhiều phương thức "chờ" trong Dusk được dựa vào phương thức `waitUsing` bên dưới. Bạn có thể sử dụng phương thức này trực tiếp để chờ cho đến khi một callback đã cho trả về giá trị `true`. Phương thức `waitUsing` nhận vào số giây chờ tối đa mà bài test được thực hiện và một thời gian lặp mà Closure sẽ được lặp đi lặp lại trong khoảng thời gian đó và một Closure và một optional thông báo lỗi:
+Nhiều phương thức "chờ" trong Dusk được dựa vào phương thức `waitUsing` bên dưới. Bạn có thể sử dụng phương thức này trực tiếp để chờ cho đến khi một callback trả về giá trị `true`. Phương thức `waitUsing` nhận vào số giây chờ tối đa mà bài test có thể được thực hiện và một khoảng thời gian lặp cho Closure và một Closure và một tuỳ chọn thông báo lỗi:
 
     $browser->waitUsing(10, 1, function () use ($something) {
         return $something->isReady();
@@ -529,7 +529,7 @@ Dusk thậm chí cho phép bạn thực hiện các kiểm tra về trạng thá
         }
     });
 
-Bạn có thể yêu cầu trạng thái của Vue component như sau:
+Bạn có thể kiểm tra trạng thái của Vue component như sau:
 
     /**
      * A basic Vue test example.
@@ -547,59 +547,59 @@ Bạn có thể yêu cầu trạng thái của Vue component như sau:
 <a name="available-assertions"></a>
 ## Assertion có sẵn
 
-Dusk cung cấp rất nhiều các yêu cầu mà bạn có thể thực hiện đối với application của bạn. Tất cả các yêu cầu có sẵn được ghi lại trong bảng dưới đây:
+Dusk cung cấp rất nhiều cách kiểm tra mà bạn có thể thực hiện đối với application của bạn. Tất cả cách kiểm tra có sẵn đều được ghi lại trong bảng dưới đây:
 
 Assertion  | Description
 ------------- | -------------
-`$browser->assertTitle($title)`  |  Yêu cầu tiêu đề của trang phải phù hợp với văn bản đã cho.
-`$browser->assertTitleContains($title)`  |  Yêu cầu tiêu đề của trang phải chứa văn bản đã cho.
-`$browser->assertUrlIs($url)`  |  Yêu cầu URL hiện tại của trang (lưu ý không chứa chuỗi parameter đằng sau url) khớp với chuỗi đã cho.
-`$browser->assertPathBeginsWith($path)`  |  Yêu cầu đường dẫn URL hiện tại phải bắt đầu bằng đường dẫn đã cho.
-`$browser->assertPathIs('/home')`  |  Yêu cầu đường dẫn hiện tại phải khớp với đường dẫn đã cho.
-`$browser->assertPathIsNot('/home')`  |  Yêu cầu đường dẫn hiện tại phải không khớp với đường dẫn đã cho.
-`$browser->assertRouteIs($name, $parameters)`  |  Yêu cầu URL hiện tại phải khớp với URL tên của một route.
-`$browser->assertQueryStringHas($name, $value)`  |  Yêu cầu tham số query string đã cho phải tồn tại và có giá trị đã cho.
-`$browser->assertQueryStringMissing($name)`  |  Yêu cầu tham số query string đã cho phải là không có.
-`$browser->assertHasQueryStringParameter($name)`  |  Yêu cầu rằng tham số query string đã cho phải tồn tại.
-`$browser->assertHasCookie($name)`  |  Yêu cầu cookie đã cho phải tồn tại.
-`$browser->assertCookieMissing($name)`  |  Yêu cầu rằng cookie đã cho không tồn tại.
-`$browser->assertCookieValue($name, $value)`  |  Yêu cầu một cookie phải có một giá trị nhất định.
-`$browser->assertPlainCookieValue($name, $value)`  |  Yêu cầu một cookie không được mã hóa phải có một giá trị nhất định.
-`$browser->assertSee($text)`  |  Yêu cầu text đã cho phải tồn tại trên trang.
-`$browser->assertDontSee($text)`  |  Yêu cầu text đã cho phải không có trên trang.
-`$browser->assertSeeIn($selector, $text)`  |  Yêu cầu text đã cho phải tồn tại trong selector.
-`$browser->assertDontSeeIn($selector, $text)`  |  Yêu cầu text đã cho phải không có trong selector.
-`$browser->assertSourceHas($code)`  |  Yêu cầu rằng source code đã cho phải tồn tại trên trang.
-`$browser->assertSourceMissing($code)`  |  Yêu cầu rằng source code đã cho phải không có trên trang.
-`$browser->assertSeeLink($linkText)`  |  Yêu cầu link đã cho phải tồn tại trên trang.
-`$browser->assertDontSeeLink($linkText)`  |  Yêu cầu link đã cho phải không có trên trang.
-`$browser->assertInputValue($field, $value)`  |  Yêu cầu field input đã cho phải có giá trị đã cho tương ứng.
-`$browser->assertInputValueIsNot($field, $value)`  |  Yêu cầu field input đã cho phải không có giá trị đã cho tương ứng.
-`$browser->assertChecked($field)`  |  Yêu cầu checkbox đã cho phải được chọn.
-`$browser->assertNotChecked($field)`  |  Yêu cầu checkbox đã cho phải không được chọn.
-`$browser->assertRadioSelected($field, $value)`  |  Yêu cầu field radio đã cho phải được chọn.
-`$browser->assertRadioNotSelected($field, $value)` |  Yêu cầu field radio đã cho phải không được chọn.
-`$browser->assertSelected($field, $value)`  |  Yêu cầu dropdown đã cho phải có giá trị đã cho tương ứng.
-`$browser->assertNotSelected($field, $value)`  |  Yêu cầu dropdown đã cho phải không có giá trị đã cho tương ứng.
-`$browser->assertSelectHasOptions($field, $values)`  |  Yêu cầu một mảng các giá trị đã cho có thể được chọn.
-`$browser->assertSelectMissingOptions($field, $values)`  |  Yêu cầu một mảng các giá trị đã cho không thể được chọn.
-`$browser->assertSelectHasOption($field, $value)`  |  Yêu cầu giá trị đã cho có thể được chọn trên field đã cho.
-`$browser->assertValue($selector, $value)`  |  Yêu cầu element giống với selector đã cho có giá trị đã cho tương ứng.
-`$browser->assertVisible($selector)`  |  Yêu cầu element giống với selector đã cho phải được hiển thị.
-`$browser->assertMissing($selector)`  |  Yêu cầu element giống với selector đã cho không được hiển thị.
-`$browser->assertDialogOpened($message)`  |  Yêu cầu một dialog JavaScript với một thông báo đã cho đã phải đang được hiển thị.
-`$browser->assertVue($property, $value, $component)`  |  Yêu cầu một thuộc tính data của Vue component đã cho giống với giá trị đã cho tương úng.
-`$browser->assertVueIsNot($property, $value, $component)`  |  Yêu cầu một thuộc tính data của Vue component đã cho không giống với giá trị đã cho tương úng.
+`$browser->assertTitle($title)`  |  Kiểm tra tiêu đề của trang phải phù hợp với văn bản đã cho.
+`$browser->assertTitleContains($title)`  |  Kiểm tra tiêu đề của trang phải chứa văn bản đã cho.
+`$browser->assertUrlIs($url)`  |  Kiểm tra URL hiện tại của trang (lưu ý không chứa chuỗi parameter đằng sau url) khớp với chuỗi đã cho.
+`$browser->assertPathBeginsWith($path)`  |  Kiểm tra đường dẫn URL hiện tại phải bắt đầu bằng đường dẫn đã cho.
+`$browser->assertPathIs('/home')`  |  Kiểm tra đường dẫn hiện tại phải khớp với đường dẫn đã cho.
+`$browser->assertPathIsNot('/home')`  |  Kiểm tra đường dẫn hiện tại phải không khớp với đường dẫn đã cho.
+`$browser->assertRouteIs($name, $parameters)`  |  Kiểm tra URL hiện tại phải khớp với URL tên của một route.
+`$browser->assertQueryStringHas($name, $value)`  |  Kiểm tra tham số query string đã cho phải tồn tại và có giá trị đã cho.
+`$browser->assertQueryStringMissing($name)`  |  Kiểm tra tham số query string đã cho phải là không có.
+`$browser->assertHasQueryStringParameter($name)`  |  Kiểm tra rằng tham số query string đã cho phải tồn tại.
+`$browser->assertHasCookie($name)`  |  Kiểm tra cookie đã cho phải tồn tại.
+`$browser->assertCookieMissing($name)`  |  Kiểm tra rằng cookie đã cho không tồn tại.
+`$browser->assertCookieValue($name, $value)`  |  Kiểm tra một cookie phải có một giá trị nhất định.
+`$browser->assertPlainCookieValue($name, $value)`  |  Kiểm tra một cookie không được mã hóa phải có một giá trị nhất định.
+`$browser->assertSee($text)`  |  Kiểm tra text đã cho phải tồn tại trên trang.
+`$browser->assertDontSee($text)`  |  Kiểm tra text đã cho phải không có trên trang.
+`$browser->assertSeeIn($selector, $text)`  |  Kiểm tra text đã cho phải tồn tại trong selector.
+`$browser->assertDontSeeIn($selector, $text)`  |  Kiểm tra text đã cho phải không có trong selector.
+`$browser->assertSourceHas($code)`  |  Kiểm tra rằng source code đã cho phải tồn tại trên trang.
+`$browser->assertSourceMissing($code)`  |  Kiểm tra rằng source code đã cho phải không có trên trang.
+`$browser->assertSeeLink($linkText)`  |  Kiểm tra link đã cho phải tồn tại trên trang.
+`$browser->assertDontSeeLink($linkText)`  |  Kiểm tra link đã cho phải không có trên trang.
+`$browser->assertInputValue($field, $value)`  |  Kiểm tra field input đã cho phải có giá trị đã cho tương ứng.
+`$browser->assertInputValueIsNot($field, $value)`  |  Kiểm tra field input đã cho phải không có giá trị đã cho tương ứng.
+`$browser->assertChecked($field)`  |  Kiểm tra checkbox đã cho phải được chọn.
+`$browser->assertNotChecked($field)`  |  Kiểm tra checkbox đã cho phải không được chọn.
+`$browser->assertRadioSelected($field, $value)`  |  Kiểm tra field radio đã cho phải được chọn.
+`$browser->assertRadioNotSelected($field, $value)` |  Kiểm tra field radio đã cho phải không được chọn.
+`$browser->assertSelected($field, $value)`  |  Kiểm tra dropdown đã cho phải có giá trị đã cho tương ứng.
+`$browser->assertNotSelected($field, $value)`  |  Kiểm tra dropdown đã cho phải không có giá trị đã cho tương ứng.
+`$browser->assertSelectHasOptions($field, $values)`  |  Kiểm tra một mảng các giá trị đã cho có thể được chọn.
+`$browser->assertSelectMissingOptions($field, $values)`  |  Kiểm tra một mảng các giá trị đã cho không thể được chọn.
+`$browser->assertSelectHasOption($field, $value)`  |  Kiểm tra giá trị đã cho có thể được chọn trên field đã cho.
+`$browser->assertValue($selector, $value)`  |  Kiểm tra element giống với selector đã cho có giá trị đã cho tương ứng.
+`$browser->assertVisible($selector)`  |  Kiểm tra element giống với selector đã cho phải được hiển thị.
+`$browser->assertMissing($selector)`  |  Kiểm tra element giống với selector đã cho không được hiển thị.
+`$browser->assertDialogOpened($message)`  |  Kiểm tra một dialog JavaScript với một thông báo đã cho đã phải đang được hiển thị.
+`$browser->assertVue($property, $value, $component)`  |  Kiểm tra một thuộc tính data của Vue component đã cho giống với giá trị đã cho tương úng.
+`$browser->assertVueIsNot($property, $value, $component)`  |  Kiểm tra một thuộc tính data của Vue component đã cho không giống với giá trị đã cho tương úng.
 
 <a name="pages"></a>
 ## Page
 
-Đôi khi, các bài test yêu cầu một số hành động phức tạp được thực hiện theo trình tự. Điều này có thể làm cho bài test của bạn khó đọc, hiểu hơn. Page cho phép bạn định nghĩa các hành động dễ hiểu có thể được thực hiện trên một trang nhất định bằng một phương thức duy nhất. Page cũng cho phép bạn định nghĩa các short-cut cho các common selector cho application của bạn hoặc một trang.
+Đôi khi, các bài test yêu cầu một số hành động phức tạp được thực hiện theo trình tự. Điều này có thể làm cho bài test của bạn khó đọc hiểu hơn. Page cho phép bạn định nghĩa các hành động có thể được thực hiện trên một trang nhất định bằng một phương thức duy nhất. Page cũng cho phép bạn định nghĩa các short-cut cho các common selector trong application của bạn hoặc trong một trang.
 
 <a name="generating-pages"></a>
 ### Tạo Page
 
-Để tạo một page object, sử dụng lệnh Artisan ``dusk:page`. Tất cả các page object sẽ được đặt trong thư mục `tests/Browser/Pages`:
+Để tạo một page object, sử dụng lệnh Artisan `dusk:page`. Tất cả các page object sẽ được lưu trong thư mục `tests/Browser/Pages`:
 
     php artisan dusk:page Login
 
@@ -624,7 +624,7 @@ Phương thức `url` sẽ trả về đường dẫn của URL đến một tra
 
 #### The `assert` Method
 
-Phương thức `assert` có thể đưa ra bất kỳ yêu cầu nào cần thiết để kiểm tra rằng trình duyệt thực sự nằm trên trang đã cho. Hoàn thành phương thức này là không cần thiết; tuy nhiên, bạn có thể tự do đưa ra những yêu cầu này nếu muốn. Các yêu cầu này sẽ được chạy tự động khi điều hướng đến trang:
+Phương thức `assert` có thể đưa ra bất kỳ yêu cầu nào cần thiết để kiểm tra rằng trình duyệt đã thực sự nằm trên trang đó hay chưa. Hoàn thành phương thức này là không cần thiết; tuy nhiên, bạn có thể tự do đưa ra những yêu cầu này nếu muốn. Các yêu cầu này sẽ được chạy tự động khi đến trang đó:
 
     /**
      * Assert that the browser is on the page.
@@ -645,7 +645,7 @@ Khi một trang đã được cấu hình, bạn có thể điều hướng đ�
 
     $browser->visit(new Login);
 
-Thỉnh thoảng bạn có thể đã ở trên một trang đã cho và cần "load" các selector và phương thức của trang vào test hiện tại. Điều này rất phổ biến khi bạn một nhấn nút và được chuyển hướng đến một trang khác mà không điều hướng đến nó. Trong tình huống này, bạn có thể sử dụng phương thức `on` để load trang:
+Thỉnh thoảng bạn có thể đã ở trên một trang và cần "load" các selector và phương thức của trang đó vào test hiện tại. Điều này rất phổ biến khi bạn nhấn một nút và được chuyển hướng đến một trang khác mà không điều hướng đến nó. Trong tình huống này, bạn có thể sử dụng phương thức `on` để load trang:
 
     use Tests\Browser\Pages\CreatePlaylist;
 
@@ -657,7 +657,7 @@ Thỉnh thoảng bạn có thể đã ở trên một trang đã cho và cần "
 <a name="shorthand-selectors"></a>
 ### Shorthand Selectors
 
-Phương thức `elements` của trang cho phép bạn định nghĩa các shortcut nhanh, dễ nhớ cho bất kỳ CSS selector nào trên trang của bạn. Ví dụ: hãy định nghĩa shortcut cho field input "email" của trang đăng nhập của application:
+Phương thức `elements` của trang cho phép bạn định nghĩa các shortcut nhanh, dễ nhớ cho bất kỳ CSS selector nào trên trang của bạn. Ví dụ: hãy định nghĩa shortcut cho field input "email" trong trang đăng nhập của application:
 
     /**
      * Get the element shortcuts for the page.
@@ -671,13 +671,13 @@ Phương thức `elements` của trang cho phép bạn định nghĩa các short
         ];
     }
 
-Bây giờ, bạn có thể sử dụng shorthand selector này bất cứ nơi nào bạn dự kiến sử dụng CSS selector của nó:
+Bây giờ, bạn có thể sử dụng shorthand selector này bất cứ nơi nào mà bạn dự kiến sử dụng CSS selector đó:
 
     $browser->type('@email', 'taylor@laravel.com');
 
 #### Global Shorthand Selectors
 
-Sau khi cài đặt Dusk, một class `Page` sẽ được đặt trong thư mục `tests/Browser/Pages` của bạn. Class này chứa một phương thức `siteElements` có thể được sử dụng để định nghĩa các global shorthand selector sẽ được khai báo sẵn trên mỗi trang trong application của bạn:
+Sau khi cài đặt Dusk, một class `Page` sẽ được lưu vào trong thư mục `tests/Browser/Pages` của bạn. Class này chứa một phương thức `siteElements` có thể được sử dụng để định nghĩa các global shorthand selector mà sẽ được khai báo sẵn trên mỗi trang trong application của bạn:
 
     /**
      * Get the global element shortcuts for the site.
@@ -694,7 +694,7 @@ Sau khi cài đặt Dusk, một class `Page` sẽ được đặt trong thư m�
 <a name="page-methods"></a>
 ### Phương thức của Page
 
-Ngoài các phương thức mặc định được định nghĩa trên các trang, bạn có thể định nghĩa thêm các phương thức bổ sung có thể được sử dụng trong suốt qua trình test của bạn. Ví dụ: hãy giả sử chúng ta đang xây dựng một application quản lý music. Một hành động chung cho một trang của application có thể là tạo một playlist. Thay vì viết lại logic để tạo playlist trong mỗi bài test, bạn có thể định nghĩa phương thức `createPlaylist` trên một class page:
+Ngoài các phương thức mặc định được định nghĩa trên các trang, bạn có thể định nghĩa thêm các phương thức bổ sung có thể được sử dụng trong suốt qua trình test của bạn. Ví dụ: hãy giả sử rằng chúng ta đang xây dựng một application quản lý nhạc. Một hành động chung cho một trang của application có thể là tạo một playlist. Thay vì viết lại logic để tạo playlist trong mỗi bài test, bạn có thể định nghĩa phương thức `createPlaylist` trên một class page:
 
     <?php
 
@@ -721,7 +721,7 @@ Ngoài các phương thức mặc định được định nghĩa trên các tra
         }
     }
 
-Khi phương thức đã được định nghĩa xong, bạn có thể sử dụng nó trong bất kỳ bài test nào mà bạn sử dụng page. Một instance browser sẽ được tự động pass cho phương thức này của page:
+Khi phương thức đã được định nghĩa xong, bạn có thể sử dụng nó trong bất kỳ bài test nào mà bạn đang sử dụng page đó. Instance browser sẽ được tự động chuyển đến phương thức của page đó:
 
     use Tests\Browser\Pages\Dashboard;
 
@@ -737,11 +737,11 @@ Các component tương tự như các đối tượng page của Dusk, nhưng đ
 <a name="generating-components"></a>
 ### Tạo Component
 
-Để tạo một component, bạn hãy sử dụng lệnh Artisan `dusk:component`. Các component mới sẽ được đặt trong thư mục `test/Browser/Components`:
+Để tạo một component, bạn hãy sử dụng lệnh Artisan `dusk:component`. Các component mới sẽ được lưu trong thư mục `test/Browser/Components`:
 
     php artisan dusk:component DatePicker
 
-Như câu lệnh ở trên, một "date picker" có thể là một ví dụ mẫu cho một component có thể tồn tại trong toàn bộ application của bạn và trên nhiều trang khác nhau. Nó sẽ rất cồng kềnh nếu viết các logic của browser để chọn một ngày cho hàng chục bài test có trong test suite của bạn. Thay vào đó, chúng ta có thể định nghĩa một component Dusk để đại diện cho date picker, cho phép chúng ta gói gọn các logic đó vào trong một component:
+Như câu lệnh ở trên, một "date picker" có thể là một ví dụ mẫu cho một component tồn tại trong toàn bộ application của bạn và trong nhiều trang khác nhau. Nó sẽ rất cồng kềnh nếu viết các logic của browser để chọn một ngày cho hàng chục bài test có trong test suite của bạn. Thay vào đó, chúng ta có thể định nghĩa một component Dusk để đại diện cho date picker, cho phép chúng ta gói gọn các logic đó vào trong một component:
 
     <?php
 

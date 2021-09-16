@@ -12,21 +12,21 @@
 <a name="introduction"></a>
 ## Giới thiệu
 
-Ngoài authentication thông thường dựa trên form, Laravel cũng cung cấp một cách đơn giản, thuận tiện để authentication với các nhà provider OAuth khác bằng cách sử dụng [Laravel Socialite](https://github.com/laravel/socialite). Socialite hiện hỗ trợ authentication với Facebook, Twitter, LinkedIn, Google, GitHub và Bitbucket.
+Ngoài authentication thông thường dựa trên form, Laravel cũng cung cấp một cách đơn giản, thuận tiện để authentication với các provider OAuth khác bằng cách sử dụng [Laravel Socialite](https://github.com/laravel/socialite). Socialite hiện hỗ trợ authentication với Facebook, Twitter, LinkedIn, Google, GitHub và Bitbucket.
 
-> {tip} Adapter cho các nền tảng này được liệt kê tại trang web [Socialite Providers](https://socialiteproviders.netlify.com/) do cộng đồng phát triển.
+> {tip} Bộ chuyển đổi cho các nền tảng này được liệt kê tại trang web [Socialite Providers](https://socialiteproviders.netlify.com/) do cộng đồng phát triển.
 
 <a name="installation"></a>
 ## Cài đặt
 
-Để bắt đầu với Socialite, hãy sử dụng Composerđể thêm package vào các library của project của bạn:
+Để bắt đầu với Socialite, hãy sử dụng Composer để thêm package vào library của project của bạn:
 
     composer require laravel/socialite
 
 <a name="configuration"></a>
 ## Cấu hình
 
-Trước khi sử dụng Socialite, bạn cũng sẽ cần thêm thông tin cho các dịch vụ OAuth mà application của bạn sử dụng. Các thông tin này phải được set trong file cấu hình `config/services.php` của bạn và nên sử dụng key `facebook`, `twitter`, `linkedin`, `google`, `github` hoặc `bitbucket`, tùy thuộc vào provider application của bạn yêu cầu. Ví dụ:
+Trước khi sử dụng Socialite, bạn cũng sẽ cần thêm thông tin cho các dịch vụ OAuth mà application của bạn sử dụng. Các thông tin này phải được set trong file cấu hình `config/services.php` của bạn và nên sử dụng các key `facebook`, `twitter`, `linkedin`, `google`, `github` hoặc `bitbucket`, tùy thuộc vào provider application của bạn yêu cầu. Ví dụ:
 
     'github' => [
         'client_id' => env('GITHUB_CLIENT_ID'),         // Your GitHub Client ID
@@ -72,7 +72,7 @@ Tiếp theo, bạn đã sẵn sàng để authenticate người dùng! Bạn s�
         }
     }
 
-Phương thức `redirect` đảm nhiệm việc gửi người dùng đến provider OAuth, trong khi phương thức `user` sẽ đọc incoming request và lấy thông tin của người dùng từ provider.
+Phương thức `redirect` đảm nhiệm việc gửi người dùng đến provider OAuth, trong khi phương thức `user` sẽ đọc request đến và lấy thông tin của người dùng từ provider.
 
 Tất nhiên là, bạn sẽ cần phải định nghĩa các route đến các phương thức của controller của bạn:
 
@@ -82,13 +82,13 @@ Tất nhiên là, bạn sẽ cần phải định nghĩa các route đến các 
 <a name="optional-parameters"></a>
 ## Các tham số tuỳ chọn
 
-Một số các provider OAuth hỗ trợ các tham số tùy chọn trong request chuyển hướng. Để thêm bất kỳ tham số tùy chọn nào trong request, hãy gọi phương thức `with` với một mảng:
+Một số các provider OAuth hỗ trợ các tham số tùy chọn trong request chuyển hướng. Để thêm bất kỳ tham số tùy chọn nào vào trong request, hãy gọi phương thức `with` với một mảng:
 
     return Socialite::driver('google')
         ->with(['hd' => 'example.com'])
         ->redirect();
 
-> {note} Khi sử dụng phương thức `with`, hãy cẩn thận đừng pass qua bất kỳ keyword bí mật nào như `state` hoặc `answer_type`.
+> {note} Khi sử dụng phương thức `with`, hãy cẩn thận đừng truyền qua bất kỳ keyword bí mật nào như `state` hoặc `answer_type`.
 
 <a name="access-scopes"></a>
 ## Truy cập đến Scope

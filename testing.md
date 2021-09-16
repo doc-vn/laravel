@@ -7,9 +7,9 @@
 <a name="introduction"></a>
 ## Giới thiệu
 
-Laravel được xây cùng với việc test. Thực tế là, Laravel đã mặc định hỗ trợ cho việc test với PHPUnit và một file `phpunit.xml` đã được set up sẵn trong application của bạn. Framework này cũng có các phương thức trợ giúp thuận tiện cho phép bạn test các application của bạn.
+Laravel được xây cùng với việc test. Thực tế là, Laravel đã mặc định hỗ trợ việc test với PHPUnit và một file `phpunit.xml` đã được set up sẵn vào trong application của bạn. Framework này cũng có các phương thức trợ giúp thuận tiện cho phép bạn test các application của bạn.
 
-Mặc định, thư mục `tests` của application của bạn chứa hai thư mục:` Feature` và `Unit`. Các test unit là các test tập trung vào một phần rất nhỏ, tách biệt trong code của bạn. Thực tế là, hầu hết các bài test unit có thể tập trung vào một phương thức duy nhất. Chức năng test cũng có thể test một phần lớn hơn của code của bạn, chứa cả cách mà một số đối tượng tương tác với nhau hoặc thậm chí là một HTTP request đầy đủ gửi tới một JSON endpoint.
+Mặc định, thư mục `tests` của application của bạn chứa hai thư mục: `Feature` và `Unit`. Các test unit là các bài test tập trung vào một phần rất nhỏ, tách biệt trong code của bạn. Thực tế là, hầu hết các bài test unit có thể tập trung vào một phương thức duy nhất. Chức năng test cũng có thể test một phần lớn hơn của code của bạn, chứa cả cách mà một số đối tượng tương tác với nhau hoặc thậm chí là một HTTP request đầy đủ gửi tới một JSON endpoint.
 
 Một file `exampleTest.php` được cung cấp sẵn trong cả hai thư mục test `Feature` và `Unit`. Sau khi cài đặt một application Laravel mới, hãy chạy `phpunit` trên cửa sổ dòng lệnh để chạy test của bạn.
 

@@ -20,16 +20,16 @@
 <a name="configuration"></a>
 ## Giới thiệu
 
-Laravel cung cấp một API thống nhất, dễ hiểu cho các caching backend khác nhau. Cấu hình cache được đặt tại `config/cache.php`. Trong file này, bạn có thể chỉ định cache driver nào bạn muốn được sử dụng mặc định trong suốt application của mình. Mặc định, Laravel hỗ trợ các caching backend phổ biến như [Memcached](https://memcached.org) và [Redis](https://redis.io).
+Laravel cung cấp một API thống nhất, dễ hiểu cho các caching backend khác nhau. Cấu hình cache được đặt tại file `config/cache.php`. Trong file này, các bạn có thể chỉ định các cache driver nào bạn muốn được sử dụng mặc định trong suốt application của mình. Mặc định, Laravel hỗ trợ các caching backend phổ biến như [Memcached](https://memcached.org) và [Redis](https://redis.io).
 
-File cấu hình cache cũng chứa nhiều tùy chọn khác, được ghi lại trong file, vì vậy hãy đảm bảo bạn đã đọc qua các tùy chọn này. Mặc định, Laravel được cấu hình để sử dụng cache driver `file`, lưu trữ các đối tượng ở dưới dạng byte, và được cache trong filesystem. Đối với các application lớn hơn, bạn nên sử dụng driver mạnh hơn như Memcached hoặc Redis. Bạn thậm chí có thể cấu hình nhiều cấu hình cache cho cùng một driver.
+File cấu hình cache cũng chứa nhiều tùy chọn khác, được ghi lại ở trong file, vì vậy hãy đảm bảo là bạn đã đọc qua các tùy chọn này. Mặc định, Laravel được cấu hình để sử dụng cache driver `file`, lưu trữ các đối tượng ở dưới dạng byte, và được cache trong filesystem. Đối với các application lớn hơn, bạn nên sử dụng driver mạnh hơn như Memcached hoặc Redis. Bạn thậm chí có thể cài đặt nhiều cấu hình cache cho cùng một driver.
 
 <a name="driver-prerequisites"></a>
 ### Yêu cầu driver
 
 #### Database
 
-Khi sử dụng cache driver `database`, bạn sẽ cần thiết lập một bảng để chứa các item cache. Bạn có thể làm như ví dụ ở bên dưới khai báo `Schema` cho bảng:
+Khi sử dụng cache driver `database`, bạn sẽ cần thiết lập một bảng để chứa các item cache. Bạn có thể làm như ví dụ ở bên dưới là khai báo một `Schema` cho bảng:
 
     Schema::create('cache', function ($table) {
         $table->string('key')->unique();
@@ -41,7 +41,7 @@ Khi sử dụng cache driver `database`, bạn sẽ cần thiết lập một b�
 
 #### Memcached
 
-Sử dụng driver Memcached yêu cầu [Memcached PECL package](https://pecl.php.net/package/memcached) được cài đặt. Bạn có thể list tất cả các máy chủ Memcached của bạn trong file cấu hình `config/cache.php`:
+Sử dụng driver Memcached, nó sẽ yêu cầu [Memcached PECL package](https://pecl.php.net/package/memcached) phải được cài đặt. Bạn có thể list tất cả các máy chủ Memcached của bạn trong file cấu hình `config/cache.php`:
 
     'memcached' => [
         [
@@ -63,9 +63,9 @@ Bạn cũng có thể set tùy chọn `host` thành một đường dẫn socket
 
 #### Redis
 
-Trước khi sử dụng cache Redis với Laravel, bạn sẽ cần cài đặt package `predis/predis` (~ 1.0) thông qua Composer hoặc cài đặt extension PhpRedis PHP qua PECL.
+Trước khi sử dụng cache Redis với Laravel, bạn sẽ cần cài đặt package `predis/predis` (~ 1.0) thông qua Composer hoặc cài đặt extension PhpRedis của PHP thông qua PECL.
 
-Để biết thêm thông tin về cách định cấu hình Redis, hãy tham khảo [trang tài liệu của Laravel](/docs/{{version}}/redis#configuration).
+Để biết thêm thông tin về cách cấu hình Redis, hãy tham khảo [trang tài liệu của Laravel](/docs/{{version}}/redis#configuration).
 
 <a name="cache-usage"></a>
 ## Sử dụng cache
@@ -73,9 +73,9 @@ Trước khi sử dụng cache Redis với Laravel, bạn sẽ cần cài đặt
 <a name="obtaining-a-cache-instance"></a>
 ### Lấy một instance cache
 
-[Contracts](/docs/{{version}}/contracts) `Illuminate\Contracts\Cache\Factory` và `Illuminate\Contracts\Cache\Repository` cung cấp quyền truy cập vào các service cache của Laravel. Contract `Factory` cung cấp quyền truy cập vào tất cả các cache driver được định nghĩa cho application của bạn. Contract `Repository` thường được chỉ định là một implementation mặc định của cache driver cho application của bạn bởi file cấu hình `cache` của bạn.
+[Contracts](/docs/{{version}}/contracts) `Illuminate\Contracts\Cache\Factory` và `Illuminate\Contracts\Cache\Repository` cung cấp quyền truy cập vào các service cache của Laravel. Contract `Factory` cung cấp quyền truy cập vào tất cả các cache driver mà đã được định nghĩa trong application của bạn. Còn contract `Repository` sẽ được định nghĩa là một implementation của một cache driver mặc định trong application của bạn, cache driver mặc định này có thể cấu hình trong file `cache` của bạn.
 
-Tuy nhiên, bạn cũng có thể sử dụng facade `Cache`, đây là thứ chúng ta sẽ sử dụng trong suốt tài liệu này. Facade `Cache` cung cấp quyền truy cập nhanh chóng, thuận tiện cho việc triển khai cơ bản của các contract cache của Laravel:
+Tuy nhiên, bạn cũng có thể sử dụng facade `Cache`, đây là thứ mà chúng ta sẽ dùng trong suốt tài liệu này. Facade `Cache` sẽ cung cấp các quyền truy cập nhanh chóng và thuận tiện vào các class implementation cơ bản của các contract cache của Laravel:
 
     <?php
 
@@ -100,7 +100,7 @@ Tuy nhiên, bạn cũng có thể sử dụng facade `Cache`, đây là thứ ch
 
 #### Accessing Multiple Cache Stores
 
-Sử dụng facade `Cache`, bạn có thể truy cập các cache store khác nhau thông qua phương thức `store`. Key sẽ được pass cho phương thức `store` phải tương ứng với một trong các store được liệt kê trong mảng cấu hình `store` trong file cấu hình `cache` của bạn:
+Sử dụng facade `Cache`, bạn có thể truy cập các cache store khác nhau thông qua phương thức `store`. Key mà sẽ được truyền vào trong phương thức `store` thì cũng phải tương ứng với một store mà đã được liệt kê trong mảng `store` trong file cấu hình `cache` của bạn:
 
     $value = Cache::store('file')->get('foo');
 
@@ -109,13 +109,13 @@ Sử dụng facade `Cache`, bạn có thể truy cập các cache store khác nh
 <a name="retrieving-items-from-the-cache"></a>
 ### Lấy item trong cache
 
-Phương thức `get` trên facade `Cache` được sử dụng để lấy các item từ cache. Nếu item không tồn tại trong cache, `null` sẽ được trả về. Nếu bạn muốn, bạn có thể pass một tham số thứ hai cho phương thức `get` chỉ định giá trị mặc định mà bạn muốn được trả về nếu item đó không tồn tại:
+Phương thức `get` trên facade `Cache` được sử dụng để lấy các item từ cache. Nếu item không tồn tại trong cache, `null` sẽ được trả về. Nếu bạn muốn, bạn có thể truyền vào một tham số thứ hai cho phương thức `get` chỉ định giá trị mặc định mà bạn muốn được trả về nếu item đó không tồn tại:
 
     $value = Cache::get('key');
 
     $value = Cache::get('key', 'default');
 
-Bạn thậm chí có thể pass một `Closure` làm giá trị mặc định. Kết quả của `Closure` sẽ được trả về nếu item được chỉ định không tồn tại trong cache. Pass một Closure cho phép bạn trì hoãn việc lấy ra các giá trị mặc định từ cơ sở dữ liệu hoặc service bên ngoài khác:
+Bạn thậm chí có thể truyền vào một `Closure` làm giá trị mặc định. Kết quả của `Closure` sẽ được trả về nếu item cần lấy không tồn tại trong cache. Việc có thể truyền vào một Closure cho phép bạn có thể lấy ra giá trị trong cache trước khi phải lấy giá trị đó ra từ một cơ sở dữ liệu hoặc một service bên ngoài:
 
     $value = Cache::get('key', function () {
         return DB::table(...)->get();
@@ -123,7 +123,7 @@ Bạn thậm chí có thể pass một `Closure` làm giá trị mặc định. 
 
 #### Checking For Item Existence
 
-Phương thức `has` có thể được sử dụng để xác định xem một item có tồn tại trong cache hay không. Phương thức này sẽ trả về `false` nếu giá trị là `null` hoặc `false`:
+Phương thức `has` có thể được sử dụng để xác định xem một item có tồn tại trong cache hay không. Phương thức này sẽ trả về `false` nếu giá trị là `null` hoặc là `false`:
 
     if (Cache::has('key')) {
         //
@@ -131,7 +131,7 @@ Phương thức `has` có thể được sử dụng để xác định xem mộ
 
 #### Incrementing / Decrementing Values
 
-Các phương thức `increment` và `decrement` có thể được sử dụng để điều chỉnh giá trị của các item integer trong cache. Cả hai phương thức này đều chấp nhận một tham số thứ hai tùy chọn cho biết số lượng tăng hoặc giảm giá trị của item:
+Các phương thức `increment` và `decrement` có thể được sử dụng để điều chỉnh giá trị của các item integer trong cache. Cả hai phương thức này đều chấp nhận một tham số tùy chọn thứ hai cho biết số lượng tăng hoặc giảm giá trị của item:
 
     Cache::increment('key');
     Cache::increment('key', $amount);
@@ -140,13 +140,13 @@ Các phương thức `increment` và `decrement` có thể được sử dụng 
 
 #### Retrieve & Store
 
-Thỉnh thoảng bạn có thể muốn lấy ra một item từ cache, nhưng cũng lưu trữ một giá trị mặc định nếu item được yêu cầu không tồn tại. Ví dụ: bạn có thể muốn lấy ra tất cả người dùng từ cache hoặc nếu không tồn tại, hãy lấy chúng từ cơ sở dữ liệu và thêm chúng vào cache. Bạn có thể làm điều này bằng cách sử dụng phương thức `Cache::remember`:
+Thỉnh thoảng bạn cũng có thể muốn lấy ra một item từ cache, nhưng cũng muốn lưu lại một giá trị mặc định nếu item đó không tồn tại. Ví dụ: bạn có thể muốn lấy ra tất cả các người dùng từ cache hoặc nếu không tồn tại, hãy lấy chúng từ cơ sở dữ liệu và thêm chúng vào cache. Bạn có thể làm điều này bằng cách sử dụng phương thức `Cache::remember`:
 
     $value = Cache::remember('users', $minutes, function () {
         return DB::table('users')->get();
     });
 
-Nếu item không tồn tại trong cache, thì `Closure` được pass cho phương thức `remember` sẽ được thực thi và kết quả của nó sẽ được đặt vào cache.
+Nếu item đó không tồn tại trong cache, thì `Closure` mà đã được truyền vào trong phương thức `remember` sẽ được thực thi và kết quả của nó sẽ được lưu vào cache.
 
 Bạn có thể sử dụng phương thức `rememberForever` để lấy một item từ cache hoặc lưu trữ nó mãi mãi:
 
@@ -156,18 +156,18 @@ Bạn có thể sử dụng phương thức `rememberForever` để lấy một 
 
 #### Retrieve & Delete
 
-Nếu bạn cần lấy một item từ cache và sau đó xóa item đó, bạn có thể sử dụng phương thức `pull`. Giống như phương thức `get`, `null` sẽ được trả về nếu item không tồn tại trong cache:
+Nếu bạn cần lấy một item từ cache và sau đó xóa item đó đi, bạn có thể sử dụng phương thức `pull`. Giống như phương thức `get`, thì `null` sẽ được trả về nếu item không tồn tại trong cache:
 
     $value = Cache::pull('key');
 
 <a name="storing-items-in-the-cache"></a>
 ### Lưu item trong cache
 
-Bạn có thể sử dụng phương thức `put` trên facade `Cache` để lưu trữ các item trong cache. Khi bạn đặt một item vào cache, bạn cần chỉ định số phút mà giá trị sẽ được lưu trong cache:
+Bạn có thể sử dụng phương thức `put` trên facade `Cache` để lưu trữ các item vào trong cache. Khi bạn đặt một item vào trong cache, thì bạn cũng cần khai báo số phút mà giá trị đó sẽ được lưu trong cache:
 
     Cache::put('key', 'value', $minutes);
 
-Thay vì pass số phút dưới dạng integer, bạn cũng có thể pass một instance `DateTime` biểu thị thời gian hết hạn của item được lưu trong bộ nhớ cache:
+Thay vì truyền vào số phút dưới dạng integer, bạn cũng có thể truyền vào một instance `DateTime` dùng để biểu thị thời gian hết hạn của item được lưu trong bộ nhớ cache:
 
     $expiresAt = now()->addMinutes(10);
 
@@ -175,17 +175,17 @@ Thay vì pass số phút dưới dạng integer, bạn cũng có thể pass mộ
 
 #### Store If Not Present
 
-Phương thức `add` sẽ chỉ thêm item vào cache nếu nó chưa tồn tại trong cache store. Phương thức sẽ trả về `true` nếu item thực sự được thêm vào cache. Nếu không, phương thức sẽ trả về `false`:
+Phương thức `add` sẽ chỉ thêm item vào cache nếu nó chưa tồn tại trong cache store. Phương thức này sẽ trả về `true` nếu item đó thực sự đã được thêm vào cache. Nếu không, phương thức sẽ trả về `false`:
 
     Cache::add('key', 'value', $minutes);
 
 #### Storing Items Forever
 
-Phương thức `forever` có thể được sử dụng để lưu trữ một item trong cache vĩnh viễn. Vì các item này sẽ không bao giờ hết hạn, chúng phải được xóa thủ công khỏi cache bằng phương thức `forget`:
+Phương thức `forever` có thể được sử dụng để lưu trữ một item trong cache vĩnh viễn. Vì các item này sẽ không bao giờ hết hạn, nên chúng sẽ phải được xóa một cách thủ công khỏi cache bằng phương thức `forget`:
 
     Cache::forever('key', 'value');
 
-> {tip} Nếu bạn đang sử dụng driver Memcached, các item được lưu trữ "forever" có thể bị xóa khi cache đạt đến giới hạn kích thước.
+> {tip} Nếu bạn đang sử dụng driver Memcached, các item được lưu trữ "forever" có thể bị xóa đi khi cache đạt đến giới hạn kích thước.
 
 <a name="removing-items-from-the-cache"></a>
 ### Xoá item trong cache
@@ -198,32 +198,32 @@ Bạn có thể xóa toàn bộ cache bằng phương thức `flush`:
 
     Cache::flush();
 
-> {note} Xóa cache không liên quan cache prefix và sẽ xóa tất cả các item khỏi cache. Hãy xem xét điều này một cách cẩn thận khi xóa bộ nhớ cache đang được chia sẻ bởi các application khác.
+> {note} Khi xóa toàn bộ cache thì nó sẽ xóa tất cả các item ra khỏi cache mà không tâm đến cache prefix. Hãy xem xét điều này một cách cẩn thận trước khi xóa, nếu cache đó đang được dùng để chia sẻ cho các application khác.
 
 <a name="the-cache-helper"></a>
 ### Cache helper
 
-Ngoài việc sử dụng facade `Cache` hoặc [cache contract](/docs/{{version}}/contracts), bạn cũng có thể sử dụng golabl helper `cache` để lấy và lưu trữ dữ liệu qua cache. Khi hàm `cache` được gọi với một tham số chuỗi, nó sẽ trả về giá trị của key đó:
+Ngoài việc sử dụng facade `Cache` hoặc [cache contract](/docs/{{version}}/contracts), bạn cũng có thể sử dụng golabl helper `cache` để lấy hoặc lưu trữ dữ liệu vào cache. Khi hàm `cache` được gọi với một tham số key, nó sẽ trả về giá trị của key đó:
 
     $value = cache('key');
 
-Nếu bạn cung cấp một mảng các cặp key / value và thời gian hết hạn cho hàm, nó sẽ lưu các giá trị vào trong cache với khoảng thời gian được chỉ định:
+Nếu bạn cung cấp một mảng gồm các cặp key và value và thời gian hết hạn của chúng cho hàm, thì nó sẽ lưu các giá trị đó vào trong cache với khoảng thời gian được chỉ định:
 
     cache(['key' => 'value'], $minutes);
 
     cache(['key' => 'value'], now()->addSeconds(10));
 
-> {tip} Khi testing gọi đến hàm golabl `cache`, bạn có thể sử dụng phương thức `Cache::shouldReceive` giống như khi bạn [testing a facade](/docs/{{version}}/mocking#mocking-facades).
+> {tip} Khi testing gọi đến hàm golabl `cache`, bạn có thể sử dụng phương thức `Cache::shouldReceive` giống như thể khi bạn [testing một facade](/docs/{{version}}/mocking#mocking-facades).
 
 <a name="cache-tags"></a>
 ## Cache tag
 
-> {note} Cache tag không được hỗ trợ khi sử dụng cache driver `file` hoặc `database`. Hơn nữa, khi sử dụng nhiều tag với bộ nhớ cache được lưu trữ "forever", hiệu suất sẽ tốt nhất với driver như `memcached`, tự động xóa các bản ghi cũ.
+> {note} Cache tag không được hỗ trợ khi sử dụng cache driver `file` hoặc `database`. Hơn nữa, khi sử dụng nhiều tag với các bộ nhớ cache được lưu trữ "forever", thì hiệu suất sẽ tốt nhất với các driver như `memcached`, loại mà tự động xóa các bản ghi cũ.
 
 <a name="storing-tagged-cache-items"></a>
 ### Lưu item vào cache tag
 
-Cache tag cho phép bạn gắn tag các item liên quan trong cache và sau đó xóa tất cả các giá trị được lưu trong bộ nhớ cache đã được gán một tag. Bạn có thể truy cập cache được gắn tag bằng cách chuyển vào một mảng tên tag theo thứ tự. Ví dụ: hãy truy cập cache được gắn tag và `put` giá trị trong cache:
+Cache tag cho phép bạn gắn tag vào các item liên quan trong cache và sau đó xóa tất cả các giá trị được lưu trong bộ nhớ cache mà đã được gán với một tag nhất định. Bạn có thể truy cập vào cache được gắn tag bằng cách truyền vào một mảng các tag theo thứ tự. Ví dụ: hãy truy cập vào cache được gắn tag và `put` giá trị vào trong cache đó:
 
     Cache::tags(['people', 'artists'])->put('John', $john, $minutes);
 
@@ -232,7 +232,7 @@ Cache tag cho phép bạn gắn tag các item liên quan trong cache và sau đ�
 <a name="accessing-tagged-cache-items"></a>
 ### Truy cập item từ cache tag
 
-Để lấy một item cache được gắn tag, pass cùng một danh sách các tag theo thứ tự cho phương thức `tags` và sau đó gọi phương thức` get` bằng key bạn muốn lấy:
+Để lấy ra một item cache mà được gắn tag, thì chúng ta truyền vào một danh sách các tag theo thứ tự cho phương thức `tags` và sau đó gọi phương thức` get` bằng key mà bạn muốn lấy:
 
     $john = Cache::tags(['people', 'artists'])->get('John');
 
@@ -241,7 +241,7 @@ Cache tag cho phép bạn gắn tag các item liên quan trong cache và sau đ�
 <a name="removing-tagged-cache-items"></a>
 ### Xoá item từ cache tag
 
-Bạn có thể xóa tất cả các item được gán một tag hoặc danh sách các tag. Ví dụ, câu lệnh này sẽ xóa tất cả các bộ nhớ cache được gắn tag `people`, `authors` hoặc cả hai. Vì vậy, cả `Anne` và `John` sẽ bị xóa khỏi cache:
+Bạn có thể xóa tất cả các item được gán một tag hoặc một danh sách các tag. Ví dụ, câu lệnh này sẽ xóa tất cả các bộ nhớ cache được gắn tag `people`, `authors` hoặc cả hai. Vì vậy, cả `Anne` và `John` sẽ bị xóa khỏi cache:
 
     Cache::tags(['people', 'authors'])->flush();
 
@@ -255,7 +255,7 @@ Ngược lại, câu lệnh này sẽ chỉ xóa các bộ nhớ cache được 
 <a name="writing-the-driver"></a>
 ### Viết driver
 
-Để tạo tùy biến cache driver của chúng ta, trước tiên chúng ta cần implement [contract](/docs/{{version}}/contracts) `Illuminate\Contracts\Cache\Store`. Vì vậy, việc implementation cache MongoDB sẽ trông giống như thế này:
+Để tạo một tùy biến cache driver riêng, trước tiên chúng ta cần implement [contract](/docs/{{version}}/contracts) `Illuminate\Contracts\Cache\Store`. Và việc implementation cache MongoDB sẽ trông giống như thế này:
 
     <?php
 
@@ -277,18 +277,18 @@ Ngược lại, câu lệnh này sẽ chỉ xóa các bộ nhớ cache được 
         public function getPrefix() {}
     }
 
-Chúng ta chỉ cần implement từng phương thức này bằng một kết nối MongoDB. Để biết ví dụ về cách implement từng phương thức này, hãy xem `Illuminate\Cache\MemcachedStore` trong source code framework. Khi việc implement của chúng ta hoàn tất, chúng ta có thể hoàn tất đăng ký tùy biến driver.
+Chúng ta chỉ cần implement từng phương thức này bằng một kết nối đến MongoDB. Để biết ví dụ về cách implement từng phương thức này, hãy xem `Illuminate\Cache\MemcachedStore` trong source code framework. Khi việc implement của chúng ta hoàn tất, chúng ta có thể đăng ký tùy biến driver như sau:
 
     Cache::extend('mongo', function ($app) {
         return Cache::repository(new MongoStore);
     });
 
-> {tip} Nếu bạn đang tự hỏi nên đặt code tùy biến cache driver ở đâu, bạn có thể tạo một namespace `Extensions` trong thư mục `app` của bạn. Tuy nhiên, hãy nhớ rằng Laravel không có cấu trúc application theo kiểu cứng nhắc và bạn có thể thoải mái tự tổ chức application của bạn theo sở thích của bạn.
+> {tip} Nếu bạn đang tự hỏi nên đặt code tùy biến cache driver ở đâu, thì bạn có thể tạo ra một namespace `Extensions` trong thư mục `app` của bạn. Tuy nhiên, hãy nhớ rằng Laravel không có cấu trúc application theo kiểu cứng nhắc và bạn có thể thoải mái tự tổ chức application của bạn theo sở thích của bạn.
 
 <a name="registering-the-driver"></a>
 ### Đăng ký driver
 
-Để đăng ký tùy biến cache driver với Laravel, chúng ta sẽ sử dụng phương thức `extend` trong facade `Cache`. Gọi tới `Cache::extend` có thể được thực hiện trong phương thức `boot` của `App\Providers\AppServiceProvider` được đi kèm các application Laravel mới hoặc bạn có thể tạo service provider của riêng mình để chứa extension đó - chỉ cần không quên đăng ký provider đó trong mảng provider `config/app.php`:
+Để đăng ký tùy biến cache driver với Laravel, chúng ta có thể sử dụng phương thức `extend` trong facade `Cache`. Việc sử dụng `Cache::extend` này có thể được thực hiện trong phương thức `boot` trong file `App\Providers\AppServiceProvider` được đi kèm với ứng dụng Laravel hoặc bạn có thể tạo ra một service provider của riêng mình để chứa extension đó - chỉ cần không quên đăng ký provider đó trong mảng provider trong file `config/app.php`:
 
     <?php
 
@@ -323,14 +323,14 @@ Chúng ta chỉ cần implement từng phương thức này bằng một kết n
         }
     }
 
-Tham số đầu tiên được pass cho phương thức `extend` là tên của driver. Điều này sẽ tương ứng với tùy chọn `driver` của bạn trong file cấu hình `config/cache.php`. Tham số thứ hai là một Closure sẽ trả về một instance `Illuminate\Cache\Repository`. Closure sẽ được pass một instance `$app`, là một instance của [service container](/docs/{{version}}/container).
+Tham số đầu tiên được truyền vào phương thức `extend` là tên của driver. Điều này sẽ tương ứng với option `driver` trong file cấu hình `config/cache.php`. Tham số thứ hai là một Closure sẽ trả về một instance `Illuminate\Cache\Repository`. Closure cũng sẽ được truyền vào một instance [service container](/docs/{{version}}/container) `$app`.
 
-Khi extension của bạn được đăng ký, hãy cập nhật tùy chọn `driver` trong file cấu hình `config/cache.php` của bạn thành tên của extension.
+Khi extension của bạn đã được đăng ký, hãy cập nhật option `driver` trong file cấu hình `config/cache.php` của bạn thành tên của extension.
 
 <a name="events"></a>
 ## Event
 
-Để thực thi code trên mọi thao tác cache, bạn có thể listen cho các [event](/docs/{{version}}/events) được kích hoạt bởi cache. Thông thường, bạn nên đặt những event listener này trong `EventServiceProvider`:
+Để thực thi một code nào trên các thao tác cache, bạn có thể listen cho các [event](/docs/{{version}}/events) được kích hoạt bởi cache. Thông thường, bạn nên đặt những event listener này trong file `EventServiceProvider`:
 
     /**
      * The event listener mappings for the application.

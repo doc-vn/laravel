@@ -31,7 +31,7 @@ Tuy nhiên, nếu bạn không muốn dùng Homestead, thì bạn hãy chắc ch
 <a name="installing-laravel"></a>
 ### Cài đặt Laravel
 
-Laravel dùng [Composer](https://getcomposer.org) để quản lý các library của nó. Nên trước khi dùng Laravel, bạn cần chắc chắn rằng đã cài đặt Composer trong máy của các bạn.
+Laravel dùng [Composer](https://getcomposer.org) để quản lý các library của nó. Nên trước khi dùng Laravel, bạn cần chắc chắn rằng đã cài đặt Composer trong máy của bạn.
 
 #### Thông qua Laravel Installer
 
@@ -39,7 +39,7 @@ Laravel dùng [Composer](https://getcomposer.org) để quản lý các library 
 
     composer global require "laravel/installer"
 
-Hãy chắc chắn rằng laravel installer đã được cài đặt trong thư mục global của composer trong `$PATH` của máy bạn, để bạn có thể chạy lệnh `laravel` tại thư mục mà bạn muốn tạo project. Cái thư mục global của composer sẽ tồn tại ở các vị trí khác nhau tuỳ theo hệ điều hành của bạn, nhưng dưới đây là một số vị trí cơ bản theo hệ điều hành:
+Hãy chắc chắn rằng laravel installer đã được cài đặt trong thư mục global của composer trong `$PATH` của bạn, để bạn có thể chạy lệnh `laravel` tại thư mục mà bạn muốn tạo project. Cái thư mục global của composer sẽ tồn tại ở các vị trí khác nhau tuỳ theo hệ điều hành của bạn, nhưng dưới đây là một số vị trí cơ bản theo hệ điều hành:
 
 <div class="content-list" markdown="1">
 - macOS: `$HOME/.composer/vendor/bin`
@@ -69,22 +69,21 @@ Và dĩ nhiên, bạn sẽ có nhiều lựa chọn hơn thông qua [Homestead](
 
 #### Thư mục public
 
-Sau khi cài đặt Laravel, bạn cần cấu hình thư mục gốc của web của bạn vào thư mục `public`. Và file `index.php` trong thư mục này sẽ được gọi khi mà tất cả các request gửi đến web của bạn.
+Sau khi cài đặt Laravel, bạn cần cấu hình thư mục gốc của web trỏ vào thư mục `public`. Và file `index.php` trong thư mục này sẽ được gọi khi tất cả các request được gửi đến web của bạn.
 
 #### Các file cấu hình
 
-Tất cả các file cấu hình cho Laravel framework sẽ được lưu trữ tại thư mục `config`. Các cấu hình đều đã được tài liệu hoá bằng comment, vì vậy hãy xem qua chúng và làm quen với chúng.
+Tất cả các file cấu hình cho Laravel framework sẽ được lưu trữ tại thư mục `config`. Các cấu hình này đều đã được tài liệu hoá bằng comment, vì vậy hãy xem qua chúng và làm quen với chúng.
 
 #### Quyền hạn của thư mục
 
-Sau khi cài đặt Laravel, bạn có thể cần cài đặt một số quyền hạn. Ví dụ, thư mục 
-`storage` và thư mục `bootstrap/cache` sẽ cần quyền writable cho web của bạn, nếu không Laravel sẽ không thể chạy, Và nếu bạn đang dùng máy ảo [Homestead](/docs/{{version}}/homestead), thì các quyền trên sẽ được cài đặt sẵn.
+Sau khi cài đặt Laravel, bạn có thể cần cài đặt một số quyền hạn. Ví dụ, thư mục `storage` và thư mục `bootstrap/cache` sẽ cần quyền writable cho web của bạn, nếu không Laravel sẽ không thể chạy, Và nếu bạn đang dùng máy ảo [Homestead](/docs/{{version}}/homestead), thì các quyền trên sẽ được cài đặt sẵn.
 
 #### Application Key
 
-Tiếp theo, bạn cũng cần làm một việc sau khi cài đặt xong Laravel là việc cài đặt  một chuỗi random để làm application key. Nếu bạn cài đặt Laravel bằng Composer hoặc Laravel installer, thì application key có thể được tạo bằng cách chạy lệnh `php artisan key:generate`.
+Tiếp theo, bạn cũng cần làm một việc sau khi đã cài đặt xong Laravel là cài đặt một chuỗi random để làm application key. Nếu bạn cài đặt Laravel bằng Composer hoặc Laravel installer, thì application key có thể được tạo bằng cách chạy lệnh `php artisan key:generate`.
 
-Bình thường, application key sẽ có chiều dài 32 ký tự. Key đó có cài đặt ở trong file cài đặt môi trường `.env`, nếu bạn chưa đổi tên file `.env.example` sang `.env`, thì bạn nên làm nó ngày bây giờ. **Nếu như application key không được cài đặt, thì session của người dùng và các mã hoá data sẽ không an toàn**
+Bình thường, application key sẽ có chiều dài 32 ký tự. Vad có thể cài đặt ở trong file cài đặt môi trường `.env` của bạn, nếu bạn chưa đổi tên file `.env.example` sang `.env`, thì bạn nên làm nó ngày bây giờ. **Nếu như application key không được cài đặt, thì session của người dùng và các mã hoá data sẽ không an toàn**
 
 #### Cấu hình thêm
 

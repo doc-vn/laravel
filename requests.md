@@ -15,7 +15,7 @@
 <a name="accessing-the-request"></a>
 ## Truy cập vào Request
 
-Để có được một instance của request HTTP hiện tại thông qua việc dependency injection, bạn khai báo kiểu class `Illuminate\Http\Request` trong phương thức controller của bạn. Instance incoming request sẽ tự động được inject bởi [service container](/docs/{{version}}/container):
+Để có được một instance của request HTTP hiện tại thông qua việc khai báo phụ thuộc, bạn có thể khai báo kiểu class `Illuminate\Http\Request` trong phương thức controller của bạn. Instance của request đến sẽ tự động được inject bởi [service container](/docs/{{version}}/container):
 
     <?php
 
@@ -41,11 +41,11 @@
 
 #### Dependency Injection và Route Parameters
 
-Nếu phương thức controller của bạn cũng đang expect input từ một tham số route, bạn nên liệt kê các tham số route đằng sau các phụ thuộc. Ví dụ: nếu route của bạn được định nghĩa như sau:
+Nếu phương thức controller của bạn cũng đang yêu cầu input từ một tham số route, bạn nên liệt kê các tham số route đó đằng sau các phụ thuộc. Ví dụ: nếu route của bạn được định nghĩa như sau:
 
     Route::put('user/{id}', 'UserController@update');
 
-Bạn vẫn có thể khai báo kiểu `Illuminate\Http\Request` và truy cập vào tham số `id` của route của bạn bằng cách định nghĩa phương thức controller như sau:
+Bạn vẫn có thể khai báo kiểu `Illuminate\Http\Request` và truy cập vào tham số `id` của route bằng cách định nghĩa phương thức controller như sau:
 
     <?php
 
@@ -70,7 +70,7 @@ Bạn vẫn có thể khai báo kiểu `Illuminate\Http\Request` và truy cập 
 
 #### Truy cập vào Request thông qua Route Closure
 
-Bạn cũng có thể khai báo kiểu class `Illuminate\Http\Request` trong một route Closure. Service container sẽ tự động inject incoming request vào Closure khi được thực thi:
+Bạn cũng có thể khai báo kiểu class `Illuminate\Http\Request` trong một route Closure. Service container sẽ tự động inject request đến vào Closure khi được thực thi:
 
     use Illuminate\Http\Request;
 
@@ -81,15 +81,15 @@ Bạn cũng có thể khai báo kiểu class `Illuminate\Http\Request` trong m�
 <a name="request-path-and-method"></a>
 ### Request Path và Method
 
-Instance `Illuminate\Http\Request` cung cấp nhiều phương thức để kiểm tra HTTP request cho application của bạn và nó là mở rộng của class `Symfony\Component\HttpFoundation\Request`. Chúng tôi sẽ nói về một số phương thức quan trọng dưới đây.
+Instance `Illuminate\Http\Request` cung cấp nhiều phương thức để kiểm tra HTTP request cho application của bạn và nó được extend từ class `Symfony\Component\HttpFoundation\Request`. Chúng tôi sẽ nói về một số phương thức quan trọng dưới đây.
 
 #### Lấy Request Path
 
-Phương thức `path` trả về thông tin path của request. Vì vậy, nếu incoming request được targeted là `http://domain.com/foo/bar`, phương thức` path` sẽ trả về `foo/bar`:
+Phương thức `path` trả về thông tin path của request. Vì vậy, nếu request đến được targeted là `http://domain.com/foo/bar`, phương thức `path` sẽ trả về `foo/bar`:
 
     $uri = $request->path();
 
-Phương thức `is` cho phép bạn xác định rằng path của incoming request có khớp với một pattern đã cho hay không. Bạn có thể sử dụng ký tự `*` làm ký tự đại diện khi sử dụng phương thức này:
+Phương thức `is` cho phép bạn xác định rằng path của request đến có khớp với một pattern đã cho hay không. Bạn có thể sử dụng ký tự `*` làm ký tự đại diện khi sử dụng phương thức này:
 
     if ($request->is('admin/*')) {
         //
@@ -97,7 +97,7 @@ Phương thức `is` cho phép bạn xác định rằng path của incoming req
 
 #### Lấy Request URL
 
-Để lấy full URL của incoming request, bạn có thể sử dụng các phương thức `url` hoặc `fullUrl`. Phương thức `url` sẽ trả về URL mà không có chuỗi truy vấn, trong khi phương thức `fullUrl` bao gồm chuỗi truy vấn:
+Để lấy full URL của request đến, bạn có thể sử dụng các phương thức `url` hoặc `fullUrl`. Phương thức `url` sẽ trả về URL mà không có chuỗi truy vấn, trong khi phương thức `fullUrl` bao gồm chuỗi truy vấn:
 
     // Without Query String...
     $url = $request->url();
@@ -136,26 +136,26 @@ Khi bạn đã cài đặt xong các thư viện trên, bạn có thể lấy đ
 <a name="input-trimming-and-normalization"></a>
 ## Input Trimming và Normalization
 
-Mặc định, Laravel có chứa các middleware `TrimStrings` và `ConvertEmptyStringsToNull` trong stack middleware global của application của bạn. Các middleware này được liệt kê trong stack bởi lớp `App\Http\Kernel`. Các middleware này sẽ tự động cắt tất cả các field chuỗi đến trên request, cũng như chuyển đổi bất kỳ field chuỗi trống nào thành `null`. Điều này cho phép bạn không phải lo lắng về những mối quan tâm bình thường này trong các route và controller của bạn.
+Mặc định, Laravel có chứa các middleware `TrimStrings` và `ConvertEmptyStringsToNull` trong stack middleware global của application. Các middleware này được liệt kê trong stack bởi class `App\Http\Kernel`. Các middleware này sẽ tự động cắt tất cả các field chuỗi trên request, cũng như chuyển đổi bất kỳ field chuỗi trống nào thành `null`. Điều này cho phép bạn cần không phải lo lắng về những điều này trong các route và controller của bạn.
 
-Nếu bạn muốn vô hiệu hóa hành vi này, bạn có thể xóa hai middleware khỏi stack middleware của application bằng cách xóa chúng khỏi thuộc tính `$middleware` của class `App\Http\Kernel` của bạn.
+Nếu bạn muốn vô hiệu hóa hành vi này, bạn có thể xóa chúng ra khỏi stack middleware của application.
 
 <a name="retrieving-input"></a>
 ## Lấy Input
 
 #### Lấy tất cả Input Data
 
-Bạn cũng có thể lấy tất cả dữ liệu input vào dưới dạng một `array` bằng cách sử dụng phương thức `all`:
+Bạn cũng có thể lấy tất cả dữ liệu input dưới dạng một `array` bằng cách sử dụng phương thức `all`:
 
     $input = $request->all();
 
 #### Lấy một Input Value
 
-Sử dụng một vài phương thức đơn giản sau đây, bạn có thể truy cập tất cả các input của người dùng từ instance `Illuminate\Http\Request` của bạn mà không cần lo lắng về method HTTP nào được sử dụng cho request. Bất kể method HTTP nào, phương thức `input` có thể được sử dụng để lấy dữ liệu đã nhập của người dùng:
+Sử dụng một vài phương thức đơn giản sau đây, bạn có thể truy cập tất cả các input của người dùng từ instance `Illuminate\Http\Request` của bạn mà không cần lo lắng về method HTTP nào được sử dụng cho request. Bất kể method HTTP nào, phương thức `input` có thể được sử dụng để lấy dữ liệu mà người dùng đã nhập:
 
     $name = $request->input('name');
 
-Bạn có thể pass một giá trị mặc định làm tham số thứ hai cho phương thức `input`. Giá trị này sẽ được trả về nếu giá trị input trong request không tồn tại:
+Bạn có thể truyền vào một giá trị mặc định làm tham số thứ hai cho phương thức `input`. Giá trị này sẽ được trả về nếu giá trị input trong request không tồn tại:
 
     $name = $request->input('name', 'Sally');
 
@@ -175,7 +175,7 @@ Nếu như không tồn tại giá trị trong query string, tham số thứ hai
 
     $name = $request->query('name', 'Helen');
 
-Bạn có thể gọi phương thức `query` mà không có bất kỳ tham số nào để truy xuất tất cả các giá trị query string dưới dạng một mảng:
+Bạn có thể gọi phương thức `query` mà không có bất kỳ tham số nào để lấy ra tất cả các giá trị query string dưới dạng một mảng:
 
     $query = $request->query();
 
@@ -185,17 +185,17 @@ Bạn cũng có thể truy cập vào input của người dùng bằng các thu
 
     $name = $request->name;
 
-Khi sử dụng các thuộc tính động, trước tiên, Laravel sẽ tìm giá trị trong các tham số trong request. Nếu nó không tồn tại, Laravel sẽ tìm kiếm field đó trong các tham số route.
+Khi sử dụng các thuộc tính động, trước tiên, Laravel sẽ tìm giá trị trong các tham số trong request. Nếu nó không tồn tại, Laravel sẽ tìm kiếm field đó trong các tham số của route.
 
 #### Lấy JSON Input Values
 
-Khi gửi các JSON request đến application của bạn, bạn có thể truy cập dữ liệu JSON thông qua phương thức `input` miễn là `Content-Type` header của request được đặt chính xác là `application/json`. Bạn thậm chí có thể sử dụng cú pháp "chấm" để lấy các phần tử con trong mảng JSON:
+Khi gửi các JSON request đến application của bạn, bạn có thể truy cập dữ liệu JSON thông qua phương thức `input` miễn là `Content-Type` header của request đó được đặt là `application/json`. Bạn thậm chí có thể sử dụng cú pháp "chấm" để lấy các phần tử con trong mảng JSON:
 
     $name = $request->input('user.name');
 
 #### Lấy A Portion Of The Input Data
 
-Nếu bạn cần truy xuất một tập hợp con của dữ liệu input, bạn có thể sử dụng các phương thức `only` và `except`. Cả hai phương thức này đều chấp nhận một `array` hoặc một danh sách động của tham số:
+Nếu bạn cần truy xuất một tập con của dữ liệu input, bạn có thể sử dụng các phương thức `only` hoặc `except`. Cả hai phương thức này đều chấp nhận một `array` hoặc một danh sách động của tham số:
 
     $input = $request->only(['username', 'password']);
 
@@ -205,23 +205,23 @@ Nếu bạn cần truy xuất một tập hợp con của dữ liệu input, b�
 
     $input = $request->except('credit_card');
 
-> {tip} Phương thức `only` trả về tất cả các cặp key / value mà bạn yêu cầu; tuy nhiên, nó sẽ không trả về các cặp key / value không có trong request.
+> {tip} Phương thức `only` trả về tất cả các cặp key / value mà bạn yêu cầu; tuy nhiên, nó sẽ không trả về các cặp key / value mà không có trong request.
 
 #### Xác định một giá trị input có tồn tại hay không
 
-Bạn nên sử dụng phương thức `has` để xác định xem giá trị có tồn tại trong request hay không. Phương thức `has` trả về `true` nếu giá trị tồn tại trong request:
+Bạn nên sử dụng phương thức `has` để xác định xem giá trị đó có tồn tại trong request hay không. Phương thức `has` trả về `true` nếu giá trị tồn tại trong request:
 
     if ($request->has('name')) {
         //
     }
 
-Khi được cho một mảng, phương thức `has` sẽ xác định xem có tất cả các giá trị có tồn tại hay không:
+Khi được cung cấp một mảng, phương thức `has` sẽ xác định xem tất cả các giá trị có trong mảng đó có tồn tại hay không:
 
     if ($request->has(['name', 'email'])) {
         //
     }
 
-Nếu bạn muốn xác định xem một giá trị có tồn tại trong request và không trống, bạn có thể sử dụng phương thức `filled`:
+Nếu bạn muốn xác định xem một giá trị có tồn tại trong request và không trống hay không, bạn có thể sử dụng phương thức `filled`:
 
     if ($request->filled('name')) {
         //
@@ -234,11 +234,11 @@ Laravel cho phép bạn giữ giá trị input từ request trước đó đến
 
 #### Flashing input đến Session
 
-Phương thức `flash` trong class `Illuminate\Http\Request` sẽ flash tất cả input của request hiện tại vào [session](/docs/{{version}}/session) để những input đó được chuyển tiếp đến request tiếp theo của người dùng:
+Phương thức `flash` trong class `Illuminate\Http\Request` sẽ flash tất cả input của request hiện tại vào [session](/docs/{{version}}/session) để những input đó được chuyển đến request tiếp theo của người dùng:
 
     $request->flash();
 
-Bạn cũng có thể sử dụng các phương thức `flashOnly` và `flashExcept` để flash một tập hợp con của dữ liệu request vào session. Các phương pháp này rất hữu ích để giữ thông tin nhạy cảm không bị lưu vào session như mật khẩu:
+Bạn cũng có thể sử dụng các phương thức `flashOnly` và `flashExcept` để flash một tập hợp con của dữ liệu request vào session. Các phương thức này rất hữu ích để giữ thông tin nhạy cảm không bị lưu vào session như mật khẩu:
 
     $request->flashOnly(['username', 'email']);
 
@@ -269,7 +269,7 @@ Laravel cũng cung cấp một global helper `old`. Nếu bạn đang muốn hi�
 
 #### Lấy Cookies từ Request
 
-Tất cả các cookie được tạo bởi Laravel framework đều được mã hóa và ký bằng mã xác thực, nghĩa là chúng sẽ bị coi là không hợp lệ nếu chúng bị client thay đổi. Để lấy  giá trị cookie từ request, hãy sử dụng phương thức `cookie` trong instance `Illuminate\Http\Request`:
+Tất cả các cookie được tạo bởi Laravel framework đều được mã hóa và được ký bằng mã xác thực, nghĩa là chúng sẽ bị coi là không hợp lệ nếu chúng bị client thay đổi. Để lấy giá trị cookie từ request, hãy sử dụng phương thức `cookie` trong instance `Illuminate\Http\Request`:
 
     $value = $request->cookie('name');
 
@@ -291,7 +291,7 @@ Phương thức `cookie` cũng chấp nhận thêm một vài tham số được
         'name', 'value', $minutes, $path, $domain, $secure, $httpOnly
     );
 
-Ngoài ra, bạn có thể sử dụng facade `Cookie` để "queue" cookie đó lại khi bạn gửi response về client, nó sẽ tự động gắn vào response. Phương thức `queue` chấp nhận một instance `Cookie` hoặc các tham số cần thiết để tạo một instance `Cookie`:
+Ngoài ra, bạn có thể sử dụng facade `Cookie` để "queue" cookie cho việc gán vào response trả về từ application. Phương thức `queue` chấp nhận một instance `Cookie` hoặc các tham số cần thiết để tạo một instance `Cookie`. Các cookie này sẽ được gán vào response trước khi nó được gửi đến trình duyệt:
 
     Cookie::queue(Cookie::make('name', 'value', $minutes));
 
@@ -299,7 +299,7 @@ Ngoài ra, bạn có thể sử dụng facade `Cookie` để "queue" cookie đó
 
 #### Tạo Cookie instance
 
-Nếu bạn muốn tạo một instance `Symfony\Component\HttpFoundation\Cookie` để cung cấp cho instance response sau đó, bạn có thể sử dụng global helper `cookie`. Cookie được tạo ra sẽ không được gửi cho client trừ khi nó được gắn với một instance response:
+Nếu bạn muốn tạo một instance `Symfony\Component\HttpFoundation\Cookie` để gán cho một instance response, bạn có thể sử dụng global helper `cookie`. Cookie được tạo ra sẽ không được gửi cho client trừ khi nó được gán vào một instance response:
 
     $cookie = cookie('name', 'value', $minutes);
 
@@ -311,13 +311,13 @@ Nếu bạn muốn tạo một instance `Symfony\Component\HttpFoundation\Cookie
 <a name="retrieving-uploaded-files"></a>
 ### Lấy Uploaded Files
 
-Bạn có thể truy cập đến các file được upload từ một instance`Illuminate\Http\Request` bằng cách sử dụng phương thức` file` hoặc sử dụng các thuộc tính động. Phương thức `file` trả về một instance của class `Illuminate\Http\UploadedFile`, được mở rộng từ class PHP `SplFileInfo` và cung cấp nhiều phương thức khác để tương tác với file:
+Bạn có thể truy cập đến các file đã được upload từ một instance`Illuminate\Http\Request` bằng cách sử dụng phương thức` file` hoặc sử dụng các thuộc tính động. Phương thức `file` trả về một instance của class `Illuminate\Http\UploadedFile`, được extend từ class PHP `SplFileInfo` và cung cấp nhiều phương thức để tương tác với file:
 
     $file = $request->file('photo');
 
     $file = $request->photo;
 
-Bạn có thể xác định nếu một file có tồn tại trong request hay không bằng phương thức `hasFile`:
+Bạn có thể xác định một file có tồn tại trong request hay không bằng cách sử dụng phương thức `hasFile`:
 
     if ($request->hasFile('photo')) {
         //
@@ -325,7 +325,7 @@ Bạn có thể xác định nếu một file có tồn tại trong request hay 
 
 #### Kiểm tra upload thành công hay không
 
-Ngoài việc kiểm tra xem file có tồn tại hay không, bạn cũng có thể cần xác minh rằng không có vấn đề gì khi tải file lên hay không, qua phương thức `isValid`:
+Ngoài việc kiểm tra xem file có tồn tại hay không, bạn cũng có thể cần xác minh rằng không có vấn đề gì khi tải file lên, qua phương thức `isValid`:
 
     if ($request->file('photo')->isValid()) {
         //
@@ -341,22 +341,22 @@ Class `UploadedFile` cũng chứa các phương thức có thể truy cập đ�
 
 #### Other File Methods
 
-Có nhiều phương thức khác có sẵn trên các instance `UploadedFile`. Hãy kiểm tra [tài liệu API cho class](http://api.symfony.com/3.0/Symfony/Component/HttpFoundation/File/UploadedFile.html) để biết thêm thông tin về các phương thức này.
+Có nhiều phương thức khác có sẵn trong các instance `UploadedFile`. Hãy kiểm tra [tài liệu API cho class này](http://api.symfony.com/3.0/Symfony/Component/HttpFoundation/File/UploadedFile.html) để biết thêm thông tin về các phương thức này.
 
 <a name="storing-uploaded-files"></a>
 ### Lưu file upload
 
-Để lưu trữ một file đã được tải lên, thông thường bạn sẽ sử dụng một trong [filesystems](/docs/{{version}}/filesystem) được cấu hình của bạn. Class `UploadedFile` có một phương thức `store` sẽ di chuyển file đã tải lên vào một trong các disk của bạn, nó có thể là một vị trí trong local filesystem của bạn hoặc thậm chí là một vị trí lưu trữ đám mây như Amazon S3.
+Để lưu trữ một file đã được tải lên, thông thường bạn sẽ sử dụng một trong các [filesystems](/docs/{{version}}/filesystem) đã được cấu hình của bạn. Class `UploadedFile` có một phương thức `store` sẽ chuyển file đã tải lên vào một trong các disk của bạn, nó có thể là một vị trí trong local filesystem hoặc thậm chí là một vị trí được lưu trữ đám mây như Amazon S3.
 
-Phương thức `store` chấp nhận một đường dẫn, nơi file sẽ được lưu, và được bắt đầu tính từ đường dẫn gốc được cấu hình trong file filesystem. Đường dẫn này không được chứa tên file, vì một unique ID sẽ tự động được tạo để đặt tên file.
+Phương thức `store` chấp nhận một đường dẫn, nơi mà file sẽ được lưu, và được bắt đầu tính từ đường dẫn gốc được cấu hình trong file filesystem. Đường dẫn này không được chứa tên file, vì một unique ID sẽ tự động được tạo để đặt tên file.
 
-Phương thức `store` cũng chấp nhận một tham số thứ hai tùy chọn cài đặt tên của disk  sẽ được sử dụng để lưu trữ file. Phương thức sẽ trả về đường dẫn của file liên kết đến thư mục gốc của disk:
+Phương thức `store` cũng chấp nhận một tham số thứ hai tùy chọn tên disk nào sẽ được sử dụng để lưu trữ file. Phương thức sẽ trả về đường dẫn của file liên kết đến thư mục gốc của disk đó:
 
     $path = $request->photo->store('images');
 
     $path = $request->photo->store('images', 's3');
 
-Nếu bạn không muốn tên tệp được tạo tự động, bạn có thể sử dụng phương thức `storeAs`, nó chấp nhận đường dẫn, tên tệp và tên disk làm tham số của nó:
+Nếu bạn không muốn tên tệp được tự động tạo, bạn có thể sử dụng phương thức `storeAs`, nó chấp nhận đường dẫn, tên tệp và tên disk làm tham số của nó:
 
     $path = $request->photo->storeAs('images', 'filename.jpg');
 
@@ -365,9 +365,9 @@ Nếu bạn không muốn tên tệp được tạo tự động, bạn có th�
 <a name="configuring-trusted-proxies"></a>
 ## Cấu hình Trusted Proxies
 
-Khi application của bạn đang chạy sau một hệ thống load balancer, mà không dùng chứng chỉ TLS / SSL để connect đến server của bạn. Đôi khi bạn sẽ cảm thấy rằng application của bạn không trả về liên kết HTTPS. Thông thường, điều này là do application của bạn đang bị chuyển tiếp lưu lượng truy cập từ load balancer của bạn vào cổng 80 và không biết rằng nó đang tạo ra các liên kết không an toàn.
+Khi application của bạn đang chạy sau một hệ thống load balancer, mà không dùng chứng chỉ TLS / SSL để kết nối đến server của bạn. Đôi khi bạn sẽ cảm thấy rằng application của bạn sẽ không trả về liên kết HTTPS. Thông thường, điều này là do application của bạn đang bị chuyển tiếp lưu lượng truy cập từ load balancer của bạn vào cổng 80 và không biết rằng nó đang tạo ra các liên kết không an toàn.
 
-Để giải quyết vấn đề này, bạn có thể sử dụng middleware `App\Http\Middleware\TrustProxies` có trong application Laravel của bạn, cho phép bạn nhanh chóng tùy chỉnh các load balancer hoặc proxy mà application của bạn, mà bạn trust. Các proxy tin cậy của bạn nên được liệt kê dưới dạng một mảng trong thuộc tính `$proxies` của middleware này. Ngoài việc cấu hình proxy tin cậy, bạn có thể cấu hình các header đang được gửi bởi proxy của bạn với thông tin về original request:
+Để giải quyết vấn đề này, bạn có thể sử dụng middleware `App\Http\Middleware\TrustProxies` có trong application Laravel của bạn, cho phép bạn nhanh chóng tùy chỉnh các load balancer hoặc các proxy mà application của bạn đang sử dụng, mà bạn trust. Các proxy tin cậy của bạn nên được liệt kê dưới dạng một mảng trong thuộc tính `$proxies` của middleware này. Ngoài việc cấu hình proxy tin cậy, bạn có thể cấu hình các header đang được gửi bởi proxy của bạn với thông tin về original request:
 
     <?php
 
@@ -404,8 +404,7 @@ Khi application của bạn đang chạy sau một hệ thống load balancer, m
 
 #### Trusting tất cả Proxies
 
-Nếu bạn đang sử dụng Amazon AWS hoặc các "cloud" khác cung cấp load balancer, bạn có thể không biết địa chỉ IP của load balancer thực tế của mình. Trong trường hợp này, bạn có thể sử dụng `**` để trust tất cả các proxy:
-If you are using Amazon AWS or another "cloud" load balancer provider, you may not know the IP addresses of your actual balancers. In this case, you may use `**` to trust all proxies:
+Nếu bạn đang sử dụng Amazon AWS hoặc các "cloud" khác cung cấp load balancer, bạn có thể không biết địa chỉ IP thật sự của load balancer. Trong trường hợp này, bạn có thể sử dụng `**` để trust tất cả các proxy:
 
     /**
      * The trusted proxies for this application.

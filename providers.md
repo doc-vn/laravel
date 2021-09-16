@@ -10,18 +10,18 @@
 <a name="introduction"></a>
 ## Giới thiệu
 
-Các service provider là trung tâm của tất cả các khởi động application Laravel. Application của riêng bạn, cũng như tất cả các service core của Laravel đều được khởi động thông qua các service provider.
+Các service provider là trung tâm của tất cả các quá trình khởi động của application Laravel. Application của riêng bạn, cũng như tất cả các service cốt lõi của Laravel đều được khởi động thông qua các service provider.
 
-Nhưng, "bootstrapped" nghĩa là gì? Nói chung, ý của chúng tôi có nghĩa là **đăng ký** những thứ, bao gồm đăng ký liên kết service container, event listener, middleware và thậm chí các route. Các Service provider là trung tâm để cấu hình application của bạn.
+Nhưng, "bootstrapped" nghĩa là gì? Nói chung, ý của chúng tôi có nghĩa là **đăng ký** những thứ, bao gồm đăng ký liên kết service container, event listener, middleware và thậm chí là các route. Các Service provider là trung tâm để cấu hình application của bạn.
 
-Nếu bạn mở file `config/app.php` đi cùng với Laravel, bạn sẽ thấy một array `providers`. Đây là tất cả các class service provider sẽ được load cho application của bạn. Tất nhiên, nhiều trong số này là các provider "hoãn", nghĩa là nó sẽ không được load trong mọi request, mà chỉ khi các service thực sự cần thiết nó mới được cung cấp.
+Nếu bạn mở file `config/app.php` đi cùng với Laravel, bạn sẽ thấy một mảng các `providers`. Đây là tất cả các class service provider sẽ được load cho application của bạn. Tất nhiên, nhiều trong số này là các provider "hoãn", nghĩa là nó sẽ không được load trong mọi request, mà chỉ khi các service này thực sự cần thiết nó mới được cung cấp.
 
-Trong phần tổng quan này, bạn sẽ học cách viết các service provider của riêng mình và đăng ký chúng với application Laravel của bạn.
+Trong phần tổng quan này, bạn sẽ học cách viết các service provider của riêng bạn và đăng ký chúng với application Laravel của bạn.
 
 <a name="writing-service-providers"></a>
 ## Viết Service Provider
 
-Tất cả các service provider đều được extend từ class `Illuminate\Support\ServiceProvider`. Hầu hết các service provider đều chứa một phương thức `register` và một phương thức` boot`. Trong phương thức `register`, bạn **chỉ nên  liên kết vào [service container](/docs/{{version}}/container)**. Bạn đừng bao giờ đăng ký bất kỳ event listener, routes hoặc bất kỳ phần chức năng nào khác vào trong phương thức `register`.
+Tất cả các service provider đều được extend từ class `Illuminate\Support\ServiceProvider`. Hầu hết các service provider đều chứa một phương thức `register` và một phương thức `boot`. Trong phương thức `register`, bạn **chỉ nên liên kết vào [service container](/docs/{{version}}/container)**. Bạn đừng bao giờ đăng ký bất kỳ event listener, routes hoặc bất kỳ phần chức năng nào khác vào trong phương thức `register`.
 
 Artisan CLI có thể tạo một provider mới thông qua lệnh `make:provider`:
 
@@ -30,9 +30,9 @@ Artisan CLI có thể tạo một provider mới thông qua lệnh `make:provide
 <a name="the-register-method"></a>
 ### Phương thức Register
 
-Như đã đề cập trước, trong phương thức `register`, bạn chỉ nên liên kết vào [service container](/docs/{{version}}/container). Bạn đừng bao giờ đăng ký bất kỳ event listener, routes hoặc bất kỳ phần chức năng nào khác vào trong phương thức `register`. Vì, bạn có thể vô tình sử dụng một service được cung cấp bởi service provider khác mà chưa được load.
+Như đã đề cập trước, trong phương thức `register`, bạn chỉ nên liên kết vào [service container](/docs/{{version}}/container). Bạn đừng bao giờ đăng ký bất kỳ event listener, routes hoặc bất kỳ phần chức năng nào khác vào trong phương thức `register`. Vì, bạn có thể vô tình sử dụng một service được cung cấp bởi một service provider khác mà chưa được load.
 
-Chúng ta hãy cùng xem một service provider cơ bản. Trong bất kỳ phương thức nào của service provider của bạn, bạn luôn có quyền truy cập vào thuộc tính `$app`, cái cung cấp quyền truy cập vào service container:
+Chúng ta hãy cùng xem một service provider cơ bản. Trong bất kỳ phương thức nào của service provider, bạn luôn có quyền truy cập vào thuộc tính `$app`, mà cung cấp quyền truy cập vào service container:
 
     <?php
 
@@ -56,12 +56,12 @@ Chúng ta hãy cùng xem một service provider cơ bản. Trong bất kỳ phư
         }
     }
 
-Service provider này chỉ định nghĩa một phương thức `register` và sử dụng phương thức đó để xác định việc implementation `Riak\Connection` trong service container. Nếu bạn không hiểu cách thức hoạt động của service container, hãy xem [tài liệu của nó](/docs/{{version}}/container).
+Service provider này chỉ định nghĩa một phương thức `register` và sử dụng phương thức đó để định nghĩa một implementation của `Riak\Connection` trong service container. Nếu bạn không hiểu cách thức hoạt động của service container, hãy xem [tài liệu của nó](/docs/{{version}}/container).
 
 <a name="the-boot-method"></a>
 ### Phương thức Boot
 
-Vậy, điều gì sẽ xảy ra nếu chúng ta cần đăng ký một view composer trong service provider của chúng ta? Điều này nên được thực hiện trong phương thức `boot`. **Phương thức này được gọi sau khi tất cả các service provider khác đã được đăng ký**, nghĩa là bạn có quyền truy cập vào tất cả các dịch vụ khác đã được đăng ký theo framework:
+Vậy, điều gì sẽ xảy ra nếu chúng ta cần đăng ký một view composer trong service provider của chúng ta? Điều này nên được thực hiện trong phương thức `boot`. **Phương thức này được gọi sau khi tất cả các service provider khác đã được đăng ký**, nghĩa là bạn có quyền truy cập vào tất cả các service khác đã được đăng ký theo framework:
 
     <?php
 
@@ -84,9 +84,9 @@ Vậy, điều gì sẽ xảy ra nếu chúng ta cần đăng ký một view com
         }
     }
 
-#### Phương thức Boot tích hợp sự phụ thuộc
+#### Phương thức Boot tích hợp khai báo phụ thuộc
 
-Bạn có thể viết sự phụ thuộc vào trong phương thức `boot` của service provider của bạn. [service container](/docs/{{version}}/container) sẽ tự động tích hợp bất kỳ phụ thuộc nào bạn cần:
+Bạn có thể viết khai báo phụ thuộc vào trong phương thức `boot` của service provider của bạn. [service container](/docs/{{version}}/container) sẽ tự động tích hợp bất kỳ phụ thuộc nào bạn cần:
 
     use Illuminate\Contracts\Routing\ResponseFactory;
 
@@ -100,7 +100,7 @@ Bạn có thể viết sự phụ thuộc vào trong phương thức `boot` củ
 <a name="registering-providers"></a>
 ## Đăng ký Providers
 
-Tất cả các service provider được đăng ký trong file cấu hình `config/app.php`. File này chứa một mảng `providers` nơi bạn có thể liệt kê tên class của các service provider của bạn. Mặc định, một nhóm các service provider core của Laravel đã được list trong mảng này. Các provider này sẽ khởi động các thành phần core của Laravel, chẳng hạn như mailer, queue, cache, và các thành phần khác.
+Tất cả các service provider được đăng ký trong file cấu hình `config/app.php`. File này chứa một mảng các `providers` nơi mà bạn có thể liệt kê tên class của các service provider của bạn. Mặc định, một nhóm các service provider cốt lõi của Laravel đã được liệt kê trong mảng này. Các provider này sẽ khởi động các thành phần cốt lõi của Laravel, chẳng hạn như mailer, queue, cache, và các thành phần khác.
 
 Để đăng ký provider của bạn, hãy thêm nó vào mảng:
 
@@ -113,9 +113,9 @@ Tất cả các service provider được đăng ký trong file cấu hình `con
 <a name="deferred-providers"></a>
 ## Các Provider hoãn
 
-Nếu provider của bạn **chỉ** đăng ký các liên kết trong [service container](/docs/{{version}}/container), bạn có thể chọn trì hoãn việc đăng ký cho đến khi một trong số các đăng ký liên kết thật sự cần thiết. Việc trì hoãn load của một provider như vậy sẽ cải thiện hiệu suất của ứng dụng của bạn, vì nó không được load từ filesystem theo mỗi request.
+Nếu provider của bạn **chỉ** đăng ký các liên kết trong [service container](/docs/{{version}}/container), bạn có thể chọn trì hoãn việc đăng ký cho đến khi một trong số các đăng ký liên kết thật sự cần thiết. Việc trì hoãn load của một provider như vậy sẽ cải thiện hiệu suất của ứng dụng của bạn, vì nó không được load từ filesystem cho mỗi request.
 
-Laravel sẽ biên dịch và lưu trữ một danh sách tất cả các service được cung cấp bởi các service provider bị hoãn lại, cùng với tên của class service provider của nó. Sau đó, chỉ khi bạn resolve một trong những service này thì Laravel mới tải service provider.
+Laravel sẽ biên dịch và lưu trữ một danh sách tất cả các service mà được cung cấp bởi các service provider trì hoãn, cùng với tên của class service provider đó. Sau đó, chỉ khi bạn resolve một trong những service này thì Laravel mới tải service provider đó lên.
 
 Để trì hoãn việc load của một provider, hãy đặt thuộc tính `defer` thành` true` và định nghĩa một phương thức `provides`. Phương thức `provides` sẽ trả về các liên kết service container được đăng ký bởi provider:
 

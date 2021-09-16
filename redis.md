@@ -11,7 +11,7 @@
 <a name="introduction"></a>
 ## Giới thiệu
 
-[Redis](https://redis.io) là một dự án mã nguồn mở, để lưu trữ các giá trị key-value. Nó thường được coi như là một server cấu trúc dữ liệu vì các key của nó có thể lưu [strings](https://redis.io/topics/data-types#strings), [hashes](https://redis.io/topics/data-types#hashes), [lists](https://redis.io/topics/data-types#lists), [sets](https://redis.io/topics/data-types#sets), và [sorted sets](https://redis.io/topics/data-types#sorted-sets).
+[Redis](https://redis.io) là một dự án mã nguồn mở, dùng để lưu trữ các giá trị key-value. Nó thường được coi như là một server cấu trúc dữ liệu vì các key của nó có thể lưu [strings](https://redis.io/topics/data-types#strings), [hashes](https://redis.io/topics/data-types#hashes), [lists](https://redis.io/topics/data-types#lists), [sets](https://redis.io/topics/data-types#sets), và [sorted sets](https://redis.io/topics/data-types#sorted-sets).
 
 Trước khi sử dụng Redis với Laravel, bạn sẽ cần cài đặt package `predis/predis` thông qua Composer:
 
@@ -37,11 +37,11 @@ Cấu hình Redis cho application của bạn nằm trong file cấu hình `conf
 
     ],
 
-Cấu hình server mặc định sẽ đủ cho môi trường phát triển. Tuy nhiên, bạn có thể tự do sửa mảng này dựa trên môi trường của bạn. Mỗi một server Redis được định nghĩa trong file cấu hình của bạn được, nó yêu cầu phải có tên, host và cổng.
+Cấu hình server mặc định sẽ đủ cho môi trường phát triển. Tuy nhiên, bạn có thể tự do sửa mảng này dựa trên môi trường của bạn. Mỗi một server Redis được định nghĩa trong file cấu hình của bạn yêu cầu phải có tên, host và cổng.
 
 #### Configuring Clusters
 
-Nếu within của bạn đang sử dụng một cụm server Redis, bạn nên định nghĩa các cụm này trong một key là `clusters` trong cấu hình Redis của bạn:
+Nếu application của bạn đang sử dụng một cụm server Redis, bạn nên định nghĩa các cụm này bằng một key là `clusters` trong cấu hình Redis của bạn:
 
     'redis' => [
 
@@ -79,7 +79,7 @@ Mặc định, các cụm sẽ thực hiện client-side sharding trên các nod
 <a name="predis"></a>
 ### Predis
 
-Ngoài các tùy chọn cấu hình server mặc định như `host`, `port`, `database`, và `password`, Predis còn hỗ trợ thêm [tham số kết nối](https://github.com/nrk/predis/wiki/Connection-Parameters)  có thể định nghĩa cho mỗi server Redis của bạn. Để sử dụng thêm tùy chọn cấu hình bổ sung này, hãy thêm chúng vào cấu hình server Redis của bạn trong file cấu hình `config/database.php`:
+Ngoài các tùy chọn cấu hình server mặc định như là `host`, `port`, `database`, và `password`, Predis còn hỗ trợ thêm các [tham số kết nối](https://github.com/nrk/predis/wiki/Connection-Parameters) có thể định nghĩa cho mỗi server Redis của bạn. Để sử dụng thêm tùy chọn cấu hình này, hãy thêm chúng vào cấu hình server Redis của bạn trong file cấu hình `config/database.php`:
 
     'default' => [
         'host' => env('REDIS_HOST', 'localhost'),
@@ -92,7 +92,7 @@ Ngoài các tùy chọn cấu hình server mặc định như `host`, `port`, `d
 <a name="phpredis"></a>
 ### PhpRedis
 
-> {note} Nếu bạn đã cài đặt PHP extension PhpRedis qua PECL, bạn sẽ cần đổi tên lối tắt `Redis` trong file cấu hình  `config/app.php` của bạn.
+> {note} Nếu bạn đã cài đặt PHP extension PhpRedis qua PECL, bạn sẽ cần đổi tên `Redis` alias trong file cấu hình  `config/app.php` của bạn.
 
 Để sử dụng extension PhpRedis, bạn nên thay đổi tùy chọn `client` trong cấu hình Redis của bạn thành `phpredis`. Tùy chọn này có thể được tìm thấy trong file cấu hình `config/database.php` của bạn:
 
@@ -103,7 +103,7 @@ Ngoài các tùy chọn cấu hình server mặc định như `host`, `port`, `d
         // Rest of Redis configuration...
     ],
 
-Ngoài các tùy chọn cấu hình server mặc định  `host`, `port`, `database`, và `password`, PhpRedis cũng hỗ trợ thêm các tham số kết nối bổ sung sau: `persistent`, `prefix`, `read_timeout` và `timeout`. Bạn có thể thêm bất kỳ tùy chọn nào vào cấu hình server Redis của bạn trong file cấu hình `config/database.php`:
+Ngoài các tùy chọn cấu hình server mặc định là `host`, `port`, `database`, và `password`, PhpRedis cũng hỗ trợ thêm các tham số kết nối bổ sung như sau: `persistent`, `prefix`, `read_timeout` và `timeout`. Bạn có thể thêm bất kỳ tùy chọn nào vào cấu hình server Redis của bạn trong file cấu hình `config/database.php`:
 
     'default' => [
         'host' => env('REDIS_HOST', 'localhost'),
@@ -141,7 +141,7 @@ Bạn có thể tương tác với Redis bằng cách gọi các phương thức
         }
     }
 
-Tất nhiên, như đã đề cập ở trên, bạn có thể gọi bất kỳ lệnh Redis nào trên facade `Redis`. Laravel sẽ sử dụng các phương thức magic để truyền các lệnh này đến server Redis, do đó, hãy pass các tham số mà lệnh Redis yêu cầu:
+Tất nhiên, như đã đề cập ở trên, bạn có thể gọi bất kỳ lệnh Redis nào trên facade `Redis`. Laravel sẽ sử dụng các phương thức magic để truyền các lệnh này đến server Redis, do đó, hãy truyền các tham số mà lệnh Redis yêu cầu:
 
     Redis::set('name', 'Taylor');
 
@@ -157,14 +157,14 @@ Bạn có thể lấy một instance Redis bằng cách gọi phương thức `R
 
     $redis = Redis::connection();
 
-Điều này sẽ cung cấp cho bạn một instance mặc định của server Redis. Bạn cũng có thể pass một tên kết nối hoặc tên cụm cho phương thức `connection` để có được một server hoặc cụm cụ thể như đã được định nghĩa trong cấu hình Redis của bạn:
+Điều này sẽ cung cấp cho bạn một instance mặc định của server Redis. Bạn cũng có thể truyền vào một tên kết nối hoặc tên của một cụm cho phương thức `connection` để có được một server hoặc một cụm server cụ thể như đã được định nghĩa trong cấu hình Redis của bạn:
 
     $redis = Redis::connection('my-connection');
 
 <a name="pipelining-commands"></a>
 ### Lệnh Pipeline
 
-Pipeline nên được sử dụng khi bạn cần gửi nhiều lệnh đến server trong một thao tác. Phương thức `pipeline` chấp nhận một tham số là: một `Closure` nhận vào một instance Redis. Bạn có thể đưa ra tất cả các lệnh của mình cho instance Redis này và tất cả chúng sẽ được thực thi trong một thao tác duy nhất:
+Pipeline nên được sử dụng khi bạn cần gửi nhiều lệnh đến server trong một thao tác. Phương thức `pipeline` chấp nhận một tham số là: một `Closure` nhận vào một instance Redis. Bạn có thể đưa ra tất cả các lệnh của bạn cho instance Redis này và tất cả chúng sẽ được thực thi trong một thao tác duy nhất:
 
     Redis::pipeline(function ($pipe) {
         for ($i = 0; $i < 1000; $i++) {
@@ -175,9 +175,9 @@ Pipeline nên được sử dụng khi bạn cần gửi nhiều lệnh đến s
 <a name="pubsub"></a>
 ## Pub / Sub
 
-Laravel cung cấp một interface thuận tiện cho các lệnh `publish` và `subscribe` của Redis. Các lệnh Redis này cho phép bạn listen tin nhắn trên một "channel" nhất định. Bạn có thể xuất tin nhắn lên channel từ một application khác hoặc thậm chí sử dụng một ngôn ngữ lập trình khác, cho phép giao tiếp dễ dàng giữa các application và process.
+Laravel cung cấp một interface thuận tiện cho các lệnh `publish` và `subscribe` của Redis. Các lệnh Redis này cho phép bạn listen tin nhắn trên một "channel" nhất định. Bạn có thể publish tin nhắn lên channel từ một application khác hoặc thậm chí sử dụng một ngôn ngữ lập trình khác, cho phép giao tiếp dễ dàng giữa các application và process.
 
-Đầu tiên, hãy thiết lập listen channel bằng phương thức `subscribe`. Chúng ta sẽ thực hiện gọi phương thức này trong một [lệnh Artisan](/docs/{{version}}/artisan) vì khi gọi phương thức `subscribe` thì sẽ bắt đầu một process chạy lâu dài:
+Đầu tiên, hãy thiết lập listen channel bằng phương thức `subscribe`. Chúng ta sẽ thực hiện gọi phương thức này trong một [lệnh Artisan](/docs/{{version}}/artisan) vì khi gọi phương thức `subscribe` là sẽ bắt đầu một process chạy lâu dài:
 
     <?php
 
@@ -215,7 +215,7 @@ Laravel cung cấp một interface thuận tiện cho các lệnh `publish` và 
         }
     }
 
-Bây giờ chúng ta có thể xuất tin nhắn lên channel bằng phương thức `publish`:
+Bây giờ chúng ta có thể publish tin nhắn lên channel bằng phương thức `publish`:
 
     Route::get('publish', function () {
         // Route logic...
@@ -225,7 +225,7 @@ Bây giờ chúng ta có thể xuất tin nhắn lên channel bằng phương th
 
 #### Wildcard Subscriptions
 
-Sử dụng phương thức `psubscribe`, bạn có thể theo dõi một nhóm các channel, nó có thể hữu ích để lấy tất cả các tin nhắn trên tất cả các channel. Tên `$channel` sẽ được pass làm tham số thứ hai được cung cấp cho callback `Closure`:
+Sử dụng phương thức `psubscribe`, bạn có thể theo dõi một nhóm các channel, nó có thể hữu ích để lấy tất cả các tin nhắn trên tất cả các channel. Tên `$channel` sẽ được truyền làm tham số thứ hai trong callback `Closure`:
 
     Redis::psubscribe(['*'], function ($message, $channel) {
         echo $message;

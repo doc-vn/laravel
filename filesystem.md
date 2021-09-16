@@ -19,12 +19,12 @@
 <a name="introduction"></a>
 ## Giới thiệu
 
-Laravel cung cấp một filesystem abstraction mạnh mẽ nhờ package PHP [Flysystem](https://github.com/thephpleague/flysystem) tuyệt vời của Frank de Jonge. Laravel Flysystem integration cung cấp các driver đơn giản để sử dụng để làm việc với các local filesystems, Amazon S3 và Rackspace Cloud Storage. Thậm chí, nó thật đơn giản để chuyển đổi giữa các tùy chọn lưu trữ này vì API vẫn giống nhau cho từng hệ thống.
+Laravel cung cấp một abstraction filesystem mạnh mẽ nhờ package PHP [Flysystem](https://github.com/thephpleague/flysystem) tuyệt vời của Frank de Jonge. Laravel Flysystem integration cung cấp các driver đơn giản để sử dụng và làm việc với các local filesystems, Amazon S3 và Rackspace Cloud Storage. Thậm chí, nó cũng đơn giản để chuyển đổi giữa các tùy chọn lưu trữ này vì API vẫn giống nhau cho mỗi hệ thống.
 
 <a name="configuration"></a>
 ## Cấu hình
 
-File cấu hình filesystem được đặt tại `config/filesystems.php`. Trong file này, bạn có thể cấu hình tất cả các "disks" của bạn. Mỗi disk đại diện cho một driver lưu trữ và vị trí lưu trữ cụ thể. Các cấu hình mẫu cho mỗi driver được hỗ trợ đã được khai báo sẵn trong file cấu hình. Vì vậy, bạn có thể sửa cấu hình để đúng với tuỳ chọn lưu trữ của bạn và thông tin của chúng.
+File cấu hình filesystem được lưu tại `config/filesystems.php`. Trong file này, bạn có thể cấu hình tất cả các "disks" của bạn. Mỗi disk đại diện cho một driver lưu trữ và vị trí lưu trữ cụ thể. Các cấu hình mẫu cho mỗi driver được hỗ trợ đã được khai báo sẵn trong file cấu hình. Vì vậy, bạn có thể sửa cấu hình để đúng với tuỳ chọn lưu trữ của bạn và thông tin của chúng.
 
 Tất nhiên, bạn có thể cấu hình bao nhiêu disk tùy thích và thậm chí có thể có nhiều disk sử dụng cùng một driver.
 
@@ -37,14 +37,14 @@ Tất nhiên, bạn có thể cấu hình bao nhiêu disk tùy thích và thậm
 
     php artisan storage:link
 
-Tất nhiên, một khi một file đã được lưu trữ và liên kết ảo đã được tạo, bạn có thể tạo một URL tới các file bằng cách sử dụng helper `asset`:
+Tất nhiên, một khi một file đã được lưu trữ và liên kết ảo đã được tạo, bạn có thể tạo một URL tới các file này bằng cách sử dụng helper `asset`:
 
     echo asset('storage/file.txt');
 
 <a name="the-local-driver"></a>
 ### Local Driver
 
-Khi sử dụng driver `local`, tất cả các file operation đều liên quan đến thư mục `root` được định nghĩa trong file cấu hình của bạn. Mặc định, giá trị này được set là thư mục `storage/app`. Vì thế, phương thức sau đây sẽ lưu trữ một file trong `storage/app/file.txt`:
+Khi sử dụng driver `local`, tất cả hoạt động của các file đều liên quan đến thư mục `root` được định nghĩa trong file cấu hình của bạn. Mặc định, giá trị này được set là thư mục `storage/app`. Vì thế, phương thức sau đây sẽ lưu trữ một file vào trong `storage/app/file.txt`:
 
     Storage::disk('local')->put('file.txt', 'Contents');
 
@@ -64,7 +64,7 @@ Thông tin cấu hình driver S3 nằm trong file cấu hình `config/filesystem
 
 #### FTP Driver Configuration
 
-Flysystem integration của Laravel hoạt động tốt với FTP; tuy nhiên, một cấu hình mẫu mặc định không được thêm vào trong file cấu hình `filesystems.php` của framework. Nếu bạn cần cấu hình hệ thống file FTP, bạn có thể sử dụng cấu hình mẫu bên dưới:
+Flysystem integration của Laravel hoạt động tốt với FTP; tuy nhiên, mặc định, một cấu hình mẫu không được thêm vào trong file cấu hình `filesystems.php` của framework. Nếu bạn cần cấu hình hệ thống file FTP, bạn có thể sử dụng cấu hình mẫu bên dưới:
 
     'ftp' => [
         'driver'   => 'ftp',
@@ -82,7 +82,7 @@ Flysystem integration của Laravel hoạt động tốt với FTP; tuy nhiên, 
 
 #### Rackspace Driver Configuration
 
-Flysystem integration của Laravel hoạt động tốt với Rackspace; tuy nhiên, một cấu hình mẫu mặc định không được thêm vào trong file cấu hình `filesystems.php` của framework. Nếu bạn cần cấu hình hệ thống file Rackspace, bạn có thể sử dụng cấu hình mẫu bên dưới:
+Flysystem integration của Laravel hoạt động tốt với Rackspace; tuy nhiên, mặc định, một cấu hình mẫu không được thêm vào trong file cấu hình `filesystems.php` của framework. Nếu bạn cần cấu hình hệ thống file Rackspace, bạn có thể sử dụng cấu hình mẫu bên dưới:
 
     'rackspace' => [
         'driver'    => 'rackspace',
@@ -97,7 +97,7 @@ Flysystem integration của Laravel hoạt động tốt với Rackspace; tuy nh
 <a name="obtaining-disk-instances"></a>
 ## Lấy Disk Instance
 
-Facade `Storage` có thể được sử dụng để tương tác với bất kỳ disk nào được cấu hình của bạn. Ví dụ, bạn có thể sử dụng phương thức `put` trên facade để lưu trữ hình đại diện trên disk mặc định. Nếu bạn gọi các phương thức trên facade `Storage` mà không khai báo phương thức` disk`, thì câu lệnh sẽ tự động được chuyển sang disk mặc định:
+Facade `Storage` có thể được sử dụng để tương tác với bất kỳ disk nào được cấu hình của bạn. Ví dụ, bạn có thể sử dụng phương thức `put` trên facade để lưu trữ hình đại diện vào trong disk mặc định. Nếu bạn gọi các phương thức trên facade `Storage` mà không khai báo phương thức` disk`, thì câu lệnh sẽ tự động được chuyển sang disk mặc định:
 
     use Illuminate\Support\Facades\Storage;
 
@@ -127,7 +127,7 @@ Bạn có thể sử dụng phương thức `url` để lấy URL cho một file
 
     $url = Storage::url('file1.jpg');
 
-> {note} Hãy nhớ rằng, nếu bạn đang sử dụng driver `local`, tất cả các file có thể truy cập công khai nên được đặt trong thư mục `storage/app/public`. Hơn nữa, bạn nên [tạo một liên kết ảo](#the-public-disk) ở `public/storage` trỏ đến thư mục `storage/app/public`.
+> {note} Hãy nhớ rằng, nếu bạn đang sử dụng driver `local`, tất cả các file mà có thể truy cập ở dạng công khai thì nên lưu trong thư mục `storage/app/public`. Hơn nữa, bạn nên [tạo một liên kết ảo](#the-public-disk) ở `public/storage` trỏ đến thư mục `storage/app/public`.
 
 #### Temporary URLs
 
@@ -139,7 +139,7 @@ Bạn có thể sử dụng phương thức `url` để lấy URL cho một file
 
 #### Local URL Host Customization
 
-Nếu như bạn muốn xác định host trước, cho các file được lưu trữ trên một disk đang dùng driver `local`, bạn có thể thêm tùy chọn `url` vào mảng cấu hình của disk:
+Nếu như bạn muốn định nghĩa host cho các file được lưu trữ trên một disk đang dùng driver `local`, bạn có thể thêm tùy chọn `url` vào mảng cấu hình của disk:
 
     'public' => [
         'driver' => 'local',
@@ -164,7 +164,7 @@ Phương thức `lastModified` trả về UNIX timestamp về lần cuối cùng
 <a name="storing-files"></a>
 ## Lưu File
 
-Phương thức `put` có thể được sử dụng để lưu trữ nội dung raw của file lên disk. Bạn cũng có thể pass một PHP `resource` đến phương thức `put`, phương thức này sẽ sử dụng stream support của Flysystem. Sử dụng stream rất được khuyến khích khi xử lý các file lớn:
+Phương thức `put` có thể được sử dụng để lưu trữ nội dung raw của file lên disk. Bạn cũng có thể truyền một PHP `resource` đến phương thức `put`, phương thức này sẽ sử dụng stream support của Flysystem. Sử dụng stream rất được khuyến khích khi xử lý các file lớn:
 
     use Illuminate\Support\Facades\Storage;
 
@@ -174,7 +174,7 @@ Phương thức `put` có thể được sử dụng để lưu trữ nội dung
 
 #### Automatic Streaming
 
-Nếu bạn muốn Laravel tự động quản lý việc streaming một file đã cho đến vị trí lưu trữ của bạn, bạn có thể sử dụng phương thức `putFile` hoặc `putFileAs`. Phương thức này chấp nhận một instance `Illuminate\Http\File` hoặc `Illuminate\Http\UploadedFile` và sẽ tự động stream file đến vị trí mong muốn của bạn:
+Nếu bạn muốn Laravel tự động quản lý việc streaming một file đã cho đến vị trí lưu trữ của bạn, bạn có thể sử dụng phương thức `putFile` hoặc `putFileAs`. Phương thức này chấp nhận một instance `Illuminate\Http\File` hoặc một `Illuminate\Http\UploadedFile` và sẽ tự động stream file đó đến vị trí mong muốn của bạn:
 
     use Illuminate\Http\File;
     use Illuminate\Support\Facades\Storage;
@@ -193,7 +193,7 @@ Các phương thức `putFile` và `putFileAs` cũng chấp nhận một than s�
 
 #### Prepending & Appending To Files
 
-Các phương thức `prepend` và `append` cho phép bạn ghi vào đầu hoặc cuối file:
+Các phương thức `prepend` và `append` cho phép bạn ghi vào đầu hoặc cuối của file:
 
     Storage::prepend('file.log', 'Prepended Text');
 
@@ -210,7 +210,7 @@ Phương thức `copy` có thể được sử dụng để sao chép một file
 <a name="file-uploads"></a>
 ### File Uploads
 
-Trong các application web, một trong những trường hợp sử dụng hay sử dụng nhất cho lưu trữ file là lưu trữ các uploaded file của người dùng như profile picture, photo và document. Laravel giúp lưu trữ dễ dàng các uploaded file bằng phương thức `store` trên một instance uploaded file. Gọi phương thức `store` với đường dẫn mà bạn muốn lưu trữ uploaded file:
+Trong các application web, một trong những trường hợp hay sử dụng nhất cho lưu trữ file là lưu trữ các uploaded file của người dùng như profile picture, photo và document. Laravel giúp lưu trữ dễ dàng các file uploaded bằng phương thức `store` trên một instance uploaded file. Gọi phương thức `store` với đường dẫn mà bạn muốn lưu trữ file đó:
 
     <?php
 
@@ -257,7 +257,7 @@ Tất nhiên, bạn cũng có thể sử dụng phương thức `putFileAs` trê
 
 #### Specifying A Disk
 
-Mặc định, phương pháp này sẽ sử dụng disk mặc định của bạn. Nếu bạn muốn chỉ định một disk khác, hãy pass tên disk làm tham số thứ hai cho phương thức `store`:
+Mặc định, phương pháp này sẽ sử dụng disk mặc định của bạn. Nếu bạn muốn chỉ định một disk khác, hãy truyền một tên disk làm tham số thứ hai cho phương thức `store`:
 
     $path = $request->file('avatar')->store(
         'avatars/'.$request->user()->id, 's3'
@@ -302,7 +302,7 @@ Nếu cần, bạn có thể khai báo disk mà file có sẽ bị xóa:
 
 #### Get All Files Within A Directory
 
-Phương thức `files` trả về một mảng của tất cả các file có trong một thư mục nhất định. Nếu bạn muốn lấy danh sách tất cả các file có trong một thư mục bao gồm tất cả các thư mục con, bạn có thể sử dụng phương thức `allFiles`:
+Phương thức `files` sẽ trả về một mảng của tất cả các file có trong một thư mục nhất định. Nếu bạn muốn lấy danh sách tất cả các file có trong một thư mục bao gồm cả các thư mục con, bạn có thể sử dụng phương thức `allFiles`:
 
     use Illuminate\Support\Facades\Storage;
 
@@ -312,7 +312,7 @@ Phương thức `files` trả về một mảng của tất cả các file có t
 
 #### Get All Directories Within A Directory
 
-Phương thức `directories` trả về một mảng của tất cả các thư mục có trong một thư mục đã cho. Ngoài ra, bạn có thể sử dụng phương thức `allDirectories` để lấy danh sách tất cả các thư mục có trong một thư mục đã cho và tất cả các thư mục con của nó:
+Phương thức `directories` trả về một mảng của tất cả các thư mục có trong một thư mục đã cho. Ngoài ra, bạn có thể sử dụng phương thức `allDirectories` để lấy danh sách tất cả các thư mục có trong một thư mục đã cho và cả các thư mục con của nó:
 
     $directories = Storage::directories($directory);
 
@@ -321,7 +321,7 @@ Phương thức `directories` trả về một mảng của tất cả các thư
 
 #### Create A Directory
 
-Phương thức `makeDirectory` sẽ tạo mới thư mục, bao gồm mọi thư mục con cần thiết:
+Phương thức `makeDirectory` sẽ tạo mới thư mục, bao gồm mọi thư mục con nếu cần thiết:
 
     Storage::makeDirectory($directory);
 
@@ -334,7 +334,7 @@ Cuối cùng, `deleteDirectory` có thể được sử dụng để xóa một 
 <a name="custom-filesystems"></a>
 ## Tuỳ chỉnh Filesystem
 
-Flysystem integrationcủa Laravel cung cấp nhiều driver cho một số "driver" mặc đinh; tuy nhiên, Flysystem không chỉ giới hạn ở những điều này mà còn có bộ chuyển đổi cho nhiều hệ thống lưu trữ khác. Bạn có thể tạo driver tùy chỉnh nếu bạn muốn sử dụng một trong những bộ chuyển đổi bổ sung này vào trong ứng dụng Laravel của bạn.
+Flysystem integrationcủa Laravel cung cấp nhiều driver cho một số "driver" mặc đinh; tuy nhiên, Flysystem không chỉ giới hạn ở những điều này mà còn có bộ chuyển đổi cho nhiều hệ thống lưu trữ khác. Bạn có thể tạo driver tùy biến nếu bạn muốn sử dụng một trong những bộ chuyển đổi bổ sung này vào trong ứng dụng Laravel của bạn.
 
 Để thiết lập custom filesystem, bạn sẽ cần một bộ chuyển đổi Flysystem. Hãy thêm một bộ chuyển đổi Dropbox được cộng đồng phát triển vào dự án của chúng ta:
 
@@ -383,4 +383,4 @@ Tiếp theo, bạn nên tạo một [service provider](/docs/{{version}}/provide
 
 Tham số đầu tiên của phương thức `extend` là tên của driver và tham số thứ hai là một Closure nhận các biến `$app` và `$config`. Resolver Closure cần phải trả về một instance của `League\Flysystem\Filesystem`. Biến `$config` chứa các giá trị được định nghĩa trong file `config/filesystems.php` cho disk được khai báo.
 
-Khi bạn đã tạo service provider để đăng ký extension, bạn có thể sử dụng driver `dropbox` trong file cấu hình `config/filesystems.php`.
+Khi bạn đã tạo xong service provider để đăng ký extension, bạn có thể sử dụng driver `dropbox` trong file cấu hình `config/filesystems.php`.

@@ -11,7 +11,7 @@
 <a name="introduction"></a>
 ## Giới thiệu
 
-Laravel làm cho việc tương tác với cơ sở dữ liệu cực kỳ đơn giản trên nhiều loại backend cơ sở dữ liệu bằng cách sử dụng raw SQL,[fluent query builder](/docs/{{version}}/queries) và [Eloquent ORM](/docs/{{version}}/eloquent). Hiện tại, Laravel hỗ trợ bốn loại cơ sở dữ liệu:
+Laravel làm cho việc tương tác với cơ sở dữ liệu cực kỳ đơn giản với nhiều loại cơ sở dữ liệu bằng cách sử dụng raw SQL, [fluent query builder](/docs/{{version}}/queries) và [Eloquent ORM](/docs/{{version}}/eloquent). Hiện tại, Laravel hỗ trợ bốn loại cơ sở dữ liệu:
 
 <div class="content-list" markdown="1">
 - MySQL
@@ -23,13 +23,13 @@ Laravel làm cho việc tương tác với cơ sở dữ liệu cực kỳ đơn
 <a name="configuration"></a>
 ### Cấu hình
 
-Cấu hình cơ sở dữ liệu cho application của bạn được đặt tại `config/database.php`. Trong file này, bạn có thể định nghĩa tất cả các connection đến cơ sở dữ liệu của bạn, cũng như khai báo connection nào sẽ được sử dụng theo mặc định. Ví dụ mẫu cho các cơ sở dữ liệu được hỗ trợ, cũng cung cấp sẵn trong file này.
+Cấu hình cơ sở dữ liệu cho application của bạn được đặt trong file `config/database.php`. Trong file này, bạn có thể định nghĩa tất cả các connection đến các cơ sở dữ liệu của bạn, cũng như khai báo connection nào sẽ là mặc định được sử dụng. Ví dụ mẫu cho các cơ sở dữ liệu này cũng được cung cấp sẵn trong file này.
 
-Mặc định, [cấu hình environment](/docs/{{version}}/configuration#environment-configuration) mẫu của Laravel đã có sẵn để sử dụng với [Laravel Homestead](/docs/{{version}}/homestead), đây là một máy ảo tiện lợi để thực hiện phát triển Laravel trên máy local của bạn. Tất nhiên, bạn có thể tự do sửa cấu hình này cho pguf hợp với cơ sở dữ liệu trên máy local của bạn.
+Mặc định, Laravel đã cài đặt sẵn một [cấu hình môi trường](/docs/{{version}}/configuration#environment-configuration) mẫu cho việc sử dụng với [Laravel Homestead](/docs/{{version}}/homestead), đây là một máy ảo thuận tiện để thực hiện phát triển Laravel trên local của bạn. Tất nhiên, bạn có thể tự do sửa lại cấu hình này cho phù hợp với cơ sở dữ liệu trên máy local của bạn.
 
 #### SQLite Configuration
 
-Sau khi tạo cơ sở dữ liệu SQLite mới bằng cách sử dụng một lệnh như `touch database/database.sqlite`, bạn có thể dễ dàng cấu hình các biến môi trường của bạn để trỏ đến cơ sở dữ liệu mới được tạo này bằng cách sử dụng một đường dẫn tuyệt đối của cơ sở dữ liệu:
+Sau khi tạo cơ sở dữ liệu SQLite mới bằng cách sử dụng câu lệnh như `touch database/database.sqlite`, bạn có thể dễ dàng cấu hình các biến môi trường của bạn để trỏ đến cơ sở dữ liệu mới này bằng cách sử dụng một đường dẫn tuyệt đối của cơ sở dữ liệu:
 
     DB_CONNECTION=sqlite
     DB_DATABASE=/absolute/path/to/database.sqlite
@@ -37,9 +37,9 @@ Sau khi tạo cơ sở dữ liệu SQLite mới bằng cách sử dụng một l
 <a name="read-and-write-connections"></a>
 ### Đọc và viết thông qua Connection
 
-Thỉnh thoảng, bạn có thể muốn sử dụng một kết nối cơ sở dữ liệu cho các câu lệnh SELECT và một kết nối khác cho các câu lệnh INSERT, UPDATE và DELETE. Laravel làm cho điều này trở nên dễ dàng và các kết nối thích hợp sẽ luôn được sử dụng cho dù bạn đang sử dụng loại nào: raw query, query builder hoặc Eloquent ORM.
+Thỉnh thoảng, bạn có thể muốn sử dụng một kết nối cơ sở dữ liệu cho các câu lệnh SELECT và một kết nối khác cho các câu lệnh INSERT, UPDATE và DELETE. Laravel làm cho điều này trở nên dễ dàng và các kết nối thích hợp sẽ luôn được sử dụng cho dù bạn đang sử dụng bất kỳ loại nào: raw query, query builder hoặc Eloquent ORM.
 
-To see how read / write connections should be configured, let's look at this example:
+Để xem cách cấu hình các kết nối đọc và ghi, hãy xem ví dụ sau:
 
     'mysql' => [
         'read' => [
@@ -58,29 +58,29 @@ To see how read / write connections should be configured, let's look at this exa
         'prefix'    => '',
     ],
 
-Lưu ý rằng có ba key đã được thêm vào mảng cấu hình: `read`, `write` và `stick`. Các key `read` và `write` có thể có một mảng các giá trị chứa một key: `host` duy nhất. Phần còn lại của các tùy chọn của cơ sở dữ liệu cho các kết nối `read` và `write` sẽ được merge từ mảng `mysql` chính.
+Lưu ý rằng có ba key đã được thêm vào trong mảng cấu hình là: `read`, `write` và `stick`. Các key `read` và `write` có thể có một mảng các giá trị chứa một key duy nhất là: `host`. Còn lại các tùy chọn cơ sở dữ liệu cho các kết nối `read` và `write` sẽ được lấy từ mảng `mysql` chính.
 
-Bạn chỉ cần set các item trong mảng `read` và `write` nếu bạn muốn ghi đè các giá trị trong mảng chính. Vì vậy, trong trường hợp này, `192.168.1.1` sẽ được sử dụng làm máy chủ cho kết nối "đọc", trong khi `192.168.1.2` sẽ được sử dụng cho kết nối "ghi". Thông tin cho cơ sở dữ liệu, tiền tố, bộ ký tự và tất cả các tùy chọn khác trong mảng `mysql` chính sẽ được chia sẻ cho cả hai kết nối.
+ Nếu bạn muốn ghi đè các giá trị trong mảng chính, thì bạn chỉ cần set các item đó vào trong mảng `read` và `write`. Vì thế, trong trường hợp này, `192.168.1.1` sẽ được sử dụng làm máy chủ cho kết nối "read", trong khi `192.168.1.2` sẽ được sử dụng cho kết nối "write". Thông tin cho cơ sở dữ liệu, tiền tố, bộ ký tự và tất cả các tùy chọn khác trong mảng `mysql` chính sẽ được chia sẻ cho cả hai kết nối.
 
 #### The `sticky` Option
 
-Tùy chọn `sticky` là một giá trị *tùy chọn* có thể được sử dụng để cho phép đọc ngay các bản ghi đã được ghi vào cơ sở dữ liệu ngay trong request hiện tại. Nếu tùy chọn `stick` được bật và các thao tác "ghi" được thực hiện cho cơ sở dữ liệu trong request hiện tại, thì mọi thao tác "đọc" tiếp theo sẽ sử dụng kết nối "ghi". Điều này đảm bảo rằng mọi dữ liệu được ghi trong request có thể được đọc lại ngay lập tức từ cơ sở dữ liệu trong cùng request đó. Tùy thuộc vào bạn, để quyết định xem đây có phải là hành động mong muốn cho application của bạn hay không.
+Tùy chọn `sticky` là một giá trị *tùy chọn* có thể được sử dụng để cho phép đọc ngay các bản ghi đã được ghi vào cơ sở dữ liệu ngay trong request hiện tại. Nếu tùy chọn `stick` được enable và các thao tác "write" được thực hiện trong cơ sở dữ liệu trong request hiện tại, thì mọi thao tác "read" tiếp theo sẽ sử dụng kết nối "write". Điều này đảm bảo rằng mọi dữ liệu được ghi trong request hiện tại có thể được đọc lại ngay lập tức từ cơ sở dữ liệu trong cùng request đó. Tùy thuộc vào bạn, để quyết định xem đây có phải là một hành động mong muốn cho application của bạn hay không.
 
 <a name="using-multiple-database-connections"></a>
 ### Dùng Multiple Database Connection
 
-Khi sử dụng nhiều kết nối, bạn có thể truy cập từng kết nối thông qua phương thức `connection` trên facade `DB`. `name` sẽ được pass cho phương thức `connection` phải tương ứng với một trong các kết nối được tạo trong file cấu hình `config/database.php` của bạn:
+Khi sử dụng nhiều kết nối, bạn có thể truy cập từng kết nối thông qua phương thức `connection` trên facade `DB`. `name` mà sẽ được truyền vào cho phương thức `connection` phải tương ứng với một trong các kết nối đã được tạo trong file cấu hình `config/database.php` của bạn:
 
     $users = DB::connection('foo')->select(...);
 
-Bạn cũng có thể truy cập vào instance PDO raw bằng cách sử dụng phương thức `getPdo` trong một instance kết nối:
+Bạn cũng có thể truy cập vào instance PDO raw bằng cách sử dụng phương thức `getPdo` trong một instance connection:
 
     $pdo = DB::connection()->getPdo();
 
 <a name="running-queries"></a>
 ## Chạy Raw SQL Query
 
-Khi bạn đã cấu hình các kết nối cơ sở dữ liệu của bạn, bạn có thể chạy các truy vấn bằng cách sử dụng facade `DB`. Facade `DB` cung cấp các phương thức cho từng loại truy vấn: `select`, `update`, `insert`, `delete`, và `statement`.
+Khi bạn đã cấu hình các kết nối cơ sở dữ liệu của bạn, bạn có thể chạy các truy vấn bằng cách sử dụng facade `DB`. Facade `DB` sẽ cung cấp các phương thức cho từng loại truy vấn như: `select`, `update`, `insert`, `delete`, và `statement`.
 
 #### Running A Select Query
 
@@ -108,7 +108,7 @@ Khi bạn đã cấu hình các kết nối cơ sở dữ liệu của bạn, b�
         }
     }
 
-Tham số đầu tiên được pass cho phương thức `select` là một truy vấn SQL raw, trong khi tham số thứ hai là bất kỳ tham số nào cần thiết cho truy vấn. Thông thường, đây là các giá trị của các mệnh đề `where`. Rằng buộc tham số này sẽ được bảo vệ chống lại SQL injection.
+Tham số đầu tiên được truyền cho phương thức `select` là một truy vấn SQL raw, trong khi tham số thứ hai là bất kỳ tham số nào cần thiết cho truy vấn. Thông thường, đây là các giá trị của các mệnh đề `where`. Rằng buộc tham số này sẽ được bảo vệ để chống lại các SQL injection.
 
 Phương thức `select` sẽ luôn trả về một `array` kết quả. Mỗi kết quả trong mảng sẽ là một đối tượng `StdClass` của PHP, cho phép bạn truy cập các giá trị của kết quả đó:
 
@@ -136,20 +136,20 @@ Phương thức `update` nên được sử dụng để cập nhật các bản
 
 #### Running A Delete Statement
 
-Phương thức `delete` được sử dụng để xóa các bản ghi khỏi cơ sở dữ liệu. Giống như `update`, Số lượng các hàng bị xoá sẽ được trả về:
+Phương thức `delete` sẽ được sử dụng để xóa các bản ghi ra khỏi cơ sở dữ liệu. Giống như `update`, Số lượng các hàng bị xoá sẽ được trả về:
 
     $deleted = DB::delete('delete from users');
 
 #### Running A General Statement
 
-Một số lệnh cơ sở dữ liệu không trả về bất kỳ giá trị nào. Đối với các loại lệnh này, bạn có thể sử dụng phương thức `statement` trên facade `DB`:
+Có một số lệnh cơ sở dữ liệu không trả về bất kỳ giá trị nào. Đối với các loại lệnh này, bạn có thể sử dụng phương thức `statement` trên facade `DB`:
 
     DB::statement('drop table users');
 
 <a name="listening-for-query-events"></a>
 ### Listen cho Query Event
 
-Nếu bạn muốn nhận về từng câu lệnh truy vấn SQL được thực hiện bởi application của bạn, bạn có thể sử dụng phương thức `listen`. Phương pháp này rất hữu ích để ghi log truy vấn hoặc debug. Bạn có thể đăng ký listener truy vấn của bạn trong [service provider](/docs/{{version}}/providers):
+Nếu bạn muốn nhận về từng câu lệnh truy vấn SQL được thực hiện bởi application, bạn có thể sử dụng phương thức `listen`. Phương thức này rất hữu ích để ghi log các truy vấn hoặc để debug. Bạn có thể đăng ký listener query của bạn trong [service provider](/docs/{{version}}/providers):
 
     <?php
 
@@ -198,7 +198,7 @@ Bạn có thể sử dụng phương thức `transaction` trên facade `DB` đ�
 
 #### Handling Deadlocks
 
-Phương thức `transaction` chấp nhận một tham số thứ hai là một tùy chọn định nghĩa số lần transaction sẽ được thử lại khi xảy ra lỗi. Sau khi thử lại hết số lần thử, thì một ngoại lệ sẽ được đưa ra:
+Phương thức `transaction` chấp nhận một tham số thứ hai là một tùy chọn để định nghĩa số lần transaction sẽ được thử lại khi xảy ra lỗi. Sau khi thử lại hết số lần thử, thì một ngoại lệ sẽ được đưa ra:
 
     DB::transaction(function () {
         DB::table('users')->update(['votes' => 1]);

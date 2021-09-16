@@ -14,20 +14,20 @@
 <a name="introduction"></a>
 ## Giới thiệu
 
-Khi xây dựng API, bạn có thể cần một lớp chuyển đổi nằm giữa các model Eloquent của bạn và các response JSON được trả về cho người dùng application của bạn. Các class resource của Laravel cho phép bạn chuyển đổi một cách rõ ràng và dễ hiểu các model và collection model của bạn thành JSON.
+Khi xây dựng API, bạn có thể cần một lớp chuyển đổi nằm giữa các model Eloquent và các response JSON được trả về cho người dùng application của bạn. Các class resource của Laravel cho phép bạn chuyển đổi một cách rõ ràng và dễ hiểu các model cũng như collection model của bạn thành JSON.
 
 <a name="generating-resources"></a>
 ## Tạo Resources
 
-Để tạo một class resource, bạn có thể sử dụng lệnh Artisan `make:resource`. Mặc định, resource sẽ được đặt trong thư mục `app/Http/Resources` của application của bạn. Các resource sẽ được mở rộng từ class `Illuminate\Http\Resources\Json\Resource`:
+Để tạo một class resource, bạn có thể sử dụng lệnh Artisan `make:resource`. Mặc định, resource sẽ được lưu trong thư mục `app/Http/Resources` của application của bạn. Các resource sẽ được extend từ class `Illuminate\Http\Resources\Json\Resource`:
 
     php artisan make:resource UserResource
 
 #### Resource Collections
 
-Ngoài việc tạo các resource biến đổi các model riêng biệt, bạn có thể tạo các resource chịu trách nhiệm chuyển đổi các collection của model. Điều này cho phép response của bạn chứa các liên kết và thông tin meta khác có liên quan đến toàn bộ collection của một resource.
+Ngoài việc tạo các resource biến đổi các model riêng biệt, bạn cũng có thể tạo các resource chịu trách nhiệm chuyển đổi một collection của các model. Điều này cho phép response của bạn chứa thêm các liên kết và các thông tin khác có liên quan đến toàn bộ collection của một resource.
 
-Để tạo một resource collection, bạn nên sử dụng cờ `--collection` khi tạo resource. Hoặc, chứa từ `Collection` trong tên resource sẽ cho Laravel biết rằng nó sẽ tạo ra một resource collection. Resource collection được mở rộng từ class `Illuminate\Http\Resources\Json\ResourceCollection`:
+Để tạo một resource collection, bạn nên sử dụng cờ `--collection` khi tạo resource. Hoặc, chứa từ `Collection` trong tên của resource sẽ cho Laravel biết rằng nó sẽ tạo ra một resource collection. Resource collection được extend từ class `Illuminate\Http\Resources\Json\ResourceCollection`:
 
     php artisan make:resource Users --collection
 
@@ -66,7 +66,7 @@ Trước khi đi sâu vào tất cả các tùy chọn có sẵn cho bạn khi v
         }
     }
 
-Mọi class resource định nghĩa một phương thức `toArray` trả về mảng các thuộc tính sẽ được chuyển đổi thành JSON khi gửi response. Lưu ý rằng chúng ta có thể truy cập vào các thuộc tính model trực tiếp từ biến `$this`. Điều này là do một class resource sẽ tự động proxy thuộc tính và phương thức truy cập vào model bên dưới để thuận tiện truy cập. Khi resource đã được định nghĩa, thì nó có thể được trả về từ một route hoặc một controller:
+Mọi class resource định nghĩa một phương thức `toArray` trả về mảng các thuộc tính sẽ được chuyển đổi thành JSON trước khi gửi response. Lưu ý rằng chúng ta có thể truy cập vào các thuộc tính model trực tiếp từ biến `$this`. Điều này là do một class resource sẽ tự động proxy thuộc tính và phương thức truy cập vào model để thuận tiện truy cập. Khi resource đã được định nghĩa, thì nó có thể được trả về từ một route hoặc một controller:
 
     use App\User;
     use App\Http\Resources\UserResource;
@@ -77,7 +77,7 @@ Mọi class resource định nghĩa một phương thức `toArray` trả về m
 
 ### Resource Collections
 
-Nếu bạn đang trả về một collection các resource hoặc một response được phân trang, bạn có thể sử dụng phương thức `collection` khi tạo instance resource trong route hoặc controller của bạn:
+Nếu bạn đang trả về một collection các resource hoặc một response đang được phân trang, bạn có thể sử dụng phương thức `collection` khi tạo instance resource trong route hoặc controller của bạn:
 
     use App\User;
     use App\Http\Resources\UserResource;
@@ -86,7 +86,7 @@ Nếu bạn đang trả về một collection các resource hoặc một respons
         return UserResource::collection(User::all());
     });
 
-Tất nhiên, điều này không cho phép thêm bất kỳ dữ liệu meta nào có thể được trả về cùng với collection. Nếu bạn muốn tùy chỉnh response của resource collection, bạn có thể tạo một resource chuyên dụng để tạo collection:
+Tất nhiên, điều này không cho phép thêm bất kỳ dữ liệu meta nào khác có thể được trả về cùng với collection. Nếu bạn muốn tùy chỉnh response của resource collection, bạn có thể tạo một resource chuyên dụng để tạo collection:
 
     php artisan make:resource UserCollection
 
@@ -117,7 +117,7 @@ Khi class resource collection đã được tạo, bạn có thể dễ dàng đ
         }
     }
 
-Sau khi định nghĩa resource collection của bạn, nó có thể được trả về từ một route hoặc controller:
+Sau khi định nghĩa resource collection của bạn, nó có thể được trả về từ một route hoặc một controller:
 
     use App\User;
     use App\Http\Resources\UserCollection;
@@ -131,7 +131,7 @@ Sau khi định nghĩa resource collection của bạn, nó có thể được t
 
 > {tip} Nếu bạn chưa đọc phần [khái niệm tổng quan](#concept-overview), bạn được khuyến khích đọc nó trước khi tiếp tục với phần này.
 
-Về bản chất, resource rất đơn giản. Nó chỉ cần chuyển đổi một model nhất định thành một mảng. Vì vậy, mỗi resource chứa một phương thức `toArray` giúp chuyển các thuộc tính của model của bạn thành một mảng thân thiện với API đề có thể được trả về cho người dùng của bạn:
+Về bản chất, resource rất đơn giản. Nó chỉ cần chuyển đổi một model nhất định thành một mảng. Vì vậy, mỗi resource chứa một phương thức `toArray` để giúp chuyển các thuộc tính của model của bạn thành một mảng thân thiện với API để có thể được trả về cho mọi người dùng của bạn:
 
     <?php
 
@@ -159,7 +159,7 @@ Về bản chất, resource rất đơn giản. Nó chỉ cần chuyển đổi 
         }
     }
 
-Khi một resource đã được định nghĩa, nó có thể được trả về trực tiếp từ một route hoặc controller:
+Khi một resource đã được định nghĩa xong, nó có thể được trả về trực tiếp từ một route hoặc một controller:
 
     use App\User;
     use App\Http\Resources\UserResource;
@@ -170,7 +170,7 @@ Khi một resource đã được định nghĩa, nó có thể được trả v�
 
 #### Relationships
 
-Nếu bạn muốn chứa các resource quan hệ trong response của bạn, bạn có thể thêm chúng vào mảng được trả về bởi phương thức `toArray` của bạn. Trong ví dụ này, chúng ra sẽ sử dụng phương thức `collection` của resource `Post` để thêm các post trên blog của người dùng vào response của resource:
+Nếu bạn muốn chứa các quan hệ trong một response của bạn, bạn có thể thêm chúng vào mảng được trả về trong phương thức `toArray` của bạn. Trong ví dụ này, chúng ra sẽ sử dụng phương thức `collection` của resource `Post` để thêm các post trên blog của người dùng vào response của resource:
 
     /**
      * Transform the resource into an array.
@@ -194,7 +194,7 @@ Nếu bạn muốn chứa các resource quan hệ trong response của bạn, b�
 
 #### Resource Collections
 
-Trong khi resource chuyển một model thành một mảng, thì các resource collection sẽ chuyển một collection của model thành một mảng. Không nhất thiết phải định nghĩa một class resource collection cho từng loại model của bạn vì tất cả các resource đều được cung cấp một phương thức `collection` để tạo resource collection "ad-hoc" một cách nhanh chóng:
+Trong khi resource chuyển một model thành một mảng, thì các resource collection sẽ chuyển một collection của model thành một mảng. Không nhất thiết phải định nghĩa một class resource collection cho từng loại model của bạn vì tất cả các resource đều được cung cấp một phương thức `collection` để tạo các resource collection "ad-hoc" một cách nhanh chóng:
 
     use App\User;
     use App\Http\Resources\UserResource;
@@ -203,7 +203,7 @@ Trong khi resource chuyển một model thành một mảng, thì các resource 
         return UserResource::collection(User::all());
     });
 
-Tuy nhiên, nếu bạn cần tùy chỉnh dữ liệu meta được trả về cùng với collection, nó sẽ cần phải định nghĩa một resource collection:
+Tuy nhiên, nếu bạn cần tùy chỉnh dữ liệu meta được trả về cùng với collection, bạn sẽ cần phải định nghĩa một resource collection riêng:
 
     <?php
 
@@ -230,7 +230,7 @@ Tuy nhiên, nếu bạn cần tùy chỉnh dữ liệu meta được trả về 
         }
     }
 
-Giống như singular resource, resource collection có thể được trả về trực tiếp từ các route hoặc controller:
+Giống như resource, resource collection có thể được trả về trực tiếp từ các route hoặc controller:
 
     use App\User;
     use App\Http\Resources\UserCollection;
@@ -242,7 +242,7 @@ Giống như singular resource, resource collection có thể được trả v�
 <a name="data-wrapping"></a>
 ### Data Wrapping
 
-Mặc định, resource ngoài cùng của bạn sẽ được wrap trong một key `data`, khi response resource, nó sẽ được chuyển đổi thành JSON. Vì thế, ví dụ, một response resource collection sẽ trông như sau:
+Mặc định, resource ngoài cùng của bạn sẽ được bao bọc bởi trong một key `data` khi chúng được chuyển đổi thành JSON. Vì thế, một response resource collection sẽ trông như sau:
 
     {
         "data": [
@@ -259,7 +259,7 @@ Mặc định, resource ngoài cùng của bạn sẽ được wrap trong một 
         ]
     }
 
-Nếu bạn muốn vô hiệu hóa việc wrap resource, bạn có thể sử dụng phương thức `withoutWrapping` trên class resource. Thông thường, bạn nên gọi phương thức này từ `AppServiceProvider` hoặc [service provider](/docs/{{version}}/providers) khác sẽ được load cho mọi request cho application của bạn:
+Nếu bạn muốn vô hiệu hóa việc bao bọc resource, bạn có thể sử dụng phương thức `withoutWrapping` trên class resource. Thông thường, bạn nên gọi phương thức này từ `AppServiceProvider` hoặc các [service provider](/docs/{{version}}/providers) khác để được load cho mọi request trong application của bạn:
 
     <?php
 
@@ -291,13 +291,13 @@ Nếu bạn muốn vô hiệu hóa việc wrap resource, bạn có thể sử d�
         }
     }
 
-> {note} Phương thức `withoutWrapping` chỉ ảnh hưởng đến response ở ngoài cùng và sẽ không xóa các key `data` mà bạn tự thêm vào resource collection của riêng bạn.
+> {note} Phương thức `withoutWrapping` chỉ ảnh hưởng đến response ở ngoài cùng và sẽ không xóa các key `data` mà bạn đã thêm vào trong resource collection.
 
 ### Wrapping Nested Resources
 
-Bạn có toàn quyền tự do xác định cách mà các quan hệ của resource của bạn được wrap. Nếu bạn muốn tất cả các resource collection được wrap trong một key `data`, kể cả việc lồng chúng, bạn nên định nghĩa một class resource collection cho mỗi resource và trả về collection trong một key `data`.
+Bạn có toàn quyền tự do định nghĩa cách mà các quan hệ của resource của bạn được bao bọc. Nếu bạn muốn tất cả các resource collection được bao bọc trong một key `data`, kể cả việc chúng lồng nhau, bạn nên định nghĩa một class resource collection cho mỗi resource và trả về collection trong một key `data`.
 
-Tất nhiên, bạn có thể tự hỏi liệu rằng điều này có khiến resource ngoài cùng của bạn được wrap trong hai key `data`. Đừng lo lắng, Laravel sẽ không bao giờ để resource của bạn vô tình bị wrap đôi, vì vậy bạn không phải lo lắng về mức độ lồng nhau của resource collection mà bạn đang chuyển đổi:
+Tất nhiên, bạn có thể tự hỏi liệu rằng điều này có khiến resource ngoài cùng của bạn được bao bọc trong hai key `data`. Đừng lo lắng, Laravel sẽ không bao giờ để resource của bạn vô tình bị bao bọc lặp lại như vậy, vì vậy bạn không phải lo lắng về mức độ lồng nhau của resource collection mà bạn đang chuyển đổi:
 
     <?php
 
@@ -321,7 +321,7 @@ Tất nhiên, bạn có thể tự hỏi liệu rằng điều này có khiến 
 
 ### Data Wrapping And Phân trang
 
-Khi trả về các collection được phân trang trong một response resource, Laravel sẽ wrap dữ liệu resource của bạn trong một key `data` ngay cả khi phương thức `withoutWrapping` đã được gọi. Điều này là do các response được phân trang luôn chứa các key `meta` và `links` với thông tin về trạng thái của phân trang:
+Khi trả về các collection được phân trang trong một response resource, Laravel sẽ bao bọc dữ liệu resource của bạn trong một key `data` ngay cả khi phương thức `withoutWrapping` đã được gọi. Điều này là do trong các response được phân trang luôn chứa các key `meta` và `links` cùng với thông tin về trạng thái của phân trang:
 
     {
         "data": [
@@ -356,7 +356,7 @@ Khi trả về các collection được phân trang trong một response resourc
 <a name="pagination"></a>
 ### Phân trang
 
-Bạn luôn có thể pass một instance phân trang cho phương thức `collection` của một resource hoặc cho một resource collectio tùy biến:
+Bạn luôn có thể truyền một instance phân trang cho phương thức `collection` của một resource hoặc một resource collection tùy biến:
 
     use App\User;
     use App\Http\Resources\UserCollection;
@@ -365,7 +365,7 @@ Bạn luôn có thể pass một instance phân trang cho phương thức `colle
         return new UserCollection(User::paginate());
     });
 
-Các response được phân trang luôn chứa các key `meta` và `links` với thông tin về trạng thái của phân trang:
+Các response được phân trang luôn chứa các key `meta` và `links` cùng với thông tin về trạng thái của phân trang:
 
     {
         "data": [
@@ -420,19 +420,19 @@ Các response được phân trang luôn chứa các key `meta` và `links` vớ
         ];
     }
 
-Trong ví dụ này, khóa `secret` sẽ chỉ được trả về trong response resource nếu phương thức `$this->isAdmin()` trả về giá trị `true`. Nếu phương thức trả về `false`, thì khóa `secret` sẽ bị xóa khỏi response resource trước khi nó được gửi cho client. Phương thức `when` cho phép bạn định nghĩa một resource của bạn mà không cần dùng đến các câu lệnh có điều kiện khi xây dựng mảng.
+Trong ví dụ này, khóa `secret` sẽ chỉ được trả về trong response resource nếu phương thức `$this->isAdmin()` trả về giá trị `true`. Nếu phương thức trả về `false`, thì khóa `secret` sẽ bị xóa khỏi response resource trước khi nó được gửi về cho client. Phương thức `when` cho phép bạn định nghĩa một resource mà không cần dùng đến các câu lệnh có điều kiện khi xây dựng với mảng.
 
-Phương thức `when` cũng chấp nhận một Closure là tham số thứ hai của nó, cho phép bạn tính giá trị kết quả chỉ khi điều kiện đã cho là `true`:
+Phương thức `when` cũng chấp nhận một Closure là tham số thứ hai của nó, cho phép bạn tính toán giá trị trả về nếu điều kiện đã cho là `true`:
 
     'secret' => $this->when($this->isAdmin(), function () {
         return 'secret-value';
     }),
 
-> {tip} Hãy nhớ rằng, phương thức gọi trên proxy resource xuống instance model. Vì vậy, trong trường hợp này, phương thức `isAdmin` đang proxy cho model Eloquent ban đầu mà đã được chuyển cho resource.
+> {tip} Hãy nhớ rằng, phương thức gọi trên proxy resource sẽ chuyển sang instance model. Vì vậy, trong trường hợp này, phương thức `isAdmin` cũng sẽ chuyển sang model Eloquent ban đầu, cái mà đã được chuyển cho resource.
 
 #### Merging Điều kiện cho thuộc tính
 
-Thỉnh thoảng bạn có thể có một số thuộc tính chỉ nên được đưa vào một response resource dựa trên cùng một điều kiện nào đó. Trong trường hợp này, bạn có thể sử dụng phương thức `mergeWhen` để chứa các thuộc tính trong response chỉ khi điều kiện đã cho là `true`:
+Thỉnh thoảng bạn có thể có một số thuộc tính chỉ được đưa vào một response resource dựa trên cùng một điều kiện nào đó. Trong trường hợp này, bạn có thể sử dụng phương thức `mergeWhen` để chứa các thuộc tính trong response chỉ khi điều kiện đã cho là `true`:
 
     /**
      * Transform the resource into an array.
@@ -457,12 +457,12 @@ Thỉnh thoảng bạn có thể có một số thuộc tính chỉ nên đượ
 
 Một lần nữa, nếu điều kiện đã cho là `false`, các thuộc tính này sẽ bị xóa ra khỏi response resource trước khi nó được gửi đến client.
 
-> {note} Không nên sử dụng phương thức `mergeWhen` trong các mảng mà trộn giữa các khoá string và khóa numeric. Hơn nữa, nó không nên được sử dụng trong các mảng với các khóa numeric mà không được sắp xếp theo tuần tự.
+> {note} Không nên sử dụng phương thức `mergeWhen` trong các mảng mà có sử dụng cả khoá string và cả khóa numeric. Hơn nữa, nó cũng không nên được sử dụng trong các mảng với các khóa numeric mà lại không được sắp xếp theo tuần tự.
 
 <a name="conditional-relationships"></a>
 ### Điều kiện cho quan hệ
 
-Ngoài các thuộc tính load có điều kiện, bạn cũng có thể thêm điều kiện cho các quan hệ trên các response resource của bạn dựa trên việc quan hệ đã được load trên model hay chưa. Điều này cho phép controller của bạn quyết định những quan hệ nào sẽ được load trên model và resource của bạn có thể dễ dàng chứa chúng chỉ khi chúng đã được load.
+Ngoài các thuộc tính load có điều kiện, bạn cũng có thể thêm điều kiện cho các quan hệ trên các response resource dựa trên việc quan hệ đã được load trên model hay chưa. Điều này cho phép controller của bạn quyết định những quan hệ nào sẽ được load trên model và resource của bạn có thể dễ dàng chứa chúng chỉ khi chúng đã được load.
 
 Cuối cùng, điều này giúp bạn dễ dàng tránh các vấn đề truy vấn "N+1" trong resource của bạn. Phương thức `whenLoaded` có thể được sử dụng để thêm một điều kiện để load một quan hệ. Để tránh load các quan hệ không cần thiết, phương thức này chấp nhận tên của quan hệ thay vì quan hệ chính nó:
 
@@ -484,11 +484,11 @@ Cuối cùng, điều này giúp bạn dễ dàng tránh các vấn đề truy v
         ];
     }
 
-Trong ví dụ này, nếu quan hệ chưa được load, khóa `posts` sẽ bị xóa ra khỏi response resource trước khi nó được gửi đến client.
+Trong ví dụ này, nếu quan hệ chưa được load, thì khóa `posts` sẽ bị xóa bỏ ra khỏi response resource trước khi nó được gửi đến client.
 
 #### Conditional Pivot Information
 
-Ngoài điều kiện chứa dữ liệu về quan hệ trong các response resource của bạn, bạn có thể chứa một điều kiện cho dữ liệu từ các bảng trung gian của quan hệ nhiều-nhiều bằng cách sử dụng phương thức `whenPivotLoaded`. Phương thức `whenPivotLoaded` chấp nhận tên của bảng pivot làm tham số đầu tiên. Tham số thứ hai phải là một Closure định nghĩa giá trị được trả về nếu thông tin pivot có sẵn trên model:
+Ngoài điều kiện để thêm dữ liệu về quan hệ trong các response resource của bạn, bạn cũng có thể thêm điều kiện cho dữ liệu từ các bảng trung gian của quan hệ nhiều-nhiều bằng cách sử dụng phương thức `whenPivotLoaded`. Phương thức `whenPivotLoaded` chấp nhận tên của bảng pivot làm tham số đầu tiên. Tham số thứ hai phải là một Closure định nghĩa giá trị được trả về nếu thông tin pivot có sẵn trên model:
 
     /**
      * Transform the resource into an array.
@@ -510,7 +510,7 @@ Ngoài điều kiện chứa dữ liệu về quan hệ trong các response reso
 <a name="adding-meta-data"></a>
 ### Thêm Meta Data
 
-Một số tiêu chuẩn API JSON yêu cầu thêm dữ liệu meta vào các response của resource và resource collection của bạn. Điều này thường chứa những thông tin như `links` đến resource hoặc resource quan hệ hoặc dữ liệu meta về chính resource đó. Nếu bạn cần trả về thêm dữ liệu meta cho một resource, hãy đưa nó vào phương thức `toArray` của bạn. Ví dụ: bạn có thể chứa thông tin `link` khi chuyển đổi một resource collection:
+Một số tiêu chuẩn API JSON yêu cầu thêm dữ liệu meta vào các response của resource và resource collection của bạn. Điều này thường chứa những thông tin như `links` đến resource hoặc resource quan hệ hoặc dữ liệu meta về chính resource đó. Nếu bạn cần trả về thêm dữ liệu meta cho một resource, hãy cho nó vào phương thức `toArray` của bạn. Ví dụ: bạn có thể chứa thông tin `link` khi chuyển đổi một resource collection:
 
     /**
      * Transform the resource into an array.
@@ -532,7 +532,7 @@ Khi trả về thêm dữ liệu meta từ resource của bạn, bạn sẽ khô
 
 #### Top Level Meta Data
 
-Thỉnh thoảng bạn có thể chỉ muốn thêm một số dữ liệu meta nhất định vào một response resource nếu resource là resource ngoài cùng được trả về. Thông thường, điều này chứa thông tin meta về toàn bộ response. Để xác định dữ liệu meta này, hãy thêm một phương thức `with` vào class resource của bạn. Phương thức này sẽ trả về một mảng dữ liệu meta sẽ được chứa trong response resource chỉ khi resource là resource ngoài cùng được tạo:
+Thỉnh thoảng bạn có thể chỉ muốn thêm một số dữ liệu meta nhất định vào một response resource nếu resource đó là resource ngoài cùng được trả về. Thông thường, điều này thường chứa những thông tin meta về toàn bộ response. Để định nghĩa những dữ liệu meta này, hãy thêm một phương thức `with` vào class resource của bạn. Phương thức này sẽ trả về một mảng dữ liệu meta sẽ được chứa trong response resource chỉ khi resource là resource ngoài cùng được tạo:
 
     <?php
 
@@ -571,7 +571,7 @@ Thỉnh thoảng bạn có thể chỉ muốn thêm một số dữ liệu meta 
 
 #### Thêm Meta Data When Constructing Resources
 
-Bạn cũng có thể thêm dữ liệu cấp cao khi khởi tạo các instance resource trong route hoặc controller của bạn. Phương thức `additional`, có sẵn trên tất cả các resource, chấp nhận một mảng dữ liệu cần được thêm vào response resource:
+Bạn cũng có thể thêm dữ liệu khi khởi tạo các instance resource trong route hoặc controller của bạn. Phương thức `additional`, có sẵn trên tất cả các resource, chấp nhận một mảng dữ liệu cần được thêm vào response resource:
 
     return (new UserCollection(User::all()->load('roles')))
                     ->additional(['meta' => [
@@ -590,7 +590,7 @@ Như bạn đã đọc, resources có thể được trả về trực tiếp t�
         return new UserResource(User::find(1));
     });
 
-Tuy nhiên, thỉnh thoảng bạn có thể cần tùy biến HTTP response trả về trước khi nó được gửi đến client. Có hai cách để thực hiện điều này. Đầu tiên, bạn có thể kết hợp thêm phương thức `response` lên resource. Phương thức này sẽ trả về một instance `Illuminate\Http\Response`, cho phép bạn toàn quyền kiểm soát các header của response:
+Tuy nhiên, thỉnh thoảng bạn có thể cần tùy biến HTTP response trước khi nó được gửi đến client. Có hai cách để thực hiện điều này. Đầu tiên, bạn có thể gắn thêm phương thức `response` lên resource. Phương thức này sẽ trả về một instance `Illuminate\Http\Response`, cho phép bạn toàn quyền kiểm soát các header của response:
 
     use App\User;
     use App\Http\Resources\UserResource;
@@ -601,7 +601,7 @@ Tuy nhiên, thỉnh thoảng bạn có thể cần tùy biến HTTP response tr�
                     ->header('X-Value', 'True');
     });
 
-Ngoài ra, bạn có thể định nghĩa một phương thức `withResponse` trong chính resource. Phương thức này sẽ được gọi khi resource được trả về là resource ngoài cùng nhất trong một response:
+Ngoài ra, bạn có thể định nghĩa một phương thức `withResponse` trong chính resource của bạn. Phương thức này sẽ được gọi đến khi resource được trả về là resource ngoài cùng nhất trong một response:
 
     <?php
 

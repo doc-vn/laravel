@@ -13,14 +13,14 @@
 <a name="introduction"></a>
 ## Giới thiệu
 
-Horizon cung cấp một bảng điều khiển đẹp mắt và cấu hình code-driven cho queue Redis được hỗ trợ bởi Laravel của bạn. Horizon cho phép bạn dễ dàng theo dõi các số liệu chính của hệ thống queue của bạn như job được thông qua, thời gian chạy và job bị thất bại.
+Horizon cung cấp một bảng điều khiển đẹp mắt và cấu hình code-driven cho queue Redis được hỗ trợ bởi Laravel của bạn. Horizon cho phép bạn dễ dàng theo dõi các số liệu chính của hệ thống queue của bạn như job được thông qua, thời gian chạy hoặc job bị thất bại.
 
-Tất cả các cấu hình worker của bạn được lưu trữ trong một file cấu hình đơn giản, cho phép cấu hình của bạn ở trong source control nơi mà toàn bộ nhóm của bạn có thể làm việc cùng nhau.
+Tất cả các cấu hình worker của bạn được lưu trữ trong một file cấu hình đơn giản, cho phép lưu cấu hình của bạn vào trong source control, nơi mà toàn bộ nhóm của bạn có thể làm việc cùng nhau.
 
 <a name="installation"></a>
 ## Cài đặt
 
-> {note} Do sử dụng tín hiệu process không đồng bộ, Horizon yêu cầu PHP 7.1+.
+> {note} Do sử dụng tín hiệu process không đồng bộ, nên Horizon yêu cầu PHP 7.1+.
 
 Bạn có thể sử dụng Composer để cài đặt Horizon vào project Laravel của bạn:
 
@@ -33,7 +33,7 @@ Sau khi cài đặt Horizon, hãy export asset của nó bằng lệnh Artisan `
 <a name="configuration"></a>
 ### Cấu hình
 
-Sau khi export asset của Horizon, file cấu hình chính của nó sẽ được đặt tại `config/horizon.php`. File cấu hình này cho phép bạn cấu hình các tùy chọn worker của bạn và mỗi tùy chọn cấu hình có chứa mô tả về mục đích của nó, vì vậy bạn hãy đọc kỹ file này.
+Sau khi export asset của Horizon, file cấu hình chính của nó sẽ được lưu tại `config/horizon.php`. File cấu hình này cho phép bạn cài đặt các tùy chọn worker của bạn và mỗi tùy chọn cài đặt có chứa mô tả về mục đích của nó, vì vậy bạn hãy đọc kỹ file này.
 
 #### Balance Options
 
@@ -41,7 +41,7 @@ Horizon cho phép bạn chọn từ ba chiến lược balance: `simple`, `auto`
 
     'balance' => 'simple',
 
-Chiến lược `auto` sẽ điều chỉnh số lượng process worker trên mỗi queue dựa trên khối lượng job hiện tại của queue. Ví dụ: nếu queue `notifications` của bạn có 1.000 job đang chờ trong khi queue `render` của bạn trống không làm gì, Horizon sẽ phân bổ nhiều worker hơn vào queue `notifications` của bạn cho đến khi nó trống. Khi tùy chọn `balance` được đặt là `false`,thì mặc định hành động của Laravel sẽ được sử dụng, xử lý các queue theo thứ tự mà chúng được liệt kê trong cấu hình của bạn.
+Chiến lược `auto` sẽ điều chỉnh số lượng process worker trên mỗi queue dựa trên khối lượng job hiện tại của queue. Ví dụ: nếu queue `notifications` của bạn có 1.000 job đang chờ trong khi queue `render` của bạn trống không làm gì, Horizon sẽ phân bổ nhiều worker hơn vào queue `notifications` của bạn cho đến khi nó trống. Khi tùy chọn `balance` là `false`, thì mặc định hành vi của Laravel sẽ được sử dụng, nó sẽ xử lý các queue theo thứ tự mà chúng được liệt kê trong cấu hình của bạn.
 
 <a name="dashboard-authentication"></a>
 ### Authentication vào bảng điều khiển
@@ -55,26 +55,26 @@ Horizon hiển thị bảng điều khiển tại `/horizon`. Mặc định, b�
 <a name="running-horizon"></a>
 ## Chạy Horizon
 
-Khi bạn đã cấu hình các worker của bạn trong file cấu hình `config/horizon.php`, bạn có thể bắt đầu Horizon bằng cách chạy lệnh Artisan `horizon`. Lệnh này sẽ bắt đầu tất cả các worker đã được cấu hình của bạn:
+Khi bạn đã cài đặt các worker của bạn trong file cấu hình `config/horizon.php`, bạn có thể bắt đầu Horizon bằng cách chạy lệnh Artisan `horizon`. Lệnh này sẽ chạy tất cả các worker đã được cài đặt của bạn:
 
     php artisan horizon
 
-Bạn có thể dừng process của Horizon và bảo nó tiếp tục xử lý các job bằng cách sử dụng các lệnh `horizon:pause` và Artisan `horizon:continue`:
+Bạn có thể dừng process của Horizon và bảo nó tiếp tục xử lý các job bằng cách sử dụng các lệnh Artisan `horizon:pause` và `horizon:continue`:
 
     php artisan horizon:pause
 
     php artisan horizon:continue
 
-Bạn có thể huỷ một process Horizon chính trên máy của bạn bằng lệnh Artisan `horizon:terminate`. Mọi job mà Horizon hiện đang xử lý sẽ được hoàn thành và sau đó Horizon sẽ được thoát:
+Bạn có thể huỷ một process Horizon master trên máy của bạn bằng lệnh Artisan `horizon:terminate`. Mọi job mà Horizon hiện đang xử lý sẽ được hoàn thành và sau đó Horizon sẽ được thoát:
 
     php artisan horizon:terminate
 
 <a name="deploying-horizon"></a>
 ### Deploy Horizon
 
-Nếu bạn đang deploy Horizon đến một live server, bạn nên cấu hình một process giám sát để theo dõi lệnh `php artisan horizon` và khởi động lại nếu nó bị thoát bất ngờ. Khi deploy một code mới đến server của bạn, bạn sẽ cần phải bảo process Horizon chính dừng lại để nó có thể được khởi động lại bởi process giám sát của bạn và nhận các thay đổi của code của bạn.
+Nếu bạn đang deploy Horizon đến một live server, bạn nên cài đặt một process giám sát để theo dõi lệnh `php artisan horizon` và khởi động lại nếu nó bị thoát bất ngờ. Khi deploy code mới đến server của bạn, bạn sẽ cần phải bảo process Horizon master dừng lại để nó có thể được khởi động lại bởi process giám sát của bạn và nhận các thay đổi của code của bạn.
 
-Bạn có thể dừng process chính của Horizon trên máy của bạn bằng lệnh Artisan `horizon:terminate`. Mọi job mà Horizon hiện đang xử lý sẽ được hoàn thành và sau đó Horizon sẽ thoát:
+Bạn có thể dừng process master của Horizon trên máy của bạn bằng lệnh Artisan `horizon:terminate`. Mọi job mà Horizon hiện đang xử lý sẽ được hoàn thành và sau đó Horizon sẽ thoát:
 
     php artisan horizon:terminate
 
@@ -96,7 +96,7 @@ Nếu bạn đang sử dụng process giám sát Supervisor để quản lý pro
 <a name="tags"></a>
 ## Tags
 
-Horizon cho phép bạn gán các “tags” cho các job, bao gồm cả mailables, event broadcast, notification và queued event listener. Trong thực tế, Horizon sẽ tự động gắn tag các job tùy thuộc vào các model Eloquent được gắn vào job. Ví dụ, hãy xem job sau:
+Horizon cho phép bạn gán các “tags” cho các job, bao gồm cả mailables, event broadcast, notification và queued event listener. Trong thực tế, Horizon sẽ tự động gắn tag cho các job tùy thuộc vào các model Eloquent được gắn vào job. Ví dụ, hãy xem job sau:
 
     <?php
 
@@ -142,7 +142,7 @@ Horizon cho phép bạn gán các “tags” cho các job, bao gồm cả mailab
         }
     }
 
-Nếu job này được queue với một instance `App\Video` có `id` là `1`, thì nó sẽ tự động nhận tag là `App\Video:1`. Điều này là do Horizon sẽ kiểm tra các thuộc tính của job xem có bất kỳ model Eloquent nào hay không. Nếu model Eloquent được tìm thấy, thì Horizon sẽ gắn thẻ job bằng cách sử dụng tên class model và khóa của model đó:
+Nếu job này được queue với một instance `App\Video` có `id` là `1`, thì nó sẽ tự động nhận tag là `App\Video:1`. Điều này là do Horizon sẽ kiểm tra các thuộc tính của job xem có bất kỳ model Eloquent nào không. Nếu model Eloquent được tìm thấy, thì Horizon sẽ gắn tag job bằng cách sử dụng tên class model và khóa của model đó:
 
     $video = App\Video::find(1);
 
@@ -170,7 +170,7 @@ Nếu bạn muốn tự định nghĩa các tag cho một trong các đối tư�
 
 > **Lưu ý:** Trước khi sử dụng thông báo, bạn nên thêm package Composer `guzzlehttp/guzzle` vào project của bạn. Khi cấu hình Horizon để gửi thông báo SMS, bạn cũng nên xem lại [yêu cầu của driver thông báo Nexmo](https://laravel.com/docs/5.5/notifications#sms-notifications).
 
-Nếu bạn muốn được thông báo khi một trong các queue của bạn có thời gian chờ lâu, bạn có thể sử dụng các phương thức `Horizon::routeMailNotificationsTo`, `Horizon::routeSlackNotificationsTo`, và `Horizon::routeSmsNotificationsTo`. Bạn có thể gọi các phương thức này từ `AppServiceProvider`:
+Nếu bạn muốn được thông báo khi một trong các queue của bạn có thời gian chờ quá lâu, bạn có thể sử dụng các phương thức `Horizon::routeMailNotificationsTo`, `Horizon::routeSlackNotificationsTo`, và `Horizon::routeSmsNotificationsTo`. Bạn có thể gọi các phương thức này từ `AppServiceProvider`:
 
     Horizon::routeMailNotificationsTo('example@example.com');
     Horizon::routeSlackNotificationsTo('slack-webhook-url', '#channel');
@@ -178,7 +178,7 @@ Nếu bạn muốn được thông báo khi một trong các queue của bạn c
 
 #### Configuring Notification Wait Time Thresholds
 
-Bạn có thể cấu hình bao nhiêu giây thì sẽ coi là "chờ lâu" trong file cấu hình `config/horizon.php` của bạn. Tùy chọn cấu hình `waits` trong file này cho phép bạn kiểm soát ngưỡng chờ dài cho mỗi kết hợp connection / queue:
+Bạn có thể cài đặt bao nhiêu giây thì sẽ được coi là "chờ lâu" trong file cấu hình `config/horizon.php` của bạn. Tùy chọn cấu hình `waits` trong file này cho phép bạn kiểm soát ngưỡng chờ cho mỗi kết hợp connection và queue:
 
     'waits' => [
         'redis:default' => 60,
@@ -187,7 +187,7 @@ Bạn có thể cấu hình bao nhiêu giây thì sẽ coi là "chờ lâu" tron
 <a name="metrics"></a>
 ## Số liệu
 
-Horizon có chứa một bảng điều khiển số liệu cung cấp các thông tin về job của bạn và thời gian chờ đợi. lưu lượng của queue. Để hiển thị bảng điều khiển này, bạn nên cấu hình lệnh Artisan `snapshot` của Horizon để cứ sau năm phút chạy một lần thông qua [scheduler](/docs/{{version}}/scheduling) của application của bạn:
+Horizon có chứa một bảng điều khiển số liệu cung cấp các thông tin về job của bạn, thời gian chờ và lưu lượng của queue. Để hiển thị bảng điều khiển này, bạn nên cài đặt lệnh Artisan `snapshot` của Horizon để cứ sau năm phút chạy một lần thông qua [scheduler](/docs/{{version}}/scheduling) của application của bạn:
 
     /**
      * Define the application's command schedule.

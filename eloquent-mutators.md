@@ -43,7 +43,7 @@ Ngoài các tuỳ biến accessors và mutator, Eloquent cũng có thể tự đ
         }
     }
 
-Như bạn có thể thấy, giá trị ban đầu của cột được pass cho accessor, cho phép bạn thao tác và trả về một giá trị khác. Để truy cập vào giá trị của accessor, bạn có thể truy cập vào thuộc tính `first_name` trên một instance model:
+Như bạn có thể thấy, giá trị ban đầu của cột được truyền vào accessor, cho phép bạn thao tác và trả về một giá trị khác. Để truy cập vào giá trị của accessor, bạn có thể truy cập vào thuộc tính `first_name` trên một instance model:
 
     $user = App\User::find(1);
 
@@ -86,18 +86,18 @@ Tất nhiên, bạn cũng có thể sử dụng accessor để trả về các g
         }
     }
 
-Mutator sẽ nhận vào giá trị đang được set cho thuộc tính, cho phép bạn thao tác với giá trị đó và set một giá trị mới cho thuộc tính `$attributes` bên trong của model Eloquent. Vì thế, ví dụ, nếu chúng ta set thuộc tính `first_name` là `Sally`:
+Mutator sẽ nhận vào giá trị đang được set cho thuộc tính, cho phép bạn thao tác với giá trị đó và set một giá trị mới cho thuộc tính `$attributes` bên trong của model Eloquent. Vì thế, ví dụ, nếu chúng ta đang set thuộc tính `first_name` là `Sally`:
 
     $user = App\User::find(1);
 
     $user->first_name = 'Sally';
 
-Trong ví dụ này, hàm `setFirstNameAttribute` sẽ được gọi với giá trị `Sally`. Mutator sẽ dùng hàm `strtolower` cho giá trị vào và set giá trị kết quả cho mảng `$attributes` bên trong.
+Trong ví dụ này, hàm `setFirstNameAttribute` sẽ được gọi với giá trị `Sally`. Mutator sẽ sử dụng hàm `strtolower` cho giá trị đầu vào của hàm và set giá trị kết quả cho mảng `$attributes`.
 
 <a name="date-mutators"></a>
 ## Date Mutator
 
-Mặc định, Eloquent sẽ chuyển đổi các cột `created_at` và `update_at` thành các instance của [Carbon](https://github.com/briannesbitt/Carbon), đây là một class được extend từ class `DateTime` của PHP, để cung cấp các phương thức hữu ích . Bạn có thể tùy biến những date nào sẽ bị chuyển đổi hay thậm chí disable những chuyển đổi này, bằng cách ghi đè thuộc tính `$dates` trong model của bạn:
+Mặc định, Eloquent sẽ chuyển đổi các cột `created_at` và `update_at` thành các instance của [Carbon](https://github.com/briannesbitt/Carbon), đây là một class được extend từ class `DateTime` của PHP, cung cấp rất nhiều phương thức hữu ích. Bạn có thể tùy biến những date nào sẽ bị chuyển đổi hay thậm chí là disable những chuyển đổi này, bằng cách ghi đè thuộc tính `$dates` trong model của bạn:
 
     <?php
 
@@ -119,7 +119,7 @@ Mặc định, Eloquent sẽ chuyển đổi các cột `created_at` và `update
         ];
     }
 
-Khi một cột được coi là một date, bạn có thể set giá trị của nó thành một UNIX timestamp hoặc một date string (`Y-m-d`) hoặc là date-time string, và tất nhiên là một instance `DateTime` / `Carbon` và các giá trị của date này sẽ tự động được lưu trữ chính xác trong cơ sở dữ liệu của bạn:
+Khi một cột được coi là một date, bạn có thể set giá trị của nó thành một UNIX timestamp, một date string (`Y-m-d`), date-time string, và tất nhiên là một instance `DateTime` hoặc instance `Carbon`, và các giá trị của date này sẽ tự động được lưu trữ chính xác vào trong cơ sở dữ liệu của bạn:
 
     $user = App\User::find(1);
 
@@ -127,7 +127,7 @@ Khi một cột được coi là một date, bạn có thể set giá trị củ
 
     $user->save();
 
-Như đã lưu ý ở trên, khi lấy các thuộc tính được liệt kê trong thuộc tính `$dates` của bạn, chúng sẽ tự động được chuyển sang thành các instance [Carbon](https://github.com/briannesbitt/Carbon), cho phép bạn sử dụng bất kỳ phương thức nào của Carbon trên thuộc tính của bạn:
+Như đã lưu ý ở trên, khi lấy các thuộc tính được liệt kê trong thuộc tính `$dates` của bạn, chúng sẽ tự động được chuyển sang thành các instance [Carbon](https://github.com/briannesbitt/Carbon), cho phép bạn sử dụng bất kỳ phương thức nào của Carbon trên thuộc tính của model:
 
     $user = App\User::find(1);
 
@@ -135,7 +135,7 @@ Như đã lưu ý ở trên, khi lấy các thuộc tính được liệt kê tr
 
 #### Date Formats
 
-Mặc định, timestamp sẽ được định dạng là `'Y-m-d H:i:s'`. Nếu bạn cần tùy biến định dạng timestamp này, hãy set thuộc tính `$dateFormat` trên model của bạn. Thuộc tính này xác định cách mà các thuộc tính date được lưu trữ vào trong cơ sở dữ liệu, cũng như định dạng của chúng khi model được serialize thành một mảng hoặc JSON:
+Mặc định, timestamp sẽ được định dạng là `'Y-m-d H:i:s'`. Nếu bạn cần tùy biến định dạng timestamp này, hãy set thuộc tính `$dateFormat` trên model của bạn. Thuộc tính này xác định cách mà các thuộc tính date được lưu trữ vào trong cơ sở dữ liệu, cũng như định dạng của chúng khi model được chuyển đổi thành một mảng hoặc JSON:
 
     <?php
 
@@ -189,7 +189,7 @@ Bây giờ, thuộc tính `is_admin` sẽ luôn được chuyển thành giá tr
 <a name="array-and-json-casting"></a>
 ### Array và JSON Casting
 
-Kiểu cast `array` đặc biệt hữu ích khi làm việc với các cột được lưu trữ dưới dạng JSON được serialize. Ví dụ: nếu cơ sở dữ liệu của bạn có một trường kiểu `JSON` hoặc `TEXT` chứa JSON được serialize, việc thêm `array` vào thuộc tính đó sẽ tự động giải mã thuộc tính serialize vào mảng PHP khi bạn truy cập vào model Eloquent của bạn:
+Kiểu cast `array` đặc biệt hữu ích khi làm việc với các cột được lưu trữ dưới dạng JSON đã được chuyển đổi. Ví dụ: nếu cơ sở dữ liệu của bạn có một cột kiểu `JSON` hoặc `TEXT` chứa JSON đã được chuyển đổi, thì việc thêm `array` vào thuộc tính đó sẽ tự động giải mã các thuộc tính đã được chuyển đổi vào mảng PHP khi bạn truy cập vào thuộc tính đó trên model Eloquent của bạn:
 
     <?php
 
@@ -209,7 +209,7 @@ Kiểu cast `array` đặc biệt hữu ích khi làm việc với các cột đ
         ];
     }
 
-Khi cast đã được định nghĩa, bạn có thể truy cập thuộc tính `options` và nó sẽ tự động được giải mã serialize từ JSON thành một mảng PHP. Khi bạn set giá trị cho thuộc tính `options`, thì mảng sẽ tự động được serialize trở lại thành JSON để lưu trữ:
+Khi cast đã được định nghĩa xong, bạn có thể truy cập vào thuộc tính `options` và nó sẽ tự động được giải mã các thuộc tính đã được chuyển đổi từ JSON vào một mảng PHP. Khi bạn set giá trị cho thuộc tính `options`, thì mảng sẽ tự động được chuyển đổi trở lại thành JSON để lưu trữ:
 
     $user = App\User::find(1);
 

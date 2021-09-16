@@ -21,9 +21,9 @@
 <a name="introduction"></a>
 ## Giới thiệu
 
-Laravel Scout cung cấp một giải pháp dựa trên driver đơn giản để thêm tìm kiếm full-text vào [các model Eloquent](/docs/{{version}}/eloquent). Sử dụng model observer, Scout sẽ tự động giữ các index tìm kiếm của bạn và đồng bộ với các bản ghi Eloquent của bạn.
+Laravel Scout cung cấp một giải pháp dựa trên driver đơn giản để thêm tìm kiếm full-text vào [các model Eloquent](/docs/{{version}}/eloquent). Sử dụng model observer, Scout sẽ tự động giữ các index tìm kiếm và đồng bộ với các bản ghi Eloquent của bạn.
 
-Hiện tại, Scout đang làm việc cùng driver [Algolia](https://www.algolia.com/); tuy nhiên, viết driver tùy biến rất đơn giản và bạn có thể tự do mở rộng Scout với việc triển khai tìm kiếm của riêng bạn.
+Hiện tại, Scout đang làm việc cùng driver [Algolia](https://www.algolia.com/); tuy nhiên, viết driver tùy biến rất đơn giản và bạn có thể tự do mở rộng Scout với việc thực hiện một tìm kiếm của riêng bạn.
 
 <a name="installation"></a>
 ## Cài đặt
@@ -64,7 +64,7 @@ Khi bạn đã cấu hình xong một queue driver, hãy set giá trị của t�
 
 #### Algolia
 
-Khi sử dụng driver Algolia, bạn nên cấu hình thông tin đăng nhập `id` và `secret` trong file cấu hình `config/scout.php` của bạn. Khi mà thông tin đăng nhập của bạn đã được cấu hình xong, bạn cũng sẽ cần cài đặt SDK PHP Algolia thông qua package manager Composer:
+Khi sử dụng driver Algolia, bạn nên cấu hình thông tin đăng nhập `id` và `secret` trong file cấu hình `config/scout.php` của bạn. Khi thông tin đăng nhập của bạn đã được cấu hình xong, bạn cũng sẽ cần cài đặt SDK PHP Algolia thông qua package manager Composer:
 
     composer require algolia/algoliasearch-client-php
 
@@ -74,7 +74,7 @@ Khi sử dụng driver Algolia, bạn nên cấu hình thông tin đăng nhập 
 <a name="configuring-model-indexes"></a>
 ### Configuring Model Indexes
 
-Mỗi một model Eloquent được đồng bộ với một "index" tìm kiếm nhất định, nó sẽ chứa tất cả các bản ghi có thể được tìm kiếm cho model đó. Nói cách khác, bạn có thể nghĩ về mỗi index giống như một bảng trong MySQL. Mặc định, mỗi model sẽ được lưu trữ theo một index khớp với tên "bảng" của model. Thông thường, là dạng số nhiều của tên model; tuy nhiên, bạn có thể tùy biến index của model bằng cách ghi đè phương thức `searchableAs` trên model:
+Mỗi một model Eloquent được đồng bộ với một "index" tìm kiếm nhất định, nó sẽ chứa tất cả các bản ghi có thể được tìm kiếm cho model đó. Nói cách khác, bạn có thể nghĩ về mỗi index giống như là một bảng trong MySQL. Mặc định, mỗi model sẽ được lưu trữ theo một index khớp với tên "bảng" của model. Thông thường, là dạng số nhiều của tên model; tuy nhiên, bạn có thể tùy biến index của model bằng cách ghi đè phương thức `searchableAs` trên model:
 
     <?php
 
@@ -135,7 +135,7 @@ Mặc định, toàn bộ form `toArray` của một model sẽ được lưu tr
 <a name="batch-import"></a>
 ### Batch Import
 
-Nếu bạn đang cài đặt Scout vào một project đã tồn tại, bạn có thể đã có sẵn các bản ghi cơ sở dữ liệu mà bạn cần import vào driver tìm kiếm của bạn. Scout cung cấp lệnh Artisan `import` mà bạn có thể sử dụng để import tất cả các bản ghi hiện có vào các index tìm kiếm của bạn:
+Nếu bạn đang cài đặt Scout vào một project đã tồn tại, có thể bạn đã có sẵn các bản ghi trong cơ sở dữ liệu và bạn cần import vào driver tìm kiếm của bạn. Scout cung cấp lệnh Artisan `import` mà bạn có thể sử dụng để import tất cả các bản ghi hiện có vào các index tìm kiếm của bạn:
 
     php artisan scout:import "App\Post"
 
@@ -152,7 +152,7 @@ Khi mà bạn đã thêm trait `Laravel\Scout\Searchable` vào một model, tấ
 
 #### Adding Via Query
 
-Nếu bạn muốn thêm một collection các model vào index tìm kiếm của bạn thông qua truy vấn của Eloquent, bạn có thể kết hợp thêm phương thức `searchable` vào truy vấn của Eloquent. Phương thức `searchable` sẽ [chunk các kết quả](/docs/{{version}}/eloquent#chunking-results) của truy vấn và thêm các bản ghi vào index tìm kiếm của bạn. Một lần nữa, nếu bạn đã cấu hình Scout để sử dụng queue, tất cả các chunk sẽ được thêm vào background bởi các queue worker của bạn:
+Nếu bạn muốn thêm một collection model vào index tìm kiếm của bạn thông qua truy vấn của Eloquent, bạn có thể kết hợp thêm phương thức `searchable` vào truy vấn của Eloquent. Phương thức `searchable` sẽ [chunk các kết quả](/docs/{{version}}/eloquent#chunking-results) của truy vấn và thêm các bản ghi vào index tìm kiếm của bạn. Một lần nữa, nếu bạn đã cấu hình Scout để sử dụng queue, tất cả các chunk sẽ được thêm vào background bởi các queue worker của bạn:
 
     // Adding via Eloquent query...
     App\Order::where('price', '>', 100)->searchable();
@@ -163,12 +163,12 @@ Nếu bạn muốn thêm một collection các model vào index tìm kiếm củ
     // You may also add records via collections...
     $orders->searchable();
 
-Phương thức `searchable` có thể được coi là một hoạt động "updateOrCreate". Nói cách khác, nếu bản ghi model đã có trong index của bạn, nó sẽ được cập nhật. Nếu nó không tồn tại trong index tìm kiếm, nó sẽ được thêm vào index.
+Phương thức `searchable` có thể được coi như là một hoạt động "updateOrCreate". Nói cách khác, nếu bản ghi model đã có trong index của bạn, nó sẽ được cập nhật. Nếu nó không tồn tại trong index tìm kiếm, nó sẽ được thêm vào index.
 
 <a name="updating-records"></a>
 ### Updating Records
 
-Để cập nhật một model mà có thể tìm kiếm, bạn chỉ cần cập nhật các thuộc tính của instance model đó và `save` model vào cơ sở dữ liệu của bạn. Scout sẽ tự động lưu các thay đổi đối với index tìm kiếm của bạn:
+Để cập nhật một model mà có thể tìm kiếm, bạn chỉ cần cập nhật các thuộc tính của instance model đó và `save` model đó vào cơ sở dữ liệu của bạn. Scout sẽ tự động lưu các thay đổi đối với index tìm kiếm của bạn:
 
     $order = App\Order::find(1);
 
@@ -176,7 +176,7 @@ Phương thức `searchable` có thể được coi là một hoạt động "up
 
     $order->save();
 
-Bạn cũng có thể sử dụng phương thức `searchable` trên truy vấn của Eloquent để cập nhật một collection của model. Nếu model không tồn tại trong index tìm kiếm của bạn, chúng sẽ được tạo:
+Bạn cũng có thể sử dụng phương thức `searchable` trên truy vấn của Eloquent để cập nhật một collection model. Nếu model không tồn tại trong index tìm kiếm của bạn, chúng sẽ được tạo mới:
 
     // Updating via Eloquent query...
     App\Order::where('price', '>', 100)->searchable();
@@ -210,7 +210,7 @@ Nếu bạn không muốn lấy ra model trước khi xóa nó, bạn có thể 
 <a name="pausing-indexing"></a>
 ### Pausing Indexing
 
-Thỉnh thoảng bạn có thể cần thực hiện một loạt các hoạt động Eloquent trên một model mà không đồng bộ dữ liệu của model với index tìm kiếm của bạn. Bạn có thể làm điều này bằng cách sử dụng phương thức `withoutSyncingToSearch`. Phương thức này chấp nhận một callback sẽ được thực hiện ngay lập tức. Bất kỳ hoạt động model nào xảy ra trong callback sẽ không được đồng bộ với index của model:
+Thỉnh thoảng bạn có thể cần thực hiện một loạt các hoạt động Eloquent trên một model mà không đồng bộ dữ liệu của model đó với index tìm kiếm. Bạn có thể làm điều này bằng cách sử dụng phương thức `withoutSyncingToSearch`. Phương thức này chấp nhận một callback sẽ được thực hiện ngay lập tức. Bất kỳ hoạt động model nào xảy ra trong callback sẽ không được đồng bộ với index của model:
 
     App\Order::withoutSyncingToSearch(function () {
         // Perform model actions...
@@ -223,7 +223,7 @@ Bạn có thể bắt đầu tìm kiếm một model bằng phương thức `sea
 
     $orders = App\Order::search('Star Trek')->get();
 
-Vì các tìm kiếm Scout trả về một collection của model Eloquent, nên bạn thậm chí có thể trả về kết quả trực tiếp từ một route hoặc controller và chúng sẽ tự động được chuyển đổi thành JSON:
+Vì các tìm kiếm Scout trả về một collection của model Eloquent, nên bạn thậm chí có thể trả về kết quả trực tiếp từ một route hoặc controller và chúng sẽ tự động được chuyển thành JSON:
 
     use Illuminate\Http\Request;
 
@@ -244,18 +244,18 @@ Các truy vấn tìm kiếm thường sẽ được thực hiện trên index đ
 <a name="where-clauses"></a>
 ### Where Clauses
 
-Scout cho phép bạn thêm các điều kiện "where" vào các truy vấn tìm kiếm của bạn. Hiện tại, các điều kiện này chỉ hỗ trợ so sánh số cơ bản và chủ yếu sử dụng cho việc query tìm kiếm theo ID đối tượng. Vì các index tìm kiếm không phải là cơ sở dữ liệu quan hệ với nhau, nên các điều kiện "where" nâng cao hơn sẽ chưa không được hỗ trợ:
+Scout cho phép bạn thêm các điều kiện "where" vào các truy vấn tìm kiếm của bạn. Hiện tại, các điều kiện này chỉ hỗ trợ so sánh số cơ bản và chủ yếu sử dụng cho việc query tìm kiếm theo ID đối tượng. Vì các index tìm kiếm không phải là cơ sở dữ liệu quan hệ, nên các điều kiện "where" nâng cao hơn sẽ chưa được hỗ trợ:
 
     $orders = App\Order::search('Star Trek')->where('user_id', 1)->get();
 
 <a name="pagination"></a>
 ### Pagination
 
-Ngoài việc lấy ra một collection của model, bạn có thể phân trang kết quả tìm kiếm được của bạn bằng phương thức `paginate`. Phương thức này sẽ trả về một instance `Paginator` giống như bạn đã đọc [tài liệu phân trang truy vấn Eloquent](/docs/{{version}}/pagination) ở các phần trước:
+Ngoài việc lấy ra một collection của model, bạn có thể phân trang kết quả tìm kiếm của bạn bằng phương thức `paginate`. Phương thức này sẽ trả về một instance `Paginator` giống như bạn đã đọc [tài liệu phân trang truy vấn Eloquent](/docs/{{version}}/pagination) ở các phần trước:
 
     $orders = App\Order::search('Star Trek')->paginate();
 
-Bạn có thể chỉ định số lượng model được trả về trên mỗi trang bằng cách pass số lượng đó làm tham số đầu tiên cho phương thức `paginate`:
+Bạn có thể chỉ định số lượng model được trả về trên mỗi trang bằng cách truyền số lượng đó làm tham số đầu tiên cho phương thức `paginate`:
 
     $orders = App\Order::search('Star Trek')->paginate(15);
 
@@ -274,7 +274,7 @@ Khi bạn đã lấy ra được kết quả, bạn có thể hiển thị kết
 
 #### Writing The Engine
 
-Nếu một trong những engine tìm kiếm của Scout không phù hợp với nhu cầu của bạn, bạn có thể viết engine tùy biến của riêng bạn và đăng ký với Scout. Engine của bạn sẽ được extend từ abstract class `Laravel\Scout\Engines\Engine`. Abstract class này chứa bảy phương thức mà engine tùy biến của bạn phải implement:
+Nếu một trong những engine tìm kiếm của Scout không phù hợp với nhu cầu của bạn, bạn có thể viết engine tùy biến của riêng bạn và đăng ký nó với Scout. Engine của bạn sẽ được extend từ abstract class `Laravel\Scout\Engines\Engine`. Abstract class này chứa bảy phương thức mà engine tùy biến của bạn phải implement:
 
     use Laravel\Scout\Builder;
 
@@ -290,7 +290,7 @@ Bạn có thể tham khảo class `Laravel\Scout\Engines\AlgoliaEngine` để bi
 
 #### Registering The Engine
 
-Khi bạn đã viết xong engine tùy biến của bạn, bạn có thể đăng ký nó với Scout bằng phương thức `extend` của engine manager của Scout. Bạn nên gọi phương thức `extend` từ phương thức` boot` của `AppServiceProvider` hoặc bất kỳ service provider nào khác được application của bạn sử dụng. Ví dụ: nếu bạn đã viết một `MySqlSearchEngine`, bạn có thể đăng ký nó như sau:
+Khi bạn đã viết xong engine tùy biến của bạn, bạn có thể đăng ký nó với Scout bằng phương thức `extend` của engine manager của Scout. Bạn nên gọi phương thức `extend` từ phương thức `boot` của `AppServiceProvider` hoặc bất kỳ service provider nào khác được application của bạn sử dụng. Ví dụ: nếu bạn đã viết một `MySqlSearchEngine`, bạn có thể đăng ký nó như sau:
 
     use Laravel\Scout\EngineManager;
 

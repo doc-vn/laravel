@@ -14,7 +14,7 @@ Redirect response là một instance của class `Illuminate\Http\RedirectRespon
         return redirect('home/dashboard');
     });
 
-Thỉnh thoảng bạn có thể muốn chuyển hướng người dùng đến vị trí trước đó của họ, chẳng hạn như khi form đã gửi không hợp lệ. Bạn có thể làm như vậy bằng cách sử dụng hàm helper global `back`. Vì tính năng này sử dụng [session](/docs/{{version}}/session), nên hãy đảm bảo rằng route gọi hàm `back` đang sử dụng group middleware `web` hoặc áp dụng tất cả middleware session:
+Thỉnh thoảng bạn có thể muốn chuyển hướng người dùng đến vị trí trước đó của họ, chẳng hạn như khi form đã gửi không hợp lệ. Bạn có thể làm như vậy bằng cách sử dụng hàm helper global `back`. Vì tính năng này sử dụng [session](/docs/{{version}}/session), nên hãy đảm bảo rằng route mà được gọi trong hàm `back` cũng đang sử dụng group middleware `web` hoặc áp dụng tất cả middleware session:
 
     Route::post('user/profile', function () {
         // Validate the request...
@@ -25,11 +25,11 @@ Thỉnh thoảng bạn có thể muốn chuyển hướng người dùng đến 
 <a name="redirecting-named-routes"></a>
 ## Redirect tới tên route
 
-Khi bạn gọi helper `redirect` không có tham số, một instance của `Illuminate\Routing\Redirector` sẽ được trả về, cho phép bạn gọi bất kỳ phương thức nào trong instance `Redirector`. Ví dụ: để tạo một `RedirectResponse` cho một tên route, bạn có thể sử dụng phương thức `route`:
+Khi bạn gọi helper `redirect` không có tham số, một instance của `Illuminate\Routing\Redirector` sẽ được trả về, cho phép bạn gọi bất kỳ phương thức nào trong instance `Redirector`. Ví dụ: để tạo một `RedirectResponse` cho tên một route, bạn có thể sử dụng phương thức `route`:
 
     return redirect()->route('login');
 
-Nếu route của bạn có các tham số, thì bạn có thể pass chúng làm tham số thứ hai cho phương thức `route`:
+Nếu route của bạn có các tham số, thì bạn có thể truyền chúng làm tham số thứ hai cho phương thức `route`:
 
     // For a route with the following URI: profile/{id}
 
@@ -37,13 +37,13 @@ Nếu route của bạn có các tham số, thì bạn có thể pass chúng là
 
 #### Populating Parameters Via Eloquent Models
 
-Nếu bạn đang chuyển hướng đến một route có tham số "ID" đang được khai báp từ một model Eloquent, bạn có thể pass qua chính model đó. ID sẽ được trích xuất tự động:
+Nếu bạn đang chuyển hướng đến một route có tham số "ID" đang được khai báo từ một model Eloquent, bạn có thể truyền qua chính model đó. ID sẽ được trích xuất tự động:
 
     // For a route with the following URI: profile/{id}
 
     return redirect()->route('profile', [$user]);
 
-Nếu bạn muốn tùy biến giá trị được đặt trong tham số route, bạn nên ghi đè phương thức `getRouteKey` trong model Eloquent của bạn:
+Nếu bạn muốn tùy biến giá trị được set trong tham số route, bạn nên ghi đè phương thức `getRouteKey` trong model Eloquent của bạn:
 
     /**
      * Get the value of the model's route key.
@@ -58,11 +58,11 @@ Nếu bạn muốn tùy biến giá trị được đặt trong tham số route,
 <a name="redirecting-controller-actions"></a>
 ## Redirect tới Controller Action
 
-Bạn cũng có thể tạo chuyển hướng đến [controller actions](/docs/{{version}}/controllers). Để làm điều đó, bạn hãy pass một bộ controller và tên action cho phương thức `action`. Hãy nhớ rằng, bạn không cần chỉ định namespace cho controller vì `RouteServiceProvider` của Laravel sẽ tự động set theo namespace của controller mặc định:
+Bạn cũng có thể tạo chuyển hướng đến [controller actions](/docs/{{version}}/controllers). Để làm điều đó, bạn hãy truyền vào một controller và tên action của nó cho phương thức `action`. Hãy nhớ rằng, bạn không cần chỉ định namespace cho controller đó vì `RouteServiceProvider` của Laravel sẽ tự động set theo namespace của controller mặc định:
 
     return redirect()->action('HomeController@index');
 
-Nếu controller route của bạn yêu cầu tham số, bạn có thể pass chúng làm tham số thứ hai cho phương thức `action`:
+Nếu controller route của bạn yêu cầu tham số, bạn có thể truyền chúng làm tham số thứ hai cho phương thức `action`:
 
     return redirect()->action(
         'UserController@profile', ['id' => 1]
@@ -79,7 +79,7 @@ Chuyển hướng đến một URL mới và [flashing data tới session](/docs
         return redirect('dashboard')->with('status', 'Profile updated!');
     });
 
-Sau khi người dùng đã được chuyển hướng, bạn có thể hiển thị message được flash từ [session](/docs/{{version}}/session). Ví dụ: sử dụng [cú pháp Blade](/docs/{{version}}/blade):
+Sau khi người dùng đã được chuyển hướng, bạn có thể hiển thị message đã được flash từ [session](/docs/{{version}}/session). Ví dụ: sử dụng [cú pháp Blade](/docs/{{version}}/blade):
 
     @if (session('status'))
         <div class="alert alert-success">

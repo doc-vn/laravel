@@ -11,7 +11,7 @@
 <a name="introduction"></a>
 ## Giới thiệu
 
-Khi xây dựng API JSON, bạn thường sẽ cần phải chuyển đổi các model và quan hệ của bạn thành các mảng hoặc JSON. Eloquent có chứa các phương thức thuận tiện để thực hiện các chuyển đổi này, cũng như kiểm soát các thuộc tính nào sẽ được chứa trong các serialization của bạn.
+Khi xây dựng API JSON, bạn thường sẽ cần phải chuyển đổi các model và quan hệ của bạn thành các mảng hoặc JSON. Eloquent có chứa các phương thức thuận tiện để thực hiện các chuyển đổi này, cũng như kiểm soát các thuộc tính nào sẽ được chứa trong các chuyển đổi của bạn.
 
 <a name="serializing-models-and-collections"></a>
 ## Serialize Model và Collection
@@ -19,7 +19,7 @@ Khi xây dựng API JSON, bạn thường sẽ cần phải chuyển đổi các
 <a name="serializing-to-arrays"></a>
 ### Serialize vào Array
 
-Để chuyển đổi một model và [quan hệ](/docs/{{version}}/eloquent-relationships) của nó thành một mảng, bạn nên sử dụng phương thức `toArray`. Phương pháp này là đệ quy, vì vậy tất cả các thuộc tính và tất cả các quan hệ (bao gồm cả quan hệ của quan hệ) cũng sẽ được chuyển đổi thành mảng:
+Để chuyển đổi một model và [quan hệ](/docs/{{version}}/eloquent-relationships) của nó thành một mảng, bạn nên sử dụng phương thức `toArray`. Phương thức này là đệ quy, vì vậy tất cả các thuộc tính và tất cả các quan hệ (bao gồm cả quan hệ của quan hệ) cũng sẽ được chuyển đổi thành mảng:
 
     $user = App\User::with('roles')->first();
 
@@ -34,7 +34,7 @@ Bạn cũng có thể chuyển đổi toàn bộ [collection](/docs/{{version}}/
 <a name="serializing-to-json"></a>
 ### Serialize vào JSON
 
-Để chuyển đổi một model thành JSON, bạn nên sử dụng phương thức `toJson`. Giống như `toArray`, phương thức` toJson` cũng được đệ quy, vì vậy tất cả các thuộc tính và quan hệ sẽ được chuyển đổi thành JSON:
+Để chuyển đổi một model thành JSON, bạn nên sử dụng phương thức `toJson`. Giống như `toArray`, phương thức` toJson` cũng là đệ quy, vì vậy tất cả các thuộc tính và quan hệ sẽ được chuyển đổi thành JSON:
 
     $user = App\User::find(1);
 
@@ -46,7 +46,7 @@ Ngoài ra, bạn có thể cast một model hoặc một collection thành một
 
     return (string) $user;
 
-Vì các model và collection được chuyển đổi thành JSON khi cast thành chuỗi, nên bạn có thể trả về các đối tượng Eloquent trực tiếp từ các route hoặc controller của application của bạn:
+Vì các model và collection sẽ được chuyển đổi thành JSON khi cast thành một chuỗi, nên bạn có thể trả về các đối tượng Eloquent trực tiếp từ các route hoặc controller của application của bạn:
 
     Route::get('users', function () {
         return App\User::all();
@@ -73,9 +73,9 @@ Thỉnh thoảng bạn có thể muốn giới hạn các thuộc tính, chẳng
         protected $hidden = ['password'];
     }
 
-> {note} Khi ẩn các quan hệ, thì sử dụng tên phương thức của quan hệ đó.
+> {note} Khi ẩn các quan hệ, thì sử dụng tên phương thức của các quan hệ đó.
 
-Ngoài ra, bạn có thể sử dụng thuộc tính `visible` để định nghĩa một danh sách trắng các thuộc tính có thể có trong mảng hoặc JSON của model của bạn. Tất cả các thuộc tính khác sẽ bị ẩn khi model được chuyển đổi thành một mảng hoặc một JSON:
+Ngoài ra, bạn có thể sử dụng thuộc tính `visible` để định nghĩa một danh sách các thuộc tính có thể có trong mảng hoặc JSON của bạn. Tất cả các thuộc tính khác sẽ bị ẩn khi model được chuyển đổi thành một mảng hoặc một JSON:
 
     <?php
 
@@ -95,18 +95,18 @@ Ngoài ra, bạn có thể sử dụng thuộc tính `visible` để định ngh
 
 #### Temporarily Modifying Attribute Visibility
 
-Nếu bạn muốn làm cho một số thuộc tính thường được ẩn sẽ được hiển thị trên một instance model nhất định, bạn có thể sử dụng phương thức `makeVisible`. Phương thức `makeVisible` sẽ trả về một instance model để kết hợp các phương thức với nhau thuận tiện hơn:
+Nếu bạn muốn làm cho một số thuộc tính bị ẩn được hiển thị trên một instance model, bạn có thể sử dụng phương thức `makeVisible`. Phương thức `makeVisible` sẽ trả về một instance model giúp cho việc kết hợp với các phương thức khác thuận tiện hơn:
 
     return $user->makeVisible('attribute')->toArray();
 
-Tương tự, nếu bạn muốn làm cho một số thuộc tính thường được hiển thị sẽ được ẩn trong một instance model nhất định, bạn có thể sử dụng phương thức `makeHidden`.
+Tương tự, nếu bạn muốn làm cho một số thuộc tính thường được hiển thị bị ẩn trong một instance model, bạn có thể sử dụng phương thức `makeHidden`.
 
     return $user->makeHidden('attribute')->toArray();
 
 <a name="appending-values-to-json"></a>
 ## Thêm giá trị vào JSON
 
-Đôi khi, khi cast các model thành một mảng hoặc JSON, bạn có thể muốn thêm các thuộc tính không có cột tương ứng trong cơ sở dữ liệu của bạn. Để làm như vậy, trước tiên, hãy định nghĩa một [accessor](/docs/{{version}}/eloquent-mutators) cho giá trị đó:
+Đôi khi, khi cast một model thành một mảng hoặc một JSON, bạn có thể muốn thêm các thuộc tính mà không có cột tương ứng trong cơ sở dữ liệu của bạn. Để làm như vậy, trước tiên, hãy định nghĩa một [accessor](/docs/{{version}}/eloquent-mutators) cho thuộc tính đó:
 
     <?php
 
@@ -145,7 +145,7 @@ Sau khi tạo accessor xong, hãy thêm tên thuộc tính đó vào thuộc tí
         protected $appends = ['is_admin'];
     }
 
-Khi thuộc tính đã được thêm vào danh sách `appends`, nó sẽ được hiển thị trong JSON và mảng của model. Các thuộc tính trong mảng `appends` cũng sẽ theo các cài đặt `visible` và `hidden` đã được cấu hình trên model.
+Khi thuộc tính đã được thêm vào mảng `appends`, nó sẽ được hiển thị trong JSON hoặc mảng của model. Các thuộc tính trong mảng `appends` cũng sẽ sử dụng các cài đặt `visible` và `hidden` đã được cấu hình trên model.
 
 #### Appending At Run Time
 
@@ -158,7 +158,7 @@ Bạn cũng có thể chỉ dẫn instance model thêm các thuộc tính bằng
 <a name="date-serialization"></a>
 ## Date Serialization
 
-Laravel mở rộng thư viện [Carbon] (https://github.com/briannesbitt/Carbon) date để cung cấp các tùy biến thuận tiện cho định dạng serialize JSON . Để tùy biến tất cả các Carbon date trong application của bạn được serialize, hãy sử dụng phương thức `Carbon::serializeUsing`. Phương thức `serializeUsing` chấp nhận một Closure trả về một chuỗi hiển thị cho một date để serialize JSON:
+Laravel extend thư viện [Carbon] (https://github.com/briannesbitt/Carbon) date để cung cấp các tùy biến thuận tiện cho định dạng chuyển đổi JSON . Để tùy biến cách chuyển đổi của tất cả các Carbon date trong application của bạn, hãy sử dụng phương thức `Carbon::serializeUsing`. Phương thức `serializeUsing` chấp nhận một Closure trả về một chuỗi hiển thị cho một date để chuyển nó sang JSON:
 
     <?php
 

@@ -11,32 +11,32 @@
 <a name="introduction"></a>
 ## Giới thiệu
 
-Contract của Laravel là một bộ interface xác định các core service được cung cấp bởi framework. Ví dụ:  một `Illuminate\Contracts\Queue\Queue` contract xác định các phương thức cần thiết cho việc queueing job, trong khi `Illuminate\Contracts\Mail\Mailer` contract xác định các phương thức cần thiết để gửi e-mail.
+Contract của Laravel là một bộ interface dùng để định nghĩa các core service được cung cấp bởi framework. Ví dụ: một `Illuminate\Contracts\Queue\Queue` contract định nghĩa các phương thức cần thiết cho việc queueing job, trong khi `Illuminate\Contracts\Mail\Mailer` contract định nghĩa các phương thức cần thiết để gửi e-mail.
 
-Mỗi contract có một implementation tương ứng được cung cấp bởi framework. Ví dụ: Laravel cung cấp một implementation queue với nhiều driver khác nhau và một implementation mailer được cung cấp bởi [SwiftMailer](https://swiftmailer.symfony.com/).
+Mỗi contract có một implementation tương ứng được cung cấp bởi framework. Ví dụ: Laravel cung cấp một implementation của queue với nhiều driver khác nhau và một implementation của mailer được dựa trên [SwiftMailer](https://swiftmailer.symfony.com/).
 
-Tất cả các contracts của Laravel đều lưu trữ trong [GitHub của chúng](https://github.com/illuminate/contracts). Điều này cung cấp một điểm tham chiếu nhanh cho tất cả các contract có sẵn, cũng như một package riêng, có thể được sử dụng bởi các developer package.
+Tất cả các contract của Laravel đều lưu trữ trong [GitHub của chúng](https://github.com/illuminate/contracts). Điều này cung cấp một điểm tham chiếu nhanh cho tất cả các contract có sẵn, cũng như một package riêng, có thể được sử dụng bởi các nhà phát triển package.
 
 <a name="contracts-vs-facades"></a>
 ### Contracts với Facades
 
-[Facade](/docs/{{version}}/facades) của Laravel và helper function cung cấp một cách đơn giản để sử dụng các service của Laravel mà không cần phải gõ và resolve các contract ra khỏi container service. Trong hầu hết các trường hợp, mỗi facade có một contract tương ứng.
+[Facade](/docs/{{version}}/facades) của Laravel và các helper function sẽ cung cấp một cách đơn giản để sử dụng các service của Laravel mà không cần phải khai báo và resolve các contract ra khỏi container service. Trong hầu hết các trường hợp, mỗi facade có một contract tương ứng.
 
-Không giống như facade, không yêu cầu bạn phải khởi tạo chúng trong hàm khởi tạo của class, các contract bắt bạn phải xác định rõ các phụ thuộc cho các class của bạn. Một số developer thích xác định rõ sự phụ thuộc trong class của họ theo cách này và do đó họ thích sử dụng contract, trong khi các developer khác thích sự tiện lợi của facade.
+Không giống như facade, không yêu cầu bạn phải khởi tạo chúng trong hàm khởi tạo của class, các contract bắt bạn phải định nghĩa rõ các phụ thuộc cho các class của bạn. Một số nhà phát triển thích định nghĩa rõ sự phụ thuộc trong class của họ giống cách này và do đó họ thích sử dụng contract, trong khi các nhà phát triển khác lại thích sự tiện lợi của facade.
 
 > {tip} Hầu hết các ứng dụng sẽ hoạt động tốt bất kể bạn thích facade hay contract. Tuy nhiên, nếu bạn đang xây dựng một package, bạn nên cân nhắc việc sử dụng các contract vì chúng sẽ dễ kiểm tra hơn trong bối cảnh là một package.
 
 <a name="when-to-use-contracts"></a>
 ## Khi nào dùng Contract
 
-Như đã nói ở trên, phần lớn quyết định sử dụng contract hoặc facade sẽ tùy thuộc vào sở thích cá nhân và thị hiếu của nhóm phát triển của bạn. Cả contract và facade đều có thể được sử dụng để tạo ra các application Laravel mạnh mẽ và được thử nghiệm tốt. Miễn là bạn giữ cho class trong phạm vi của nó, bạn sẽ nhận thấy rất ít sự khác biệt thực tế giữa việc sử dụng contract và facade.
+Như đã nói ở trên, phần lớn quyết định sử dụng contract hay là facade sẽ tùy thuộc vào sở thích cá nhân và thị hiếu của nhóm phát triển. Cả contract và facade đều có thể được sử dụng để tạo ra application Laravel mạnh mẽ và được thử nghiệm tốt. Miễn là bạn giữ cho class trong phạm vi của nó, bạn sẽ nhận thấy rất ít sự khác biệt giữa việc sử dụng contract và facade.
 
-Tuy nhiên, bạn vẫn có thể có một số câu hỏi liên quan đến contract. Ví dụ, tại sao lại sử dụng interface ở tất cả? Không sử dụng interface phức tạp hơn không? Các lý do để sử dụng interface sẽ được thể hiện trong các tiêu đề dưới đây: liên kết lỏng và tính đơn giản.
+Tuy nhiên, bạn vẫn có thể có một số câu hỏi liên quan đến contract. Ví dụ, tại sao lại sử dụng interface? Việc sử dụng interface có phức tạp hơn không? Các lý do để sử dụng interface sẽ được thể hiện trong các mục dưới đây: liên kết lỏng và tính đơn giản.
 
 <a name="loose-coupling"></a>
 ### Liên kết lỏng
 
-Trước tiên, hãy xem xét một số code có liên kết chặt chẽ tới một implementation cache. Xem xét ví dụ sau:
+Trước tiên, hãy xem xét một số code có liên kết chặt chẽ tới một implementation của cache. Xem xét ví dụ sau:
 
     <?php
 
@@ -74,11 +74,11 @@ Trước tiên, hãy xem xét một số code có liên kết chặt chẽ tới
         }
     }
 
-Trong class này, code có liên kết chặt chẽ tới một implementation cache đã cho. Nó được liên kết chặt chẽ bởi vì chúng ta phụ thuộc vào class Cache cụ thể từ một package vendor. Nếu API của package đó thay đổi, code của chúng ta cũng phải thay đổi.
+Trong class này, code có liên kết chặt chẽ tới một implementation của cache đã cho. Nó được liên kết chặt chẽ bởi vì chúng ta phụ thuộc vào class Cache từ một package vendor. Nếu API của package đó thay đổi, code của chúng ta cũng phải thay đổi.
 
-Tương tự như vậy, nếu chúng ta muốn thay đổi loại cache (Memcached) sang một loại khác như (Redis), một lần nữa chúng ta sẽ phải sửa đổi source code của mình. Source code của chúng ta không nên biết quá nhiều về người cung cấp dữ liệu hoặc làm thế nào để họ cung cấp dữ liệu đó.
+Tương tự như vậy, nếu chúng ta muốn thay đổi loại cache (Memcached) sang một loại khác như (Redis), một lần nữa chúng ta sẽ phải thay đổi source code của mình. Source code của chúng ta không nên biết quá nhiều về người cung cấp dữ liệu hoặc làm thế nào để họ cung cấp dữ liệu đó.
 
-**Thay vì cách tiếp cận trên, chúng ta có thể cải thiện code của mình bằng cách phụ thuộc vào giao diện đơn giản mà không có bất kỳ liên quan gì đến package vendor:**
+**Thay vì cách tiếp cận trên, chúng ta có thể cải thiện code của mình bằng cách phụ thuộc vào một interface đơn giản mà không có bất kỳ liên quan gì đến package vendor:**
 
     <?php
 
@@ -105,21 +105,21 @@ Tương tự như vậy, nếu chúng ta muốn thay đổi loại cache (Memcac
         }
     }
 
-Bây giờ code của chúng ta sẽ không còn được liên kết với bất kỳ vendor nào cả, hoặc thậm chí là Laravel. Vì contracts package không chứa implementation và không phụ thuộc, bạn có thể dễ dàng viết một implementation thay thế cho bất kỳ contract cụ thể nào, cho phép bạn thay đổi việc implementation cache của bạn mà không phải sửa đổi bất kỳ mã nguồn nào mà đang sử dụng đoạn code cache.
+Bây giờ code của chúng ta sẽ không còn được liên kết với bất kỳ vendor nào nữa, hoặc thậm chí là Laravel. Vì contracts package không chứa implementation và cũng không chứa phụ thuộc nào, bạn có thể dễ dàng viết một implementation thay thế cho bất kỳ contract nào, cho phép bạn thay thế việc implementation của cache mà không phải sửa đổi bất kỳ mã nguồn nào mà đang sử dụng đoạn code cache ở trên.
 
 <a name="simplicity"></a>
 ### Tính đơn giản
 
-Khi tất cả các service của Laravel được xác định gọn gàng trong các interface đơn giản, rất dễ xác định chức năng được cung cấp bởi một service nhất định. **Các contract đóng vai trò là tài liệu ngắn gọn cho các tính năng của framework.**
+Khi tất cả các service của Laravel được định nghĩa vào trong các interface đơn giản, thì sẽ dễ dàng hơn để xác định chức năng mà được cung cấp bởi service đó. **Các contract đóng vai trò là tài liệu ngắn gọn cho các tính năng của framework.**
 
-Ngoài ra, khi bạn phụ thuộc vào các interface đơn giản, code của bạn sẽ dễ hiểu và dễ bảo trì hơn. Thay vì bạn phải tìm các phương thức nào có thể sử dụng trong một class lớn và phức tạp, bạn có thể tham khảo một interface đơn giản, gọn gàng.
+Ngoài ra, khi bạn phụ thuộc vào các interface đơn giản, code của bạn sẽ dễ hiểu và dễ bảo trì hơn. Thay vì bạn phải tìm các phương thức nào có thể sử dụng trong một class lớn và phức tạp, thì bạn có thể tham khảo một interface đơn giản, rõ ràng.
 
 <a name="how-to-use-contracts"></a>
 ## Làm thế nào để dùng Contract
 
-Vậy, làm thế nào để bạn lấy được một implementation của một contract? Nó thực sự khá đơn giản.
+Vậy, làm thế nào để bạn có thể lấy ra được một implementation của một contract? Nó thực sự khá đơn giản.
 
-Có nhiều loại class trong Laravel được resolve thông qua [service container](/docs/{{version}}/container), bao gồm controller, event listener, middleware, cqueued job và thậm chí là route Closure. Vì vậy, để lấy được một implementation của một contract, bạn chỉ cần "loại" interface vào trong hàm khởi tạo của class đang được resolve.
+Có nhiều loại class trong Laravel được resolve thông qua [service container](/docs/{{version}}/container), bao gồm cả controller, event listener, middleware, queued job và thậm chí là route Closure. Vì vậy, để lấy được một implementation của một contract, bạn chỉ cần khai báo interface vào trong hàm khởi tạo của class mà cần được resolve.
 
 Ví dụ, hãy xem event listener này:
 
@@ -161,7 +161,7 @@ Ví dụ, hãy xem event listener này:
         }
     }
 
-Khi event listener được resolve, service container sẽ đọc các loại có trên hàm khởi tạo của class và đưa ra giá trị phù hợp. Để tìm hiểu thêm về việc đăng ký trong service container, hãy xem [tài liệu của nó](/docs/{{version}}/container).
+Khi event listener được resolve, service container sẽ đọc các khai báo có trong hàm khởi tạo của class và đưa vào các giá trị phù hợp. Để tìm hiểu thêm về việc đăng ký trong service container, hãy xem [tài liệu của nó](/docs/{{version}}/container).
 
 <a name="contract-reference"></a>
 ## Contract tham khảo

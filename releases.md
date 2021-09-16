@@ -7,17 +7,17 @@
 <a name="versioning-scheme"></a>
 ## Cấu trúc phiên bản
 
-Cấu trúc của phiên bản của Laravel được duy trì theo quy ước sau: `paradigm.major.minor`. Các phiên bản được phát hành chính thức của framework được phát hành sáu tháng một lần (tháng 2 và tháng 8), trong khi các bản phát hành nhỏ có thể được phát hành thường xuyên hơn có thể cho mỗi tuần. Các bản phát hành nhỏ sẽ **không bao giờ** chứa các thay đổi mà có thể dẫn đến hệ thống của bạn lỗi.
+Cấu trúc của phiên bản của Laravel được duy trì theo quy ước như sau: `paradigm.major.minor`. Các phiên bản được phát hành chính thức của framework được phát hành sáu tháng một lần (tháng 2 và tháng 8), trong khi các bản phát hành nhỏ có thể được phát hành thường xuyên hơn có thể cho mỗi tuần. Các bản phát hành nhỏ sẽ **không bao giờ** chứa các thay đổi mà có thể dẫn đến hệ thống của bạn bị lỗi.
 
-Khi sủ dụng framework Laravel hoặc các component của nó từ application hoặc package của bạn, bạn phải luôn luôn sử dụng một ràng buộc phiên bản, chẳng hạn như `5.5.*`, Vì các bản phát hành chính thức của Laravel có chứa các thay đổi mà làm hệ thống của bạn lỗi. Tuy nhiên, chúng tôi sẽ cố gắng đảm bảo bạn có thể cập nhật lên bản phát hành chính thức mới trong một ngày hoặc ít hơn.
+Khi sủ dụng framework Laravel hoặc các component của nó từ application hoặc package của bạn, bạn phải luôn luôn sử dụng một ràng buộc phiên bản, chẳng hạn như `5.5.*`, Vì các bản phát hành chính thức của Laravel  có thể chứa các thay đổi mà làm hệ thống của bạn bị lỗi. Tuy nhiên, chúng tôi sẽ cố gắng đảm bảo rằng bạn có thể cập nhật lên bản phát hành chính thức mới trong một ngày hoặc ít hơn.
 
-Các bản phát hành thay đổi Paradigm được phân tách qua nhiều năm và đại diện cho những thay đổi căn bản trong kiến trúc và quy ước của framework. Hiện tại, chưa có bản phát hành thay đổi Paradigm nào được phát triển.
+Các bản phát hành thay đổi Paradigm được phân tách qua nhiều năm và đại diện cho những thay đổi căn bản trong kiến trúc và quy ước của framework. Hiện tại, chưa có bản phát hành thay đổi Paradigm nào được phát triển hiện tại.
 
 #### Tại sao Laravel không sử dụng phiên bản Semantic?
 
-Ngoài ra, tất cả các component tùy chọn của Laravel (Cashier, Dusk, Valet, Socialite, vv...) **đều** sử dụng phiên bản Semantic. Tuy nhiên, bản thân framework Laravel thì không. Lý do cho điều này là bởi vì phiên bản Semantic là một cách "tiếp cận" để xác định xem hai đoạn mã có tương thích hay không. Ngay cả khi sử dụng phiên bản Semantic, bạn vẫn phải cài đặt các package nâng cấp và phải chạy lại bộ test suite của bạn để biết được rằng liệu có gì *thực sự* không tương thích với code của bạn không.
+Ngoài ra, tất cả các component tùy chọn của Laravel như (Cashier, Dusk, Valet, Socialite, vv...) **đều** sử dụng phiên bản Semantic. Tuy nhiên, bản thân framework Laravel thì không. Lý do cho điều này là bởi vì phiên bản Semantic là một cách "tiếp cận" để xác định xem hai đoạn mã có tương thích hay không. Ngay cả khi sử dụng phiên bản Semantic, bạn vẫn phải cài đặt các package nâng cấp và phải chạy lại bộ test suite của bạn để biết được rằng liệu có gì *thực sự* không tương thích với code của bạn không.
 
-Vì vậy, thay vào đó, framework Laravel sử dụng cấu trúc phiên bản có tính truyền đạt cao hơn về phạm vi phát hành thực tế. Hơn nữa, vì các bản phát hành nhỏ sẽ **không bao giờ** chứa các thay đổi mà dẫn đến hệ thống của bạn bị lỗi, nên bạn sẽ không bao giờ nhận được thay đổi nào gây lỗi, chừng nào các ràng buộc phiên bản của bạn tuân theo quy ước `paradigm.major.*`.
+Vì vậy, thay vào đó, framework Laravel sử dụng cấu trúc phiên bản có tính truyền đạt cao hơn về phạm vi phát hành thực tế. Hơn nữa, vì các bản phát hành nhỏ sẽ **không bao giờ** chứa các thay đổi mà dẫn đến hệ thống của bạn bị lỗi, nên bạn sẽ không bao giờ nhận được các thay đổi nào mà có thể gây lỗi, chừng nào các ràng buộc phiên bản của bạn vẫn tuân theo quy ước `paradigm.major.*`.
 
 <a name="support-policy"></a>
 ## Chính sách hỗ trợ
@@ -43,9 +43,9 @@ Tất cả các cấu hình worker của bạn được lưu trữ trong một f
 
 ### Package Discovery
 
-> {video} Có một [video hướng dẫn](https://laracasts.com/series/whats-new-in-laravel-5-5/episodes/5) miến phí cho tính năng này ở trên Laracasts.
+> {video} Có một [video hướng dẫn](https://laracasts.com/series/whats-new-in-laravel-5-5/episodes/5) miễn phí cho tính năng này ở trên Laracasts.
 
-Trong các phiên bản trước của Laravel, việc cài đặt package thường yêu cầu một số bước bổ sung như thêm service provider vào file cấu hình `app` của bạn và đăng ký các facade liên quan. Tuy nhiên, với Laravel 5.5, Laravel có thể tự động phát hiện và tự đăng ký service provider và facade cho bạn.
+Trong các phiên bản trước của Laravel, việc cài đặt package thường yêu cầu một số bước bổ sung như thêm service provider vào file cấu hình `app` của bạn và đăng ký các facade liên quan. Tuy nhiên, với Laravel 5.5, Laravel có thể tự động phát hiện và tự đăng ký service provider và các facade cho bạn.
 
 Ví dụ, bạn có thể trải nghiệm điều này bằng cách cài đặt một package rất phổ biến là `barryvdh/laravel-debugbar` vào application Laravel của bạn. Khi package đã được cài đặt qua Composer, debug bar sẽ tự động thêm vào cho application của bạn mà không cần cấu hình thêm bất cứ thứ gì khác:
 
@@ -65,7 +65,7 @@ Các nhà phát triển package cũng chỉ cần thêm các service provider v�
 
 ### API Resources
 
-Khi xây dựng API, bạn có thể cần một lớp chuyển đổi nằm giữa các model Eloquent của bạn và các response JSON được trả về cho người dùng application của bạn. Các class resource của Laravel cho phép bạn chuyển đổi một cách rõ ràng và dễ hiểu các model và collection model của bạn thành JSON.
+Khi xây dựng API, bạn có thể cần một lớp chuyển đổi nằm giữa các model Eloquent của bạn và các response JSON được trả về cho người dùng application. Các class resource của Laravel cho phép bạn chuyển đổi một cách rõ ràng và dễ hiểu các model và các collection model của bạn thành JSON.
 
 Một class resource đại diện cho một model cần được chuyển đổi thành cấu trúc JSON. Ví dụ, đây là một class `UserResource` đơn giản:
 
@@ -99,7 +99,7 @@ Tất nhiên, đây chỉ là ví dụ cơ bản nhất về API resource. Larav
 
 ### Console Command Auto-Registration
 
-> {video} Có một [video hướng dẫn](https://laracasts.com/series/whats-new-in-laravel-5-5/episodes/12) miến phí cho tính năng này ở trên Laracasts.
+> {video} Có một [video hướng dẫn](https://laracasts.com/series/whats-new-in-laravel-5-5/episodes/12) miễn phí cho tính năng này ở trên Laracasts.
 
 Khi tạo các lệnh console mới, bạn sẽ không còn phải bắt buộc liệt kê chúng theo cách thủ công trong thuộc tính `$commands` trong Console kernel của bạn. Thay vào đó, một phương thức `load` mới sẽ được gọi từ phương thức `commands` từ kernel của bạn, nó sẽ quét một thư mục nhất định và sẽ tự động đăng ký bất kỳ lệnh console nào có trong thư mục đó:
 
@@ -117,7 +117,7 @@ Khi tạo các lệnh console mới, bạn sẽ không còn phải bắt buộc 
 
 ### New Frontend Presets
 
-> {video} Có một [video hướng dẫn](https://laracasts.com/series/whats-new-in-laravel-5-5/episodes/4) miến phí cho tính năng này ở trên Laracasts.
+> {video} Có một [video hướng dẫn](https://laracasts.com/series/whats-new-in-laravel-5-5/episodes/4) miễn phí cho tính năng này ở trên Laracasts.
 
 Mặc dù Vue scaffolding vẫn được có sẵn trong Laravel 5.5, nhưng cũng có thêm một số tùy chọn cài đặt frontend mới mà bạn có thể sử dụng. Trong một application Laravel mới, bạn có thể thay đổi Vue scaffolding thành React scaffolding bằng lệnh `preset`:
 
@@ -140,7 +140,7 @@ Kết hợp job cho phép bạn khai báo một danh sách các queued job nên 
 
 ### Queued Job Rate Limiting
 
-Nếu application của bạn tương tác với Redis, bạn có thể điều tiết các queued job theo thời gian hoặc đồng thời. Tính năng này có thể hỗ trợ khi các queued job của bạn đang tương tác với các API cũng bị giới hạn về tỷ lệ chạy. Ví dụ, bạn có thể điều tiết một loại job nhất định để chỉ chạy 10 lần trong 60 giây.
+Nếu application của bạn tương tác với Redis, bạn có thể điều tiết các queued job theo thời gian hoặc đồng thời. Tính năng này có thể hỗ trợ khi các queued job của bạn đang tương tác với các API mà cũng bị giới hạn về tỷ lệ chạy. Ví dụ, bạn có thể điều tiết một loại job nhất định chỉ chạy 10 lần trong 60 giây.
 
     Redis::throttle('key')->allow(10)->every(60)->then(function () {
         // Job logic...
@@ -164,7 +164,7 @@ Ngoài ra, bạn có thể khai báo số lượng worker tối đa có thể x�
 
 ### Time Based Job Attempts
 
-Thay thế cho việc định nghĩa số lần một job có thể được thử trước khi nó thất bại, bạn có thể định nghĩa thời gian mà job đó hết thời gian. Điều này cho phép một job được thử thoải mái trong một khoảng thời gian nhất định. Để định nghĩa thời gian mà một job hết thời gian, hãy thêm phương thức `retryUntil` vào class job của bạn:
+Thay thế cho việc định nghĩa số lần một job có thể được thử trước khi nó thất bại, bạn có thể định nghĩa thời gian mà job đó sẽ hết thời gian. Điều này cho phép một job được thử thoải mái trong một khoảng thời gian nhất định. Để định nghĩa thời gian mà một job sẽ hết thời gian, hãy thêm phương thức `retryUntil` vào class job của bạn:
 
     /**
      * Determine the time at which the job should timeout.
@@ -180,13 +180,13 @@ Thay thế cho việc định nghĩa số lần một job có thể được th�
 
 ### Validation Rule Objects
 
-> {video} Có một [video hướng dẫn](https://laracasts.com/series/whats-new-in-laravel-5-5/episodes/7) miến phí cho tính năng này ở trên Laracasts.
+> {video} Có một [video hướng dẫn](https://laracasts.com/series/whats-new-in-laravel-5-5/episodes/7) miễn phí cho tính năng này ở trên Laracasts.
 
-Các đối tượng validation rule cung cấp một cách mới, nhỏ gọn để thêm các validation rule tùy biến vào application của bạn. Trong các phiên bản trước của Laravel, phương thức `Validator::extend` đã được sử dụng để thêm các validation rule tùy biến thông qua Closures. Tuy nhiên, điều này có thể trở lên rất cồng kềnh. Trong Laravel 5.5, lệnh Artisan `make:rule` mới sẽ tạo một validation rule mới trong thư mục `app/Rules`:
+Các đối tượng validation rule cung cấp một cách mới, nhỏ gọn để thêm các validation rule tùy biến vào application của bạn. Trong các phiên bản trước của Laravel, phương thức `Validator::extend` đã được sử dụng để thêm các validation rule tùy biến thông qua Closures. Tuy nhiên, điều này có thể trở lên rất cồng kềnh. Trong Laravel 5.5, lệnh Artisan `make:rule` mới sẽ tạo ra một file validation rule mới trong thư mục `app/Rules`:
 
     php artisan make:rule ValidName
 
-Một đối tượng validation rule chỉ có hai phương thức: `passes` và `message`. Phương thức `passes` nhận vào giá trị và tên thuộc tính và sẽ trả về `true` hoặc `false` tùy thuộc vào giá trị thuộc tính có hợp lệ hay không. Phương thức `message` sẽ trả về thông báo lỗi của validation, nó sẽ được sử dụng khi validation thất bại:
+Một đối tượng validation rule chỉ có hai phương thức: `passes` và `message`. Phương thức `passes` nhận vào giá trị và tên của thuộc tính và sẽ trả về `true` hoặc `false` tùy thuộc vào giá trị thuộc tính có hợp lệ hay không. Phương thức `message` sẽ trả về thông báo lỗi của validation, nó sẽ được sử dụng khi validation thất bại:
 
     <?php
 
@@ -219,7 +219,7 @@ Một đối tượng validation rule chỉ có hai phương thức: `passes` v�
         }
     }
 
-Khi rule đã được định nghĩa, bạn có thể sử dụng rule đó bằng cách pass một instance của đối tượng rule đó với các rule validation khác của bạn:
+Khi rule đã được định nghĩa, bạn có thể sử dụng rule đó bằng cách truyền một instance của đối tượng rule đó với các rule validation khác của bạn:
 
     use App\Rules\ValidName;
 
@@ -267,7 +267,7 @@ Một middleware mới `App\Http\Middleware\TrustProxies` đã có mặc định
 
 ### On-Demand Notifications
 
-Thỉnh thoảng bạn có thể cần gửi thông báo cho người mà chưa được lưu trữ dưới dạng một "user" application của bạn. Sử dụng phương thức `Notification::route`, bạn có thể chỉ định thông tin ad-hoc notification routing trước khi gửi thông báo:
+Thỉnh thoảng bạn có thể cần gửi thông báo cho người mà thông tin người đó chưa được lưu vào trong bảng cơ sở dữ liệu. Sử dụng phương thức `Notification::route`, bạn có thể chỉ định thông tin ad-hoc notification routing trước khi gửi thông báo:
 
     Notification::route('mail', 'taylor@laravel.com')
                 ->route('nexmo', '5555555555')
@@ -275,9 +275,9 @@ Thỉnh thoảng bạn có thể cần gửi thông báo cho người mà chưa 
 
 ### Renderable Mailables
 
-> {video} There is a free [video tutorial](https://laracasts.com/series/whats-new-in-laravel-5-5/episodes/6) for this feature available on Laracasts.
+> {video} Có một [video hướng dẫn](https://laracasts.com/series/whats-new-in-laravel-5-5/episodes/6) miễn phí cho tính năng này ở trên Laracasts.
 
-Mailable có thể được trả lại trực tiếp từ route, cho phép bạn preview các thiết kế mailable của bạn trên trình duyệt:
+Mailable có thể được trả lại trực tiếp từ route, cho phép bạn xem xét các thiết kế mailable của bạn trên trình duyệt:
 
     Route::get('/mailable', function () {
         $invoice = App\Invoice::find(1);
@@ -287,7 +287,7 @@ Mailable có thể được trả lại trực tiếp từ route, cho phép bạ
 
 ### Renderable & Reportable Exceptions
 
-> {video} Có một [video hướng dẫn](https://laracasts.com/series/whats-new-in-laravel-5-5/episodes/18) miến phí cho tính năng này ở trên Laracasts.
+> {video} Có một [video hướng dẫn](https://laracasts.com/series/whats-new-in-laravel-5-5/episodes/18) miễn phí cho tính năng này ở trên Laracasts.
 
 Trong các phiên bản trước của Laravel, bạn có thể bạn đã phải dùng đến "kiểm tra kiểu" trong xử lý ngoại lệ của bạn để hiển thị các response tùy biến cho một ngoại lệ nhất định. Chẳng hạn, bạn có thể đã viết code như thế này trong phương thức `render` của xử lý ngoại lệ của bạn:
 
@@ -307,7 +307,7 @@ Trong các phiên bản trước của Laravel, bạn có thể bạn đã phả
         return parent::render($request, $exception);
     }
 
-Trong Laravel 5.5, bây giờ bạn có thể định nghĩa một phương thức `render` trực tiếp trên các ngoại lệ của bạn. Điều này cho phép bạn đặt logic tạo response tùy biến trực tiếp lên ngoại lệ, giúp tránh cồng kềnh các logic có điều kiện trong trình xử lý ngoại lệ của bạn. Nếu bạn cũng muốn tùy biến logic report cho ngoại lệ, bạn có thể định nghĩa một phương thức `report` trong class này:
+Trong Laravel 5.5, bây giờ bạn có thể định nghĩa một phương thức `render` trực tiếp trên các ngoại lệ của bạn. Điều này cho phép bạn set các logic tạo response tùy biến trực tiếp lên trên ngoại lệ, giúp tránh cồng kềnh các logic có nhiều điều kiện trong trình xử lý ngoại lệ của bạn. Nếu bạn cũng muốn tùy biến logic report cho ngoại lệ, bạn có thể định nghĩa một phương thức `report` trong class này:
 
     <?php
 
@@ -341,9 +341,9 @@ Trong Laravel 5.5, bây giờ bạn có thể định nghĩa một phương th�
 
 ### Request Validation
 
-> {video} Có một [video hướng dẫn](https://laracasts.com/series/whats-new-in-laravel-5-5/episodes/2) miến phí cho tính năng này ở trên Laracasts.
+> {video} Có một [video hướng dẫn](https://laracasts.com/series/whats-new-in-laravel-5-5/episodes/2) miễn phí cho tính năng này ở trên Laracasts.
 
-Hiện tại, đối tượng `Illuminate\Http\Request` cung cấp phương thức `validate`, cho phép bạn validate một incoming request từ một route Closure hoặc controller:
+Hiện tại, đối tượng `Illuminate\Http\Request` cung cấp phương thức `validate`, cho phép bạn validate một request đến từ một route Closure hoặc một controller:
 
     use Illuminate\Http\Request;
 
@@ -358,7 +358,7 @@ Hiện tại, đối tượng `Illuminate\Http\Request` cung cấp phương th�
 
 ### Consistent Exception Handling
 
-Xử lý ngoại lệ validation hiện nhất quán trong toàn bộ framework. Trước đây, có nhiều vị trí trong framework yêu cầu phải được tùy chỉnh để thay đổi format mặc định cho các phản hồi lỗi JSON validation. Ngoài ra, hiện tại, các format mặc định cho các phản hồi JSON validation trong Laravel 5.5 cũng đã tuân thủ quy ước sau:
+Xử lý ngoại lệ validation hiện đã nhất quán trong toàn bộ framework. Trước đây, có nhiều vị trí trong framework yêu cầu phải được tùy chỉnh để thay đổi format mặc định cho các phản hồi lỗi JSON validation. Ngoài ra, hiện tại, các format mặc định cho các phản hồi JSON validation trong Laravel 5.5 cũng đã tuân thủ quy ước sau:
 
     {
         "message": "The given data was invalid.",
@@ -374,7 +374,7 @@ Xử lý ngoại lệ validation hiện nhất quán trong toàn bộ framework.
         }
     }
 
-Tất cả định dạng lỗi JSON validation có thể được kiểm soát bằng cách định nghĩa một phương thức trên class `App\Exceptions\Handler` của bạn. Ví dụ, tùy chỉnh sau đây sẽ định dạng các phản hồi JSON validation sử dụng quy ước Laravel 5.4.
+Tất cả định dạng lỗi JSON validation có thể được kiểm soát bằng cách định nghĩa một phương thức trên class `App\Exceptions\Handler` của bạn. Ví dụ, tùy chỉnh sau đây sẽ định dạng các phản hồi JSON validation sử dụng theo quy ước của bản Laravel 5.4.
 
     use Illuminate\Validation\ValidationException;
 
@@ -402,7 +402,7 @@ Các driver bộ nhớ cache như Redis và Memcached hiện có hỗ trợ đ�
         // Lock was not able to be obtained...
     }
 
-Hoặc, bạn có thể pass một Closure cho phương thức `get`. Closure sẽ chỉ được thực hiện nếu có thể lấy được lock và lock sẽ tự động được giải phóng sau khi thực hiện xong Closure:
+Hoặc, bạn có thể truyền vào một Closure cho phương thức `get`. Closure sẽ chỉ được thực hiện nếu có thể lấy được lock và lock sẽ tự động được giải phóng sau khi thực hiện xong Closure:
 
     Cache::lock('lock-name', 60)->get(function () {
         // Lock obtained for 60 seconds...
@@ -416,9 +416,9 @@ Ngoài ra, bạn có thể "chặn" cho đến khi lock đó sẵn sàng trở l
 
 ### Blade Improvements
 
-> {video} Có một [video hướng dẫn](https://laracasts.com/series/whats-new-in-laravel-5-5/episodes/10) miến phí cho tính năng này ở trên Laracasts.
+> {video} Có một [video hướng dẫn](https://laracasts.com/series/whats-new-in-laravel-5-5/episodes/10) miễn phí cho tính năng này ở trên Laracasts.
 
-Lập trình một lệnh tùy biến đôi khi phức tạp hơn khi định nghĩa các câu lệnh câu lệnh điều kiện tùy biến đơn giản. Vì lý do đó, Blade hiện cung cấp một phương thức `Blade::if` cho phép bạn định nghĩa các câu lệnh điều kiện tùy biến bằng cách sử dụng Closures. Ví dụ: hãy định nghĩa một câu lệnh điều kiện tùy biến kiểm tra môi trường của application hiện tại. Chúng ta có thể làm điều này trong phương thức `boot` của `AppServiceProvider`:
+Lập trình một lệnh tùy biến đôi khi phức tạp hơn là khi định nghĩa các câu lệnh điều kiện tùy biến đơn giản. Vì lý do đó, Blade hiện cung cấp một phương thức `Blade::if` cho phép bạn định nghĩa các câu lệnh điều kiện tùy biến bằng cách sử dụng Closures. Ví dụ: hãy định nghĩa một câu lệnh điều kiện tùy biến kiểm tra môi trường của application hiện tại. Chúng ta có thể làm điều này trong phương thức `boot` của `AppServiceProvider`:
 
     use Illuminate\Support\Facades\Blade;
 
@@ -434,7 +434,7 @@ Lập trình một lệnh tùy biến đôi khi phức tạp hơn khi định ng
         });
     }
 
-Khi câu lệnh điều kiện tùy biến đã được định nghĩa xong, chúng ta có thể dễ dàng sử dụng nó trên các template của bạn:
+Khi câu lệnh điều kiện tùy biến này đã được định nghĩa xong, chúng ta có thể dễ dàng sử dụng nó trên các template của bạn:
 
     @env('local')
         // The application is in the local environment...
@@ -454,13 +454,13 @@ Ngoài khả năng dễ dàng định nghĩa các câu lệnh điều kiện Bla
 
 ### New Routing Methods
 
-> {video} Có một [video hướng dẫn](https://laracasts.com/series/whats-new-in-laravel-5-5/episodes/16) miến phí cho tính năng này ở trên Laracasts.
+> {video} Có một [video hướng dẫn](https://laracasts.com/series/whats-new-in-laravel-5-5/episodes/16) miễn phí cho tính năng này ở trên Laracasts.
 
-Nếu bạn đang định nghĩa một route để chuyển hướng đến một URI khác, bây giờ bạn có thể sử dụng phương thức `Route::redirect`. Phương thức này cung cấp một shortcut thuận tiện để bạn không phải định nghĩa lại một route hoặc một controller để thực hiện chuyển hướng:
+Nếu bạn đang định nghĩa một route để chuyển hướng đến một URI khác, bây giờ bạn có thể sử dụng phương thức `Route::redirect`. Phương thức này cung cấp một shortcut thuận tiện để bạn không phải định nghĩa lại một route hoặc một controller mới để thực hiện chuyển hướng:
 
     Route::redirect('/here', '/there', 301);
 
-Nếu route của bạn chỉ cần trả về một view, thì bây giờ bạn có thể sử dụng phương thức `Route::view`. Giống như phương thức `redirect`, phương thức này cung cấp một shortcut đơn giản để bạn không phải xác định một route hoặc một controller. Phương thức `view` chấp nhận URI làm tham số đầu tiên và tên view làm tham số thứ hai. Ngoài ra, bạn có thể cung cấp một mảng dữ liệu để pass đến view dưới dạng tham số thứ ba tùy chọn:
+Nếu route của bạn chỉ cần trả về một view, thì bây giờ bạn có thể sử dụng phương thức `Route::view`. Giống như phương thức `redirect`, phương thức này cung cấp một shortcut đơn giản để bạn không phải xác định một route hoặc một controller. Phương thức `view` chấp nhận URI làm tham số đầu tiên và tên view làm tham số thứ hai. Ngoài ra, bạn có thể cung cấp một mảng dữ liệu để truyền đến view dưới dạng tham số thứ ba tùy chọn:
 
     Route::view('/welcome', 'welcome');
 
@@ -470,7 +470,7 @@ Nếu route của bạn chỉ cần trả về một view, thì bây giờ bạn
 
 #### The `sticky` Option
 
-Khi định cấu hình  đọc / ghi cho các kết nối cơ sở dữ liệu, một tùy chọn cấu hình `stick` mới cũng có thể được sử dụng:
+Khi cấu hình đọc / ghi cho các kết nối cơ sở dữ liệu, một tùy chọn cấu hình `stick` mới cũng có thể được sử dụng:
 
     'mysql' => [
         'read' => [
@@ -489,4 +489,4 @@ Khi định cấu hình  đọc / ghi cho các kết nối cơ sở dữ liệu,
         'prefix'    => '',
     ],
 
-Tùy chọn `stick` là một giá trị *tùy chọn* có thể được sử dụng để cho phép đọc ngay các bản ghi đã được ghi vào cơ sở dữ liệu trong request hiện tại. Nếu tùy chọn `stick` được bật và thao tác "ghi" đã được thực hiện đối với cơ sở dữ liệu trong request hiện tại, mọi thao tác "đọc" tiếp theo sẽ sử dụng kết nối của thao tác "ghi" vừa xong. Điều này đảm bảo rằng mọi dữ liệu được ghi trong cùng một request có thể được đọc lại ngay lập tức từ cơ sở dữ liệu trong cùng một request đó. Tùy thuộc vào application của bạn, mà bạn có thể quyết định xem đây có phải là một hành động mong muốn cho application của bạn hay không.
+Tùy chọn `stick` là một giá trị *tùy chọn* có thể được sử dụng để cho phép đọc ngay các bản ghi đã được ghi vào cơ sở dữ liệu trong request hiện tại. Nếu tùy chọn `stick` được bật và các thao tác "ghi" đã được thực hiện đối với cơ sở dữ liệu trong request hiện tại, thì mọi thao tác "đọc" tiếp theo đó sẽ sử dụng kết nối của thao tác "ghi" vừa được gọi. Điều này đảm bảo rằng mọi dữ liệu được ghi trong cùng một request có thể được đọc lại ngay lập tức từ cơ sở dữ liệu trong cùng một request đó. Tùy thuộc vào application của bạn, mà bạn có thể quyết định xem đây có phải là một hành động mong muốn cho application của bạn hay không.

@@ -37,12 +37,12 @@ Laravel cung cấp một API rất dễ hiểu để thực hiện các HTTP req
         }
     }
 
-Phương thức `get` tạo một request `GET` vào application, trong khi phương thức `assertStatus` xác nhận rằng response được trả về phải có mã trạng thái HTTP đã cho. Ngoài assertion đơn giản này, Laravel còn chứa nhiều assertion khác nhau để kiểm tra các header response, nội dung, cấu trúc JSON, vv...
+Phương thức `get` tạo một request `GET` vào application, trong khi phương thức `assertStatus` xác nhận rằng response được trả về có phải có mã trạng thái HTTP đã cho hay không. Ngoài assertion đơn giản này, Laravel còn chứa nhiều assertion khác nhau để kiểm tra các header response, nội dung, cấu trúc JSON, vv...
 
 <a name="customizing-request-headers"></a>
 ### Tuỳ biến Request Header
 
-Bạn có thể sử dụng phương thức `withHeaders` để tùy biến các header của request trước khi nó được gửi đến application. Điều này cho phép bạn thêm bất kỳ header tùy biến nào bạn muốn vào request:
+Bạn có thể sử dụng phương thức `withHeaders` để tùy biến các header của request trước khi nó được gửi đến application. Điều này cho phép bạn thêm bất kỳ header tùy biến nào bạn muốn vào trong request:
 
     <?php
 
@@ -101,14 +101,14 @@ Tất nhiên, cách dùng chủ yếu của session là để duy trì trạng t
         }
     }
 
-Bạn cũng có thể khai báo guard nào sẽ được sử dụng để xác thực người dùng đã cho bằng cách chuyển tên guard làm tham số thứ hai cho phương thức `actingAs`:
+Bạn cũng có thể khai báo guard nào sẽ được sử dụng để xác thực người dùng đã cho bằng cách truyền tên guard làm tham số thứ hai cho phương thức `actingAs`:
 
     $this->actingAs($user, 'api')
 
 <a name="testing-json-apis"></a>
 ## Test JSON API
 
-Laravel cũng cung cấp một số helper để kiểm tra API JSON và response của chúng. Ví dụ, các phương thức `json`, `get`, `post`, `put`, `patch`, và `delete` có thể được sử dụng để đưa ra các request với các method HTTP khác nhau. Bạn cũng có thể dễ dàng pass dữ liệu và header cho các phương thức này. Để bắt đầu, hãy viết một bài test để thực hiện một request `POST` đến `/user` và assert rằng một dữ liệu bạn mong đợi sẽ trả về:
+Laravel cũng cung cấp một số helper để kiểm tra API JSON và response của chúng. Ví dụ, các phương thức `json`, `get`, `post`, `put`, `patch`, và `delete` có thể được sử dụng để đưa ra các request với các method HTTP khác nhau. Bạn cũng có thể dễ dàng truyền dữ liệu và các header cho các phương thức này. Để bắt đầu, hãy viết một bài test để thực hiện một request `POST` đến `/user` và xác nhận rằng một dữ liệu mà bạn mong đợi sẽ trả về:
 
     <?php
 
@@ -136,7 +136,7 @@ Laravel cũng cung cấp một số helper để kiểm tra API JSON và respons
 <a name="verifying-exact-match"></a>
 ### Verifying An Exact JSON Match
 
-Nếu bạn muốn kiểm tra mảng đã cho là khớp **chính xác** cho response JSON được application trả về, bạn nên sử dụng phương thức `assertExactJson`:
+Nếu bạn muốn kiểm tra mảng đã cho là giống **chính xác** với response JSON được application trả về, bạn nên sử dụng phương thức `assertExactJson`:
 
     <?php
 
@@ -162,7 +162,7 @@ Nếu bạn muốn kiểm tra mảng đã cho là khớp **chính xác** cho res
 <a name="testing-file-uploads"></a>
 ## Test File Upload
 
-Class `Illuminate\Http\UploadedFile` cung cấp một phương thức `fake` có thể được sử dụng để tạo các file giả hoặc hình ảnh giả để test. Điều này, kết hợp với phương thức `fake` của facade `Storage` sẽ đơn giản hóa rất nhiều cho việc test các file upload. Ví dụ: bạn có thể kết hợp hai chức năng này để dễ dàng test cho form upload avatar:
+Class `Illuminate\Http\UploadedFile` cung cấp một phương thức `fake` có thể được sử dụng để tạo các file giả hoặc hình ảnh giả để test. Điều này, kết hợp với phương thức `fake` của facade `Storage` sẽ đơn giản hóa rất nhiều cho việc test các file upload. Ví dụ: bạn có thể kết hợp hai chức năng này để dễ dàng test cho một form upload avatar:
 
     <?php
 
@@ -335,7 +335,7 @@ Yêu cầu response không chứa đoạn JSON đã cho:
 <a name="assert-json-missing-exact"></a>
 #### assertJsonMissingExact
 
-Yêu cầu response không chứa đoạn JSON chính xác:
+Yêu cầu response không chứa chính xác đoạn JSON đã cho:
 
     $response->assertJsonMissingExact(array $data);
 
@@ -349,14 +349,14 @@ Yêu cầu response có cấu trúc JSON đã cho:
 <a name="assert-json-validation-errors"></a>
 #### assertJsonValidationErrors
 
-Yêu cầu response trả về lỗi JSON validation cho các key:
+Yêu cầu JSON response trả về lỗi validation cho các key:
 
     $response->assertJsonValidationErrors($keys);
 
 <a name="assert-plain-cookie"></a>
 #### assertPlainCookie
 
-Yêu cầu response có chứa một cookie đã cho (không được mã hóa):
+Yêu cầu response phải chứa một cookie đã cho (không được mã hóa):
 
     $response->assertPlainCookie($cookieName, $value = null);
 
@@ -391,14 +391,14 @@ Yêu cầu session có chứa một phần dữ liệu đã cho:
 <a name="assert-session-has-all"></a>
 #### assertSessionHasAll
 
-Yêu cầu session có chứa một danh sách các giá trị nhất định:
+Yêu cầu session có chứa một mảng các giá trị nhất định:
 
     $response->assertSessionHasAll(array $data);
 
 <a name="assert-session-has-errors"></a>
 #### assertSessionHasErrors
 
-Yêu cầu session có chứa lỗi cho field đã cho:
+Yêu cầu session có chứa lỗi của các field đã cho:
 
     $response->assertSessionHasErrors(array $keys, $format = null, $errorBag = 'default');
 
@@ -440,7 +440,7 @@ Yêu cầu response view có chứa một phần dữ liệu:
 <a name="assert-view-has-all"></a>
 #### assertViewHasAll
 
-Yêu cầu response view có chứa một danh sách dữ liệu nhất định:
+Yêu cầu response view có chứa một mảng dữ liệu nhất định:
 
     $response->assertViewHasAll(array $data);
 

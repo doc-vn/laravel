@@ -6,7 +6,7 @@
 <a name="upgrade-5.5.42"></a>
 ## Upgrade đến 5.5.42 từ 5.5 (Release bảo mật)
 
-Laravel 5.5.42 là bản phát hành bảo mật của Laravel và được khuyến cáo là bản nâng cấp ngay lập tức cho tất cả người dùng. Laravel 5.5.42 cũng chứa một thay đổi nghiêm trọng cho việc mã hóa và serialization của cookie, vì vậy hãy đọc kỹ các lưu ý sau khi nâng cấp application của bạn.
+Laravel 5.5.42 là bản phát hành bảo mật của Laravel và được khuyến cáo là bản nâng cấp ngay lập tức cho tất cả mọi người dùng. Laravel 5.5.42 cũng chứa một thay đổi nghiêm trọng cho việc mã hóa và serialization của cookie, vì vậy hãy đọc kỹ các lưu ý sau khi nâng cấp application của bạn.
 
 **Lỗ hổng này chỉ có thể bị khai thác nếu khóa mã hóa của application của bạn (ở đây là biến môi trường `APP_KEY`) đã bị người khác truy cập được.** Thông thường, người dùng application của bạn không thể truy cập vào giá trị này. Tuy nhiên, nếu nhân viên cũ của bạn có thể truy cập vào khóa mã hóa này thì họ có thể sử dụng khóa này để tấn công application của bạn. Nếu bạn có một lý do nào đó để tin rằng khóa mã hóa của bạn nằm trong tay của một nhận viên cũ hoặc một kẻ phá hoại, thì bạn phải **tạo** lại giá trị khóa đó sang một giá trị mới ngay lập tức.
 
@@ -14,7 +14,7 @@ Laravel 5.5.42 là bản phát hành bảo mật của Laravel và được khuy
 
 Laravel 5.5.42 sẽ vô hiệu hóa tất cả các serialization / unserialization của các giá trị cookie. Vì tất cả các cookie của Laravel đều được mã hóa và được ký, nên các giá trị cookie thường được coi là an toàn cho việc phân biệt giả mạo khách hàng. **Tuy nhiên, nếu khóa mã hóa của application của bạn nằm trong tay của một kẻ phá hoại, thì người đó có thể tạo các giá trị cookie bằng cách sử dụng khóa mã hóa và khai thác các lỗ hổng thừa kế để serialization / unserialization các đối tượng PHP, như là gọi các phương thức class tùy ý trong application của bạn.**
 
-Vô hiệu hóa serialization trên tất cả các giá trị cookie sẽ làm mất hiệu lực tất cả các session của application của bạn và người dùng sẽ cần phải đăng nhập lại vào application. Ngoài ra, mọi cookie mã hóa khác mà application của bạn đang setting sẽ trở thành không hợp lệ. Vì lý do này, bạn có thể muốn thêm logic bổ sung vào application của bạn để validate các giá trị cookie tùy biến của bạn giống với danh sách các giá trị mà bạn mong đợi; nếu không, bạn nên xoá chúng.
+Vô hiệu hóa serialization trên tất cả các giá trị cookie sẽ làm mất hiệu lực tất cả các session của application của bạn và người dùng sẽ cần phải đăng nhập lại vào application. Ngoài ra, mọi cookie mã hóa khác mà application của bạn đang setting sẽ trở thành không hợp lệ. Vì lý do này, bạn có thể muốn thêm logic vào application của bạn để validate các giá trị cookie tùy biến của bạn giống với danh sách các giá trị mà bạn mong đợi; nếu không, bạn nên xoá chúng.
 
 #### Configuring Cookie Serialization
 
@@ -54,7 +54,7 @@ Cập nhật library `laravel/framework` của bạn thành `5.5.*` Trong file `
 
 Nếu bạn đang sử dụng package `laravel/browser-kit-testing`, bạn nên cập nhật package thành `2.*` trong file `composer.json` của bạn.
 
-Tất nhiên, đừng quên kiểm tra bất kỳ package của bên thứ 3 nào được application của bạn sử dụng và phiên bản của nó sẽ cần phù hợp với phiên bản Laravel 5.5.
+Tất nhiên, đừng quên kiểm tra bất kỳ package của bên thứ 3 nào application của bạn sử dụng và phiên bản của chúng cũng sẽ cần phù hợp với phiên bản Laravel 5.5.
 
 #### Laravel Installer
 
@@ -76,7 +76,7 @@ Laravel 5.5 sẽ yêu cầu Swift Mailer phiên bản `~6.0`.
 
 #### Auto-Loading Commands
 
-Trong Laravel 5.5, Artisan có thể tự động load các lệnh để bạn không phải tự đăng ký chúng trong kernel. Để tận dụng tính năng mới này, bạn nên thêm dòng sau vào phương thức `commands` của class `App\Console\Kernel`:
+Trong Laravel 5.5, Artisan có thể tự động load các lệnh để bạn không phải tự đăng ký chúng trong kernel. Để tận dụng tính năng mới này, bạn nên thêm dòng sau vào phương thức `commands` trong class `App\Console\Kernel`:
 
     $this->load(__DIR__.'/Commands');
 
@@ -90,15 +90,15 @@ Với những cải tiến gần đây đối với bộ nhớ đệm của PHP,
 
 ### Authorization
 
-> {note} Khi nâng cấp từ Laravel 5.4 lên 5.5, tất cả các cookie `remember_me` sẽ bị không hợp lệ và người dùng sẽ out ra màn hình đăng xuất trở lại.
+> {note} Khi nâng cấp từ Laravel 5.4 lên 5.5, tất cả các cookie `remember_me` sẽ bị không hợp lệ và người dùng sẽ bị out ra màn hình đăng xuất trở lại.
 
 #### The `authorizeResource` Controller Method
 
-Khi pass một tên model mà có nhiều từ cho phương thức `authorizeResource`, kết quả của route bây giờ sẽ là "snake" case, giống với hành động của các resource controller.
+Khi truyền tên của một model mà có nhiều từ cho phương thức `authorizeResource`, kết quả của route bây giờ sẽ là "snake" case, giống với hành động của các resource controller.
 
 #### The `basic` and `onceBasic` Methods
 
-Các phương thức `Auth::basic` và `Auth::onceBasic` bây giờ sẽ đưa ra `\Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException` thay vì trả về một `Response` khi authentication thất bại. Mặc định, điều này vẫn sẽ tạo ra một response 401 được gửi về client. Nhưng, nếu logic của application của bạn đang kiểm tra giá trị trả về của `Auth::basic` để tạo ra một response tùy biến hoặc thực hiện hành động khác khi không authentication, thì bây giờ bạn sẽ cần xử lý ngoại lệ `UnauthorizedHttpException` trong một khối `catch` hoặc trong trình xử lý ngoại lệ của application của bạn.
+Các phương thức `Auth::basic` và `Auth::onceBasic` bây giờ sẽ đưa ra `\Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException` thay vì trả về một `Response` khi authentication thất bại. Mặc định, điều này vẫn sẽ tạo ra một response 401 sẽ được gửi về client. Nhưng, nếu logic của application của bạn đang kiểm tra giá trị trả về của `Auth::basic` để tạo ra một response tùy biến hoặc thực hiện hành động khác khi không authentication được, thì bây giờ bạn sẽ cần xử lý ngoại lệ `UnauthorizedHttpException` trong một lệnh `catch` hoặc trong trình xử lý ngoại lệ trong application của bạn.
 
 #### The `before` Policy Method
 
@@ -108,7 +108,7 @@ Phương thức `before` của class policy sẽ không được gọi nếu cla
 
 #### Database Driver
 
-Nếu bạn đang sử dụng driver bộ nhớ đệm của cơ sở dữ liệu, bạn nên chạy `php artisan cache:clear` khi deploy lần đầu tiên của application Laravel 5.5 đã được nâng cấp.
+Nếu bạn đang sử dụng driver cache là cơ sở dữ liệu, bạn nên chạy `php artisan cache:clear` khi deploy lần đầu tiên của application Laravel 5.5 đã được nâng cấp.
 
 ### Eloquent
 
@@ -145,7 +145,7 @@ Phương thức `getQualifiedForeignKeyName` đã được đổi tên thành`ge
 
 #### Model `is` Method
 
-Nếu bạn đang ghi đè phương thức `is` của model Eloquent của bạn, bạn nên xóa khai báo dạng kiểu `Model` ra khỏi phương thức. Điều này cho phép phương thức `is` nhận được giá trị `null` làm tham số:
+Nếu bạn đang ghi đè phương thức `is` trong model Eloquent của bạn, bạn nên xóa khai báo dạng kiểu `Model` ra khỏi phương thức. Điều này cho phép phương thức `is` nhận được các giá trị `null` làm tham số:
 
     /**
      * Determine if two models have the same ID and belong to the same table.
@@ -160,7 +160,7 @@ Nếu bạn đang ghi đè phương thức `is` của model Eloquent của bạn
 
 #### Model `$events` Property
 
-Thuộc tính `$events` trong các model của bạn sẽ cần được đổi tên thành `$dispatchesEvents`. Thay đổi này cần được thực hiện là do có nhiều người dùng cần định nghĩa mối quan hệ của `events`, mà điều này lại gây ra xung đột với tên thuộc tính cũ.
+Thuộc tính `$events` trong các model của bạn sẽ cần được đổi tên thành `$dispatchesEvents`. Thay đổi này cần được thực hiện là do có nhiều người dùng cần định nghĩa quan hệ của `events`, mà điều này lại gây ra xung đột với tên thuộc tính cũ.
 
 #### Pivot `$parent` Property
 
@@ -191,7 +191,7 @@ Tuy nhiên, trong Laravel 5.5, alias sẽ được sử dụng chính xác như 
 
 #### Model Methods & Attribute Names
 
-Để ngăn cho việc truy cập vào các thuộc tính private của model khi sử dụng truy cập bằng mảng, nên sẽ không còn tồn tại các phương thức nào ở trong model có cùng tên với thuộc tính. Làm như vậy sẽ khiến cho một ngoại lệ được đưa ra khi truy cập vào các thuộc tính của model thông qua mảng (`$user['name']`) hoặc hàm helper `data_get`.
+Để ngăn cho việc truy cập vào các thuộc tính private của model khi dùng một mảng truy cập, nó sẽ không còn có thể nếu có phương thức nào đó ở trong model có cùng tên với thuộc tính. Làm như vậy sẽ khiến cho một ngoại lệ được đưa ra khi truy cập vào các thuộc tính của model thông qua mảng (`$user['name']`) hoặc hàm helper `data_get`.
 
 ### Exception Format
 
@@ -233,7 +233,7 @@ Thay đổi này cũng ảnh hưởng đến định dạng lỗi validation cho
 
 #### A Note On Form Requests
 
-Nếu bạn đang tùy chỉnh một định dạng response cho một form request riêng biệt, thì bây giờ bạn sẽ cần ghi đè phương thức `failedValidation` của form request đó và đưa ra một instance `HttpResponseException` có chứa response tùy chỉnh đó của bạn:
+Nếu bạn đang tùy chỉnh một định dạng response cho một form request riêng biệt, thì bây giờ bạn sẽ cần ghi đè phương thức `failedValidation` của form request đó và đưa ra một instance `HttpResponseException` có chứa response tùy chỉnh của bạn:
 
     use Illuminate\Http\Exceptions\HttpResponseException;
 
@@ -350,7 +350,7 @@ Một số authentication assertion đã được đổi tên để thống nh�
 
 #### Mail Fake
 
-Nếu bạn đang sử dụng `Mail` fake để xác định xem một mail **đã được queue** hay chưa, thì bây giờ bạn có thể sử dụng `Mail::assertQueued` thay vì `Mail::assertSent`. Sự khác biệt này cho phép bạn yêu cầu mail đó phải được queue để được gửi dưới background và không được gửi trong request.
+Nếu bạn đang sử dụng `Mail` fake để xác định xem một mail **đã được queue** hay chưa, thì bây giờ bạn có thể sử dụng `Mail::assertQueued` thay vì `Mail::assertSent`. Sự khác biệt này cho phép bạn yêu cầu mail đó phải được queue để gửi dưới background và không được gửi trong request.
 
 #### Tinker
 
@@ -395,4 +395,4 @@ Lệnh blade `@php` không còn chấp nhận các inline tag. Thay vào đó, h
 
 ### Miscellaneous
 
-Chúng tôi cũng khuyến cáo bạn nên xem các thay đổi trong `laravel/laravel` [GitHub repository](https://github.com/laravel/laravel). Mặc dù nhiều thay đổi trong số này không bắt buộc, bạn có thể muốn giữ các file này đồng bộ với ứng dụng của bạn. Một số thay đổi này sẽ được đề cập trong hướng dẫn nâng cấp này, nhưng những thay đổi khác, chẳng hạn như thay đổi file cấu hình hoặc comment, sẽ không được đề cập. Bạn có thể dễ dàng xem các thay đổi bằng [Công cụ so sánh của GitHub](https://github.com/laravel/laravel/compare/5.4...5.5) và chọn bản cập nhật nào quan trọng với bạn.
+Chúng tôi cũng khuyến cáo bạn nên xem các thay đổi trong `laravel/laravel` [GitHub repository](https://github.com/laravel/laravel). Mặc dù nhiều thay đổi trong số này không bắt buộc, nhưng bạn có thể muốn giữ các file này đồng bộ với ứng dụng của bạn. Một số thay đổi này sẽ được đề cập trong hướng dẫn nâng cấp này, nhưng những thay đổi khác, chẳng hạn như thay đổi file cấu hình hoặc comment, sẽ không được đề cập. Bạn có thể dễ dàng xem các thay đổi bằng [Công cụ so sánh của GitHub](https://github.com/laravel/laravel/compare/5.4...5.5) và chọn bản cập nhật nào quan trọng với bạn.

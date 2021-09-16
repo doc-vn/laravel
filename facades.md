@@ -2,8 +2,8 @@
 
 - [Giới thiệu](#introduction)
 - [Khi nào dùng Facade](#when-to-use-facades)
-    - [Facade với Dependency Injection](#facades-vs-dependency-injection)
-    - [Facade với Helper Functions](#facades-vs-helper-functions)
+    - [Facade và khai báo phụ thuộc](#facades-vs-dependency-injection)
+    - [Facade và Helper Functions](#facades-vs-helper-functions)
 - [Facade làm việc như thế nào](#how-facades-work)
 - [Real-Time Facades](#real-time-facades)
 - [Facade Class tham khảo](#facade-class-reference)
@@ -11,7 +11,7 @@
 <a name="introduction"></a>
 ## Giới thiệu
 
-Facades cung cấp interface "static" cho các class có sẵn trong [service container](/docs/{{version}}/container) của ứng dụng. Các laravel ship với nhiều facade cung cấp quyền truy cập vào hầu hết các tính năng của Laravel. Facade của Laravel đóng vai trò như là "static proxies" cho các class bên dưới nằm trong service container, cung cấp lợi ích của một cú pháp ngắn gọn, hàm ý trong khi vẫn duy trì khả năng kiểm tra và tính linh hoạt cao hơn các phương thức tĩnh truyền thống.
+Facades cung cấp một "static" interface cho các class có trong [service container](/docs/{{version}}/container) của application. Laravel đi kèm với rất nhiều facade cung cấp các quyền truy cập vào hầu hết các tính năng của Laravel. Facade của Laravel đóng vai trò như là một "static proxies" cho các class bên dưới nằm trong service container, cung cấp lợi ích của một cú pháp ngắn gọn, hàm ý trong khi vẫn duy trì khả năng kiểm thử và tính linh hoạt cao hơn các phương thức tĩnh truyền thống.
 
 Tất cả các facade của Laravel được định nghĩa trong namespace `Illuminate\Support\Facades`. Vì vậy, chúng ta có thể dễ dàng truy cập vào một facade như sau:
 
@@ -26,18 +26,18 @@ Trong suốt tài liệu của Laravel, nhiều ví dụ sẽ sử dụng các f
 <a name="when-to-use-facades"></a>
 ## Khi nào dùng Facade
 
-Facade có nhiều lợi ích. Chúng cung cấp một cú pháp ngắn gọn, dễ nhớ cho phép bạn sử dụng các tính năng của Laravel mà không cần nhớ các tên class dài phải được injected hoặc cấu hình thủ công. Hơn nữa, do cách sử dụng duy nhất của các phương thức động của PHP, chúng rất dễ để test.
+Facade có nhiều lợi ích. Chúng cung cấp một cú pháp ngắn gọn, dễ nhớ cho phép bạn sử dụng các tính năng của Laravel mà không cần phải nhớ các tên class dài sẽ phải khai báo hoặc cấu hình thủ công. Hơn nữa, do cách sử dụng độc đáo của các phương thức động của PHP, chúng rất dễ để test.
 
-Tuy nhiên, một số lưu ý phải được thực hiện khi sử dụng facade. Mối nguy hiểm chính của facade là class bị vượt phạm vi. Vì facade rất dễ sử dụng và không cần thiết phải dùng injected, nên nó có thể dễ dàng để các class của bạn tiếp tục lớn lên và sử dụng nhiều facade trong một class. Sử dụng dependency injection, nó làm cho việc phát triển các dòng code trong class càng ngày càng lớn hơn.  Vì vậy, khi sử dụng facade, đặc biệt chú ý đến phạm vi class của bạn để phạm vi của nó ở trong phạm vi cho phép.
+Tuy nhiên, một số lưu ý phải được thực hiện khi sử dụng facade. Mối nguy hiểm chính của facade là class bị vượt phạm vi. Vì facade rất dễ sử dụng và không cần thiết phải khai báo, nên nó có thể dễ dàng để các class của bạn tiếp tục lớn lên và sử dụng nhiều facade trong một class. Việc dùng nhiều khai báo phụ thuộc, làm cho việc phát triển các dòng code trong class của bạn ngày càng lớn hơn.  Vì vậy, khi sử dụng facade, đặc biệt chú ý đến phạm vi của class của bạn để phạm vi của nó ở trong phạm vi cho phép.
 
-> {tip} Khi tạo một package third-party tương tác với Laravel, tốt hơn là nên inject [Laravel contracts](/docs/{{version}}/contracts) thay vì sử dụng facade. Vì các package được xây dựng bên ngoài của Laravel, bạn sẽ không có quyền truy cập vào các facade testing helper của Laravel.
+> {tip} Khi tạo một package third-party tương tác với Laravel, tốt hơn là nên khai báo [Laravel contracts](/docs/{{version}}/contracts) thay vì sử dụng facade. Vì các package được xây dựng bên ngoài của Laravel, bạn sẽ không có quyền truy cập vào các facade testing helper của Laravel.
 
 <a name="facades-vs-dependency-injection"></a>
-### Facades với Dependency Injection
+### Facades và khai báo phụ thuộc
 
-Một trong những lợi ích chính của dependency injection là khả năng để hoán đổi việc implementation của class được injected. Điều này rất hữu ích trong quá trình testing vì bạn có thể inject mock hoặc stub và nhận rằng các hàm khác cũng được gọi trong stub.
+Một trong những lợi ích chính của khai báo phụ thuộc là khả năng để hoán đổi implementation của class được khai báo. Điều này rất hữu ích trong quá trình testing vì bạn có thể khai báo giả hoặc stub và nhận rằng các hàm khác cũng được gọi trong stub.
 
-Thông thường, sẽ không thể mock hoặc stub thực sự một phương thức static class. Tuy nhiên, do các facade sử dụng các phương thức động để gọi các phương thức proxy đến các đối tượng resolve từ service container, nên chúng ta có thể test các facade giống như chúng ta kiểm tra một class instance được injected. Ví dụ: hãy xem route sau:
+Thông thường, sẽ không thể giả hoặc stub thực sự một phương thức static class. Tuy nhiên, do các facade sử dụng các phương thức động để gọi các phương thức proxy đến các đối tượng được resolve từ service container, nên chúng ta có thể kiểm thử các facade giống như chúng ta kiểm tra một instance class được khai báo. Ví dụ: hãy xem route sau:
 
     use Illuminate\Support\Facades\Cache;
 
@@ -45,7 +45,7 @@ Thông thường, sẽ không thể mock hoặc stub thực sự một phương 
         return Cache::get('key');
     });
 
-Chúng ta có thể viết test sau để xác minh rằng phương thức `Cache::get` đã được gọi với đối số mà chúng ta mong đợi:
+Chúng ta có thể viết test sau để kiểm tra rằng phương thức `Cache::get` đã được gọi với đối số mà chúng ta mong đợi hay chưa:
 
     use Illuminate\Support\Facades\Cache;
 
@@ -65,21 +65,21 @@ Chúng ta có thể viết test sau để xác minh rằng phương thức `Cach
     }
 
 <a name="facades-vs-helper-functions"></a>
-### Facades với Helper Functions
+### Facades và Helper Functions
 
-Ngoài facade, Laravel còn chứa nhiều hàm "helper" có thể thực hiện các tác vụ phổ biến như tạo views, bắn event, gửi job hoặc gửi response HTTP. Nhiều hàm của helper này thực hiện hàm tương tự như facade tương ứng. Ví dụ: facade này và helper này là tương đương:
+Ngoài facade, Laravel còn chứa nhiều hàm "helper" để có thể thực hiện các task phổ biến như tạo views, kích hoạt event, gửi job hoặc gửi response HTTP. Nhiều hàm của helper này thực hiện giống với facade tương ứng. Ví dụ: facade này và helper này là tương đương:
 
     return View::make('profile');
 
     return view('profile');
 
-Hoàn toàn không có sự khác biệt giữa facade và helper. Khi sử dụng các helper, bạn vẫn có thể kiểm tra chúng chính xác như facade tương ứng. Ví dụ: hãy xem route sau:
+Hoàn toàn không có sự khác biệt giữa facade và helper. Khi sử dụng các helper, bạn vẫn có thể kiểm tra chúng chính xác như bạn làm với facade tương ứng. Ví dụ: hãy xem route sau:
 
     Route::get('/cache', function () {
         return cache('key');
     });
 
-Ở trong route cache ở trên, hàm helper `cache` sẽ gọi phương thức `get` trên class nằm dưới facade `Cache`. Vì vậy, mặc dù chúng ta đang sử dụng hàm helper, chúng ta có thể viết bài kiểm tra sau để xác định rằng phương thức đã được gọi với đối số mà chúng ta mong muốn:
+Ở trong route cache ở trên, hàm helper `cache` sẽ gọi phương thức `get` trên class nằm dưới facade `Cache`. Vì vậy, mặc dù chúng ta đang sử dụng hàm helper, chúng ta có thể viết bài kiểm tra như ở dưới để kiểm tra rằng phương thức đã được gọi với đối số mà chúng ta mong muốn hay chưa:
 
     use Illuminate\Support\Facades\Cache;
 
@@ -101,9 +101,9 @@ Hoàn toàn không có sự khác biệt giữa facade và helper. Khi sử dụ
 <a name="how-facades-work"></a>
 ## Facade làm việc như thế nào
 
-Trong một application Laravel, facade là một class chuyên cung cấp quyền truy cập vào một đối tượng từ container. Và công việc này sẽ được làm bởi hệ thống trong class `Facade`. Facade của Laravel và bất kỳ facade tùy chỉnh nào mà bạn tạo sẽ extend từ class cơ sở  `Illuminate\Support\Facades\Facade`.
+Trong một application Laravel, facade là một class chuyên cung cấp các quyền truy cập vào một đối tượng từ container. Và công việc này sẽ được làm bởi hệ thống trong class `Facade`. Facade của Laravel và bất kỳ facade tùy biến nào mà bạn tạo sẽ extend từ class  `Illuminate\Support\Facades\Facade`.
 
-Class cơ sở `Facade` sử dụng phương thức magic `__callStatic()` để trì hoãn các call từ facade của bạn đến một đối tượng được resolve từ container. Trong ví dụ ở dưới đây, sẽ gọi đến cache system của Laravel. Nếu bạn chỉ liếc qua, bạn có thể nghĩ rằng phương thức static `get` đang được gọi trong class` Cache`:
+Class `Facade` sử dụng phương thức magic `__callStatic()` để trì hoãn các call từ facade của bạn đến một đối tượng được resolve từ container. Trong ví dụ ở dưới đây, sẽ gọi đến cache system của Laravel. Nếu bạn chỉ liếc qua, bạn có thể nghĩ rằng phương thức static `get` đang được gọi trong class` Cache`:
 
     <?php
 
@@ -142,12 +142,12 @@ Nếu chúng ta nhìn vào class `Illuminate\Support\Facades\Cache`, bạn sẽ 
         protected static function getFacadeAccessor() { return 'cache'; }
     }
 
-Thay vào đó, facade `Cache` sẽ được mở rộng từ class `Facade` cơ sở và định nghĩa một phương thức là `getFacadeAccessor()`. Công việc của phương thức này là trả về tên của một liên kết đã có trong service container. Khi người dùng tham chiếu bất kỳ phương thức tĩnh nào trên facade `Cache`, Laravel sẽ resolve liên kết tên là `cache` từ [service container](/docs/{{version}}/container) và chạy phương thức được yêu cầu (trong trường hợp này là  `get`) trong đối tượng đó.
+Thay vào đó, facade `Cache` sẽ được mở rộng từ class `Facade` và định nghĩa một phương thức là `getFacadeAccessor()`. Công việc của phương thức này là trả về tên của một liên kết đã có trong service container. Khi người dùng tham chiếu bất kỳ phương thức tĩnh nào trên facade `Cache`, Laravel sẽ resolve một liên kết có tên là `cache` từ [service container](/docs/{{version}}/container) và chạy phương thức được yêu cầu (trong trường hợp này là  `get`) trên đối tượng đó.
 
 <a name="real-time-facades"></a>
 ## Real-Time Facades
 
-Sử dụng real-time facade, bạn có thể coi bất kỳ class nào trong ứng dụng của mình như thể nó là một facade. Để minh họa cách sử dụng cái này, hãy xem xét một ví dụ. Ví dụ: giả sử model `Podcast` của chúng ta có một phương thức là `publish`. Tuy nhiên, để publish một podcast, chúng ta cần inject một instance `Publisher`:
+Sử dụng real-time facade, bạn có thể coi bất kỳ class nào trong ứng dụng của mình như là một facade. Để minh họa cách sử dụng này, hãy xem một ví dụ. Ví dụ: giả sử model `Podcast` của chúng ta có một phương thức là `publish`. Tuy nhiên, để publish một podcast, chúng ta cần khai báo một instance `Publisher`:
 
     <?php
 
@@ -172,7 +172,7 @@ Sử dụng real-time facade, bạn có thể coi bất kỳ class nào trong �
         }
     }
 
-Việc inject một implementation của publisher vào trong phương thức cho phép chúng ta dễ dàng kiểm tra phương thức một cách độc lập vì chúng ta có thể giả định publisher đã được injected. Tuy nhiên, nó đòi hỏi chúng ta phải luôn pass một instance publisher cho mỗi lần chúng ta gọi phương thức `Publish`. Sử dụng các real-time facade, chúng ta có thể duy trì khả năng kiểm tra tương tự trong khi không bắt buộc phải pass instance của `Publisher`. Để tạo real-time facade, tiền tố namespace của class được import với `Facades`:
+Việc khai báo một implementation của publisher vào trong phương thức này cho phép chúng ta dễ dàng kiểm tra phương thức một cách độc lập vì chúng ta có thể giả định publisher đã được khai báo. Tuy nhiên, nó đòi hỏi chúng ta phải luôn truyền vào một instance publisher cho mỗi lần chúng ta gọi phương thức `publish`. Sử dụng các real-time facade, chúng ta có thể duy trì khả năng kiểm tra tương tự trong khi không bắt buộc phải truyền instance của `Publisher`. Để tạo real-time facade, thêm tiền tố namespace của class được import với `Facades`:
 
     <?php
 
@@ -196,7 +196,7 @@ Việc inject một implementation của publisher vào trong phương thức ch
         }
     }
 
-Khi real-time facade được sử dụng, việc implementation của publisher sẽ được resolve khỏi service container bằng cách sử dụng phần interface hoặc tên lớp xuất hiện sau tiền tố `Facades`. Khi testing, chúng ta có thể sử dụng built-in facade testing helper của Laravel để giả phương thức này được gọi:
+Khi real-time facade được sử dụng, việc implementation của publisher sẽ được resolve từ service container bằng cách sử dụng phần interface hoặc tên class xuất hiện phía sau tiền tố `Facades`. Khi testing, chúng ta có thể sử dụng built-in facade testing helper của Laravel để giả phương thức này được gọi:
 
     <?php
 
@@ -229,7 +229,7 @@ Khi real-time facade được sử dụng, việc implementation của publisher
 <a name="facade-class-reference"></a>
 ## Tham khảo Class Facade
 
-Dưới đây bạn sẽ tìm thấy mọi facade và class bên dưới của nó. Đây là một công cụ hữu ích để nhanh chóng để đào sâu vào tài liệu API cho một root facade nhất định. [service container binding](/docs/{{version}}/container) key cũng được ghi nếu trong trường hợp bạn cần áp dụng.
+Dưới đây bạn sẽ tìm thấy mọi facade và class bên dưới nó. Đây là một công cụ hữu ích để nhanh chóng để đào sâu vào tài liệu API cho một facade gốc. [Service container binding](/docs/{{version}}/container) key cũng được ghi nếu trong trường hợp bạn cần áp dụng.
 
 Facade  |  Class  |  Service Container Binding
 ------------- | ------------- | -------------

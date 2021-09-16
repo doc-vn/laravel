@@ -22,7 +22,7 @@ Laravel Valet sẽ cấu hình máy Mac của bạn dùng [Nginx](https://www.ng
 
 Cụ thể là, bạn sẽ có một môi trường phát triển Laravel nhanh chóng chỉ dùng khoảng 7 MB RAM. Valet không phải là sự thay thế hoàn toàn cho Vagrant hoặc Homestead, nhưng cung cấp một sự thay thế tuyệt vời nếu bạn muốn những điều cơ bản linh hoạt, thích tốc độ cực cao hoặc đang làm việc trên một máy có dung lượng RAM hạn chế.
 
-Out of the box, Valet support includes, but is not limited to:
+Mặc định, Valet hỗ trợ bao gồm, nhưng không giới hạn:
 
 <div class="content-list" markdown="1">
 - [Laravel](https://laravel.com)
@@ -55,40 +55,40 @@ Tuy nhiên, bạn có thể mở rộng Valet với [custom drivers](#custom-val
 
 Như bạn đã biết, Laravel cung cấp [Homestead](/docs/{{version}}/homestead), và các môi trường phát triển Laravel khác. Homestead và Valet sẽ khác nhau về đối tượng hướng đến, và cách tiếp cận với môi trường phát triển ở local. Homestead cung cấp một máy ảo Ubuntu cùng với cấu hình Nginx. Homestead sẽ là lựa chọn tốt nếu bạn muốn có một môi trường phát triển Linux được ảo hóa hoàn toàn trên Windows / Linux.
 
-Valet chỉ hỗ trợ Mac và yêu cầu bạn cài đặt PHP và database server trực tiếp vào máy local của bạn. Điều này có thể dễ dàng đạt được bằng cách sử dụng [Homebrew] (http://brew.sh/) với các lệnh như `brew install php72` và` brew install mysql`. Valet cung cấp một môi trường phát triển local nhanh chóng với mức tiêu thụ tài nguyên tối thiểu, vì vậy thật tuyệt vời cho các nhà phát triển chỉ yêu cầu PHP / MySQL và không cần môi trường phát triển ảo hóa hoàn toàn.
+Valet chỉ hỗ trợ Mac và yêu cầu bạn cài đặt PHP và database server trực tiếp vào máy local của bạn. Điều này có thể dễ dàng đạt được bằng cách sử dụng [Homebrew] (http://brew.sh/) với các lệnh như `brew install php72` và `brew install mysql`. Valet cung cấp một môi trường phát triển local nhanh chóng với mức tiêu thụ tài nguyên tối thiểu, vì vậy thật tuyệt vời cho các nhà phát triển chỉ yêu cầu PHP / MySQL và không cần môi trường phát triển ảo hóa hoàn toàn.
 
-Cả Valet và Homestead đều là những lựa chọn tuyệt vời để cấu hình môi trường phát triển Laravel của bạn. Cái nào bạn chọn sẽ phụ thuộc vào sở thích cá nhân và nhu cầu của nhóm bạn.
+Cả Valet và Homestead đều là những lựa chọn tuyệt vời để cấu hình môi trường phát triển Laravel của bạn. Cái nào mà bạn chọn đều sẽ phụ thuộc vào sở thích cá nhân hoặc nhu cầu của nhóm phát triển của bạn.
 
 <a name="installation"></a>
 ## Cài đặt
 
-**Valet yêu cầu macOS và [Homebrew] (http://brew.sh/). Trước khi cài đặt, bạn nên đảm bảo rằng không có chương trình nào khác như Apache hoặc Nginx đang chạy với cổng 80 trên máy local của bạn.**
+**Valet yêu cầu macOS và [Homebrew](http://brew.sh/). Trước khi cài đặt, bạn nên đảm bảo rằng không có chương trình nào khác như Apache hoặc Nginx đang chạy ở cổng 80 trên máy local của bạn.**
 
 <div class="content-list" markdown="1">
 - Cài đặt hoặc cập nhật [Homebrew](http://brew.sh/) mới nhất bằng cách dùng lệnh `brew update`.
 - Cài đặt PHP 7.2 bằng cách dùng lệnh `brew install homebrew/php/php72` thông qua Homebrew.
-- Cài đặt Valet với Composer thông qua lệnh `composer global require laravel/valet`. Và chắc chắn rằng thư mục `~/.composer/vendor/bin` này đã có trong "PATH" máy bạn.
+- Cài đặt Valet với Composer thông qua lệnh `composer global require laravel/valet`. Và chắc chắn rằng thư mục `~/.composer/vendor/bin` này đã có trong "PATH" của máy bạn.
 - Chạy lệnh `valet install`. Lệnh này sẽ cấu hình và cài đặt Valet và DnsMasq, và đăng ký Valet's daemon sẽ được chạy khi máy bạn khởi động.
 </div>
 
-Khi Valet được cài đặt, hãy thử ping thử đến bất kỳ tên miền nào có đuôi là `* .test` trên terminal của bạn bằng cách sử dụng một lệnh ` ping foobar.test`. Nếu Valet được cài đặt chính xác, bạn sẽ thấy miền này phản hồi trên `127.0.0.1`.
+Khi Valet đã được cài đặt, hãy thử ping đến bất kỳ tên miền nào có đuôi là `* .test` trên terminal của bạn như sử dụng một lệnh `ping foobar.test`. Nếu Valet được cài đặt chính xác, bạn sẽ thấy tên miền này phản hồi trên `127.0.0.1`.
 
-Valet sẽ tự động khởi động daemon cảu nó mỗi khi máy bạn khởi động. Bạn sẽ không cần phải chạy `valet start` hoặc` valet install` một lần nào nữa sau khi quá trình cài đặt Valet ban đầu hoàn tất.
+Valet sẽ tự động khởi động daemon của nó mỗi khi máy bạn khởi động. Bạn sẽ không cần phải chạy `valet start` hoặc `valet install` một lần nào nữa sau khi quá trình cài đặt Valet ban đầu hoàn tất.
 
 #### Dùng tên miền khác
 
 Mặc định, Valet sẽ cung cấp project của bạn dùng tên miền `.test`. Nếu bạn muốn sử dụng một tên miền khác, bạn có thể sử dụng lệnh `valet domain tld-name`.
 
-Ví dụ: nếu bạn muốn sử dụng `.app` thay vì` .test`, hãy chạy `valet domain app` và Valet sẽ tự động thay đổi tên miền project của bạn sang `*.app`.
+Ví dụ: nếu bạn muốn sử dụng `.app` thay vì `.test`, hãy chạy `valet domain app` và Valet sẽ tự động thay đổi tên miền project của bạn sang `*.app`.
 
 #### Database
 
-Nếu bạn cần một cơ sở dữ liệu, hãy thử MySQL bằng cách chạy `brew install mysql` trên cửa sổ dòng lệnh. Khi MySQL đã được cài đặt, bạn có thể khởi động nó bằng lệnh `brew services start mysql`. Sau đó, bạn có thể kết nối đến cơ sở dữ liệu tại `127.0.0.1` với username `root` và mật khẩu trống.
+Nếu bạn cần một cơ sở dữ liệu, hãy thử MySQL bằng cách chạy `brew install mysql` trên cửa sổ dòng lệnh. Khi MySQL đã được cài đặt, bạn có thể khởi động nó bằng lệnh `brew services start mysql`. Sau đó, bạn có thể kết nối đến cơ sở dữ liệu tại địa chỉ `127.0.0.1` với username là `root` và mật khẩu là trống.
 
 <a name="upgrading"></a>
 ### Cập nhật
 
-Bạn có thể cập nhật cài đặt Valet của mình bằng lệnh `composer global update` trong terminal của bạn. Sau khi nâng cấp, bạn nên chạy lệnh `valet install` để Valet có thể nâng cấp bổ sung cho các tệp cấu hình của bạn nếu cần.
+Bạn có thể cập nhật cài đặt Valet của bạn bằng lệnh `composer global update` trong terminal của bạn. Sau khi nâng cấp, bạn nên chạy lệnh `valet install` để Valet có thể nâng cấp bổ sung cho các tệp cấu hình của bạn nếu cần.
 
 #### Nâng cấp Valet 2.0
 
@@ -97,40 +97,40 @@ Với bản Valet 2.0, nó sẽ chuyển đổi web server từ Caddy sang Nginx
     valet stop
     valet uninstall
 
-Tiếp theo, bạn nên nâng cấp lên phiên bản Valet mới nhất. Tùy thuộc vào cách bạn cài đặt Valet, việc này thường được thực hiện thông qua Git hoặc Composer. Nếu bạn đã cài đặt Valet qua Composer, bạn nên sử dụng lệnh sau để cập nhật lên phiên bản chính mới nhất:
+Tiếp theo, bạn nên nâng cấp lên phiên bản Valet mới nhất. Tùy thuộc vào cách bạn cài đặt Valet, việc này thường được thực hiện thông qua Git hoặc Composer. Nếu bạn đã cài đặt Valet thông qua Composer, bạn nên sử dụng lệnh sau để cập nhật lên phiên bản chính thức mới nhất:
 
     composer global require laravel/valet
 
-Còn nếu bạn sử dụng Git để tải source code của Valet, thì bạn nên chạy lệnh `install`:
+Còn nếu bạn sử dụng Git để tải source code của Valet về, thì bạn nên chạy lệnh `install`:
 
     valet install
     valet restart
 
-Sau khi nâng cấp, có thể cần phải chạy lại lệnh re-park hoặc re-link cho site của bạn.
+Sau khi nâng cấp, có thể bạn cần phải chạy lại lệnh re-park hoặc re-link cho site của bạn.
 
 <a name="serving-sites"></a>
 ## Tạo Site
 
-Sau khi Valet được cài đặt xong, bạn có thể bắt đầu tạo site của bạn. Valet cung cấp hai lệnh để giúp bạn tạo các trang web của mình: `park` và` link`.
+Sau khi Valet được cài đặt xong, bạn có thể bắt đầu tạo site của bạn. Valet cung cấp hai lệnh để giúp bạn tạo các trang web của bạn: `park` và `link`.
 
 <a name="the-park-command"></a>
 **Lệnh `park`**
 
 <div class="content-list" markdown="1">
-- Tạo một thư mục mới trên máy Mac của bạn, ví dụ như `mkdir ~/Sites`. Tiếp theo, chạy lệnh `cd ~/Sites` và `valet park`. Lệnh `valet park` sẽ đăng ký thư mục mà con trỏ của bạn đang trỏ vào thành một đường dẫn, mà Valet sẽ tìm kiếm cho site.
+- Tạo một thư mục mới trên máy Mac của bạn, ví dụ như `mkdir ~/Sites`. Tiếp theo, chạy lệnh `cd ~/Sites` và `valet park`. Lệnh `valet park` này sẽ đăng ký thư mục hiện tại thành một đường dẫn, mà Valet sẽ tìm kiếm cho site.
 - Tiếp theo, tạo môt project Laravel mới vào thư mục bạn vừa tạo bằng lệnh `laravel new blog`.
 - Và mở link `http://blog.test` trên web browser của bạn.
 </div>
 
-**Đó là tất cả** Bây giờ, bất kỳ project Laravel nào bạn tạo trong thư mục mà đã park thì nó sẽ tự động được tạo một site theo quy ước `http://folder-name.test`.
+**Đó là tất cả** Bây giờ, bất kỳ project Laravel nào bạn tạo trong thư mục mà đã được park thì nó sẽ tự động được tạo một site theo quy ước là `http://folder-name.test`.
 
 <a name="the-link-command"></a>
 **Lệnh `link`**
 
-Lệnh `link` cũng được dùng để tạo site Laravel của bạn. Lệnh này hữu ích nếu bạn muốn tạo một site trong một thư mục chứ không phải toàn bộ thư mục.
+Lệnh `link` cũng được dùng để tạo site cho bạn. Lệnh này hữu ích nếu bạn muốn tạo một site trong một thư mục chứ không phải là toàn bộ thư mục.
 
 <div class="content-list" markdown="1">
-- Để dùng lệnh này, bạn cần trỏ vào project mà bạn muốn tạo site, và chạy lệnh `valet link app-name` trong terminal. Valet sẽ tạo một link ảo trong thư mục `~/.valet/Sites`, và nó sẽ trỏ đến thư mục bạn đã chạy lệnh ở trên.
+- Để dùng lệnh này, bạn cần trỏ vào project mà bạn đang muốn tạo site, và chạy lệnh `valet link app-name` trong terminal. Valet sẽ tạo một link ảo trong thư mục `~/.valet/Sites`, và nó sẽ trỏ đến thư mục mà bạn đã chạy lệnh ở trên.
 - Sau khi bạn đã chạy lệnh `link`, bạn có thể truy cập vào site của bạn trên web browser với link `http://app-name.test`.
 </div>
 
@@ -141,7 +141,7 @@ Lệnh `link` cũng được dùng để tạo site Laravel của bạn. Lệnh 
 <a name="securing-sites"></a>
 **Bảo vệ site với TLS**
 
-Mặc định, Valet sẽ tạo site trên HTTP. Tuy nhiên, nếu bạn muốn tạo một trang web được mã hoá TLS bằng HTTP/2, hãy sử dụng lệnh `secure`. Ví dụ: nếu trang web của bạn đang được Valet tạo trên tên miền `laravel.test`, bạn nên chạy lệnh sau để bảo vệ trang web:
+Mặc định, Valet sẽ tạo site trên HTTP. Tuy nhiên, nếu bạn muốn tạo một trang web được mã hoá TLS bằng HTTP/2, hãy sử dụng lệnh `secure`. Ví dụ: nếu trang web của bạn đang được Valet tạo trên tên miền `laravel.test`, thì bạn nên chạy lệnh sau để bảo vệ trang web:
 
     valet secure laravel
 
@@ -152,9 +152,9 @@ Mặc định, Valet sẽ tạo site trên HTTP. Tuy nhiên, nếu bạn muốn 
 <a name="sharing-sites"></a>
 ## Chia sẻ site
 
-Valet đã chứa một lệnh để chia sẻ các trang web ở local của bạn với thế giới. Không cần cài đặt phần mềm bổ sung sau khi Valet được cài đặt.
+Valet đã chứa một lệnh để chia sẻ các trang web ở local của bạn với thế giới. Không cần cài đặt phần mềm bổ sung nào sau khi Valet được cài đặt.
 
-Để chia sẻ một trang web, hãy trỏ đến thư mục của trang web trong terminal của bạn và chạy lệnh `valet share`. Một URL sẽ được chèn vào clipboard của bạn và sẵn sàng paste bất kỳ đâu ví dụ như vào trong trình duyệt của bạn. Và chỉ có thế.
+Để chia sẻ một trang web, hãy trỏ đến thư mục chứa trang web đó trong terminal của bạn và chạy lệnh `valet share`. Một URL sẽ được chèn vào clipboard của bạn và sẵn sàng paste bất kỳ đâu, ví dụ như vào trong trình duyệt của bạn. Và chỉ có thế.
 
 Để ngừng chia sẻ trang web của bạn, hãy nhấn `Control + C` để hủy quá trình.
 
@@ -163,17 +163,17 @@ Valet đã chứa một lệnh để chia sẻ các trang web ở local của b�
 <a name="custom-valet-drivers"></a>
 ## Tuỳ chỉnh Valet Drivers
 
-Bạn có thể viết Valet "driver" của riêng mình để tạo các ứng dụng PHP chạy trên framework khác hoặc CMS khác không được Valet hỗ trợ. Khi bạn cài đặt Valet, một thư mục `~/.valet/Drivers`sẽ được tạo và chứa file `SampleValetDriver.php`. File này sẽ chứa một driver mẫu  để trình bày cách viết một tuỳ chỉnh driver. Để viết một driver thì nó chỉ yêu cầu bạn kế thừa 3 phương thức: `serves`, `isStaticFile`, và `frontControllerPath`.
+Bạn có thể viết Valet "driver" của riêng bạn để tạo các ứng dụng PHP chạy trên framework khác hoặc CMS khác không được Valet hỗ trợ. Khi bạn cài đặt Valet, một thư mục `~/.valet/Drivers` sẽ được tạo và chứa file `SampleValetDriver.php`. File này sẽ chứa một driver mẫu để trình bày cách viết một driver tuỳ chỉnh. Để viết một driver thì nó chỉ yêu cầu bạn kế thừa 3 phương thức: `serves`, `isStaticFile`, và `frontControllerPath`.
 
-Tất cả 3 phương thức đều nhận các giá trị `$sitePath`, `$siteName`, và `$uri` làm đối số của chúng. `$sitePath` là đường dẫn đến trang web mà đã được tạo trên máy của bạn, chẳng hạn như `/Users/Lisa/Sites/my-project`. `$siteName` là phần host/site name của tên miền(`my-project`). `$uri`là request đến URI (`/foo/bar`).
+Tất cả 3 phương thức đều nhận các giá trị là `$sitePath`, `$siteName`, và `$uri` làm đối số của chúng. `$sitePath` là đường dẫn đến trang web mà đã được tạo trên máy của bạn, chẳng hạn như `/Users/Lisa/Sites/my-project`. `$siteName` là phần "host" / "site name" của tên miền(`my-project`). `$uri`là request đến URI (`/foo/bar`).
 
-Khi mà bạn đã tuỳ chỉnh xong Valet driver, đặt nó trong thư mục `~/.valet/Drivers` bằng cách sử dụng quy ước đặt tên` FrameworkValetDriver.php`. Ví dụ: nếu bạn đang viết valet driver cho WordPress, tên file của bạn phải là `WordPressValetDriver.php`.
+Khi mà bạn đã tuỳ chỉnh xong Valet driver, lưu nó vào trong thư mục `~/.valet/Drivers` bằng cách sử dụng quy ước đặt tên `FrameworkValetDriver.php`. Ví dụ: nếu bạn đang viết valet driver cho WordPress, thì tên file của bạn phải là `WordPressValetDriver.php`.
 
-Let's take a look at a sample implementation of each method your custom Valet driver should implement.
+Hãy xem cách triển khai mẫu của từng phương thức mà driver Valet của bạn nên triển khai.
 
 #### Phương thức `serves`
 
-Phương thức `serves` sẽ trả về` true` nếu driver của bạn sẽ xử lý request đến. Ngược lại, phương thức sẽ trả về `false`. Vì vậy, trong phương thức này, bạn nên xác định xem `$sitePath` đã cho có chứa loại dự án mà bạn đang cố gắng tạo hay không.
+Phương thức `serves` sẽ trả về `true` nếu driver của bạn sẽ xử lý request đến. Ngược lại, phương thức sẽ trả về `false`. Vì vậy, trong phương thức này, bạn nên xác định xem `$sitePath` đã cho có chứa loại dự án mà bạn đang cố gắng tạo hay không.
 
 Ví dụ: giả sử chúng ta đang viết một `WordPressValetDriver`. Phương thức serve của chúng ta có thể trông giống như thế này:
 
@@ -192,7 +192,7 @@ Ví dụ: giả sử chúng ta đang viết một `WordPressValetDriver`. Phươ
 
 #### Phương thức `isStaticFile`
 
-`IsStaticFile` sẽ xác định xem request đến có phải là file "static" hay không, chẳng hạn như hình ảnh hoặc stylesheet. Nếu file là static, phương thức sẽ trả về đường dẫn đến file  static trên disk. Nếu yêu cầu đến không phải cho file static, phương thức sẽ trả về `false`:
+`IsStaticFile` sẽ xác định xem request đến có phải là file "static" hay không, chẳng hạn như hình ảnh hoặc stylesheet. Nếu file là static, phương thức sẽ trả về đường dẫn đến file static trên disk. Nếu request đến không phải cho file static, phương thức sẽ trả về `false`:
 
     /**
      * Determine if the incoming request is for a static file.
@@ -215,7 +215,7 @@ Ví dụ: giả sử chúng ta đang viết một `WordPressValetDriver`. Phươ
 
 #### Phương thức `frontControllerPath`
 
-Phương thức `frontControllPath` sẽ trả về đường dẫn cho  "front controller" của application, thường là tệp "index.php"  của bạn hoặc tương đương:
+Phương thức `frontControllPath` sẽ trả về đường dẫn cho "front controller" của application, thường là tệp "index.php" của bạn hoặc tương đương:
 
     /**
      * Get the fully resolved path to the application's front controller.
@@ -233,7 +233,7 @@ Phương thức `frontControllPath` sẽ trả về đường dẫn cho  "front 
 <a name="local-drivers"></a>
 ### Local Drivers
 
-Nếu bạn muốn định nghĩa một Valet driver tùy chỉnh cho một ứng dụng, hãy tạo một `LocalValetDriver.php` trong thư mục gốc của ứng dụng. Valet driver tùy chỉnh của bạn có thể mở rộng từ lớp `ValetDriver` hoặc mở rộng một driver cụ thể của một ứng dụng hiện có, chẳng hạn như` LaravelValetDriver`:
+Nếu bạn muốn định nghĩa một Valet driver tùy chỉnh cho một ứng dụng, hãy tạo một `LocalValetDriver.php` trong thư mục gốc của ứng dụng. Valet driver tùy chỉnh của bạn có thể extent từ class `ValetDriver` hoặc extent từ một driver cụ thể của một ứng dụng hiện có, chẳng hạn như` LaravelValetDriver`:
 
     class LocalValetDriver extends LaravelValetDriver
     {
@@ -270,7 +270,7 @@ Nếu bạn muốn định nghĩa một Valet driver tùy chỉnh cho một ứn
 Lệnh  | Mô tả
 ------------- | -------------
 `valet forget` | Chạy lệnh này từ một thư mục đã được park để xóa thư mục đó ra khỏi danh sách thư mục đã được park.
-`valet paths` | Xem tất cả các đường dẫn đã được park của bạn.
+`valet paths` | Xem tất cả các đường dẫn đã được park.
 `valet restart` | Khởi động lại daemon Valet.
 `valet start` | Khởi động daemon Valet.
 `valet stop` | Dừng daemon Valet.

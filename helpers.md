@@ -254,7 +254,7 @@ Hàm `array_first` trả về phần tử đầu tiên của mảng pass qua m�
 
     // 200
 
-Một giá trị mặc định cũng có thể được pass làm tham số thứ ba cho phương thức. Giá trị này sẽ được trả về nếu không có giá trị nào pass qua điều kiện:
+Một giá trị mặc định cũng có thể được truyền làm tham số thứ ba cho phương thức. Giá trị này sẽ được trả về nếu không có giá trị nào được pass qua điều kiện:
 
     $first = array_first($array, $callback, $default);
 
@@ -300,7 +300,7 @@ Hàm `array_get` cũng chấp nhận một giá trị mặc định, sẽ đư�
 <a name="method-array-has"></a>
 #### `array_has()` {#collection-method}
 
-Hàm `array_has` sẽ kiểm tra xem một item hoặc các item đã cho có tồn tại trong một mảng bằng cách sử dụng ký hiệu "dot" hay không:
+Hàm `array_has` sẽ kiểm tra xem một item hoặc các item đã cho có tồn tại trong một mảng hay không bằng cách sử dụng ký hiệu "dot":
 
     $array = ['product' => ['name' => 'Desk', 'price' => 100]];
 
@@ -325,7 +325,7 @@ Hàm `array_last` trả về phần tử cuối cùng của mảng pass qua mộ
 
     // 300
 
-Một giá trị mặc định có thể được pass làm tham số thứ ba cho phương thức. Giá trị này sẽ được trả về nếu không có giá trị nào pass qua điều kiện:
+Một giá trị mặc định có thể được truyền làm tham số thứ ba cho phương thức. Giá trị này sẽ được trả về nếu không có giá trị nào pass qua điều kiện:
 
     $last = array_last($array, $callback, $default);
 
@@ -354,7 +354,7 @@ Hàm `array_pluck` lấy tất cả các giá trị cho một key đã cho từ 
 
     // ['Taylor', 'Abigail']
 
-Bạn cũng có thể khai báo key cho danh sách kết quả trả về:
+Bạn cũng có thể khai báo thêm key cho mảng đó:
 
     $names = array_pluck($array, 'developer.name', 'developer.id');
 
@@ -392,7 +392,7 @@ Hàm `array_pull` trả về và xóa một cặp key / giá trị ra khỏi m�
 
     // $array: ['price' => 100]
 
-Một giá trị mặc định có thể được pass làm tham số thứ ba cho phương thức. Giá trị này sẽ được trả về nếu key không tồn tại:
+Một giá trị mặc định có thể được truyền làm tham số thứ ba cho phương thức. Giá trị này sẽ được trả về nếu key không tồn tại:
 
     $value = array_pull($array, $key, $default);
 
@@ -407,7 +407,7 @@ Hàm `array_random` sẽ trả về một giá trị ngẫu nhiên từ một m�
 
     // 4 - (retrieved randomly)
 
-Bạn cũng có thể chỉ định số lượng item sẽ trả về làm tham số thứ hai tùy chọn. Lưu ý rằng việc cung cấp tham số này sẽ trả về một mảng, ngay cả khi chỉ có một item mong muốn:
+Bạn cũng có thể chỉ định số lượng item sẽ được trả về làm tham số thứ hai. Lưu ý rằng việc cung cấp tham số này sẽ trả về một mảng, ngay cả khi chỉ có một item mong muốn:
 
     $items = array_random($array, 2);
 
@@ -416,7 +416,7 @@ Bạn cũng có thể chỉ định số lượng item sẽ trả về làm tham
 <a name="method-array-set"></a>
 #### `array_set()` {#collection-method}
 
-Hàm `array_set` sẽ set một giá trị trong một mảng bị lông vào nhau bằng cách sử dụng ký hiệu "dot":
+Hàm `array_set` sẽ set một giá trị trong một mảng bị lồng nhau bằng cách sử dụng ký hiệu "dot":
 
     $array = ['products' => ['desk' => ['price' => 100]]];
 
@@ -490,7 +490,7 @@ Hàm `array_where` sẽ lọc một mảng bằng cách sử dụng Closure:
 <a name="method-array-wrap"></a>
 #### `array_wrap()` {#collection-method}
 
-Hàm `array_wrap` sẽ wrap giá trị đã cho vào trong một mảng. Nếu giá trị đã cho là một mảng, nó sẽ không bị thay đổi:
+Hàm `array_wrap` sẽ bao bọc giá trị đã cho vào trong một mảng. Nếu giá trị đã cho là một mảng, nó sẽ không bị thay đổi:
 
     $string = 'Laravel';
 
@@ -509,7 +509,7 @@ Nếu giá trị đã cho là null, một mảng trống sẽ được trả v�
 <a name="method-data-fill"></a>
 #### `data_fill()` {#collection-method}
 
-Hàm `data_fill` đặt một giá trị bị thiếu trong một mảng hoặc đối tượng lồng nhau bằng cách sử dụng ký hiệu "dot":
+Hàm `data_fill` sẽ set một giá trị bị thiếu trong một mảng hoặc một đối tượng lồng nhau bằng cách sử dụng ký hiệu "dot":
 
     $data = ['products' => ['desk' => ['price' => 100]]];
 
@@ -521,7 +521,7 @@ Hàm `data_fill` đặt một giá trị bị thiếu trong một mảng hoặc 
 
     // ['products' => ['desk' => ['price' => 100, 'discount' => 10]]]
 
-Hàm này cũng chấp nhận dấu hoa thị dưới dạng như ký tự đại diện và sẽ điền vào mục tiêu tương ứng:
+Hàm này cũng chấp nhận dấu hoa thị dưới dạng như một ký tự đại diện và sẽ điền vào mục tiêu tương ứng:
 
     $data = [
         'products' => [
@@ -544,7 +544,7 @@ Hàm này cũng chấp nhận dấu hoa thị dưới dạng như ký tự đạ
 <a name="method-data-get"></a>
 #### `data_get()` {#collection-method}
 
-Hàm `data_get` lấy một giá trị từ một mảng hoặc đối tượng lồng nhau bằng cách sử dụng ký hiệu "dot":
+Hàm `data_get` lấy một giá trị từ một mảng hoặc một đối tượng lồng nhau bằng cách sử dụng ký hiệu "dot":
 
     $data = ['products' => ['desk' => ['price' => 100]]];
 
@@ -561,7 +561,7 @@ Hàm `data_get` cũng chấp nhận một giá trị mặc định, sẽ đượ
 <a name="method-data-set"></a>
 #### `data_set()` {#collection-method}
 
-Hàm `data_set` sẽ set một giá trị trong một mảng hoặc đối tượng lồng nhau bằng cách sử dụng ký hiệu "dot":
+Hàm `data_set` sẽ set một giá trị trong một mảng hoặc một đối tượng lồng nhau bằng cách sử dụng ký hiệu "dot":
 
     $data = ['products' => ['desk' => ['price' => 100]]];
 
@@ -569,7 +569,7 @@ Hàm `data_set` sẽ set một giá trị trong một mảng hoặc đối tư�
 
     // ['products' => ['desk' => ['price' => 200]]]
 
-Hàm này cũng chấp nhận ký tự đại diện và sẽ set giá trị cho mục tiêu tương ứng:
+Hàm này cũng chấp nhận ký tự đại diện và để set giá trị cho mục tiêu tương ứng:
 
     $data = [
         'products' => [
@@ -589,7 +589,7 @@ Hàm này cũng chấp nhận ký tự đại diện và sẽ set giá trị cho
         ]
     */
 
-Mặc định, bất kỳ giá trị hiện có sẽ bị ghi đè. Nếu bạn chỉ muốn set một giá trị nếu nó không tồn tại, bạn có thể pass `false` làm tham số thứ ba:
+Mặc định, bất kỳ giá trị hiện có sẽ bị ghi đè. Nếu bạn chỉ muốn set một giá trị nếu nó không tồn tại, bạn có thể truyền `false` làm tham số thứ ba:
 
     $data = ['products' => ['desk' => ['price' => 100]]];
 
@@ -661,7 +661,7 @@ Hàm `database_path` trả về đường dẫn đến thư mục `database`. B�
 <a name="method-mix"></a>
 #### `mix()` {#collection-method}
 
-Hàm `mix` trả về đường dẫn đến [file Mix được version](/docs/{{version}}/mix):
+Hàm `mix` trả về đường dẫn đến [file Mix đã được version](/docs/{{version}}/mix):
 
     $path = mix('css/app.css');
 
@@ -698,13 +698,13 @@ Hàm `storage_path` trả về đường dẫn đến thư mục` storage`. Bạ
 <a name="method-__"></a>
 #### `__()` {#collection-method}
 
-Hàm `__` sẽ translate chuỗi cần được dịch hoặc key cần được dịch đã cho bằng cách sử dụng [localization files](/docs/{{version}}/localization) của bạn:
+Hàm `__` sẽ dịch chuỗi cần được dịch hoặc key cần được dịch đã cho bằng cách sử dụng [localization files](/docs/{{version}}/localization) của bạn:
 
     echo __('Welcome to our application');
 
     echo __('messages.welcome');
 
-Nếu chuỗi hoặc key cần được dịch được khai báo nhưng không tồn tại, hàm `__` sẽ trả về giá trị đưa vào. Vì vậy, nếu sử dụng ví dụ mẫu trên, hàm `__` sẽ trả về `messages.welcome` nếu key cần được dịch đó không tồn tại.
+Nếu chuỗi hoặc key cần được dịch không tồn tại, hàm `__` sẽ trả về giá trị được đưa vào. Vì vậy, nếu sử dụng ví dụ mẫu trên, hàm `__` sẽ trả về `messages.welcome` nếu key cần được dịch đó không tồn tại.
 
 <a name="method-camel-case"></a>
 #### `camel_case()` {#collection-method}
@@ -718,7 +718,7 @@ Hàm `camel_case` chuyển đổi chuỗi đã cho thành `camelCase`:
 <a name="method-class-basename"></a>
 #### `class_basename()` {#collection-method}
 
-`class_basename` trả về tên class của class đã cho với namespace của class bị xóa:
+`class_basename` trả về tên class đã cho với namespace của class bị xóa:
 
     $class = class_basename('Foo\Bar\Baz');
 
@@ -727,7 +727,7 @@ Hàm `camel_case` chuyển đổi chuỗi đã cho thành `camelCase`:
 <a name="method-e"></a>
 #### `e()` {#collection-method}
 
-Hàm `e` chạy hàm` htmlspecialchars` của PHP với tùy chọn `double_encode` được set thành` false`:
+Hàm `e` chạy hàm` htmlspecialchars` của PHP với tùy chọn `double_encode` được set thành `false`:
 
     echo e('<html>foo</html>');
 
@@ -736,7 +736,7 @@ Hàm `e` chạy hàm` htmlspecialchars` của PHP với tùy chọn `double_enco
 <a name="method-ends-with"></a>
 #### `ends_with()` {#collection-method}
 
-Hàm `ends_with` xác định nếu chuỗi đã cho có kết thúc bằng giá trị đã cho hay không:
+Hàm `ends_with` sẽ kiểm tra chuỗi đã cho có kết thúc bằng giá trị đã cho hay không:
 
     $result = ends_with('This is my name', 'name');
 
@@ -765,7 +765,7 @@ Hàm `preg_replace_array` sẽ thay thế một pattern vào trong một chuỗi
 <a name="method-snake-case"></a>
 #### `snake_case()` {#collection-method}
 
-Hàm `Snake_snake_casecase` chuyển đổi chuỗi đã cho thành` snake_case`:
+Hàm `snake_case` sẽ chuyển đổi chuỗi đã cho thành` snake_case`:
 
     $converted = snake_case('fooBar');
 
@@ -774,7 +774,7 @@ Hàm `Snake_snake_casecase` chuyển đổi chuỗi đã cho thành` snake_case`
 <a name="method-starts-with"></a>
 #### `starts_with()` {#collection-method}
 
-Hàm `started_with` sẽ xác định chuỗi đã cho có bắt đầu bằng giá trị đã cho hay không:
+Hàm `started_with` sẽ kiểm tra chuỗi đã cho có bắt đầu bằng giá trị đã cho hay không:
 
     $result = starts_with('This is my name', 'This');
 
@@ -807,7 +807,7 @@ Hàm `str_contains` xác định xem chuỗi đã cho có chứa giá trị đã
 
     // true
 
-Bạn cũng có thể pass một mảng các giá trị để xác định xem chuỗi đã cho có chứa bất kỳ giá trị nào trong mảng không:
+Bạn cũng có thể truyền vào một mảng các giá trị để xác định xem chuỗi đã cho có chứa bất kỳ giá trị nào trong mảng không:
 
     $contains = str_contains('This is my name', ['my', 'foo']);
 
@@ -816,7 +816,7 @@ Bạn cũng có thể pass một mảng các giá trị để xác định xem c
 <a name="method-str-finish"></a>
 #### `str_finish()` {#collection-method}
 
-Hàm `str_finish` thêm một instance của giá trị đã cho vào một chuỗi nếu nó chưa kết thúc bằng giá trị đó:
+Hàm `str_finish` sẽ thêm một instance của giá trị đã cho vào một chuỗi nếu nó chưa kết thúc bằng giá trị đó:
 
     $adjusted = str_finish('this/string', '/');
 
@@ -848,7 +848,7 @@ Hàm `str_limit` sẽ cắt ngắn chuỗi đã cho ở độ dài nhất địn
 
     // The quick brown fox...
 
-Bạn cũng có thể pass một tham số thứ ba để thay đổi chuỗi sẽ được nối vào cuối chuỗi:
+Bạn cũng có thể truyền một tham số thứ ba để thay đổi chuỗi sẽ được nối vào cuối chuỗi:
 
     $truncated = str_limit('The quick brown fox jumps over the lazy dog', 20, ' (...)');
 
@@ -857,7 +857,7 @@ Bạn cũng có thể pass một tham số thứ ba để thay đổi chuỗi s�
 <a name="method-str-plural"></a>
 #### `str_plural()` {#collection-method}
 
-Hàm `str_plural` chuyển đổi một chuỗi thành dạng số nhiều của nó. Chức năng này hiện chỉ hỗ trợ ngôn ngữ tiếng Anh:
+Hàm `str_plural` sẽ chuyển đổi một chuỗi thành dạng số nhiều của nó. Chức năng này hiện tại chỉ hỗ trợ ngôn ngữ tiếng Anh:
 
     $plural = str_plural('car');
 
@@ -916,7 +916,7 @@ Hàm `str_replace_last` sẽ thay thế giá trị cuối cùng có trong chuỗ
 <a name="method-str-singular"></a>
 #### `str_singular()` {#collection-method}
 
-Hàm `str_singular` sẽ chuyển đổi một chuỗi thành dạng số ít của nó. Chức năng này hiện chỉ hỗ trợ ngôn ngữ tiếng Anh:
+Hàm `str_singular` sẽ chuyển đổi một chuỗi thành dạng số ít của nó. Chức năng này hiện tại chỉ hỗ trợ ngôn ngữ tiếng Anh:
 
     $singular = str_singular('cars');
 
@@ -969,7 +969,7 @@ Hàm `title_case` chuyển đổi chuỗi đã cho thành` Title Case`:
 <a name="method-trans"></a>
 #### `trans()` {#collection-method}
 
-Hàm `trans` sẽ translate các key cần dịch bằng cách sử dụng [localization files](/docs/{{version}}/localization) của bạn:
+Hàm `trans` sẽ dịch các key cần dịch bằng cách sử dụng [localization files](/docs/{{version}}/localization) của bạn:
 
     echo trans('messages.welcome');
 
@@ -978,7 +978,7 @@ Nếu key cần dịch mà không tồn tại, hàm `trans` sẽ trả về key 
 <a name="method-trans-choice"></a>
 #### `trans_choice()` {#collection-method}
 
-Hàm `trans_choice` sẽ translate các key cần dịch đã cho với một biến số nhiều:
+Hàm `trans_choice` sẽ dịch các key cần dịch đã cho với một biến số nhiều:
 
     echo trans_choice('messages.notifications', $unreadCount);
 
@@ -990,18 +990,18 @@ Nếu key cần dịch mà không tồn tại, hàm `trans_choice` sẽ trả v�
 <a name="method-action"></a>
 #### `action()` {#collection-method}
 
-Hàm `action` sẽ tạo ra một URL cho hành động của controller đã cho. Bạn không cần phải pass namespace của controller. Thay vào đó, hãy pass tên class của controller liên kết đến namespace `App\Http\Controllers`:
+Hàm `action` sẽ tạo ra một URL cho một action của controller đã cho. Bạn không cần phải truyền namespace của controller. Thay vào đó, hãy truyền tên class của controller liên kết đến namespace `App\Http\Controllers`:
 
     $url = action('HomeController@index');
 
-Nếu phương thức nhận tham số cho route, bạn có thể pass chúng làm tham số thứ hai cho phương thức:
+Nếu phương thức chấp nhận tham số cho route, bạn có thể truyền chúng làm tham số thứ hai cho phương thức:
 
     $url = action('UserController@profile', ['id' => 1]);
 
 <a name="method-asset"></a>
 #### `asset()` {#collection-method}
 
-Hàm `property` tạo URL cho một asset bằng cách sử dụng scheme hiện tại của request (HTTP hoặc HTTPS):
+Hàm `asset` sẽ tạo URL cho một asset bằng cách sử dụng scheme hiện tại của request (HTTP hoặc HTTPS):
 
     $url = asset('img/photo.jpg');
 
@@ -1019,11 +1019,11 @@ Hàm `route` sẽ tạo một URL cho route đã được đặt tên:
 
     $url = route('routeName');
 
-Nếu route có nhận tham số, bạn có thể pass chúng làm tham số thứ hai cho phương thức:
+Nếu route có chấp nhận tham số, bạn có thể truyền chúng làm tham số thứ hai cho phương thức:
 
     $url = route('routeName', ['id' => 1]);
 
-Mặc định, hàm `route` tạo ra một URL tuyệt đối. Nếu bạn muốn tạo một URL tương đối, bạn có thể pass `false` làm tham số thứ ba:
+Mặc định, hàm `route` sẽ tạo ra một URL tuyệt đối. Nếu bạn muốn tạo một URL tương đối, bạn có thể truyền `false` làm tham số thứ ba:
 
     $url = route('routeName', ['id' => 1], false);
 
@@ -1063,7 +1063,7 @@ Hàm `abort` sẽ đưa ra một [exception HTTP](/docs/{{version}}/errors#http-
 
     abort(403);
 
-Bạn cũng có thể cung cấp response text và response header tùy chỉnh của exception:
+Bạn cũng có thể cung cấp response text và response header tùy biến cho exception:
 
     abort(403, 'Unauthorized.', $headers);
 
@@ -1074,7 +1074,7 @@ Hàm `abort_if` sẽ đưa ra một exception HTTP nếu một biểu thức boo
 
     abort_if(! Auth::user()->isAdmin(), 403);
 
-Giống như phương thức `abort`, bạn cũng có thể cung cấp response text của exception làm tham số thứ ba và một mảng các response header tùy chỉnh làm tham số thứ tư.
+Giống như phương thức `abort`, bạn cũng có thể cung cấp response text cho exception làm tham số thứ ba và một mảng các response header tùy biến làm tham số thứ tư.
 
 <a name="method-abort-unless"></a>
 #### `abort_unless()` {#collection-method}
@@ -1083,7 +1083,7 @@ Hàm `abort_unless` sẽ đưa ra một exception HTTP nếu một biểu thức
 
     abort_unless(Auth::user()->isAdmin(), 403);
 
-Giống như phương thức `abort`, bạn cũng có thể cung cấp response text của exception làm tham số thứ ba và một mảng các response header tùy chỉnh làm tham số thứ tư.
+Giống như phương thức `abort`, bạn cũng có thể cung cấp response text cho exception làm tham số thứ ba và một mảng các response header tùy biến làm tham số thứ tư.
 
 <a name="method-app"></a>
 #### `app()` {#collection-method}
@@ -1092,14 +1092,14 @@ Hàm `app` trả về instance [service container](/docs/{{version}}/container):
 
     $container = app();
 
-Bạn có thể pass một tên class hoặc tên interface để resolve nó từ container:
+Bạn có thể truyền một tên class hoặc một tên interface để resolve nó từ container:
 
     $api = app('HelpSpot\API');
 
 <a name="method-auth"></a>
 #### `auth()` {#collection-method}
 
-Hàm `auth` sẽ trả về một instance [authenticator](/docs/{{version}}/authentication) . Bạn có thể sử dụng nó thay vì dùng facade `Auth` cho thuận tiện:
+Hàm `auth` sẽ trả về một instance [authenticator](/docs/{{version}}/authentication). Bạn có thể sử dụng nó thay vì dùng facade `Auth` cho thuận tiện:
 
     $user = auth()->user();
 
@@ -1133,7 +1133,7 @@ Hàm `broadcast` sẽ [broadcasts](/docs/{{version}}/broadcasting) một [event]
 <a name="method-blank"></a>
 #### `blank()` {#collection-method}
 
-Hàm `blank` trả về giá trị đã cho là "blank" hay không:
+Hàm `blank` sẽ trả về giá trị đã cho là "blank" hay không:
 
     blank('');
     blank('   ');
@@ -1153,13 +1153,13 @@ Hàm `blank` trả về giá trị đã cho là "blank" hay không:
 <a name="method-cache"></a>
 #### `cache()` {#collection-method}
 
-Hàm `cache` có thể được sử dụng để lấy các giá trị từ [cache](/docs/{{version}}/cache). Nếu key đã cho không tồn tại trong cache, giá trị mặc định tùy chọn sẽ được trả về:
+Hàm `cache` có thể được sử dụng để lấy các giá trị từ [cache](/docs/{{version}}/cache). Nếu key đã cho không tồn tại trong cache, giá trị mặc định sẽ được trả về:
 
     $value = cache('key');
 
     $value = cache('key', 'default');
 
-Bạn có thể thêm các item vào cache bằng cách pass một mảng các cặp key / giá trị cho hàm. Bạn cũng nên pass thêm số phút hoặc thời lượng mà giá trị được lưu trong bộ nhớ cache sẽ được coi là hợp lệ:
+Bạn có thể thêm các item vào cache bằng cách truyền một mảng các cặp key / giá trị cho hàm. Bạn cũng nên truyền thêm số phút hoặc thời gian mà giá trị được lưu trong bộ nhớ cache sẽ được coi là hợp lệ:
 
     cache(['key' => 'value'], 5);
 
@@ -1168,14 +1168,14 @@ Bạn có thể thêm các item vào cache bằng cách pass một mảng các c
 <a name="method-class-uses-recursive"></a>
 #### `class_uses_recursive()` {#collection-method}
 
-Hàm `class_uses_recursive` sẽ trả về tất cả các trait được sử dụng bởi một class, bao gồm cả các trait được sử dụng bởi bất kỳ class con:
+Hàm `class_uses_recursive` sẽ trả về tất cả các trait được sử dụng bởi một class, bao gồm cả các trait được sử dụng bởi bất kỳ các class con:
 
     $traits = class_uses_recursive(App\User::class);
 
 <a name="method-collect"></a>
 #### `collect()` {#collection-method}
 
-Hàm `collect` tạo ra một instance [collection](/docs/{{version}}/collections)  từ giá trị đã cho:
+Hàm `collect` tạo ra một instance [collection](/docs/{{version}}/collections) từ giá trị đã cho:
 
     $collection = collect(['taylor', 'abigail']);
 
@@ -1188,7 +1188,7 @@ Hàm `config` sẽ lấy giá trị của biến [configuration](/docs/{{version
 
     $value = config('app.timezone', $default);
 
-Bạn có thể set các biến cấu hình trong thời gian chạy bằng cách chuyển một mảng các cặp key / giá trị:
+Bạn có thể set các biến cấu hình trong thời gian chạy bằng cách truyền một mảng các cặp key / giá trị:
 
     config(['app.debug' => true]);
 
@@ -1209,7 +1209,7 @@ Hàm `csrf_field` sẽ tạo ra một thẻ input `hidden` HTML chứa giá tr�
 <a name="method-csrf-token"></a>
 #### `csrf_token()` {#collection-method}
 
-Hàm `csrf_token` lấy ra giá trị của CSRF token hiện tại:
+Hàm `csrf_token` sẽ lấy ra giá trị của CSRF token hiện tại:
 
     $token = csrf_token();
 
@@ -1316,22 +1316,22 @@ Hàm `info` sẽ ghi thông tin vào [log](/docs/{{version}}/errors#logging):
 
     info('Some helpful information!');
 
-Một mảng dữ liệu theo ngữ cảnh cũng có thể được pass cho hàm:
+Một mảng dữ liệu theo ngữ cảnh cũng có thể được truyền cho hàm:
 
     info('User login attempt failed.', ['id' => $user->id]);
 
 <a name="method-logger"></a>
 #### `logger()` {#collection-method}
 
-Hàm `logger` có thể được sử dụng để viết một thông báo mức `debug` vào [log](/docs/{{version}}/errors#logging):
+Hàm `logger` có thể được sử dụng để viết một thông báo ở mức `debug` vào [log](/docs/{{version}}/errors#logging):
 
     logger('Debug message');
 
-Một mảng dữ liệu theo ngữ cảnh cũng có thể được pass cho hàm:
+Một mảng dữ liệu theo ngữ cảnh cũng có thể được truyền cho hàm:
 
     logger('User has logged in.', ['id' => $user->id]);
 
-Một instance [logger](/docs/{{version}}/errors#logging) sẽ được trả về nếu không có giá trị nào được pass cho hàm:
+Một instance [logger](/docs/{{version}}/errors#logging) sẽ được trả về nếu không có giá trị nào được truyền vào cho hàm:
 
     logger()->error('You are not allowed here.');
 
@@ -1363,7 +1363,7 @@ Hàm `old` sẽ [lấy ra](/docs/{{version}}/requests#retrieving-input) một gi
 <a name="method-optional"></a>
 #### `optional()` {#collection-method}
 
-Hàm `optional` nhận vào bất kỳ tham số nào và cho phép bạn truy cập các thuộc tính hoặc phương thức gọi trên đối tượng đó. Nếu đối tượng đã cho là `null`, các thuộc tính và phương thức sẽ trả về `null` thay vì gây ra lỗi:
+Hàm `optional` nhận vào bất kỳ tham số nào và cho phép bạn truy cập các thuộc tính hoặc phương thức được gọi trên đối tượng đó. Nếu đối tượng đã cho là `null`, các thuộc tính và phương thức sẽ trả về `null` thay vì gây ra lỗi:
 
     return optional($user->address)->street;
 
@@ -1379,7 +1379,7 @@ Phương thức `policy` sẽ lấy ra một instance [policy](/docs/{{version}}
 <a name="method-redirect"></a>
 #### `redirect()` {#collection-method}
 
-Hàm `redirect` sẽ trả về một [response HTTP chuyển hướng](/docs/{{version}}/responses#redirects) hoặc trả về instance chuyển hướng nếu không có tham số được pass vào:
+Hàm `redirect` sẽ trả về một [response HTTP chuyển hướng](/docs/{{version}}/responses#redirects) hoặc trả về instance chuyển hướng nếu không có tham số được truyền vào:
 
     return redirect($to = null, $status = 302, $headers = [], $secure = null);
 
@@ -1397,7 +1397,7 @@ Hàm `report` sẽ report một exception bằng cách sử dụng phương th�
 <a name="method-request"></a>
 #### `request()` {#collection-method}
 
-Hàm `request` trả về instance [request](/docs/{{version}}/requests) hiện tại hoặc nhận được một input item:
+Hàm `request` trả về instance [request](/docs/{{version}}/requests) hiện tại hoặc lấy ra một input item:
 
     $request = request();
 
@@ -1412,7 +1412,7 @@ Hàm `rescue` sẽ thực thi Closure đã cho và catch bất kỳ exception n�
         return $this->method();
     });
 
-Bạn cũng có thể pass tham số thứ hai cho hàm `rescue`. Tham số này sẽ là giá trị "default" cần được trả về nếu có exception xảy ra trong khi thực hiện Closure:
+Bạn cũng có thể truyền tham số thứ hai cho hàm `rescue`. Tham số này sẽ là giá trị "default" cần được trả về nếu có exception xảy ra trong khi thực hiện Closure:
 
     return rescue(function () {
         return $this->method();
@@ -1427,7 +1427,7 @@ Bạn cũng có thể pass tham số thứ hai cho hàm `rescue`. Tham số này
 <a name="method-resolve"></a>
 #### `resolve()` {#collection-method}
 
-Hàm `resolve` sẽ resolve một tên class hoặc interface đã cho thành instance của nó bằng cách sử dụng [service container](/docs/{{version}}/container):
+Hàm `resolve` sẽ resolve một tên class hoặc một interface đã cho thành một instance của nó bằng cách sử dụng [service container](/docs/{{version}}/container):
 
     $api = resolve('HelpSpot\API');
 
@@ -1443,7 +1443,7 @@ Hàm `response` tạo ra một instance [response](/docs/{{version}}/responses) 
 <a name="method-retry"></a>
 #### `retry()` {#collection-method}
 
-Hàm `retry` sẽ thử thực hiện callback đã cho, cho đến khi đạt được ngưỡng thử tối đa đã cho. Nếu callback không đưa ra exception, giá trị trả về của nó sẽ được trả về. Nếu callback đưa ra một exception, nó sẽ tự động được thử lại. Nếu vượt quá số lần thử tối đa, exception sẽ bị đưa ra:
+Hàm `retry` sẽ thử thực hiện callback đã cho, cho đến khi đạt được ngưỡng thử tối đa nào đó. Nếu callback không đưa ra exception, chính giá trị trả về của nó sẽ được trả về. Nếu callback đưa ra một exception, nó sẽ tự động được thử lại. Nếu vượt quá số lần thử tối đa, exception sẽ bị đưa ra:
 
     return retry(5, function () {
         // Attempt 5 times while resting 100ms in between attempts...
@@ -1456,11 +1456,11 @@ Hàm `session` có thể được sử dụng để lấy hoặc set các giá t
 
     $value = session('key');
 
-Bạn có thể set giá trị bằng cách pass một mảng các cặp key / giá trị cho hàm:
+Bạn có thể set giá trị bằng cách truyền một mảng các cặp key / giá trị cho hàm:
 
     session(['chairs' => 7, 'instruments' => 3]);
 
-Session store sẽ được trả về nếu không có giá trị nào được pass cho hàm:
+Session store sẽ được trả về nếu không có giá trị nào được truyền cho hàm:
 
     $value = session()->get('key');
 
@@ -1469,7 +1469,7 @@ Session store sẽ được trả về nếu không có giá trị nào được
 <a name="method-tap"></a>
 #### `tap()` {#collection-method}
 
-Hàm `tap` sẽ nhận vào hai tham số: một là `$value` và một Closure. `$value` sẽ được pass đến phần Closure và sau đó được trả về bởi hàm `tap`. Giá trị trả về của Closure là không liên quan:
+Hàm `tap` sẽ nhận vào hai tham số: một là `$value` và một Closure. `$value` sẽ được truyền đến phần Closure và sau đó được trả về bởi hàm `tap`. Giá trị trả về của Closure là không liên quan:
 
     $user = tap(User::first(), function ($user) {
         $user->name = 'taylor';
@@ -1477,7 +1477,7 @@ Hàm `tap` sẽ nhận vào hai tham số: một là `$value` và một Closure.
         $user->save();
     });
 
-Nếu không có Closure nào được pass đến hàm `tap`, bạn có thể gọi bất kỳ phương thức nào trên `$value` đã cho. Giá trị trả về của phương thức bạn gọi sẽ luôn là `$value`, bất kể phương thức đó thực sự trả về định nghĩa của nó là gì. Ví dụ, phương thức `update` Eloquent thường trả về một số nguyên. Tuy nhiên, chúng ta có thể buộc phương thức trả về chính model bằng cách gọi phương thức `update` thông qua hàm `tap`:
+Nếu không có Closure nào được truyền đến hàm `tap`, bạn có thể gọi bất kỳ phương thức nào trên `$value` đã cho. Giá trị trả về của phương thức bạn gọi sẽ luôn là `$value`, bất kể phương thức đó thực sự trả về định nghĩa gì đi chăng nữa. Ví dụ, phương thức `update` Eloquent thường trả về một số nguyên. Tuy nhiên, chúng ta có thể buộc phương thức trả về chính model bằng cách gọi phương thức `update` thông qua hàm `tap`:
 
     $user = tap($user)->update([
         'name' => $name,
@@ -1507,7 +1507,7 @@ Hàm `throw_if` sẽ đưa ra exception đã cho nếu một biểu thức boole
 <a name="method-throw-unless"></a>
 #### `throw_unless()` {#collection-method}
 
-Hàm `throw_unless` sẽ đưa ra exception đã cho nếu một biểu thức boolean đã cholà `false`:
+Hàm `throw_unless` sẽ đưa ra exception đã cho nếu một biểu thức boolean đã cho là `false`:
 
     throw_unless(Auth::user()->isAdmin(), AuthorizationException::class);
 
@@ -1527,7 +1527,7 @@ Hàm `trait_uses_recursive` trả về tất cả các trait được sử dụn
 <a name="method-transform"></a>
 #### `transform()` {#collection-method}
 
-Hàm `transform` sẽ thực thi một `Closure` trên một giá trị đã cho nếu giá trị không [blank](#method-blank) và trả về kết quả của `Closure`:
+Hàm `transform` sẽ thực thi một `Closure` trên một giá trị đã cho nếu giá trị không [blank](#method-blank) và trả về kết quả của một `Closure`:
 
     $callback = function ($value) {
         return $value * 2;
@@ -1537,7 +1537,7 @@ Hàm `transform` sẽ thực thi một `Closure` trên một giá trị đã cho
 
     // 10
 
-Một giá trị mặc định hoặc `Closure` cũng có thể được pass làm tham số thứ ba cho phương thức. Giá trị này sẽ được trả về nếu giá trị đã cho là blank:
+Một giá trị mặc định hoặc một `Closure` cũng có thể được truyền làm tham số thứ ba cho phương thức. Giá trị này sẽ được trả về nếu giá trị đã cho là blank:
 
     $result = transform(null, $callback, 'The value is blank');
 
@@ -1546,14 +1546,14 @@ Một giá trị mặc định hoặc `Closure` cũng có thể được pass l�
 <a name="method-validator"></a>
 #### `validator()` {#collection-method}
 
-Hàm `validator` sẽ tạo ra một instance [validator](/docs/{{version}}/validation) mới với các tham số đã cho. Bạn có thể sử dụng nó thay vì facade  `Validator` cho thuận tiện:
+Hàm `validator` sẽ tạo ra một instance [validator](/docs/{{version}}/validation) mới với các tham số đã cho. Bạn có thể sử dụng nó thay vì facade `Validator` cho thuận tiện:
 
     $validator = validator($data, $rules, $messages);
 
 <a name="method-value"></a>
 #### `value()` {#collection-method}
 
-Hàm `value` sẽ trả về giá trị được cho. Tuy nhiên, nếu bạn pass một `Closure` cho hàm, thì` Closure` sẽ được thực thi sau đó kết quả của nó sẽ được trả về:
+Hàm `value` sẽ trả về giá trị được cho. Tuy nhiên, nếu bạn truyền một `Closure` cho hàm, thì` Closure` sẽ được thực thi sau đó kết quả của nó sẽ được trả về:
 
     $result = value(true);
 
@@ -1575,7 +1575,7 @@ Hàm `view` sẽ lấy ra một instance [view](/docs/{{version}}/views):
 <a name="method-with"></a>
 #### `with()` {#collection-method}
 
-Hàm `with` sẽ trả về giá trị được cho. Nếu một `Closure` được pass làm tham số thứ hai cho hàm, thì` Closure` sẽ được thực thi sau đó kết quả của nó sẽ được trả về:
+Hàm `with` sẽ trả về giá trị được cho. Nếu một `Closure` được truyền làm tham số thứ hai cho hàm, thì `Closure` đó sẽ được thực thi và sau đó kết quả của nó sẽ được trả về:
 
     $callback = function ($value) {
         return (is_numeric($value)) ? $value * 2 : 0;
