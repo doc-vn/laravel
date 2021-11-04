@@ -1,6 +1,6 @@
 # Contribution Guide
 
-- [Báo cáo Bug](#bug-reports)
+- [BáoêBug](#bug-reports)
 - [Các kệnh phát triển chính](#core-development-discussion)
 - [Branch nào?](#which-branch)
 - [Lỗ hổng bảo mật](#security-vulnerabilities)
@@ -9,13 +9,13 @@
     - [StyleCI](#styleci)
 
 <a name="bug-reports"></a>
-## Báo cáo Bug
+## Báo Bug
 
-Để khuyến khích sự phát triển tích cực, Laravel rất khuyến khích tạo các pull request, không chỉ là các bug. "Báo cáo bug" cũng có thể là một pull request được gửi dưới dạng chứa một bài test thất bại.
+Để khuyến khích cho sự phát triển, Laravel rất khuyến khích bạn tạo các pull request, không chỉ là báo bug. "Báo bug" cũng có thể là một pull request được gửi dưới dạng là một bài test thất bại.
 
-Tuy nhiên, nếu bạn muốn tạo một bug, thì bug của bạn nên chứa một tiêu đề và một mô tả rõ ràng về bug của bạn. Bạn cũng nên mô tả càng nhiều thông tin liên quan càng tốt và một code ví dụ để tạo ra bug đó. Mục tiêu của báo cáo bug là giúp bạn dễ dàng - và những người khác - tái hiện bug và phát triển các bản sửa bug.
+Tuy nhiên, nếu bạn muốn tạo một bug, thì bug của bạn nên chứa một tiêu đề và một mô tả rõ ràng về bug mà bạn gặp phải. Bạn cũng nên mô tả càng nhiều thông tin liên quan đến bug càng tốt và một code ví dụ để tạo ra bug đó. Mục tiêu của báo bug là giúp bạn dễ dàng - và những người khác - tái hiện lại bug đó và phát triển các bản sửa bug.
 
-Hãy nhớ rằng, các báo cáo bug được tạo ra với hy vọng rằng những người khác có cùng vấn đề với bạn có thể cộng tác với nhau để cùng nhau sửa bug. Bạn đừng hy vọng rằng báo cáo bug sẽ là khởi động một quá trình sửa bug nào đó hoặc người khác sẽ nhảy vào để sửa. Tạo một báo cáo bug để giúp chính bạn và những người khác, bắt đầu một quá trình sửa bug mà bạn đã báo cáo.
+Hãy nhớ rằng, báo bug được tạo ra với hy vọng rằng những người khác có cùng vấn đề với bạn có thể cộng tác với nhau để cùng nhau sửa bug. Bạn đừng hy vọng rằng báo bug sẽ làm khởi động một quá trình sửa bug nào đó hoặc người khác sẽ nhảy vào để sửa giúp bạn. Tạo một bug để giúp chính bạn và những người khác, bắt đầu một quá trình sửa bug mà bạn đã báo cáo.
 
 Mã nguồn của Laravel được quản lý trên GitHub và có các repository cho từng dự án của Laravel:
 
@@ -37,9 +37,9 @@ Mã nguồn của Laravel được quản lý trên GitHub và có các reposito
 </div>
 
 <a name="core-development-discussion"></a>
-## Các kệnh phát triển chính
+## Các kênh phát triển chính
 
-Bạn có thể đề xuất các tính năng mới hoặc các cải tiến về các hành động của Laravel trong Laravel Internals [issue board](https://github.com/laravel/internals/issues). Nếu bạn đề xuất một tính năng mới, vui lòng sẵn sàng triển khai một số code cần thiết để hoàn thành tính năng này.
+Bạn có thể đề xuất các tính năng mới hoặc các cải tiến về các hành động của Laravel trong Laravel Internals [issue board](https://github.com/laravel/internals/issues). Nếu bạn đề xuất một tính năng mới, vui lòng làm sẵn một số code cần thiết để hoàn thành tính năng này.
 
 Kênh `#internals` của team Slack [LaraChat](https://larachat.co) sẽ thảo luận về các lỗi, tính năng mới và triển khai các tính năng hiện tại. Taylor Otwell, maintainer của Laravel, thường có mặt trong kênh này vào các ngày trong tuần từ 8 giờ sáng đến 5 giờ chiều (UTC-06:00 or America/Chicago) và xuất hiện thường xuyên trong kênh vào các thời điểm khác.
 
@@ -52,7 +52,7 @@ Các tính năng **phụ** có **tương thích** với bản phát hành Larave
 
 Các tính năng **chính** mới phải luôn được gửi đến branch `master`, nơi chứa bản phát hành Laravel sắp tới.
 
-Nếu bạn không chắc chắn tính năng của bạn đủ điều kiện là chính hay phụ, vui lòng hỏi Taylor Otwell trong kênh `#internals` của nhóm Slack [LaraChat](https://larachat.co).
+Nếu bạn không chắc chắn tính năng của bạn là chính hay là phụ, vui lòng hỏi Taylor Otwell trong kênh `#internals` của nhóm Slack [LaraChat](https://larachat.co).
 
 <a name="security-vulnerabilities"></a>
 ## Lỗ hổng bảo mật
@@ -67,7 +67,7 @@ Laravel tuân theo tiêu chuẩn coding [PSR-2](https://github.com/php-fig/fig-s
 <a name="phpdoc"></a>
 ### PHPDoc
 
-Dưới đây là một ví dụ mẫu về Laravel documentation hợp lệ. Lưu ý rằng đằng sau thuộc tính `@param` là hai khoảng trắng, tiếp theo là kiểu của tham số, và hai khoảng trắng nữa và cuối cùng là tên biến:
+Dưới đây là một ví dụ mẫu về Laravel documentation hợp lệ. Lưu ý rằng đằng sau thuộc tính `@param` là hai khoảng trắng, tiếp theo là kiểu của tham số, và hai khoảng trắng và cuối cùng là tên biến:
 
     /**
      * Register a binding with the container.

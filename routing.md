@@ -31,17 +31,17 @@ Các route cơ bản của Laravel chấp nhận một URI và một `Closure`, 
 
 #### Các file Route mặc định
 
-Tất cả các route của Laravel được định nghĩa trong các file route của bạn, và được lưu trong thư mục `routes`. Các file này được tự động load bởi framework. File `routes/web.php` định nghĩa các route dành cho giao diện web của bạn. Các route này sẽ được gán với nhóm middleware `web`, cung cấp các tính năng như trạng thái session và bảo vệ CSRF. Các route trong `routes/api.php` là không có trạng thái và được gán với nhóm middleware `api`.
+Tất cả các route của Laravel được định nghĩa trong các file route, và được lưu trong thư mục `routes`. Các file này được tự động load bởi framework. File `routes/web.php` định nghĩa các route dành cho giao diện web của bạn. Các route này sẽ được gán với nhóm middleware `web`, cung cấp các tính năng như trạng thái session và bảo vệ CSRF. Các route trong `routes/api.php` là các route không có trạng thái và được gán với nhóm middleware `api`.
 
-Đối với hầu hết các application, bạn sẽ bắt đầu bằng cách định nghĩa các route trong file `routes/web.php` của bạn. Các route đã được tạo trong file `routes/web.php` có thể được truy cập bằng cách nhập URL của route đó vào trong trình duyệt web của bạn. Ví dụ: bạn có thể truy cập vào route sau bằng cách điều hướng tới `http://your-app.dev/user` trong trình duyệt web của bạn:
+Đối với hầu hết các application, bạn sẽ bắt đầu bằng cách định nghĩa các route trong file `routes/web.php`. Các route đã được tạo trong file `routes/web.php` có thể được truy cập bằng cách nhập URL của route đó vào trong trình duyệt web của bạn. Ví dụ: bạn có thể truy cập vào route sau bằng cách nhập url là `http://your-app.dev/user` trong trình duyệt web của bạn:
 
     Route::get('/user', 'UserController@index');
 
-Các route được định nghĩa trong file `routes/api.php` sẽ được lồng trong một nhóm route bởi `RouteServiceProvider`. Trong nhóm này, tiền tố URI `/api` sẽ được tự động áp dụng, do đó bạn không cần phải tự làm cho mỗi route trong file. Bạn có thể sửa đổi tiền tố và các tùy chọn khác cho nhóm route này bằng cách sửa đổi class `RouteServiceProvider` của bạn.
+Các route được định nghĩa trong file `routes/api.php` sẽ nằm trong một nhóm route bởi `RouteServiceProvider`. Trong nhóm này, tiền tố URI `/api` sẽ được tự động áp dụng, do đó bạn không cần phải tự làm cho mỗi route có trong file. Bạn có thể sửa đổi tiền tố và các tùy chọn khác cho nhóm route này bằng cách sửa đổi trong class `RouteServiceProvider` của bạn.
 
 #### Router Method có sẵn
 
-Router cho phép bạn đăng ký route đáp ứng với nhiều phương thức HTTP:
+Router cho phép bạn đăng ký route với nhiều phương thức HTTP:
 
     Route::get($uri, $callback);
     Route::post($uri, $callback);
@@ -50,7 +50,7 @@ Router cho phép bạn đăng ký route đáp ứng với nhiều phương thứ
     Route::delete($uri, $callback);
     Route::options($uri, $callback);
 
-Thỉnh thoảng, bạn có thể cần phải đăng ký một route đáp ứng với nhiều phương thức từ HTTP. Bạn có thể làm như vậy bằng cách sử dụng phương thức `match`. Hoặc, bạn thậm chí có thể đăng ký một route đáp ứng với tất cả các động từ HTTP bằng cách sử dụng phương thức `any`:
+Thỉnh thoảng, bạn có thể cần phải đăng ký một route với nhiều phương thức từ HTTP. Bạn có thể làm như vậy bằng cách sử dụng phương thức `match`. Hoặc, bạn thậm chí có thể đăng ký một route đáp ứng với tất cả các động từ HTTP bằng cách sử dụng phương thức `any`:
 
     Route::match(['get', 'post'], '/', function () {
         //
@@ -79,7 +79,7 @@ Nếu bạn đang định nghĩa route chuyển hướng đến một URI khác,
 <a name="view-routes"></a>
 ### View Routes
 
-Nếu route của bạn chỉ cần trả về một view, thì bạn có thể sử dụng phương thức `Route::view`. Giống như phương thức `redirect`, phương thức này cung cấp một lối tắt đơn giản để bạn không phải định nghĩa một route hoặc một controller đầy đủ. Phương thức `view` chấp nhận URI làm đối số đầu tiên và tên view làm đối số thứ hai. Ngoài ra, bạn có thể cung cấp một mảng data để chuyển đến view dưới dạng là tùy chọn đối số thứ ba:
+Nếu route của bạn chỉ cần trả về một view, thì bạn có thể sử dụng phương thức `Route::view`. Giống như phương thức `redirect`, phương thức này cung cấp một lối tắt đơn giản để bạn không phải định nghĩa một route hoặc một controller đầy đủ. Phương thức `view` chấp nhận URI làm đối số đầu tiên và tên view sẽ làm đối số thứ hai. Ngoài ra, bạn có thể cung cấp một mảng data để chuyển đến view dưới dạng là tùy chọn đối số thứ ba:
 
     Route::view('/welcome', 'welcome');
 
@@ -152,7 +152,7 @@ Nếu bạn muốn một tham số route luôn bị ràng buộc bởi một bi�
         parent::boot();
     }
 
-Khi pattern đã được định nghĩa, nó sẽ tự động được áp dụng cho tất cả các route sử dụng tên tham số đó:
+Sau khi pattern đã được định nghĩa xong, nó sẽ tự động được áp dụng cho tất cả các route sử dụng tên tham số đó:
 
     Route::get('user/{id}', function ($id) {
         // Only executed if {id} is numeric...
@@ -161,7 +161,7 @@ Khi pattern đã được định nghĩa, nó sẽ tự động được áp d�
 <a name="named-routes"></a>
 ## Tên của Route
 
-Các tên của route cho phép thuận tiện tạo các URL hoặc các chuyển hướng đến các route cụ thể. Bạn có thể đặt tên cho một route bằng cách kết hợp phương thức `name` vào định nghĩa route:
+Các tên của route cho phép tạo các URL hoặc các chuyển hướng đến các route cụ thể. Bạn có thể đặt tên cho một route bằng cách kết hợp phương thức `name` vào định nghĩa route:
 
     Route::get('user/profile', function () {
         //
@@ -173,7 +173,7 @@ Bạn cũng có thể đặt tên route cho các hành động của controller:
 
 #### Tạo URLs từ tên route
 
-Khi bạn đã gán một tên cho một route, bạn có thể sử dụng tên của route đó khi tạo URL hoặc chuyển hướng qua hàm `route` global:
+Khi bạn đã gán tên cho một route, bạn có thể sử dụng tên của route đó khi tạo URL hoặc chuyển hướng qua hàm `route` global:
 
     // Generating URLs...
     $url = route('profile');
@@ -212,7 +212,7 @@ Nếu bạn muốn xác định xem request hiện tại có đúng với một 
 <a name="route-groups"></a>
 ## Nhóm Route
 
-Nhóm route cho phép bạn chia sẻ các thuộc tính route, chẳng hạn như middleware hoặc namespaces trên một số lượng lớn các route mà không cần phải định nghĩa các thuộc tính đó trên mỗi route. Các thuộc tính được chia sẻ sẽ được chỉ định trong một mảng định dạng là tham số đầu tiên của phương thức `Route::group`.
+Nhóm route cho phép bạn chia sẻ các thuộc tính route, chẳng hạn như middleware hoặc namespaces trên một số lượng lớn các route mà không cần phải định nghĩa các thuộc tính đó trên mỗi route. Các thuộc tính được chia sẻ sẽ được chỉ định trong một mảng là tham số đầu tiên của phương thức `Route::group`.
 
 <a name="route-group-middleware"></a>
 ### Middleware
@@ -276,22 +276,22 @@ Phương thức `name` có thể được sử dụng để đặt tiền tố c
 <a name="route-model-binding"></a>
 ## Liên kết Route Model
 
-Khi inject một model ID vào một route hoặc một controller action, bạn sẽ thường truy vấn để lấy ra model tương ứng với ID đó ra. Liên kết route model của Laravel sẽ cung cấp một cách thuận tiện để tự động đưa ra các instance của model vào các route của bạn. Ví dụ, thay vì inject user ID, bạn có thể inject một instance model `User` khớp với ID đã cho.
+Khi inject một model ID vào một route hoặc một controller action, bạn sẽ thường truy vấn để lấy ra model tương ứng với ID đó ra. Liên kết route model của Laravel sẽ cung cấp một cách để tự động đưa ra các instance của model vào các route của bạn. Ví dụ, thay vì inject user ID, bạn có thể inject một instance model `User` khớp với ID đã cho.
 
 <a name="implicit-binding"></a>
 ### Liên kết ngầm
 
-Laravel sẽ tự động resolve các model Eloquent được định nghĩa trong các route hoặc controller action có kiểu tên biến khớp với tên tham số route. Ví dụ:
+Laravel sẽ tự động resolve các model Eloquent được định nghĩa trong các route hoặc trong controller action nếu tên biến khớp với tên tham số route. Ví dụ:
 
     Route::get('api/users/{user}', function (App\User $user) {
         return $user->email;
     });
 
-Do biến `$user` được khai báo có kiểu là model Eloquent `App\User` và tên biến khớp với tham số URI `{user}`, nên Laravel sẽ tự động inject một instance model có ID khớp với giá trị tương ứng từ URI request. Nếu không tìm thấy instance model phù hợp trong cơ sở dữ liệu, phản hồi HTTP 404 sẽ tự động được tạo.
+Vì biến `$user` được khai báo có kiểu là model Eloquent `App\User` và tên biến này cũng khớp với tham số URI `{user}`, nên Laravel sẽ tự động inject một instance model có ID là giá trị tương ứng từ URI request. Nếu không tìm thấy instance model nào phù hợp trong cơ sở dữ liệu, phản hồi HTTP 404 sẽ được đưa tạo.
 
 #### Tuỳ chỉnh tên Key
 
-Nếu bạn muốn tuỳ biến một liên kết của một model sử dụng một cột khác, khác với cột `id` trong cơ sở dữ liệu, bạn có thể ghi đè phương thức `getRouteKeyName` trong model Eloquent:
+Nếu bạn muốn tuỳ biến một liên kết của một model mà sử dụng một cột khác, khác với cột `id` trong cơ sở dữ liệu, bạn có thể ghi đè phương thức `getRouteKeyName` trong model Eloquent:
 
     /**
      * Get the route key for the model.
@@ -306,7 +306,7 @@ Nếu bạn muốn tuỳ biến một liên kết của một model sử dụng 
 <a name="explicit-binding"></a>
 ### Liên kết rõ ràng
 
-Để đăng ký một liên kết rõ ràng, hãy sử dụng phương thức `model` của router để định nghĩa một class cho một tham số đã cho. Bạn nên định nghĩa các liên kết model rõ ràng của bạn trong phương thức `boot` trong class` RouteServiceProvider`:
+Để đăng ký một liên kết rõ ràng, hãy sử dụng phương thức `model` trong router để định nghĩa một class với một tham số đã cho. Bạn nên định nghĩa các liên kết model rõ ràng của bạn trong phương thức `boot` của class` RouteServiceProvider`:
 
     public function boot()
     {
@@ -321,13 +321,13 @@ Tiếp theo, hãy định nghĩa một route chứa tham số `{user}`:
         //
     });
 
-Vì chúng ta đã liên kết các tham số `{user}` vào trong model `App\User`, nên một instance `User` sẽ được tự động inject vào trong route của bạn. Vì vậy, ví dụ, một request với uri là `profile/1` sẽ tự động inject instance `User` có ID là `1` từ cơ sở dữ liệu.
+Vì chúng ta đã liên kết các tham số `{user}` vào trong model `App\User`, nên một instance `User` sẽ được tự động inject vào trong route của bạn. Vì vậy, ví dụ, nếu một request với uri là `profile/1` thì sẽ tự động inject instance `User` có ID là `1` từ cơ sở dữ liệu.
 
-Nếu không tìm thấy model instance phù hợp trong cơ sở dữ liệu, phản hồi HTTP 404 sẽ được tạo tự động.
+Nếu không tìm thấy model instance phù hợp trong cơ sở dữ liệu, phản hồi HTTP 404 sẽ được đưa ra.
 
 #### Tuỳ chỉnh logic phụ thuộc
 
-Nếu bạn muốn sử dụng logic phụ thuộc của riêng bạn, bạn có thể sử dụng phương thức `Route::bind`. `Closure` của bạn sẽ được truyền đến phương thức` bind` và nhận vào giá trị của tham số URI và sẽ trả về một instance của class, cái mà được inject vào trong route trước đó:
+Nếu bạn muốn sử dụng tuỳ chỉnh logic phụ thuộc của bạn, bạn có thể sử dụng phương thức `Route::bind`. `Closure` của bạn sẽ được truyền đến phương thức `bind` và nhận vào giá trị của tham số URI, sau đó sẽ trả về một instance của class, và sẽ được inject vào trong route trước đó:
 
     public function boot()
     {
@@ -341,7 +341,7 @@ Nếu bạn muốn sử dụng logic phụ thuộc của riêng bạn, bạn có
 <a name="form-method-spoofing"></a>
 ## Form Method giả
 
-Các HTML form không hỗ trợ các hành động `PUT`, `PATCH` hoặc `DELETE`. Vì vậy, khi định nghĩa các route `PUT`, `PATCH` hoặc `DELETE` được gửi từ HTML form, bạn sẽ cần phải thêm một input hidden `_method` vào form. Giá trị được gửi vào input hidden `_method` sẽ được sử dụng làm method request HTTP:
+Các HTML form không hỗ trợ các action `PUT`, `PATCH` hoặc `DELETE`. Vì vậy, khi định nghĩa các route `PUT`, `PATCH` hoặc `DELETE` được gửi từ HTML form, bạn sẽ cần phải thêm một input hidden `_method` vào form. Giá trị được gửi vào input hidden `_method` sẽ được sử dụng làm method request HTTP:
 
     <form action="/foo/bar" method="POST">
         <input type="hidden" name="_method" value="PUT">
@@ -355,7 +355,7 @@ Bạn có thể dùng helper `method_field` để tạo input `_method`:
 <a name="accessing-the-current-route"></a>
 ## Truy cập vào Route hiện tại
 
-Bạn có thể dùng các phương thức `current`, `currentRouteName`, và `currentRouteAction` trong facade `Route` để truy cập vào các thông tin của route hiện tại đang xử lý cho một request đến:
+Bạn có thể dùng các phương thức `current`, `currentRouteName`, và `currentRouteAction` trong facade `Route` để truy cập vào các thông tin của route hiện tại đang được xử lý cho một request:
 
     $route = Route::current();
 

@@ -12,7 +12,7 @@
 <a name="introduction"></a>
 ## Giới thiệu
 
-Laravel cung cấp một API rất dễ hiểu để thực hiện các HTTP request đến application của bạn và kiểm tra đầu ra. Ví dụ, hãy xem một bài test được định nghĩa ở dưới đây:
+Laravel cung cấp một API rất dễ hiểu để thực hiện các HTTP request đến application của bạn và kiểm tra kết quả. Ví dụ, hãy xem một bài test mẫu được định nghĩa ở dưới đây:
 
     <?php
 
@@ -42,7 +42,7 @@ Phương thức `get` tạo một request `GET` vào application, trong khi phư
 <a name="customizing-request-headers"></a>
 ### Tuỳ biến Request Header
 
-Bạn có thể sử dụng phương thức `withHeaders` để tùy biến các header của request trước khi nó được gửi đến application. Điều này cho phép bạn thêm bất kỳ header tùy biến nào bạn muốn vào trong request:
+Bạn có thể sử dụng phương thức `withHeaders` để tùy biến các header của request trước khi nó được gửi đến application. Điều này cho phép bạn thêm bất kỳ header nào bạn muốn vào trong request:
 
     <?php
 
@@ -70,7 +70,7 @@ Bạn có thể sử dụng phương thức `withHeaders` để tùy biến các
 <a name="session-and-authentication"></a>
 ## Session / Authentication
 
-Laravel cũng cung cấp một số helper để làm việc với session trong quá trình test HTTP. Đầu tiên, bạn có thể set dữ liệu session thành một mảng nhất định bằng phương thức `withSession`. Điều này hữu ích để load session với dữ liệu trước khi gửi request cho application của bạn:
+Laravel cũng cung cấp một số helper để làm việc với session trong quá trình test HTTP. Đầu tiên, bạn có thể set dữ liệu session thành một mảng nhất định bằng phương thức `withSession`. Điều này hữu ích để load session với dữ liệu đã có trước, trước khi gửi request cho application của bạn:
 
     <?php
 
@@ -83,7 +83,7 @@ Laravel cũng cung cấp một số helper để làm việc với session trong
         }
     }
 
-Tất nhiên, cách dùng chủ yếu của session là để duy trì trạng thái cho người dùng đã được xác thực. Phương thức helper `actingAs` cung cấp một cách đơn giản để xác thực một người dùng nhất định. Ví dụ: chúng ta có thể sử dụng một [model factory](/docs/{{version}}/database-testing#writing-factories) để tạo và xác thực một người dùng:
+Tất nhiên, cách dùng chủ yếu của session là để duy trì trạng thái người dùng đã được xác thực. Phương thức helper `actingAs` sẽ cung cấp một cách đơn giản để xác thực một người dùng. Ví dụ: chúng ta có thể sử dụng một [model factory](/docs/{{version}}/database-testing#writing-factories) để tạo và xác thực một người dùng:
 
     <?php
 
@@ -101,14 +101,14 @@ Tất nhiên, cách dùng chủ yếu của session là để duy trì trạng t
         }
     }
 
-Bạn cũng có thể khai báo guard nào sẽ được sử dụng để xác thực người dùng đã cho bằng cách truyền tên guard làm tham số thứ hai cho phương thức `actingAs`:
+Bạn cũng có thể khai báo guard nào sẽ được sử dụng để xác thực người dùng bằng cách truyền tên guard làm tham số thứ hai cho phương thức `actingAs`:
 
     $this->actingAs($user, 'api')
 
 <a name="testing-json-apis"></a>
 ## Test JSON API
 
-Laravel cũng cung cấp một số helper để kiểm tra API JSON và response của chúng. Ví dụ, các phương thức `json`, `get`, `post`, `put`, `patch`, và `delete` có thể được sử dụng để đưa ra các request với các method HTTP khác nhau. Bạn cũng có thể dễ dàng truyền dữ liệu và các header cho các phương thức này. Để bắt đầu, hãy viết một bài test để thực hiện một request `POST` đến `/user` và xác nhận rằng một dữ liệu mà bạn mong đợi sẽ trả về:
+Laravel cũng cung cấp một số helper để kiểm tra API JSON và response của chúng. Ví dụ, các phương thức `json`, `get`, `post`, `put`, `patch`, và `delete` có thể được sử dụng để đưa vào các request với các method HTTP khác nhau. Bạn cũng có thể dễ dàng truyền dữ liệu và các header cho các phương thức này. Để bắt đầu, hãy viết một bài test để thực hiện một request `POST` đến `/user` và xác nhận rằng dữ liệu mà bạn mong muốn sẽ trả về:
 
     <?php
 
@@ -131,12 +131,12 @@ Laravel cũng cung cấp một số helper để kiểm tra API JSON và respons
         }
     }
 
-> {tip} Phương thức `assertJson` sẽ chuyển đổi response thành một mảng và sử dụng `PHPUnit::assertArraySubset` để kiểm tra mảng đã cho có tồn tại trong response JSON được application trả về hay không. Vì vậy, nếu có các thuộc tính khác trong response JSON, bài test này vẫn sẽ được pass miễn là có đoạn đã cho.
+> {tip} Phương thức `assertJson` sẽ chuyển response thành một mảng và sử dụng `PHPUnit::assertArraySubset` để kiểm tra mảng đó có tồn tại trong response JSON mà được application trả về hay không. Vì vậy, nếu có các thuộc tính khác trong response JSON, bài test này vẫn sẽ được pass miễn là có đoạn đã cho.
 
 <a name="verifying-exact-match"></a>
 ### Verifying An Exact JSON Match
 
-Nếu bạn muốn kiểm tra mảng đã cho là giống **chính xác** với response JSON được application trả về, bạn nên sử dụng phương thức `assertExactJson`:
+Nếu bạn muốn kiểm tra một mảng đã cho là giống **chính xác** với một response JSON mà được application trả về, bạn nên sử dụng phương thức `assertExactJson`:
 
     <?php
 
@@ -162,7 +162,7 @@ Nếu bạn muốn kiểm tra mảng đã cho là giống **chính xác** với 
 <a name="testing-file-uploads"></a>
 ## Test File Upload
 
-Class `Illuminate\Http\UploadedFile` cung cấp một phương thức `fake` có thể được sử dụng để tạo các file giả hoặc hình ảnh giả để test. Điều này, kết hợp với phương thức `fake` của facade `Storage` sẽ đơn giản hóa rất nhiều cho việc test các file upload. Ví dụ: bạn có thể kết hợp hai chức năng này để dễ dàng test cho một form upload avatar:
+Class `Illuminate\Http\UploadedFile` cung cấp một phương thức `fake` có thể được sử dụng để tạo ra các file giả hoặc hình ảnh giả để test. Nó kết hợp cùng với phương thức `fake` của facade `Storage` sẽ đơn giản hóa rất nhiều cho việc test các file upload. Ví dụ: bạn có thể kết hợp hai chức năng này để dễ dàng test cho một form upload avatar:
 
     <?php
 
@@ -198,7 +198,7 @@ Khi tạo file bằng phương thức `fake`, bạn có thể khai báo width, h
 
     UploadedFile::fake()->image('avatar.jpg', $width, $height)->size(100);
 
-Ngoài việc tạo hình ảnh, bạn có thể tạo các file thuộc bất kỳ loại nào khác bằng phương thức `create`:
+Ngoài việc tạo hình ảnh, bạn có thể tạo ra các file thuộc bất kỳ loại nào khác bằng phương thức `create`:
 
     UploadedFile::fake()->create('document.pdf', $sizeInKilobytes);
 
@@ -208,7 +208,7 @@ Ngoài việc tạo hình ảnh, bạn có thể tạo các file thuộc bất k
 <a name="response-assertions"></a>
 ### Response Assertions
 
-Laravel cung cấp nhiều phương thức assertion để tùy biến cho các bài test [PHPUnit](https://phpunit.de/) của bạn. Các assertion này có thể được truy cập trên response được trả về từ các phương thức test `json`, `get`, `post`, `put`, và `delete`:
+Laravel cung cấp nhiều phương thức assertion để tùy biến cho các bài test [PHPUnit](https://phpunit.de/) của bạn. Các assertion này có thể được truy cập trên các response được trả về từ các phương thức test `json`, `get`, `post`, `put`, và `delete`:
 
 <style>
     .collection-method-list > p {
@@ -461,7 +461,7 @@ Yêu cầu response view thiếu một phần dữ liệu bị ràng buộc:
 <a name="authentication-assertions"></a>
 ### Authentication Assertions
 
-Laravel cũng cung cấp nhiều cách authentication liên quan đến assertion cho các bài test [PHPUnit](https://phpunit.de/) của bạn:
+Laravel cũng sẽ cung cấp nhiều cách authentication liên quan đến assertion cho các bài test [PHPUnit](https://phpunit.de/) của bạn:
 
 Method  | Description
 ------------- | -------------

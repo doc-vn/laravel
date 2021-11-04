@@ -27,7 +27,7 @@
 <a name="introduction"></a>
 ## Giới thiệu
 
-Các bảng cơ sở dữ liệu thường được quan hệ với nhau. Ví dụ: một bài post trên một blog có thể có nhiều comment hoặc một order có thể quan hệ với người dùng đã đặt nó. Eloquent giúp quản lý và làm việc với những quan hệ này dễ dàng hơn và hỗ trợ một số loại quan hệ khác nhau:
+Các bảng cơ sở dữ liệu thường được quan hệ với nhau. Ví dụ: một bài post trên một blog có thể có nhiều comment hoặc một order có thể có quan hệ với người dùng đã đặt nó. Eloquent giúp quản lý và làm việc với những quan hệ này một cách dễ dàng hơn và hỗ trợ một số loại quan hệ khác nhau như sau:
 
 - [Một - Một](#one-to-one)
 - [Một - Nhiều](#one-to-many)
@@ -43,12 +43,12 @@ Các quan hệ của Eloquent là các phương thức được định nghĩa n
 
     $user->posts()->where('active', 1)->get();
 
-Nhưng, trước khi đi sâu vào việc sử dụng các quan hệ, hãy tìm hiểu cách định nghĩa của từng loại quan hệ.
+Nhưng, trước khi đi sâu vào việc sử dụng các quan hệ, hãy tìm hiểu cách định nghĩa cho từng loại quan hệ.
 
 <a name="one-to-one"></a>
 ### Một - Một
 
-Một quan hệ một-một là một quan hệ rất cơ bản. Ví dụ, một model `User` có thể quan hệ với một  `Phone`. Để định nghĩa quan hệ này, chúng ta hăy set một phương thức `phone` trên model `User`. Phương thức `phone` nên gọi phương thức `hasOne` và trả về chính phương thức đó:
+Một quan hệ một-một là một quan hệ rất cơ bản. Ví dụ, một model `User` có thể có quan hệ với một  `Phone`. Để định nghĩa quan hệ này, chúng ta hăy set một phương thức `phone` trên model `User`. Phương thức `phone` này sẽ gọi phương thức `hasOne` và trả về chính phương thức đó:
 
     <?php
 
@@ -75,13 +75,13 @@ Eloquent sẽ xác định khóa ngoại của quan hệ dựa trên tên model.
 
     return $this->hasOne('App\Phone', 'foreign_key');
 
-Ngoài ra, Eloquent cũng giả định rằng khóa ngoại phải có giá trị trùng khớp với giá trị cột `id` (hoặc cột tuỳ biến `$primaryKey`) của model cha. Nói cách khác, Eloquent sẽ tìm giá trị của `id` của user trong cột `user_id` trong bảng `Phone`. Nếu bạn muốn quan hệ này sử dụng một giá trị khác ngoài `id`, bạn có thể truyền vào một tham số thứ ba cho phương thức `hasOne` khai báo khóa tùy biến của bạn:
+Ngoài ra, Eloquent cũng giả định rằng khóa ngoại này phải có giá trị trùng với giá trị cột `id` (hoặc cột tuỳ biến `$primaryKey`) của model cha. Nói cách khác, Eloquent sẽ tìm giá trị `id` của user trong cột `user_id` trong bảng `Phone`. Nếu bạn muốn quan hệ này sử dụng một giá trị khác ngoài `id`, bạn có thể truyền vào một tham số thứ ba cho phương thức `hasOne` khai báo khóa chính tùy biến của bạn:
 
     return $this->hasOne('App\Phone', 'foreign_key', 'local_key');
 
 #### Defining The Inverse Of The Relationship
 
-Vì vậy, chúng ta có thể truy cập model `Phone` từ model `User`. Bây giờ, hãy định nghĩa quan hệ trên model `Phone`, sẽ cho phép chúng ta truy cập ngược lại vào model `User` sở hữu phone đó. Chúng ta có thể định nghĩa một quan hệ ngược lại của `hasOne` bằng cách sử dụng phương thức `belongsTo`:
+Vì vậy, chúng ta có thể truy cập vào model `Phone` từ model `User`. Bây giờ, hãy định nghĩa quan hệ trong model `Phone`, sẽ cho phép chúng ta truy cập ngược lại vào model `User` sở hữu chiếc phone đó. Chúng ta có thể định nghĩa một quan hệ ngược lại của `hasOne` bằng cách sử dụng phương thức `belongsTo`:
 
     <?php
 
@@ -100,7 +100,7 @@ Vì vậy, chúng ta có thể truy cập model `Phone` từ model `User`. Bây 
         }
     }
 
-Trong ví dụ trên, Eloquent sẽ cố gắng tìm `user_id` từ model `Phone` với một giá trị `id` trên model `User`. Eloquent sẽ xác định tên mặc định của khóa ngoại bằng cách lấy tên của phương thức quan hệ và thêm hậu tố `_id`. Tuy nhiên, nếu khóa ngoại trên model `Phone` không phải là `user_id`, bạn có thể truyền một tên khóa khác làm tham số thứ hai cho phương thức `belongsTo`:
+Trong ví dụ trên, Eloquent sẽ cố gắng tìm `user_id` từ model `Phone` với một giá trị `id` có trong model `User`. Eloquent sẽ xác định tên mặc định của khóa ngoại bằng cách lấy tên của phương thức quan hệ và thêm hậu tố `_id`. Tuy nhiên, nếu khóa ngoại trên model `Phone` không phải là `user_id`, bạn có thể truyền một tên khóa khác làm tham số thứ hai cho phương thức `belongsTo`:
 
     /**
      * Get the user that owns the phone.
@@ -110,7 +110,7 @@ Trong ví dụ trên, Eloquent sẽ cố gắng tìm `user_id` từ model `Phone
         return $this->belongsTo('App\User', 'foreign_key');
     }
 
-Nếu model cha của bạn không sử dụng `id` làm khóa chính của nó hoặc bạn muốn join model con vào một cột khác, bạn có thể truyền một tham số thứ ba cho phương `belongsTo` khai báo khóa tùy biến của bảng cha của bạn:
+Nếu model cha của bạn không sử dụng cột `id` làm khóa chính hoặc bạn muốn join model con vào một cột khác, bạn có thể truyền một tham số thứ ba cho phương thức `belongsTo` khai báo khóa chính tùy biến trong bảng cha của bạn:
 
     /**
      * Get the user that owns the phone.
@@ -123,7 +123,7 @@ Nếu model cha của bạn không sử dụng `id` làm khóa chính của nó 
 <a name="default-models"></a>
 #### Default Models
 
-Quan hệ `belongsTo` cho phép bạn định nghĩa một model mặc định sẽ được trả về nếu trong trường hợp quan hệ đó là `null`. Trường hợp này thường được gọi là [trường hợp đối tượng null](https://en.wikipedia.org/wiki/Null_Object_pattern) và có thể giúp xoá các câu lệnh kiểm tra có trong code của bạn. Trong ví dụ sau, quan hệ `user` sẽ trả về một model `App\User` trống nếu không có `user` nào đi kèm với post:
+Quan hệ `belongsTo` cho phép bạn định nghĩa một model mặc định sẽ được trả về nếu trong trường hợp quan hệ đó là `null`. Trường hợp này thường được gọi là [trường hợp đối tượng null](https://en.wikipedia.org/wiki/Null_Object_pattern) và có thể giúp xoá các câu lệnh kiểm tra có trong code của bạn. Trong ví dụ sau, quan hệ `user` sẽ trả về một model `App\User` trống nếu không có `user` nào được đính kèm với post:
 
     /**
      * Get the author of the post.
@@ -158,7 +158,7 @@ Quan hệ `belongsTo` cho phép bạn định nghĩa một model mặc định s
 <a name="one-to-many"></a>
 ### Một - Nhiều
 
-Quan hệ "một-nhiều" được sử dụng để định nghĩa các quan hệ mà trong đó một model sở hữu nhiều model khác. Ví dụ, một post trên blog có thể có nhiều comment. Giống như tất cả các quan hệ Eloquent khác, quan hệ một-nhiều được định nghĩa bằng cách set một hàm trên model Eloquent của bạn:
+Quan hệ "một-nhiều" có thể được sử dụng để định nghĩa các quan hệ mà trong đó một model sở hữu nhiều model khác. Ví dụ, một post trên blog có thể có nhiều comment. Giống như tất cả các quan hệ Eloquent khác, quan hệ một-nhiều được định nghĩa bằng cách set một hàm trên model Eloquent của bạn:
 
     <?php
 
@@ -177,9 +177,9 @@ Quan hệ "một-nhiều" được sử dụng để định nghĩa các quan h�
         }
     }
 
-Hãy nhớ rằng, Eloquent sẽ tự động xác định cột khóa ngoại phù hợp trên model `Comment`. Theo quy ước, Eloquent sẽ lấy tên theo dạng "snake case" của model cha và set thêm hậu tố là `_id`. Vì vậy, trong ví dụ này, Eloquent sẽ giả định rằng khóa ngoại trên model `Comment` là `post_id`.
+Hãy nhớ rằng, Eloquent sẽ tự động xác định cột khóa ngoại phù hợp trên model `Comment`. Theo quy ước, Eloquent sẽ lấy tên theo dạng "snake case" của model cha và set thêm hậu tố là `_id`. Vì vậy, trong ví dụ này, Eloquent sẽ giả định rằng khóa ngoại trong model `Comment` là `post_id`.
 
-Khi quan hệ đã được định nghĩa, chúng ta có thể truy cập vào collection comment bằng cách truy cập thông qua thuộc tính `comments`. Hãy nhớ rằng, vì Eloquent cung cấp "các thuộc tính động", nên chúng ta có thể truy cập các phương thức quan hệ như thể chúng được định nghĩa là các thuộc tính trên model:
+Khi quan hệ đã được định nghĩa xong, bạn có thể truy cập vào một collection comment bằng cách truy cập thông qua thuộc tính `comments`. Hãy nhớ rằng, vì Eloquent sẽ cung cấp "các thuộc tính động" cho quan hệ, nên bạn có thể truy cập vào các phương thức quan hệ như thể chúng được định nghĩa là các thuộc tính trong model:
 
     $comments = App\Post::find(1)->comments;
 
@@ -187,11 +187,11 @@ Khi quan hệ đã được định nghĩa, chúng ta có thể truy cập vào 
         //
     }
 
-Tất nhiên, vì tất cả các quan hệ cũng đóng vai trò như là một query builder, nên bạn có thể thêm các ràng buộc cho những comment được lấy ra bằng cách gọi phương thức `comments` và tiếp tục thêm các điều kiện vào truy vấn:
+Tất nhiên, vì tất cả các quan hệ cũng đóng vai trò như là một query builder, nên bạn có thể thêm các ràng buộc cho những comment được lấy ra bằng cách gọi phương thức `comments` và tiếp tục thêm các điều kiện vào trong truy vấn:
 
     $comments = App\Post::find(1)->comments()->where('title', 'foo')->first();
 
-Giống như phương thức `hasOne`, bạn cũng có thể ghi đè các khóa ngoại và khóa local bằng cách truyền thêm các tham số bổ sung cho phương thức `hasMany`:
+Giống như phương thức `hasOne`, bạn cũng có thể ghi đè các khóa ngoại và khóa chính bằng cách truyền thêm các tham số bổ sung cho phương thức `hasMany`:
 
     return $this->hasMany('App\Comment', 'foreign_key');
 
@@ -200,7 +200,7 @@ Giống như phương thức `hasOne`, bạn cũng có thể ghi đè các khóa
 <a name="one-to-many-inverse"></a>
 ### Một - Nhiều (Ngược lại)
 
-Bây giờ chúng ta có thể truy cập tất cả các comment của một post, tiếp theo hãy định nghĩa một quan hệ để cho phép từ comment có thể truy cập ngược lại vào post của chính nó. Để định nghĩa một nghịch đảo của quan hệ `hasMany`, hãy định nghĩa một hàm quan hệ trên model con gọi đến phương thức `belongsTo`:
+Bây giờ chúng ta có thể truy cập vào tất cả các comment của một post, tiếp theo hãy định nghĩa một quan hệ để cho phép từ một comment có thể truy cập ngược lại vào một post của chính nó. Để định nghĩa một nghịch đảo của quan hệ `hasMany`, hãy định nghĩa một hàm quan hệ trên model con gọi đến phương thức `belongsTo`:
 
     <?php
 
@@ -225,7 +225,7 @@ Khi quan hệ đã được định nghĩa, chúng ta có thể lấy ra model `
 
     echo $comment->post->title;
 
-Trong ví dụ trên, Eloquent sẽ cố gắng tìm `post_id` từ model `Comment` với một giá trị `id` trên model `Post`. Eloquent sẽ xác định tên mặc định của khóa ngoại bằng cách lấy tên của phương thức quan hệ và thêm hậu tố `_id`. Tuy nhiên, nếu khóa ngoại trên model `Comment` không phải là `post_id`, bạn có thể truyền một tên khóa ngoại khác làm tham số thứ hai cho phương thức `belongsTo`:
+Trong ví dụ trên, Eloquent sẽ cố gắng tìm `post_id` từ model `Comment` với một giá trị `id` có trong model `Post`. Eloquent sẽ xác định tên mặc định của khóa ngoại bằng cách lấy tên của phương thức quan hệ và thêm hậu tố `_id`. Tuy nhiên, nếu khóa ngoại trong model `Comment` không phải là `post_id`, bạn có thể truyền một tên khóa ngoại khác làm tham số thứ hai cho phương thức `belongsTo`:
 
     /**
      * Get the post that owns the comment.
@@ -235,7 +235,7 @@ Trong ví dụ trên, Eloquent sẽ cố gắng tìm `post_id` từ model `Comme
         return $this->belongsTo('App\Post', 'foreign_key');
     }
 
-Nếu model cha của bạn không sử dụng `id` làm khóa chính của nó hoặc bạn muốn join model con vào một cột khác, bạn có thể truyền vào một tham số thứ ba cho phương `belongsTo` khai báo khóa tùy biến của bảng cha của bạn:
+Nếu model cha của bạn không sử dụng `id` làm khóa chính của nó hoặc bạn muốn join model con vào một cột khác, bạn có thể truyền vào một tham số thứ ba cho phương `belongsTo` khai báo khóa chính tùy biến của bảng cha của bạn:
 
     /**
      * Get the post that owns the comment.
@@ -248,9 +248,9 @@ Nếu model cha của bạn không sử dụng `id` làm khóa chính của nó 
 <a name="many-to-many"></a>
 ### Nhiều - Nhiều
 
-Quan hệ nhiều-nhiều sẽ phức tạp hơn một chút so với các quan hệ `hasOne` và `hasMany`. Một ví dụ về quan hệ kiểu như vậy là một user có thể có nhiều role, trong đó các role cũng có thể được chia cho nhiều user khác. Ví dụ: nhiều user có thể có role là "Admin". Để định nghĩa quan hệ này, cần có ba bảng cơ sở dữ liệu: `users`, `roles`, và `role_user`. Tên bảng `role_user` sẽ được lấy theo thứ tự chữ cái của tên các model và có chứa các cột `user_id` và` Role_id`.
+Quan hệ nhiều-nhiều có thể sẽ phức tạp hơn một chút so với các quan hệ `hasOne` và `hasMany`. Một ví dụ về quan hệ kiểu như vậy là một user có thể có nhiều role, trong đó các role cũng có thể được chia cho nhiều user khác nhau. Ví dụ: nhiều user có thể có role là "Admin". Để định nghĩa quan hệ này, cần có ba bảng cơ sở dữ liệu: `users`, `roles`, và `role_user`. Tên bảng `role_user` sẽ được lấy theo thứ tự chữ cái của tên các model và có chứa các cột `user_id` và` Role_id`.
 
-Quan hệ nhiều-nhiều được định nghĩa bằng cách viết một phương thức để trả về phương thức `belongsToMany`. Ví dụ: hãy định nghĩa phương thức `roles` trên model `User` của chúng ta:
+Quan hệ nhiều-nhiều được định nghĩa bằng cách viết một phương thức sẽ trả về phương thức `belongsToMany`. Ví dụ: hãy định nghĩa phương thức `roles` trên model `User` của chúng ta:
 
     <?php
 
@@ -269,7 +269,7 @@ Quan hệ nhiều-nhiều được định nghĩa bằng cách viết một phư
         }
     }
 
-Khi quan hệ đã được định nghĩa, bạn có thể truy cập các role từ một user bằng cách sử dụng thuộc tính động `roles`:
+Khi quan hệ đã được định nghĩa xong, bạn có thể truy cập đến các role từ một user bằng cách sử dụng thuộc tính động `roles`:
 
     $user = App\User::find(1);
 
@@ -277,11 +277,11 @@ Khi quan hệ đã được định nghĩa, bạn có thể truy cập các role
         //
     }
 
-Tất nhiên, giống như tất cả các loại quan hệ khác, bạn có thể gọi phương thức `roles` để tiếp tục thêm các ràng buộc truy vấn trên quan hệ:
+Tất nhiên, giống như tất cả các loại quan hệ khác, bạn có thể gọi phương thức `roles` để tiếp tục thêm các ràng buộc truy vấn trên quan hệ đó:
 
     $roles = App\User::find(1)->roles()->orderBy('name')->get();
 
-Như đã đề cập trước đó, để xác định tên của bảng join các quan hệ, Eloquent sẽ nối tên hai model có quan hệ với nhau theo thứ tự bảng chữ cái. Tuy nhiên, bạn có thể tự do ghi đè lên quy ước này. Bạn có thể làm như vậy bằng cách truyền một tham số thứ hai cho phương thức `belongsToMany`:
+Như đã đề cập ở trước đó, để xác định tên của bảng join các quan hệ, Eloquent sẽ nối tên hai model có quan hệ với nhau theo thứ tự bảng chữ cái. Tuy nhiên, bạn có thể tự do ghi đè quy ước này. Bạn có thể làm như vậy bằng cách truyền một tham số thứ hai cho phương thức `belongsToMany`:
 
     return $this->belongsToMany('App\Role', 'role_user');
 
@@ -291,7 +291,7 @@ Ngoài việc tùy biến tên của bảng join, bạn cũng có thể tùy bi�
 
 #### Defining The Inverse Of The Relationship
 
-Để định nghĩa một nghịch đảo của quan hệ nhiều-nhiều, bạn hãy thực hiện một phương thức khác đến `belongsToMany` trên model quan hệ của bạn. Để tiếp tục ví dụ về user role của chúng ta, hãy định nghĩa phương thức `users` trên model `Role`:
+Để định nghĩa một nghịch đảo của một quan hệ nhiều-nhiều, bạn hãy tạo một phương thức khác gọi đến `belongsToMany` trên model quan hệ của bạn. Để tiếp tục ví dụ về user role của chúng ta, hãy định nghĩa phương thức `users` trên model `Role`:
 
     <?php
 
@@ -310,11 +310,11 @@ Ngoài việc tùy biến tên của bảng join, bạn cũng có thể tùy bi�
         }
     }
 
-Như bạn có thể thấy, quan hệ được định nghĩa sẽ giống với quan hệ trên model `User`, ngoại trừ việc tham chiếu là model `App\User`. Vì chúng ta đang sử dụng lại phương thức `belongsToMany`, nên tất cả các tùy chọn thông thường như tên bảng và khóa đều khả dụng khi định nghĩa nghịch đảo của các quan hệ nhiều-nhiều.
+Như bạn có thể thấy, quan hệ được định nghĩa sẽ giống với quan hệ trên model `User`, ngoại trừ việc tham chiếu là model `App\User`. Vì chúng ta đang sử dụng lại phương thức `belongsToMany`, nên tất cả các tùy chọn thông thường như tên bảng và khóa đều có thể được set khi định nghĩa nghịch đảo của quan hệ nhiều-nhiều.
 
 #### Retrieving Intermediate Table Columns
 
-Như bạn đã biết, làm việc với các quan hệ nhiều-nhiều đòi hỏi phải có sự hiện diện của một bảng trung gian. Eloquent cung cấp một số cách tương tác rất hữu ích với bảng đó. Ví dụ: giả sử đối tượng `User` của chúng ta có nhiều đối tượng `Role` mà nó quan hệ. Sau khi truy cập quan hệ này, chúng ta có thể truy cập vào bảng trung gian bằng cách sử dụng thuộc tính `pivot` trên model:
+Như bạn đã biết, làm việc với các quan hệ nhiều-nhiều đòi hỏi phải có sự hiện diện của một bảng trung gian. Eloquent cung cấp một số cách tương tác rất hữu ích cho bảng đó. Ví dụ: giả sử đối tượng `User` của chúng ta có nhiều đối tượng `Role`. Sau khi truy cập vào quan hệ này, chúng ta có thể truy cập vào bảng trung gian bằng cách sử dụng thuộc tính `pivot` trên model đó:
 
     $user = App\User::find(1);
 
@@ -322,9 +322,9 @@ Như bạn đã biết, làm việc với các quan hệ nhiều-nhiều đòi h
         echo $role->pivot->created_at;
     }
 
-Lưu ý rằng mỗi model `Role` mà chúng ta lấy ra được sẽ tự động được gán một thuộc tính là `pivot`. Thuộc tính này chứa một model đại diện cho bảng trung gian và có thể được sử dụng như bất kỳ model Eloquent nào khác.
+Lưu ý rằng mỗi model `Role` mà chúng ta lấy ra được sẽ tự động được gán một thuộc tính là `pivot`. Thuộc tính này chứa model đại diện cho bảng trung gian và có thể được sử dụng như bất kỳ model Eloquent nào khác.
 
-Mặc định, chỉ các khóa model sẽ xuất hiện trong đối tượng pivot`. Nếu bảng pivot của bạn chứa thêm các thuộc tính bổ sung, bạn phải khai báo chúng khi định nghĩa quan hệ:
+Mặc định, chỉ những khóa của model mới có thể xuất hiện trong đối tượng `pivot`. Nếu bảng pivot của bạn có chứa thêm các thuộc tính khác, bạn phải khai báo chúng khi định nghĩa quan hệ:
 
     return $this->belongsToMany('App\Role')->withPivot('column1', 'column2');
 
@@ -334,7 +334,7 @@ Nếu bạn muốn bảng pivot của bạn tự động duy trì các cột tim
 
 #### Customizing The `pivot` Attribute Name
 
-Như đã lưu ý trước đó, các thuộc tính từ bảng trung gian có thể được truy cập trên các model sử dụng theo thuộc tính `pivot`. Tuy nhiên, bạn có thể tùy biến tên của thuộc tính này để phản ánh tốt hơn cho mục đích của nó trong application của bạn.
+Như đã lưu ý trước đó, các thuộc tính từ bảng trung gian có thể được truy cập trên model bằng cách sử dụng theo thuộc tính `pivot`. Tuy nhiên, bạn có thể tùy biến tên của thuộc tính này để phản ánh tốt hơn cho mục đích của bạn trong application.
 
 Ví dụ: nếu application của bạn chứa user có thể subscribe podcast, bạn có thể có một quan hệ nhiều-nhiều giữa user và podcast. Nếu đây là trường hợp đó, bạn có thể muốn đổi tên truy cập vào bảng trung gian của bạn thành `subscription` thay vì `pivot`. Điều này có thể được thực hiện bằng cách sử dụng phương thức `as` khi định nghĩa quan hệ của bạn:
 
@@ -360,7 +360,7 @@ Bạn cũng có thể lọc các kết quả được trả về bởi `belongsT
 
 #### Defining Custom Intermediate Table Models
 
-Nếu bạn muốn định nghĩa một model tùy biến, để biểu diễn bảng trung gian của quan hệ của bạn, bạn có thể gọi phương thức `using` khi định nghĩa quan hệ. Tất cả các model tùy biến được sử dụng để biểu diễn các bảng quan hệ trung gian phải được extend từ class `Illuminate\Database\Eloquent\Relations\Pivot`. Ví dụ: chúng ta có thể định nghĩa một `Role` sử dụng model pivot `UserRole` tùy biến:
+Nếu bạn muốn định nghĩa một model tùy biến, để biểu diễn bảng trung gian của quan hệ của bạn, bạn có thể gọi phương thức `using` khi định nghĩa quan hệ. Tất cả các model tùy biến được sử dụng để biểu diễn cho các bảng quan hệ trung gian phải được extend từ class `Illuminate\Database\Eloquent\Relations\Pivot`. Ví dụ: chúng ta có thể định nghĩa một `Role` sử dụng model pivot `UserRole` tùy biến như sau:
 
     <?php
 
@@ -395,7 +395,7 @@ Khi định nghĩa model `UserRole`, chúng ta sẽ extend nó từ class `Pivot
 <a name="has-many-through"></a>
 ### Quan hệ thông qua trung gian
 
-Quan hệ "trung gian" cung cấp một lối tắt thuận tiện để truy cập các quan hệ xa thông qua các quan hệ trung gian. Ví dụ, một model `Country` có thể có nhiều model `Post` thông qua một model `User` trung gian. Trong ví dụ này, bạn có thể dễ dàng thu thập tất cả các post trên blog cho một quốc gia nhất định. Hãy xem các bảng cần thiết để định nghĩa quan hệ này:
+Quan hệ "trung gian" cung cấp một lối tắt thuận tiện để truy cập vào các quan hệ xa thông qua các quan hệ trung gian. Ví dụ, một model `Country` có thể có nhiều model `Post` thông qua một model `User` trung gian. Trong ví dụ này, bạn có thể dễ dàng thu thập tất cả các post trên một blog cho một quốc gia. Hãy xem các bảng cần thiết để định nghĩa quan hệ này:
 
     countries
         id - integer
@@ -411,7 +411,7 @@ Quan hệ "trung gian" cung cấp một lối tắt thuận tiện để truy c�
         user_id - integer
         title - string
 
-Mặc dù `posts` không chứa cột `country_id`, nhưng quan hệ `hasManyThrough` cung cấp quyền truy cập vào các post của một quốc gia thông qua `$country->posts`. Để thực hiện truy vấn này, Eloquent kiểm tra `country_id` trên bảng `users` trung gian. Sau khi tìm được các ID user phù hợp, chúng sẽ được sử dụng để truy vấn vào bảng `posts`.
+Mặc dù `posts` không chứa cột `country_id`, nhưng quan hệ `hasManyThrough` cung cấp quyền truy cập vào các post của một quốc gia thông qua `$country->posts`. Để thực hiện truy vấn này, Eloquent sẽ kiểm tra `country_id` trên bảng `users` trung gian. Sau khi tìm thấy các user ID, chúng sẽ được sử dụng để truy vấn vào bảng `posts`.
 
 Chúng ta đã xem qua cấu trúc bảng cho quan hệ này, bây giờ hãy định nghĩa nó trên model `Country`:
 
@@ -434,7 +434,7 @@ Chúng ta đã xem qua cấu trúc bảng cho quan hệ này, bây giờ hãy đ
 
 Tham số đầu tiên được truyền cho phương thức `hasManyThrough` là tên của model cuối cùng mà chúng ta muốn truy cập, trong khi tham số thứ hai là tên của model trung gian.
 
-Các quy ước thông thường dành cho các khóa ngoại Eloquent cũng sẽ được sử dụng khi thực hiện các truy vấn quan hệ. Nếu bạn muốn tùy chỉnh các khóa của các quan hệ, bạn có thể truyền chúng làm tham số thứ ba và thứ tư cho phương thức `hasManyThrough`. Tham số thứ ba là tên của khóa ngoại trên model trung gian. Tham số thứ tư là tên của khóa ngoại trên model cuối cùng. Tham số thứ năm là khóa local, trong khi tham số thứ sáu là khóa local của model trung gian:
+Các quy ước thông thường dành cho các khóa ngoại Eloquent cũng sẽ được sử dụng khi thực hiện các truy vấn quan hệ này. Nếu bạn muốn tùy chỉnh các khóa của các quan hệ, bạn có thể truyền chúng làm tham số thứ ba và thứ tư cho phương thức `hasManyThrough`. Tham số thứ ba là tên khóa ngoại trên model trung gian. Tham số thứ tư là tên khóa ngoại trên model cuối cùng. Tham số thứ năm là tên khóa chính, trong khi tham số thứ sáu là khóa chính của model trung gian:
 
     class Country extends Model
     {
@@ -456,7 +456,7 @@ Các quy ước thông thường dành cho các khóa ngoại Eloquent cũng s�
 
 #### Table Structure
 
-Quan hệ đa hình cho phép một model thuộc về nhiều hơn một model khác trên một liên kết. Ví dụ: hãy tưởng tượng user trong application của bạn có thể "comment" cả post và video. Sử dụng các quan hệ đa hình, bạn có thể sử dụng một bảng `comments` cho cả hai tình huống này. Trước tiên, hãy xem cấu trúc bảng cần thiết để xây dựng quan hệ này:
+Quan hệ đa hình cho phép một model thuộc về nhiều hơn một model trên một liên kết. Ví dụ: hãy tưởng tượng user trong application của bạn có thể "comment" cả post và video. Sử dụng các quan hệ đa hình, bạn có thể sử dụng bảng `comments` cho cả hai tình huống này. Trước tiên, hãy xem cấu trúc bảng cần thiết để xây dựng quan hệ này:
 
     posts
         id - integer
@@ -474,7 +474,7 @@ Quan hệ đa hình cho phép một model thuộc về nhiều hơn một model 
         commentable_id - integer
         commentable_type - string
 
-Hai cột quan trọng cần lưu ý ở đây là cột `commentable_id` và cột `commentable_type` trong bảng `comments`. Cột `commentable_id` sẽ chứa giá trị ID của post hoặc video, trong khi cột `commentable_type` sẽ chứa tên class của model sở hữu. Cột `commentable_type` là cách ORM xác định "loại" model nào sẽ trả về khi truy cập vào quan hệ `commentable`.
+Hai cột quan trọng nhất cần lưu ý ở đây là cột `commentable_id` và cột `commentable_type` trong bảng `comments`. Cột `commentable_id` sẽ chứa giá trị ID của post hoặc video, trong khi cột `commentable_type` sẽ chứa tên class của model sở hữu nó. Cột `commentable_type` là cách ORM sẽ xác định "loại" của model nào sẽ trả về khi truy cập vào quan hệ `commentable`.
 
 #### Model Structure
 
@@ -521,7 +521,7 @@ Tiếp theo, hãy xem các định nghĩa model cần thiết để xây dựng 
 
 #### Retrieving Quan hệ đa hình
 
-Khi bảng cơ sở dữ liệu và model của bạn đã được định nghĩa xong, bạn có thể truy cập vào các quan hệ thông qua các model của bạn. Ví dụ: để truy cập đến tất cả các comment cho một post, chúng ta có thể sử dụng thuộc tính động `comments`:
+Khi bảng cơ sở dữ liệu và model của bạn đã được định nghĩa xong, bạn có thể truy cập vào quan hệ này thông qua các model của bạn. Ví dụ: để truy cập đến tất cả các comment cho một post, chúng ta có thể sử dụng thuộc tính động `comments`:
 
     $post = App\Post::find(1);
 
@@ -529,7 +529,7 @@ Khi bảng cơ sở dữ liệu và model của bạn đã được định ngh�
         //
     }
 
-Bạn cũng có thể lấy ra chủ sở hữu của một quan hệ đa hình từ model đa hình bằng cách truy cập vào tên của phương thức thực hiện lệnh gọi tới `morphTo`. Trong trường hợp của chúng ta, đó là phương thức `commentable` trên model `Comment`. Vì vậy, chúng ta sẽ truy cập vào phương thức đó như là một thuộc tính động:
+Bạn cũng có thể lấy ra chủ sở hữu của một quan hệ đa hình từ một model đa hình bằng cách truy cập vào tên của phương thức mà thực hiện lệnh gọi tới `morphTo`. Trong trường hợp của chúng ta, đó là phương thức `commentable` trên model `Comment`. Vì vậy, chúng ta sẽ truy cập vào phương thức đó như là một thuộc tính động:
 
     $comment = App\Comment::find(1);
 
@@ -539,7 +539,7 @@ Quan hệ `commentable` trên model `Comment` sẽ trả về một instance `Po
 
 #### Custom Polymorphic Types
 
-Mặc định, Laravel sẽ sử dụng tên của class để lưu trữ loại model quan hệ. Chẳng hạn, như ví dụ mẫu ở trên, một `Comment` có thể thuộc về một `Post` hoặc là một `Video`, thì mặc định cột `commentable_type` sẽ có thể lưu giá trị là `App\Post` hoặc là `App\Video`. Tuy nhiên, nếu bạn muốn tách cơ sở dữ liệu ra khỏi cấu trúc folder bên trong của application. Trong trường hợp đó, bạn có thể định nghĩa một "morph map" quan hệ để chỉ dẫn Eloquent sử dụng một cái tên khác cho mỗi model thay vì tên class của mỗi model đó:
+Mặc định, Laravel sẽ sử dụng tên của class để lưu vào loại model cho quan hệ này. Chẳng hạn, như ví dụ mẫu ở trên, một `Comment` có thể thuộc về một `Post` hoặc một `Video`, thì mặc định cột `commentable_type` sẽ phải lưu một giá trị là `App\Post` hoặc `App\Video`. Tuy nhiên, nếu bạn muốn tách cơ sở dữ liệu ra khỏi cấu trúc folder trong application của bạn. Trong trường hợp đó, bạn có thể định nghĩa một "morph map" quan hệ để hướng dẫn Eloquent sử dụng một cái tên khác cho các model thay vì sử dụng tên class của các model đó:
 
     use Illuminate\Database\Eloquent\Relations\Relation;
 
@@ -555,7 +555,7 @@ Bạn có thể đăng ký `morphMap` trong hàm `boot` của `AppServiceProvide
 
 #### Table Structure
 
-Ngoài các quan hệ đa hình truyền thống, bạn cũng có thể định nghĩa các quan hệ đa hình "nhiều-nhiều". Ví dụ: model `Post` và `Video` của một blog có thể chia sẻ quan hệ đa hình với một model `Tag`. Sử dụng quan hệ đa hình nhiều-nhiều cho phép bạn có một danh sách các tag duy nhất được chia sẻ trên các post và video. Đầu tiên, hãy xem cấu trúc bảng:
+Ngoài các kiểu quan hệ đa hình truyền thống, bạn cũng có thể định nghĩa thêm các kiểu quan hệ đa hình "nhiều-nhiều". Ví dụ: model `Post` và `Video` của một blog có thể dùng quan hệ đa hình với một model `Tag`. Sử dụng quan hệ đa hình nhiều-nhiều cho phép bạn có một danh sách các tag được dùng trên các post và video. Đầu tiên, hãy xem cấu trúc bảng:
 
     posts
         id - integer
@@ -597,7 +597,7 @@ Tiếp theo, chúng ta đã sẵn sàng để định nghĩa các quan hệ cho 
 
 #### Defining The Inverse Of The Relationship
 
-Tiếp theo, trên model `Tag`, bạn nên định nghĩa một phương thức cho từng model quan hệ của nó. Vì thế, trong ví dụ này, chúng ta sẽ định nghĩa một phương thức `posts` và một phương thức `videos`:
+Tiếp theo, trên model `Tag`, bạn sẽ định nghĩa một phương thức cho từng loại model quan hệ của nó. Vì vậy, trong ví dụ này, chúng ta sẽ định nghĩa một phương thức `posts` và một phương thức `videos`:
 
     <?php
 
@@ -626,7 +626,7 @@ Tiếp theo, trên model `Tag`, bạn nên định nghĩa một phương thức 
 
 #### Retrieving The Relationship
 
-Khi các bảng và model của bạn đã được định nghĩa xong, bạn có thể truy cập vào các quan hệ thông qua model của bạn. Ví dụ: để truy cập vào tất cả các tag của một post, bạn có thể sử dụng thuộc tính động `tags`:
+Khi các bảng và các model của bạn đã được định nghĩa xong, bạn có thể truy cập vào các quan hệ này thông qua model của bạn. Ví dụ: để truy cập vào tất cả các tag của một post, bạn có thể sử dụng thuộc tính động `tags`:
 
     $post = App\Post::find(1);
 
@@ -634,7 +634,7 @@ Khi các bảng và model của bạn đã được định nghĩa xong, bạn c
         //
     }
 
-Bạn cũng có thể lấy ra chủ sở hữu của một quan hệ đa hình từ model đa hình bằng cách truy cập vào tên của phương thức thực hiện lệnh gọi `morphedByMany`. Trong trường hợp của chúng ta, đó là các phương thức `posts` hoặc `videos` trên model `Tag`. Vì vậy, bạn sẽ truy cập các phương thức đó dưới dạng các thuộc tính động:
+Bạn cũng có thể lấy ra một chủ sở hữu của một quan hệ đa hình từ model đa hình bằng cách truy cập vào tên của phương thức mà thực hiện lệnh gọi tới `morphedByMany`. Trong trường hợp của chúng ta, đó là các phương thức `posts` hoặc `videos` trên model `Tag`. Vì vậy, bạn sẽ truy cập các phương thức đó dưới dạng các thuộc tính động:
 
     $tag = App\Tag::find(1);
 
@@ -645,7 +645,7 @@ Bạn cũng có thể lấy ra chủ sở hữu của một quan hệ đa hình 
 <a name="querying-relations"></a>
 ## Query theo quan hệ
 
-Vì tất cả các quan hệ Eloquent đều được định nghĩa thông qua phương thức, nên bạn có thể gọi phương thức đó để lấy ra các instance của quan hệ mà không cần phải thực hiện các câu lệnh truy vấn quan hệ. Ngoài ra, tất cả các quan hệ Eloquent cũng đóng vai trò như là một [query builders](/docs/{{version}}/queries), cho phép bạn tiếp tục thêm các ràng buộc vào các truy vấn trước khi được thực thi vào cơ sở dữ liệu của bạn.
+Vì tất cả các quan hệ Eloquent đều được định nghĩa thông qua phương thức, nên bạn có thể gọi các phương thức đó để lấy ra các instance của quan hệ mà không cần phải thực hiện một câu lệnh truy vấn quan hệ. Ngoài ra, tất cả các quan hệ Eloquent cũng đóng vai trò như là một [query builders](/docs/{{version}}/queries), cho phép bạn tiếp tục thêm các ràng buộc cho các truy vấn trước khi được thực thi trong cơ sở dữ liệu của bạn.
 
 Ví dụ, hãy tưởng tượng một hệ thống blog trong đó có model `User` liên kết với nhiều model `Post`:
 
@@ -666,7 +666,7 @@ Ví dụ, hãy tưởng tượng một hệ thống blog trong đó có model `U
         }
     }
 
-Bạn có thể truy vấn quan hệ `post` và thêm các ràng buộc bổ sung cho quan hệ như sau:
+Bạn có thể truy vấn quan hệ `post` và thêm các ràng buộc bổ sung cho quan hệ này như sau:
 
     $user = App\User::find(1);
 
@@ -677,7 +677,7 @@ Bạn cũng có thể sử dụng bất kỳ phương thức nào của [query b
 <a name="relationship-methods-vs-dynamic-properties"></a>
 ### Phương thức quan hệ và thuộc tính động
 
-Nếu bạn không cần thêm các ràng buộc bổ sung cho truy vấn quan hệ Eloquent, bạn có thể truy cập vào quan hệ như thể đó là một thuộc tính. Ví dụ: chúng ta sẽ tiếp tục sử dụng các model `User` và `Post` như ở trên, chúng ta có thể truy cập vào tất cả các post của user như sau:
+Nếu bạn không cần thêm các ràng buộc cho truy vấn quan hệ Eloquent, bạn có thể truy cập vào quan hệ như thể đó là một thuộc tính. Ví dụ: chúng ta sẽ tiếp tục sử dụng các model `User` và `Post` như ở trên, chúng ta có thể truy cập vào tất cả các post của một user như sau:
 
     $user = App\User::find(1);
 
@@ -685,22 +685,22 @@ Nếu bạn không cần thêm các ràng buộc bổ sung cho truy vấn quan h
         //
     }
 
-Thuộc tính động là một "lazy loading", nghĩa là chúng sẽ chỉ load dữ liệu quan hệ của chúng khi bạn thực sự truy cập đến chúng. Do đó, các nhà phát triển thường sử dụng [eager loading](#eager-loading) để load trước các quan hệ mà họ biết là sẽ được truy cập sau khi một model được load. Eager loading sẽ cung cấp một cách hiệu quả để giảm số lượng truy vấn SQL phải được thực thi để load các quan hệ của một model.
+Thuộc tính động là một "lazy loading", nghĩa là chúng sẽ chỉ load dữ liệu quan hệ khi bạn thực sự truy cập đến chúng. Do đó, các nhà phát triển thường sử dụng [eager loading](#eager-loading) để load trước các quan hệ mà họ biết là sẽ được truy cập vào sau khi một model được load. Eager loading sẽ cung cấp một cách hiệu quả để giảm số lượng truy vấn SQL phải được thực thi để load các quan hệ của một model.
 
 <a name="querying-relationship-existence"></a>
 ### Query quan hệ tồn tại
 
-Khi truy cập vào các bản ghi trong một model, bạn có thể muốn giới hạn kết quả của mình dựa trên sự tồn tại của một quan hệ. Ví dụ, hãy tưởng tượng bạn muốn lấy tất cả các post trên blog có ít nhất là một comment. Để làm như vậy, bạn có thể truyền tên của quan hệ cho các phương thức `has` hoặc `orHas`:
+Khi truy cập vào các bản ghi có trong một model, bạn có thể muốn giới hạn kết quả của bạn nhận được dựa trên sự tồn tại của một quan hệ. Ví dụ, hãy tưởng tượng bạn muốn lấy tất cả các post trên blog có ít nhất là một comment. Để làm như vậy, bạn có thể truyền tên của quan hệ cho các phương thức `has` hoặc `orHas`:
 
     // Retrieve all posts that have at least one comment...
     $posts = App\Post::has('comments')->get();
 
-Bạn cũng có thể khai báo thêm toán tử và tổng số để tùy biến thêm cho các truy vấn:
+Bạn cũng có thể khai báo thêm các toán tử và số lượng để tùy biến thêm cho các truy vấn này:
 
     // Retrieve all posts that have three or more comments...
     $posts = App\Post::has('comments', '>=', 3)->get();
 
-Các câu lệnh `has` lồng nhau cũng có thể được khởi tạo bằng cách sử dụng ký tự "dấu chấm". Ví dụ: bạn có thể lấy ra tất cả các post có ít nhất một comment và một vote:
+Các câu lệnh `has` lồng nhau cũng có thể được khởi tạo bằng cách sử dụng ký tự "chấm". Ví dụ: bạn có thể lấy ra tất cả các post có ít nhất một comment và một vote:
 
     // Retrieve all posts that have at least one comment with votes...
     $posts = App\Post::has('comments.votes')->get();
@@ -715,7 +715,7 @@ Nếu bạn cần nhiều hơn thế nữa, bạn có thể sử dụng các ph�
 <a name="querying-relationship-absence"></a>
 ### Query quan hệ không tồn tại
 
-Khi truy cập vào các bản ghi của một model, bạn có thể muốn giới hạn kết quả của bạn dựa trên việc không có bản ghi quan hệ nào. Ví dụ: hãy tưởng tượng bạn muốn lấy tất cả các post trên blog mà **không** có bất kỳ comment nào. Để làm như vậy, bạn có thể truyền tên của quan hệ cho các phương thức `doesntHave` hoặc `orDoesntHave`:
+Khi truy cập vào các bản ghi của một model, bạn có thể muốn giới hạn kết quả nhận được dựa trên việc có hoặc không có bản ghi quan hệ. Ví dụ: hãy tưởng tượng bạn muốn lấy tất cả các post trên một blog mà **không** có bất kỳ comment nào. Để làm như vậy, bạn có thể truyền tên của quan hệ cho các phương thức `doesntHave` hoặc `orDoesntHave`:
 
     $posts = App\Post::doesntHave('comments')->get();
 
@@ -728,7 +728,7 @@ Nếu bạn cần nhiều hơn thế nữa, bạn có thể sử dụng các ph�
 <a name="counting-related-models"></a>
 ### Đếm các bản ghi theo quan hệ model
 
-Nếu bạn muốn đếm số lượng kết quả từ một quan hệ mà không thực sự load chúng, bạn có thể sử dụng phương thức `withCount`, và kết quả nhận được sẽ được set vào cột `{relation}_count` trên các model kết quả của bạn. Ví dụ:
+Nếu bạn muốn đếm số lượng kết quả của một quan hệ mà không muốn load chúng, bạn có thể sử dụng phương thức `withCount`, và kết quả sẽ được set vào cột `{relation}_count` trên các model kết quả của bạn. Ví dụ:
 
     $posts = App\Post::withCount('comments')->get();
 
@@ -736,7 +736,7 @@ Nếu bạn muốn đếm số lượng kết quả từ một quan hệ mà kh�
         echo $post->comments_count;
     }
 
-Bạn cũng có thể thêm "counts" cho nhiều quan hệ cũng như thêm các ràng buộc cho các truy vấn:
+Bạn cũng có thể thêm "counts" cho nhiều quan hệ khác cũng như thêm các ràng buộc cho các câu lệnh truy vấn:
 
     $posts = App\Post::withCount(['votes', 'comments' => function ($query) {
         $query->where('content', 'like', 'foo%');
@@ -745,7 +745,7 @@ Bạn cũng có thể thêm "counts" cho nhiều quan hệ cũng như thêm các
     echo $posts[0]->votes_count;
     echo $posts[0]->comments_count;
 
-Bạn cũng có thể thêm lối tắt cho một kết quả đếm quan hệ, cho phép nhiều lần đếm trên cùng một quan hệ:
+Bạn cũng có thể thêm tên gọi khác cho một kết quả đếm quan hệ, cho phép bạn thực hiện nhiều lần đếm trên cùng một quan hệ:
 
     $posts = App\Post::withCount([
         'comments',
@@ -761,7 +761,7 @@ Bạn cũng có thể thêm lối tắt cho một kết quả đếm quan hệ, 
 <a name="eager-loading"></a>
 ## Eager Loading
 
-Khi truy cập vào các quan hệ Eloquent dưới dạng các thuộc tính, dữ liệu quan hệ là "lazy loaded". Điều này có nghĩa là dữ liệu quan hệ không được tải cho đến khi bạn truy cập vào nó lần đầu tiên. Tuy nhiên, Eloquent có thể "eager load" quan hệ tại thời điểm bạn truy vấn vào model cha. Eager loading làm giảm bớt vấn đề truy vấn N + 1. Để minh họa vấn đề truy vấn N + 1, hãy xem một model `Book` có quan hệ đến `Author`:
+Khi truy cập vào các quan hệ Eloquent dưới dạng các thuộc tính, dữ liệu quan hệ là "lazy loaded". Điều này có nghĩa là dữ liệu quan hệ sẽ không được load cho đến khi bạn truy cập vào chúng lần đầu tiên. Tuy nhiên, Eloquent có thể "eager load" quan hệ tại thời điểm bạn truy vấn vào model cha. Eager loading sẽ làm giảm bớt vấn đề truy vấn N + 1. Để minh họa cho vấn đề truy vấn N + 1, hãy xem một model `Book` có quan hệ với model `Author`:
 
     <?php
 
@@ -788,9 +788,9 @@ Bây giờ, hãy lấy ra tất cả các sách và tác giả của chúng:
         echo $book->author->name;
     }
 
-Vòng lặp này sẽ thực hiện 1 truy vấn để lấy ra tất cả các sách trên bảng, sau đó một truy vấn khác cho mỗi cuốn sách để lấy ra tác giả. Vì vậy, nếu chúng ta có 25 cuốn sách, vòng lặp này sẽ chạy 26 truy vấn: 1 cho lấy tất cả các cuốn sách và 25 truy vấn thêm để lấy ra tác giả của mỗi cuốn sách.
+Vòng lặp này sẽ thực hiện 1 truy vấn để lấy ra tất cả các sách có trong bảng, rồi sau đó thực hiện một truy vấn khác cho mỗi cuốn sách để lấy ra tác giả. Vì vậy, nếu chúng ta có 25 cuốn sách, thì vòng lặp này sẽ chạy 26 truy vấn: 1 truy vấn sẽ lấy ra tất cả các cuốn sách và 25 truy vấn còn lại để lấy ra tác giả của mỗi cuốn sách.
 
-Rất may, chúng ta có thể sử dụng eager loading để giảm các hành động này xuống chỉ còn 2 truy vấn. Khi truy vấn, bạn có thể khai báo những quan hệ nào sẽ được eager loading bằng phương thức `with`:
+Rất may, chúng ta có thể sử dụng eager loading để giảm các hành động truy vấn này xuống chỉ còn 2 truy vấn. Khi truy vấn, bạn có thể khai báo những quan hệ nào sẽ được eager loading bằng phương thức `with`:
 
     $books = App\Book::with('author')->get();
 
@@ -798,7 +798,7 @@ Rất may, chúng ta có thể sử dụng eager loading để giảm các hành
         echo $book->author->name;
     }
 
-Đối với cách làm này, chỉ có hai truy vấn duy nhất sẽ được thực hiện:
+Đối với cách làm này, chỉ có hai truy vấn sẽ được thực hiện:
 
     select * from books
 
@@ -806,34 +806,34 @@ Rất may, chúng ta có thể sử dụng eager loading để giảm các hành
 
 #### Eager Loading Multiple Relationships
 
-Thỉnh thoảng bạn có thể cần eager load nhiều quan hệ khác nhau trong một hành động. Để làm như vậy, chỉ cần truyền thêm các tham số bổ sung cho phương thức `with`:
+Thỉnh thoảng bạn có thể cần eager load nhiều quan hệ khác nhau trong một hành động. Để làm như vậy, chỉ cần truyền thêm các tham số cho phương thức `with`:
 
     $books = App\Book::with(['author', 'publisher'])->get();
 
 #### Nested Eager Loading
 
-Để eager load cho các quan hệ lồng nhau, bạn có thể sử dụng cú pháp "chấm". Ví dụ: hãy eager load tất cả các tác giả của một cuốn sách và tất cả các liên hệ của tác giả đó trong một lệnh Eloquent:
+Để eager load các quan hệ lồng nhau, bạn có thể sử dụng cú pháp "chấm". Ví dụ: hãy eager load tất cả các tác giả của một cuốn sách và tất cả các liên hệ của tác giả đó trong một lệnh Eloquent:
 
     $books = App\Book::with('author.contacts')->get();
 
 #### Eager Loading Specific Columns
 
-Bạn có thể không phải lúc nào cũng cần mọi cột từ quan hệ mà bạn đang truy xuất. Vì lý do này, Eloquent cho phép bạn khai báo các cột của quan hệ mà bạn muốn lấy ra:
+Bạn có thể không phải lúc nào cũng cần mọi cột của quan hệ mà bạn đang truy xuất. Vì lý do này, Eloquent cho phép bạn khai báo các cột của quan hệ mà bạn muốn lấy ra:
 
     $users = App\Book::with('author:id,name')->get();
 
-> {note} Khi sử dụng tính năng này, bạn phải luôn khai báo cột `id` trong danh sách các cột bạn muốn lấy ra.
+> {note} Khi sử dụng tính năng này, bạn phải luôn khai báo cột `id` trong danh sách các cột mà bạn muốn lấy ra.
 
 <a name="constraining-eager-loads"></a>
 ### Rằng buộc khi eager loading
 
-Thỉnh thoảng bạn có thể muốn eager load một quan hệ, nhưng cũng muốn khai báo thêm các ràng buộc truy vấn bổ sung cho quan hệ eager load đó. Và đây là một ví dụ cho điều đó:
+Thỉnh thoảng bạn có thể muốn eager load một quan hệ, nhưng cũng muốn khai báo thêm các ràng buộc truy vấn cho quan hệ eager load đó. Và đây là một ví dụ cho điều đó:
 
     $users = App\User::with(['posts' => function ($query) {
         $query->where('title', 'like', '%first%');
     }])->get();
 
-Trong ví dụ này, Eloquent sẽ chỉ eager load các post mà trong đó cột `title` của post chứa từ `first`. Tất nhiên, bạn có thể gọi các phương thức [query builder](/docs/{{version}}/queries) khác để tùy biến thêm thao tác eager loading:
+Trong ví dụ này, Eloquent sẽ chỉ eager load các post mà trong đó cột `title` của post sẽ chứa từ `first`. Tất nhiên, bạn có thể gọi các phương thức [query builder](/docs/{{version}}/queries) khác để tùy biến thêm cho thao tác eager loading:
 
     $users = App\User::with(['posts' => function ($query) {
         $query->orderBy('created_at', 'desc');
@@ -842,7 +842,7 @@ Trong ví dụ này, Eloquent sẽ chỉ eager load các post mà trong đó c�
 <a name="lazy-eager-loading"></a>
 ### Lazy Eager Loading
 
-Thỉnh thoảng bạn có thể cần eager load một quan hệ sau khi model cha đã được lấy ra. Ví dụ, điều này có thể hữu ích nếu bạn cần quyết định có tự động load các model quan hệ hay không:
+Thỉnh thoảng bạn có thể cần eager load một quan hệ sau khi một model cha đã được lấy ra. Ví dụ, điều này có thể hữu ích nếu bạn cần một cách linh động để load các model quan hệ:
 
     $books = App\Book::all();
 
@@ -850,7 +850,7 @@ Thỉnh thoảng bạn có thể cần eager load một quan hệ sau khi model 
         $books->load('author', 'publisher');
     }
 
-Nếu bạn cần set thêm các ràng buộc truy vấn bổ sung cho truy vấn eager loading, bạn có thể truyền một mảng có khóa là các quan hệ mà bạn muốn load. Các giá trị mảng phải là các instances `Closure` nhận vào một instances query:
+Nếu bạn cần set thêm các ràng buộc truy vấn cho các truy vấn eager loading, bạn có thể truyền vào một mảng có khóa là các quan hệ mà bạn muốn load. Các giá trị mảng phải là các instances `Closure` nhận vào một instances query:
 
     $books->load(['author' => function ($query) {
         $query->orderBy('published_date', 'asc');
@@ -874,7 +874,7 @@ Nếu bạn cần set thêm các ràng buộc truy vấn bổ sung cho truy vấ
 <a name="the-save-method"></a>
 ### Phương thức save
 
-Eloquent cung cấp các phương thức thuận tiện để thêm một model mới vào các quan hệ. Ví dụ, có lẽ bạn cần thêm một `Comment` mới cho model `Post`. Thay vì set thủ công thuộc tính `post_id` trên `Comment`, thì bạn có thể thêm trực tiếp `Comment` từ phương thức `save` của quan hệ::
+Eloquent cung cấp các phương thức thuận tiện để thêm một model vào các quan hệ. Ví dụ, bạn cần thêm một `Comment` vào một model `Post`. Thay vì set thủ công thuộc tính `post_id` trên `Comment`, thì bạn có thể thêm trực tiếp `Comment` từ phương thức `save` của quan hệ::
 
     $comment = new App\Comment(['message' => 'A new comment.']);
 
@@ -882,9 +882,9 @@ Eloquent cung cấp các phương thức thuận tiện để thêm một model 
 
     $post->comments()->save($comment);
 
-Lưu ý rằng chúng ta đã không truy cập vào quan hệ `comments` như là một thuộc tính động. Thay vào đó, chúng ta đã gọi phương thức `comments` để lấy ra một instance của quan hệ. Phương thức `save` sẽ tự động thêm giá trị `post_id` phù hợp vào model `Comment` mới.
+Lưu ý rằng chúng ta đã không truy cập vào quan hệ `comments` như là một thuộc tính động. Thay vào đó, chúng ta đã gọi phương thức `comments` để lấy ra một instance của quan hệ. Và phương thức `save` sẽ tự động thêm giá trị `post_id` phù hợp cho model `Comment` mới.
 
-Nếu bạn cần lưu nhiều model quan hệ cùng một lúc, bạn có thể sử dụng phương thức `saveMany`:
+Nếu bạn cần lưu nhiều model quan hệ trong cùng một lúc, bạn có thể sử dụng phương thức `saveMany`:
 
     $post = App\Post::find(1);
 
@@ -922,7 +922,7 @@ Bạn có thể sử dụng phương thức `createMany` để tạo nhiều mod
 <a name="updating-belongs-to-relationships"></a>
 ### Quan hệ thuộc về
 
-Khi cập nhật một quan hệ `belongsTo`, bạn có thể sử dụng phương thức `associate`. Phương thức này sẽ set khóa ngoại trên model con:
+Khi cập nhật một quan hệ `belongsTo`, bạn có thể sử dụng phương thức `associate`. Phương thức này sẽ set khóa ngoại vào model con:
 
     $account = App\Account::find(10);
 
@@ -951,7 +951,7 @@ Khi attach một quan hệ với một model, bạn cũng có thể truyền th�
 
     $user->roles()->attach($roleId, ['expires' => $expires]);
 
-Tất nhiên, thỉnh thoảng có thể cần phải xóa một role ra khỏi một user. Để xoá một bản ghi quan hệ nhiều-nhiều, hãy sử dụng phương thức `detach`. Phương thức `detach` sẽ xoá bản ghi phù hợp ra khỏi bảng trung gian; tuy nhiên, cả hai model vẫn sẽ còn trong cơ sở dữ liệu:
+Tất nhiên, thỉnh thoảng bạn cũng có thể cần phải xóa một role ra khỏi một user. Để xoá một bản ghi quan hệ nhiều-nhiều, hãy sử dụng phương thức `detach`. Phương thức `detach` sẽ xoá bản ghi phù hợp ra khỏi bảng trung gian; tuy nhiên, cả hai model vẫn sẽ còn trong cơ sở dữ liệu:
 
     // Detach a single role from the user...
     $user->roles()->detach($roleId);
@@ -959,7 +959,7 @@ Tất nhiên, thỉnh thoảng có thể cần phải xóa một role ra khỏi 
     // Detach all roles from the user...
     $user->roles()->detach();
 
-Để thuận tiện, các phương thức `attach` và `detach` cũng chấp nhận một mảng ID làm đầu vào:
+Để thuận tiện, các phương thức `attach` và `detach` cũng chấp nhận một mảng các ID làm đầu vào:
 
     $user = App\User::find(1);
 
@@ -980,13 +980,13 @@ Bạn cũng có thể truyền thêm các giá trị cho bảng trung gian với
 
     $user->roles()->sync([1 => ['expires' => true], 2, 3]);
 
-Nếu bạn không muốn detach ID đã tồn tại, bạn có thể sử dụng phương thức `syncWithoutDetaching`:
+Nếu bạn không muốn detach những ID đã tồn tại, bạn có thể sử dụng phương thức `syncWithoutDetaching`:
 
     $user->roles()->syncWithoutDetaching([1, 2, 3]);
 
 #### Toggling Associations
 
-Quan hệ nhiều-nhiều cũng cung cấp thêm một phương thức `toggle` để "bật" hoặc "tắt" trạng thái attach của một mảng các ID đã cho. Nếu ID trong mảng đó đã được attach, thì nó sẽ bị detached. Tương tự, nếu nó đang được detached, thì nó sẽ được attach:
+Quan hệ nhiều-nhiều cũng cung cấp thêm một phương thức `toggle` để "bật" hoặc "tắt" trạng thái attach của một mảng các ID. Nếu ID trong mảng đó đã được attach, thì nó sẽ bị detached. Tương tự, nếu nó đang được detached, thì nó sẽ được attach:
 
     $user->roles()->toggle([1, 2, 3]);
 
@@ -1007,7 +1007,7 @@ Nếu bạn cần cập nhật một bản ghi hiện có trong bảng pivot c�
 <a name="touching-parent-timestamps"></a>
 ## Sửa timestamp của model chứa
 
-Khi một model `belongsTo` hoặc `belongsToMany` tới một model khác, chẳng hạn như một `Comment` nằm trong một `Post`, đôi khi bạn sẽ cần thiết cập nhật timestamp của model cha khi model con được cập nhật. Ví dụ, khi một model `Comment` được cập nhật, bạn có thể muốn tự động "touch" vào cột timestamp `update_at` của `Post` cha của nó. Eloquent có thể làm cho hành động đó trở lên dễ dàng. Bạn chỉ cần thêm một thuộc tính `touches` chứa tên của quan hệ, vào model con của bạn:
+Khi một model `belongsTo` hoặc `belongsToMany` tới một model khác, chẳng hạn như một `Comment` nằm trong một `Post`, đôi khi bạn sẽ cần cập nhật timestamp của model cha khi model con được cập nhật. Ví dụ, khi một model `Comment` được cập nhật, bạn có thể muốn tự động "touch" vào cột timestamp `update_at` của model `Post`. Eloquent có thể làm cho hành động đó trở lên dễ dàng. Bạn chỉ cần thêm một thuộc tính `touches` chứa tên quan hệ, vào model con của bạn:
 
     <?php
 
@@ -1033,7 +1033,7 @@ Khi một model `belongsTo` hoặc `belongsToMany` tới một model khác, ch�
         }
     }
 
-Bây giờ, khi bạn cập nhật một `Comment`, thì `Post` cha của nó cũng sẽ được cập nhật cột `update_at`, giúp thuận tiện hơn để biết khi nào vô hiệu hoá cache của model `Post`:
+Bây giờ, khi bạn cập nhật một `Comment`, thì `Post` của nó cũng sẽ được cập nhật cột `update_at`, giúp thuận tiện hơn để biết khi nào vô hiệu hoá cache của model `Post`:
 
     $comment = App\Comment::find(1);
 

@@ -20,7 +20,7 @@ Khi bạn đã sẵn sàng deploy application Laravel của bạn vào productio
 <a name="nginx"></a>
 ### Nginx
 
-Nếu bạn đang deploy application của bạn đến một server đang chạy Nginx, bạn có thể sử dụng file cấu hình sau đây để làm điểm bắt đầu để cấu hình server web của bạn. Nhiều khả năng, file này sẽ cần được tùy chỉnh tùy thuộc vào cấu hình server của bạn. Nếu bạn muốn được hỗ trợ trong việc quản lý server của mình, hãy cân nhắc sử dụng một dịch vụ như [Laravel Forge](https://forge.laravel.com):
+Nếu bạn đang deploy application của bạn đến một server đang chạy Nginx, bạn có thể sử dụng file cấu hình sau đây để làm điểm bắt đầu cho cấu hình web server của bạn. Nhiều khả năng, file này sẽ cần được tùy chỉnh tùy thuộc vào cấu hình server của bạn. Nếu bạn muốn được hỗ trợ trong việc quản lý server, hãy cân nhắc sử dụng một dịch vụ như [Laravel Forge](https://forge.laravel.com):
 
     server {
         listen 80;
@@ -62,20 +62,20 @@ Nếu bạn đang deploy application của bạn đến một server đang chạ
 <a name="autoloader-optimization"></a>
 ### Tối ưu autoloader
 
-Khi đang deploy application vào production, hãy chắc chắn rằng bạn đã tối ưu hoá class autoloader map của Composer, để Composer có thể nhanh chóng tìm thấy file thích hợp cho một class:
+Khi deploy application vào production, hãy chắc chắn là bạn đã tối ưu hoá class autoloader map của Composer, để Composer có thể nhanh chóng tìm thấy file thích hợp cho một class:
 
     composer install --optimize-autoloader
 
-> {tip} Ngoài việc tối ưu autoloader, bạn cũng nên chắc chắn là luôn có file `composer.lock` trong project source code của bạn. Các library trong project của bạn có thể cài đặt nhanh hơn khi mà có file `composer.lock`.
+> {tip} Ngoài việc tối ưu autoloader, bạn cũng nên chắc chắn là luôn có file `composer.lock` trong project source code của bạn. Các library trong project của bạn có thể cài đặt nhanh hơn khi mà có file `composer.lock` này.
 
 <a name="optimizing-configuration-loading"></a>
 ### Tối ưu load config
 
-Khi đang deploy application vào production, bạn nên đảm bảo rằng bạn đã chạy lệnh Artisan `config:cache` trong quá trình deploy của bạn:
+Khi deploy application vào production, bạn cũng nên đảm bảo là bạn đã chạy lệnh Artisan `config:cache` trong quá trình deploy:
 
     php artisan config:cache
 
-Lệnh này sẽ kết hợp tất cả các file config của Laravel thành một file và được lưu vào trong bộ nhớ cache, giúp giảm đáng kể số lượng trao đổi giữa framework với filesystem khi tải các value config của bạn.
+Lệnh này sẽ nối tất cả các file config của Laravel thành một file và được lưu vào trong bộ nhớ cache, giúp giảm đáng kể số lượng trao đổi giữa framework với filesystem khi tải các value config của bạn.
 
 <a name="optimizing-route-loading"></a>
 ### Tối ưu load route
@@ -84,13 +84,13 @@ Nếu bạn đang build một application lớn với nhiều route, bạn nên 
 
     php artisan route:cache
 
-Lệnh này sẽ giảm tất cả các đăng ký route của bạn vào trong một phương thức duy nhất và được lưu trong một file ở cache, nó giúp cải thiện hiệu suất của việc đăng ký route khi đăng ký hàng trăm route.
+Lệnh này sẽ giảm tất cả các đăng ký route của bạn vào trong một phương thức duy nhất và lưu trong một file ở cache, nó giúp cải thiện hiệu suất của việc đăng ký route khi đăng ký hàng trăm route.
 
-> {note} Vì chức nằng này sẽ dùng hàm mã hoá thành chuỗi của PHP, bạn chỉ có thể cache được các route cho apllication theo loại route cơ bản. PHP sẽ không thể mã hoá được các hàm callback.
+> {note} Vì chức nằng này sẽ dùng hàm mã hoá chuỗi của PHP, nên bạn chỉ có thể cache được các loại route cho apllication theo loại route cơ bản. PHP sẽ không thể mã hoá được các hàm callback.
 
 <a name="deploying-with-forge"></a>
 ## Deploy cùng Forge
 
-Nếu bạn chưa sẵn sàng để quản lý cấu hình server của riêng mình hoặc không thoải mái với cấu hình tất cả các dịch vụ khác nhau cần thiết để chạy ứng dụng Laravel, [Laravel Forge](https://forge.laravel.com) là một điều thay thế tuyệt vời.
+Nếu bạn chưa sẵn sàng để quản lý cấu hình server của bạn hoặc không thoải mái với cấu hình các dịch vụ khác nhau cần thiết để chạy ứng dụng Laravel, [Laravel Forge](https://forge.laravel.com) là một điều thay thế tuyệt vời.
 
 Laravel Forge có thể tạo server trên các nhà cung cấp khác nhau như DigitalOcean, Linode, AWS, v.v. Ngoài ra, Forge có thể cài đặt và quản lý tất cả các công cụ cần thiết để xây dựng các ứng dụng Laravel, như Nginx, MySQL, Redis, Memcached, Beanstalk,...

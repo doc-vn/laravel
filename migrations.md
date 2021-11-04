@@ -21,9 +21,9 @@
 <a name="introduction"></a>
 ## Giới thiệu
 
-Migration giống như là version control cho cơ sở dữ liệu của bạn, cho phép team của bạn dễ dàng sửa và chia sẻ các database schema của application. Migration thường được kết hợp với schema builder của Laravel để xây dựng database schema của application của bạn. Nếu bạn đã từng phải nói với các thành viên trong team là tự thêm một cột vào database schema local của họ, thì bạn đã phải gặp phải vấn đề migration cơ sở dữ liệu.
+Migration giống như là một version control cho cơ sở dữ liệu, cho phép team của bạn dễ dàng sửa và chia sẻ các database schema của application. Migration thường được kết hợp với schema builder của Laravel để xây dựng database schema cho application của bạn. Nếu bạn đã từng phải nói với các thành viên trong team của bạn là tự thêm một cột vào database schema ở local của họ, thì bạn đã từng phải gặp phải vấn đề về migration cơ sở dữ liệu.
 
-Laravel [facade](/docs/{{version}}/facades) `Schema` cung cấp một cách để tạo và thao tác với các bảng trên tất cả các hệ thống cơ sở dữ liệu được hỗ trợ của Laravel mà không cần quan tâm về loại database.
+Laravel [facade](/docs/{{version}}/facades) `Schema` cung cấp một cách để tạo và thao tác với các bảng trên tất cả các hệ thống cơ sở dữ liệu được hỗ trợ bởi Laravel mà không cần quan tâm về loại database.
 
 <a name="generating-migrations"></a>
 ## Tạo Migration
@@ -32,22 +32,22 @@ Laravel [facade](/docs/{{version}}/facades) `Schema` cung cấp một cách đ�
 
     php artisan make:migration create_users_table
 
-File migration mới sẽ được lưu trong thư mục `database/migrations` của bạn. Mỗi tên file migration đều chứa một dấu timestamp cho phép Laravel xác định thứ tự migration.
+File migration mới sẽ được lưu trong thư mục `database/migrations` của bạn. Mỗi tên file migration đều có chứa một dấu mốc timestamp cho phép Laravel xác định thứ tự migration.
 
-Các tùy chọn `--table` và `--create` cũng có thể được sử dụng để chỉ định tên bảng và migration có tạo một bảng mới hay không. Những tùy chọn này sẽ được điền trước vào file migration được generate cùng với bảng đã được chỉ định:
+Các tùy chọn `--table` và `--create` cũng có thể được sử dụng để chỉ định tên bảng và migration có tạo một bảng mới hay không. Những tùy chọn này sẽ được điền trước vào file migration sẽ được tạo cùng với tên bảng đã được chỉ định:
 
     php artisan make:migration create_users_table --create=users
 
     php artisan make:migration add_votes_to_users_table --table=users
 
-Nếu bạn muốn khai báo một đường dẫn tùy biến đầu ra cho file migration được generate, bạn có thể sử dụng tùy chọn `--path` khi chạy lệnh `make:migration`. Đường dẫn tuỳ biến này phải được bắt đầu từ đường dẫn root của application của bạn.
+Nếu bạn muốn khai báo một đường dẫn output tùy biến cho file migration được tạo, bạn có thể sử dụng tùy chọn `--path` khi chạy lệnh `make:migration`. Đường dẫn tuỳ biến này phải được bắt đầu từ đường dẫn root của application của bạn.
 
 <a name="migration-structure"></a>
 ## Cấu trúc Migration
 
-Một class migration chứa hai phương thức: `up` và `down`. Phương thức `up` được sử dụng để thêm một bảng, một cột hoặc một index mới vào cơ sở dữ liệu của bạn, trong khi phương thức `down` sẽ quay ngược lại các hoạt động được thực hiện bởi phương thức `up`.
+Một class migration sẽ chứa hai phương thức: `up` và `down`. Phương thức `up` sẽ được sử dụng để thêm một bảng, một cột hoặc một index mới vào cơ sở dữ liệu của bạn, trong khi phương thức `down` sẽ quay ngược lại các hành động mà được thực hiện bởi phương thức `up`.
 
-Trong cả hai phương thức này, bạn đều có thể sử dụng schema builder của Laravel để tạo và sửa các bảng một cách rõ ràng. Để tìm hiểu về tất cả các phương thức có sẵn trong `Schema` builder, [hãy xem tài liệu của nó](#creating-tables). Ví dụ, migration mẫu này sẽ tạo ra một bảng `flights`:
+Trong cả hai phương thức này, bạn đều có thể sử dụng schema builder của Laravel để tạo và sửa các bảng một cách rõ ràng. Để tìm hiểu về tất cả các phương thức có sẵn trong `Schema` builder, [hãy xem tài liệu về nó](#creating-tables). Ví dụ, migration mẫu này sẽ tạo ra một bảng `flights`:
 
     <?php
 
@@ -86,7 +86,7 @@ Trong cả hai phương thức này, bạn đều có thể sử dụng schema b
 <a name="running-migrations"></a>
 ## Chạy Migration
 
-Để chạy tất cả các migration của bạn, hãy thực hiện lệnh Artisan `migrate`:
+Để chạy tất cả các migration của bạn, hãy chạy lệnh Artisan `migrate`:
 
     php artisan migrate
 
@@ -94,18 +94,18 @@ Trong cả hai phương thức này, bạn đều có thể sử dụng schema b
 
 #### Forcing Migrations To Run In Production
 
-Một số hành động migration có thể là nguy hiểm, có nghĩa là chúng có thể khiến bạn mất dữ liệu. Để bảo vệ bạn khỏi việc chạy các lệnh này đối với cơ sở dữ liệu production của bạn, bạn sẽ được nhắc xác nhận trước khi các lệnh được chạy. Để bắt các lệnh này chạy mà không nhắc xác nhận, hãy sử dụng cờ `--force`:
+Một số hành động migration có thể là nguy hiểm, có nghĩa là chúng có thể khiến bạn mất dữ liệu. Để bảo vệ bạn khỏi việc chạy các lệnh này đối với cơ sở dữ liệu production, bạn sẽ được nhắc xác nhận trước khi chạy các lệnh được này. Để bắt các lệnh này chạy mà không nhắc xác nhận, hãy sử dụng cờ `--force`:
 
     php artisan migrate --force
 
 <a name="rolling-back-migrations"></a>
 ### Rollback Migration
 
-Để rollback về migration mới nhất, bạn có thể sử dụng lệnh `rollback`. Lệnh này sẽ rollback lại "batch" migration cuối cùng, có thể có chứa nhiều file migration:
+Để rollback về migration mới nhất, bạn có thể sử dụng lệnh `rollback`. Lệnh này sẽ rollback lại "batch" migration cuối cùng mà bạn dùng, nó có thể có chứa nhiều file migration:
 
     php artisan migrate:rollback
 
-Bạn có thể muốn rollback lại một số migration cần thiết bằng cách cung cấp tùy chọn `step` cho lệnh `rollback`. Ví dụ: lệnh sau sẽ rollback lại năm lần trước so với batch cuối cùng:
+Bạn có thể muốn rollback lại một số migration cần thiết bằng cách cung cấp thêm tùy chọn `step` cho lệnh `rollback`. Ví dụ: lệnh sau sẽ rollback lại năm lần trước khi đến batch cuối cùng:
 
     php artisan migrate:rollback --step=5
 
@@ -122,13 +122,13 @@ Lệnh `migrate:refresh` sẽ rollback lại tất cả các migration của b�
     // Refresh the database and run all database seeds...
     php artisan migrate:refresh --seed
 
-Bạn có thể rollback và migrate lại một số migration cần thiết bằng cách cung cấp tùy chọn `step` cho lệnh `refresh`. Ví dụ: lệnh sau sẽ rollback và migrate lại năm lần migration gần nhất:
+Bạn có thể rollback và migrate lại một số migration cần thiết bằng cách cung cấp tùy chọn `step` cho lệnh `refresh`. Ví dụ: lệnh sau sẽ rollback và migrate lại năm lần trước so với migration gần nhất:
 
     php artisan migrate:refresh --step=5
 
 #### Drop All Tables & Migrate
 
-Lệnh `migrate:fresh` sẽ xóa tất cả các bảng ra khỏi cơ sở dữ liệu và sau đó thực thi lệnh `migrate`:
+Lệnh `migrate:fresh` sẽ xóa tất cả các bảng ra khỏi cơ sở dữ liệu và sau đó thực thi lại lệnh `migrate`:
 
     php artisan migrate:fresh
 
@@ -140,7 +140,7 @@ Lệnh `migrate:fresh` sẽ xóa tất cả các bảng ra khỏi cơ sở dữ 
 <a name="creating-tables"></a>
 ### Tạo Tables
 
-Để tạo một bảng cơ sở dữ liệu mới, hãy sử dụng phương thức `create` trên facade `Schema`. Phương thức `create` chấp nhận hai tham số. Đầu tiên là tên của bảng, trong khi tham số thứ hai là một `Closure` nhận vào một đối tượng `Blueprint` có thể được sử dụng để định nghĩa bảng mới:
+Để tạo một bảng cơ sở dữ liệu mới, hãy sử dụng phương thức `create` trên facade `Schema`. Phương thức `create` chấp nhận hai tham số.Tham số đầu tiên là tên của bảng, trong khi tham số thứ hai là một `Closure` nhận vào một đối tượng `Blueprint` có thể được sử dụng để định nghĩa một bảng mới:
 
     Schema::create('users', function (Blueprint $table) {
         $table->increments('id');
@@ -150,7 +150,7 @@ Tất nhiên, khi tạo bảng, bạn có thể sử dụng bất kỳ [column m
 
 #### Checking For Table / Column Existence
 
-Bạn có thể dễ dàng kiểm tra sự tồn tại của bảng hoặc cột bằng các phương thức `hasTable` và `hasColumn`:
+Bạn có thể dễ dàng kiểm tra sự tồn tại của một bảng hoặc một cột bằng các phương thức `hasTable` và `hasColumn`:
 
     if (Schema::hasTable('users')) {
         //
@@ -168,7 +168,7 @@ Nếu bạn muốn thực hiện một schema trên một kết nối cơ sở d
         $table->increments('id');
     });
 
-Bạn có thể sử dụng các lệnh sau trên schema builder để định nghĩa các tùy chọn của bảng:
+Bạn có thể sử dụng các lệnh sau trên schema builder để định nghĩa các tùy chọn cho bảng:
 
 Command  |  Description
 -------  |  -----------
@@ -180,7 +180,7 @@ Command  |  Description
 <a name="renaming-and-dropping-tables"></a>
 ### Đổi tên / Xoá Table
 
-Để đổi tên một bảng cơ sở dữ liệu đã tồn tại, hãy sử dụng phương thức `rename`:
+Để đổi tên một bảng đã tồn tại trong cơ sở dữ liệu, hãy sử dụng phương thức `rename`:
     Schema::rename($from, $to);
 
 Để xóa một bảng hiện có, bạn có thể sử dụng các phương thức `drop` hoặc `dropIfExists`:
@@ -191,7 +191,7 @@ Command  |  Description
 
 #### Renaming Tables With Foreign Keys
 
-Trước khi đổi tên một bảng, bạn nên kiểm tra xem khóa ngoại trỏ đến bảng đó đã có trong file migration của bạn hay chưa, thay vì để Laravel tự gán tên dựa trên quy ước. Nếu không có, tên khóa ngoại đó sẽ tham chiếu đến tên bảng cũ.
+Trước khi đổi tên một bảng, bạn nên kiểm tra khóa ngoại trỏ đến bảng đó đã có trong file migration thay vì để Laravel tự gán tên dựa trên quy ước của nó. Nếu không, tên khóa ngoại đó sẽ tham chiếu đến tên bảng cũ.
 
 <a name="columns"></a>
 ## Column
@@ -199,7 +199,7 @@ Trước khi đổi tên một bảng, bạn nên kiểm tra xem khóa ngoại t
 <a name="creating-columns"></a>
 ### Tạo Column
 
-Phương thức `table` trên facade `Schema` có thể được sử dụng để cập nhật các bảng đã tồn tại. Giống như phương thức `create`, phương thức `table` chấp nhận hai tham số: một là tên bảng và một là `Closure` nhận vào một instance `Blueprint` mà bạn có thể sử dụng nó để thêm các cột vào bảng:
+Phương thức `table` trên facade `Schema` có thể được sử dụng để cập nhật các bảng đã tồn tại. Giống như phương thức `create`, phương thức `table` chấp nhận hai tham số: một là tên một bảng và hai là một `Closure` nhận vào một instance `Blueprint` mà bạn có thể sử dụng nó để thêm các cột vào trong bảng:
 
     Schema::table('users', function (Blueprint $table) {
         $table->string('email');
@@ -207,7 +207,7 @@ Phương thức `table` trên facade `Schema` có thể được sử dụng đ�
 
 #### Available Column Types
 
-Tất nhiên, schema builder sẽ chứa nhiều loại cột mà bạn có thể khai báo khi xây dựng các bảng của bạn:
+Tất nhiên, schema builder cũng sẽ chứa nhiều loại cột mà bạn có thể khai báo khi xây dựng các bảng cho bạn:
 
 Lệnh  |  Mô tả
 -------  |  -----------
@@ -271,7 +271,7 @@ Lệnh  |  Mô tả
 <a name="column-modifiers"></a>
 ### Column Modifiers
 
-Ngoài các loại cột được liệt kê ở trên, có một số "modifiers" cột bạn có thể sử dụng trong khi thêm một cột vào bảng cơ sở dữ liệu. Ví dụ, để tạo một cột chấp nhận "nullable", bạn có thể sử dụng phương thức `nullable`:
+Ngoài các loại cột được liệt kê ở trên, có một số "modifiers" cột mà bạn có thể sử dụng trong khi thêm một cột vào trong bảng cơ sở dữ liệu. Ví dụ, để tạo một cột chấp nhận "nullable", bạn có thể sử dụng phương thức `nullable`:
 
     Schema::table('users', function (Blueprint $table) {
         $table->string('email')->nullable();
@@ -299,13 +299,13 @@ Modifier  |  Mô tả
 
 #### Prerequisites
 
-Trước khi sửa một cột, bạn hãy chắc chắn là bạn đã thêm library `doctrine/dbal` vào file `composer.json` của bạn. Thư viện Doctrine DBAL được sử dụng để xác định trạng thái hiện tại của cột và tạo các truy vấn SQL cần thiết để thực hiện các khai báo điều chỉnh cho các cột đó:
+Trước khi sửa một cột, bạn hãy chắc chắn là bạn đã thêm library `doctrine/dbal` vào trong file `composer.json` của bạn. Thư viện Doctrine DBAL được sử dụng để xác định trạng thái hiện tại của cột và tạo ra các truy vấn SQL cần thiết để thực hiện các khai báo điều chỉnh cho các cột đó:
 
     composer require doctrine/dbal
 
 #### Updating Column Attributes
 
-Phương thức `change` cho phép bạn sửa một số loại của cột hiện có thành một loại mới hoặc sửa các thuộc tính của cột. Ví dụ: bạn có thể muốn tăng kích thước của cột string. Để xem phương thức `change` hoạt động như thế nào, hãy thử tăng kích thước của cột `name` từ 25 lên 50:
+Phương thức `change` cho phép bạn sửa một số loại cột hiện có thành một loại mới hoặc sửa các thuộc tính của cột. Ví dụ: bạn có thể muốn tăng kích thước của cột string. Để xem phương thức `change` hoạt động như thế nào, hãy thử tăng kích thước của cột `name` từ 25 lên 50:
 
     Schema::table('users', function (Blueprint $table) {
         $table->string('name', 50)->change();
@@ -321,24 +321,24 @@ Chúng ta cũng có thể sửa một cột thành nullable:
 
 #### Renaming Columns
 
-Để đổi tên một cột, bạn có thể sử dụng phương thức `renameColumn` trong Schema builder. Trước khi đổi tên một cột, hãy nhớ thêm library `doctrine/dbal` vào file `composer.json` của bạn:
+Để đổi tên một cột, bạn có thể sử dụng phương thức `renameColumn` trong Schema builder. Trước khi đổi tên một cột, hãy nhớ thêm library `doctrine/dbal` vào trong file `composer.json` của bạn:
 
     Schema::table('users', function (Blueprint $table) {
         $table->renameColumn('from', 'to');
     });
 
-> {note} Đổi tên bất kỳ cột nào trong bảng cũng có các cột kiểu `enum` thì hiện tại không được hỗ trợ.
+> {note} Việc đổi tên cột trong một bảng mà có chứa một cột khác kiểu `enum` thì sẽ không thể đổi được.
 
 <a name="dropping-columns"></a>
 ### Xoá Column
 
-Để xóa một cột, hãy sử dụng phương thức `dropColumn` trong Schema builder. Trước khi xóa các cột khỏi cơ sở dữ liệu SQLite, bạn sẽ cần thêm library `doctrine/dbal` vào file `composer.json` của bạn và chạy lệnh `composer update` trong terminal để cài đặt thư viện:
+Để xóa một cột, hãy sử dụng phương thức `dropColumn` trong Schema builder. Trước khi xóa một cột ra khỏi cơ sở dữ liệu SQLite, bạn sẽ cần thêm library `doctrine/dbal` vào trong file `composer.json` của bạn và chạy lệnh `composer update` trong terminal để cài đặt thư viện:
 
     Schema::table('users', function (Blueprint $table) {
         $table->dropColumn('votes');
     });
 
-Bạn có thể xóa nhiều cột từ một bảng bằng cách truyền một mảng tên các cột vào phương thức `dropColumn`:
+Bạn có thể xóa nhiều cột từ một bảng bằng cách truyền một mảng gồm tên các cột vào trong phương thức `dropColumn`:
 
     Schema::table('users', function (Blueprint $table) {
         $table->dropColumn(['votes', 'avatar', 'location']);
@@ -362,7 +362,7 @@ Command  |  Description
 <a name="creating-indexes"></a>
 ### Tạo Index
 
-Schema builder có hỗ trợ một số loại cindex. Trước tiên, hãy xem một ví dụ khai báo giá trị của một cột phải là unique. Để tạo index, chúng ta có thể kết hợp thêm phương thức `unique` vào trong định nghĩa cột:
+Schema builder có hỗ trợ một số loại cindex. Trước tiên, hãy xem một ví dụ khai báo giá trị của một cột phải là unique. Để tạo một index, chúng ta có thể kết hợp thêm phương thức `unique` vào trong định nghĩa của cột:
 
     $table->string('email')->unique();
 
@@ -370,11 +370,11 @@ Ngoài ra, bạn có thể tạo index sau khi định nghĩa cột. Ví dụ:
 
     $table->unique('email');
 
-Bạn thậm chí có thể truyền một mảng các cột cho một phương thức index để tạo index gộp (hoặc index hỗn hợp):
+Bạn thậm chí có thể truyền một mảng gồm các cột cho một phương thức index để tạo index gộp (hoặc index hỗn hợp):
 
     $table->index(['account_id', 'created_at']);
 
-Laravel sẽ tự động tạo một tên index phù hợp, nhưng bạn có thể truyền tham số thứ hai cho phương thức để khai báo tên:
+Laravel sẽ tự động tạo một tên index phù hợp, nhưng bạn có thể truyền thêm tham số thứ hai cho phương thức để khai báo tên đó:
 
     $table->unique('email', 'unique_email');
 
@@ -390,7 +390,7 @@ Command  |  Description
 
 #### Index Lengths & MySQL / MariaDB
 
-Laravel sử dụng ký tự mặc định là `utf8mb4`, hỗ trợ lưu trữ cả "biểu tượng cảm xúc" trong cơ sở dữ liệu. Nếu bạn đang chạy phiên bản MySQL cũ hơn phiên bản 5.7.7 hoặc MariaDB cũ hơn phiên bản 10.2.2, bạn có thể cần phải tự cấu hình độ dài chuỗi mặc định được tạo bởi migration, để MySQL tạo index cho chúng. Bạn có thể cấu hình điều này bằng cách gọi phương thức `Schema::defaultStringLength` trong `AppServiceProvider` của bạn:
+Laravel sử dụng ký tự mặc định là `utf8mb4`, hỗ trợ lưu trữ cả "biểu tượng cảm xúc" trong cơ sở dữ liệu. Nếu bạn đang chạy phiên bản MySQL cũ hơn phiên bản 5.7.7 hoặc MariaDB cũ hơn phiên bản 10.2.2, bạn có thể cần phải tự cấu hình độ dài mặc định của chuỗi được tạo bởi migration, để MySQL tạo index cho chúng. Bạn có thể cấu hình điều này bằng cách gọi phương thức `Schema::defaultStringLength` trong `AppServiceProvider` của bạn:
 
     use Illuminate\Support\Facades\Schema;
 
@@ -404,12 +404,12 @@ Laravel sử dụng ký tự mặc định là `utf8mb4`, hỗ trợ lưu trữ 
         Schema::defaultStringLength(191);
     }
 
-Ngoài ra, bạn có thể kích hoạt tùy chọn `innodb_large_prefix` cho cơ sở dữ liệu của bạn. Tham khảo tài liệu của cơ sở dữ liệu của bạn để biết hướng dẫn về cách bật tùy chọn này.
+Ngoài ra, bạn có thể kích hoạt tùy chọn `innodb_large_prefix` cho cơ sở dữ liệu của bạn. Tham khảo tài liệu của cơ sở dữ liệu của bạn để biết thêm hướng dẫn về cách bật tùy chọn này.
 
 <a name="dropping-indexes"></a>
 ### Xoá Index
 
-Để xóa một index, bạn phải khai báo tên của index. Mặc định, Laravel tự động gán tên phù hợp cho các index. Chỉ cần nối tên bảng và tên cột index và loại index. Dưới đây là một số ví dụ:
+Để xóa một index, bạn có thể khai báo một tên index. Mặc định, Laravel sẽ tự động gán một tên phù hợp cho các index. Chỉ cần nối tên bảng và tên cột index và loại index. Dưới đây là một số ví dụ:
 
 Command  |  Description
 -------  |  -----------
@@ -418,7 +418,7 @@ Command  |  Description
 `$table->dropIndex('geo_state_index');`  |  Xoá một index từ bảng "geo" table.
 `$table->dropSpatialIndex('geo_location_spatialindex');`  |  Xoá một spatial index từ bảng "geo" (trừ SQLite).
 
-Nếu bạn truyền một mảng các cột vào một phương thức xoá index, thì quy ước tên index sẽ được tạo dựa trên tên bảng, tên cột và loại khóa:
+Nếu bạn truyền một mảng gồm các cột vào trong một phương thức xoá index, thì quy ước tên index sẽ được tạo dựa trên tên bảng, tên cột và loại khóa:
 
     Schema::table('geo', function (Blueprint $table) {
         $table->dropIndex(['state']); // Drops index 'geo_state_index'
@@ -427,7 +427,7 @@ Nếu bạn truyền một mảng các cột vào một phương thức xoá ind
 <a name="foreign-key-constraints"></a>
 ### Rằng buộc khoá ngoại
 
-Laravel cũng cung cấp hỗ trợ để tạo các ràng buộc khóa ngoại, được sử dụng để đảm bảo tính toàn vẹn ở mức cơ sở dữ liệu. Ví dụ: hãy định nghĩa một cột `user_id` trong bảng `posts` là khoá ngoại của cột `id` trong bảng` users`:
+Laravel cũng cung cấp hỗ trợ để tạo các ràng buộc khóa ngoại, được sử dụng để đảm bảo tính toàn vẹn cho cơ sở dữ liệu. Ví dụ: hãy định nghĩa một cột `user_id` trong bảng `posts` là khoá ngoại của cột `id` trong bảng` users`:
 
     Schema::table('posts', function (Blueprint $table) {
         $table->integer('user_id')->unsigned();
@@ -435,13 +435,13 @@ Laravel cũng cung cấp hỗ trợ để tạo các ràng buộc khóa ngoại,
         $table->foreign('user_id')->references('id')->on('users');
     });
 
-Bạn cũng có thể khai báo hành động mong muốn cho các thuộc tính của ràng buộc "khi xóa" và "khi cập nhật":
+Bạn cũng có thể khai báo hành động mong muốn cho các thuộc tính của ràng buộc "khi xóa" hoặc "khi cập nhật":
 
     $table->foreign('user_id')
           ->references('id')->on('users')
           ->onDelete('cascade');
 
-Để xoá khóa ngoại, bạn có thể sử dụng phương thức `dropForeign`. Các ràng buộc khóa ngoại sẽ được sử dụng quy ước đặt tên giống như các index. Vì vậy, chúng ta sẽ nối tên bảng và tên cột trong ràng buộc, sau đó thêm hậu tố "_foreign":
+Để xoá khóa ngoại, bạn có thể sử dụng phương thức `dropForeign`. Các ràng buộc khóa ngoại sẽ được sử dụng theo quy ước đặt tên giống với các index. Vì vậy, chúng ta sẽ nối tên bảng và tên cột trong ràng buộc, sau đó thêm hậu tố "_foreign":
 
     $table->dropForeign('posts_user_id_foreign');
 

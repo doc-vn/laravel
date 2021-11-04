@@ -14,7 +14,7 @@
 <a name="introduction"></a>
 ## Giới thiệu
 
-Laravel cung cấp nhiều công cụ hữu ích để giúp bạn dễ dàng test các cơ sở dữ liệu của bạn. Trước tiên, bạn có thể sử dụng helper `assertDatabaseHas` để yêu cầu những dữ liệu có trong cơ sở dữ liệu phải giống với một bộ tiêu chí nhất định. Ví dụ: nếu bạn muốn yêu cầu phải có một bản ghi trong bảng `users` với giá trị `email` là `sally@example.com`, bạn có thể làm như sau:
+Laravel cung cấp nhiều công cụ hữu ích để giúp bạn dễ dàng test các cơ sở dữ liệu của bạn. Trước tiên, bạn có thể sử dụng các helper `assertDatabaseHas` để yêu cầu những dữ liệu có trong cơ sở dữ liệu phải giống với một bộ tiêu chí nhất định. Ví dụ: nếu bạn muốn yêu cầu phải có một bản ghi trong bảng `users` với giá trị `email` là `sally@example.com`, bạn có thể làm như sau:
 
     public function testDatabase()
     {
@@ -25,7 +25,7 @@ Laravel cung cấp nhiều công cụ hữu ích để giúp bạn dễ dàng te
         ]);
     }
 
-Bạn cũng có thể sử dụng helper `assertDatabaseMissing` để yêu cầu rằng dữ liệu phải không được có trong cơ sở dữ liệu.
+Bạn cũng có thể sử dụng helper `assertDatabaseMissing` để yêu cầu dữ liệu phải không được có trong cơ sở dữ liệu.
 
 Tất nhiên, phương thức `assertDatabaseHas` và những phương thức helper khác giống như nó là để cho thuận tiện hơn. Bạn có thể tự do sử dụng bất kỳ phương thức kiểm tra nào của PHPUnit để bổ sung cho các bài test của bạn.
 
@@ -38,14 +38,14 @@ Tất nhiên, phương thức `assertDatabaseHas` và những phương thức he
 
 Factory mới sẽ được tạo trong thư mục `database/factories` của bạn.
 
-Tùy chọn `--model` có thể được sử dụng để khai báo tên của model sẽ được tạo bởi factory. Dựa theo tùy chọn này mà tên model sẽ được khai báo sẵn vào file factory được tạo:
+Tùy chọn `--model` có thể được sử dụng để khai báo tên của model sẽ được tạo ra bởi factory. Dựa theo tùy chọn này mà tên model sẽ được khai báo vào trong file factory được tạo:
 
     php artisan make:factory PostFactory --model=Post
 
 <a name="resetting-the-database-after-each-test"></a>
 ## Reset database sau mỗi lần test
 
-Việc reset lại cơ sở dữ liệu của bạn sau mỗi lần kiểm tra thường rất hữu ích để dữ liệu từ những lần kiểm tra trước sẽ không còn can thiệp được vào các lần kiểm tra tiếp theo. Trait `RefreshDatabase` là cách tiếp cận tối ưu nhất để migration cơ sở dữ liệu test của bạn, nó không phụ thuộc vào việc bạn đang sử dụng cơ sở dữ liệu trong bộ nhớ hay cơ sở dữ liệu truyền thống. Hãy dùng trait trong class test của bạn và mọi thứ sẽ được xử lý cho bạn:
+Việc reset lại cơ sở dữ liệu của bạn sau mỗi lần kiểm tra thường rất hữu ích để dữ liệu từ những lần kiểm tra trước sẽ không còn can thiệp được vào các lần kiểm tra sau. Trait `RefreshDatabase` là cách tiếp cận tối ưu nhất để migration cơ sở dữ liệu test cho bạn, nó không phụ thuộc vào việc bạn đang sử dụng cơ sở dữ liệu trong bộ nhớ hay cơ sở dữ liệu truyền thống. Hãy dùng trait trong class test của bạn và mọi thứ sẽ được xử lý cho bạn:
 
     <?php
 
@@ -75,7 +75,7 @@ Việc reset lại cơ sở dữ liệu của bạn sau mỗi lần kiểm tra t
 <a name="writing-factories"></a>
 ## Viết Factory
 
-Trước khi test, bạn có thể cần thêm một vài bản ghi vào cơ sở dữ liệu của bạn trước khi thực hiện kiểm tra. Thay vì khai báo thủ công các giá trị của từng cột khi bạn tạo dữ liệu test này, Laravel cho phép bạn định nghĩa một loạt các thuộc tính mặc định cho từng [Eloquent models](/docs/{{version}}/eloquent) bằng cách sử dụng các model factory. Để bắt đầu, hãy xem file `database/factories/UserFactory.php` trong ứng dụng của bạn. Mặc định, file này chứa một định nghĩa của factory:
+Trước khi test, bạn có thể cần thêm một vài bản ghi vào trong cơ sở dữ liệu của bạn trước khi thực hiện test. Thay vì khai báo thủ công các giá trị cho từng cột khi bạn tạo dữ liệu test này, Laravel cho phép bạn định nghĩa một loạt các thuộc tính mặc định cho từng [Eloquent models](/docs/{{version}}/eloquent) bằng cách sử dụng các model factory. Để bắt đầu, hãy xem file `database/factories/UserFactory.php` trong ứng dụng của bạn. Mặc định, file này chứa sẵn một định nghĩa của factory:
 
     use Faker\Generator as Faker;
 
@@ -88,7 +88,7 @@ Trước khi test, bạn có thể cần thêm một vài bản ghi vào cơ s�
         ];
     });
 
-Closure đóng vai trò là định nghĩa của factory, bạn có thể trả về các giá trị test mặc định của tất cả các thuộc tính trong model. Closure sẽ nhận vào một instance của thư viện [Faker] (https://github.com/fzaninotto/Faker) PHP, cho phép bạn dễ dàng tạo các loại dữ liệu ngẫu nhiên khác nhau để test.
+Closure đóng vai trò là định nghĩa của factory, bạn có thể trả về các giá trị test mặc định cho tất cả các thuộc tính trong model. Closure sẽ nhận vào một instance của thư viện [Faker](https://github.com/fzaninotto/Faker) PHP, cho phép bạn dễ dàng tạo các loại dữ liệu giả ngẫu nhiên khác nhau để test.
 
 Bạn cũng có thể tạo thêm các file factory cho từng model để tổ chức tốt hơn. Ví dụ: bạn có thể tạo các file `UserFactory.php` và `CommentFactory.php` trong thư mục `database/factories` của bạn. Tất cả các file trong thư mục `factories` sẽ tự động được load bởi Laravel.
 
@@ -115,7 +115,7 @@ Nếu state của bạn mà yêu cầu tính toán hoặc một instance `$faker
 <a name="creating-models"></a>
 ### Tạo Model
 
-Khi bạn đã định nghĩa các factory của bạn, bạn có thể sử dụng hàm global `factory` trong các bài test hoặc trong các file seed của bạn để tạo ra các instance model. Vì vậy, chúng ta hãy xem qua một vài ví dụ về việc tạo model. Đầu tiên, chúng ta sẽ sử dụng phương thức `make` để tạo các model nhưng không lưu chúng vào cơ sở dữ liệu:
+Khi bạn đã định nghĩa các factory của bạn, bạn có thể sử dụng hàm global `factory` trong các bài test hoặc trong các file seed của bạn để tạo ra các instance model. Bây giờ, chúng ta hãy xem qua một vài ví dụ về việc tạo model. Đầu tiên, chúng ta sẽ sử dụng phương thức `make` để tạo các model nhưng không lưu chúng vào cơ sở dữ liệu:
 
     public function testDatabase()
     {
@@ -124,7 +124,7 @@ Khi bạn đã định nghĩa các factory của bạn, bạn có thể sử d�
         // Use model in tests...
     }
 
-Bạn cũng có thể tạo một Collection chứa nhiều model hoặc tạo các model với một loại nhất định:
+Bạn cũng có thể tạo một Collection chứa nhiều model hoặc tạo nhiều model với một loại nhất định:
 
     // Create three App\User instances...
     $users = factory(App\User::class, 3)->make();
@@ -161,7 +161,7 @@ Phương thức `create` không chỉ tạo ra các instance model mà còn lưu
         // Use model in tests...
     }
 
-Bạn có thể ghi đè các thuộc tính trong model bằng cách truyền vào một mảng cho phương thức `create`:
+Bạn có thể ghi đè các thuộc tính trong model bằng cách truyền thêm một mảng cho phương thức `create`:
 
     $user = factory(App\User::class)->create([
         'name' => 'Abigail',

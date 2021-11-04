@@ -6,7 +6,7 @@
 <a name="introduction"></a>
 ## Giới thiệu
 
-Laravel chứa một loạt các hàm PHP global "helper". Nhiều trong số các hàm này được sử dụng bởi chính framework; tuy nhiên, bạn có thể thoải mái sử dụng chúng trong các application của bạn nếu bạn thấy chúng thuận tiện.
+Laravel chứa một loạt các hàm PHP global "helper". Nhiều trong số các hàm này được sử dụng bởi chính framework; tuy nhiên, bạn có thể thoải mái sử dụng chúng trong application của bạn nếu bạn thấy chúng tiện ích.
 
 <a name="available-methods"></a>
 ## Các phương thức có sẵn
@@ -202,7 +202,7 @@ Hàm `array_add` sẽ thêm một cặp key / giá trị đã cho vào một m�
 <a name="method-array-collapse"></a>
 #### `array_collapse()` {#collection-method}
 
-Hàm `array_collapse` sẽ thu gọn một mảng các mảng con thành một mảng duy nhất:
+Hàm `array_collapse` sẽ thu gọn một mảng gồm nhiều mảng con thành một mảng duy nhất:
 
     $array = array_collapse([[1, 2, 3], [4, 5, 6], [7, 8, 9]]);
 
@@ -211,7 +211,7 @@ Hàm `array_collapse` sẽ thu gọn một mảng các mảng con thành một m
 <a name="method-array-divide"></a>
 #### `array_divide()` {#collection-method}
 
-Hàm `array_divide` trả về hai mảng, một mảng chứa các key và cái còn lại chứa các giá trị của mảng đã cho:
+Hàm `array_divide` trả về hai mảng, một mảng chứa các key và một mảng chứa các giá trị của mảng đã cho:
 
     list($keys, $values) = array_divide(['name' => 'Desk']);
 
@@ -222,7 +222,7 @@ Hàm `array_divide` trả về hai mảng, một mảng chứa các key và cái
 <a name="method-array-dot"></a>
 #### `array_dot()` {#collection-method}
 
-Hàm `array_dot` sẽ làm ngang hàng một mảng nhiều chiều thành một mảng đơn cấp sử dụng ký hiệu "dot" để biểu thị độ sâu:
+Hàm `array_dot` sẽ làm ngang hàng một mảng nhiều chiều thành một mảng một chiều sử dụng ký hiệu "dot" để biểu thị độ sâu:
 
     $array = ['products' => ['desk' => ['price' => 100]]];
 
@@ -261,7 +261,7 @@ Một giá trị mặc định cũng có thể được truyền làm tham số 
 <a name="method-array-flatten"></a>
 #### `array_flatten()` {#collection-method}
 
-Hàm `array_flatten` làm ngang hàng một mảng nhiều chiều thành một mảng đơn cấp:
+Hàm `array_flatten` làm ngang hàng một mảng nhiều chiều thành một mảng một chiều:
 
     $array = ['name' => 'Joe', 'languages' => ['PHP', 'Ruby']];
 

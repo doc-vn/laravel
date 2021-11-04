@@ -42,18 +42,18 @@
 <a name="introduction"></a>
 ## Giới thiệu
 
-Ngoài việc hỗ trợ [gửi email](/docs/{{version}}/mail), Laravel cũng hỗ trợ để gửi các notification qua nhiều channel khác nhau, như mail, SMS (qua [Nexmo](https://www.nexmo.com/)) và [Slack](https://slack.com). Notification cũng có thể được lưu trữ trong cơ sở dữ liệu để có thể được hiển thị trong giao diện web của bạn.
+Ngoài việc hỗ trợ [gửi email](/docs/{{version}}/mail), Laravel cũng hỗ trợ để gửi các notification qua nhiều channel khác nhau, như mail, SMS (qua [Nexmo](https://www.nexmo.com/)) và [Slack](https://slack.com). Notification cũng có thể được lưu trữ vào trong cơ sở dữ liệu của bạn để có thể được hiển thị trong giao diện của người dùng.
 
-Thông thường, notification phải ngắn gọn, nội dung của message phải notification cho người dùng biết về điều gì đó đã xảy ra trong application của bạn. Ví dụ: nếu bạn đang viết một application thanh toán, bạn có thể gửi notification "Thanh toán hóa đơn" cho người dùng của bạn biết thông qua các channel email và SMS.
+Thông thường, notification phải ngắn gọn, nội dung của message phải thông báo cho người dùng biết về điều gì đó đã xảy ra trong application của bạn. Ví dụ: nếu bạn đang viết một application thanh toán, bạn có thể gửi một notification "Thanh toán hóa đơn" cho người dùng của bạn thông qua các channel email và SMS.
 
 <a name="creating-notifications"></a>
 ## Tạo Notification
 
-Trong Laravel, mỗi notification được đại diện bởi một class duy nhất (thường được lưu trữ trong thư mục `app/Notifications`). Đừng lo lắng nếu bạn không thấy thư mục này trong application của bạn, vì nó sẽ được tạo cho bạn khi bạn chạy lệnh Artisan `make:notification`:
+Trong Laravel, các notification được đại diện bởi duy nhất một class (thường được lưu trong thư mục `app/Notifications`). Bạn đừng lo lắng nếu bạn không thấy thư mục đó trong application của bạn, vì nó sẽ được tạo khi bạn chạy lệnh Artisan `make:notification`:
 
     php artisan make:notification InvoicePaid
 
-Lệnh này sẽ lưu một class notification mới vào trong thư mục `app/Notifications` của bạn. Mỗi class notification chứa một phương thức `via` và một số phương thức xây dựng message khác nhau (chẳng hạn như `toMail` hoặc `toDatabase`) để chuyển đổi notification thành một message được tối ưu hóa cho một channel cụ thể nào đó.
+Lệnh này sẽ tạo một class notification mới vào trong thư mục `app/Notifications` của bạn. Mỗi class notification chứa một phương thức `via` và một số phương thức xây dựng message khác (chẳng hạn như `toMail` hoặc `toDatabase`) để chuyển đổi notification thành một message được tối ưu hóa cho một channel cụ thể.
 
 <a name="sending-notifications"></a>
 ## Gửi Notification
@@ -61,7 +61,7 @@ Lệnh này sẽ lưu một class notification mới vào trong thư mục `app/
 <a name="using-the-notifiable-trait"></a>
 ### Dùng Notifiable Trait
 
-Notification có thể được gửi theo hai cách: cách một là sử dụng phương thức `notify` của trait `Notifiable` hoặc cách hai là sử dụng [facade](/docs/{{version}}/facades) `Notification`. Đầu tiên, hãy xem cách sử dụng trait:
+Notification có thể được gửi theo hai cách: cách một là sử dụng phương thức `notify` trong trait `Notifiable` hoặc cách hai là sử dụng [facade](/docs/{{version}}/facades) `Notification`. Đầu tiên, hãy xem cách sử dụng trait:
 
     <?php
 
@@ -81,23 +81,23 @@ Trait này được sử dụng mặc định bởi model `App\User` và chứa 
 
     $user->notify(new InvoicePaid($invoice));
 
-> {tip} Hãy nhớ rằng, bạn có thể sử dụng trait `Illuminate\Notifications\Notifiable` trên bất kỳ model nào khác của bạn. Bạn không bị giới hạn chỉ dùng nó trên model `User` của bạn.
+> {tip} Hãy nhớ rằng, bạn có thể sử dụng trait `Illuminate\Notifications\Notifiable` trên bất kỳ model nào mà bạn muốn. Bạn không bị giới hạn dùng nó trên model `User` của bạn.
 
 <a name="using-the-notification-facade"></a>
 ### Dùng Notification Facade
 
-Ngoài ra, bạn có thể gửi notification thông qua [facade](/docs/{{version}}/facades) `Notification`. Điều này chủ yếu hữu ích khi bạn cần gửi notification cho nhiều thực thể notifiable, chẳng hạn như một collection user. Để gửi notification bằng facade, hãy truyền tất cả các thực thể notifiable và instance notification sang phương thức `send`:
+Ngoài ra, bạn có thể gửi notification thông qua [facade](/docs/{{version}}/facades) `Notification`. Điều này sẽ hữu ích khi bạn cần gửi notification cho nhiều thực thể notifiable, chẳng hạn như một collection user. Để gửi notification bằng facade, hãy truyền tất cả các thực thể notifiable và instance notification sang phương thức `send`:
 
     Notification::send($users, new InvoicePaid($invoice));
 
 <a name="specifying-delivery-channels"></a>
 ### Chỉ định Channel sẽ được gửi
 
-Mỗi class notification có một phương thức `via` xác định channel nào notification sẽ được gửi. Mặc định, các notification có thể được gửi trên các channel `mail`, `database`, `broadcast`, `nexmo`, và `slack`.
+Mỗi class notification có một phương thức `via` định nghĩa channel nào của notification sẽ được gửi. Mặc định, các notification có thể được gửi trên các channel `mail`, `database`, `broadcast`, `nexmo`, và `slack`.
 
-> {tip} Nếu bạn muốn sử dụng các channel phân phối khác như Telegram hoặc Pusher, hãy xem drive do cộng đồng phát triển [Laravel Notification Channels website](http://laravel-notification-channels.com).
+> {tip} Nếu bạn muốn sử dụng các channel khác như Telegram hoặc Pusher, hãy xem drive do cộng đồng phát triển [Laravel Notification Channels website](http://laravel-notification-channels.com).
 
-Phương thức `via` nhận vào một instance `$notifiable`, đây sẽ là một instance của class mà notification sẽ được gửi đến. Bạn có thể sử dụng `$notifiable` để xác định channel nào sẽ được gửi notification:
+Phương thức `via` nhận vào một instance `$notifiable`, đây sẽ là một instance của class mà notification sẽ gửi đến. Bạn có thể sử dụng `$notifiable` để xác định channel nào sẽ gửi notification:
 
     /**
      * Get the notification's delivery channels.
@@ -113,9 +113,9 @@ Phương thức `via` nhận vào một instance `$notifiable`, đây sẽ là m
 <a name="queueing-notifications"></a>
 ### Queue Notification
 
-> {note} Trước khi queue notification, bạn nên cấu hình queue của bạn và [start một worker](/docs/{{version}}/queues).
+> {note} Trước khi queue notification, bạn nên cấu hình queue và [chạy một worker](/docs/{{version}}/queues).
 
-Gửi notification có thể mất nhiều thời gian, đặc biệt nếu channel cần call API bên ngoài để gửi notification. Để tăng tốc thời gian phản hồi của application, hãy để notification của bạn được queue bằng cách thêm interface `ShouldQueue` và trait `Queueable` vào class của bạn. Interface và trait sẽ được import cho tất cả các notification được tạo ra bằng cách sử dụng `make:notification`, vì vậy bạn có thể ngay lập tức thêm chúng vào class notification của bạn:
+Gửi notification có thể mất nhiều thời gian, đặc biệt nếu channel cần gọi API bên ngoài để gửi notification. Để tăng tốc độ thời gian phản hồi của application, hãy queue notification của bạn bằng cách thêm interface `ShouldQueue` và trait `Queueable` vào class của bạn. Interface và trait này sẽ mặc định được import cho các notification được tạo ra bằng lệnh `make:notification`, vì vậy bạn có thể ngay lập tức thêm chúng vào trong class notification của bạn:
 
     <?php
 
@@ -132,7 +132,7 @@ Gửi notification có thể mất nhiều thời gian, đặc biệt nếu chan
         // ...
     }
 
-Khi interface `ShouldQueue` đã được thêm vào notification của bạn, bạn có thể gửi notification như bình thường. Laravel sẽ phát hiện interface `ShouldQueue` trên class notification đó và tự động queue việc gửi notification:
+Khi interface `ShouldQueue` đã được thêm vào, bạn có thể gửi notification như bình thường. Laravel sẽ phát hiện interface `ShouldQueue` này và tự động queue việc gửi notification:
 
     $user->notify(new InvoicePaid($invoice));
 
@@ -145,7 +145,7 @@ Nếu bạn muốn delay việc gửi notification, bạn có thể kết hợp 
 <a name="on-demand-notifications"></a>
 ### On-Demand Notifications
 
-Thỉnh thoảng bạn có thể cần gửi notification cho người mà chưa được lưu trữ dưới dạng một "user" trong application của bạn. Sử dụng phương thức `Notification::route`, bạn có thể chỉ định thông tin ad-hoc notification routing trước khi gửi notification:
+Thỉnh thoảng bạn có thể cần gửi notification cho người mà chưa được lưu trong cơ sở dữ liệu dưới dạng một "user". Sử dụng phương thức `Notification::route`, bạn có thể chỉ định thông tin ad-hoc notification routing trước khi gửi notification:
 
     Notification::route('mail', 'taylor@laravel.com')
                 ->route('nexmo', '5555555555')
@@ -157,7 +157,7 @@ Thỉnh thoảng bạn có thể cần gửi notification cho người mà chưa
 <a name="formatting-mail-messages"></a>
 ### Formatting Mail Messages
 
-Nếu một notification hỗ trợ gửi dưới dạng email, bạn nên định nghĩa một phương thức `toMail` trong class notification. Phương thức này sẽ nhận vào một thực thể `$notifiable` và sẽ trả về một instance `Illuminate\Notifications\Messages\MailMessage`.  Mail message có thể chứa các dòng text cũng như "call to action". Chúng ta hãy xem một ví dụ về phương thức `toMail`:
+Nếu một notification hỗ trợ gửi dưới dạng email, bạn nên định nghĩa một phương thức `toMail` trong class notification. Phương thức này sẽ nhận vào một thực thể `$notifiable` và sẽ trả về một instance `Illuminate\Notifications\Messages\MailMessage`.  Mail message có thể chứa các dòng text cũng như các "call to action". Chúng ta hãy xem một ví dụ về phương thức `toMail`:
 
     /**
      * Get the mail representation of the notification.
@@ -176,17 +176,17 @@ Nếu một notification hỗ trợ gửi dưới dạng email, bạn nên đị
                     ->line('Thank you for using our application!');
     }
 
-> {tip} Lưu ý rằng chúng ta đang sử dụng `$this->invoice->id` trong phương thức `toMail` của chúng ta. Bạn có thể truyền bất kỳ dữ liệu nào mà notification của bạn cần để tạo message cho nó bằng hàm khởi tạo của notification.
+> {tip} Lưu ý rằng chúng ta đang sử dụng `$this->invoice->id` trong phương thức `toMail`. Bạn có thể truyền bất kỳ dữ liệu nào mà notification của bạn cần để tạo message cho nó bằng hàm khởi tạo của notification.
 
-Trong ví dụ này, chúng ta đăng ký một lời chào, một dòng text, một call to action và sau đó là một dòng text khác. Các phương thức được cung cấp bởi đối tượng `MailMessage` giúp việc định dạng các email giao dịch nhỏ trở nên dễ dàng và đơn giản hơn. Sau đó, mail channel sẽ dịch các thành phần của message thành một template email HTML đẹp, phản hồi nhanh với một bản sao text đơn giản. Đây là một ví dụ về một email được tạo bởi channel `mail`:
+Trong ví dụ này, chúng ta đã đăng ký một lời chào, một dòng text, một call to action và sau đó là một dòng text khác. Các phương thức này được cung cấp bởi đối tượng `MailMessage` giúp cho việc định dạng các email giao dịch nhỏ trở nên dễ dàng và đơn giản hơn. Sau đó, mail channel sẽ dịch các thành phần của message này thành một template email HTML đẹp có phản hồi nhanh với một bản sao text đơn giản. Đây là một ví dụ mẫu về email được tạo bởi channel `mail`:
 
 <img src="https://laravel.com/assets/img/notification-example.png" width="551" height="596">
 
-> {tip} Khi gửi mail notification, hãy đảm bảo bạn đã set giá trị `name` trong file cấu hình `config/app.php` của bạn. Giá trị này sẽ được sử dụng trong phần header và footer của message mail notification của bạn.
+> {tip} Khi gửi mail notification, hãy đảm bảo là bạn đã set giá trị `name` trong file cấu hình `config/app.php` của bạn. Giá trị này sẽ được sử dụng trong phần header và footer của message mail notification của bạn.
 
 #### Other Notification Formatting Options
 
-Thay vì định nghĩa "dòng" text trong class notification, bạn có thể sử dụng phương thức `view` để khai báo một template tùy biến được sử dụng, để hiển thị email notification:
+Thay vì định nghĩa "dòng" text trong class notification, bạn có thể sử dụng phương thức `view` để khai báo một template tùy biến để hiển thị email notification:
 
     /**
      * Get the mail representation of the notification.
@@ -219,7 +219,7 @@ Ngoài ra, bạn có thể trả về một [đối tượng mailable](/docs/{{v
 <a name="error-messages"></a>
 #### Error Messages
 
-Một số notification thông báo cho người dùng về các lỗi, chẳng hạn như thanh toán hóa đơn không thành công. Bạn có thể tạo một mail message liên quan đến lỗi đó bằng cách gọi phương thức `error` khi xây dựng message của bạn. Khi sử dụng phương thức `error` trên mail message, button call to action sẽ có màu đỏ thay vì màu xanh nước biển:
+Một số notification thông báo cho người dùng về các lỗi, chẳng hạn như thanh toán hóa đơn không thành công. Bạn có thể tạo một mail message liên quan đến lỗi đó bằng cách gọi phương thức `error` khi xây dựng message của bạn. Khi sử dụng phương thức `error` trên mail message, button call to action sẽ có màu đỏ thay vì màu xanh nước biển như thường lệ:
 
     /**
      * Get the mail representation of the notification.
@@ -238,7 +238,7 @@ Một số notification thông báo cho người dùng về các lỗi, chẳng 
 <a name="customizing-the-recipient"></a>
 ### Tuỳ biến người nhận
 
-Khi gửi notifications qua channel `mail`, hệ thống notification sẽ tự động tìm kiếm thuộc tính `email` trong thực thể notifiable của bạn. Bạn có thể tùy chỉnh địa chỉ email nào được sử dụng để gửi notification bằng cách định nghĩa phương thức `routeNotificationForMail` trên thực thể:
+Khi gửi notifications qua channel `mail`, hệ thống notification sẽ tự động tìm kiếm thuộc tính `email` trong thực thể notifiable của bạn. Bạn có thể tùy biến địa chỉ email nào sẽ được sử dụng để gửi notification bằng cách định nghĩa phương thức `routeNotificationForMail` trên thực thể đó:
 
     <?php
 
@@ -265,7 +265,7 @@ Khi gửi notifications qua channel `mail`, hệ thống notification sẽ tự 
 <a name="customizing-the-subject"></a>
 ### Tuỳ biến chủ đề
 
-Mặc định, chủ đề của email là tên class của notification được định dạng theo dạng "title case". Vì vậy, nếu class notification của bạn được đặt tên là `InvoicePaid`, chủ đề của email sẽ là `Invoice Paid`. Nếu bạn muốn chỉ định một chủ đề rõ ràng hơn cho message, bạn có thể gọi phương thức `subject` khi xây dựng message của bạn:
+Mặc định, chủ đề của email là tên class của notification được định dạng theo dạng "title case". Vì vậy, nếu class notification của bạn được đặt tên là `InvoicePaid`, thì chủ đề của email sẽ là `Invoice Paid`. Nếu bạn muốn chỉ định một chủ đề rõ ràng hơn cho message, bạn có thể gọi phương thức `subject` khi xây dựng message của bạn:
 
     /**
      * Get the mail representation of the notification.
@@ -283,23 +283,23 @@ Mặc định, chủ đề của email là tên class của notification đượ
 <a name="customizing-the-templates"></a>
 ### Tuỳ biến template
 
-Bạn có thể sửa HTML và template được sử dụng bởi mail notification bằng cách export resources của package notification. Sau khi chạy lệnh này, các template mail notification sẽ được lưu vào trong thư mục `resources/views/vendor/notifications`:
+Bạn có thể sửa HTML và template được sử dụng bởi mail notification bằng cách export resources của package notification. Sau khi chạy lệnh này, các template mail notification sẽ được lưu ở trong thư mục `resources/views/vendor/notifications`:
 
     php artisan vendor:publish --tag=laravel-notifications
 
 <a name="markdown-mail-notifications"></a>
 ## Markdown Mail Notification
 
-Markdown mail notification cho phép bạn tận dụng các template mail notification được xây dựng sẵn, đồng thời cho bạn tự do hơn để viết các tùy biến message dài hơn. Vì các message được viết bằng Markdown, nên Laravel có thể hiển thị các template HTML đẹp, đáp ứng cho các message, đồng thời tự động tạo một bản sao text đơn giản.
+Markdown mail notification cho phép bạn tận dụng các template mail notification được xây dựng sẵn, đồng thời cho bạn tự do hơn để viết các tùy biến message dài hơn. Vì các message được viết bằng Markdown, nên Laravel có thể hiển thị các template HTML đẹp đáp ứng cho các message, đồng thời tự động tạo một bản sao text đơn giản.
 
 <a name="generating-the-message"></a>
 ### Tạo Message
 
-Để tạo một notification với template Markdown, bạn có thể sử dụng tùy chọn `--markdown` trong lệnh Artisan `make:notification`:
+Để tạo một notification với một template Markdown, bạn có thể sử dụng tùy chọn `--markdown` trong lệnh Artisan `make:notification`:
 
     php artisan make:notification InvoicePaid --markdown=mail.invoice.paid
 
-Giống như tất cả các mail notification khác, các notification sử dụng các template Markdown sẽ định nghĩa một phương thức `toMail` trong class notification của chúng. Tuy nhiên, thay vì sử dụng các phương thức `line` và `action` để khởi tạo notification, hãy sử dụng phương thức `markdown` để khai báo tên của template Markdown được sử dụng:
+Giống như tất cả các mail notification khác, các notification sử dụng bởi các template Markdown sẽ định nghĩa một phương thức `toMail` trong class notification của chúng. Tuy nhiên, thay vì sử dụng các phương thức `line` và `action` để khởi tạo cho notification, hãy sử dụng phương thức `markdown` để khai báo tên của template Markdown được sử dụng:
 
     /**
      * Get the mail representation of the notification.
@@ -319,7 +319,7 @@ Giống như tất cả các mail notification khác, các notification sử d�
 <a name="writing-the-message"></a>
 ### Viết Message
 
-Markdown mail notification sử dụng kết hợp giữa các component Blade và cú pháp Markdown cho phép bạn dễ dàng khởi tạo notification trong khi tận dụng các component notification được tạo sẵn của Laravel:
+Markdown mail notification sử dụng kết hợp giữa các component Blade và cú pháp Markdown cho phép bạn dễ dàng khởi tạo notification trong khi vẫn tận dụng được các component notification được tạo sẵn của Laravel:
 
     @component('mail::message')
     # Invoice Paid
@@ -336,7 +336,7 @@ Markdown mail notification sử dụng kết hợp giữa các component Blade v
 
 #### Button Component
 
-Component button sẽ tạo một button link được đặt ở chính giữa trang. Component này chấp nhận hai tham số, một là `url` và một tùy chọn `color`. Các màu được hỗ trợ là `blue`, `green` và `red`. Bạn có thể thêm các button component vào một notification nếu muốn:
+Component button sẽ tạo một button được đặt ở chính giữa của trang. Component này chấp nhận hai tham số, một là `url` và một là tùy chọn `color`. Các màu được hỗ trợ là `blue`, `green` và `red`. Bạn có thể thêm các button component vào một notification nếu muốn:
 
     @component('mail::button', ['url' => $url, 'color' => 'green'])
     View Invoice
@@ -364,15 +364,15 @@ Component table cho phép bạn chuyển đổi một bảng Markdown thành m�
 <a name="customizing-the-components"></a>
 ### Tuỳ biến The Compoents
 
-Bạn có thể export tất cả các component Markdown mail sang một thư mục riêng của bạn để tùy chỉnh. Để export các component, sử dụng lệnh Artisan `vendor:publish` để export thẻ nội dung `laravel-mail`:
+Bạn có thể export tất cả các component Markdown mail sang một thư mục riêng của bạn để tùy chỉnh. Để export các component này, hãy sử dụng lệnh Artisan `vendor:publish` để export với nội dung tag `laravel-mail`:
 
     php artisan vendor:publish --tag=laravel-mail
 
-Lệnh này sẽ export các component Markdown mail sang thư mục `resources/views/vendor/mail`. Thư mục `mail` sẽ chứa một thư mục `html` và `markdown`, mỗi thư mục chứa các hiển thị tương ứng cho mỗi component có sẵn. Các component trong thư mục `html` được sử dụng để tạo phiên bản HTML cho email của bạn và các bản sao của chúng trong thư mục `markdown` được sử dụng để tạo phiên bản text thuần túy. Bạn có thể tự do tùy chỉnh các component này theo cách bạn muốn.
+Lệnh này sẽ export các component Markdown mail sang thư mục `resources/views/vendor/mail`. Thư mục `mail` sẽ chứa một thư mục là `html` và một thư mục là `markdown`, mỗi thư mục chứa các hiển thị tương ứng cho mỗi component có sẵn. Các component trong thư mục `html` được sử dụng để tạo phiên bản HTML cho email và các bản sao của chúng còn trong thư mục `markdown` được sử dụng để tạo các phiên bản text thuần túy. Bạn có thể tự do tùy chỉnh các component này theo cách mà bạn muốn.
 
 #### Customizing The CSS
 
-Sau khi export các component, thư mục `resources/views/vendor/mail/html/themes` sẽ chứa file `default.css`. Bạn có thể tùy chỉnh CSS trong file này và các tuỳ chỉnh của bạn sẽ tự động được nhúng vào trong các hiển thị HTML của Markdown notification của bạn.
+Sau khi export các component, thư mục `resources/views/vendor/mail/html/themes` sẽ chứa một file `default.css`. Bạn có thể tùy chỉnh CSS trong file này và các tuỳ chỉnh của bạn sẽ tự động được nhúng vào trong các hiển thị HTML của Markdown notification của bạn.
 
 > {tip} Nếu bạn muốn xây dựng một theme hoàn toàn mới cho các component Markdown, hãy viết một file CSS mới trong thư mục `html/themes` và thay đổi tùy chọn `theme` trong file cấu hình `mail` của bạn.
 
@@ -382,9 +382,9 @@ Sau khi export các component, thư mục `resources/views/vendor/mail/html/them
 <a name="database-prerequisites"></a>
 ### Yêu cầu
 
-Channel notification `database` lưu trữ thông tin notification trong bảng cơ sở dữ liệu. Bảng này sẽ chứa thông tin như loại notification cũng như dữ liệu JSON mô tả notification.
+Channel notification `database` sẽ lưu trữ thông tin notification vào trong bảng của cơ sở dữ liệu. Bảng này sẽ chứa thông tin như loại notification cũng như dữ liệu JSON mô tả của notification đó.
 
-Bạn có thể truy vấn bảng để hiển thị các notification trong giao diện người dùng của application. Nhưng, trước khi bạn có thể làm điều đó, bạn sẽ cần tạo một bảng cơ sở dữ liệu để giữ các notification của bạn. Bạn có thể sử dụng lệnh `notifications:table` để tạo một migration với table schema thích hợp:
+Bạn có thể truy vấn vào bảng để hiển thị các notification trong giao diện người dùng của application. Nhưng, trước khi bạn có thể làm điều đó, bạn sẽ cần phải tạo một bảng để lưu các notification của bạn. Bạn có thể sử dụng lệnh `notifications:table` để tạo một migration với một table schema thích hợp:
 
     php artisan notifications:table
 
@@ -393,7 +393,7 @@ Bạn có thể truy vấn bảng để hiển thị các notification trong gia
 <a name="formatting-database-notifications"></a>
 ### Formatting Database Notifications
 
-Nếu một notification hỗ trợ lưu trữ trong bảng cơ sở dữ liệu, bạn nên định nghĩa một phương thức `toDatabase` hoặc `toArray` trong class notification. Phương thức này sẽ nhận vào một thực thể `$notifiable` và sẽ trả về một mảng PHP. Mảng được trả về sẽ được mã hóa dưới dạng JSON và được lưu trữ vào trong cột `data` trong bảng `notifications` của bạn. Chúng ta hãy xem một ví dụ về phương thức `toArray`:
+Nếu một notification hỗ trợ lưu trữ trong bảng cơ sở dữ liệu, thì bạn nên định nghĩa một phương thức `toDatabase` hoặc `toArray` trong class notification. Phương thức này sẽ nhận vào một thực thể `$notifiable` và sẽ trả về một mảng PHP. Mảng được trả về sẽ được mã hóa dưới dạng JSON và được lưu trữ vào trong cột `data` trong bảng `notifications`. Bạn hãy xem một ví dụ về phương thức `toArray`:
 
     /**
      * Get the array representation of the notification.
@@ -411,12 +411,12 @@ Nếu một notification hỗ trợ lưu trữ trong bảng cơ sở dữ liệu
 
 #### `toDatabase` và `toArray`
 
-Phương thức `toArray` cũng được sử dụng bởi channel `broadcast` để xác định xem dữ liệu nào sẽ phát đến JavaScript client của bạn. Như nếu bạn muốn biểu thị hai mảng khác nhau cho các channel `database` và `broadcast`, bạn nên định nghĩa phương thức `toDatabase` thay vì phương thức `toArray`.
+Phương thức `toArray` cũng được sử dụng bởi channel `broadcast` để xác định xem dữ liệu nào sẽ phát đến JavaScript client. Nhưng nếu bạn muốn biểu thị hai mảng khác nhau cho hai channel `database` và `broadcast` khác nhau, thì bạn nên định nghĩa bằng phương thức `toDatabase` thay vì phương thức `toArray`.
 
 <a name="accessing-the-notifications"></a>
 ### Truy cập Notifications
 
-Khi notification đã được lưu trữ trong cơ sở dữ liệu, bạn cần một cách thuận tiện để truy cập vào chúng từ các thực thể notifiable của bạn. Trait `Illuminate\Notifications\Notifiable`, được chứa trong model `App\User` mặc định của Laravel, có chứa một quan hệ Eloquent là `notifications` sẽ trả về các notification cho thực thể. Để lấy notification, bạn có thể truy cập phương thức này giống như bất kỳ quan hệ Eloquent nào khác. Mặc định, các notification sẽ được sắp xếp theo timestamp `created_at`:
+Khi notification đã được lưu vào trong cơ sở dữ liệu, bạn cần một cách để truy cập vào các notification từ các thực thể notifiable của bạn. Mặc định trait `Illuminate\Notifications\Notifiable` đã được khai báo trong model `App\User` mặc định đi kèm với Laravel, nó có chứa một quan hệ Eloquent là `notifications` sẽ trả về các notification cho các thực thể. Để lấy notification, bạn có thể truy cập phương thức này giống như bất kỳ phương thức quan hệ Eloquent nào khác. Mặc định, các notification sẽ được sắp xếp theo thời gian timestamp `created_at`:
 
     $user = App\User::find(1);
 
@@ -424,7 +424,7 @@ Khi notification đã được lưu trữ trong cơ sở dữ liệu, bạn cầ
         echo $notification->type;
     }
 
-Nếu bạn chỉ muốn lấy các notification "chưa đọc", bạn có thể sử dụng quan hệ `unreadNotifications`. Một lần nữa, các notification này sẽ được sắp xếp theo timestamp `created_at`:
+Nếu bạn chỉ muốn lấy các notification "chưa đọc", bạn có thể sử dụng quan hệ `unreadNotifications`. Một lần nữa, các notification này sẽ được sắp xếp theo thời gian timestamp `created_at`:
 
     $user = App\User::find(1);
 
@@ -432,12 +432,12 @@ Nếu bạn chỉ muốn lấy các notification "chưa đọc", bạn có thể
         echo $notification->type;
     }
 
-> {tip} Để truy cập notification của bạn từ JavaScript client, bạn nên định nghĩa một notification controller cho application của bạn để trả về notification cho một thực thể notifiable, chẳng hạn như người dùng hiện tại. Sau đó, bạn có thể tạo một HTTP request đến URI của controller đó từ JavaScript client của bạn.
+> {tip} Để truy cập vào notification của bạn từ JavaScript client, bạn nên định nghĩa một notification controller riêng cho application của bạn để trả về notification cho một thực thể notifiable, chẳng hạn như người dùng hiện tại. Sau đó, bạn hãy tạo một HTTP request đến URI của controller đó từ JavaScript client của bạn.
 
 <a name="marking-notifications-as-read"></a>
 ### Đánh dấu đã đọc cho Notification
 
-Thông thường, bạn sẽ muốn đánh dấu một notification là "đã đọc" khi người dùng đã xem nó. Trait `Illuminate\Notifications\Notifiable` sẽ cung cấp phương thức `markAsRead`, sẽ cập nhật cột `read_at` trong record database của notification:
+Thông thường, bạn sẽ muốn đánh dấu một notification là "đã đọc" khi người dùng đã xem nó. Trait `Illuminate\Notifications\Notifiable` cũng sẽ cung cấp một phương thức `markAsRead` để cập nhật cột `read_at` trong record database của notification đó:
 
     $user = App\User::find(1);
 
@@ -445,17 +445,17 @@ Thông thường, bạn sẽ muốn đánh dấu một notification là "đã đ
         $notification->markAsRead();
     }
 
-Tuy nhiên, thay vì lặp qua từng notification, bạn có thể sử dụng phương thức `markAsRead` trực tiếp trên collection của notification:
+Tuy nhiên, thay vì lặp từng notification, bạn có thể sử dụng phương thức `markAsRead` trực tiếp trên một collection của notification:
 
     $user->unreadNotifications->markAsRead();
 
-Bạn cũng có thể sử dụng truy vấn cập nhật hàng loạt để đánh dấu tất cả các notification là đã đọc mà không lấy chúng ra cơ sở dữ liệu:
+Bạn cũng có thể sử dụng cập nhật hàng loạt để đánh dấu tất cả các notification là đã đọc mà không cần phải lấy chúng ra khỏi cơ sở dữ liệu:
 
     $user = App\User::find(1);
 
     $user->unreadNotifications()->update(['read_at' => now()]);
 
-Tất nhiên, bạn cũng có thể 'xóa' các notification, để xóa chúng khỏi bảng bạn có thể làm như sau:
+Tất nhiên, bạn cũng có thể 'xóa' các notification này, để xóa chúng ra khỏi bảng bạn có thể làm như sau:
 
     $user->notifications()->delete();
 
@@ -465,12 +465,12 @@ Tất nhiên, bạn cũng có thể 'xóa' các notification, để xóa chúng 
 <a name="broadcast-prerequisites"></a>
 ### Yêu cầu
 
-Trước khi broadcasting notification, bạn nên cấu hình và làm quen với các service [event broadcasting](/docs/{{version}}/broadcasting) của Laravel. Event broadcasting cung cấp một cách để phản ứng với các event Laravel do phía server tạo ra, từ JavaScript client của bạn.
+Trước khi broadcasting notification, bạn nên cấu hình và làm quen với các service [event broadcasting](/docs/{{version}}/broadcasting) của Laravel. Event broadcasting cung cấp một cách phù hợp để tương tác với các event Laravel do phía server tạo ra, từ JavaScript client của bạn.
 
 <a name="formatting-broadcast-notifications"></a>
 ### Formatting Broadcast Notifications
 
-Channel `broadcast` của broadcasts notification sẽ dùng các service [event broadcasting](/docs/{{version}}/broadcasting) của Laravel, cho phép JavaScript client của bạn nhận được notification theo thời gian thực. Nếu một notification hỗ trợ broadcasting, bạn nên định nghĩa phương thức `toBroadcast` trên class notification. Phương thức này sẽ nhận vào một thực thể `$notifiable` và sẽ trả về một instance `BroadcastMessage`. Dữ liệu được trả về sẽ được mã hóa dưới dạng JSON và phát đến JavaScript client của bạn. Chúng ta hãy xem một ví dụ về phương thức `toBroadcast`:
+Channel `broadcast` của broadcasts notification sẽ dùng các service [event broadcasting](/docs/{{version}}/broadcasting) của Laravel, cho phép JavaScript client của bạn nhận được các notification theo thời gian thực. Nếu một notification hỗ trợ broadcasting, bạn nên định nghĩa phương thức `toBroadcast` trên class notification. Phương thức này sẽ nhận vào một thực thể `$notifiable` và sẽ trả về một instance `BroadcastMessage`. Dữ liệu được trả về sẽ được mã hóa dưới dạng JSON và broadcast đến JavaScript client của bạn. Chúng ta hãy xem một ví dụ về phương thức `toBroadcast`:
 
     use Illuminate\Notifications\Messages\BroadcastMessage;
 
@@ -490,18 +490,18 @@ Channel `broadcast` của broadcasts notification sẽ dùng các service [event
 
 #### Broadcast Queue Configuration
 
-Tất cả các broadcast notification sẽ được queue để broadcasting. Nếu bạn muốn cấu hình queue connection hoặc tên queue được sử dụng để queue hoạt động broadcast, bạn có thể sử dụng các phương thức `onConnection` và `onQueue` của `BroadcastMessage`:
+Tất cả các broadcast notification sẽ được queue lại để broadcasting. Nếu bạn muốn cấu hình queue connection hoặc tên queue được sử dụng để queue lại broadcast, bạn có thể sử dụng các phương thức `onConnection` và `onQueue` của `BroadcastMessage`:
 
     return (new BroadcastMessage($data))
                     ->onConnection('sqs')
                     ->onQueue('broadcasts');
 
-> {tip} Ngoài dữ liệu bạn khai báo, broadcast notification cũng sẽ chứa một trường `type` dùng để chứa tên class của notification.
+> {tip} Ngoài dữ liệu bạn khai báo, broadcast notification cũng sẽ chứa một trường `type` sẽ được để chứa tên class của notification.
 
 <a name="listening-for-notifications"></a>
 ### Listening cho Notifications
 
-Notification sẽ được broadcast trên một private channel được định dạng theo cách sử dụng quy ước  `{notifiable}.{id}`. Vì vậy, nếu bạn đang gửi notification đến một instance `App\User` có ID là `1`, notification sẽ được broadcast trên private channel `App.User.1`. Khi sử dụng [Laravel Echo](/docs/{{version}}/broadcasting), bạn có thể dễ dàng listen cho các notification trên channel bằng phương thức helper `notification`:
+Notification sẽ được broadcast trên các private channel được định danh theo cách sử dụng quy ước `{notifiable}.{id}`. Vì vậy, nếu bạn đang gửi notification đến một instance `App\User` có ID là `1`, thì notification sẽ được broadcast trên private channel là `App.User.1`. Khi sử dụng [Laravel Echo](/docs/{{version}}/broadcasting), bạn có thể dễ dàng listen cho các notification trên channel này bằng phương thức helper `notification`:
 
     Echo.private('App.User.' + userId)Z
         .notification((notification) => {
@@ -510,7 +510,7 @@ Notification sẽ được broadcast trên một private channel được địn
 
 #### Customizing The Notification Channel
 
-Nếu bạn muốn tùy chỉnh channel mà nhận thực thể notifiable của broadcast notification, bạn có thể định nghĩa một phương thức `receivesBroadcastNotificationsOn` trên thực thể notifiable:
+Nếu bạn muốn tùy chỉnh channel nhận thực thể notifiable của broadcast notification, bạn có thể định nghĩa một phương thức `receivesBroadcastNotificationsOn` trên thực thể notifiable:
 
     <?php
 
@@ -541,7 +541,7 @@ Nếu bạn muốn tùy chỉnh channel mà nhận thực thể notifiable của
 <a name="sms-prerequisites"></a>
 ### Yêu cầu
 
-Gửi notification SMS trong Laravel được cung cấp bởi [Nexmo](https://www.nexmo.com/). Trước khi bạn có thể gửi notification qua Nexmo, bạn cần cài đặt package `nexmo/client` qua Composer và thêm một vài tùy chọn cấu hình vào file cấu hình `config/services.php` của bạn. Bạn có thể copy cấu hình mẫu ở bên dưới để bắt đầu:
+Gửi notification SMS trong Laravel được mặc định cung cấp bởi [Nexmo](https://www.nexmo.com/). Trước khi bạn có thể gửi notification qua Nexmo, bạn cần cài đặt package `nexmo/client` qua Composer và thêm một vài tùy chọn cấu hình vào file cấu hình `config/services.php` của bạn. Bạn có thể copy cấu hình mẫu ở bên dưới để bắt đầu:
 
     'nexmo' => [
         'key' => env('NEXMO_KEY'),
@@ -549,12 +549,12 @@ Gửi notification SMS trong Laravel được cung cấp bởi [Nexmo](https://w
         'sms_from' => '15556666666',
     ],
 
-Tùy chọn `sms_from` là số điện thoại mà tin nhắn SMS của bạn sẽ được gửi từ đó. Bạn nên tạo số điện thoại cho application của bạn trong bảng điều khiển Nexmo.
+Tùy chọn `sms_from` là số điện thoại mà tin nhắn SMS của bạn sẽ được gửi. Bạn nên tạo số điện thoại cho application của bạn trong bảng điều khiển Nexmo.
 
 <a name="formatting-sms-notifications"></a>
 ### Formatting SMS Notifications
 
-Nếu một notification hỗ trợ gửi dưới dạng SMS, bạn nên định nghĩa phương thức `toNexmo` trên class notification. Phương thức này sẽ nhận được một thực thể `$notifiable` và sẽ trả về một instance `Illuminate\Notifications\Messages\NexmoMessage`:
+Nếu một notification hỗ trợ gửi dưới dạng SMS, bạn nên định nghĩa phương thức `toNexmo` trên class notification. Phương thức này sẽ nhận vào một thực thể `$notifiable` và sẽ trả về một instance `Illuminate\Notifications\Messages\NexmoMessage`:
 
     /**
      * Get the Nexmo / SMS representation of the notification.
@@ -588,7 +588,7 @@ Nếu tin nhắn SMS của bạn sẽ chứa các ký tự unicode, bạn nên g
 <a name="customizing-the-from-number"></a>
 ### Tuỳ biến "From" Number
 
-Nếu bạn muốn gửi một số notification từ một số điện thoại khác với số điện thoại được khai báo trong file `config/services.php` của bạn, bạn có thể sử dụng phương thức `from` trên một instance `NexmoMessage`:
+Nếu bạn muốn gửi một số notification từ một số điện thoại khác với số điện thoại đã được khai báo trong file `config/services.php` của bạn, bạn có thể sử dụng phương thức `from` trên một instance `NexmoMessage`:
 
     /**
      * Get the Nexmo / SMS representation of the notification.
@@ -606,7 +606,7 @@ Nếu bạn muốn gửi một số notification từ một số điện thoại
 <a name="routing-sms-notifications"></a>
 ### Routing SMS Notifications
 
-Khi gửi notification qua channel `nexmo`, notification system sẽ tự động tìm thuộc tính `phone_number` trên thực thể notifiable. Nếu bạn muốn tùy chỉnh số điện thoại mà notification sẽ được gửi tới, hãy định nghĩa phương thức `routeNotificationForNexmo` trên thực thể:
+Khi gửi notification qua channel `nexmo`, notification system sẽ tự động tìm thuộc tính `phone_number` trên thực thể notifiable. Nếu bạn muốn tùy chỉnh số điện thoại mà được notification gửi tới, hãy định nghĩa thêm phương thức `routeNotificationForNexmo` trên thực thể:
 
     <?php
 
@@ -645,7 +645,7 @@ Bạn cũng sẽ cần cấu hình ["Incoming Webhook"](https://api.slack.com/in
 <a name="formatting-slack-notifications"></a>
 ### Formatting Slack Notifications
 
-Nếu một notification hỗ trợ gửi dưới dạng message Slack, bạn nên định nghĩa phương thức `toSlack` trên class notification. Phương thức này sẽ nhận vào một thực thể `$notifiable` và sẽ trả về một instance `Illuminate\Notifications\Messages\SlackMessage`. Tin nhắn Slack có thể chứa nội dung text cũng như "đính kèm" thêm một định dạng text hoặc một mảng các trường. Chúng ta hãy xem một ví dụ `toSlack` cơ bản:
+Nếu một notification hỗ trợ gửi dưới dạng message của Slack, bạn nên định nghĩa phương thức `toSlack` trên class notification. Phương thức này sẽ nhận vào một thực thể `$notifiable` và sẽ trả về một instance `Illuminate\Notifications\Messages\SlackMessage`. Message Slack có thể có chứa nội dung text cũng như "đính kèm" thêm một định dạng text hoặc một mảng các trường. Chúng ta hãy xem một ví dụ `toSlack` cơ bản:
 
     /**
      * Get the Slack representation of the notification.
@@ -700,7 +700,7 @@ Bạn cũng có thể sử dụng hình ảnh làm logo thay vì biểu tượng
 <a name="slack-attachments"></a>
 ### Đính kèm vào message slack
 
-Bạn cũng có thể "đính kèm" thêm vào tin nhắn Slack. Đính kèm này cung cấp các tùy chọn định dạng phong phú hơn các tin nhắn text bình thường. Trong ví dụ này, chúng ta sẽ gửi notification lỗi về một ngoại lệ xảy ra trong một application, chứa một liên kết để xem thêm chi tiết về ngoại lệ:
+Bạn cũng có thể "đính kèm" thêm thông tin vào tin nhắn Slack. Đính kèm này cung cấp các tùy chọn định dạng phong phú hơn các tin nhắn text bình thường. Trong ví dụ này, chúng ta sẽ gửi notification lỗi về một ngoại lệ xảy ra trong application, chứa một link liên kết để xem chi tiết hơn về ngoại lệ:
 
     /**
      * Get the Slack representation of the notification.
@@ -757,7 +757,7 @@ Ví dụ trên sẽ tạo ra một notification Slack trông giống như sau:
 
 #### Markdown Attachment Content
 
-Nếu một số trường đính kèm của bạn chứa Markdown, bạn có thể sử dụng phương thức `markdown` để bảo Slack phân tích cú pháp và hiển thị các trường đính kèm dưới dạng văn bản được định dạng theo kiểu Markdown. Các giá trị được phương thức này chấp nhận là: `pretext`, `text` và / hoặc `fields`. Để biết thêm thông tin về định dạng đính kèm Slack, hãy xem [Tài liệu API Slack](https://api.slack.com/docs/message-formatting#message_formatting):
+Nếu một số trường đính kèm của bạn chứa Markdown, bạn có thể sử dụng phương thức `markdown` để bảo Slack phân tích cú pháp và hiển thị các trường đính kèm dưới dạng văn bản được định dạng theo kiểu Markdown. Các giá trị được phương thức này chấp nhận là: `pretext`, `text` hoặc `fields`. Để biết thêm thông tin về định dạng đính kèm Slack, hãy xem [Tài liệu API Slack](https://api.slack.com/docs/message-formatting#message_formatting):
 
     /**
      * Get the Slack representation of the notification.
@@ -782,7 +782,7 @@ Nếu một số trường đính kèm của bạn chứa Markdown, bạn có th
 <a name="routing-slack-notifications"></a>
 ### Routing Slack Notifications
 
-Để route Slack notification đến vị trí thích hợp, hãy định nghĩa phương thức `routeNotificationForSlack` trên thực thể notifiable của bạn. Điều này sẽ trả về URL webhook mà notification sẽ được gửi tới đó. URL webhook có thể được tạo bằng cách thêm một "Incoming Webhook" vào group Slack của bạn:
+Để route Slack notification đến một vị trí, hãy định nghĩa phương thức `routeNotificationForSlack` trên thực thể notifiable của bạn. Điều này sẽ trả về một URL webhook mà notification sẽ được gửi tới đó. URL webhook có thể được tạo ra bằng cách thêm một "Incoming Webhook" vào group Slack của bạn:
 
     <?php
 
@@ -809,7 +809,7 @@ Nếu một số trường đính kèm của bạn chứa Markdown, bạn có th
 <a name="notification-events"></a>
 ## Notification Events
 
-Khi một notification được gửi, event `Illuminate\Notifications\Events\NotificationSent` sẽ được kích hoạt bởi notification system. Nó sẽ chứa thực thể "notifiable" và một instance notification. Bạn có thể đăng ký listener cho các event này trong `EventServiceProvider`:
+Khi một notification đã được gửi, event `Illuminate\Notifications\Events\NotificationSent` sẽ được kích hoạt bởi notification system. Nó sẽ chứa thực thể "notifiable" và một instance notification. Bạn có thể đăng ký listener cho các event này trong `EventServiceProvider`:
 
     /**
      * The event listener mappings for the application.
@@ -822,9 +822,9 @@ Khi một notification được gửi, event `Illuminate\Notifications\Events\No
         ],
     ];
 
-> {tip} Sau khi đăng ký listener trong `EventServiceProvider` của bạn, hãy sử dụng lệnh Artisan `event:generate` để tạo nhanh các class listener.
+> {tip} Sau khi đăng ký listener trong `EventServiceProvider`, hãy sử dụng lệnh Artisan `event:generate` để tạo ra các class listener.
 
-Trong một event listener, bạn có thể truy cập vào các thuộc tính `notifiable`, `notification`, và `channel` trong event để biết thêm về người nhận notification hoặc chính notification đó:
+Trong một event listener, bạn có thể truy cập vào các thuộc tính `notifiable`, `notification` và `channel` trong event để biết thêm thông tin về người nhận notification hoặc chính notification đó:
 
     /**
      * Handle the event.
@@ -842,7 +842,7 @@ Trong một event listener, bạn có thể truy cập vào các thuộc tính `
 <a name="custom-channels"></a>
 ## Tuỳ biến Channels
 
-Laravel có sẵn với một số notification channel, nhưng bạn có thể muốn viết driver của riêng bạn để gửi notification qua các channel khác. Laravel làm cho nó trở nên rất đơn giản. Để bắt đầu, hãy định nghĩa một class có chứa phương thức `send`. Phương thức sẽ nhận được hai tham số: một là `$notifiable` và một là `$notification`:
+Laravel có sẵn với một số notification channel, nhưng bạn có thể muốn viết thêm các driver khác để gửi notification qua các channel riêng của bạn. Laravel làm cho nó trở nên rất đơn giản. Để bắt đầu, hãy định nghĩa một class có chứa phương thức `send`. Phương thức sẽ nhận vào hai tham số: một là `$notifiable` và một là `$notification`:
 
     <?php
 

@@ -24,16 +24,16 @@
 <a name="introduction"></a>
 ## Giới thiệu
 
-Database query builder của Laravel cung cấp interface thuận tiện, dễ dàng để tạo và chạy các query vào cơ sở dữ liệu. Nó có thể được sử dụng để thực hiện hầu hết các hành động vào cơ sở dữ liệu trong application của bạn và có thể làm việc trên tất cả các hệ thống cơ sở dữ liệu được hỗ trợ.
+Database query builder của Laravel cung cấp một interface thuận tiện, dễ dàng để tạo và chạy các query vào cơ sở dữ liệu. Nó có thể được sử dụng để thực hiện hầu hết các hành động vào cơ sở dữ liệu trong application của bạn và có thể làm việc trên tất cả các hệ thống cơ sở dữ liệu được hỗ trợ.
 
-Query builder của Laravel sử dụng tham số PDO để bảo vệ application của bạn khỏi các cuộc tấn công SQL injection. Bạn không cần phải chuẩn hoá các chuỗi trước khi truyền.
+Query builder của Laravel sử dụng tham số PDO để bảo vệ application của bạn khỏi các cuộc tấn công SQL injection. Bạn sẽ không cần phải chuẩn hoá các chuỗi trước khi truyền vào query.
 
 <a name="retrieving-results"></a>
 ## Lấy ra kết quả
 
 #### Retrieving All Rows From A Table
 
-Bạn có thể sử dụng phương thức `table` trên facade `DB` để bắt đầu một query. Phương thức `table` trả về một instance của query builder cho bảng đó, cho phép bạn kết hợp nhiều điều kiện vào trong một query và cuối cùng để nhận lại kết quả, bằng phương thức `get`:
+Bạn có thể sử dụng phương thức `table` trên facade `DB` để tạo một query. Phương thức `table` trả về một instance của query builder cho bảng đó, cho phép bạn kết hợp nhiều điều kiện vào trong một query và cuối cùng để nhận lại kết quả, bằng phương thức `get`:
 
     <?php
 
@@ -57,7 +57,7 @@ Bạn có thể sử dụng phương thức `table` trên facade `DB` để bắ
         }
     }
 
-Phương thức `get` trả về một `Illuminate\Support\Collection` chứa các kết quả trong đó, mỗi kết quả là một instance của đối tượng `StdClass` của PHP. Bạn có thể truy cập vào giá trị của từng cột bằng cách khai báo tên cột như tên một thuộc tính của đối tượng:
+Phương thức `get` trả về một `Illuminate\Support\Collection` chứa các kết quả trong đó, mỗi kết quả là một instance của đối tượng `StdClass` của PHP. Bạn có thể truy cập vào giá trị của từng cột bằng cách khai báo tên cột như là một tên một thuộc tính của đối tượng:
 
     foreach ($users as $user) {
         echo $user->name;
@@ -65,19 +65,19 @@ Phương thức `get` trả về một `Illuminate\Support\Collection` chứa c�
 
 #### Retrieving A Single Row / Column From A Table
 
-Nếu bạn chỉ cần lấy ra một hàng từ bảng cơ sở dữ liệu, bạn có thể sử dụng phương thức `first`. Phương thức này sẽ trả về một đối tượng `StdClass`:
+Nếu bạn chỉ cần lấy ra một hàng từ một bảng cơ sở dữ liệu, bạn có thể sử dụng phương thức `first`. Phương thức này sẽ trả về một đối tượng `StdClass`:
 
     $user = DB::table('users')->where('name', 'John')->first();
 
     echo $user->name;
 
-Nếu thậm chí bạn không cần toàn bộ giá trị của một hàng, bạn có thể lấy ra một giá trị từ một bản ghi bằng cách sủ dụng phương thức `value`. Phương thức này sẽ trả về giá trị của cột mà bạn đã khai báo:
+Nếu bạn không cần lấy ra toàn bộ giá trị của một hàng, bạn có thể lấy ra một giá trị của một bản ghi bằng cách sủ dụng phương thức `value`. Phương thức này sẽ trả về giá trị của cột mà bạn đã khai báo:
 
     $email = DB::table('users')->where('name', 'John')->value('email');
 
 #### Retrieving A List Of Column Values
 
-Nếu bạn muốn lấy ra một Collection chứa tất cả các giá trị của một cột, bạn có thể sử dụng phương thức `pluck`. Trong ví dụ này, chúng ta sẽ lấy ra một Collection các tiêu đề của các role:
+Nếu bạn muốn lấy ra một Collection chứa tất cả các giá trị của một cột, bạn có thể sử dụng phương thức `pluck`. Trong ví dụ này, chúng ta sẽ lấy ra một Collection tiêu đề của các role:
 
     $titles = DB::table('roles')->pluck('title');
 
@@ -85,7 +85,7 @@ Nếu bạn muốn lấy ra một Collection chứa tất cả các giá trị c
         echo $title;
     }
 
-Bạn cũng có thể khai báo key là các giá trị của cột khác cho Collection được trả về:
+Bạn cũng có thể khai báo thêm key cho Collection được trả về là giá trị của một cột khác:
 
     $roles = DB::table('roles')->pluck('title', 'name');
 
@@ -96,7 +96,7 @@ Bạn cũng có thể khai báo key là các giá trị của cột khác cho Co
 <a name="chunking-results"></a>
 ### Phân đoạn kết quả
 
-Nếu bạn cần làm việc với hàng ngàn bản ghi trong cơ sở dữ liệu, hãy xem xét sử dụng phương thức `chunk`. Phương thức này lấy ra một đoạn nhỏ kết quả tại một thời điểm và đưa từng đoạn đó vào một `Closure` để xử lý. Phương thức này rất hữu ích để viết [Lệnh Artisan](/docs/{{version}}/artisan) xử lý hàng ngàn bản ghi. Ví dụ: hãy làm thử với toàn bộ bảng `users` với số lượng 100 bản ghi cùng một lúc:
+Nếu bạn cần làm việc với hàng ngàn bản ghi trong cơ sở dữ liệu, hãy xem xét sử dụng phương thức `chunk`. Phương thức này lấy ra một đoạn nhỏ kết quả tại một thời điểm và đưa từng đoạn đó vào một `Closure` để xử lý. Phương thức này rất hữu ích để viết [Lệnh Artisan](/docs/{{version}}/artisan) xử lý hàng ngàn bản ghi. Ví dụ: hãy làm thử với toàn bộ bảng `users` với số lượng khoảng 100 bản ghi cùng một lúc:
 
     DB::table('users')->orderBy('id')->chunk(100, function ($users) {
         foreach ($users as $user) {
@@ -104,7 +104,7 @@ Nếu bạn cần làm việc với hàng ngàn bản ghi trong cơ sở dữ li
         }
     });
 
-Bạn có thể dừng xử lý các đoạn tiếp theo bằng cách trả về `false` từ` Closure`:
+Bạn có thể dừng xử lý các đoạn tiếp theo bằng cách trả về giá trị `false` từ `Closure`:
 
     DB::table('users')->orderBy('id')->chunk(100, function ($users) {
         // Process the records...
@@ -121,7 +121,7 @@ Query builder cũng cung cấp nhiều phương thức thống kê khác nhau nh
 
     $price = DB::table('orders')->max('price');
 
-Tất nhiên, bạn có thể kết hợp các phương thức này với các lệnh khác:
+Tất nhiên, bạn có thể kết hợp các phương thức này với các câu lệnh khác:
 
     $price = DB::table('orders')
                     ->where('finalized', 1)
@@ -162,7 +162,7 @@ Thỉnh thoảng bạn có thể cần sử dụng một biểu thức raw trong
 <a name="raw-methods"></a>
 ### Raw Methods
 
-Thay vì sử dụng `DB::raw`, bạn cũng có thể sử dụng các phương thức sau để thêm biểu thức raw vào các phần khác nhau của query của bạn.
+Thay vì sử dụng `DB::raw`, bạn cũng có thể sử dụng các phương thức sau để thêm các biểu thức raw vào các phần khác nhau của query của bạn.
 
 #### `selectRaw`
 
@@ -174,7 +174,7 @@ Phương thức `selectRaw` có thể được sử dụng thay cho câu lệnh 
 
 #### `whereRaw / orWhereRaw`
 
-Các phương thức `whereRaw` và `orWhereRaw` có thể được sử dụng để thêm lệnh `where` raw vào query của bạn. Các phương thức này chấp nhận một mảng các tùy chọn tham số được truyền vào làm tham số thứ hai của chúng:
+Các phương thức `whereRaw` và `orWhereRaw` có thể được sử dụng để thêm câu lệnh `where` raw vào query của bạn. Các phương thức này chấp nhận một mảng các tùy chọn tham số được truyền vào làm tham số thứ hai của nó:
 
     $orders = DB::table('orders')
                     ->whereRaw('price > IF(state = "TX", ?, 100)', [200])
@@ -182,7 +182,7 @@ Các phương thức `whereRaw` và `orWhereRaw` có thể được sử dụng 
 
 #### `havingRaw / orHavingRaw`
 
-Các phương thức `havingRaw` và `orHavingRaw` có thể được sử dụng để set một chuỗi raw làm giá trị của lệnh `having`:
+Các phương thức `havingRaw` và `orHavingRaw` có thể được sử dụng để set một chuỗi raw làm giá trị của câu lệnh `having`:
 
     $orders = DB::table('orders')
                     ->select('department', DB::raw('SUM(price) as total_sales'))
@@ -192,7 +192,7 @@ Các phương thức `havingRaw` và `orHavingRaw` có thể được sử dụn
 
 #### `orderByRaw`
 
-Phương thức `orderByRaw` có thể được sử dụng để set một chuỗi raw làm giá trị của lệnh `order by`:
+Phương thức `orderByRaw` có thể được sử dụng để set một chuỗi raw làm giá trị của câu lệnh `order by`:
 
     $orders = DB::table('orders')
                     ->orderByRaw('updated_at - created_at DESC')
@@ -203,7 +203,7 @@ Phương thức `orderByRaw` có thể được sử dụng để set một chu�
 
 #### Inner Join Clause
 
-Query builder cũng có thể được sử dụng để viết các câu lệnh join. Để thực hiện một "inner join" cơ bản, bạn có thể sử dụng phương thức `join` trên một instance của query builder. Tham số đầu tiên được truyền cho phương thức `join` là tên của bảng bạn cần join, trong khi các tham số còn lại khai báo các cột dành cho phép join. Tất nhiên, như bạn có thể thấy, bạn có thể join nhiều bảng trong một query duy nhất:
+Query builder cũng có thể được sử dụng để viết các câu lệnh join. Để thực hiện một "inner join" cơ bản, bạn có thể sử dụng phương thức `join` trên một instance của query builder. Tham số đầu tiên được truyền vào cho phương thức `join` là tên của bảng mà bạn cần join, trong khi các tham số còn lại là khai báo các cột dành cho phép join. Tất nhiên, như bạn có thể thấy, bạn có thể join nhiều bảng trong cùng một query duy nhất:
 
     $users = DB::table('users')
                 ->join('contacts', 'users.id', '=', 'contacts.user_id')
@@ -221,7 +221,7 @@ Nếu bạn muốn thực hiện "left join" thay vì "inner join", hãy sử d�
 
 #### Cross Join Clause
 
-Để thực hiện "cross join", hãy sử dụng phương thức `crossJoin` với tên của bảng mà bạn muốn cross join. Các cross join sẽ tạo ra một bảng mới có hàng là các hàng của bảng đầu tiên và bảng thứ hai được nhân chéo vào nhau:
+Để thực hiện "cross join", hãy sử dụng phương thức `crossJoin` với tên bảng mà bạn muốn cross join. Các cross join sẽ tạo ra một bảng mới có hàng là các hàng của bảng đầu tiên và bảng thứ hai nhân chéo vào nhau:
 
     $users = DB::table('sizes')
                 ->crossJoin('colours')
@@ -229,7 +229,7 @@ Nếu bạn muốn thực hiện "left join" thay vì "inner join", hãy sử d�
 
 #### Advanced Join Clauses
 
-Bạn cũng có thể khai báo các lệnh join cụ thể hơn. Để bắt đầu, hãy truyền một `Closure` làm tham số thứ hai vào phương thức `join`. `Closure` sẽ nhận vào một đối tượng `JoinClause` cho phép bạn khai báo các điều kiện đối với lệnh `join`:
+Bạn cũng có thể khai báo các lệnh join một cách cụ thể hơn. Để bắt đầu, hãy truyền một `Closure` làm tham số thứ hai vào phương thức `join`. `Closure` sẽ nhận vào một đối tượng `JoinClause` cho phép bạn khai báo các điều kiện đối với câu lệnh `join`:
 
     DB::table('users')
             ->join('contacts', function ($join) {
@@ -237,7 +237,7 @@ Bạn cũng có thể khai báo các lệnh join cụ thể hơn. Để bắt đ
             })
             ->get();
 
-Nếu bạn muốn sử dụng lệnh "where" trong các lệnh join của bạn, bạn có thể sử dụng các phương thức `where` và `orWhere` trong join. Thay vì so sánh hai cột, các phương thức này sẽ so sánh cột với một giá trị:
+Nếu bạn muốn sử dụng lệnh "where" trong các lệnh join của bạn, bạn có thể sử dụng các phương thức `where` và `orWhere` trong join. Thay vì so sánh hai cột, các phương thức này sẽ so sánh một cột với một giá trị:
 
     DB::table('users')
             ->join('contacts', function ($join) {
@@ -249,7 +249,7 @@ Nếu bạn muốn sử dụng lệnh "where" trong các lệnh join của bạn
 <a name="unions"></a>
 ## Union
 
-Query builder cũng cung cấp một cách nhanh chóng để "union" hai query lại với nhau. Ví dụ, bạn có thể tạo một query ban đầu và sử dụng phương thức `union` để kết hợp nó với query thứ hai:
+Query builder cũng cung cấp một cách nhanh chóng để "union" hai query lại với nhau. Ví dụ, bạn có thể tạo ra một query đầu tiên và sử dụng phương thức `union` để kết hợp nó với một query thứ hai:
 
     $first = DB::table('users')
                 ->whereNull('first_name');
@@ -266,7 +266,7 @@ Query builder cũng cung cấp một cách nhanh chóng để "union" hai query 
 
 #### Simple Where Clauses
 
-Bạn có thể sử dụng phương thức `where` trên một instance của query builder để thêm các lệnh `where` vào query. Một phương thức `where` cơ bản thường yêu cầu ba tham số. Tham số đầu tiên là tên của cột. Tham số thứ hai là một toán tử so sánh, có thể là bất kỳ toán tử nào được hỗ trợ của cơ sở dữ liệu. Cuối cùng, tham số thứ ba là giá trị để so sánh với cột.
+Bạn có thể sử dụng phương thức `where` trên một instance của query builder để thêm các lệnh `where` vào query. Một phương thức `where` cơ bản thường yêu cầu ba tham số. Tham số đầu tiên là tên của cột. Tham số thứ hai là một toán tử so sánh, có thể là bất kỳ toán tử nào được hỗ trợ bởi cơ sở dữ liệu. Cuối cùng, tham số thứ ba là giá trị để so sánh với cột.
 
 Ví dụ: đây là một truy vấn kiểm tra giá trị của cột "votes" bằng 100:
 
@@ -310,14 +310,14 @@ Bạn có thể kết hợp các điều kiện với nhau cũng như thêm các
 
 **whereBetween**
 
-Phương thức `whereBetween` sẽ kiểm tra giá trị của một cột nằm giữa hai giá trị:
+Phương thức `whereBetween` sẽ kiểm tra giá trị của một cột nằm giữa hai giá trị đã cho:
 
     $users = DB::table('users')
                         ->whereBetween('votes', [1, 100])->get();
 
 **whereNotBetween**
 
-Phương thức `whereNotBetween` sẽ kiểm tra giá trị của một cột nằm ngoài hai giá trị:
+Phương thức `whereNotBetween` sẽ kiểm tra giá trị của một cột nằm ngoài hai giá trị đã cho:
 
     $users = DB::table('users')
                         ->whereNotBetween('votes', [1, 100])
@@ -409,7 +409,7 @@ Phương thức `whereColumn` cũng có thể được truyền vào một mản
 <a name="parameter-grouping"></a>
 ### Group tham số
 
-Thỉnh thoảng bạn có thể cần tạo lệnh where nâng cao như lệnh "where exists" hoặc các nhóm tham số lồng nhau. Query builder của Laravel cũng có thể xử lý được chúng. Để bắt đầu, chúng ta hãy xem một ví dụ về các nhóm điều kiện trong ngoặc đơn:
+Thỉnh thoảng bạn có thể cần tạo ra lệnh where nâng cao như lệnh "where exists" hoặc các nhóm tham số lồng nhau. Query builder của Laravel cũng có thể xử lý được chúng. Để bắt đầu, chúng ta hãy xem một ví dụ về các nhóm điều kiện trong ngoặc đơn:
 
     DB::table('users')
                 ->where('name', '=', 'John')
@@ -419,14 +419,14 @@ Thỉnh thoảng bạn có thể cần tạo lệnh where nâng cao như lệnh 
                 })
                 ->get();
 
-Như bạn có thể thấy, việc truyền một `Closure` vào phương thức `orWhere` sẽ làm cho query builder bắt đầu tạo ra một nhóm điều kiện. `Closure` sẽ nhận vào một instance query builder mà bạn có thể sử dụng để set các điều kiện cần có vào trong nhóm dấu ngoặc đơn. Ví dụ trên sẽ tạo ra SQL như sau:
+Như bạn có thể thấy, việc truyền một `Closure` vào phương thức `orWhere` sẽ làm cho query builder bắt đầu tạo ra một nhóm điều kiện. `Closure` sẽ nhận vào một instance query builder mà bạn có thể sử dụng nó để set các điều kiện cần có vào trong nhóm dấu ngoặc đơn. Ví dụ trên sẽ tạo ra SQL như sau:
 
     select * from users where name = 'John' or (votes > 100 and title <> 'Admin')
 
 <a name="where-exists-clauses"></a>
 ### Lệnh where exist
 
-Phương thức `whereExists` cho phép bạn viết các lệnh SQL `where exists`. Phương thức `whereExists` chấp nhận một tham số `Closure`, sẽ nhận vào một instance query builder cho phép bạn định nghĩa query sẽ được set vào bên trong lệnh "exists":
+Phương thức `whereExists` cho phép bạn viết các lệnh SQL `where exists`. Phương thức `whereExists` chấp nhận một tham số `Closure`, sẽ nhận vào một instance query builder cho phép bạn định nghĩa thêm query mà sẽ được set vào bên trong lệnh "exists":
 
     DB::table('users')
                 ->whereExists(function ($query) {
@@ -446,7 +446,7 @@ Truy vấn trên sẽ tạo ra lệnh SQL như sau:
 <a name="json-where-clauses"></a>
 ### Lệnh where cho JSON
 
-Laravel cũng hỗ trợ truy vấn vào các cột loại JSON trên cơ sở dữ liệu. Hiện tại, cột loại JSON đã được hỗ trợ từ MySQL 5.7 và PostgreSQL. Để truy vấn vào cột loại JSON, hãy sử dụng toán tử `->`:
+Laravel cũng hỗ trợ truy vấn vào các cột loại JSON trên cơ sở dữ liệu. Hiện tại, các cột loại JSON đã được hỗ trợ từ MySQL 5.7 và PostgreSQL. Để truy vấn vào cột loại JSON, hãy sử dụng toán tử `->`:
 
     $users = DB::table('users')
                     ->where('options->language', 'en')
@@ -461,7 +461,7 @@ Laravel cũng hỗ trợ truy vấn vào các cột loại JSON trên cơ sở d
 
 #### orderBy
 
-Phương thức `orderBy` cho phép bạn sắp xếp kết quả của truy vấn theo một cột đã cho. Tham số đầu tiên cho phương thức `orderBy` phải là tên cột mà bạn muốn sắp xếp, trong khi tham số thứ hai chiều sắp xếp, có thể là `asc` hoặc `desc`:
+Phương thức `orderBy` cho phép bạn sắp xếp kết quả của truy vấn theo một cột nhất định. Tham số đầu tiên cho phương thức `orderBy` phải là một tên cột mà bạn muốn sắp xếp, trong khi tham số thứ hai là chiều sắp xếp, có thể là `asc` hoặc `desc`:
 
     $users = DB::table('users')
                     ->orderBy('name', 'desc')
@@ -503,7 +503,7 @@ Bạn cũng có thể truyền nhiều tham số vào phương thức `groupBy` 
 
 #### skip / take
 
-Để giới hạn số lượng kết quả được trả về từ truy vấn hoặc bỏ qua một số kết quả nhất định trong truy vấn, bạn có thể sử dụng các phương thức `skip` và `take`:
+Để giới hạn số lượng kết quả được trả về từ một truy vấn hoặc bỏ qua một số kết quả nhất định trong truy vấn, bạn có thể sử dụng các phương thức `skip` và `take`:
 
     $users = DB::table('users')->skip(10)->take(5)->get();
 
@@ -517,7 +517,7 @@ Ngoài ra, bạn có thể sử dụng các phương thức `limit` và `offset`
 <a name="conditional-clauses"></a>
 ## Điều kiện cho lệnh
 
-Thỉnh thoảng bạn có thể muốn các lệnh chỉ áp dụng cho một truy vấn khi điều gì đó là đúng. Chẳng hạn, bạn chỉ có thể muốn áp dụng câu lệnh `where` nếu giá trị input có xuất hiện trong một request đến. Bạn có thể thực hiện điều này bằng cách sử dụng phương thức `when` như sau:
+Thỉnh thoảng bạn cũng có thể muốn các câu lệnh chỉ áp dụng cho một truy vấn khi điều gì đó là đúng. Chẳng hạn, bạn chỉ có thể muốn áp dụng câu lệnh `where` nếu giá trị input này có xuất hiện trong một request. Bạn có thể thực hiện điều này bằng cách sử dụng phương thức `when` như sau:
 
     $role = $request->input('role');
 
@@ -529,7 +529,7 @@ Thỉnh thoảng bạn có thể muốn các lệnh chỉ áp dụng cho một t
 
 Phương thức `when` chỉ chạy Closure khi tham số đầu tiên là `true`. Nếu tham số đầu tiên là `false`, thì Closure sẽ không được chạy.
 
-Bạn có thể truyền một Closure khác làm tham số thứ ba cho phương thức `when`. Closure này sẽ chạy nếu tham số đầu tiên trả về là `false`. Để minh họa cách sử dụng của tính năng này, chúng ta có thể sử dụng nó để set cách sắp xếp mặc định ở trong truy vấn:
+Bạn có thể truyền một Closure khác làm tham số thứ ba cho phương thức `when`. Closure này sẽ được chạy nếu tham số đầu tiên trả về giá trị là `false`. Để minh họa cách sử dụng của tính năng này, chúng ta có thể sử dụng nó để set cách sắp xếp mặc định ở trong truy vấn:
 
     $sortBy = null;
 
@@ -550,7 +550,7 @@ Query builder cũng cung cấp một phương thức `insert` để thêm các b
         ['email' => 'john@example.com', 'votes' => 0]
     );
 
-Bạn thậm chí có thể thêm nhiều bản ghi vào bảng với chỉ một lệnh `insert` bằng cách truyền mảng trong mảng. Mỗi mảng đại diện cho một hàng được thêm vào bảng:
+Bạn thậm chí có thể thêm nhiều bản ghi vào bảng của cơ sở dữ liệu với chỉ một lệnh `insert` bằng cách truyền mảng trong một mảng khác. Mỗi mảng con đại diện cho một hàng được thêm vào trong bảng đó:
 
     DB::table('users')->insert([
         ['email' => 'taylor@example.com', 'votes' => 0],
@@ -559,7 +559,7 @@ Bạn thậm chí có thể thêm nhiều bản ghi vào bảng với chỉ mộ
 
 #### Auto-Incrementing IDs
 
-Nếu bảng có set id tự động tăng, hãy sử dụng phương thức `insertGetId` để thêm bản ghi và sau đó lấy ra ID:
+Nếu bảng có set id tự động tăng, hãy sử dụng phương thức `insertGetId` để thêm bản ghi đó vào và sau đó lấy ra ID:
 
     $id = DB::table('users')->insertGetId(
         ['email' => 'john@example.com', 'votes' => 0]
@@ -588,7 +588,7 @@ Khi cập nhật một cột JSON, bạn nên sử dụng cú pháp `->` để t
 <a name="increment-and-decrement"></a>
 ### Increment và Decrement
 
-Query builder cũng cung cấp các phương thức thuận tiện để tăng hoặc giảm giá trị của một cột. Đây là một cách tắt, cung cấp một cách rõ ràng và ngắn gọn hơn so với việc viết thủ công câu lệnh `update`.
+Query builder cũng cung cấp các phương thức để tăng hoặc giảm giá trị của một cột. Đây là một cách tắt, cung cấp một cách rõ ràng và ngắn gọn hơn so với việc viết thủ công một câu lệnh `update`.
 
 Cả hai phương thức này đều chấp nhận ít nhất một tham số là: tên cột cần sửa. tham số thứ hai có thể được truyền vào tùy ý để kiểm soát số lượng sẽ được tăng hoặc giảm đi:
 
@@ -613,7 +613,7 @@ Query builder cũng có thể được sử dụng để xóa các bản ghi ra 
 
     DB::table('users')->where('votes', '>', 100)->delete();
 
-Nếu bạn muốn truncate toàn bộ bảng, điều này sẽ xóa tất cả các hàng và đặt lại ID tự động tăng về 0, bạn có thể sử dụng phương thức `truncate`:
+Nếu bạn muốn truncate toàn bộ bảng, điều này sẽ xóa tất cả các hàng và set lại ID tự động tăng về 0, bạn có thể sử dụng phương thức `truncate`:
 
     DB::table('users')->truncate();
 

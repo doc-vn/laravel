@@ -7,19 +7,19 @@
 <a name="introduction"></a>
 ## Giới thiệu
 
-Bộ mã hóa của Laravel sử dụng là OpenSSL để cung cấp các loại mã hóa AES-256 và AES-128. Bạn được khuyến khích sử dụng các hệ thống mã hóa đi kèm với Laravel và không cố gắng tạo ra các thuật toán mã hóa "home grown" của riêng bạn. Tất cả các giá trị được mã hóa của Laravel được ký bằng message authentication code (MAC) để không thể sửa đổi giá trị của chúng sau khi được mã hóa.
+Bộ mã hóa Laravel sử dụng là OpenSSL, cung cấp các loại mã hóa AES-256 và AES-128. Bạn được khuyến khích sử dụng các hệ thống mã hóa đi kèm với Laravel và đừng cố gắng tạo ra các thuật toán mã hóa "home grown" của riêng bạn. Tất cả các giá trị được mã hóa bởi Laravel đều được ký bằng message authentication code (MAC) để không thể bị sửa đổi giá trị của chúng sau khi đã được mã hóa.
 
 <a name="configuration"></a>
 ## Cấu hình
 
-Trước khi sử dụng bộ mã hóa của Laravel, bạn phải cài đặt tùy chọn `key` trong file cấu hình `config/app.php` của bạn. Bạn nên sử dụng lệnh `php artisan key:generate` để tạo key này vì lệnh Artisan này sẽ sử dụng trình tạo byte an toàn ngẫu nhiên của PHP để tạo key của bạn. Nếu giá trị này không được cài đặt đúng cách, tất cả các giá trị được mã hóa bởi Laravel sẽ không an toàn.
+Trước khi sử dụng bộ mã hóa của Laravel, bạn cần phải cài đặt tùy chọn `key` trong file cấu hình `config/app.php` của bạn. Bạn nên sử dụng lệnh `php artisan key:generate` để tạo key này vì lệnh Artisan này sẽ sử dụng trình tạo byte ngẫu nhiên an toàn của PHP để tạo key cho bạn. Nếu giá trị này không được cài đặt đúng cách, tất cả các giá trị được mã hóa bởi Laravel sẽ không an toàn.
 
 <a name="using-the-encrypter"></a>
 ## Dùng Encrypter
 
 #### Encrypting A Value
 
-Bạn có thể mã hóa một giá trị bằng cách sử dụng helper `encrypt`. Tất cả các giá trị đã được mã hóa sẽ được mã hóa bằng OpenSSL và mật mã `AES-256-CBC`. Hơn nữa, tất cả các giá trị được mã hóa mà được ký bằng message authentication code (MAC) có thể phát hiện bất kỳ sửa đổi nào đối với chuỗi đã được mã hóa:
+Bạn có thể mã hóa một giá trị bằng cách sử dụng helper `encrypt`. Tất cả các giá trị mã hóa đều được mã hóa bằng OpenSSL và mật mã `AES-256-CBC`. Hơn nữa, tất cả các giá trị mã hóa mà được ký bằng message authentication code (MAC) đều có thể phát hiện bất kỳ sửa đổi nào đối với giá trị đã được mã hóa:
 
     <?php
 
@@ -50,7 +50,7 @@ Bạn có thể mã hóa một giá trị bằng cách sử dụng helper `encry
 
 #### Encrypting Without Serialization
 
-Các giá trị đã được mã hóa sẽ được truyền qua `serialize` trong quá trình mã hóa, cho phép mã hóa các đối tượng và mảng. Do đó, các client không phải là PHP nếu nhận được các giá trị đã mã hóa sẽ cần phải `unserialize` dữ liệu. Nếu bạn muốn mã hóa và giải mã các giá trị mà không cần qua serialization, bạn có thể sử dụng các phương thức `encryptString` và `decryptString` của facade `Crypt`:
+Các giá trị đã được mã hóa sẽ được truyền qua `serialize` trong quá trình mã hóa, cho phép bạn mã hóa các đối tượng và mảng. Do đó, các client không phải là PHP nếu nhận được các giá trị đã mã hóa sẽ cần phải `unserialize` dữ liệu. Nếu bạn muốn mã hóa và giải mã các giá trị mà không cần qua serialization, bạn có thể sử dụng các phương thức `encryptString` và `decryptString` của facade `Crypt`:
 
     use Illuminate\Support\Facades\Crypt;
 

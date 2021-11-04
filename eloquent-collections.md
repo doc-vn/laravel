@@ -7,9 +7,9 @@
 <a name="introduction"></a>
 ## Giới thiệu
 
-Tất cả các kết quả được trả về bởi Eloquent đều là các instance của đối tượng `Illuminate\Database\Eloquent\Collection`, bao gồm cả các kết quả được truy xuất thông qua phương thức `get` hoặc được truy vấn thông qua quan hệ. Đối tượng collection Eloquent được extend từ [base collection](/docs/{{version}}/collections), do đó, nó thừa hưởng nhiều phương thức dùng để làm việc dễ dàng hơn với mảng model Eloquent.
+Tất cả các kết quả được trả về từ Eloquent đều là các instance của đối tượng `Illuminate\Database\Eloquent\Collection`, bao gồm cả kết quả được truy xuất thông qua phương thức `get` hoặc truy vấn thông qua quan hệ. Đối tượng collection Eloquent được extend từ [base collection](/docs/{{version}}/collections), do đó, nó thừa hưởng nhiều phương thức có thể được dùng để làm việc dễ dàng hơn với mảng model Eloquent.
 
-Tất nhiên, tất cả các collection cũng có vai trò như là một vòng lặp, cho phép bạn lặp qua nó như thể nó là một mảng PHP đơn thuần:
+Tất nhiên, tất cả các collection này cũng có vai trò như là một vòng lặp, cho phép bạn lặp qua nó như thể nó là một mảng PHP đơn thuần:
 
     $users = App\User::where('active', 1)->get();
 
@@ -17,7 +17,7 @@ Tất nhiên, tất cả các collection cũng có vai trò như là một vòng
         echo $user->name;
     }
 
-Tuy nhiên, collection mạnh mẽ hơn nhiều so với mảng và có thêm nhiều phương thức như map hoặc reduce, có thể được kết hợp lại với nhau bằng một giao diện trực quan. Ví dụ: hãy xóa tất cả các người dùng không hoạt động và lấy ra tên của những người dùng còn lại:
+Tuy nhiên, collection mạnh mẽ hơn nhiều so với mảng và có thêm nhiều phương thức như map hoặc reduce, có thể được kết hợp lại với nhau qua một giao diện trực quan. Ví dụ: hãy xóa tất cả những người dùng không hoạt động và lấy ra tên của những người dùng còn lại:
 
     $users = App\User::all();
 
@@ -28,7 +28,7 @@ Tuy nhiên, collection mạnh mẽ hơn nhiều so với mảng và có thêm nh
         return $user->name;
     });
 
-> {note} Trong khi hầu hết các phương thức Eloquent trả về một instance mới của collection Eloquent, thì các phương thức `pluck`, `keys`, `zip`, `collapse`, `flatten` và `flip` sẽ trả về một instance [base collection](/docs/{{version}}/collections). Tương tự, nếu mà phương thức `map` trả về một collection không chứa bất kỳ model Eloquent nào, nó sẽ tự động được chuyển về một base collection.
+> {note} Trong khi hầu hết các phương thức Eloquent trả về một instance mới của collection Eloquent, thì các phương thức `pluck`, `keys`, `zip`, `collapse`, `flatten` và `flip` sẽ trả về một instance [base collection](/docs/{{version}}/collections). Tương tự, nếu mà phương thức `map` trả về một collection không chứa bất kỳ model Eloquent nào, thì nó sẽ tự động được chuyển đổi thành một base collection.
 
 <a name="available-methods"></a>
 ## Các phương thức có sẵn
@@ -145,7 +145,7 @@ Tất cả các collection Eloquent đều được extend từ đối tượng 
 <a name="custom-collections"></a>
 ## Tuỳ biến Collection
 
-Nếu bạn cần sử dụng một đối tượng `Collection` tùy biến với các phương thức được mở rộng dành riêng cho bạn, bạn có thể ghi đè phương thức `newCollection` trên model của bạn:
+Nếu bạn cần sử dụng một đối tượng `Collection` tùy biến cho các phương thức dành riêng cho bạn, bạn có thể ghi đè phương thức `newCollection` trên model của bạn:
 
     <?php
 
@@ -168,4 +168,4 @@ Nếu bạn cần sử dụng một đối tượng `Collection` tùy biến v�
         }
     }
 
-Khi bạn đã định nghĩa một phương thức `newCollection`, bạn sẽ nhận lại được một instance của collection tùy biến của bạn bất cứ khi nào Eloquent trả về một instance `Collection` cho model đó. Nếu bạn muốn sử dụng collection tùy biến này cho mọi model trong application của bạn, bạn nên ghi đè phương thức `newCollection` trên một class base model và được tất cả các model khác extend.
+Khi bạn đã định nghĩa một phương thức `newCollection`, bạn sẽ nhận lại một instance của collection tùy biến của bạn bất cứ khi nào Eloquent trả về một instance `Collection` cho model đó. Nếu bạn muốn sử dụng collection tùy biến cho mọi model trong application của bạn, bạn nên ghi đè phương thức `newCollection` trên một class base model mà được tất cả các model khác extend.

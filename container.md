@@ -16,9 +16,9 @@
 <a name="introduction"></a>
 ## Giới thiệu
 
-Laravel service container là một công cụ mạnh mẽ để quản lý các class phụ thuộc và thực hiện tích hợp class phụ thuộc đó vào class khác. Tích hợp class phụ thuộc là một cụm từ tuyệt vời có nghĩa cơ bản là: class phụ thuộc sẽ được "tích hợp" vào một class khác thông qua hàm tạo hoặc trong một số trường hợp là hàm "setter".
+Laravel service container là một công cụ mạnh mẽ để quản lý các class phụ thuộc và thực hiện tích hợp các class phụ thuộc đó vào các class khác. Tích hợp class phụ thuộc là một cụm từ tuyệt vời có nghĩa cơ bản là: class phụ thuộc sẽ được "tích hợp" vào một class khác thông qua hàm tạo hoặc trong một số trường hợp là hàm "setter".
 
-Hãy nhìn một ví dụ đơn giản:
+Hãy xem một ví dụ đơn giản:
 
     <?php
 
@@ -62,7 +62,7 @@ Hãy nhìn một ví dụ đơn giản:
         }
     }
 
-Trong ví dụ trên, `UserController` sẽ cần lấy user từ một data source. Vì vậy, chúng ta sẽ **tích hợp** một service có thể lấy user. Trong ngữ cảnh này, trong class `UserRepository` của chúng ta có thể sử dụng [Eloquent](/docs/{{version}}/eloquent) để lấy thông tin user từ database. Tuy nhiên, vì repository đã được tích hợp, chúng ta có thể dễ dàng chuyển nó sang một implementation khác. Chúng ta cũng có thể dễ dàng "làm giả", hoặc tạo một implementation giả của `UserRepository` khi test application của chúng ta.
+Trong ví dụ trên, `UserController` sẽ cần lấy user từ một data source. Vì vậy, chúng ta sẽ **tích hợp** một service có thể lấy user. Theo ngữ cảnh này, trong class `UserRepository` của chúng ta có thể sử dụng [Eloquent](/docs/{{version}}/eloquent) để lấy thông tin user trực tiếp từ database. Tuy nhiên, vì repository đã được tích hợp, nên chúng ta có thể dễ dàng chuyển việc đó với một implementation khác. Và chúng ta cũng có thể dễ dàng "làm giả", hoặc tạo một implementation giả của `UserRepository` khi test application của chúng ta.
 
 Hiểu sâu về Laravel service container sẽ một điều cần thiết để tạo một application lớn, mạnh mẽ, cũng như phát triển phần lõi của Laravel.
 
@@ -72,24 +72,24 @@ Hiểu sâu về Laravel service container sẽ một điều cần thiết đ�
 <a name="binding-basics"></a>
 ### Liên kết cơ bản
 
-Hầu như tất cả các liên kết của service container sẽ được đăng ký trong [service providers](/docs/{{version}}/providers), vì vậy hầu hết các ví dụ này sẽ được thể hiện bằng cách sử dùng container trong ngữ cảnh đó.
+Hầu như tất cả các liên kết của service container sẽ được đăng ký trong [service providers](/docs/{{version}}/providers), nên vì thế hầu hết các ví dụ này sẽ được thực hiện bằng cách sử dụng container trong ngữ cảnh này.
 
 > {tip} Bạn sẽ không cần phải liên kết class vào container, nếu chúng không phụ thuộc vào bất kỳ interfaces nào. Bạn cũng không cần phải cài đặt Container làm thế nào để tạo ra một đối tượng, vì nó có thể tự động resolve đối tượng mà bạn cần bằng cách sử dụng class động.
 
 #### Liên kết đơn giản
 
-Trong một service provider, bạn luôn có quyền truy cập vào container thông qua thuộc tính `$this->app`. Chúng ta có thể đăng ký một liên kết bằng cách sử dụng phương thức `bind`, bạn truyền vào một tên class hoặc tên của một interface mà bạn muốn đăng ký cùng với một `Closure` sẽ trả về một instance của class mà bạn mong muốn:
+Trong một service provider, bạn luôn có quyền truy cập vào container thông qua thuộc tính `$this->app`. Chúng ta có thể đăng ký một liên kết bằng cách sử dụng phương thức `bind`, bạn truyền vào tên một class hoặc tên của một interface mà bạn muốn đăng ký cùng với một `Closure` sẽ trả về một instance của class mà bạn mong muốn:
 
     $this->app->bind('HelpSpot\API', function ($app) {
         return new HelpSpot\API($app->make('HttpClient'));
     });
 
 
-Lưu ý rằng chúng ta nhận container vào như là một tham số resolver. Sau đó chúng ta có thể sử dụng chính container đó để resolve các phụ thuộc con của đối tượng mà chúng ta đang xây dựng. Như ví dụ ở trên thì tham số của container chính là `$app`, chúng ta nhận tham số đó vào và resolve thêm một phụ thuộc con nữa là `HttpClient` để tạo ra một instance mới HelpSpot\API và trả về với tên là `HelpSpot\API`.
+Lưu ý rằng chúng ta nhận container vào như là một tham số resolver. Sau đó chúng ta có thể sử dụng chính container đó để resolve các phụ thuộc con của đối tượng mà chúng ta đang xây dựng. Như ví dụ ở trên thì tham số của container chính là `$app`, chúng ta nhận tham số đó vào và resolve thêm một phụ thuộc con là `HttpClient` để tạo ra một instance HelpSpot\API mới và trả về với tên là `HelpSpot\API`.
 
 #### Liên kết singleton
 
-Phương thức `singleton` sẽ liên kết một class hoặc một interface vào trong container chỉ resolve nó một lần duy nhất. Khi một liên kết singleton đã được resolve, thì lần tiếp theo khi gọi vào container thì đối tượng đó sẽ được trả về:
+Phương thức `singleton` sẽ liên kết một class hoặc một interface vào trong container và chỉ resolve nó một lần duy nhất. Khi một liên kết singleton đã được resolve, thì lần tiếp theo khi gọi vào container thì đối tượng đó sẽ được trả về:
 
     $this->app->singleton('HelpSpot\API', function ($app) {
         return new HelpSpot\API($app->make('HttpClient'));
@@ -105,7 +105,7 @@ Bạn cũng có thể liên kết một object instance đã tồn tại vào co
 
 #### Liên kết primitives
 
-Thỉnh thoảng, bạn có một class nhận vào một số class tích hợp, nhưng bạn cũng có thể muốn thêm một số giá trị khác để thêm vào class đó, ví dụ như một giá trị integer. Bạn có thể dễ dàng sử dụng liên kết theo ngữ cảnh đó để đưa vào một giá trị mà class của bạn có thể cần:
+Thỉnh thoảng, bạn có một class nhận vào một số các class tích hợp, nhưng bạn cũng có thể muốn thêm một số các giá trị khác nhau để thêm vào những class đó, ví dụ như là một giá trị integer. Bạn có thể dễ dàng sử dụng liên kết theo ngữ cảnh đó để đưa vào một giá trị mà class của bạn có thể cần:
 
     $this->app->when('App\Http\Controllers\UserController')
               ->needs('$variableName')
@@ -114,14 +114,14 @@ Thỉnh thoảng, bạn có một class nhận vào một số class tích hợp
 <a name="binding-interfaces-to-implementations"></a>
 ### Liên kết Interfaces tới Implementations
 
-Một tính năng rất mạnh mẽ của service container là khả năng liên kết một interface với một implementation nhất định. Ví dụ: giả sử chúng ta có interface `EventPusher` và implementation `RedisEventPusher`. Khi mà chúng ta đã code xong implementation `RedisEventPusher` của interface đó, chúng ta có thể đăng ký nó với service container như sau:
+Một tính năng rất mạnh mẽ của service container là khả năng liên kết một interface tới một implementation nhất định. Ví dụ: giả sử chúng ta có interface `EventPusher` và implementation `RedisEventPusher`. Khi mà chúng ta đã code xong implementation `RedisEventPusher` của interface, chúng ta có thể đăng ký nó với service container như sau:
 
     $this->app->bind(
         'App\Contracts\EventPusher',
         'App\Services\RedisEventPusher'
     );
 
-Câu lệnh trên sẽ nói với container rằng nó cần tích hợp `RedisEventPusher` vào một class nếu class đó cần một implementation của interface `EventPusher`. Bây giờ chúng ta có thể gõ interface `EventPusher` vào hàm khởi tạo của class đó hoặc bất kỳ nơi nào khác, nơi mà các phụ thuộc được khai báo và được resolve bởi service container:
+Câu lệnh trên sẽ nói với container rằng nó cần tích hợp `RedisEventPusher` vào một class nếu class đó cần một implementation của interface `EventPusher`. Bây giờ chúng ta có thể viết interface `EventPusher` vào hàm khởi tạo của class đó hoặc bất kỳ nơi nào khác, nơi mà các phụ thuộc được khai báo và được resolve bởi service container:
 
     use App\Contracts\EventPusher;
 
@@ -139,7 +139,7 @@ Câu lệnh trên sẽ nói với container rằng nó cần tích hợp `RedisE
 <a name="contextual-binding"></a>
 ### Liên kết theo ngữ cảnh
 
-Thỉnh thoảng bạn có thể có hai class sử dụng chung một interface, nhưng bạn lại muốn tích hợp các implementation khác nhau đó vào các class khác nhau. Ví dụ, có hai controller bị phụ thuộc vào các implementation khác nhau của class `Illuminate\Contracts\Filesystem\Filesystem` [contract](/docs/{{version}}/contracts). Laravel cung cấp một interface đơn giản, và dễ dàng để xác định hành vi này:
+Thỉnh thoảng bạn cũng có thể có hai class sử dụng chung một interface, nhưng bạn lại muốn tích hợp các implementation khác nhau đó vào các class khác nhau. Ví dụ, có hai controller bị phụ thuộc vào các implementation khác nhau của class `Illuminate\Contracts\Filesystem\Filesystem` [contract](/docs/{{version}}/contracts). Laravel cung cấp một interface đơn giản, và dễ dàng để thực hiện hành vi này:
 
     use Illuminate\Support\Facades\Storage;
     use App\Http\Controllers\PhotoController;
@@ -161,7 +161,7 @@ Thỉnh thoảng bạn có thể có hai class sử dụng chung một interface
 <a name="tagging"></a>
 ### Thẻ
 
-Đôi khi, bạn có thể cần phải resolve tất cả một "category" liên kết. Ví dụ, giả sử bạn đang xây dựng một trình tổng hợp report nhận được một mảng gồm nhiều implementation khác nhau của interface `Report`. Sau khi đăng ký các implementation của interface `Report` này, bạn có thể gán cho chúng vào một thẻ bằng phương thức `tag`:
+Đôi khi, bạn có thể cần phải resolve tất cả một "category" liên kết. Ví dụ, giả sử bạn đang xây dựng một report tổng hợp nhận vào một mảng gồm nhiều implementation khác nhau của interface `Report`. Sau khi đăng ký các implementation của interface `Report`, bạn có thể gán cho chúng vào một thẻ bằng phương thức `tag`:
 
     $this->app->bind('SpeedReport', function () {
         //
@@ -202,7 +202,7 @@ Nếu bạn đang ở trong một vị trí mà code không có quyền truy c�
 
     $api = resolve('HelpSpot\API');
 
-Nếu một số phụ thuộc của class của bạn mà không thể resolve được thông qua container, bạn có thể tích hợp chúng bằng cách chuyển chúng thành một mảng và truyền vào phương thức `makeWith`:
+Nếu một số phụ thuộc của class mà bạn mong muốn không thể resolve được thông qua container, bạn có thể tích hợp chúng bằng cách chuyển chúng thành một mảng và truyền vào phương thức `makeWith`:
 
     $api = $this->app->makeWith('HelpSpot\API', ['id' => 1]);
 
@@ -262,12 +262,12 @@ Service container sẽ kích hoạt một event mỗi khi nó resolve một đ�
         // Called when container resolves objects of type "HelpSpot\API"...
     });
 
-Như bạn có thể thấy, đối tượng đang được resolve sẽ được truyền vào một hàm callback, cho phép bạn đặt thêm bất kỳ thuộc tính nào vào trong đối tượng trước khi nó được trao về cho người resolve nó.
+Như bạn có thể thấy, đối tượng đang được resolve sẽ được truyền vào một hàm callback, cho phép bạn đặt thêm bất kỳ thuộc tính nào vào trong đối tượng trước khi nó được trả về cho người resolve nó.
 
 <a name="psr-11"></a>
 ## PSR-11
 
-Service container của Laravel là một triển khai của một interface [PSR-11](https://github.com/php-fig/fig-standards/blob/master/accepted/PSR-11-container.md). Do đó, bạn có thể khai báo một interface container PSR-11 để có được một instance của container Laravel:
+Service container của Laravel là một implement của một interface [PSR-11](https://github.com/php-fig/fig-standards/blob/master/accepted/PSR-11-container.md). Do đó, bạn có thể khai báo một interface container PSR-11 để có được một instance của container Laravel:
 
     use Psr\Container\ContainerInterface;
 

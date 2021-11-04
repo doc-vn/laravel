@@ -15,7 +15,7 @@
 <a name="accessing-the-request"></a>
 ## Truy cập vào Request
 
-Để có được một instance của request HTTP hiện tại thông qua việc khai báo phụ thuộc, bạn có thể khai báo kiểu class `Illuminate\Http\Request` trong phương thức controller của bạn. Instance của request đến sẽ tự động được inject bởi [service container](/docs/{{version}}/container):
+Để có được một instance của request HTTP thông qua việc khai báo phụ thuộc, bạn có thể khai báo kiểu class `Illuminate\Http\Request` trong phương thức controller của bạn. Instance của request sẽ tự động được inject bởi [service container](/docs/{{version}}/container):
 
     <?php
 
@@ -70,7 +70,7 @@ Bạn vẫn có thể khai báo kiểu `Illuminate\Http\Request` và truy cập 
 
 #### Truy cập vào Request thông qua Route Closure
 
-Bạn cũng có thể khai báo kiểu class `Illuminate\Http\Request` trong một route Closure. Service container sẽ tự động inject request đến vào Closure khi được thực thi:
+Bạn cũng có thể khai báo kiểu class `Illuminate\Http\Request` trong một route Closure. Service container sẽ tự động inject request vào Closure khi được thực thi:
 
     use Illuminate\Http\Request;
 
@@ -85,11 +85,11 @@ Instance `Illuminate\Http\Request` cung cấp nhiều phương thức để ki�
 
 #### Lấy Request Path
 
-Phương thức `path` trả về thông tin path của request. Vì vậy, nếu request đến được targeted là `http://domain.com/foo/bar`, phương thức `path` sẽ trả về `foo/bar`:
+Phương thức `path` trả về thông tin path của request. Vì vậy, nếu request được targeted là `http://domain.com/foo/bar`, thì phương thức `path` sẽ trả về `foo/bar`:
 
     $uri = $request->path();
 
-Phương thức `is` cho phép bạn xác định rằng path của request đến có khớp với một pattern đã cho hay không. Bạn có thể sử dụng ký tự `*` làm ký tự đại diện khi sử dụng phương thức này:
+Phương thức `is` cho phép bạn kiểm tra path của request có khớp với một pattern đã cho hay không. Bạn có thể sử dụng ký tự `*` làm ký tự đại diện khi sử dụng phương thức này:
 
     if ($request->is('admin/*')) {
         //
@@ -97,7 +97,7 @@ Phương thức `is` cho phép bạn xác định rằng path của request đ�
 
 #### Lấy Request URL
 
-Để lấy full URL của request đến, bạn có thể sử dụng các phương thức `url` hoặc `fullUrl`. Phương thức `url` sẽ trả về URL mà không có chuỗi truy vấn, trong khi phương thức `fullUrl` bao gồm chuỗi truy vấn:
+Để lấy full URL của request, bạn có thể sử dụng các phương thức `url` hoặc `fullUrl`. Phương thức `url` sẽ trả về URL mà không có chuỗi truy vấn, trong khi phương thức `fullUrl` sẽ bao gồm chuỗi truy vấn:
 
     // Without Query String...
     $url = $request->url();
@@ -107,7 +107,7 @@ Phương thức `is` cho phép bạn xác định rằng path của request đ�
 
 #### Lấy Request Method
 
-Phương thức `method` sẽ trả về mothed HTTP của request. Bạn có thể sử dụng phương thức `isMethod` để xác định rằng mothed HTTP có khớp với một chuỗi đã cho hay không:
+Phương thức `method` sẽ trả về mothed HTTP của request. Bạn có thể sử dụng phương thức `isMethod` để kiểm tra mothed HTTP có khớp với một chuỗi đã cho hay không:
 
     $method = $request->method();
 
@@ -118,12 +118,12 @@ Phương thức `method` sẽ trả về mothed HTTP của request. Bạn có th
 <a name="psr7-requests"></a>
 ### PSR-7 Requests
 
-[Tiêu chuẩn PSR-7](http://www.php-fig.org/psr/psr-7/) định nghĩa interface cho các message HTTP, bao gồm các request và response. Nếu bạn muốn có được một instance của PSR-7 request thay vì Laravel request, trước tiên bạn sẽ cần cài đặt một vài thư viện. Laravel sẽ sử dụng component *Symfony HTTP Message Bridge* để chuyển đổi các request và response của Laravel thành các implementation tương thích PSR-7:
+[Tiêu chuẩn PSR-7](http://www.php-fig.org/psr/psr-7/) định nghĩa interface cho các message HTTP, bao gồm cả các request và response. Nếu bạn muốn có một instance của PSR-7 request thay vì Laravel request, trước tiên bạn sẽ cần cài đặt một vài thư viện. Laravel sẽ sử dụng component *Symfony HTTP Message Bridge* để chuyển đổi các request và response của Laravel thành các implementation tương thích PSR-7:
 
     composer require symfony/psr-http-message-bridge
     composer require zendframework/zend-diactoros
 
-Khi bạn đã cài đặt xong các thư viện trên, bạn có thể lấy được PSR-7 request bằng cách khai báo kiểu request interface trên route Closure hoặc controller method:
+Khi bạn đã cài đặt xong các thư viện trên, bạn có thể lấy được PSR-7 request bằng cách khai báo kiểu request interface trên vào route Closure hoặc controller method:
 
     use Psr\Http\Message\ServerRequestInterface;
 
@@ -136,7 +136,7 @@ Khi bạn đã cài đặt xong các thư viện trên, bạn có thể lấy đ
 <a name="input-trimming-and-normalization"></a>
 ## Input Trimming và Normalization
 
-Mặc định, Laravel có chứa các middleware `TrimStrings` và `ConvertEmptyStringsToNull` trong stack middleware global của application. Các middleware này được liệt kê trong stack bởi class `App\Http\Kernel`. Các middleware này sẽ tự động cắt tất cả các field chuỗi trên request, cũng như chuyển đổi bất kỳ field chuỗi trống nào thành `null`. Điều này cho phép bạn cần không phải lo lắng về những điều này trong các route và controller của bạn.
+Mặc định, Laravel sẽ chứa các middleware `TrimStrings` và `ConvertEmptyStringsToNull` trong stack middleware global của application. Các middleware trên được liệt kê trong stack bởi class `App\Http\Kernel`. Các middleware này sẽ tự động trim tất cả các field dạng chuỗi trên request, cũng như chuyển đổi bất kỳ field nào đang ở dạng chuỗi trống thành `null`. Điều này cho phép bạn cần không phải lo lắng về những định dạng chuỗi có trong các route và controller của bạn.
 
 Nếu bạn muốn vô hiệu hóa hành vi này, bạn có thể xóa chúng ra khỏi stack middleware của application.
 
@@ -159,7 +159,7 @@ Bạn có thể truyền vào một giá trị mặc định làm tham số th�
 
     $name = $request->input('name', 'Sally');
 
-Khi làm việc với các form có chứa một mảng input, hãy sử dụng ký tự "chấm" để truy cập các mảng:
+Khi làm việc với các form có chứa một mảng input, hãy sử dụng ký tự "chấm" để truy cập vào mảng:
 
     $name = $request->input('products.0.name');
 
@@ -189,13 +189,13 @@ Khi sử dụng các thuộc tính động, trước tiên, Laravel sẽ tìm gi
 
 #### Lấy JSON Input Values
 
-Khi gửi các JSON request đến application của bạn, bạn có thể truy cập dữ liệu JSON thông qua phương thức `input` miễn là `Content-Type` header của request đó được đặt là `application/json`. Bạn thậm chí có thể sử dụng cú pháp "chấm" để lấy các phần tử con trong mảng JSON:
+Khi gửi các JSON request cho application của bạn, bạn có thể truy cập dữ liệu JSON thông qua phương thức `input` miễn là `Content-Type` header của request đó được set là `application/json`. Bạn thậm chí có thể sử dụng cú pháp "chấm" để lấy các phần tử con trong mảng JSON:
 
     $name = $request->input('user.name');
 
 #### Lấy A Portion Of The Input Data
 
-Nếu bạn cần truy xuất một tập con của dữ liệu input, bạn có thể sử dụng các phương thức `only` hoặc `except`. Cả hai phương thức này đều chấp nhận một `array` hoặc một danh sách động của tham số:
+Nếu bạn cần truy xuất một tập con của dữ liệu input, bạn có thể sử dụng các phương thức `only` hoặc `except`. Cả hai phương thức này đều chấp nhận một `array` hoặc một danh sách động các tham số:
 
     $input = $request->only(['username', 'password']);
 
@@ -209,7 +209,7 @@ Nếu bạn cần truy xuất một tập con của dữ liệu input, bạn có
 
 #### Xác định một giá trị input có tồn tại hay không
 
-Bạn nên sử dụng phương thức `has` để xác định xem giá trị đó có tồn tại trong request hay không. Phương thức `has` trả về `true` nếu giá trị tồn tại trong request:
+Bạn nên sử dụng phương thức `has` để xác định xem giá trị đó có tồn tại trong request hay không. Phương thức `has` sẽ trả về `true` nếu giá trị tồn tại trong request:
 
     if ($request->has('name')) {
         //
@@ -230,7 +230,7 @@ Nếu bạn muốn xác định xem một giá trị có tồn tại trong reque
 <a name="old-input"></a>
 ### Old Input
 
-Laravel cho phép bạn giữ giá trị input từ request trước đó đến request tiếp theo. Tính năng này đặc biệt hữu ích cho việc điền lại các giá trị vào form sau khi phát hiện có lỗi dữ liệu. Tuy nhiên, nếu bạn đang sử dụng [validation features](/docs/{{version}}/validation) của Laravel, thì bạn cũng không cần chỉnh sửa gì cho tính năng đó cả, hệ thống built-in validation của Laravel sẽ tự động gọi đến chúng.
+Laravel cho phép bạn giữ giá trị input từ request trước đó đến request tiếp theo. Tính năng này đặc biệt hữu ích cho việc điền lại các giá trị vào form sau khi phát hiện có lỗi dữ liệu. Tuy nhiên, nếu bạn đang sử dụng [validation features](/docs/{{version}}/validation) của Laravel, thì bạn sẽ không cần chỉnh sửa gì cho tính năng này, hệ thống built-in validation của Laravel sẽ tự động gọi đến chúng.
 
 #### Flashing input đến Session
 
@@ -246,7 +246,7 @@ Bạn cũng có thể sử dụng các phương thức `flashOnly` và `flashExc
 
 #### Flashing Input vào chuyển hướng
 
-Vì bạn thường xuyên phải flash input vào session và sau đó chuyển về trang trước đó, bạn có thể dễ dàng đưa những input đó vào một chuyển hướng bằng cách sử dụng phương thức `withInput`:
+Vì bạn thường xuyên phải flash input vào session và sau đó chuyển về trang trước đó, bạn có thể dễ dàng đưa những input đó vào chuyển hướng đó bằng cách sử dụng phương thức `withInput`:
 
     return redirect('form')->withInput();
 
@@ -256,11 +256,11 @@ Vì bạn thường xuyên phải flash input vào session và sau đó chuyển
 
 #### Lấy Old Input
 
-Để lấy input flash từ request trước đó, hãy sử dụng phương thức `old` trong instance `Request`. Phương thức `old` sẽ lấy dữ liệu input được flash trước đó từ [session](/docs/{{version}}/session):
+Để lấy một input flash từ request trước đó, hãy sử dụng phương thức `old` trong instance `Request`. Phương thức `old` sẽ lấy dữ liệu input được flash trước đó từ [session](/docs/{{version}}/session):
 
     $username = $request->old('username');
 
-Laravel cũng cung cấp một global helper `old`. Nếu bạn đang muốn hiển thị old input vào trong một [Blade template](/docs/{{version}}/blade), nó sẽ thuận tiện hơn khi bạn sử dụng helper `old`. Nếu old input không tồn tại, `null` sẽ được trả về:
+Laravel cũng cung cấp một global helper `old`. Nếu bạn đang muốn hiển thị một old input vào trong một [Blade template](/docs/{{version}}/blade), nó sẽ thuận tiện hơn khi bạn sử dụng helper `old`. Nếu old input không tồn tại, `null` sẽ được trả về:
 
     <input type="text" name="username" value="{{ old('username') }}">
 
@@ -273,7 +273,7 @@ Tất cả các cookie được tạo bởi Laravel framework đều được m�
 
     $value = $request->cookie('name');
 
-Ngoài ra, bạn có thể sử dụng facade `Cookie` để truy cập các giá trị cookie:
+Ngoài ra, bạn có thể sử dụng facade `Cookie` để truy cập các giá trị của cookie:
 
     $value = Cookie::get('name');
 
@@ -311,13 +311,13 @@ Nếu bạn muốn tạo một instance `Symfony\Component\HttpFoundation\Cookie
 <a name="retrieving-uploaded-files"></a>
 ### Lấy Uploaded Files
 
-Bạn có thể truy cập đến các file đã được upload từ một instance`Illuminate\Http\Request` bằng cách sử dụng phương thức` file` hoặc sử dụng các thuộc tính động. Phương thức `file` trả về một instance của class `Illuminate\Http\UploadedFile`, được extend từ class PHP `SplFileInfo` và cung cấp nhiều phương thức để tương tác với file:
+Bạn có thể truy cập đến các file đã được upload từ một instance`Illuminate\Http\Request` bằng cách sử dụng phương thức `file` hoặc sử dụng các thuộc tính động. Phương thức `file` trả về một instance của class `Illuminate\Http\UploadedFile`, được extend từ class PHP `SplFileInfo` và cung cấp nhiều phương thức để tương tác với file:
 
     $file = $request->file('photo');
 
     $file = $request->photo;
 
-Bạn có thể xác định một file có tồn tại trong request hay không bằng cách sử dụng phương thức `hasFile`:
+Bạn có thể kiểm tra một file có tồn tại trong request hay không bằng cách sử dụng phương thức `hasFile`:
 
     if ($request->hasFile('photo')) {
         //
@@ -346,7 +346,7 @@ Có nhiều phương thức khác có sẵn trong các instance `UploadedFile`. 
 <a name="storing-uploaded-files"></a>
 ### Lưu file upload
 
-Để lưu trữ một file đã được tải lên, thông thường bạn sẽ sử dụng một trong các [filesystems](/docs/{{version}}/filesystem) đã được cấu hình của bạn. Class `UploadedFile` có một phương thức `store` sẽ chuyển file đã tải lên vào một trong các disk của bạn, nó có thể là một vị trí trong local filesystem hoặc thậm chí là một vị trí được lưu trữ đám mây như Amazon S3.
+Để lưu trữ một file đã được tải lên, thông thường bạn sẽ sử dụng một trong các [filesystems](/docs/{{version}}/filesystem) đã được cấu hình của bạn. Class `UploadedFile` có một phương thức `store` sẽ chuyển file đã tải lên vào một trong các disk của bạn, nó có thể là một vị trí trong local filesystem hoặc thậm chí là một vị trí được lưu trữ trên đám mây như Amazon S3.
 
 Phương thức `store` chấp nhận một đường dẫn, nơi mà file sẽ được lưu, và được bắt đầu tính từ đường dẫn gốc được cấu hình trong file filesystem. Đường dẫn này không được chứa tên file, vì một unique ID sẽ tự động được tạo để đặt tên file.
 
@@ -356,7 +356,7 @@ Phương thức `store` cũng chấp nhận một tham số thứ hai tùy chọ
 
     $path = $request->photo->store('images', 's3');
 
-Nếu bạn không muốn tên tệp được tự động tạo, bạn có thể sử dụng phương thức `storeAs`, nó chấp nhận đường dẫn, tên tệp và tên disk làm tham số của nó:
+Nếu bạn không muốn tên tệp được tự động tạo, bạn có thể sử dụng phương thức `storeAs`, nó sẽ chấp nhận một đường dẫn, một tên tệp và một tên disk làm tham số của nó:
 
     $path = $request->photo->storeAs('images', 'filename.jpg');
 
@@ -365,9 +365,9 @@ Nếu bạn không muốn tên tệp được tự động tạo, bạn có th�
 <a name="configuring-trusted-proxies"></a>
 ## Cấu hình Trusted Proxies
 
-Khi application của bạn đang chạy sau một hệ thống load balancer, mà không dùng chứng chỉ TLS / SSL để kết nối đến server của bạn. Đôi khi bạn sẽ cảm thấy rằng application của bạn sẽ không trả về liên kết HTTPS. Thông thường, điều này là do application của bạn đang bị chuyển tiếp lưu lượng truy cập từ load balancer của bạn vào cổng 80 và không biết rằng nó đang tạo ra các liên kết không an toàn.
+Khi application của bạn đang chạy sau một hệ thống load balancer, mà không dùng chứng chỉ TLS / SSL để kết nối đến server của bạn. Đôi khi bạn sẽ cảm thấy rằng application của bạn sẽ không trả về liên kết HTTPS. Thông thường, điều này là do application của bạn đang bị chuyển tiếp lưu lượng truy cập từ load balancer vào cổng 80 và không biết rằng nó đang tạo ra các liên kết không an toàn.
 
-Để giải quyết vấn đề này, bạn có thể sử dụng middleware `App\Http\Middleware\TrustProxies` có trong application Laravel của bạn, cho phép bạn nhanh chóng tùy chỉnh các load balancer hoặc các proxy mà application của bạn đang sử dụng, mà bạn trust. Các proxy tin cậy của bạn nên được liệt kê dưới dạng một mảng trong thuộc tính `$proxies` của middleware này. Ngoài việc cấu hình proxy tin cậy, bạn có thể cấu hình các header đang được gửi bởi proxy của bạn với thông tin về original request:
+Để giải quyết vấn đề này, bạn có thể sử dụng middleware `App\Http\Middleware\TrustProxies` có trong application Laravel của bạn, cho phép bạn nhanh chóng tùy chỉnh các load balancer hoặc các proxy mà application đang sử dụng, mà bạn tin tưởng. Các proxy mà bạn tin tưởng nên được liệt kê dưới dạng một mảng trong thuộc tính `$proxies` của middleware này. Ngoài việc cấu hình proxy tin tưởng, bạn có thể cấu hình các header đang được gửi bởi proxy của bạn với thông tin về original request:
 
     <?php
 

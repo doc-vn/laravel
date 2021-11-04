@@ -10,7 +10,7 @@
     - [Delayed Dispatching](#delayed-dispatching)
     - [Kết hợp Job](#job-chaining)
     - [Tuỳ biến Queue và Connection](#customizing-the-queue-and-connection)
-    - [Khai báo số lần thử Job tối đa / giá trị timeout](#max-job-attempts-and-timeout)
+    - [Khai báo số lần chạy Job tối đa / giá trị timeout](#max-job-attempts-and-timeout)
     - [Giới hạn tỷ lệ chạy](#rate-limiting)
     - [Xử lý Error](#error-handling)
 - [Chạy Queue Worker](#running-the-queue-worker)
@@ -27,18 +27,18 @@
 <a name="introduction"></a>
 ## Giới thiệu
 
-> {tip} Laravel hiện cung cấp Horizon, một hệ thống cấu hình và bảng điều khiển đẹp mắt cho các queue được hỗ trợ bởi Redis của bạn. Hãy xem toàn bộ [tài liệu Horizon](/docs/{{version}}/horizon) để biết thêm thông tin.
+> {tip} Laravel hiện cung cấp Horizon là một hệ thống cấu hình và điều khiển cho các queue mà được tạo bởi Redis của bạn. Hãy xem toàn bộ [tài liệu Horizon](/docs/{{version}}/horizon) để biết thêm thông tin chi tiết.
 
-Queue của Laravel cung cấp một API hợp nhất trên nhiều loại queue backend khác nhau, chẳng hạn như Beanstalk, Amazon SQS, Redis hoặc thậm chí là một database. Queue cho phép bạn trì hoãn việc xử lý một tác vụ tốn nhiều thời gian, chẳng hạn như việc gửi email, sau một thời gian nhất định. Trì hoãn các tác vụ tiêu tốn thời gian này sẽ tăng tốc đáng kể các request web đến application của bạn.
+Queue của Laravel cung cấp một API hợp nhất trên nhiều loại queue backend khác nhau, chẳng hạn như Beanstalk, Amazon SQS, Redis hoặc thậm chí là một database. Queue cho phép bạn trì hoãn việc xử lý một tác vụ tốn nhiều thời gian, chẳng hạn như việc gửi email sau một thời gian nhất định. Trì hoãn các tác vụ tiêu tốn thời gian này sẽ tăng tốc các request web đến application của bạn.
 
-File cấu hình queue được lưu trữ trong `config/queue.php`. Trong file này, bạn sẽ tìm thấy các cấu hình connection cho từng driver queue được chứa trong framework, bao gồm database, [Beanstalkd](https://kr.github.io/beanstalkd/), [Amazon SQS](https://aws.amazon.com/sqs/), [Redis](https://redis.io), và một driver đồng bộ sẽ chạy job ngay lập tức (để sử dụng dưới local). Driver queue `null` cũng được khai báo để loại bỏ các job đã được queue.
+File cấu hình queue được lưu trữ trong `config/queue.php`. Trong file này, bạn sẽ tìm thấy các cấu hình connection cho từng loại driver queue có trong framework, bao gồm database, [Beanstalkd](https://kr.github.io/beanstalkd/), [Amazon SQS](https://aws.amazon.com/sqs/), [Redis](https://redis.io), và một driver chạy đồng bộ job (để sử dụng dưới local). Driver queue `null` cũng đã được khai báo để loại bỏ các job đã được queue.
 
 <a name="connections-vs-queues"></a>
 ### Connection và Queue
 
-Trước khi bắt đầu với Laravel queue, điều quan trọng là phải hiểu sự khác biệt giữa "connections" và "queues". Trong file cấu hình `config/queue.php` của bạn, có một tùy chọn cấu hình `connections`. Tùy chọn này sẽ định nghĩa một connection cụ thể đến backend service như Amazon SQS, Beanstalk hoặc Redis. Tuy nhiên, bất kỳ queue connection nào cũng có thể có nhiều "queue", và nó có thể được coi là một ngăn xếp hoặc một loạt các job khác nhau.
+Trước khi bắt đầu với Laravel queue, điều quan trọng là phải hiểu sự khác biệt giữa "connections" và "queues". Trong file cấu hình `config/queue.php` của bạn, có một tùy chọn cấu hình là `connections`. Tùy chọn này sẽ định nghĩa một connection đến một backend service như Amazon SQS, Beanstalk hoặc Redis. Tuy nhiên, bất kỳ connection nào cũng có thể có nhiều "queue", và nó có thể được coi là một ngăn xếp hoặc một mảng các job khác nhau.
 
-Lưu ý rằng mỗi ví dụ cấu hình connection trong file cấu hình `queue` chứa một thuộc tính `queue`. Đây là queue mặc định mà các job sẽ được gửi đến khi chúng được gửi đến một connection. Nói cách khác, nếu bạn gửi một job mà không xác định rõ ràng queue nào sẽ được gửi đến, job đó sẽ được lưu trên queue mà đã được định nghĩa trong thuộc tính `queue` của cấu hình connection:
+Lưu ý rằng mỗi ví dụ cấu hình connection trong file cấu hình `queue` có chứa một thuộc tính `queue`. Đây là queue mặc định mà các job sẽ được gửi tới mỗi khi chúng được gửi đến một connection. Nói cách khác, nếu bạn gửi một job mà không khai báo rõ queue nào sẽ được dùng, thì job đó sẽ được lưu vào queue mà đã được định nghĩa trong thuộc tính `queue` của cấu hình connection:
 
     // This job is sent to the default queue...
     Job::dispatch();
@@ -46,7 +46,7 @@ Lưu ý rằng mỗi ví dụ cấu hình connection trong file cấu hình `que
     // This job is sent to the "emails" queue...
     Job::dispatch()->onQueue('emails');
 
-Một số application có thể không cần phải tạo nhiều job lên nhiều queue, thay vào đó một queue đơn giản có thể phù hợp hơn. Tuy nhiên, việc tạo các job lên nhiều queue có thể đặc biệt hữu ích cho các application muốn ưu tiên hoặc phân chia cách xử lý các job, vì Laravel queue worker cho phép bạn khai báo queue nào sẽ được xử lý theo mức độ ưu tiên của nó. Ví dụ: nếu bạn tạo job lên queue `high`, bạn có thể chạy một worker có mức độ ưu tiên xử lý cao hơn:
+Một số application có thể không cần phải tạo nhiều job trong nhiều queue, thay vào đó một queue có thể là phù hợp hơn. Tuy nhiên, việc tạo các job lên nhiều queue cũng có thể đặc biệt hữu ích cho các application mà muốn ưu tiên hoặc là phân chia cách xử lý cho từng job, vì Laravel queue worker cho phép bạn khai báo các queue sẽ được xử lý theo mức độ ưu tiên. Ví dụ: nếu bạn tạo một job lên queue `high`, thì bạn có thể chạy một worker có mức độ ưu tiên xử lý cao hơn:
 
     php artisan queue:work --queue=high,default
 
@@ -55,7 +55,7 @@ Một số application có thể không cần phải tạo nhiều job lên nhi�
 
 #### Database
 
-Để sử dụng driver `database` queue, bạn sẽ cần một bảng cơ sở dữ liệu để lưu các job. Để tạo một migration tạo bảng này, hãy chạy lệnh Artisan `queue:table`. Khi migration đã được tạo, bạn có thể migrate cơ sở dữ liệu của bạn bằng lệnh `migrate`:
+Để sử dụng driver `database` queue, bạn sẽ cần một bảng cơ sở dữ liệu để lưu các job. Để tạo một migration tạo bảng, hãy chạy lệnh Artisan `queue:table`. Khi migration đã được tạo, bạn có thể migrate cơ sở dữ liệu của bạn bằng lệnh `migrate`:
 
     php artisan queue:table
 
@@ -65,7 +65,7 @@ Một số application có thể không cần phải tạo nhiều job lên nhi�
 
 Để sử dụng driver `redis` queue, bạn nên cấu hình connection tới Redis database trong file cấu hình `config/database.php` của bạn.
 
-Nếu connection Redis queue của bạn sử dụng một Cluster Redis, thì tên queue của bạn phải chứa một [key hash tag](https://redis.io/topics/cluster-spec#keys-hash-tags). Điều này là bắt buộc để đảm bảo rằng tất cả các key Redis cho queue sẽ được set vào cùng một vị trí hash:
+Nếu connection Redis của bạn sử dụng một Cluster Redis, thì tên queue của bạn phải chứa một [key hash tag](https://redis.io/topics/cluster-spec#keys-hash-tags). Điều này là bắt buộc để đảm bảo rằng tất cả các key Redis cho queue sẽ được set vào cùng một vị trí hash:
 
     'redis' => [
         'driver' => 'redis',
@@ -76,7 +76,7 @@ Nếu connection Redis queue của bạn sử dụng một Cluster Redis, thì t
 
 #### Other Driver Prerequisites
 
-Các library sau sẽ cần thiết cho driver queue đã được liệt kê:
+Các library sau sẽ cần thiết cho driver queue cũng sẽ được liệt kê:
 
 <div class="content-list" markdown="1">
 - Amazon SQS: `aws/aws-sdk-php ~3.0`
@@ -90,16 +90,16 @@ Các library sau sẽ cần thiết cho driver queue đã được liệt kê:
 <a name="generating-job-classes"></a>
 ### Tạo class Job
 
-Mặc định, tất cả các queueable job cho application của bạn được lưu trữ trong thư mục `app/Jobs`. Nếu thư mục `app/Jobs` không tồn tại, nó sẽ được tạo khi bạn chạy lệnh Artisan `make:job`. Bạn có thể tạo một queue job mới bằng cách sử dụng Artisan CLI:
+Mặc định, tất cả các job cho application của bạn được lưu trong thư mục `app/Jobs`. Nếu thư mục `app/Jobs` chưa tồn tại, thì nó có thể được tạo ra khi bạn chạy lệnh Artisan `make:job`. Bạn có thể tạo một queue job mới bằng cách sử dụng Artisan CLI:
 
     php artisan make:job ProcessPodcast
 
-Class được tạo ra sẽ implement interface `Illuminate\Contracts\Queue\ShouldQueue`, và cho Laravel biết rằng job sẽ được tạo cho queue để chạy không đồng bộ.
+Class được tạo ra sẽ implement interface `Illuminate\Contracts\Queue\ShouldQueue`, và cho Laravel biết là job này sẽ được đưa vào queue để chạy không đồng bộ.
 
 <a name="class-structure"></a>
 ### Cấu trúc class
 
-Các class của job rất đơn giản, thông thường chỉ chứa một phương thức `handle` được gọi khi job được xử lý bởi queue. Để bắt đầu, chúng ta hãy xem một class của một job ví dụ. Trong ví dụ này, chúng ta sẽ thử rằng chúng ta quản lý một service xuất bản podcast và cần xử lý các file podcast đã tải lên trước khi chúng được xuất bản:
+Các class của job rất đơn giản, thông thường chỉ chứa một phương thức `handle` được gọi khi job được xử lý bởi queue. Để bắt đầu, chúng ta hãy xem một class của một job ví dụ. Trong ví dụ này, chúng ta sẽ chạy là chúng ta quản lý một service xuất bản podcast và cần xử lý các file podcast đã được tải lên trước khi được xuất bản:
 
     <?php
 
@@ -142,16 +142,16 @@ Các class của job rất đơn giản, thông thường chỉ chứa một ph�
         }
     }
 
-Trong ví dụ trên, hãy lưu ý rằng chúng ta có thể truyền một [Eloquent model](/docs/{{version}}/eloquent) trực tiếp vào hàm khởi tạo của queued job. Do trait `SerializesModels` này đang được job sử dụng, nên các model Eloquent sẽ được serialize và unserialize ngược lại khi job được xử lý. Nếu queued job của bạn chấp nhận một model Eloquent trong hàm khởi tạo của nó, thì chỉ có mã định danh cho model đó sẽ được serialize trên queue. Và khi job đó thực sự được xử lý, hệ thống queue sẽ tự động lấy ra lại full instance của model từ cơ sở dữ liệu. Tất cả đều hoàn toàn an toàn đối với application của bạn và ngăn chặn các vấn đề có thể phát sinh từ việc serialize full instance của model Eloquent.
+Trong ví dụ trên, hãy lưu ý rằng chúng ta có thể truyền một [Eloquent model](/docs/{{version}}/eloquent) trực tiếp vào hàm khởi tạo của queued job. Do trait `SerializesModels` này đang được job sử dụng, nên các model Eloquent sẽ được serialize và unserialize ngược lại khi job được xử lý. Nếu queued job của bạn chấp nhận một model Eloquent trong hàm khởi tạo, thì chỉ có mã định danh cho model sẽ được serialize trên queue. Và khi job đó được xử lý, thì hệ thống queue sẽ tự động lấy ra lại full instance của model đó từ cơ sở dữ liệu. Tất cả đều là hoàn toàn an toàn đối với application của bạn và ngăn chặn các vấn đề có thể phát sinh từ việc serialize full instance của model Eloquent.
 
 Phương thức `handle` được gọi khi job được xử lý bởi queue. Lưu ý rằng chúng ta có thể khai báo các phụ thuộc vào phương thức `handle` của job. Laravel [service container](/docs/{{version}}/container) sẽ tự động inject các phụ thuộc này.
 
-> {note} Dữ liệu nhị phân, chẳng hạn như nội dung ảnh thô, phải được truyền qua hàm `base64_encode` trước khi được truyền đến một queued job. Nếu không làm điều đó, thì job có thể serialize thành chuỗi JSON không đúng khi được đặt lên queue.
+> {note} Dữ liệu nhị phân, chẳng hạn như một nội dung ảnh thô, phải được truyền qua hàm `base64_encode` trước khi được truyền đến một queued job. Nếu không làm điều này, thì job đó có thể serialize thành chuỗi JSON không đúng khi được đặt lên queue.
 
 <a name="dispatching-jobs"></a>
 ## Dispatching Job
 
-Khi bạn viết xong các class job của bạn, bạn có thể dispatch nó bằng cách sử dụng phương thức `dispatch` trên chính job đó. Các tham số được truyền cho phương thức `dispatch` sẽ được truyền lại vào hàm khởi tạo của job:
+Khi bạn đã viết xong các class job của bạn, bạn có thể dispatch nó bằng cách sử dụng phương thức `dispatch` trên chính job đó. Các tham số được truyền vào cho phương thức `dispatch` sẽ được truyền lại vào hàm khởi tạo của job:
 
     <?php
 
@@ -180,7 +180,7 @@ Khi bạn viết xong các class job của bạn, bạn có thể dispatch nó b
 <a name="delayed-dispatching"></a>
 ### Delayed Dispatching
 
-Nếu bạn muốn delay việc thực hiện một queued job, bạn có thể sử dụng phương thức `delay` khi đang dispatch một job. Ví dụ: hãy khai báo rằng một job không nên được xử lý cho đến 10 phút sau khi job được dispatch:
+Nếu bạn muốn delay việc thực hiện một queued job, bạn có thể sử dụng phương thức `delay` khi đang dispatch một job. Ví dụ: hãy khai báo một job không nên được xử lý cho đến 10 phút sau khi job đó được dispatch:
 
     <?php
 
@@ -212,7 +212,7 @@ Nếu bạn muốn delay việc thực hiện một queued job, bạn có thể 
 <a name="job-chaining"></a>
 ### Kết hợp Job
 
-Kết hợp job cho phép bạn khai báo một danh sách các queued job nên được chạy theo một trình tự. Nếu một job trong danh sách bị thất bại, thì các job còn lại sẽ không được chạy. Để thực hiện một danh sách queued job, bạn có thể sử dụng phương thức `withChain` trên bất kỳ dispatchable job nào của bạn:
+Kết hợp job cho phép bạn khai báo một danh sách các queued job sẽ được chạy theo một trình tự nhất định. Nếu một job trong danh sách bị thất bại, thì các job còn lại cũng sẽ không được chạy. Để thực hiện một danh sách queued job, bạn có thể sử dụng phương thức `withChain` trên bất kỳ dispatchable job nào của bạn:
 
     ProcessPodcast::withChain([
         new OptimizePodcast,
@@ -224,7 +224,7 @@ Kết hợp job cho phép bạn khai báo một danh sách các queued job nên 
 
 #### Dispatching đến một Queue cụ thể
 
-Bằng cách tạo các job đến các queue khác nhau, bạn có thể "phân loại" các queued job của bạn và thậm chí là ưu tiên bao nhiêu worker sẽ được gán cho mỗi queue. Hãy nhớ rằng, điều này không đẩy job đến các queue "connection" khác có ở trong file định nghĩa cấu hình queue của bạn, mà chỉ đẩy đến các queue có trong một connection. Để khai báo queue, sử dụng phương thức `onQueue` khi gửi job:
+Bằng cách tạo các job đến các queue khác nhau, bạn có thể "phân loại" các queued job của bạn và thậm chí là ưu tiên bao nhiêu worker sẽ được gán cho mỗi queue. Hãy nhớ rằng, điều này không đẩy job đến các queue "connection" khác mà có ở trong file định nghĩa cấu hình queue của bạn, mà chỉ đẩy đến các queue có trong một connection cụ thể. Để khai báo queue, sử dụng phương thức `onQueue` khi gửi job:
 
     <?php
 
@@ -252,7 +252,7 @@ Bằng cách tạo các job đến các queue khác nhau, bạn có thể "phân
 
 #### Dispatching To A Particular Connection
 
-Nếu bạn đang làm việc với nhiều queue connection, bạn có thể khai báo connection nào sẽ được tạo một job tới nó. Để khai báo connection, sử dụng phương thức `onConnection` khi gửi job:
+Nếu bạn đang làm việc với nhiều queue connection, bạn có thể khai báo connection nào sẽ dùng cho một job. Để khai báo connection, sử dụng phương thức `onConnection` khi gửi job:
 
     <?php
 
@@ -285,15 +285,15 @@ Tất nhiên, bạn có thể kết hợp các phương thức `onConnection` v�
                   ->onQueue('processing');
 
 <a name="max-job-attempts-and-timeout"></a>
-### Khai báo số lần thử Job tối đa / giá trị timeout
+### Khai báo số lần chạy Job tối đa / giá trị timeout
 
 #### Max Attempts
 
-Một cách tiếp cận để khai báo số lần tối đa mà một job có thể được thử thực hiện là thông qua switch `--tries` trên lệnh Artisan:
+Một cách tiếp cận để khai báo số lần tối đa mà một job có thể được chạy là thông qua switch `--tries` trên lệnh Artisan:
 
     php artisan queue:work --tries=3
 
-Tuy nhiên, bạn có thể thực hiện một cách tiếp cận chi tiết hơn bằng cách định nghĩa số lần thử tối đa trên chính class của job. Nếu số lần thử tối đa được chỉ định trong job, nó sẽ được ưu tiên giá trị này hơn là giá trị được cung cấp trên dòng lệnh:
+Tuy nhiên, bạn có thể thực hiện một cách tiếp cận chi tiết hơn bằng cách định nghĩa số lần chạy tối đa trên chính class của job. Nếu số lần chạy tối đa được chỉ định trong job, thì nó sẽ ưu tiên giá trị này hơn là giá trị được cung cấp trên dòng lệnh:
 
     <?php
 
@@ -312,7 +312,7 @@ Tuy nhiên, bạn có thể thực hiện một cách tiếp cận chi tiết h�
 <a name="time-based-attempts"></a>
 #### Time Based Attempts
 
-Thay thế cho việc định nghĩa số lần một job có thể được thử trước khi nó thất bại, bạn có thể định nghĩa thời gian mà job đó hết thời gian. Điều này cho phép một job được thử thoải mái trong một khoảng thời gian nhất định. Để định nghĩa thời gian mà một job hết thời gian, hãy thêm phương thức `retryUntil` vào class job của bạn:
+Thay thế cho việc định nghĩa số lần một job có thể được chạy trước khi nó thất bại, bạn có thể định nghĩa thời gian mà job đó sẽ hết hạn. Điều này cho phép một job có thể được chạy thoải mái trong một khoảng thời gian nhất định. Để định nghĩa thời gian mà một job sẽ hết hạn, hãy thêm phương thức `retryUntil` vào class job của bạn:
 
     /**
      * Determine the time at which the job should timeout.
@@ -330,11 +330,11 @@ Thay thế cho việc định nghĩa số lần một job có thể được th�
 
 > {note} Tính năng `timeout` được tối ưu hóa cho PHP 7.1+ và PHP extension `pcntl`.
 
-Tương tự, số giây tối đa mà các job có thể chạy, có thể được khai báo bằng cách sử dụng switch `--timeout` trên lệnh Artisan:
+Tương tự, thời gian hết hạn của một job có thể được khai báo bằng cách sử dụng switch `--timeout` trên lệnh Artisan:
 
     php artisan queue:work --timeout=30
 
-Tuy nhiên, bạn cũng có thể định nghĩa số giây tối đa một job có thể được phép chạy trên chính class của job đó. Nếu timeout được khai báo trong job, nó sẽ được ưu tiên hơn bất kỳ timeout nào được khai báo trên dòng lệnh:
+Tuy nhiên, bạn cũng có thể định nghĩa thời gian hết hạn của một job trên chính class của job đó. Nếu thời gian hết hạn được khai báo trong job, nó sẽ được ưu tiên hơn bất kỳ thời gian hết hạn nào được khai báo trên dòng lệnh:
 
     <?php
 
@@ -353,9 +353,9 @@ Tuy nhiên, bạn cũng có thể định nghĩa số giây tối đa một job 
 <a name="rate-limiting"></a>
 ### Giới hạn tỷ lệ chạy
 
-> {note} Tính năng này yêu cầu application của bạn cần cài đặt một [Redis server](/docs/{{version}}/redis).
+> {note} Tính năng này yêu cầu application của bạn cài đặt một [Redis server](/docs/{{version}}/redis).
 
-Nếu application của bạn tương tác với Redis, bạn có thể điều tiết các queued job chạy theo thời gian hoặc đồng thời. Tính năng này có thể hỗ trợ khi các queued job của bạn mà đang tương tác với các API mà cũng bị giới hạn về tỷ lệ chạy. Ví dụ, bằng cách sử dụng phương thức `throttle`, bạn có thể điều tiết một loại job nhất định chỉ được chạy 10 lần trong 60 giây. Nếu không thể lấy được lock, bạn nên giải phóng job trở lại queue để có thể thử lại sau:
+Nếu application của bạn có tương tác với Redis, bạn có thể điều tiết các queued job chạy theo thời gian hoặc đồng thời. Tính năng này có thể hỗ trợ khi các queued job của bạn mà đang tương tác với các API mà có giới hạn về tỷ lệ chạy. Ví dụ, bằng cách sử dụng phương thức `throttle`, bạn có thể điều tiết một loại job sẽ chỉ được chạy 10 lần trong vòng 60 giây. Nếu không thể lấy được lock, bạn nên giải phóng job đó trở lại queue để có thể chạy lại ở lần sau:
 
     Redis::throttle('key')->allow(10)->every(60)->then(function () {
         // Job logic...
@@ -365,9 +365,9 @@ Nếu application của bạn tương tác với Redis, bạn có thể điều 
         return $this->release(10);
     });
 
-> {tip} Trong ví dụ trên, `key` có thể là bất kỳ chuỗi nào dùng để xác định một loại job mà bạn muốn giới hạn tỷ lệ chạy. Ví dụ, bạn có thể muốn khởi tạo một key dựa trên tên class của một job và một ID của các model Eloquent mà nó hoạt động.
+> {tip} Trong ví dụ trên, `key` có thể là bất kỳ chuỗi nào dùng để xác định một loại job mà bạn muốn giới hạn tỷ lệ chạy. Ví dụ, bạn có thể muốn khởi tạo một key dựa trên tên class của job đó và một ID của model Eloquent mà nó hoạt động.
 
-Ngoài ra, bạn có thể khai báo số lượng worker tối đa có thể xử lý đồng thời một job nhất định. Điều này có thể hữu ích khi một queued job đang sửa một resource chỉ được sửa bởi một job tại một thời điểm. Ví dụ, bằng cách sử dụng phương thức `funnel`, bạn có thể giới hạn các job thuộc loại đã cho chỉ được xử lý bởi một worker tại một thời điểm:
+Ngoài ra, bạn có thể khai báo số lượng worker tối đa mà có thể xử lý đồng thời một job. Điều này có thể hữu ích khi một queued job đang sửa một resource thì chỉ được sửa trên một job tại một thời điểm nhất định. Ví dụ, bằng cách sử dụng phương thức `funnel`, bạn có thể giới hạn các job thuộc loại đã cho chỉ được xử lý bởi một worker tại một thời điểm:
 
     Redis::funnel('key')->limit(1)->then(function () {
         // Job logic...
@@ -377,23 +377,23 @@ Ngoài ra, bạn có thể khai báo số lượng worker tối đa có thể x�
         return $this->release(10);
     });
 
-> {tip} Khi sử dụng giới hạn tỷ lệ chạy, số lần thử job của bạn sẽ cần để chạy thành công có thể khó xác định. Do đó, rất hữu ích khi kết hợp giới hạn tỷ lệ chạy với [lần thử dựa trên thời gian](#time-based-attempts).
+> {tip} Khi sử dụng giới hạn tỷ lệ chạy, thì số lần cần để chạy job thành công có thể rất khó xác định. Do đó, sẽ hữu ích hơn khi kết hợp giới hạn tỷ lệ chạy với [số lần chạy dựa trên thời gian](#time-based-attempts).
 
 <a name="error-handling"></a>
 ### Xử lý Error
 
-Nếu một ngoại lệ được đưa ra trong khi job đang được xử lý, job sẽ tự động được giải phóng trở lại vào queue để có thể thử lại lần nữa. Job sẽ tiếp tục được phát hành cho đến khi nó được thử quá số lần tối đa cho phép của application của bạn. Số lần thử tối đa được xác định bởi switch `--tries` được sử dụng trên lệnh Artisan `queue:work`. Ngoài ra, số lần thử tối đa có thể được xác định trên chính class của job. Thông tin thêm về việc chạy queue worker [có thể được tìm thấy bên dưới](#running-the-queue-worker).
+Nếu một ngoại lệ được đưa ra trong khi job đang được xử lý, thì job đó sẽ tự động được giải phóng trở lại vào queue để có thể chạy lại lần sau. Job đó sẽ tiếp tục được chạy lại cho đến khi nó được chạy quá số lần tối đa cho phép của application của bạn. Số lần chạy tối đa được xác định bởi switch `--tries` được sử dụng trên lệnh Artisan `queue:work`. Ngoài ra, số lần chạy tối đa này cũng có thể được xác định trên chính class của job. Thông tin chi tiết về việc chạy queue worker [có thể được tìm thấy ở bên dưới](#running-the-queue-worker).
 
 <a name="running-the-queue-worker"></a>
 ## Chạy Queue Worker
 
-Laravel có chứa một queue worker sẽ xử lý các job mới khi chúng được tạo lên queue. Bạn có thể chạy worker đó bằng lệnh Artisan `queue:work`. Lưu ý rằng một khi lệnh `queue:work` đã được chạy, thì nó sẽ tiếp tục chạy cho đến khi nó được dừng bằng cách thủ công hoặc bạn đóng terminal của bạn:
+Laravel có chứa một queue worker sẽ xử lý các job mới khi chúng được tạo lên queue. Bạn có thể chạy worker đó bằng lệnh Artisan `queue:work`. Lưu ý rằng một khi lệnh `queue:work` đã được chạy, thì nó sẽ tiếp tục chạy cho đến khi nào nó được dừng bằng cách thủ công hoặc bạn đóng terminal của bạn:
 
     php artisan queue:work
 
-> {tip} Để giữ cho process `queue:work` luôn hoạt động trong background, bạn nên sử dụng trình giám sát process, chẳng hạn như [Supervisor](#supervisor-configuration) để đảm bảo rằng queue worker không bị dừng giữa chừng.
+> {tip} Để giữ cho process `queue:work` luôn hoạt động trong background, bạn nên sử dụng một trình giám sát process, chẳng hạn như [Supervisor](#supervisor-configuration) để đảm bảo rằng queue worker không bị dừng giữa chừng.
 
-Hãy nhớ rằng, các queue worker là các process tồn tại lâu dài và lưu trữ trạng thái application vào trong bộ nhớ. Do đó, chúng sẽ không nhận biết dược những thay đổi trong source code của bạn sau khi chúng được chạy. Vì vậy, trong khi quá trình deploy của bạn, hãy đảm bảo [khởi động lại queue worker của bạn](#queue-workers-and-deployment).
+Hãy nhớ rằng, các queue worker là các process tồn tại lâu dài và lưu trữ trạng thái của application vào trong bộ nhớ. Do đó, chúng sẽ không nhận biết dược những thay đổi trong source code của bạn sau khi bạn đã chạy chúng. Vì vậy, trong khi quá trình deploy của bạn, hãy đảm bảo là [bạn đã khởi động lại queue worker của bạn](#queue-workers-and-deployment).
 
 #### Processing A Single Job
 
@@ -403,62 +403,62 @@ Tùy chọn `--once` có thể được sử dụng để lệnh worker chỉ x�
 
 #### Specifying The Connection & Queue
 
-Bạn cũng có thể khai báo queue connection mà worker sẽ sử dụng. Tên connection được truyền vào lệnh `work` phải tương ứng với một trong các connection được khai báo trong file cấu hình `config/queue.php` của bạn:
+Bạn cũng có thể khai báo queue connection mà worker sẽ sử dụng. Tên connection được truyền vào lệnh `work` phải tương ứng với một trong các connection đã được khai báo ở trong file cấu hình `config/queue.php` của bạn:
 
     php artisan queue:work redis
 
-Bạn cũng có thể tùy chỉnh queue worker của bạn nhiều hơn nữa bằng cách chỉ xử lý các queue cụ thể cho một connection nhất định. Ví dụ: nếu tất cả các email của bạn được xử lý trong queue `emails` trên queue connection là `redis` của bạn, bạn có thể đưa ra lệnh sau để start một worker chỉ xử lý mỗi queue đó:
+Bạn cũng có thể tùy chỉnh queue worker của bạn nhiều hơn nữa bằng cách chỉ xử lý các queue cụ thể cho một connection nhất định. Ví dụ: nếu tất cả các email của bạn được xử lý trong queue `emails` trên một connection là `redis`, thì bạn có thể gọi lệnh sau để chạy một worker chỉ xử lý cho riêng queue đó:
 
     php artisan queue:work redis --queue=emails
 
 #### Resource Considerations
 
-Daemon queue worker sẽ không "khởi động lại" framework trước khi xử lý mỗi job. Do đó, bạn nên giải phóng tất cả resources nặng sau khi hoàn thành xử lý mỗi job. Ví dụ, nếu bạn đang thực hiện chỉnh sửa hình ảnh với thư viện GD, bạn nên giải phóng bộ nhớ với câu lệnh `imagedestroy` khi bạn hoàn thành.
+Daemon queue worker sẽ không "khởi động lại" framework trước khi xử lý mỗi job. Do đó, bạn nên giải phóng tất cả resources nặng sau khi hoàn thành xử lý job. Ví dụ, nếu bạn đang thực hiện tác vụ chỉnh sửa ảnh với thư viện GD, bạn nên giải phóng bộ nhớ với câu lệnh `imagedestroy` khi bạn hoàn thành.
 
 <a name="queue-priorities"></a>
 ### Queue ưu tiên
 
-Thỉnh thoảng bạn có thể muốn ưu tiên xử lý một queue của bạn. Ví dụ, trong file `config/queue.php`, bạn có thể set `queue` mặc định cho connection `redis` của bạn là `low`. Tuy nhiên, đôi khi bạn có thể muốn tạo một job đẩy lên queue ưu tiên `high` như sau:
+Thỉnh thoảng bạn có thể muốn ưu tiên xử lý một queue. Ví dụ, trong file `config/queue.php`, bạn có thể set mặc định `queue` cho connection `redis` là `low`. Tuy nhiên, đôi khi bạn có thể muốn tạo ra một job ở trên queue ưu tiên `high` như sau:
 
     dispatch((new Job)->onQueue('high'));
 
-Để start một worker xác định tất cả các queue job `high` được xử lý trước, sau đó tiếp tục xử lý job trong queue `low`, hãy truyền vào một danh sách tên queue được phân cách bằng dấu phẩy cho lệnh `work`:
+Để chạy một worker cho việc xử lý các queue job `high` trước rồi sau đó mới xử lý đến các job trong queue `low`, thì bạn có thể truyền vào một danh sách tên queue sẽ phân cách nhau bằng dấu phẩy cho lệnh `work`:
 
     php artisan queue:work --queue=high,low
 
 <a name="queue-workers-and-deployment"></a>
 ### Queue Worker và Deployment
 
-Vì queue worker là các process tồn tại lâu dài, chúng sẽ không biết được các thay đổi đối trên code của bạn, nếu không được khởi động lại. Vì vậy, cách đơn giản nhất để deploy một application sử dụng queue worker là khởi động lại worker trong quá trình deploy của bạn. Bạn có thể khởi động lại tất cả các worker bằng cách chạy lệnh `queue:restart`:
+Vì queue worker là các process tồn tại lâu dài, nên nếu không được khởi động lại, thì chúng sẽ không biết được các thay đổi trên code của bạn. Vì vậy, cách đơn giản nhất để deploy một application sử dụng queue worker là khởi động lại worker trong quá trình deploy của bạn. Bạn có thể khởi động lại tất cả các worker bằng cách chạy lệnh `queue:restart`:
 
     php artisan queue:restart
 
-Lệnh này sẽ làm tất cả các queue workers "die" sau khi chúng xử lý xong job hiện tại để không làm job đó bị mất. Vì các queue worker sẽ die khi lệnh `queue:restart` được chạy, nên bạn nên chạy một process quản lý, chẳng hạn như [Supervisor](#supervisor-configuration) để tự động khởi động lại các queue worker.
+Để không làm job đó bị mất, lệnh này sẽ làm tất cả các queue workers "die" sau khi chúng xử lý xong các job hiện tại. Vì các queue worker sẽ bị die khi lệnh `queue:restart` được chạy, vì thế bạn nên chạy một process quản lý, chẳng hạn như [Supervisor](#supervisor-configuration) để tự động khởi động lại các queue worker đó.
 
-> {tip} Queue sẽ sử dụng [cache](/docs/{{version}}/cache) để lưu trữ tín hiệu khởi động lại, vì vậy bạn nên kiểm tra driver cache đã được cấu hình đúng cho application của bạn trước khi sử dụng tính năng này.
+> {tip} Queue sẽ sử dụng [cache](/docs/{{version}}/cache) để lưu trữ tín hiệu khởi động lại, vì vậy bạn nên kiểm tra driver cache đã được cấu hình cho application của bạn đúng chưa trước khi sử dụng tính năng này.
 
 <a name="job-expirations-and-timeouts"></a>
 ### Job hết hạn và timeout
 
 #### Job Expiration
 
-Trong file cấu hình `config/queue.php` của bạn, mỗi queue connection sẽ định nghĩa một tùy chọn `retry_after`. Tùy chọn này sẽ khai báo queue connection sẽ đợi bao nhiêu giây trước khi thử lại một job đang được xử lý. Ví dụ: nếu giá trị của `retry_after` được set là `90`, thì job đó sẽ được giải phóng trở lại vào queue nếu nó đã được xử lý quá 90 giây mà không bị xóa. Thông thường, bạn nên đặt giá trị `retry_after` là số giây tối đa mà một job của bạn có thể sẽ mất để hoàn tất xử lý.
+Trong file cấu hình `config/queue.php` của bạn, mỗi queue connection sẽ định nghĩa một tùy chọn `retry_after`. Tùy chọn này sẽ khai báo cho queue connection biết sẽ phải đợi bao nhiêu giây trước khi chạy lại một job đang được xử lý. Ví dụ: nếu giá trị của `retry_after` được set là `90`, thì job đó sẽ được giải phóng trở lại vào queue nếu nó đã được xử lý quá 90 giây mà không bị xóa. Thông thường, bạn nên set giá trị `retry_after` là số giây tối đa mà một job của bạn có thể sẽ mất để hoàn thành tất cả xử lý.
 
-> {note} Chỉ có queue connection của Amazon SQS sẽ không chứa giá trị `retry_after`. SQS sẽ sẽ retry một job dựa trên [Default Visibility Timeout](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/AboutVT.html) được quản lý trong AWS console.
+> {note} Chỉ có queue connection của Amazon SQS sẽ không chứa giá trị `retry_after`. SQS sẽ retry một job dựa trên [Default Visibility Timeout](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/AboutVT.html) được quản lý trong AWS console.
 
 #### Worker Timeouts
 
-Lệnh Artisan `queue:work` có một tùy chọn `--timeout`. Tùy chọn `--timeout` này sẽ khai báo process queue master của Laravel sẽ đợi bao lâu trước khi killing một queue worker con đang xử lý bởi một job. Thỉnh thoảng, một queue process con có thể bị "đơ" vì nhiều lý do, chẳng hạn như sử dụng một HTTP có thể call ra bên ngoài, nhưng không có respond. Tùy chọn `--timeout` sẽ loại bỏ các process bị đơ vượt quá giới hạn thời gian đã được khai báo:
+Lệnh Artisan `queue:work` có một tùy chọn là `--timeout`. Tùy chọn `--timeout` này sẽ khai báo process queue master của Laravel sẽ đợi bao lâu trước khi killing một queue worker đang xử lý bởi một job. Thỉnh thoảng, một queue process có thể bị "đơ" vì nhiều lý do, chẳng hạn như sử dụng một HTTP có thể call ra bên ngoài, nhưng lại không có respond trở lại. Tùy chọn `--timeout` sẽ loại bỏ các process bị đơ vượt quá giới hạn thời gian đã được khai báo:
 
     php artisan queue:work --timeout=60
 
-Tùy chọn cấu hình `retry_after` và tùy chọn CLI `--timeout` tuy khác nhau, nhưng nếu phối hợp với nhau thì sẽ giúp đảm bảo rằng các job sẽ không bị mất và các job chỉ được xử lý thành công một lần.
+Tùy chọn cấu hình `retry_after` và tùy chọn CLI `--timeout` tuy khác nhau, nhưng nếu phối hợp với nhau thì sẽ giúp bạn đảm bảo rằng các job sẽ không bị mất và các job chỉ được xử lý thành công trong một lần.
 
-> {note} Giá trị `--timeout` phải luôn luôn có thời gian ngắn hoặc ít hơn vài giây so với giá trị cấu hình `retry_after` của bạn. Điều này sẽ đảm bảo rằng một worker xử lý một job nhất định luôn bị killed trước khi job được thử lại. Nếu tùy chọn `--timeout` của bạn dài hơn giá trị cấu hình `retry_after` của bạn, job của bạn có thể được xử lý hai lần.
+> {note} Giá trị `--timeout` phải luôn luôn có thời gian ngắn hoặc ít hơn vài giây so với giá trị cấu hình `retry_after`. Điều này sẽ đảm bảo là một worker sẽ xử lý một job nhất định luôn bị killed trước khi job đó được chạy lại. Nếu tùy chọn `--timeout` của bạn dài hơn giá trị cấu hình `retry_after`, thì job đó của bạn có thể bị xử lý hai lần.
 
 #### Worker Sleep Duration
 
-Khi các job đã được tạo trong queue, worker sẽ tiếp tục xử lý các job mà không có thời gian nghỉ giữa chúng. Tuy nhiên, với tùy chọn `sleep` sẽ xác định xem worker sẽ "sleep" trong bao lâu nếu không có job mới. Trong khi sleep, worker sẽ không xử lý bất kỳ job mới nào - các job đó sẽ được xử lý sau khi thời gian worker nghỉ.
+Khi job đã được tạo trong queue, worker sẽ tiếp tục xử lý các job mà không có thời gian nghỉ giữa chúng. Tuy nhiên, với tùy chọn `sleep` sẽ xác định xem worker sẽ "sleep" trong bao lâu nếu không có job mới. Trong khi sleep, worker sẽ không xử lý bất kỳ job mới nào - các job đó sẽ được xử lý sau khi thời gian worker đã nghỉ.
 
     php artisan queue:work --sleep=3
 
@@ -471,11 +471,11 @@ Supervisor là trình giám sát process cho hệ điều hành Linux và sẽ t
 
     sudo apt-get install supervisor
 
-> {tip} Nếu bạn không muốn tự cấu hình Supervisor, hãy xem xét sử dụng [Laravel Forge](https://forge.laravel.com), nó sẽ tự động cài đặt và cấu hình Supervisor cho các dự án Laravel của bạn.
+> {tip} Nếu bạn không muốn tự cấu hình Supervisor, hãy xem xét việc sử dụng [Laravel Forge](https://forge.laravel.com), nó sẽ tự động cài đặt và cấu hình Supervisor cho các dự án Laravel của bạn.
 
 #### Configuring Supervisor
 
-Các file cấu hình của Supervisor thường được lưu trữ trong thư mục `/etc/supervisor/conf.d`. Trong thư mục này, bạn có thể tạo nhiều file cấu hình để hướng dẫn supervisor cách mà các process của bạn sẽ được giám sát. Ví dụ: hãy tạo một file `laravel-worker.conf` để bắt đầu và giám sát process `queue:work`:
+Các file cấu hình của Supervisor thường được lưu trong thư mục `/etc/supervisor/conf.d`. Trong thư mục này, bạn có thể tạo nhiều file cấu hình để hướng dẫn supervisor cách mà các process của bạn sẽ được giám sát. Ví dụ: hãy tạo một file `laravel-worker.conf` để bắt đầu và giám sát process `queue:work`:
 
     [program:laravel-worker]
     process_name=%(program_name)s_%(process_num)02d
@@ -487,7 +487,7 @@ Các file cấu hình của Supervisor thường được lưu trữ trong thư 
     redirect_stderr=true
     stdout_logfile=/home/forge/app.com/worker.log
 
-Trong ví dụ trên, lệnh `numprocs` sẽ hướng dẫn Supervisor chạy 8 process `queue:work` và giám sát tất cả chúng, tự động khởi động lại chúng nếu chúng thất bại. Tất nhiên, bạn nên thay đổi phần `queue:work sqs` của lệnh `command` để phản ánh queue connection mong muốn của bạn.
+Trong ví dụ trên, lệnh `numprocs` sẽ hướng dẫn Supervisor chạy 8 process `queue:work` và giám sát tất cả chúng, tự động khởi động lại nếu chúng thất bại. Tất nhiên, bạn nên thay đổi phần `queue:work sqs` của lệnh `command` để phản ánh queue connection mà bạn mong muốn.
 
 #### Starting Supervisor
 
@@ -499,25 +499,25 @@ Khi file cấu hình đã hoàn thành, bạn có thể cập nhật cấu hình
 
     sudo supervisorctl start laravel-worker:*
 
-Để biết thêm thông tin về Supervisor, hãy tham khảo [Tài liệu Supervisor](http://supervisord.org/index.html).
+Để biết thêm thông tin về Supervisor, hãy tham khảo [tài liệu Supervisor](http://supervisord.org/index.html).
 
 <a name="dealing-with-failed-jobs"></a>
 ## Xử lý Job failed
 
-Thỉnh thoảng, queued job của bạn sẽ thất bại. Đừng lo lắng, mọi thứ không phải lúc nào cũng theo như kế hoạch! Laravel có chứa một cách thuận tiện để khai báo số lần tối đa một job được thử lại. Sau khi một job vượt quá số lần thử này, nó sẽ được thêm vào bảng cơ sở dữ liệu là `failed_jobs`. Để tạo migration cho bảng `failed_jobs` này, bạn có thể sử dụng lệnh `queue:failed-table`:
+Thỉnh thoảng, queued job của bạn sẽ gặp thất bại. Đừng lo lắng, mọi thứ không phải lúc nào cũng theo như kế hoạch! Laravel có chứa một cách để khai báo số lần tối đa một job được chạy lại. Sau khi một job vượt quá số lần chạy này, nó sẽ được thêm vào bảng cơ sở dữ liệu `failed_jobs`. Để tạo migration cho bảng `failed_jobs`, bạn có thể sử dụng lệnh `queue:failed-table`:
 
     php artisan queue:failed-table
 
     php artisan migrate
 
-Sau đó, khi chạy [queue worker](#running-the-queue-worker), bạn nên khai báo số lần thử tối đa mà một job nên được thử bằng cách sử dụng switch `--tries` trên lệnh `queue:work`. Nếu bạn không khai báo giá trị cho tùy chọn `--tries`, các job sẽ được thử lại vô thời hạn:
+Sau khi chạy [queue worker](#running-the-queue-worker), bạn nên khai báo số lần chạy tối đa mà một job được chạy bằng cách sử dụng switch `--tries` trên lệnh `queue:work`. Nếu bạn không khai báo giá trị tùy chọn `--tries`, thì các job sẽ được chạy lại vô thời hạn:
 
     php artisan queue:work redis --tries=3
 
 <a name="cleaning-up-after-failed-jobs"></a>
 ### Dọn dẹp sau khi Job failed
 
-Bạn có thể định nghĩa một phương thức `failed` trực tiếp vào class job của bạn, cho phép bạn thực hiện việc dọn dẹp cho job khi xảy ra lỗi. Đây là vị trí hoàn hảo để gửi cảnh báo đến người dùng của bạn hoặc revert lại mọi hành động được thực hiện bởi job. `Exception` sẽ khiến job thất bại và sẽ được chuyển sang phương thức `failed`:
+Bạn có thể định nghĩa một phương thức `failed` trực tiếp vào class job của bạn, cho phép bạn thực hiện việc dọn dẹp job khi xảy ra lỗi. Đây là một vị trí hoàn hảo để gửi các cảnh báo đến người dùng hoặc revert lại các hành động trước khi thực hiện job. `Exception` sẽ khiến job thất bại và sẽ được chuyển sang phương thức `failed`:
 
     <?php
 
@@ -614,30 +614,30 @@ Nếu bạn muốn đăng ký một event sẽ được gọi khi một job th�
 <a name="retrying-failed-jobs"></a>
 ### Chạy lại Job failed
 
-Để xem tất cả các job đã bị thất bại của bạn, những job này đã được thêm vào bảng cơ sở dữ liệu `failed_jobs` của bạn, bạn có thể sử dụng lệnh Artisan `queue:failed` để xem chúng:
+Để xem tất cả các job đã bị thất bại, bạn có thể sử dụng lệnh Artisan `queue:failed`, những job này sẽ được thêm vào trong bảng cơ sở dữ liệu `failed_jobs` của bạn:
 
     php artisan queue:failed
 
-Lệnh `queue:failed` sẽ liệt kê các ID của job, connection, queue và thời gian bị thất bại. ID của job có thể được sử dụng để thử lại những job đã thất bại. Chẳng hạn, để thử lại một của job đã bị thất bại có ID là `5`, hãy chạy lệnh sau:
+Lệnh `queue:failed` sẽ liệt kê các ID, connection, queue và thời gian bị thất bại của job. ID của job có thể được sử dụng để chạy lại những job đã bị thất bại. Chẳng hạn, để chạy lại một của job đã bị thất bại có ID là `5`, thì hãy chạy lệnh như sau:
 
     php artisan queue:retry 5
 
-Để thử lại tất cả các job bị thất bại của bạn, hãy chạy lệnh `queue:retry` và truyền vào `all` làm ID:
+Để chạy lại tất cả các job bị thất bại, bạn hãy chạy lệnh `queue:retry` và truyền vào `all` làm ID:
 
     php artisan queue:retry all
 
-Nếu bạn muốn xóa một job đã bị thất bại, bạn có thể sử dụng lệnh `queue:forget`:
+Nếu bạn muốn xóa một job bị thất bại, bạn có thể sử dụng lệnh `queue:forget`:
 
     php artisan queue:forget 5
 
-Để xóa tất cả các job đã bị thất bại của bạn, bạn có thể sử dụng lệnh `queue:flush`:
+Để xóa tất cả các job bị thất bại, bạn có thể sử dụng lệnh `queue:flush`:
 
     php artisan queue:flush
 
 <a name="job-events"></a>
 ## Job Event
 
-Sử dụng các phương thức `before` và `after` trong [facade](/docs/{{version}}/facades) `Queue`, bạn có thể khai báo các callback được thực hiện trước hoặc sau khi một queued job được xử lý. Các callback này là một cách tuyệt vời để thực hiện thêm logging hoặc ghi thông kê cho bảng điều khiển. Thông thường, bạn nên gọi các phương thức này từ [service provider](/docs/{{version}}/providers). Ví dụ: chúng ta có thể sử dụng `AppServiceProvider` được đi kèm với Laravel:
+Sử dụng các phương thức `before` và `after` trong [facade](/docs/{{version}}/facades) `Queue`, bạn có thể khai báo các callback sẽ được thực hiện trước hoặc sau khi một queued job được xử lý. Các callback này là một cách tuyệt vời để thực hiện thêm logging hoặc ghi thông kê cho bảng điều khiển. Thông thường, bạn nên gọi các phương thức này từ [service provider](/docs/{{version}}/providers). Ví dụ: chúng ta có thể sử dụng `AppServiceProvider` được đi kèm với Laravel:
 
     <?php
 
@@ -681,7 +681,7 @@ Sử dụng các phương thức `before` và `after` trong [facade](/docs/{{ver
         }
     }
 
-Sử dụng phương thức `looping` trong [facade](/docs/{{version}}/facades) `Queue`, bạn có thể khai báo các callback được thực thi trước khi worker lấy một job từ một queue. Ví dụ: bạn có thể đăng ký một Closure để rollback bất kỳ các transaction nào đang bị làm giở bởi một job đã thất bại trước đó:
+Sử dụng phương thức `looping` trong [facade](/docs/{{version}}/facades) `Queue`, bạn có thể khai báo các callback sẽ được thực thi trước khi worker lấy một job từ queue. Ví dụ: bạn có thể đăng ký một Closure để rollback bất kỳ các transaction nào đang bị làm dở bởi một job đã bị thất bại trước đó:
 
     Queue::looping(function () {
         while (DB::transactionLevel() > 0) {

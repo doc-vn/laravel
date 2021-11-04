@@ -17,14 +17,14 @@
 <a name="introduction"></a>
 ## Giới thiệu
 
-Các event của Laravel cung cấp một implementation observer đơn giản, cho phép bạn subscribe và listen các event khác nhau xảy ra trong application của bạn. Các class event thường được lưu trữ trong thư mục `app/Events`, trong khi các listen của các event được lưu trữ trong thư mục `app/Listeners`. Đừng lo lắng nếu bạn không thấy các thư mục này trong application của bạn, vì chúng sẽ được tạo cho bạn khi bạn tạo các event và listener bằng các lệnh của Artisan console.
+Các event của Laravel cung cấp một observer implementation đơn giản, cho phép bạn subscribe và listen các event khác nhau xảy ra trong application của bạn. Các class event thường được lưu trong thư mục `app/Events`, còn các listen của các event đó được lưu trong thư mục `app/Listeners`. Đừng lo lắng nếu bạn không thấy các thư mục này trong application của bạn, vì chúng sẽ được tạo khi bạn tạo các event và listener bằng các lệnh của Artisan console.
 
-Các event đóng vai trò là một cách tuyệt vời để tách các khía cạnh khác nhau của application của bạn, vì một event có thể có nhiều listener không phụ thuộc vào nhau. Ví dụ: bạn có thể muốn gửi thông báo Slack cho người dùng của bạn mỗi khi đơn hàng đã được giao. Thay vì ghép code xử lý đơn đặt hàng của bạn với code thông báo Slack, bạn có thể đưa ra một event `OrderShipped`, mà listener có thể nhận và chuyển nó thành một thông báo Slack.
+Các event đóng vai trò là một cách tuyệt vời để tách các khía cạnh khác nhau của application, vì một event có thể có nhiều listener mà không phụ thuộc vào lẫn nhau. Ví dụ: bạn có thể muốn gửi thông báo đến Slack cho người dùng của bạn mỗi khi đơn hàng đã được giao. Thay vì ghép code xử lý đơn đặt hàng với code thông báo của Slack, bạn có thể đưa ra một event `OrderShipped`, mà listener có thể nhận và chuyển nó thành một thông báo đến Slack.
 
 <a name="registering-events-and-listeners"></a>
 ## Đăng ký Event và Listener
 
-`EventServiceProvider` đi kèm với application Laravel của bạn cung cấp một nơi thuận tiện để đăng ký tất cả các listener event của application của bạn. Thuộc tính `listen` chứa một mảng gồm tất cả các event (key) và listener (giá trị) của chúng. Tất nhiên, bạn có thể thêm nhiều event vào mảng này khi application của bạn yêu cầu. Ví dụ: hãy thêm một event `OrderShipped`:
+`EventServiceProvider` đi kèm trong application Laravel cung cấp một cách đăng ký dễ dàng cho tất cả các listener event trong application của bạn. Thuộc tính `listen` chứa một mảng gồm các event (là các key) và listener (là các giá trị). Tất nhiên, bạn có thể thêm nhiều event vào mảng này khi application của bạn yêu cầu. Ví dụ: hãy thêm một event `OrderShipped` như sau:
 
     /**
      * The event listener mappings for the application.
@@ -40,14 +40,14 @@ Các event đóng vai trò là một cách tuyệt vời để tách các khía 
 <a name="generating-events-and-listeners"></a>
 ### Tạo Event và Listener
 
-Tất nhiên, việc tạo thủ công các file cho mỗi event và listener là rất công kềnh. Thay vào đó, hãy thêm listener và event vào `EventServiceProvider` của bạn và sử dụng lệnh `event:generate`. Lệnh này sẽ tạo ra bất kỳ event hoặc listener nào được liệt kê trong `EventServiceProvider` của bạn. Tất nhiên, các event và listener đã tồn tại sẽ không bị ảnh hưởng:
+Tất nhiên, việc tạo bằng tay các file cho các event và listener này là rất công kềnh. Thay vào đó, hãy thêm listener và event của nó vào trong `EventServiceProvider` của bạn và sử dụng lệnh `event:generate`. Lệnh này sẽ tạo ra bất kỳ các event hoặc các listener nào được liệt kê trong mảng `EventServiceProvider`. Dĩ nhiên, các event và listener đã được tạo thì sẽ không bị ảnh hưởng:
 
     php artisan event:generate
 
 <a name="manually-registering-events"></a>
 ### Đăng ký Event thủ công
 
-Thông thường, các event nên được đăng ký thông qua `EventServiceProvider` vào mảng `$listen`; tuy nhiên, bạn cũng có thể đăng ký các event dựa trên Closure bằng cách thủ công trong phương thức `boot` của `EventServiceProvider`:
+Thông thường, các event nên được đăng ký thông qua `EventServiceProvider` vào mảng `$listen`; tuy nhiên, bạn cũng có thể đăng ký các event dựa trên Closure bằng cách đưa nó vào trong phương thức `boot` của `EventServiceProvider`:
 
     /**
      * Register any other events for your application.
@@ -65,7 +65,7 @@ Thông thường, các event nên được đăng ký thông qua `EventServicePr
 
 #### Wildcard Event Listeners
 
-Bạn thậm chí có thể đăng ký listener bằng cách sử dụng ký tự đại diện `*` làm tham số , cho phép bạn nhận được nhiều event trên cùng một listener. Và nó nhận vào tên event là tham số đầu tiên và toàn bộ mảng dữ liệu event là tham số thứ hai:
+Bạn thậm chí có thể đăng ký listener bằng cách sử dụng ký tự đại diện `*` làm tham số, cho phép bạn nhận được nhiều event trên cùng một listener. Và nó nhận tên event là tham số đầu tiên và toàn bộ mảng dữ liệu event là tham số thứ hai:
 
     Event::listen('event.*', function ($eventName, array $data) {
         //
@@ -74,7 +74,7 @@ Bạn thậm chí có thể đăng ký listener bằng cách sử dụng ký t�
 <a name="defining-events"></a>
 ## Khai báo Event
 
-Một event class là một data container chứa thông tin liên quan đến event. Ví dụ: giả sử event `OrderShipped` của chúng ta nhận một đối tượng [Eloquent ORM](/docs/{{version}}/eloquent):
+Một event class là một data container chứa các thông tin liên quan đến event. Ví dụ: giả sử event `OrderShipped` của chúng ta sẽ nhận một đối tượng [Eloquent ORM](/docs/{{version}}/eloquent):
 
     <?php
 
@@ -101,12 +101,12 @@ Một event class là một data container chứa thông tin liên quan đến e
         }
     }
 
-Như bạn có thể thấy, event class này không chứa code logic. Nó là một container chứa instance `Order` đã được mua. Trait `SerializesModels` được sử dụng bởi event này sẽ chuyển đổi bất kỳ model Eloquent nào nếu đối tượng đó được chuyển đổi bằng hàm `serialize` của PHP.
+Như bạn có thể thấy, event class này không chứa code logic. Nó là một container chứa instance `Order` đã được mua. Trait `SerializesModels` được sử dụng trong event này để khôi phục lại bất kỳ model Eloquent nào nếu nó đã bị chuyển đổi bằng hàm `serialize` của PHP.
 
 <a name="defining-listeners"></a>
 ## Khai báo Listener
 
-Tiếp theo, chúng ta hãy xem một listener cho một event mẫu. Listener của event nhận vào một instance event trong phương thức `handle` của nó. Lệnh `event:generate` sẽ tự động import class event thích hợp vào và khai báo nó trong phương thức `handle`. Trong phương thức `handle`, bạn có thể thực hiện bất kỳ hành động nào cần thiết để respond event:
+Tiếp theo, chúng ta hãy xem một listener mẫu cho một event. Listener của event sẽ nhận vào một instance event trong phương thức `handle`. Lệnh `event:generate` sẽ tự động import class event và khai báo nó vào trong phương thức `handle`. Trong phương thức `handle`, bạn có thể thực hiện bất kỳ hành động nào cần thiết để xử lý event:
 
     <?php
 
@@ -138,7 +138,7 @@ Tiếp theo, chúng ta hãy xem một listener cho một event mẫu. Listener c
         }
     }
 
-> {tip} Listener event của bạn cũng có thể khai báo bất kỳ sự phụ thuộc nào cần thiết ở trong hàm khởi tạo. Tất cả các listener event sẽ được resolve thông qua [service container](/docs/{{version}}/container), do đó, các phụ thuộc sẽ được tự động thêm vào.
+> {tip} Listener event của bạn cũng có thể khai báo bất kỳ sự phụ thuộc nào cần thiết ở trong hàm khởi tạo. Tất cả các listener event sẽ được resolve thông qua [service container](/docs/{{version}}/container), do đó, các phụ thuộc cũng sẽ được tự động thêm vào.
 
 #### Stopping The Propagation Of An Event
 
@@ -147,9 +147,9 @@ Thỉnh thoảng, bạn có thể muốn ngừng việc truyền một event đ�
 <a name="queued-event-listeners"></a>
 ## Queued Event Listener
 
-Queueing listener có thể có lợi nếu listener của bạn thực hiện một nhiệm vụ mà không cần phải phản hồi ngay lập tức như việc gửi e-mail hoặc tạo một HTTP request. Trước khi bắt đầu với queued listener, hãy đảm bảo là bạn đã [cấu hình queue](/docs/{{version}}/queues) và start một queue listener trên server hoặc môi trường develop của bạn.
+Queueing listener có thể có lợi nếu listener của bạn thực hiện một nhiệm vụ mà không cần phải phản hồi ngay lập tức như việc gửi e-mail hoặc tạo một HTTP request. Trước khi bắt đầu với queued listener, hãy đảm bảo là bạn đã [cấu hình queue](/docs/{{version}}/queues) và chạy một queue listener trên server hoặc môi trường develop của bạn.
 
-Để khai báo một listener sẽ được queue, hãy thêm interface `ShouldQueue` vào class listener. Listener được tạo bởi lệnh Artisan `event:generate` sẽ khai báo interface này và được import nó vào namespace hiện tại, vì vậy bạn có thể sử dụng nó ngay lập tức:
+Để khai báo một listener sẽ được queue, hãy thêm interface `ShouldQueue` vào class listener. Listener được tạo bởi lệnh Artisan `event:generate` sẽ khai báo sẵn interface này và import nó vào namespace hiện tại, vì vậy bạn có thể sử dụng nó ngay lập tức:
 
     <?php
 
@@ -163,11 +163,11 @@ Queueing listener có thể có lợi nếu listener của bạn thực hiện m
         //
     }
 
-Và chỉ có thế! Bây giờ, khi listener này được gọi cho một event, nó sẽ tự động được queue bởi event dispatcher bằng cách sử dụng [queue system](/docs/{{version}}/queues) của Laravel. Nếu không có ngoại lệ nào được đưa ra khi listener được thực thi bởi queue, thì queue job đó sẽ tự động bị xóa sau khi xử lý xong.
+Và chỉ có thế! Bây giờ, khi listener này được gọi trong một event, nó sẽ tự động được queue bởi event dispatcher bằng cách sử dụng [queue system](/docs/{{version}}/queues) của Laravel. Nếu không có ngoại lệ nào được đưa ra khi listener được thực thi bởi queue, thì queue job đó sẽ tự động bị xóa sau khi xử lý xong.
 
 #### Customizing The Queue Connection & Queue Name
 
-Nếu bạn muốn tùy chỉnh kết nối đến queue và tên queue được sử dụng bởi event listener, bạn có thể định nghĩa các thuộc tính `$connection` và `$queue` trong class listener của bạn:
+Nếu bạn muốn tùy chỉnh kết nối của queue và tên queue được sử dụng bởi event listener, bạn có thể định nghĩa các thuộc tính `$connection` và `$queue` trong class listener của bạn:
 
     <?php
 
@@ -196,7 +196,7 @@ Nếu bạn muốn tùy chỉnh kết nối đến queue và tên queue được
 <a name="manually-accessing-the-queue"></a>
 ### Truy cập Queue thủ công
 
-Nếu bạn cần tự truy cập các phương thức `delete` và `release` của queue job, bạn có thể làm như vậy bằng cách sử dụng trait `Illuminate\Queue\InteractsWithQueue`. Trait này được mặc định import vào trong các listener được tạo bằng lệnh artisan và cung cấp quyền truy cập vào các phương thức sau:
+Nếu bạn cần tự truy cập các phương thức `delete` và `release` của queue job, bạn có thể làm như vậy bằng cách sử dụng trait `Illuminate\Queue\InteractsWithQueue`. Trait này sẽ được mặc định import sẵn vào trong các listener nếu nó được tạo bằng lệnh artisan và cung cấp quyền truy cập vào các phương thức `delete` và `release`:
 
     <?php
 
@@ -268,7 +268,7 @@ Thỉnh thoảng queue của event listener của bạn có thể bị thất b�
 <a name="dispatching-events"></a>
 ## Dispatching Event
 
-Để dispatch một event, bạn có thể truyền một instance của event cho helper `event`. Helper này sẽ dispatch event đến tất cả những listener đã đăng ký nó. Vì helper `event` là global, nên bạn có thể gọi nó từ bất kỳ đâu trong application của bạn:
+Để gửi một event, bạn có thể truyền một instance của event cho helper `event`. Helper này sẽ gửi event đó đến tất cả những listener đã đăng ký với nó. Vì helper `event` là global helper, nên bạn có thể gọi nó bất kỳ đâu trong application của bạn:
 
     <?php
 
@@ -296,7 +296,7 @@ Thỉnh thoảng queue của event listener của bạn có thể bị thất b�
         }
     }
 
-> {tip} Khi testing, nó có thể hữu ích để kiểm tra rằng một số event đã được dispatch đi mà không thực sự cần chạy listener của nó. [built-in testing helpers](/docs/{{version}}/mocking#event-fake) làm cho nó trở thành dễ dàng.
+> {tip} Khi testing, nếu bạn cần kiểm tra một số event được gửi đi mà không cần chạy đến các listener của các event. [built-in testing helpers](/docs/{{version}}/mocking#event-fake) có thể làm điều đó trở lên dễ dàng.
 
 <a name="event-subscribers"></a>
 ## Event Subscriber
@@ -304,7 +304,7 @@ Thỉnh thoảng queue của event listener của bạn có thể bị thất b�
 <a name="writing-event-subscribers"></a>
 ### Viết Event Subscriber
 
-Event subscriber là các class có thể đăng ký nhiều event từ trong chính class đó, cho phép bạn định nghĩa nhiều xử lý event trong một class. Subscriber nên định nghĩa một phương thức `subscribe`, sẽ được truyền một instance event dispatcher. Bạn có thể gọi phương thức `listen` trong dispatcher để đăng ký event listener:
+Event subscriber là các class có thể đăng ký nhiều event từ trong chính class đó, cho phép bạn định nghĩa nhiều xử lý event trong cùng một class. Subscriber nên định nghĩa một phương thức `subscribe`, nó sẽ nhận vào một instance event dispatcher. Bạn có thể gọi phương thức `listen` trong dispatcher đó để đăng ký event listener:
 
     <?php
 
@@ -345,7 +345,7 @@ Event subscriber là các class có thể đăng ký nhiều event từ trong ch
 <a name="registering-event-subscribers"></a>
 ### Đăng ký Event Subscriber
 
-Sau khi viết xong subscriber, bạn đã sẵn sàng để đăng ký nó với event dispatcher. Bạn có thể đăng ký subscriber bằng cách sử dụng thuộc tính `$subscribe` trong `EventServiceProvider`. Ví dụ: hãy thêm `UserEventSubscriber` vào danh sách:
+Sau khi đã tạo xong subscriber, bạn có thể đăng ký nó với event dispatcher. Bạn có thể đăng ký subscriber bằng cách sử dụng thuộc tính `$subscribe` trong `EventServiceProvider`. Ví dụ: hãy thêm `UserEventSubscriber` vào trong danh sách:
 
     <?php
 

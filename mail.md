@@ -23,12 +23,12 @@
 <a name="introduction"></a>
 ## Giới thiệu
 
-Laravel cung cấp API đơn giản, gọn gàng trên thư viện [SwiftMailer] (https://swiftmailer.symfony.com/) với các driver cho SMTP, Mailgun, SparkPost, Amazon SES, hàm `mail` của PHP và `sendmail`, cho phép bạn nhanh chóng bắt đầu gửi mail thông qua dịch vụ dựa trên đám mây hoặc local mà bạn chọn.
+Laravel cung cấp một API đơn giản, gọn gàng trên thư viện [SwiftMailer](https://swiftmailer.symfony.com/) với các driver như SMTP, Mailgun, SparkPost, Amazon SES, hàm `mail` của PHP và `sendmail`, cho phép bạn nhanh chóng bắt đầu gửi mail thông qua dịch vụ trên đám mây hoặc local mà bạn chọn.
 
 <a name="driver-prerequisites"></a>
 ### Yêu cầu driver
 
-Các driver dựa trên API như Mailgun và SparkPost thường đơn giản hơn và nhanh hơn là các máy chủ SMTP. Nếu có thể, bạn nên sử dụng một trong những driver này. Tất cả các driver API yêu cầu thư viện Guzzle HTTP, có thể được cài đặt thông qua trình quản lý package Composer:
+Các driver dựa trên API như Mailgun và SparkPost thường đơn giản hơn và nhanh hơn là các máy chủ SMTP. Nếu có thể, bạn nên sử dụng một trong những driver này. Tất cả các driver API đều yêu cầu thư viện Guzzle HTTP, thư viện này có thể được cài đặt thông qua trình quản lý package Composer:
 
     composer require guzzlehttp/guzzle
 
@@ -73,14 +73,14 @@ Trong Laravel, mỗi loại email được gửi bởi application của bạn �
 <a name="writing-mailables"></a>
 ## Viết Mailables
 
-Tất cả cấu hình của một class mailable được thực hiện trong phương thức `build`. Trong phương thức này, bạn có thể gọi các phương thức khác nhau, chẳng hạn như `from`, `subject`, `view`, và `attach` để cấu hình việc trình bày và gửi email.
+Tất cả các cấu hình dành cho một class mailable đều được thực hiện trong phương thức `build`. Trong phương thức này, bạn có thể gọi các phương thức khác nhau, chẳng hạn như `from`, `subject`, `view`, và `attach` để cấu hình việc trình bày và gửi email.
 
 <a name="configuring-the-sender"></a>
 ### Cấu hình Sender
 
 #### Using The `from` Method
 
-Trước tiên, hãy xem cấu hình người gửi email. Hay nói cách khác, ai sẽ gửi email "from". Có hai cách để cấu hình người gửi. Đầu tiên, bạn có thể sử dụng phương thức `from` trong phương thức `build` có sẵn trong class mailable của bạn:
+Trước tiên, hãy xem cấu hình người gửi email. Hay nói cách khác, ai sẽ gửi email "from". Có hai cách để cấu hình người gửi. Đầu tiên, bạn có thể sử dụng phương thức `from` trong phương thức `build` trong class mailable của bạn:
 
     /**
      * Build the message.
@@ -95,14 +95,14 @@ Trước tiên, hãy xem cấu hình người gửi email. Hay nói cách khác,
 
 #### Using A Global `from` Address
 
-Tuy nhiên, nếu application của bạn sử dụng cùng một địa chỉ "from" cho tất cả các email của nó, thì nó có thể trở nên cồng kềnh khi gọi phương thức `from` trong mỗi class mailable mà bạn tạo. Thay vào đó, bạn có thể khai báo một địa chỉ "from" global trong file cấu hình `config/mail.php`. Địa chỉ này sẽ được sử dụng nếu không có địa chỉ "from" nào khác được khai báo trong class mailable:
+Tuy nhiên, nếu application của bạn sử dụng cùng một địa chỉ "from" cho tất cả các email, thì nó có thể trở nên cồng kềnh khi gọi phương thức `from` trong mỗi class mailable mà bạn tạo. Thay vào đó, bạn có thể khai báo một địa chỉ "from" global trong file cấu hình `config/mail.php`. Địa chỉ này sẽ được sử dụng nếu không có địa chỉ "from" nào được khai báo trong class mailable:
 
     'from' => ['address' => 'example@example.com', 'name' => 'App Name'],
 
 <a name="configuring-the-view"></a>
 ### Cấu hình View
 
-Trong phương thức `build` của class mailable, bạn có thể sử dụng phương thức `view` để khai báo một template nào đó sẽ được sử dụng khi hiển thị nội dung email. Vì mỗi email thường sử dụng một [Blade template](/docs/{{version}}/blade) để hiển thị nội dung của nó, bạn có toàn bộ sức mạnh và sự tiện lợi của công cụ tạo template của Blade khi xây dựng HTML cho email của bạn:
+Trong phương thức `build` của class mailable, bạn có thể sử dụng phương thức `view` để khai báo một template sẽ được sử dụng khi hiển thị nội dung email. Vì mỗi email thường sử dụng một [Blade template](/docs/{{version}}/blade) để hiển thị nội dung của nó, bạn có thể có toàn bộ sức mạnh và sự tiện lợi của công cụ tạo template của Blade khi xây dựng HTML cho email của bạn:
 
     /**
      * Build the message.
@@ -118,7 +118,7 @@ Trong phương thức `build` của class mailable, bạn có thể sử dụng 
 
 #### Plain Text Emails
 
-Nếu bạn muốn định nghĩa một phiên bản văn bản đơn giản của email của bạn, bạn có thể sử dụng phương thức `text`. Giống như phương thức `view`, phương thức `text` chấp nhận một tên template sẽ được sử dụng để hiển thị nội dung của email. Bạn có thể thoải mái định nghĩa cả phiên bản HTML và văn bản thuần của tin nhắn của bạn:
+Nếu bạn muốn định nghĩa một văn bản thuần cho email của bạn, bạn có thể sử dụng phương thức `text`. Giống như phương thức `view`, phương thức `text` chấp nhận một tên template sẽ được sử dụng để hiển thị nội dung của email. Bạn có thể thoải mái định nghĩa cả phiên bản HTML và phiên bản văn bản thuần cho nội dung của bạn:
 
     /**
      * Build the message.
@@ -136,7 +136,7 @@ Nếu bạn muốn định nghĩa một phiên bản văn bản đơn giản c�
 
 #### Via Public Properties
 
-Thông thường, bạn sẽ muốn chuyển một số dữ liệu cho view của bạn mà bạn có thể sử dụng khi hiển thị HTML của email. Có hai cách bạn có thể cung cấp dữ liệu cho view của bạn. Đầu tiên, mọi thuộc tính công khai được định nghĩa trên class mailable của bạn sẽ tự động được cung cấp cho view. Vì thế, ví dụ, bạn có thể chuyển dữ liệu vào hàm khởi tạo của class mailable của bạn và đặt dữ liệu đó thành các thuộc tính công khai được định nghĩa trên class:
+Thông thường, bạn sẽ muốn chuyển một số dữ liệu cho view mà bạn có thể sử dụng khi hiển thị HTML. Có hai cách để bạn có thể cung cấp dữ liệu cho view của bạn. Đầu tiên, mọi thuộc tính công khai được định nghĩa trong class mailable của bạn sẽ tự động được cung cấp cho view. Vì thế, ví dụ, bạn có thể chuyển dữ liệu vào hàm khởi tạo của class mailable của bạn và set dữ liệu đó thành thuộc tính công khai được định nghĩa trong class:
 
     <?php
 
@@ -179,7 +179,7 @@ Thông thường, bạn sẽ muốn chuyển một số dữ liệu cho view c�
         }
     }
 
-Khi dữ liệu đã được set thành thuộc tính công khai, nó sẽ tự động có sẵn trong view của bạn, vì vậy bạn có thể truy cập nó giống như bạn truy cập bất kỳ dữ liệu nào khác trong các template Blade của bạn:
+Khi dữ liệu đã được set thành thuộc tính công khai, nó sẽ được tự động truyền vào trong view, vì vậy bạn có thể truy cập vào nó giống như bạn truy cập vào bất kỳ dữ liệu nào khác có trong template Blade của bạn:
 
     <div>
         Price: {{ $order->price }}
@@ -187,7 +187,7 @@ Khi dữ liệu đã được set thành thuộc tính công khai, nó sẽ tự
 
 #### Via The `with` Method:
 
-Nếu bạn muốn tùy chỉnh định dạng dữ liệu email của bạn trước khi nó được gửi đến template, bạn có thể tự truyền dữ liệu của bạn đến view thông qua phương thức `with`. Thông thường, bạn vẫn sẽ truyền dữ liệu qua hàm khởi tạo của class mailable; tuy nhiên, bạn nên set dữ liệu này thành các thuộc tính `protected` hoặc `private` để những dữ liệu này sẽ không được tự động đưa cho template. Sau đó, khi gọi phương thức `with`, sẽ truyền một mảng dữ liệu mà bạn muốn để đưa cho template:
+Nếu bạn muốn tùy chỉnh định dạng dữ liệu email của bạn trước khi nó được gửi đến template, bạn có thể tự truyền dữ liệu của bạn đến view thông qua phương thức `with`. Thông thường, bạn vẫn sẽ truyền dữ liệu qua hàm khởi tạo của class mailable; tuy nhiên, bạn nên set dữ liệu này thành thuộc tính `protected` hoặc `private` để những dữ liệu này sẽ không được tự động đưa cho template. Sau đó, khi gọi phương thức `with`, để truyền những dữ liệu mà bạn muốn đưa vào cho template:
 
     <?php
 
@@ -234,7 +234,7 @@ Nếu bạn muốn tùy chỉnh định dạng dữ liệu email của bạn tr�
         }
     }
 
-Khi dữ liệu đã được truyền đến phương thức `with`, nó sẽ tự động có sẵn trong view của bạn, vì vậy bạn có thể truy cập nó giống như bạn truy cập bất kỳ dữ liệu nào khác trong các template Blade của bạn:
+Khi dữ liệu đã được truyền đến phương thức `with`, nó sẽ tự động đưa vào trong view của bạn, vì vậy bạn có thể truy cập vào nó giống như bạn truy cập vào bất kỳ dữ liệu nào khác có trong template Blade của bạn:
 
     <div>
         Price: {{ $orderPrice }}
@@ -243,7 +243,7 @@ Khi dữ liệu đã được truyền đến phương thức `with`, nó sẽ t
 <a name="attachments"></a>
 ### Attachments
 
-Để thêm file đính kèm vào email, hãy sử dụng phương thức `attach` trong phương thức `build` của class mailable. Phương thức `attach` chấp nhận một đường dẫn đầy đủ đến file làm tham số đầu tiên của nó:
+Để thêm một file đính kèm vào email, hãy sử dụng phương thức `attach` trong phương thức `build` của class mailable. Phương thức `attach` chấp nhận một đường dẫn đầy đủ đến file làm tham số đầu tiên của nó:
 
         /**
          * Build the message.
@@ -256,7 +256,7 @@ Khi dữ liệu đã được truyền đến phương thức `with`, nó sẽ t
                         ->attach('/path/to/file');
         }
 
-Khi đính kèm file vào một tin nhắn, bạn cũng có thể khai báo tên hiển thị và / hoặc loại MIME bằng cách chuyển một `array` làm tham số thứ hai cho phương thức `attach`:
+Khi đính kèm file một vào một email, bạn cũng có thể khai báo tên hiển thị hoặc loại MIME bằng cách truyền một `array` làm tham số thứ hai cho phương thức `attach`:
 
         /**
          * Build the message.
@@ -274,7 +274,7 @@ Khi đính kèm file vào một tin nhắn, bạn cũng có thể khai báo tên
 
 #### Raw Data Attachments
 
-Phương thức `attachData` có thể được sử dụng để đính kèm một chuỗi raw dạng byte dưới dạng file đính kèm. Ví dụ: bạn có thể sử dụng phương thức này nếu bạn đã tạo một file PDF trong bộ nhớ và muốn đính kèm nó vào email mà không ghi nó vào disk. Phương thức `attachData` chấp nhận các byte raw dữ liệu làm tham số đầu tiên của nó, tên của file làm tham số thứ hai và một mảng các tùy chọn làm tham số thứ ba của nó:
+Phương thức `attachData` có thể được sử dụng để đính kèm một chuỗi raw byte dưới dạng file đính kèm. Ví dụ: bạn có thể sử dụng phương thức này nếu bạn đã tạo một file PDF trong bộ nhớ và muốn đính kèm file đó vào email mà không muốn ghi nó ra disk. Phương thức `attachData` chấp nhận các raw byte dữ liệu làm tham số đầu tiên và tên của file làm tham số thứ hai ngoài ra một mảng các tùy chọn làm tham số thứ ba của nó:
 
         /**
          * Build the message.
@@ -292,7 +292,7 @@ Phương thức `attachData` có thể được sử dụng để đính kèm m�
 <a name="inline-attachments"></a>
 ### Inline Attachments
 
-Nhúng hình ảnh vào trong email của bạn thường cồng kềnh; tuy nhiên, Laravel cung cấp một cách thuận tiện để đính kèm hình ảnh của bạn vào email và lấy CID của hình ảnh đó để hiển thị khi người dùng mở email. Để nhúng hình ảnh, hãy sử dụng phương thức `embed` trên biến `$message` trong template email của bạn. Laravel tự động cung cấp biến `$message` cho tất cả các template email của bạn, vì vậy bạn không cần phải lo lắng về việc truyền nó theo cách thủ công:
+Nhúng hình ảnh vào trong email của bạn thường rất cồng kềnh; tuy nhiên, Laravel cung cấp một cách xử lý thuận tiện để đính kèm hình ảnh của bạn vào email và lấy CID của hình ảnh đó để hiển thị khi người dùng mở email. Để nhúng hình ảnh, hãy sử dụng phương thức `embed` trên biến `$message` trong template email của bạn. Laravel tự động cung cấp biến `$message` cho tất cả các template email của bạn, vì vậy bạn không cần phải lo lắng về việc truyền nó:
 
     <body>
         Here is an image:
@@ -300,7 +300,7 @@ Nhúng hình ảnh vào trong email của bạn thường cồng kềnh; tuy nhi
         <img src="{{ $message->embed($pathToFile) }}">
     </body>
 
-> {note} biến `$message` không thể sử dụng trong các markdown message.
+> {note} biến `$message` không thể sử dụng trong các nội dung markdown.
 
 #### Embedding Raw Data Attachments
 
@@ -315,7 +315,7 @@ Nếu bạn đã có một chuỗi raw dữ liệu mà bạn muốn nhúng vào 
 <a name="customizing-the-swiftmailer-message"></a>
 ### Tuỳ biến SwiftMailer Message
 
-Phương thức `withSwiftMessage` của class `Mailable` cho phép bạn đăng ký một callback sẽ được gọi với một instance message raw SwiftMailer trước khi gửi message. Điều này cung cấp cho bạn một cách để tùy biến message trước khi nó được gửi:
+Phương thức `withSwiftMessage` của class `Mailable` cho phép bạn đăng ký một callback sẽ được gọi với một instance message raw SwiftMailer trước khi gửi message. Điều này cung cấp cho bạn một cách để tùy biến message trước khi nó được gửi đi:
 
         /**
          * Build the message.
@@ -340,11 +340,11 @@ Markdown mailable message cho phép bạn tận dụng lợi thế của các te
 <a name="generating-markdown-mailables"></a>
 ### Tạo Markdown Mailables
 
-Để tạo một mailable với template Markdown tương ứng, bạn có thể sử dụng tùy chọn `--markdown` của lệnh Artisan `make:mail`:
+Để tạo một mailable với template Markdown tương ứng, bạn có thể sử dụng tùy chọn `--markdown` trong lệnh Artisan `make:mail`:
 
     php artisan make:mail OrderShipped --markdown=emails.orders.shipped
 
-Sau đó, khi cấu hình mailable trong phương thức `build` của nó, hãy gọi phương thức `markdown` thay vì phương thức `view`. Các phương thức `markdown` chấp nhận tên của template Markdown và một mảng dữ liệu tùy chọn để cung cấp cho template:
+Sau đó, khi cấu hình mailable trong phương thức `build`, hãy gọi phương thức `markdown` thay vì phương thức `view`. Các phương thức `markdown` chấp nhận tên của template Markdown và một mảng dữ liệu để cung cấp cho template:
 
     /**
      * Build the message.
@@ -360,7 +360,7 @@ Sau đó, khi cấu hình mailable trong phương thức `build` của nó, hãy
 <a name="writing-markdown-messages"></a>
 ### Viết Markdown Messages
 
-Các markdown mailable sử dụng kết hợp các component của Blade và cú pháp Markdown cho phép bạn dễ dàng tạo ra format mail trong khi vẫn tận dụng các component được tạo sẵn của Laravel:
+Các markdown mailable sử dụng kết hợp các component của Blade và cú pháp Markdown cho phép bạn dễ dàng tạo ra format mail trong khi vẫn tận dụng được các component đã được tạo sẵn của Laravel:
 
     @component('mail::message')
     # Order Shipped
@@ -375,11 +375,11 @@ Các markdown mailable sử dụng kết hợp các component của Blade và c�
     {{ config('app.name') }}
     @endcomponent
 
-> {tip} Không sử dụng thụt đầu dòng khi viết email bằng Markdown. Trình phân tích cú pháp Markdown sẽ hiển thị nội dung thụt đầu dòng dưới dạng code block.
+> {tip} Đừng sử dụng thụt đầu dòng khi viết email bằng Markdown. Trình phân tích cú pháp Markdown sẽ hiển thị nội dung thụt đầu dòng dưới dạng code block.
 
 #### Button Component
 
-Component button sẽ tạo ra một button link ở chính giữa. Component này chấp nhận hai tham số, một là `url` và một là tùy chọn `color`. Các màu được hỗ trợ là `blue`,`green` và `red`. Bạn có thể thêm các component button vào message nếu muốn:
+Component button sẽ tạo ra một link button ở chính giữa. Component này chấp nhận hai tham số, một là `url` và một là tùy chọn `color`. Các màu được hỗ trợ là `blue`, `green` và `red`. Bạn có thể thêm các component button vào message nếu muốn:
 
     @component('mail::button', ['url' => $url, 'color' => 'green'])
     View Order
@@ -395,7 +395,7 @@ Component panel sẽ tạo một block văn bản trong một panel có màu n�
 
 #### Table Component
 
-Component table cho phép bạn chuyển đổi một bảng Markdown thành một bảng HTML. Component này chấp nhận nội dung như một bảng Markdown bình thường. Căn chỉnh trái phải của cột bảng cũng được mặc định hỗ trợ bởi cú pháp căn chỉnh cột bảng của Markdown:
+Component table cho phép bạn chuyển đổi một bảng Markdown thành một bảng HTML. Component này chấp nhận nội dung như một bảng Markdown bình thường. Căn chỉnh trái phải của cột cũng được mặc định hỗ trợ bởi cú pháp căn chỉnh cột của Markdown:
 
     @component('mail::table')
     | Laravel       | Table         | Example  |
@@ -407,22 +407,22 @@ Component table cho phép bạn chuyển đổi một bảng Markdown thành m�
 <a name="customizing-the-components"></a>
 ### Tuỳ biến Components
 
-Bạn có thể export tất cả các component Markdown mail sang thư mục riêng của bạn để tùy biến. Để export các component, sử dụng lệnh Artisan `vendor:publish` để export tag nội dung `laravel-mail`:
+Bạn có thể export ra tất cả các component mail Markdown sang thư mục riêng của bạn để tùy biến. Để export các component, hãy sử dụng lệnh Artisan `vendor:publish` để export tag nội dung `laravel-mail`:
 
     php artisan vendor:publish --tag=laravel-mail
 
-Lệnh này sẽ export các component Markdown mail sang thư mục `resources/views/vendor/mail`. Thư mục `mail` sẽ chứa một thư mục `html` và `markdown`, mỗi thư mục chứa các hiển thị tương ứng của mỗi component có sẵn. Các component trong thư mục `html` được sử dụng để tạo phiên bản HTML cho email của bạn và các bản sao của chúng trong thư mục `markdown` được sử dụng để tạo phiên bản văn bản thuần túy. Bạn có thể tự do tùy biến các component này theo cách bạn muốn.
+Lệnh này sẽ export các component mail Markdown sang thư mục `resources/views/vendor/mail`. Thư mục `mail` sẽ chứa một thư mục `html` và một thư mục `markdown`, mỗi thư mục chứa các hiển thị tương ứng của mỗi component. Các component có trong thư mục `html` có thể được sử dụng để tạo văn bản HTML cho email và các bản sao của chúng trong thư mục `markdown` có thể được sử dụng để tạo văn bản thuần túy. Bạn có thể tự do tùy biến các component này theo cách bạn muốn.
 
 #### Customizing The CSS
 
-Sau khi export các component, thư mục `resources/views/vendor/mail/html/themes` sẽ chứa file `default.css`. Bạn có thể tùy biến CSS trong file này và các tuỳ biến này của bạn sẽ tự động được nhúng vào trong các hiển thị HTML cho Markdown mail của bạn.
+Sau khi export các component, thư mục `resources/views/vendor/mail/html/themes` sẽ chứa một file `default.css`. Bạn có thể tùy biến CSS trong file này và các tuỳ biến này của bạn sẽ tự động được nhúng vào trong các hiển thị HTML cho mail Markdown của bạn.
 
 > {tip} Nếu bạn muốn xây dựng một theme hoàn toàn mới cho các component Markdown, hãy viết một file CSS mới trong thư mục `html/themes` và thay đổi tùy chọn `theme` trong file cấu hình `mail` của bạn.
 
 <a name="previewing-mailables-in-the-browser"></a>
 ## Xem trước Mailables trên Browser
 
-Khi thiết kế một template của mailable, sẽ thật cần thiết để xem trước bản mailable được thiết kế trong trình duyệt của bạn giống như các template Blade thông thường. Vì lý do này, Laravel cho phép bạn trả lại bất kỳ mailable nào trực tiếp từ một Closure route hoặc controller. Khi một mailable được trả lại, nó sẽ được tạo và hiển thị trong trình duyệt, cho phép bạn xem trước thiết kế của nó mà không cần phải gửi nó đến một địa chỉ email thực tế:
+Khi thiết kế một template cho mailable, sẽ thật cần thiết để xem trước bản mailable được thiết kế trong trình duyệt của bạn giống như các template Blade thông thường. Vì lý do này, Laravel cho phép bạn trả về trực tiếp bất kỳ mailable nào từ một Closure route hoặc controller. Khi một mailable đã được trả lại, nó sẽ được tạo và hiển thị trong trình duyệt, cho phép bạn xem trước thiết kế của nó mà không cần phải gửi nó đến một địa chỉ email thực tế:
 
     Route::get('/mailable', function () {
         $invoice = App\Invoice::find(1);
@@ -433,7 +433,7 @@ Khi thiết kế một template của mailable, sẽ thật cần thiết để 
 <a name="sending-mail"></a>
 ## Gửi Mail
 
-Để gửi một message, hãy sử dụng phương thức `to` trong [facade](/docs/{{version}}/facades) `Mail`. Phương thức `to` chấp nhận một địa chỉ email, một instance user hoặc một collection user. Nếu bạn truyền qua một đối tượng hoặc một collection các đối tượng, mailer sẽ tự động sử dụng các thuộc tính `email` và `name` của đối tượng đã được truyền khi set người nhận email, vì vậy hãy đảm bảo các thuộc tính này có tồn tại trên các đối tượng của bạn. Khi bạn đã khai báo người nhận, bạn có thể truyền một instance của class mailable của bạn tới phương thức `send`:
+Để gửi một message, hãy sử dụng phương thức `to` trong [facade](/docs/{{version}}/facades) `Mail`. Phương thức `to` chấp nhận một địa chỉ email, một instance user hoặc một collection user. Nếu bạn truyền qua một đối tượng hoặc một collection các đối tượng, mailer sẽ tự động sử dụng các thuộc tính `email` và `name` trong các đối tượng đã được truyền vào khi set người nhận email, vì vậy hãy đảm bảo các thuộc tính này có tồn tại trong các đối tượng của bạn. Khi bạn đã khai báo người nhận, bạn có thể truyền một instance của class mailable của bạn tới phương thức `send`:
 
     <?php
 
@@ -464,7 +464,7 @@ Khi thiết kế một template của mailable, sẽ thật cần thiết để 
         }
     }
 
-Tất nhiên, bạn không bị giới hạn chỉ trong khai báo người nhận "to" khi gửi message. Mà bạn có thể tự do set "to", "cc" và "bcc" cho người nhận, tất cả được kết hợp trong một chuỗi phương thức duy nhất:
+Tất nhiên, bạn không bị giới hạn chỉ trong khai báo người nhận "to" khi gửi message. Mà bạn có thể tự do set "to", "cc" và "bcc" cho người nhận, tất cả có thể được kết hợp trong một chuỗi phương thức duy nhất:
 
     Mail::to($request->user())
         ->cc($moreUsers)
@@ -476,18 +476,18 @@ Tất nhiên, bạn không bị giới hạn chỉ trong khai báo người nh�
 
 #### Queueing A Mail Message
 
-Vì việc gửi email có thể mất nhiều thời gian response của application của bạn, nhiều nhà phát triển sẽ chọn cách queue email message cho background gửi. Laravel làm cho điều này trở nên dễ dàng bằng cách sử dụng [unified queue API](/docs/{{version}}/queues) được tích hợp sẵn của nó. Để queue một mail message, hãy sử dụng phương thức `queue` trên facade `Mail` sau khi khai báo người nhận thư:
+Vì việc gửi email có thể mất nhiều thời gian của application, nên nhiều nhà phát triển sẽ chọn cách queue email message để gửi dưới background. Laravel làm cho điều này trở nên dễ dàng bằng cách sử dụng [unified queue API](/docs/{{version}}/queues) được tích hợp sẵn trong facade `Mail`. Để queue một mail message, hãy sử dụng phương thức `queue` trong facade `Mail` sau khi khai báo người nhận thư:
 
     Mail::to($request->user())
         ->cc($moreUsers)
         ->bcc($evenMoreUsers)
         ->queue(new OrderShipped($order));
 
-Phương thức này sẽ tự động đảm nhiệm việc tạo một job lên queue để message sẽ được gửi trong background. Tất nhiên, bạn sẽ cần [cấu hình queue](/docs/{{version}}/queues) trước khi sử dụng tính năng này.
+Phương thức này sẽ tự động đảm nhận việc tạo một job lên queue để message sẽ được gửi trong background. Tất nhiên, bạn sẽ cần [cấu hình queue](/docs/{{version}}/queues) trước khi sử dụng tính năng này.
 
 #### Delayed Message Queueing
 
-Nếu bạn muốn delay việc gửi thư email trong queue, bạn có thể sử dụng phương thức `later`. Với tham số đầu tiên của nó, phương thức `later` chấp nhận một instance `DateTime` cho biết khi nào thư sẽ được gửi:
+Nếu bạn muốn delay việc gửi thư email trong queue, bạn có thể sử dụng phương thức `later`. Với tham số đầu tiên của phương thức `later` là một instance `DateTime` cho biết khi nào mail sẽ được gửi:
 
     $when = now()->addMinutes(10);
 
@@ -498,7 +498,7 @@ Nếu bạn muốn delay việc gửi thư email trong queue, bạn có thể s�
 
 #### Pushing To Specific Queues
 
-Vì tất cả các class mailable được tạo bằng lệnh `make:mail` đều sử dụng trait `Illuminate\Bus\Queueable`, bạn có thể gọi các phương thức `onQueue` và `onConnection` trong bất kỳ class mailable nào, cho phép bạn khai báo tên kết nối và tên queue cho mail:
+Vì tất cả các class mailable mà được tạo bằng lệnh `make:mail` đều có sử dụng trait `Illuminate\Bus\Queueable`, nên bạn có thể gọi các phương thức `onQueue` và `onConnection` trong bất kỳ class mailable nào, cho phép bạn khai báo tên kết nối và tên queue sẽ cần khi gửi mail:
 
     $message = (new OrderShipped($order))
                     ->onConnection('sqs')
@@ -511,7 +511,7 @@ Vì tất cả các class mailable được tạo bằng lệnh `make:mail` đ�
 
 #### Queueing By Default
 
-Nếu bạn có nhiều class mailable mà bạn muốn luôn được queue, bạn có thể implement contract `ShouldQueue` trên class. Bây giờ, ngay cả khi bạn gọi phương thức `send` khi gửi thư, thì mailable vẫn sẽ được queue vì nó đã implement contract:
+Nếu bạn có class mailable mà luôn muốn sử dụng queue, bạn có thể implement contract `ShouldQueue` trên class. Bây giờ, ngay cả khi bạn gọi phương thức `send` khi gửi thư, thì mailable vẫn sẽ được queue vì nó đã được implement contract:
 
     use Illuminate\Contracts\Queue\ShouldQueue;
 
@@ -523,11 +523,11 @@ Nếu bạn có nhiều class mailable mà bạn muốn luôn được queue, b�
 <a name="mail-and-local-development"></a>
 ## Mail và Local Development
 
-Khi đang phát triển tính năng gửi email, có lẽ bạn không thực sự muốn gửi email đến các địa chỉ email thực sự. Laravel cung cấp một số cách để "vô hiệu hóa" việc gửi email trong quá trình phát triển ở local.
+Khi bạn đang phát triển một tính năng gửi email, có thể bạn không muốn gửi email đến các địa chỉ email thực sự. Laravel cung cấp một số cách để "vô hiệu hóa" việc gửi email trong quá trình phát triển ở local.
 
 #### Log Driver
 
-Thay vì gửi email của bạn, driver mail `log` sẽ ghi tất cả các email vào file log của bạn để kiểm tra. Để biết thêm thông tin về cách cấu hình application của bạn theo từng môi trường, hãy xem [tài liệu cấu hình](/docs/{{version}}/configuration#environment-configuration).
+Thay vì gửi email, driver mail `log` sẽ viết tất cả các email vào file log của bạn để bạn tiện kiểm tra. Để biết thêm thông tin về cách cấu hình application của bạn theo từng môi trường, hãy xem [tài liệu cấu hình](/docs/{{version}}/configuration#environment-configuration).
 
 #### Universal To
 
@@ -540,12 +540,12 @@ Một giải pháp khác được cung cấp bởi Laravel là set một ngườ
 
 #### Mailtrap
 
-Cuối cùng, bạn có thể sử dụng một service như [Mailtrap](https://mailtrap.io) và driver `smtp` để gửi email của bạn đến hộp thư "giả" nơi bạn có thể xem chúng trong một email client thực sự. Cách tiếp cận này có lợi ích là cho phép bạn thực sự kiểm tra các email cuối cùng trong hòm thư của Mailtrap.
+Cuối cùng, bạn có thể sử dụng một service như [Mailtrap](https://mailtrap.io) và driver `smtp` để gửi email của bạn đến hộp thư "giả" nơi mà bạn có thể xem các email trong một hòm thư thực sự. Cách tiếp cận này có lợi ích là cho phép bạn thực sự kiểm tra các email cuối cùng trong hòm thư của Mailtrap.
 
 <a name="events"></a>
 ## Events
 
-Laravel sẽ bắn hai event trong quá trình gửi mail. Event `MessageSending` được kích hoạt trước khi một message được gửi, trong khi event `MessageSent` được kích hoạt sau khi message đã được gửi. Hãy nhớ rằng, những event này được kích hoạt khi thư đang được *gửi*, chứ không phải khi nó đã được queue. Bạn có thể đăng ký một listener event cho event này trong `EventServiceProvider`:
+Laravel sẽ tạo hai event trong quá trình gửi mail. Event `MessageSending` sẽ được kích hoạt trước khi một message được gửi, trong khi event `MessageSent` sẽ được kích hoạt sau khi message đã được gửi. Hãy nhớ rằng, những event này được kích hoạt khi thư đang được *gửi*, chứ không phải là khi nó đã được queue. Bạn có thể đăng ký một listener event cho những event này trong `EventServiceProvider`:
 
     /**
      * The event listener mappings for the application.

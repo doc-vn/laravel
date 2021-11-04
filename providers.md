@@ -10,13 +10,13 @@
 <a name="introduction"></a>
 ## Giới thiệu
 
-Các service provider là trung tâm của tất cả các quá trình khởi động của application Laravel. Application của riêng bạn, cũng như tất cả các service cốt lõi của Laravel đều được khởi động thông qua các service provider.
+Các service provider là trung tâm của tất cả quá trình khởi động của application Laravel. Application của bạn, cũng như tất cả các service cốt lõi của Laravel đều được khởi động thông qua các service provider.
 
-Nhưng, "bootstrapped" nghĩa là gì? Nói chung, ý của chúng tôi có nghĩa là **đăng ký** những thứ, bao gồm đăng ký liên kết service container, event listener, middleware và thậm chí là các route. Các Service provider là trung tâm để cấu hình application của bạn.
+Nhưng, "bootstrapped" nghĩa là gì? Nói chung, ý của chúng tôi có nghĩa là **đăng ký** những thứ, bao gồm cả đăng ký liên kết service container, event listener, middleware và thậm chí là cả các route. Các Service provider là trung tâm để cấu hình application của bạn.
 
-Nếu bạn mở file `config/app.php` đi cùng với Laravel, bạn sẽ thấy một mảng các `providers`. Đây là tất cả các class service provider sẽ được load cho application của bạn. Tất nhiên, nhiều trong số này là các provider "hoãn", nghĩa là nó sẽ không được load trong mọi request, mà chỉ khi các service này thực sự cần thiết nó mới được cung cấp.
+Nếu bạn mở file `config/app.php` đi cùng với Laravel, bạn sẽ thấy một mảng các `providers`. Đây là tất cả các class service provider sẽ được load cho application của bạn. Tất nhiên, nhiều trong số này là các provider "hoãn", nghĩa là nó sẽ không được load trong mọi request, mà chỉ khi các service này thực sự cần thiết nó mới được load.
 
-Trong phần tổng quan này, bạn sẽ học cách viết các service provider của riêng bạn và đăng ký chúng với application Laravel của bạn.
+Trong phần tổng quan này, bạn sẽ học cách viết các service provider của riêng bạn và đăng ký chúng với application Laravel.
 
 <a name="writing-service-providers"></a>
 ## Viết Service Provider
@@ -56,7 +56,7 @@ Chúng ta hãy cùng xem một service provider cơ bản. Trong bất kỳ phư
         }
     }
 
-Service provider này chỉ định nghĩa một phương thức `register` và sử dụng phương thức đó để định nghĩa một implementation của `Riak\Connection` trong service container. Nếu bạn không hiểu cách thức hoạt động của service container, hãy xem [tài liệu của nó](/docs/{{version}}/container).
+Service provider này chỉ định nghĩa một phương thức `register` và sử dụng phương thức đó để định nghĩa một implementation của `Riak\Connection` trong service container. Nếu bạn không hiểu cách thức hoạt động của service container, hãy xem [tài liệu về nó](/docs/{{version}}/container).
 
 <a name="the-boot-method"></a>
 ### Phương thức Boot
@@ -86,7 +86,7 @@ Vậy, điều gì sẽ xảy ra nếu chúng ta cần đăng ký một view com
 
 #### Phương thức Boot tích hợp khai báo phụ thuộc
 
-Bạn có thể viết khai báo phụ thuộc vào trong phương thức `boot` của service provider của bạn. [service container](/docs/{{version}}/container) sẽ tự động tích hợp bất kỳ phụ thuộc nào bạn cần:
+Bạn có thể viết khai báo phụ thuộc vào trong phương thức `boot` của service provider của bạn. [service container](/docs/{{version}}/container) sẽ tự động tích hợp bất kỳ phụ thuộc nào mà bạn cần:
 
     use Illuminate\Contracts\Routing\ResponseFactory;
 
@@ -100,7 +100,7 @@ Bạn có thể viết khai báo phụ thuộc vào trong phương thức `boot`
 <a name="registering-providers"></a>
 ## Đăng ký Providers
 
-Tất cả các service provider được đăng ký trong file cấu hình `config/app.php`. File này chứa một mảng các `providers` nơi mà bạn có thể liệt kê tên class của các service provider của bạn. Mặc định, một nhóm các service provider cốt lõi của Laravel đã được liệt kê trong mảng này. Các provider này sẽ khởi động các thành phần cốt lõi của Laravel, chẳng hạn như mailer, queue, cache, và các thành phần khác.
+Tất cả các service provider được đăng ký trong file cấu hình `config/app.php`. File này chứa một mảng các `providers` nơi mà bạn có thể liệt kê tên class của các service provider của bạn. Mặc định, một nhóm các service provider cốt lõi của Laravel đã được liệt kê ở trong mảng này. Các provider này sẽ khởi động các thành phần cốt lõi của Laravel, chẳng hạn như mailer, queue, cache, và các thành phần khác.
 
 Để đăng ký provider của bạn, hãy thêm nó vào mảng:
 
@@ -115,7 +115,7 @@ Tất cả các service provider được đăng ký trong file cấu hình `con
 
 Nếu provider của bạn **chỉ** đăng ký các liên kết trong [service container](/docs/{{version}}/container), bạn có thể chọn trì hoãn việc đăng ký cho đến khi một trong số các đăng ký liên kết thật sự cần thiết. Việc trì hoãn load của một provider như vậy sẽ cải thiện hiệu suất của ứng dụng của bạn, vì nó không được load từ filesystem cho mỗi request.
 
-Laravel sẽ biên dịch và lưu trữ một danh sách tất cả các service mà được cung cấp bởi các service provider trì hoãn, cùng với tên của class service provider đó. Sau đó, chỉ khi bạn resolve một trong những service này thì Laravel mới tải service provider đó lên.
+Laravel sẽ biên dịch và lưu trữ một danh sách tất cả các service mà được cung cấp dưới các service provider trì hoãn, cùng với tên của class service provider đó. Sau đó, chỉ khi bạn resolve một trong những service này thì Laravel mới tải service provider đó lên.
 
 Để trì hoãn việc load của một provider, hãy đặt thuộc tính `defer` thành` true` và định nghĩa một phương thức `provides`. Phương thức `provides` sẽ trả về các liên kết service container được đăng ký bởi provider:
 

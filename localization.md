@@ -12,7 +12,7 @@
 <a name="introduction"></a>
 ## Giới thiệu
 
-Các tính năng localization của Laravel cung cấp một cách thuận tiện để lấy ra các chuỗi bằng nhiều ngôn ngữ khác nhau, cho phép bạn dễ dàng hỗ trợ nhiều ngôn ngữ trong application của bạn. Các chuỗi ngôn ngữ được lưu trữ trong các file ở thư mục `resources/lang`. Trong thư mục này cần có thư mục con cho mỗi ngôn ngữ được application hỗ trợ:
+Các tính năng localization của Laravel cung cấp một cách thuận tiện để lấy ra các chuỗi bằng nhiều ngôn ngữ khác nhau, cho phép bạn dễ dàng hỗ trợ nhiều ngôn ngữ trong application của bạn. Các chuỗi ngôn ngữ được lưu trữ trong các file ở thư mục `resources/lang`. Trong thư mục này cần có thư mục con cho mỗi ngôn ngữ được application của bạn hỗ trợ:
 
     /resources
         /lang
@@ -21,7 +21,7 @@ Các tính năng localization của Laravel cung cấp một cách thuận tiệ
             /es
                 messages.php
 
-Tất cả các file ngôn ngữ trả về một mảng của các chuỗi đã được đặt key. Ví dụ:
+Tất cả các file ngôn ngữ đều trả về một mảng của các chuỗi đã được đặt key. Ví dụ:
 
     <?php
 
@@ -68,7 +68,7 @@ Thông thường, các chuỗi translation được lưu trữ trong các file t
             /es
                 messages.php
 
-Tất cả các file ngôn ngữ trả về một mảng của các chuỗi đã được đặt key. Ví dụ:
+Tất cả các file ngôn ngữ đều trả về một mảng của các chuỗi đã được đặt key. Ví dụ:
 
     <?php
 
@@ -81,7 +81,7 @@ Tất cả các file ngôn ngữ trả về một mảng của các chuỗi đã
 <a name="using-translation-strings-as-keys"></a>
 ### Sử dụng chuỗi translation như key
 
-Đối với các application có yêu cầu dịch thuật nặng, việc xác định mọi chuỗi bằng "short key" có thể nhanh chóng gây nhầm lẫn khi tham chiếu chúng trong các view của bạn. Vì lý do này, Laravel cũng cung cấp hỗ trợ để xác định chuỗi translation bằng cách sử dụng bản translation "default" của chuỗi làm khóa.
+Đối với các application có yêu cầu dịch thuật nặng, việc xác định mọi chuỗi bằng "short key" có thể nhanh chóng gây nhầm lẫn khi tham chiếu chúng trong các view của bạn. Vì lý do này, Laravel cũng cung cấp một hỗ trợ để xác định chuỗi translation bằng cách sử dụng bản translation "default" của chuỗi làm khóa.
 
 Các file translation sử dụng chuỗi translation làm khóa được lưu trữ dưới dạng file JSON trong thư mục `resources/lang`. Ví dụ: nếu ứng dụng của bạn có bản translation tiếng Tây Ban Nha, bạn nên tạo file `resources/lang/es.json`:
 
@@ -92,13 +92,13 @@ Các file translation sử dụng chuỗi translation làm khóa được lưu t
 <a name="retrieving-translation-strings"></a>
 ## Lấy chuỗi translation
 
-Bạn có thể lấy các chuỗi đã được dịch từ các file ngôn ngữ bằng cách sử dụng hàm helper `__`. Phương thức `__` chấp nhận tên file và khóa của chuỗi đã dịch làm tham số đầu tiên của nó. Ví dụ: hãy lấy chuỗi đã dịch `welcome` từ file ngôn ngữ `resources/lang/messages.php`:
+Bạn có thể lấy các chuỗi đã được dịch từ các file ngôn ngữ bằng cách sử dụng hàm helper `__`. Phương thức `__` chấp nhận tên file và khóa của chuỗi đã dịch làm tham số đầu tiên của nó. Ví dụ: hãy lấy chuỗi đã được  đượcdịch `welcome` từ file ngôn ngữ `resources/lang/messages.php`:
 
     echo __('messages.welcome');
 
     echo __('I love programming.');
 
-Tất nhiên, nếu bạn đang sử dụng [Blade templating engine](/docs/{{version}}/blade), bạn có thể sử dụng cú pháp `{{ }}` để echo một chuỗi đã dịch hoặc sử dụng lệnh `@lang`:
+Tất nhiên, nếu bạn đang sử dụng [Blade templating engine](/docs/{{version}}/blade), bạn có thể sử dụng cú pháp `{{ }}` để echo một chuỗi đã được dịch hoặc sử dụng lệnh `@lang`:
 
     {{ __('messages.welcome') }}
 
@@ -109,15 +109,15 @@ Nếu chuỗi cần dịch được chỉ định không tồn tại, hàm `__` 
 <a name="replacing-parameters-in-translation-strings"></a>
 ### Thay thế parameter trong chuỗi translation
 
-Nếu bạn muốn, bạn có thể định nghĩa một thuộc tính thay thế trong các chuỗi translation của bạn. Tất cả những thuộc tính thay thế đều có tiền tố là `:`. Ví dụ: bạn có thể định nghĩa thông báo chào mừng với thuộc tính thay thế là name:
+Nếu bạn muốn, bạn có thể định nghĩa một thuộc tính thay thế trong các chuỗi translation của bạn. Tất cả những thuộc tính thay thế đều có tiền tố là `:`. Ví dụ: bạn có thể định nghĩa thông báo chào mừng với một thuộc tính thay thế name:
 
     'welcome' => 'Welcome, :name',
 
-Để thay thế các thuộc tính thay thế khi lấy chuỗi translation, hãy truyền một mảng các thay thế làm tham số thứ hai cho hàm `__`:
+Để thay đổi các thuộc tính thay thế khi lấy chuỗi translation, hãy truyền một mảng các thay thế làm tham số thứ hai cho hàm `__`:
 
     echo __('messages.welcome', ['name' => 'dayle']);
 
-Nếu biến thay của bạn đều là chữ in hoa hoặc chỉ viết hoa chữ cái đầu tiên, giá trị dịch cũng sẽ được viết hoa tương ứng:
+Nếu biến thay của bạn đều là chữ in hoa hoặc chỉ viết hoa chữ cái đầu tiên, giá trị translation cũng sẽ được viết hoa tương ứng:
 
     'welcome' => 'Welcome, :NAME', // Welcome, DAYLE
     'goodbye' => 'Goodbye, :Name', // Goodbye, Dayle
@@ -129,11 +129,11 @@ Số nhiều là một vấn đề phức tạp, vì các ngôn ngữ khác nhau
 
     'apples' => 'There is one apple|There are many apples',
 
-Bạn thậm chí có thể tạo các quy tắc số nhiều phức tạp hơn, chỉ định các chuỗi translation cho nhiều đoạn trong dãy số:
+Bạn thậm chí có thể tạo các quy tắc số nhiều phức tạp hơn, bằng cách chỉ định các chuỗi translation cho nhiều đoạn trong dãy số:
 
     'apples' => '{0} There are none|[1,19] There are some|[20,*] There are many',
 
-Sau khi định nghĩa chuỗi translation có nhiều tùy chọn về số nhiều, bạn có thể sử dụng hàm `trans_choice` để lấy ra chuỗi cho một "count" đã cho. Trong ví dụ này, vì count lớn hơn một, dạng số nhiều của chuỗi translation được trả về:
+Sau khi định nghĩa chuỗi translation có nhiều tùy chọn về số nhiều, bạn có thể sử dụng hàm `trans_choice` để lấy ra chuỗi cho một "count" đã cho. Trong ví dụ này, vì count lớn hơn một, dạng số nhiều của chuỗi translation sẽ được trả về:
 
     echo trans_choice('messages.apples', 10);
 
@@ -146,6 +146,6 @@ Bạn cũng có thể định nghĩa các thuộc tính thay thế trong các ch
 <a name="overriding-package-language-files"></a>
 ## Ghi đè package file language
 
-Một số package có thể gửi cùng với các file ngôn ngữ riêng của họ. Thay vì thay đổi vào các file core của package để thay đổi các chuổi translation, bạn có thể ghi đè chúng bằng cách đặt các file trong thư mục `resources/lang/vendor/{package}/{locale}`.
+Một số package có thể đi cùng với các file ngôn ngữ riêng của họ. Thay vì sửa vào các file core của package để thay đổi các chuổi translation, bạn có thể ghi đè chúng bằng cách lưu các file trong thư mục `resources/lang/vendor/{package}/{locale}`.
 
-Vậy, ví dụ, nếu bạn cần ghi đè các chuỗi translation tiếng Anh trong file `messages.php` ở package có tên là `skyrim/hearthfire`, bạn nên đặt một file ngôn ngữ tại: `resources/lang/vendor/hearthfire/en/messages.php`. Trong file này, bạn chỉ nên định nghĩa chuỗi translation mà bạn muốn ghi đè. Bất kỳ chuỗi translation nào bạn không muốn ghi đè sẽ vẫn được tải từ các file ngôn ngữ gốc của package.
+Vậy, ví dụ, nếu bạn cần ghi đè các chuỗi translation tiếng Anh trong file `messages.php` của package có tên là `skyrim/hearthfire`, thì bạn cần lưu một file ngôn ngữ có path như sau: `resources/lang/vendor/hearthfire/en/messages.php`. Trong file này, bạn chỉ cần định nghĩa chuỗi translation mà bạn muốn ghi đè. Bất kỳ chuỗi translation nào mà bạn không muốn ghi đè sẽ vẫn được tải từ các file ngôn ngữ gốc của package.

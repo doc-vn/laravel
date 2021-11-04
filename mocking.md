@@ -12,9 +12,9 @@
 <a name="introduction"></a>
 ## Giới thiệu
 
-Khi test các application của Laravel, bạn có thể muốn "làm giả" các khía cạnh nhất định của application để chúng không thực sự được thực thi trong khi test. Ví dụ: khi test một controller gửi một event, bạn có thể muốn làm giả một event listener để chúng không thực sự được thực thi trong quá trình test. Điều này cho phép bạn chỉ kiểm tra HTTP response của controller mà không phải lo lắng về việc thực thi của event listener, vì event listener có thể được kiểm tra trong một test case của riêng nó.
+Khi test các application của Laravel, bạn có thể muốn "làm giả" các khía cạnh nhất định của application để chúng không thực sự được thực thi trong khi test. Ví dụ: khi test một controller gửi một event, bạn có thể muốn làm giả một event listener để chúng không thực sự được thực thi trong quá trình test. Điều này cho phép bạn chỉ kiểm tra HTTP response của controller mà không phải lo lắng về việc thực thi của event listener, vì các event listener có thể được kiểm tra trong một test case của riêng nó.
 
-Mặc định, Laravel cung cấp helper để làm giả các event, job và facade. Những helper này chủ yếu cung cấp một layer tiện lợi trên Mockery để bạn không phải tự thực hiện các việc gọi phương thức Mockery phức tạp. Tất nhiên, bạn có thể tự do sử dụng [Mockery](http://docs.mockery.io/en/latest/) hoặc PHPUnit để làm giả hoặc spy của riêng bạn.
+Mặc định, Laravel cung cấp helper để làm giả các event, job và facade. Những helper này chủ yếu cung cấp một layer dựa trên Mockery để bạn không phải tự thực hiện các việc gọi phương thức Mockery phức tạp. Tất nhiên, bạn có thể tự do sử dụng [Mockery](http://docs.mockery.io/en/latest/) hoặc PHPUnit để làm giả hoặc spy của riêng bạn.
 
 <a name="bus-fake"></a>
 ## Bus Fake
@@ -51,7 +51,7 @@ Thay cho việc làm giả, bạn có thể sử dụng phương thức `fake` c
 <a name="event-fake"></a>
 ## Event Fake
 
-Thay cho việc làm giả, bạn có thể sử dụng phương thức `fake` của facade `Event` để ngăn tất cả những event listener sẽ được thực thi. Sau đó, bạn có thể xác nhận các event đã được gửi đi và thậm chí kiểm tra dữ liệu mà họ nhận được. Khi sử dụng fake, các assertion sẽ được thực hiện sau khi code test được thực thi:
+Thay cho việc làm giả, bạn có thể sử dụng phương thức `fake` của facade `Event` để ngăn tất cả những event listener sẽ được thực thi. Sau đó, bạn có thể xác nhận các event đã được gửi đi hay chưa và thậm chí kiểm tra dữ liệu mà nó nhận được. Khi sử dụng fake, các assertion sẽ được thực hiện sau khi code test được thực thi:
 
     <?php
 
@@ -86,7 +86,7 @@ Thay cho việc làm giả, bạn có thể sử dụng phương thức `fake` c
 <a name="mail-fake"></a>
 ## Mail Fake
 
-Bạn có thể sử dụng phương thức `fake` của facade `Mail` để ngăn mail được gửi. Sau đó, bạn có thể xác nhận [mailables](/docs/{{version}}/mail) đã được gửi cho người dùng và thậm chí kiểm tra dữ liệu họ nhận được. Khi sử dụng fake, các assertion được thực hiện sau khi code test được thực thi:
+Bạn có thể sử dụng phương thức `fake` của facade `Mail` để ngăn mail được gửi. Sau đó, bạn có thể xác nhận [mailables](/docs/{{version}}/mail) đã được gửi đi cho người dùng hay chưa và thậm chí kiểm tra dữ liệu nó nhận được. Khi sử dụng fake, các assertion được thực hiện sau khi code test được thực thi:
 
     <?php
 
@@ -133,7 +133,7 @@ Nếu bạn đang sử dụng queue mailable để gửi ở dưới background,
 <a name="notification-fake"></a>
 ## Notification Fake
 
-Bạn có thể sử dụng phương thức `fake` của facade `Notification` để ngăn notification được gửi đi. Sau đó, bạn có thể xác nhận [notifications](/docs/{{version}}/notifications) đã được gửi cho người dùng và thậm chí kiểm tra dữ liệu họ nhận được. Khi sử dụng fake, các assertion được thực hiện sau khi code test được thực thi:
+Bạn có thể sử dụng phương thức `fake` của facade `Notification` để ngăn notification được gửi đi. Sau đó, bạn có thể xác nhận [notifications](/docs/{{version}}/notifications) đã được gửi cho người dùng hay chưa và thậm chí kiểm tra dữ liệu nó nhận được. Khi sử dụng fake, các assertion được thực hiện sau khi code test được thực thi:
 
     <?php
 
@@ -176,7 +176,7 @@ Bạn có thể sử dụng phương thức `fake` của facade `Notification` �
 <a name="queue-fake"></a>
 ## Queue Fake
 
-Thay cho việc làm giả, bạn có thể sử dụng phương thức `fake` của facade `Queue` để ngăn các job được queue. Sau đó, bạn có thể xác nhận rằng các job đã được tạo trong queue và thậm chí kiểm tra dữ liệu họ nhận được. Khi sử dụng fake, các assertion sẽ được thực hiện sau khi code test được thực thi:
+Thay cho việc làm giả, bạn có thể sử dụng phương thức `fake` của facade `Queue` để ngăn các job được queue. Sau đó, bạn có thể xác nhận các job đó đã được tạo trong queue hay chưa và thậm chí kiểm tra dữ liệu nó nhận được. Khi sử dụng fake, các assertion sẽ được thực hiện sau khi code test được thực thi:
 
     <?php
 
@@ -214,7 +214,7 @@ Thay cho việc làm giả, bạn có thể sử dụng phương thức `fake` c
 <a name="storage-fake"></a>
 ## Storage Fake
 
-Phương thức `fake` của facade `Storage` cho phép bạn dễ dàng tạo một disk giả, kết hợp với các tiện ích tạo file của class `UploadedFile`, giúp đơn giản hóa rất nhiều việc kiểm tra file tải lên. Ví dụ:
+Phương thức `fake` của facade `Storage` cho phép bạn dễ dàng tạo một disk giả, kết hợp với các tiện ích tạo file của class `UploadedFile`, sẽ giúp đơn giản hóa rất nhiều việc kiểm tra file upload. Ví dụ:
 
     <?php
 
@@ -244,12 +244,12 @@ Phương thức `fake` của facade `Storage` cho phép bạn dễ dàng tạo m
         }
     }
 
-> {tip} Mặc định, phương thức `fake` sẽ xóa tất cả các file trong thư mục temporary của nó. Nếu bạn muốn giữ các file này, bạn có thể sử dụng phương thức "persistentFake" thay thế.
+> {tip} Mặc định, phương thức `fake` sẽ xóa tất cả các file trong thư mục temporary của nó. Nếu bạn muốn giữ lại các file này, bạn có thể sử dụng phương thức "persistentFake" thay thế.
 
 <a name="mocking-facades"></a>
 ## Facades
 
-Không giống như các cuộc gọi phương thức static truyền thống, [facades](/docs/{{version}}/facades) có thể bị làm giả. Điều này cung cấp một lợi thế lớn so với các phương thức static truyền thống và cho phép bạn khả năng test nếu bạn đang sử dụng khai báo phụ thuộc. Khi test, bạn có thể muốn làm giả việc gọi đến facade của Laravel trong controller của bạn. Ví dụ, hãy xem hành động của controller sau:
+Không giống như các phương thức static call truyền thống, [facades](/docs/{{version}}/facades) có thể bị làm giả. Điều này cung cấp một lợi thế lớn so với các phương thức static truyền thống và cho phép bạn khả năng test nếu bạn đang sử dụng khai báo phụ thuộc. Khi test, bạn có thể muốn làm giả việc gọi đến facade của Laravel trong controller của bạn. Ví dụ, hãy xem hành động của controller sau:
 
     <?php
 
@@ -272,7 +272,7 @@ Không giống như các cuộc gọi phương thức static truyền thống, [
         }
     }
 
-Chúng ta có thể làm giả việc gọi đến facade `Cache` bằng cách sử dụng phương thức `shouldReceive`, nó sẽ trả về một instance giả của [Mockery] (https://github.com/padraic/mockery). Vì các facade được resolve và quản lý bởi [service container](/docs/{{version}}/container), nên chúng có khả năng test cao hơn nhiều so với một class static thông thường. Ví dụ: chúng ta hãy làm giả việc gọi đến phương thức `get` của facade `Cache`:
+Chúng ta có thể làm giả việc gọi đến facade `Cache` bằng cách sử dụng phương thức `shouldReceive`, nó sẽ trả về một instance giả của [Mockery](https://github.com/padraic/mockery). Vì các facade được resolve và quản lý bởi [service container](/docs/{{version}}/container), nên chúng có khả năng test cao hơn nhiều so với một class static thông thường. Ví dụ: chúng ta hãy làm giả việc gọi đến phương thức `get` của facade `Cache`:
 
     <?php
 
@@ -298,4 +298,4 @@ Chúng ta có thể làm giả việc gọi đến facade `Cache` bằng cách s
         }
     }
 
-> {note} Bạn không nên làm giả facade `Request`. Thay vào đó, hãy truyền input mà bạn mong muốn vào các phương thức của HTTP helper, chẳng hạn như `get` và `post` khi chạy test của bạn. Tương tự như vậy, thay vì làm giả facade `Config`, hãy gọi phương thức `Config::set` trong các test của bạn.
+> {note} Bạn không nên làm giả facade `Request`. Thay vào đó, hãy truyền input mà bạn mong muốn vào phương thức của HTTP helper, chẳng hạn như `get` và `post` khi chạy test của bạn. Tương tự như vậy, thay vì làm giả facade `Config`, hãy gọi phương thức `Config::set` trong các test của bạn.

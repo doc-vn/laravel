@@ -11,9 +11,9 @@
 <a name="introduction"></a>
 ## Giới thiệu
 
-Accessor và Mutator cho phép bạn định dạng các giá trị thuộc tính của Eloquent khi bạn lấy ra hoặc set chúng trên các instance model. Ví dụ: bạn có thể muốn sử dụng [Laravel encrypter](/docs/{{version}}/encryption) để mã hóa một giá trị trong khi lưu nó vào trong cơ sở dữ liệu, sau đó tự động giải mã nó khi bạn truy cập vào Eloquent model.
+Accessor và Mutator cho phép bạn định dạng các giá trị của thuộc tính Eloquent khi bạn lấy ra hoặc set trên một instance model. Ví dụ: bạn có thể muốn sử dụng [Laravel encrypter](/docs/{{version}}/encryption) để mã hóa một giá trị trong khi lưu nó vào trong cơ sở dữ liệu, sau đó tự động giải mã khi bạn truy cập vào Eloquent model đó.
 
-Ngoài các tuỳ biến accessors và mutator, Eloquent cũng có thể tự động chuyển các trường kiểu date thành các trường hợp kiểu [Carbon](https://github.com/briannesbitt/Carbon) hoặc thậm chí [chuyển trường text sang JSON](#attribute-casting).
+Ngoài các tuỳ biến accessors và mutator, Eloquent cũng có thể tự chuyển các trường kiểu date thành các trường hợp kiểu [Carbon](https://github.com/briannesbitt/Carbon) hoặc thậm chí [chuyển trường từ text sang JSON](#attribute-casting).
 
 <a name="accessors-and-mutators"></a>
 ## Accessor và Mutator
@@ -64,7 +64,7 @@ Tất nhiên, bạn cũng có thể sử dụng accessor để trả về các g
 <a name="defining-a-mutator"></a>
 ### Định nghĩa một Mutator
 
-Để định nghĩa một mutator, hãy định nghĩa một phương thức `setFooAttribute` trên model của bạn trong đó `Foo` là tên được set theo kiểu "studly" của cột mà bạn muốn truy cập. Vì thế, một lần nữa, hãy định nghĩa một mutator cho thuộc tính `first_name`. Mutator này sẽ được gọi tự động khi chúng ta set một giá trị cho thuộc tính `first_name` trên model:
+Để định nghĩa một mutator, hãy định nghĩa một phương thức `setFooAttribute` trên model của bạn trong đó `Foo` là tên được set theo kiểu "studly" của cột mà bạn muốn truy cập. Vì thế, một lần nữa, hãy định nghĩa một mutator cho thuộc tính `first_name`. Mutator này sẽ được gọi tự động khi bạn set một giá trị cho thuộc tính `first_name` trên model:
 
     <?php
 
@@ -86,18 +86,18 @@ Tất nhiên, bạn cũng có thể sử dụng accessor để trả về các g
         }
     }
 
-Mutator sẽ nhận vào giá trị đang được set cho thuộc tính, cho phép bạn thao tác với giá trị đó và set một giá trị mới cho thuộc tính `$attributes` bên trong của model Eloquent. Vì thế, ví dụ, nếu chúng ta đang set thuộc tính `first_name` là `Sally`:
+Mutator sẽ nhận vào giá trị mà đang được set cho thuộc tính đó, và cho phép bạn thao tác với giá trị đó rồi set một giá trị mới cho thuộc tính `$attributes` bên trong của model Eloquent. Vì vậy, ví dụ, nếu chúng ta đang set một thuộc tính `first_name` là `Sally`:
 
     $user = App\User::find(1);
 
     $user->first_name = 'Sally';
 
-Trong ví dụ này, hàm `setFirstNameAttribute` sẽ được gọi với giá trị `Sally`. Mutator sẽ sử dụng hàm `strtolower` cho giá trị đầu vào của hàm và set giá trị kết quả cho mảng `$attributes`.
+Trong ví dụ này, hàm `setFirstNameAttribute` sẽ được gọi với giá trị `Sally`. Mutator sẽ sử dụng hàm `strtolower` cho giá trị được đưa vào và set giá trị kết quả cho mảng `$attributes`.
 
 <a name="date-mutators"></a>
 ## Date Mutator
 
-Mặc định, Eloquent sẽ chuyển đổi các cột `created_at` và `update_at` thành các instance của [Carbon](https://github.com/briannesbitt/Carbon), đây là một class được extend từ class `DateTime` của PHP, cung cấp rất nhiều phương thức hữu ích. Bạn có thể tùy biến những date nào sẽ bị chuyển đổi hay thậm chí là disable những chuyển đổi này, bằng cách ghi đè thuộc tính `$dates` trong model của bạn:
+Mặc định, Eloquent sẽ chuyển đổi các cột `created_at` và `update_at` thành các instance của [Carbon](https://github.com/briannesbitt/Carbon), đây là một class được extend từ class `DateTime` của PHP, cung cấp rất nhiều phương thức hữu ích. Bạn có thể tùy biến những date nào sẽ bị chuyển đổi hay thậm chí là vô hiệu hoá những chuyển đổi này, bằng cách ghi đè thuộc tính `$dates` trong model của bạn:
 
     <?php
 
@@ -119,7 +119,7 @@ Mặc định, Eloquent sẽ chuyển đổi các cột `created_at` và `update
         ];
     }
 
-Khi một cột được coi là một date, bạn có thể set giá trị của nó thành một UNIX timestamp, một date string (`Y-m-d`), date-time string, và tất nhiên là một instance `DateTime` hoặc instance `Carbon`, và các giá trị của date này sẽ tự động được lưu trữ chính xác vào trong cơ sở dữ liệu của bạn:
+Khi một cột được coi là một date, bạn có thể set giá trị của nó thành một UNIX timestamp, một date string (`Y-m-d`), date-time string, và tất nhiên là một instance `DateTime` hoặc một instance `Carbon`, và các giá trị của date này sẽ tự động được lưu chính xác vào trong cơ sở dữ liệu của bạn:
 
     $user = App\User::find(1);
 
@@ -135,7 +135,7 @@ Như đã lưu ý ở trên, khi lấy các thuộc tính được liệt kê tr
 
 #### Date Formats
 
-Mặc định, timestamp sẽ được định dạng là `'Y-m-d H:i:s'`. Nếu bạn cần tùy biến định dạng timestamp này, hãy set thuộc tính `$dateFormat` trên model của bạn. Thuộc tính này xác định cách mà các thuộc tính date được lưu trữ vào trong cơ sở dữ liệu, cũng như định dạng của chúng khi model được chuyển đổi thành một mảng hoặc JSON:
+Mặc định, timestamp sẽ được định dạng là `'Y-m-d H:i:s'`. Nếu bạn cần tùy biến định dạng timestamp này, hãy set thuộc tính `$dateFormat` trên model của bạn. Thuộc tính này sẽ cho biết cách mà các thuộc tính date được lưu vào trong cơ sở dữ liệu, cũng như định dạng của chúng khi model được chuyển đổi thành một mảng hoặc một định dạng JSON:
 
     <?php
 
@@ -156,9 +156,9 @@ Mặc định, timestamp sẽ được định dạng là `'Y-m-d H:i:s'`. Nếu
 <a name="attribute-casting"></a>
 ## Attribute Casting
 
-Thuộc tính `$casts` trên model của bạn cung cấp một phương thức thuận tiện để chuyển đổi các thuộc tính thành các kiểu dữ liệu phổ biến. Thuộc tính `$casts` phải là một mảng trong đó khóa là tên của thuộc tính muốn được chuyển và giá trị là loại bạn muốn chuyển đổi. Các kiểu cast được hỗ trợ là: `integer`, `real`, `float`, `double`, `string`, `boolean`, `object`, `array`, `collection`, `date`, `datetime`, và `timestamp`.
+Thuộc tính `$casts` trên model của bạn cung cấp một phương thức thuận tiện để chuyển đổi các thuộc tính thành các kiểu dữ liệu phổ biến. Thuộc tính `$casts` phải là một mảng trong đó khóa là tên của thuộc tính mà bạn muốn được chuyển và giá trị là loại bạn muốn chuyển đổi đến. Các kiểu cast được hỗ trợ là: `integer`, `real`, `float`, `double`, `string`, `boolean`, `object`, `array`, `collection`, `date`, `datetime`, và `timestamp`.
 
-Ví dụ: hãy chuyển thuộc tính `is_admin`, được lưu trữ trong cơ sở dữ liệu của chúng ta dưới dạng một số integer (`0` và `1`) thành giá trị boolean:
+Ví dụ: hãy chuyển thuộc tính `is_admin`, được lưu trong cơ sở dữ liệu của chúng ta dưới dạng một số integer (`0` và `1`) thành giá trị boolean:
 
     <?php
 
@@ -189,7 +189,7 @@ Bây giờ, thuộc tính `is_admin` sẽ luôn được chuyển thành giá tr
 <a name="array-and-json-casting"></a>
 ### Array và JSON Casting
 
-Kiểu cast `array` đặc biệt hữu ích khi làm việc với các cột được lưu trữ dưới dạng JSON đã được chuyển đổi. Ví dụ: nếu cơ sở dữ liệu của bạn có một cột kiểu `JSON` hoặc `TEXT` chứa JSON đã được chuyển đổi, thì việc thêm `array` vào thuộc tính đó sẽ tự động giải mã các thuộc tính đã được chuyển đổi vào mảng PHP khi bạn truy cập vào thuộc tính đó trên model Eloquent của bạn:
+Kiểu cast `array` đặc biệt hữu ích khi làm việc với các cột được lưu trữ dưới dạng JSON. Ví dụ: nếu cơ sở dữ liệu của bạn có một cột kiểu `JSON` hoặc `TEXT` chứa một chuỗi JSON, thì việc thêm `array` vào thuộc tính đó sẽ tự động giải mã các thuộc tính JSON đó thành mảng PHP khi bạn truy cập vào thuộc tính đó trên model Eloquent của bạn:
 
     <?php
 
@@ -209,7 +209,7 @@ Kiểu cast `array` đặc biệt hữu ích khi làm việc với các cột đ
         ];
     }
 
-Khi cast đã được định nghĩa xong, bạn có thể truy cập vào thuộc tính `options` và nó sẽ tự động được giải mã các thuộc tính đã được chuyển đổi từ JSON vào một mảng PHP. Khi bạn set giá trị cho thuộc tính `options`, thì mảng sẽ tự động được chuyển đổi trở lại thành JSON để lưu trữ:
+Khi cast đã được định nghĩa xong, bạn có thể truy cập vào thuộc tính `options` và nó sẽ tự động được giải mã thuộc tính từ JSON vào một mảng PHP. Khi bạn set giá trị cho thuộc tính `options`, thì mảng sẽ tự động được chuyển đổi trở lại thành JSON để lưu trữ:
 
     $user = App\User::find(1);
 

@@ -1,7 +1,7 @@
 # Contracts
 
 - [Giới thiệu](#introduction)
-    - [Contracts với Facades](#contracts-vs-facades)
+    - [Contracts và Facades](#contracts-vs-facades)
 - [Khi nào dùng Contracts](#when-to-use-contracts)
     - [Loose Coupling](#loose-coupling)
     - [Simplicity](#simplicity)
@@ -11,32 +11,32 @@
 <a name="introduction"></a>
 ## Giới thiệu
 
-Contract của Laravel là một bộ interface dùng để định nghĩa các core service được cung cấp bởi framework. Ví dụ: một `Illuminate\Contracts\Queue\Queue` contract định nghĩa các phương thức cần thiết cho việc queueing job, trong khi `Illuminate\Contracts\Mail\Mailer` contract định nghĩa các phương thức cần thiết để gửi e-mail.
+Contract của Laravel là một bộ interface dùng để định nghĩa các core service mà framework cung cấp. Ví dụ: một `Illuminate\Contracts\Queue\Queue` contract định nghĩa các phương thức cần thiết cho việc queueing job, trong khi `Illuminate\Contracts\Mail\Mailer` contract định nghĩa các phương thức cần thiết để gửi e-mail.
 
-Mỗi contract có một implementation tương ứng được cung cấp bởi framework. Ví dụ: Laravel cung cấp một implementation của queue với nhiều driver khác nhau và một implementation của mailer được dựa trên [SwiftMailer](https://swiftmailer.symfony.com/).
+Mỗi contract có một implementation tương ứng được cung cấp bởi framework. Ví dụ: Laravel cung cấp một implementation queue với nhiều driver khác nhau và một implementation mailer được phát triển bởi [SwiftMailer](https://swiftmailer.symfony.com/).
 
-Tất cả các contract của Laravel đều lưu trữ trong [GitHub của chúng](https://github.com/illuminate/contracts). Điều này cung cấp một điểm tham chiếu nhanh cho tất cả các contract có sẵn, cũng như một package riêng, có thể được sử dụng bởi các nhà phát triển package.
+Tất cả các contract của Laravel đều được lưu trữ trong [GitHub của chúng](https://github.com/illuminate/contracts). Điều này cung cấp một điểm tham chiếu nhanh cho tất cả các contract có sẵn, đồng thời, các nhà phát triển package có thể sử dụng các package một cách riêng rẽ và độc lập.
 
 <a name="contracts-vs-facades"></a>
-### Contracts với Facades
+### Contracts và Facades
 
 [Facade](/docs/{{version}}/facades) của Laravel và các helper function sẽ cung cấp một cách đơn giản để sử dụng các service của Laravel mà không cần phải khai báo và resolve các contract ra khỏi container service. Trong hầu hết các trường hợp, mỗi facade có một contract tương ứng.
 
-Không giống như facade, không yêu cầu bạn phải khởi tạo chúng trong hàm khởi tạo của class, các contract bắt bạn phải định nghĩa rõ các phụ thuộc cho các class của bạn. Một số nhà phát triển thích định nghĩa rõ sự phụ thuộc trong class của họ giống cách này và do đó họ thích sử dụng contract, trong khi các nhà phát triển khác lại thích sự tiện lợi của facade.
+Không giống như facade, không yêu cầu bạn phải khởi tạo chúng trong hàm khởi tạo của class, các contract cho phép bạn định nghĩa rõ các phụ thuộc cho các class của bạn. Một số nhà phát triển thích định nghĩa rõ sự phụ thuộc trong class của họ giống như cách này và do đó họ thích sử dụng contract, trong khi các nhà phát triển khác lại thích sự tiện lợi của facade.
 
 > {tip} Hầu hết các ứng dụng sẽ hoạt động tốt bất kể bạn thích facade hay contract. Tuy nhiên, nếu bạn đang xây dựng một package, bạn nên cân nhắc việc sử dụng các contract vì chúng sẽ dễ kiểm tra hơn trong bối cảnh là một package.
 
 <a name="when-to-use-contracts"></a>
 ## Khi nào dùng Contract
 
-Như đã nói ở trên, phần lớn quyết định sử dụng contract hay là facade sẽ tùy thuộc vào sở thích cá nhân và thị hiếu của nhóm phát triển. Cả contract và facade đều có thể được sử dụng để tạo ra application Laravel mạnh mẽ và được thử nghiệm tốt. Miễn là bạn giữ cho class trong phạm vi của nó, bạn sẽ nhận thấy rất ít sự khác biệt giữa việc sử dụng contract và facade.
+Như đã nói ở trên, phần lớn quyết định sử dụng contract hay là facade sẽ tùy thuộc vào sở thích cá nhân và thị hiếu của nhóm phát triển. Cả contract và facade đều có thể được sử dụng để tạo ra application Laravel mạnh mẽ và được thử nghiệm tốt. Miễn là bạn giữ cho class trong giới hạn của nó, bạn sẽ nhận thấy có rất ít sự khác biệt giữa việc sử dụng contract và facade.
 
 Tuy nhiên, bạn vẫn có thể có một số câu hỏi liên quan đến contract. Ví dụ, tại sao lại sử dụng interface? Việc sử dụng interface có phức tạp hơn không? Các lý do để sử dụng interface sẽ được thể hiện trong các mục dưới đây: liên kết lỏng và tính đơn giản.
 
 <a name="loose-coupling"></a>
 ### Liên kết lỏng
 
-Trước tiên, hãy xem xét một số code có liên kết chặt chẽ tới một implementation của cache. Xem xét ví dụ sau:
+Trước tiên, hãy xem xét một số code có liên kết chặt chẽ tới một implementation của cache. Cùng xem ví dụ sau:
 
     <?php
 
@@ -110,7 +110,7 @@ Bây giờ code của chúng ta sẽ không còn được liên kết với bấ
 <a name="simplicity"></a>
 ### Tính đơn giản
 
-Khi tất cả các service của Laravel được định nghĩa vào trong các interface đơn giản, thì sẽ dễ dàng hơn để xác định chức năng mà được cung cấp bởi service đó. **Các contract đóng vai trò là tài liệu ngắn gọn cho các tính năng của framework.**
+Khi tất cả các service của Laravel được định nghĩa vào trong các interface đơn giản, thì sẽ dễ dàng hơn để xác định chức năng mà được cung cấp bởi service đó. **Các contract đóng vai trò là một tài liệu ngắn gọn cho các tính năng của framework.**
 
 Ngoài ra, khi bạn phụ thuộc vào các interface đơn giản, code của bạn sẽ dễ hiểu và dễ bảo trì hơn. Thay vì bạn phải tìm các phương thức nào có thể sử dụng trong một class lớn và phức tạp, thì bạn có thể tham khảo một interface đơn giản, rõ ràng.
 
@@ -161,12 +161,12 @@ Ví dụ, hãy xem event listener này:
         }
     }
 
-Khi event listener được resolve, service container sẽ đọc các khai báo có trong hàm khởi tạo của class và đưa vào các giá trị phù hợp. Để tìm hiểu thêm về việc đăng ký trong service container, hãy xem [tài liệu của nó](/docs/{{version}}/container).
+Khi event listener được resolve, service container sẽ đọc các khai báo có trong hàm khởi tạo của class và đưa vào các giá trị phù hợp. Để tìm hiểu thêm về việc đăng ký trong service container, hãy xem [tài liệu này](/docs/{{version}}/container).
 
 <a name="contract-reference"></a>
 ## Contract tham khảo
 
-Table này cung cấp một tài liệu tham khảo nhanh cho tất cả các contract của Laravel và các facade tương đương của chúng:
+Bảng này cung cấp một tài liệu tham khảo nhanh cho tất cả các contract của Laravel và các facade tương ứng với chúng:
 
 Contract  |  References Facade
 ------------- | -------------

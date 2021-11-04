@@ -21,23 +21,23 @@
 
 #### Strings và Arrays
 
-Tất cả các route và các controller sẽ trả về một response và sẽ được gửi về cho trình duyệt của người dùng. Laravel cung cấp một số cách khác nhau để trả về một response. Response cơ bản nhất là trả về một chuỗi từ một route hoặc một controller. Framework sẽ tự động chuyển đổi chuỗi đó thành một HTTP response đầy đủ:
+Tất cả các route và các controller đều sẽ trả về một response và được gửi về cho trình duyệt web của người dùng. Laravel cung cấp một số cách khác nhau để trả về một response. Response cơ bản nhất là trả về một chuỗi từ một route hoặc một controller. Framework sẽ tự động chuyển đổi chuỗi đó thành một HTTP response đầy đủ:
 
     Route::get('/', function () {
         return 'Hello World';
     });
 
-Ngoài việc trả về các chuỗi từ route và controller của bạn, bạn cũng có thể trả về một mảng. Framework sẽ tự động chuyển mảng đó thành một JSON response:
+Ngoài việc trả về một chuỗi từ route và controller của bạn, bạn cũng có thể trả về một mảng. Framework sẽ tự động chuyển mảng đó thành một JSON response:
 
     Route::get('/', function () {
         return [1, 2, 3];
     });
 
-> {tip} Bạn có biết rằng bạn cũng có thể trả về [Eloquent collections](/docs/{{version}}/eloquent-collections) từ route hoặc controller của bạn không? Chúng sẽ tự động được chuyển đổi thành JSON. Cứ thử đi!
+> {tip} Bạn có biết rằng bạn cũng có thể trả về [Eloquent collections](/docs/{{version}}/eloquent-collections) từ một route hoặc một controller của bạn không? Chúng sẽ tự động được chuyển đổi thành JSON. Bạn cứ thử đi!
 
 #### Response Objects
 
-Thông thường, bạn sẽ không chỉ trả về chuỗi hoặc mảng từ các route action của bạn. Thay vào đó, bạn sẽ muốn trả lại cả một instance `Illuminate\Http\Response` hoặc một [views](/docs/{{version}}/views).
+Thông thường, bạn sẽ không chỉ trả về một chuỗi hoặc một mảng từ route action của bạn. Thay vào đó, bạn có thể sẽ muốn trả lại cả một instance `Illuminate\Http\Response` hoặc một [views](/docs/{{version}}/views).
 
 Trả về cả một instance `Response` cho phép bạn tùy biến status code và header của response's HTTP. Một instance `Response` sẽ được extend từ class `Symfony\Component\HttpFoundation\Response`, cung cấp nhiều phương thức để xây dựng các HTTP response:
 
@@ -49,7 +49,7 @@ Trả về cả một instance `Response` cho phép bạn tùy biến status cod
 <a name="attaching-headers-to-responses"></a>
 #### Gắn Header vào Responses
 
-Nhớ rằng hầu hết các phương thức response đều có thể kết hợp được với nhau, cho phép dễ dàng khởi tạo một response instance. Ví dụ, bạn có thể sử dụng phương thức `header` để thêm một danh sách header cho response trước khi gửi chúng về cho người dùng:
+Hãy nhớ rằng hầu hết các phương thức response đều có thể kết hợp lại với nhau, cho phép bạn dễ dàng khởi tạo một response instance. Ví dụ, bạn có thể sử dụng phương thức `header` để thêm một danh sách header cho response trước khi gửi chúng về cho người dùng:
 
     return response($content)
                 ->header('Content-Type', $type)
@@ -68,17 +68,17 @@ Hoặc, bạn có thể sử dụng phương thức `withHeaders` để chỉ đ
 <a name="attaching-cookies-to-responses"></a>
 #### Gắn Cookies vào Responses
 
-Phương thức `cookie` trong response instance cho phép bạn dễ dàng gắn các cookie vào response. Ví dụ, bạn có thể sử dụng phương thức `cookie` để tạo một cookie và dễ dàng gắn nó vào response như sau:
+Phương thức `cookie` trong response instance cho phép bạn dễ dàng gắn một cookie vào response. Ví dụ, bạn có thể sử dụng phương thức `cookie` để tạo một cookie và dễ dàng gắn nó vào response như sau:
 
     return response($content)
                     ->header('Content-Type', $type)
                     ->cookie('name', 'value', $minutes);
 
-Phương thức `cookie` cũng cho phép thêm một vài tham số được ít sử dụng hơn. Nói chung, các tham số này có cùng mục đích và ý nghĩa như các tham số sẽ được cung cấp cho phương thức [setcookie](https://secure.php.net/manual/en/function.setcookie.php) của PHP:
+Phương thức `cookie` cũng cho phép thêm một vài tham số ít sử dụng hơn. Nói chung, các tham số này có cùng mục đích và ý nghĩa như các tham số được cung cấp bởi phương thức [setcookie](https://secure.php.net/manual/en/function.setcookie.php) của PHP:
 
     ->cookie($name, $value, $minutes, $path, $domain, $secure, $httpOnly)
 
-Ngoài ra, bạn có thể sử dụng facade `Cookie` để "queue" cookie cho việc gán vào response trả về từ application. Phương thức `queue` chấp nhận một instance `Cookie` hoặc các tham số cần thiết để tạo một instance `Cookie`. Các cookie này sẽ được gán vào response trước khi nó được gửi đến trình duyệt:
+Ngoài ra, bạn có thể sử dụng facade `Cookie` để "queue" cookie cho việc gán vào response trả về từ application. Phương thức `queue` chấp nhận một instance `Cookie` hoặc các tham số cần thiết để tạo một instance `Cookie`. Các cookie này sẽ được gán vào response trước khi nó được gửi về cho trình duyệt:
 
     Cookie::queue(Cookie::make('name', 'value', $minutes));
 
@@ -87,7 +87,7 @@ Ngoài ra, bạn có thể sử dụng facade `Cookie` để "queue" cookie cho 
 <a name="cookies-and-encryption"></a>
 #### Cookies và Encryption
 
-Mặc định, tất cả các cookie được tạo bởi Laravel đều được mã hóa và được ký để client không thể sửa đổi hoặc đọc chúng. Nếu bạn muốn tắt mã hóa cho một số cookie do application của bạn tạo ra, bạn có thể sử dụng thuộc tính `$except` của middleware `App\Http\Middleware\EncryptCookies`, nằm trong thư mục `app/Http/Middleware`:
+Mặc định, tất cả các cookie được tạo bởi Laravel đều được mã hóa và được ký để client không thể sửa đổi hoặc đọc chúng. Nếu bạn muốn tắt mã hóa cho một số cookie mà bạn tạo ra, bạn có thể sử dụng thuộc tính `$except` của middleware `App\Http\Middleware\EncryptCookies`, nằm trong thư mục `app/Http/Middleware`:
 
     /**
      * The names of the cookies that should not be encrypted.
@@ -101,13 +101,13 @@ Mặc định, tất cả các cookie được tạo bởi Laravel đều đư�
 <a name="redirects"></a>
 ## Redirect
 
-Redirect response là một instance của class `Illuminate\Http\RedirectResponse` và chứa các header thích hợp cần thiết để chuyển hướng người dùng đến một URL khác. Có một số cách để tạo ra một instance `RedirectResponse`. Phương pháp đơn giản nhất là sử dụng global helper `redirect`:
+Redirect response là một instance của class `Illuminate\Http\RedirectResponse` và chứa các header cần thiết để chuyển hướng người dùng đến một URL khác. Có một số cách để tạo ra một instance `RedirectResponse`. Phương pháp đơn giản nhất là sử dụng global helper `redirect`:
 
     Route::get('dashboard', function () {
         return redirect('home/dashboard');
     });
 
-Thỉnh thoảng bạn có thể muốn chuyển hướng người dùng đến trang trước đó của họ, chẳng hạn như khi form đã gửi không hợp lệ. Bạn có thể làm như vậy bằng cách sử dụng hàm global helper `back`. Vì chức năng này sử dụng [session](/docs/{{version}}/session), nên hãy đảm bảo rằng route được gọi bởi hàm `back` đang dùng group middleware `web` hoặc đang áp dụng tất cả các middleware session:
+Thỉnh thoảng bạn có thể muốn chuyển hướng người dùng đến một trang trước đó, chẳng hạn như khi nhập form không hợp lệ. Bạn có thể làm như vậy bằng cách sử dụng hàm global helper `back`. Vì chức năng này sử dụng [session](/docs/{{version}}/session), nên hãy đảm bảo là route được gọi bởi hàm `back` cũng đang dùng group middleware `web` hoặc đang dùng tất cả các middleware session:
 
     Route::post('user/profile', function () {
         // Validate the request...
@@ -118,7 +118,7 @@ Thỉnh thoảng bạn có thể muốn chuyển hướng người dùng đến 
 <a name="redirecting-named-routes"></a>
 ### Redirecting đến Named Route
 
-Khi bạn gọi helper `redirect` không có tham số, một instance của `Illuminate\Routing\Redirector` sẽ được trả về, cho phép bạn gọi bất kỳ phương thức nào trên instance `Redirector`. Ví dụ: để tạo một `RedirectResponse` cho một route đã được đặt tên, bạn có thể sử dụng phương thức` route`:
+Khi bạn gọi helper `redirect` mà không truyền vào tham số, thì một instance của `Illuminate\Routing\Redirector` sẽ được trả về, cho phép bạn gọi bất kỳ phương thức nào trên instance `Redirector`. Ví dụ: để tạo một `RedirectResponse` cho một route mà bạn đã đặt tên, bạn có thể sử dụng phương thức` route`:
 
     return redirect()->route('login');
 
@@ -130,13 +130,13 @@ Nếu route đó có yêu cầu truyền tham số, bạn có thể truyền ch�
 
 #### Nhúng Parameter thông qua Eloquent Model
 
-Nếu bạn đang chuyển hướng đến một route mà có tham số "ID" đang được nhúng từ một model Eloquent, bạn có thể truyền chính model đó vào. ID sẽ được trích xuất tự động:
+Nếu bạn đang chuyển hướng đến một route mà có tham số "ID" đang được nhúng trong một model Eloquent, bạn có thể truyền chính model đó vào làm tham số. ID sẽ được trích xuất tự động:
 
     // For a route with the following URI: profile/{id}
 
     return redirect()->route('profile', [$user]);
 
-Nếu bạn muốn tùy biến giá trị được set trong tham số của route, bạn nên ghi đè phương thức `getRouteKey` trên model Eloquent của bạn:
+Nếu bạn muốn tùy biến giá trị được lấy trong tham số route, bạn cần ghi đè phương thức `getRouteKey` trên model Eloquent của bạn:
 
     /**
      * Get the value of the model's route key.
@@ -151,7 +151,7 @@ Nếu bạn muốn tùy biến giá trị được set trong tham số của rou
 <a name="redirecting-controller-actions"></a>
 ### Redirecting đến Controller Action
 
-Bạn cũng có thể tạo chuyển hướng đến [controller actions](/docs/{{version}}/controllers). Để làm như vậy, hãy truyền một controller và tên action cho phương thức `action`. Hãy nhớ rằng, bạn không cần thêm namespace cho controller vì `RouteServiceProvider` của Laravel sẽ tự động cài đặt base namespace cho controller đó:
+Bạn cũng có thể tạo chuyển hướng đến một [controller actions](/docs/{{version}}/controllers). Để làm như vậy, hãy truyền một controller và tên action của nó cho phương thức `action`. Hãy nhớ rằng, bạn không cần thêm namespace cho controller vì `RouteServiceProvider` của Laravel đã tự động cài đặt sẵn namespace cho controller đó:
 
     return redirect()->action('HomeController@index');
 
@@ -171,7 +171,7 @@ Thỉnh thoảng bạn có thể cần chuyển hướng đến một domain ở
 <a name="redirecting-with-flashed-session-data"></a>
 ### Redirecting cùng Flashed Session Data
 
-Chuyển hướng đến một URL mới và [flashing data tới session](/docs/{{version}}/session#flash-data) thường được thực hiện cùng một lúc. Thông thường, điều này được sử dụng sau khi thực hiện thành công một action nào đó và bạn flash một mesage báo thành công đến session. Để thuận tiện, bạn có thể tạo một instance `RedirectResponse` và flash dữ liệu vào session với chỉ một chuỗi phương thức đơn giản:
+Chuyển hướng đến một URL mới và [flashing data tới session](/docs/{{version}}/session#flash-data) thường được thực hiện cùng một lúc. Thông thường, điều này được sử dụng sau khi thực hiện thành công một action nào đó và bạn muốn flash một mesage báo thành công đến session. Để thuận tiện, bạn có thể tạo một instance `RedirectResponse` và flash dữ liệu đó vào session với chỉ một chuỗi phương thức đơn giản:
 
     Route::post('user/profile', function () {
         // Update the user's profile...
@@ -190,7 +190,7 @@ Sau khi người dùng đã được chuyển hướng, bạn có thể hiển t
 <a name="other-response-types"></a>
 ## Các loại Response khác
 
-Helper `response` có thể được sử dụng để tạo các loại instance response khác nhau. Khi helper `response` được gọi mà không có tham số, một implementation của `Illuminate\Contracts\Routing\ResponseFactory` [contract](/docs/{{version}}/contracts) sẽ được trả về. Contract này sẽ cung cấp một số phương pháp hữu ích để tạo response.
+Helper `response` có thể được sử dụng để tạo các loại instance response khác nhau. Khi helper `response` được gọi mà không có tham số, một implementation của `Illuminate\Contracts\Routing\ResponseFactory` [contract](/docs/{{version}}/contracts) sẽ được trả về. Contract này sẽ cung cấp một số phương thức hữu ích để tạo response.
 
 <a name="view-responses"></a>
 ### View Responses
@@ -201,7 +201,7 @@ Nếu bạn cần kiểm soát trạng thái và header của response nhưng c�
                 ->view('hello', $data, 200)
                 ->header('Content-Type', $type);
 
-Và dĩ nhjên, nếu bạn không cần truyền một tuỳ chỉnh HTTP status code hoặc custom header, bạn nên dùng hàm global helper `view`.
+Và dĩ nhiên, nếu bạn không cần tuỳ chỉnh HTTP status code hoặc custom header, bạn nên dùng hàm global helper `view`.
 
 <a name="json-responses"></a>
 ### JSON Responses
@@ -222,7 +222,7 @@ Nếu bạn muốn tạo một JSONP response, bạn có thể sử dụng phư�
 <a name="file-downloads"></a>
 ### File Downloads
 
-Phương thức `download` có thể được sử dụng để tạo response buộc trình duyệt của người dùng download file tại một đường dẫn đã cho. Phương thức `download` chấp nhận một tên file làm tham số thứ hai cho phương thức, nó sẽ xác định tên file mà người dùng sẽ nhìn thấy khi download file. Cuối cùng, bạn có thể chuyển một mảng các HTTP header làm tham số thứ ba cho phương thức:
+Phương thức `download` có thể được sử dụng để tạo response buộc trình duyệt của người dùng download file tại một đường dẫn đã cho. Phương thức `download` chấp nhận một tên file làm tham số thứ hai cho phương thức, nó sẽ được hiển thị khi người dùng download file. Cuối cùng, bạn có thể chuyển một mảng các HTTP header làm tham số thứ ba cho phương thức:
 
     return response()->download($pathToFile);
 
@@ -230,12 +230,12 @@ Phương thức `download` có thể được sử dụng để tạo response b
 
     return response()->download($pathToFile)->deleteFileAfterSend(true);
 
-> {note} Symfony HttpFoundation, quản lý các file download, bắt buộc file được download phải có tên file là ASCII.
+> {note} Quản lý file download Symfony HttpFoundation yêu cầu file download phải có tên file là ASCII.
 
 <a name="file-responses"></a>
 ### File Responses
 
-Phương thức `file` có thể được sử dụng để hiển thị một file, chẳng hạn như một image hoặc PDF, nhìn trực tiếp trong trình duyệt của người dùng thay vì bắt buộc phải download. Phương thức này chấp nhận đường dẫn đến file làm tham số đầu tiên và một mảng các header làm tham số thứ hai của nó:
+Phương thức `file` có thể được sử dụng để hiển thị một file, chẳng hạn như file image hoặc file PDF, cho phép xem trực tiếp ngay tại trình duyệt của người dùng thay vì phải download. Phương thức này chấp nhận đường dẫn đến file làm tham số đầu tiên và một mảng các header làm tham số thứ hai của nó:
 
     return response()->file($pathToFile);
 
@@ -268,6 +268,6 @@ Nếu bạn muốn định nghĩa một response tùy biến mà bạn có thể
         }
     }
 
-Hàm `macro` chấp nhận một tên làm tham số đầu tiên của nó và một Closure là tham số thứ hai. Closure của macro sẽ được thực thi khi gọi tên macro từ implementation `ResponseFactory` hoặc helper `response`:
+Hàm `macro` chấp nhận tên hàm làm tham số đầu tiên và một Closure làm tham số thứ hai. Closure của macro sẽ được thực thi khi gọi tên của hàm macro từ implementation `ResponseFactory` hoặc helper `response`:
 
     return response()->caps('foo');

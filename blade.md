@@ -24,7 +24,7 @@
 <a name="introduction"></a>
 ## Giới thiệu
 
-Blade là công cụ tạo template đơn giản nhưng mạnh mẽ được cung cấp cùng với Laravel. Không giống như các công cụ tạo template của PHP phổ biến khác, Blade không hạn chế bạn sử dụng code PHP trong view của bạn. Trên thực tế, tất cả các view Blade được biên dịch thành code PHP và được lưu vào cache, cho đến khi chúng được sửa đổi, có nghĩa là về cơ bản Blade không làm tăng chi phí chung cho application của bạn. Các file Blade sử dụng phần đuôi mở rộng là `.blade.php` và thường được lưu trữ trong thư mục `resources/views`.
+Blade là một công cụ tạo template đơn giản nhưng mạnh mẽ được đi kèm cùng với Laravel. Không giống như các công cụ tạo template phổ biến khác của PHP, Blade không hạn chế bạn sử dụng code PHP trong view của bạn. Trên thực tế, tất cả các view Blade được biên dịch thành code PHP và được lưu vào trong cache, cho đến khi chúng được sửa đổi, có nghĩa là về cơ bản Blade không làm tăng chi phí chung cho application của bạn. Các file Blade sử dụng phần đuôi mở rộng là `.blade.php` và thường được lưu trữ trong thư mục `resources/views`.
 
 <a name="template-inheritance"></a>
 ## Kế thừa template
@@ -32,7 +32,7 @@ Blade là công cụ tạo template đơn giản nhưng mạnh mẽ được cun
 <a name="defining-a-layout"></a>
 ### Định nghĩa một layout
 
-Hai trong số những lợi ích chính của việc sử dụng Blade là _kế thừa template_ và _sections_. Để bắt đầu, chúng ta hãy xem một ví dụ đơn giản. Đầu tiên, chúng ta hãy xem thử một layout trang "master". Vì hầu hết tất cả các trang web đều cố gắng duy trì một layout chung trên các trang khác nhau, nên Blade rất tiện để định nghĩa cho các layout này chỉ trong một file view Blade duy nhất:
+Hai trong số những lợi ích chính của việc sử dụng Blade là _kế thừa template_ và _sections_. Để bắt đầu, chúng ta hãy xem một ví dụ đơn giản. Đầu tiên, chúng ta hãy xem thử một layout trang "master". Vì hầu hết tất cả các trang web đều cố gắng duy trì một layout chung cho tất cả các trang khác nhau, nên Blade rất tiện cho việc định nghĩa các loại layout này chỉ trong một file view Blade duy nhất:
 
     <!-- Stored in resources/views/layouts/app.blade.php -->
 
@@ -53,12 +53,12 @@ Hai trong số những lợi ích chính của việc sử dụng Blade là _k�
 
 Như bạn có thể thấy, file này chứa code HTML. Tuy nhiên, hãy lưu ý các lệnh `@section` và `@yield`. Lệnh `@section`, như cái tên của nó, nó dùng để định nghĩa một phần của nội dung, trong khi lệnh `@yield` được sử dụng để hiển thị nội dung của một phần nhất định.
 
-Bây giờ chúng ta đã định nghĩa xong một layout cho application của bạn, hãy bắt đầu bằng một định nghĩa của một trang layout con kế thừa từ layout đó.
+Vậy chúng ta đã định nghĩa xong một layout cho application của bạn, bây giờ hãy bắt đầu bằng một định nghĩa của một trang layout con kế thừa từ layout ở trên.
 
 <a name="extending-a-layout"></a>
 ### Kế thừa một Layout
 
-Khi định nghĩa một view con, bạn hãy sử dụng lệnh `@extends` của Blade để chỉ định layout mà view con đó sẽ được "kế thừa". Các view mà được mở rộng từ một layout Blade có thể đưa thêm nội dung vào các phần của layout bằng cách sử dụng các lệnh `@section`. Nhớ rằng, có thể thấy trong ví dụ trên, nội dung của các phần này sẽ được hiển thị trong layout bằng cách sử dụng `@yield`:
+Khi định nghĩa một view con, bạn hãy sử dụng lệnh `@extends` của Blade để chỉ định layout nào mà view con đó sẽ được "kế thừa". Các view mà được mở rộng từ một layout Blade có thể đưa thêm nội dung vào các section của layout bằng cách sử dụng các lệnh `@section`. Hãy nhớ rằng, như ví dụ ở trên, nội dung của các section này sẽ được hiển thị trong layout bằng cách sử dụng `@yield`:
 
     <!-- Stored in resources/views/child.blade.php -->
 
@@ -76,9 +76,9 @@ Khi định nghĩa một view con, bạn hãy sử dụng lệnh `@extends` củ
         <p>This is my body content.</p>
     @endsection
 
-Trong ví dụ này, phần `sidebar` đang sử dụng lệnh `@@parent` để nối thêm vào (chứ không phải ghi đè) sidebar của layout. Lệnh `@@parent` sẽ được thay thế bằng nội dung của layout khi view được hiển thị.
+Trong ví dụ này, section `sidebar` đang sử dụng lệnh `@@parent` để nối thêm vào (chứ không phải ghi đè) sidebar của layout. Lệnh `@@parent` sẽ được thay thế bằng nội dung của layout khi view được hiển thị.
 
-> {tip} Trái ngược với ví dụ trước, phần `sidebar` này kết thúc bằng `@endsection` thay vì `@show`. Lệnh `@endsection` sẽ định nghĩa kết thúc một section trong khi `@show` cũng sẽ định nghĩa kết thúc một section nhưng nó cũng định nghĩa thêm một lệnh `@yield` để cho layout con để có thể định nghĩa thêm nội dung vào layout chính.
+> {tip} Trái ngược với ví dụ trước đó, section `sidebar` này kết thúc bằng `@endsection` thay vì `@show`. Lệnh `@endsection` sẽ định nghĩa kết thúc một section trong khi `@show` cũng sẽ định nghĩa kết thúc một section nhưng nó cũng định nghĩa thêm một lệnh `@yield` để cho layout con để có thể định nghĩa thêm nội dung vào layout chính.
 
 Blade view có thể được trả về từ route khi dùng với global helper `view`:
 
@@ -89,7 +89,7 @@ Blade view có thể được trả về từ route khi dùng với global helpe
 <a name="components-and-slots"></a>
 ## Components và Slots
 
-Các component và slot cung cấp nhiều lợi ích tương tự nhưng các section và layout; tuy nhiên, có một số mô hình của component và slot là dễ hiểu hơn. Trước tiên, hãy tưởng tượng một component "cảnh báo" có thể tái sử dụng và chúng ta muốn sử dụng lại nó trong suốt quá trình phát triển ứng dụng của mình:
+Các component và slot cung cấp nhiều lợi ích tương tự như các section và layout; tuy nhiên, có một số loại của component và slot là dễ hiểu hơn. Trước tiên, hãy tưởng tượng một component "cảnh báo" có thể tái sử dụng và chúng ta muốn sử dụng lại nó trong suốt quá trình phát triển ứng dụng của bạn:
 
     <!-- /resources/views/alert.blade.php -->
 
@@ -113,7 +113,7 @@ Thỉnh thoảng chúng ra sẽ cần định nghĩa nhiều slot cho một comp
         {{ $slot }}
     </div>
 
-Bây giờ, chúng ta có thể inject nội dung vào slot được đặt tên bằng cách sử dụng lệnh `@slot`. Bất kỳ nội dung nào không nằm trong lệnh `@slot` sẽ được truyền đến component trong biến `$slot`:
+Bây giờ, chúng ta có thể inject nội dung vào slot đã được đặt tên bằng cách sử dụng lệnh `@slot`. Bất kỳ nội dung nào mà không nằm trong lệnh `@slot` sẽ được truyền đến component trong biến `$slot`:
 
     @component('alert')
         @slot('title')
@@ -123,9 +123,9 @@ Bây giờ, chúng ta có thể inject nội dung vào slot được đặt tên
         You are not allowed to access this resource!
     @endcomponent
 
-#### Pass dữ liệu bổ sung đến component
+#### Truyền thêm dữ liệu bổ sung đến component
 
-Thỉnh thoảng bạn có thể cần truyền dữ liệu bổ sung cho một component. Vì lý do này, bạn có thể truyền một mảng dữ liệu làm tham số thứ hai cho lệnh  `@component`. Tất cả dữ liệu sẽ được cung cấp cho component template dưới dạng các biến:
+Thỉnh thoảng bạn có thể cần truyền thêm dữ liệu cho một component. Bạn có thể truyền một mảng dữ liệu làm tham số thứ hai cho lệnh  `@component`. Tất cả các dữ liệu sẽ được truyền cho component template dưới dạng các biến:
 
     @component('alert', ['foo' => 'bar'])
         ...
@@ -134,7 +134,7 @@ Thỉnh thoảng bạn có thể cần truyền dữ liệu bổ sung cho một 
 <a name="displaying-data"></a>
 ## Hiển thị dữ liệu
 
-Bạn có thể hiển thị dữ liệu đã được truyền đến Blade view của bạn bằng cách wrap biến trong hai lần dấu ngoặc nhọn. Ví dụ: một route như sau:
+Bạn có thể hiển thị dữ liệu đã được truyền đến Blade view của bạn bằng cách đặt tên biến vào trong hai lần dấu ngoặc nhọn. Ví dụ: một route như sau:
 
     Route::get('greeting', function () {
         return view('welcome', ['name' => 'Samantha']);
@@ -144,7 +144,7 @@ Bạn có thể hiển thị nội dung của biến `name` như thế này:
 
     Hello, {{ $name }}.
 
-Tất nhiên, bạn không bị giới hạn trong việc hiển thị nội dung của các biến đã được truyền đến view. Bạn cũng có thể echo ra kết quả với bất kỳ hàm PHP nào tương tự. Thực tế, bạn có thể đặt bất kỳ code PHP nào bạn muốn vào trong câu lệnh echo của Blade:
+Tất nhiên, bạn không bị giới hạn trong việc hiển thị nội dung của các biến đã được truyền đến view. Bạn cũng có thể echo ra kết quả với bất kỳ hàm PHP nào tương tự. Thực tế, bạn có thể set bất kỳ code PHP nào mà bạn muốn vào trong lệnh echo của Blade:
 
     The current UNIX timestamp is {{ time() }}.
 
@@ -152,15 +152,15 @@ Tất nhiên, bạn không bị giới hạn trong việc hiển thị nội dun
 
 #### Hiển thị dữ liệu unescaped
 
-Mặc định, các câu lệnh Blade `{{ }}` này sẽ được tự động gửi qua hàm `htmlspecialchars` của PHP để ngăn chặn các cuộc tấn công XSS. Nếu bạn không muốn dữ liệu của mình được escaped, bạn có thể sử dụng cú pháp sau:
+Mặc định, các câu lệnh Blade `{{ }}` này sẽ được tự động gửi qua hàm `htmlspecialchars` của PHP để ngăn chặn các cuộc tấn công XSS. Nếu bạn không muốn dữ liệu của bạn được escaped, bạn có thể sử dụng cú pháp sau:
 
     Hello, {!! $name !!}.
 
-> {note} Bạn hãy cẩn thận khi hiển thị một nội dung được cung cấp bởi người dùng. Hãy luôn sử dụng escaped với cú pháp hai lần dấu ngoặc nhọn để ngăn chặn các cuộc tấn công XSS khi hiển thị dữ liệu do người dùng cung cấp.
+> {note} Bạn hãy cẩn thận khi hiển thị một nội dung mà được cung cấp bởi người dùng. Hãy luôn sử dụng escaped với cú pháp hai lần dấu ngoặc nhọn để ngăn chặn các cuộc tấn công XSS khi hiển thị dữ liệu do người dùng cung cấp.
 
 #### Tạo JSON
 
-Thỉnh thoảng bạn có thể truyền một mảng vào view của bạn với ý định là hiển thị nó dưới dạng JSON để khởi tạo một biến JavaScript. Ví dụ:
+Thỉnh thoảng bạn có thể muốn truyền một mảng vào view của bạn với ý định là hiển thị nó dưới dạng một chuỗi JSON để khởi tạo một biến JavaScript. Ví dụ:
 
     <script>
         var app = <?php echo json_encode($array); ?>;
@@ -175,17 +175,17 @@ Tuy nhiên, thay vì gọi thủ công `json_encode`, bạn có thể sử dụn
 <a name="blade-and-javascript-frameworks"></a>
 ### Blade và JavaScript Frameworks
 
-Do nhiều framework JavaScript cũng sử dụng hai lần dấu ngoặc nhọn để biểu thị một biểu thức sẽ được hiển thị trong trình duyệt, nên bạn có thể sử dụng ký hiệu `@` để thông báo cho Blade rendering engine là biểu thức này sẽ không bị chạm vào. Ví dụ:
+Do nhiều framework JavaScript cũng sử dụng hai lần dấu ngoặc nhọn để hiển thị dữ liệu trong trình duyệt, nên bạn có thể sử dụng ký hiệu `@` để thông báo cho Blade rendering engine là biểu thức này sẽ không được laravel rendering. Ví dụ:
 
     <h1>Laravel</h1>
 
     Hello, @{{ name }}.
 
-Trong ví dụ này, ký hiệu `@` sẽ bị xóa bởi Blade; tuy nhiên, biểu thức `{{ name }}` sẽ vẫn còn và chưa được xử lý bởi Blade engine, cho phép thay vào đó là các biểu thức mà sẽ được render bởi framework JavaScript của bạn.
+Trong ví dụ này, ký hiệu `@` sẽ bị xóa bởi Blade; tuy nhiên, biểu thức `{{ name }}` sẽ vẫn còn và sẽ không được xử lý bởi Blade engine, điều này cho phép các biểu thức đó sẽ được render bởi framework JavaScript của bạn.
 
 #### Lệnh `@verbatim`
 
-Nếu trong template của bạn đang hiển thị nhiều biến JavaScript, bạn có thể wrap HTML trong lệnh `@verbatim` để bạn không phải đặt tiền tố cho mỗi câu lệnh echo Blade bằng ký hiệu `@`:
+Nếu trong template của bạn đang hiển thị nhiều biến JavaScript, bạn có thể bao bọc các lệnh đó trong lệnh `@verbatim` để bạn không phải đặt tiền tố cho mỗi câu lệnh echo Blade bằng ký hiệu `@`:
 
     @verbatim
         <div class="container">
@@ -196,12 +196,12 @@ Nếu trong template của bạn đang hiển thị nhiều biến JavaScript, b
 <a name="control-structures"></a>
 ## Control Structures
 
-Ngoài việc kế thừa template và hiển thị dữ liệu, Blade cũng cung cấp các shortcut cho các cấu trúc điều khiển PHP phổ biến, chẳng hạn như các câu lệnh và các vòng lặp có điều kiện. Các shortcut này cung cấp một cách làm việc rất gọn gàng, ngắn gọn với các cấu trúc điều khiển PHP, trong khi vẫn quen thuộc với các hàm tương tự trong PHP.
+Ngoài việc kế thừa template và hiển thị dữ liệu, Blade cũng cung cấp các shortcut cho các cấu trúc điều khiển PHP phổ biến, chẳng hạn như các câu lệnh và các vòng lặp có điều kiện. Các shortcut này cung cấp một cách làm việc rất ngắn gọn, gọn gàng với các cấu trúc điều khiển PHP, trong khi vẫn quen thuộc với các hàm tương tự trong PHP.
 
 <a name="if-statements"></a>
 ### Lệnh if
 
-Bạn có thể xây dựng các câu lệnh `if` bằng cách sử dụng các lệnh `@if`, `@elseif`, `@else`, và `@endif`. Các lệnh này hoạt động giống hệt với các hàm tương tư trong PHP:
+Bạn có thể xây dựng các câu lệnh `if` bằng cách sử dụng các lệnh `@if`, `@elseif`, `@else`, và `@endif`. Các lệnh này hoạt động giống hệt với các hàm tương tự trong PHP:
 
     @if (count($records) === 1)
         I have one record!
@@ -217,7 +217,7 @@ Bạn có thể xây dựng các câu lệnh `if` bằng cách sử dụng các 
         You are not signed in.
     @endunless
 
-Ngoài các lệnh có điều kiện đã được thảo luận ở trên, các lệnh `@isset` và `@empty` có thể được sử dụng làm các shortcut cho các hàm PHP tương ứng của chúng:
+Ngoài các lệnh có điều kiện đã được thảo luận ở trên, các lệnh `@isset` và `@empty` cũng có thể được sử dụng làm các shortcut cho các hàm PHP tương ứng của chúng:
 
     @isset($records)
         // $records is defined and is not null...
@@ -229,7 +229,7 @@ Ngoài các lệnh có điều kiện đã được thảo luận ở trên, cá
 
 #### Lệnh authentication
 
-Các lệnh `@auth` và `@guest` có thể được sử dụng để nhanh chóng xác định xem người dùng hiện tại có được xác thực chưa? hay là khách:
+Các lệnh `@auth` và `@guest` có thể được sử dụng để xác định xem người dùng hiện tại đã được xác thực chưa? hay là khách:
 
     @auth
         // The user is authenticated...
@@ -302,7 +302,7 @@ Ngoài các câu lệnh có điều kiện, Blade cung cấp các lệnh đơn g
         <p>I'm looping forever.</p>
     @endwhile
 
-> {tip} Khi lặp, bạn có thể sử dụng [loop variable](#the-loop-variable) để thu được thông tin có giá trị về vòng lặp, chẳng hạn như bạn đang ở vòng lặp đầu tiên hoặc vòng lặp cuối cùng.
+> {tip} Khi lặp, bạn có thể sử dụng [loop variable](#the-loop-variable) để nhận về các thông tin có giá trị về vòng lặp, chẳng hạn như bạn đang ở vòng lặp đầu tiên hoặc vòng lặp cuối cùng.
 
 Khi sử dụng các vòng lặp, bạn cũng có thể kết thúc vòng lặp hoặc bỏ qua vòng lặp hiện tại:
 
@@ -331,7 +331,7 @@ Bạn cũng có thể thêm các điều kiện và khai báo lệnh đó trong 
 <a name="the-loop-variable"></a>
 ### Biến loop
 
-Khi lặp, một biến `$loop` sẽ có sẵn bên trong vòng lặp của bạn. Biến này cung cấp quyền truy cập vào một số thông tin hữu ích như chỉ số vòng lặp hiện tại và liệu đây có phải là lần lặp đầu tiên hay là cuối cùng của vòng lặp:
+Khi lặp, một biến `$loop` sẽ có sẵn bên trong vòng lặp của bạn. Biến này cung cấp quyền truy cập vào một số thông tin hữu ích như vòng lặp hiện tại và liệu đây có phải là vòng lặp đầu tiên hay là vòng lặp cuối cùng:
 
     @foreach ($users as $user)
         @if ($loop->first)
@@ -371,7 +371,7 @@ Property  | Description
 <a name="comments"></a>
 ### Comments
 
-Blade cũng cho phép bạn định nghĩa các comment trong view của bạn. Tuy nhiên, không giống như comment trong HTML, comment trong Blade không được thêm vào trong HTML do application của bạn trả về:
+Blade cũng cho phép bạn định nghĩa các comment trong view của bạn. Tuy nhiên, không giống như comment trong HTML, comment trong Blade sẽ không được hiển thị vào trong HTML do application của bạn trả về:
 
     {{-- This comment will not be present in the rendered HTML --}}
 
@@ -384,12 +384,12 @@ Trong một số trường hợp, có thể bạn cần nhúng code PHP vào tro
         //
     @endphp
 
-> {tip} Mặc dù Blade cung cấp tính năng này, nhưng việc sử dụng nó thường xuyên có thể là một tín hiệu cho thấy bạn đang có quá nhiều logic đang được nhúng trong template của bạn.
+> {tip} Mặc dù Blade cung cấp tính năng này, nhưng việc sử dụng nó thường xuyên có thể là một tín hiệu cho thấy bạn đang có quá nhiều logic đang được nhúng vào trong template của bạn.
 
 <a name="including-sub-views"></a>
 ## Thêm Sub-Views
 
-Lệnh `@include` của Blade cho phép bạn thêm một view Blade khác vào trong view hiện tại. Tất cả các biến đã có trong view chính cũng sẽ có trong view được thêm:
+Lệnh `@include` của Blade cho phép bạn thêm một view Blade khác vào trong view hiện tại. Tất cả các biến đã có trong view hiện tại cũng sẽ có trong view được thêm:
 
     <div>
         @include('shared.errors')
@@ -399,11 +399,11 @@ Lệnh `@include` của Blade cho phép bạn thêm một view Blade khác vào 
         </form>
     </div>
 
-Mặc dù view được thêm sẽ kế thừa tất cả các dữ liệu có sẵn trong view chính, nhưng bạn cũng có thể chuyển một mảng dữ liệu bổ sung cho view được thêm:
+Mặc dù view được thêm sẽ kế thừa tất cả các dữ liệu có sẵn trong view chính, nhưng bạn cũng có thể chuyển thêm một mảng dữ liệu bổ sung cho view được thêm:
 
     @include('view.name', ['some' => 'data'])
 
-Tất nhiên, nếu bạn thử `@include` một view không tồn tại, thì Laravel sẽ đưa ra lỗi. Nếu bạn muốn thêm một view có thể có hoặc không tồn tại, thì bạn nên sử dụng lệnh `@includeIf`:
+Tất nhiên, nếu bạn thử `@include` một view không tồn tại, thì Laravel sẽ đưa ra một lỗi. Nếu bạn muốn thêm một view có thể có hoặc có thể không tồn tại, thì bạn nên sử dụng lệnh `@includeIf`:
 
     @includeIf('view.name', ['some' => 'data'])
 
@@ -415,33 +415,33 @@ Nếu bạn muốn `@include` một view tùy thuộc vào một điều kiện 
 
     @includeFirst(['custom.admin', 'admin'], ['some' => 'data'])
 
-> {note} Bạn nên tránh sử dụng các hằng số `__DIR__` và `__FILE__` trong view Blade của bạn, vì chúng sẽ dẫn đến vị trí của view sẽ được cache và compile.
+> {note} Bạn nên tránh sử dụng các hằng số `__DIR__` và `__FILE__` trong view Blade của bạn, vì chúng sẽ dẫn đến vị trí view sẽ được cache và compile.
 
 <a name="rendering-views-for-collections"></a>
 ### Tạo Views cho Collections
 
-Bạn có thể kết hợp các vòng lặp và các include thành một dòng với lệnh `@each` của Blade:
+Bạn có thể kết hợp các vòng lặp và các include vào một dòng lệnh `@each` của Blade:
 
     @each('view.name', $jobs, 'job')
 
-Tham số đầu tiên là view con để hiển thị cho từng thành phần trong mảng hoặc collection. Tham số thứ hai là mảng hoặc collection mà bạn muốn lặp, trong khi tham số thứ ba là tên biến sẽ được gán cho mỗi lần lặp hiện tại trong view. Vậy, ví dụ, nếu như bạn đang lặp một mảng `jobs`, thông thường bạn sẽ muốn truy cập từng job dưới dạng một biến `job` trong view con. Key cho vòng lặp hiện tại sẽ có sẵn dưới dạng biến `key` trong view con của bạn.
+Tham số đầu tiên là tên view con để hiển thị cho từng phần tử trong mảng hoặc collection. Tham số thứ hai là mảng hoặc collection mà bạn muốn lặp, trong khi tham số thứ ba là tên biến sẽ được gán cho mỗi lần lặp trong view. Vậy, ví dụ, nếu như bạn đang lặp một mảng `jobs`, thông thường bạn sẽ muốn truy cập từng job dưới dạng tên một biến `job` trong view con. Key cho vòng lặp hiện tại sẽ có sẵn dưới dạng biến `key` trong view con của bạn.
 
-Bạn cũng có thể truyền một tham số thứ tư cho lệnh `@each`. Tham số này xác định view sẽ được hiển thị nếu mảng đó là trống.
+Bạn cũng có thể truyền một tham số thứ tư cho lệnh `@each`. Tham số này định nghĩa view nào sẽ được hiển thị nếu mảng đó trống.
 
     @each('view.name', $jobs, 'job', 'view.empty')
 
-> {note} View được hiển thị qua `@each` sẽ không kế thừa các biến từ view cha. Nếu view con muốn các biến này, bạn có thể sử dụng `@foreach` và `@include` thay thế.
+> {note} View được hiển thị qua `@each` sẽ không kế thừa các biến từ view cha. Nếu bạn muốn các view con của bạn có các biến này, bạn có thể sử dụng `@foreach` và `@include` thay thế.
 
 <a name="stacks"></a>
 ## Stacks
 
-Blade cho phép bạn push đến các stack có tên, để hiển thị ở một nơi khác trong view hoặc layout khác. Điều này có thể đặc biệt hữu ích để định nghĩa một thư viện JavaScript nào đó theo yêu cầu của view con của bạn:
+Blade cho phép bạn khai báo thêm các file hoặc các biến vào trong các stack đã được tên, để có thể được hiển thị ở một nơi khác trong view hoặc layout. Điều này có thể đặc biệt hữu ích để định nghĩa một thư viện JavaScript nào đó theo yêu cầu của view con của bạn:
 
     @push('scripts')
         <script src="/example.js"></script>
     @endpush
 
-Bạn có thể push đến một stack nhiều lần nếu cần. Để hiển thị nội dung stack hoàn chỉnh, truyền tên của stack vào lệnh `@stack`:
+Bạn có thể khai báo cho một stack nhiều lần nếu cần. Để hiển thị nội dung stack hoàn chỉnh, truyền tên của stack vào lệnh `@stack`:
 
     <head>
         <!-- Head Contents -->
@@ -452,7 +452,7 @@ Bạn có thể push đến một stack nhiều lần nếu cần. Để hiển 
 <a name="service-injection"></a>
 ## Service Injection
 
-Lệnh `@inject` có thể được sử dụng để lấy một service từ [service container](/docs/{{version}}/container) của Laravel. Tham số đầu tiên được truyền vào `@inject` là tên biến mà service sẽ được đặt vào, trong khi tham số thứ hai là tên class hoặc là tên một interface của service mà bạn muốn resolve:
+Lệnh `@inject` có thể được sử dụng để lấy một service ra từ [service container](/docs/{{version}}/container). Tham số đầu tiên được truyền vào `@inject` là tên biến mà service sẽ được set, trong khi tham số thứ hai là tên class hoặc là tên một interface của service mà bạn muốn resolve:
 
     @inject('metrics', 'App\Services\MetricsService')
 
@@ -463,7 +463,7 @@ Lệnh `@inject` có thể được sử dụng để lấy một service từ [
 <a name="extending-blade"></a>
 ## Mở rộng blade
 
-Blade cho phép bạn định nghĩa các lệnh tùy biến của riêng bạn bằng phương thức `directive`. Khi trình biên dịch Blade gặp phải lệnh tùy biến này, nó sẽ gọi đến hàm callback đã được khai báo mà lệnh này chứa.
+Blade cho phép bạn định nghĩa thêm các lệnh tùy biến của riêng bạn bằng phương thức `directive`. Khi trình biên dịch Blade gặp phải các lệnh tùy biến này, nó sẽ tự động gọi đến hàm callback đã được khai báo cho lệnh này.
 
 Ví dụ sau đây sẽ tạo ra một lệnh `@datetime($var)` để format lại một biến `$var` đã cho, và biến này phải là một instance của `DateTime`:
 
@@ -499,7 +499,7 @@ Ví dụ sau đây sẽ tạo ra một lệnh `@datetime($var)` để format l�
         }
     }
 
-Như bạn có thể thấy, chúng ta sẽ nối phương thức `format` vào bất kỳ biểu thức nào, được truyền vào lệnh. Vì vậy, trong ví dụ này, code PHP cuối cùng được tạo bởi lệnh này sẽ là:
+Như bạn có thể thấy, chúng ta sẽ nối phương thức `format` vào bất kỳ biểu thức nào được truyền vào lệnh. Vì vậy, trong ví dụ này, code PHP cuối cùng được tạo ra bởi lệnh này sẽ như sau:
 
     <?php echo ($var)->format('m/d/Y H:i'); ?>
 
@@ -508,7 +508,7 @@ Như bạn có thể thấy, chúng ta sẽ nối phương thức `format` vào 
 <a name="custom-if-statements"></a>
 ### Tuỳ biến lệnh if
 
-Lập trình một lệnh tùy biến đôi khi lại là phức tạp hơn là định nghĩa một câu lệnh điều kiện tùy biến đơn giản. Vì lý do đó, Blade cung cấp phương thức `Blade::if` cho phép bạn nhanh chóng định nghĩa các lệnh có điều kiện tùy biến bằng cách sử dụng Closures. Ví dụ: hãy định nghĩa một điều kiện tùy biến kiểm tra biến môi trường hiện tại của application. Chúng ta có thể làm điều này trong phương thức `boot` của `AppServiceProvider`:
+Lập trình một lệnh tùy biến đôi khi lại là phức tạp hơn là định nghĩa một câu lệnh điều kiện tùy biến đơn giản. Vì lý do đó, Blade cung cấp phương thức `Blade::if` cho phép bạn nhanh chóng định nghĩa các lệnh tùy biến có điều kiện bằng cách sử dụng Closures. Ví dụ: hãy định nghĩa một điều kiện tùy biến có thể kiểm tra biến môi trường hiện tại của application. Chúng ta có thể làm điều này trong phương thức `boot` của `AppServiceProvider`:
 
     use Illuminate\Support\Facades\Blade;
 

@@ -9,7 +9,7 @@
 <a name="introduction"></a>
 ## Giới thiệu
 
-Class `Illuminate\Support\Collection` cung cấp một wrapper dễ dàng, thuận tiện để làm việc với các mảng dữ liệu. Ví dụ, hãy xem code sau đây. Chúng ta sẽ sử dụng helper `collect` để tạo một instance collection mới từ mảng, chạy hàm `strtoupper` cho mỗi phần tử và sau đó xóa đi tất cả các phần tử trống:
+Class `Illuminate\Support\Collection` cung cấp một wrapper dễ dàng, thuận tiện để làm việc với các mảng dữ liệu. Ví dụ, hãy xem code sau đây. Chúng ta sẽ sử dụng helper `collect` để tạo ra một instance collection mới từ một mảng, và chạy hàm `strtoupper` cho mỗi phần tử và xóa đi tất cả các phần tử trống:
 
     $collection = collect(['taylor', 'abigail', null])->map(function ($name) {
         return strtoupper($name);
@@ -18,12 +18,12 @@ Class `Illuminate\Support\Collection` cung cấp một wrapper dễ dàng, thu�
         return empty($name);
     });
 
-Như các bạn có thể thấy, class `Collection` cho phép bạn kết hợp các phương thức của nó để bạn dễ dàng thực hiện mapping và reject phần tử đó ra khỏi mảng. Nói chung, các collection là bất biến, điều này có nghĩa là mọi phương thức của `Collection` đều trả về một instance `Collection` mới.
+Như các bạn có thể thấy, class `Collection` cho phép bạn kết hợp các phương thức của nó lại với nhau cho phép bạn dễ dàng thực hiện mapping và reject các phần tử ra khỏi mảng. Nói chung, các collection là bất biến, điều này có nghĩa là mọi phương thức của `Collection` đều trả về một instance `Collection` mới.
 
 <a name="creating-collections"></a>
 ### Tạo collection
 
-Như đã đề cập ở trên, helper `collect` sẽ trả về một instance `Illuminate\Support\Collection`  mới cho mảng đã được cho. Vì vậy, việc tạo ra một collection rất đơn giản như sau:
+Như đã đề cập ở trên, helper `collect` sẽ trả về một instance `Illuminate\Support\Collection` cho mảng đã được cho. Vì vậy, việc tạo một collection rất đơn giản như sau:
 
     $collection = collect([1, 2, 3]);
 
@@ -32,7 +32,7 @@ Như đã đề cập ở trên, helper `collect` sẽ trả về một instance
 <a name="extending-collections"></a>
 ### Extend collection
 
-Các collection là các "macroable", do đó nó cho phép bạn bổ sung các phương thức vào các class `Collection` trong thời gian chạy. Ví dụ, đoạn mã sau sẽ thêm một phương thức `toUpper` vào các class `Collection`:
+Các collection là các "macroable", nên nó cho phép bạn bổ sung các phương thức vào các class `Collection` trong thời gian chạy. Ví dụ, đoạn code sau sẽ thêm một phương thức `toUpper` vào class `Collection`:
 
     use Illuminate\Support\Str;
 
@@ -53,7 +53,7 @@ Thông thường, bạn nên khai báo các collection macro trong một [servic
 <a name="available-methods"></a>
 ## Các phương thức có sẵn
 
-Trong phần còn lại của tài liệu này, chúng ta sẽ thảo luận về từng phương thức có sẵn trên class `Collection`. Hãy nhớ rằng, tất cả các phương thức này đều có thể được kết hợp cùng nhau để xử lý một mảng dễ dàng. Hơn nữa, hầu hết mọi phương thức đều trả về một instance `Collection` mới, nên bạn giữ bản sao gốc của collection đó khi cần thiết:
+Trong phần còn lại của tài liệu này, chúng ta sẽ thảo luận về các phương thức có sẵn trên class `Collection`. Hãy nhớ rằng, tất cả các phương thức này đều có thể được kết hợp lại với nhau để xử lý cho một mảng dễ dàng. Hơn nữa, hầu hết mọi phương thức đều sẽ trả về một instance `Collection` mới, giúp bạn giữ bản gốc của collection đó khi cần thiết:
 
 <style>
     #collection-method-list > p {
@@ -285,7 +285,7 @@ Phương thức `contains` sẽ xác định xem trong collection đó có chứ
 
     // false
 
-Bạn cũng có thể pass một cặp key và value cho phương thức `contains`, nó sẽ xác định xem cặp key value đó có tồn tại trong collection hay không:
+Bạn cũng có thể truyền vào một cặp key và value cho phương thức `contains`, nó sẽ xác định xem cặp key value đó có tồn tại trong collection hay không:
 
     $collection = collect([
         ['product' => 'Desk', 'price' => 200],

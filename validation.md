@@ -27,17 +27,17 @@
 <a name="introduction"></a>
 ## Giới thiệu
 
-Laravel cung cấp một số cách tiếp cận khác nhau để validate dữ liệu tới application của bạn. Mặc định, class controller base của Laravel sử dụng một trait `ValidatesRequests` dùng để cung cấp một phương thức thuận tiện cho validate request HTTP với nhiều rule validate mạnh mẽ.
+Laravel cung cấp một số cách tiếp cận khác nhau để validate dữ liệu trong application của bạn. Mặc định, class controller base của Laravel đã sử dụng một trait `ValidatesRequests` để cung các một phương thức cho validate request HTTP với nhiều rule validate mạnh mẽ.
 
 <a name="validation-quickstart"></a>
 ## Validation Quickstart
 
-Để tìm hiểu về các tính năng validation mạnh mẽ của Laravel, chúng ta hãy xem một ví dụ đầy đủ về validation cho một form và hiển thị các thông báo lỗi cho người dùng.
+Để tìm hiểu về các tính năng validation của Laravel, chúng ta hãy xem một ví dụ về validation cho một form và cách hiển thị thông báo lỗi cho người dùng.
 
 <a name="quick-defining-the-routes"></a>
 ### Định nghĩa Routes
 
-Đầu tiên, giả sử chúng ta có các route sau được định nghĩa trong file `routes/web.php`:
+Đầu tiên, giả sử chúng ta có các route sau đã được định nghĩa trong file `routes/web.php`:
 
     Route::get('post/create', 'PostController@create');
 
@@ -48,7 +48,7 @@ Dĩ nhiên, route `GET` sẽ hiển thị một form cho người dùng để t�
 <a name="quick-creating-the-controller"></a>
 ### Tạo Controller
 
-Tiếp theo, chúng ta hãy xem một controller đơn giản xử lý các route. Bây giờ chúng ta sẽ bỏ trống phương thức `store`:
+Tiếp theo, chúng ta hãy xem một controller đơn giản xử lý cho các route. Bây giờ chúng ta sẽ bỏ trống phương thức `store`:
 
     <?php
 
@@ -84,7 +84,7 @@ Tiếp theo, chúng ta hãy xem một controller đơn giản xử lý các rout
 <a name="quick-writing-the-validation-logic"></a>
 ### Viết Validation Logic
 
-Bây giờ chúng ta đã sẵn sàng để điền vào phương thức `store` của chúng ta với logic để validate bài đăng mới trong blog. Để làm điều này, chúng ta sẽ sử dụng phương thức `validate` được cung cấp bởi đối tượng `Illuminate\Http\Request`. Nếu pass qua validate rule, code của bạn sẽ tiếp tục được thực thi bình thường; tuy nhiên, nếu validate không thành công, một exception sẽ được đưa ra và một error response thích hợp sẽ tự động được gửi về cho người dùng. Trong trường hợp request HTTP bình thường, thì response sẽ là một chuyển hướng, còn nếu request là kiểu AJAX thì một response JSON sẽ được gửi.
+Bây giờ chúng ta đã sẵn sàng để viết vào phương thức `store` của chúng ta với các logic validate bài đăng trong blog. Để làm điều này, chúng ta sẽ sử dụng phương thức `validate` được cung cấp trong đối tượng `Illuminate\Http\Request`. Nếu pass qua validate rule, code của bạn sẽ được tiếp tục thực thi bình thường; tuy nhiên, nếu validate không thành công, một exception sẽ được đưa ra và một error response thích hợp sẽ tự động được gửi về cho người dùng. Trong trường hợp request HTTP bình thường, thì response sẽ là một chuyển hướng, còn nếu request là kiểu AJAX thì một response JSON sẽ được trả về.
 
 Để hiểu rõ hơn về phương thức `validate`, chúng ta hãy quay lại phương thức` store`:
 
@@ -104,7 +104,7 @@ Bây giờ chúng ta đã sẵn sàng để điền vào phương thức `store`
         // The blog post is valid...
     }
 
-Như bạn có thể thấy, chúng ta đã truyền các quy tắc validation mà chúng ta mong muốn vào phương thức `validate`. Một lần nữa, nếu validation thất bại, một response thích hợp sẽ được tự động tạo. Còn nếu validation thành công, controller của chúng ta sẽ tiếp tục được thực thi bình thường.
+Như bạn có thể thấy, chúng ta đã truyền các quy tắc validation mà chúng ta mong muốn vào phương thức `validate`. Một lần nữa, nếu validation thất bại, một response thích hợp sẽ được tự động trả về. Còn nếu validation thành công, controller của chúng ta sẽ tiếp tục được thực thi bình thường.
 
 #### Dừng luôn nếu Validation đầu tiên thất bại
 
@@ -130,13 +130,13 @@ Nếu request HTTP của bạn chứa các tham số "lồng nhau", bạn có th
 <a name="quick-displaying-the-validation-errors"></a>
 ### Hiển thị Validation Errors
 
-Vậy, điều gì sẽ xảy ra nếu các tham số request đến không vượt qua các quy tắc validation đã cho? Như đã đề cập trước đó, Laravel sẽ tự động chuyển hướng người dùng trở lại vị trí trước đó của họ. Ngoài ra, tất cả các lỗi validation sẽ được tự động [flash vào trong session](/docs/{{version}}/session#flash-data).
+Vậy, điều gì sẽ xảy ra nếu các tham số request không pass qua các quy tắc validation đã cho? Như đã đề cập trước đó, Laravel sẽ tự động chuyển hướng người dùng trở lại vị trí trước đó của họ. Ngoài ra, tất cả các lỗi validation sẽ được tự động [flash vào trong session](/docs/{{version}}/session#flash-data).
 
-Một lần nữa, hãy lưu ý rằng chúng ta không phải liên kết các thông báo lỗi với view trong route `GET` của chúng ta. Điều này là do Laravel sẽ kiểm tra có lỗi trong session hay không và tự động liên kết chúng với view nếu chúng tồn tại. Biến `$errors` sẽ là một instance của `Illuminate\Support\MessageBag`. Để biết thêm thông tin về cách làm việc với đối tượng này, [xem tài liệu của nó](#working-with-error-messages).
+Một lần nữa, hãy lưu ý rằng chúng ta không phải liên kết bất kỳ thông báo lỗi nào với view trong route `GET` của chúng ta. Điều này là do Laravel sẽ kiểm tra có lỗi trong session có hay không và tự động tạo liên kết chúng với view nếu chúng tồn tại. Biến `$errors` sẽ là một instance của `Illuminate\Support\MessageBag`. Để biết thêm thông tin về cách làm việc với đối tượng này, [xem tài liệu của nó](#working-with-error-messages).
 
-> {tip} Biến `$errors` bị ràng buộc với view bởi middleware `Illuminate\View\Middleware\ShareErrorsFromSession`, được cung cấp bởi group middleware `web`. **Khi middleware này được áp dụng, thì biến `$errors` này sẽ luôn có sẵn trong view của bạn**, cho phép bạn thuận tiện giả sử biến `$errors` luôn được khai báo và có thể được sử dụng một cách an toàn hơn.
+> {tip} Biến `$errors` bị ràng buộc với view thông qua middleware `Illuminate\View\Middleware\ShareErrorsFromSession`, được cung cấp bởi group middleware `web`. **Khi middleware này được áp dụng, thì biến `$errors` này sẽ luôn có tồn tại trong view của bạn**, cho phép bạn giả sử biến `$errors` luôn được khai báo và có thể được sử dụng một cách an toàn hơn.
 
-Vì vậy, trong ví dụ của chúng ta, người dùng sẽ được chuyển hướng đến phương thức `create` của controller khi validation thất bại, cho phép chúng ta hiển thị các thông báo lỗi trong view:
+Vì vậy, trong ví dụ của chúng ta, người dùng sẽ được chuyển hướng về phương thức `create` của controller khi validation thất bại, cho phép chúng ta hiển thị các thông báo lỗi trong view như sau:
 
     <!-- /resources/views/post/create.blade.php -->
 
@@ -157,7 +157,7 @@ Vì vậy, trong ví dụ của chúng ta, người dùng sẽ được chuyển
 <a name="a-note-on-optional-fields"></a>
 ### Lưu ý về các field tùy chọn
 
-Mặc định, Laravel sẽ chứa middleware `TrimStrings` và `ConvertEmptyStringsToNull` trong stack middleware global của application. Các middleware này sẽ được liệt kê trong stack bởi class `App\Http\Kernel`. Vì điều này, nên bạn sẽ cần phải đánh dấu các trường request "optional" của bạn là `nullable` nếu bạn không muốn validator coi các giá trị `null` là không hợp lệ. Ví dụ:
+Mặc định, Laravel sẽ chứa hai middleware là: `TrimStrings` và `ConvertEmptyStringsToNull` trong stack middleware global application. Các middleware này sẽ được liệt kê trong stack bởi class `App\Http\Kernel`. Vì thế, bạn sẽ cần phải đánh dấu các trường request "optional" của bạn là `nullable` nếu bạn không muốn validator coi các giá trị `null` của các trường này là không hợp lệ. Ví dụ:
 
     $request->validate([
         'title' => 'required|unique:posts|max:255',
@@ -165,12 +165,12 @@ Mặc định, Laravel sẽ chứa middleware `TrimStrings` và `ConvertEmptyStr
         'publish_at' => 'nullable|date',
     ]);
 
-Trong ví dụ trên, chúng ta đang định nghĩa rằng trường `publish_at` có thể là `null` hoặc nếu có giá trị thì phải theo format của date. Nếu chúng ta không thêm `nullable` vào trong định nghĩa quy tắc, thì validator sẽ coi `null` là một date không hợp lệ.
+Trong ví dụ trên, chúng ta đang định nghĩa là trường `publish_at` có thể là `null` hoặc nếu có giá trị thì phải theo format của date. Nếu chúng ta không thêm `nullable` vào trong định nghĩa quy tắc này, thì validator sẽ coi `null` là một date không hợp lệ.
 
 <a name="quick-ajax-requests-and-validation"></a>
 #### AJAX Requests và Validation
 
-Trong ví dụ trên, chúng ta đã sử dụng một hình thức bình thường để gửi dữ liệu đến application. Tuy nhiên, nhiều application sẽ sử dụng các request là AJAX. Khi sử dụng phương thức `validate` trong request là AJAX, Laravel sẽ không tạo ra response chuyển hướng. Thay vào đó, Laravel tạo ra một response JSON chứa tất cả các lỗi validation. Phản hồi JSON này sẽ được gửi với HTTP status code là 422.
+Trong ví dụ trên, chúng ta đã sử dụng một form bình thường để gửi dữ liệu đến application. Tuy nhiên, nhiều application sẽ sử dụng các request là AJAX. Nên nếu sử dụng phương thức `validate` trong request là AJAX, thì Laravel sẽ không tạo ra response chuyển hướng. Thay vào đó, Laravel tạo ra một response JSON chứa tất cả các lỗi validation. Response JSON này sẽ được gửi về với HTTP status code là 422.
 
 <a name="form-request-validation"></a>
 ## Form Request Validation
@@ -178,7 +178,7 @@ Trong ví dụ trên, chúng ta đã sử dụng một hình thức bình thư�
 <a name="creating-form-requests"></a>
 ### Tạo Form Requests
 
-Đối với các kịch bản validation phức tạp hơn, bạn có thể muốn tạo một "form request". Form requests là các class request tùy biến có chứa logic validation. Để tạo một class form request, hãy sử dụng lệnh Artisan CLI `make:request`:
+Đối với các kịch bản validation phức tạp hơn, bạn có thể tạo một "form request". Form requests là các class request tùy biến có chứa logic validation. Để tạo một class form request, hãy sử dụng lệnh Artisan CLI `make:request`:
 
     php artisan make:request StoreBlogPost
 
@@ -197,7 +197,7 @@ Class được tạo ra sẽ được lưu trong thư mục `app/Http/Requests`.
         ];
     }
 
-Vậy, các quy tắc validation sẽ được so sánh như thế nào? Tất cả những gì bạn cần làm là khai báo theo dạng kiểu cho request trong phương thức controller của bạn. Form request đến sẽ được validate trước khi phương thức controller được gọi, nghĩa là bạn không cần làm lộn xộn controller của bạn với bất kỳ logic validate nào:
+Vậy, các quy tắc validation sẽ được so sánh như thế nào? Tất cả những gì bạn cần làm là khai báo nó cho request trong phương thức controller của bạn. Form request đến sẽ được validate trước khi phương thức controller được gọi, nghĩa là bạn không cần làm lộn xộn controller của bạn với bất kỳ logic validate nào:
 
     /**
      * Store the incoming blog post.
@@ -210,11 +210,11 @@ Vậy, các quy tắc validation sẽ được so sánh như thế nào? Tất c
         // The incoming request is valid...
     }
 
-Nếu validation thất bại, một response chuyển hướng sẽ được tạo để đưa người dùng trở lại vị trí trước đó của họ. Các lỗi cũng sẽ được flash vào session để chúng có thể được hiển thị. Nếu request là loại request AJAX, response HTTP có status code 422 sẽ được trả về cho người dùng chứa một JSON các lỗi validation.
+Nếu validation thất bại, một response chuyển hướng sẽ được tạo và đưa người dùng trở về vị trí trước đó của họ. Các lỗi cũng sẽ được flash vào session để chúng có thể được hiển thị. Nếu request là loại request AJAX, response HTTP có status code 422 sẽ được trả về cho người dùng chứa một data JSON gồm các lỗi validation.
 
 #### Thêm After Hooks vào Form Requests
 
-Nếu bạn muốn thêm một "after" hook vào một form request, bạn có thể sử dụng phương thức `withValidator`. Phương thức này nhận vào một validator đã được khởi tạo, cho phép bạn gọi bất kỳ phương thức nào trước khi các quy tắc validation được thực sự so sánh:
+Nếu bạn muốn thêm một "after" hook vào một form request, bạn có thể sử dụng phương thức `withValidator`. Phương thức này nhận vào một validator đã được khởi tạo, cho phép bạn gọi bất kỳ phương thức nào trước khi các quy tắc validation thực sự được so sánh:
     /**
      * Configure the validator instance.
      *
@@ -233,7 +233,7 @@ Nếu bạn muốn thêm một "after" hook vào một form request, bạn có t
 <a name="authorizing-form-requests"></a>
 ### Authorizing Form Requests
 
-Class form request cũng chứa một phương thức `authorize`. Trong phương thức này, bạn có thể kiểm tra xem người dùng hiện tại có thực sự có quyền truy cập vào resource này hay không. Ví dụ: bạn có thể xác định xem người dùng có thực sự là chủ sở hữu của một bình luận trong blog mà họ đang cố cập nhật hay không:
+Class form request cũng chứa một phương thức `authorize`. Trong phương thức này, bạn có thể kiểm tra xem người dùng hiện tại thực sự có quyền truy cập vào resource này hay không. Ví dụ: bạn có thể xác định xem người dùng có thực sự là chủ sở hữu của một bình luận trong blog mà họ đang cố cập nhật hay không:
 
     /**
      * Determine if the user is authorized to make this request.
@@ -247,13 +247,13 @@ Class form request cũng chứa một phương thức `authorize`. Trong phươn
         return $comment && $this->user()->can('update', $comment);
     }
 
-Vì tất cả các form request đều được mở rộng từ class request Laravel, chúng ta có thể sử dụng phương thức `user` để truy cập vào người dùng hiện tại đang được authenticate. Hãy lưu ý cách gọi đến phương thức `route` trong ví dụ ở trên. Phương thức này cấp cho bạn quyền truy cập vào các tham số URI đã được định nghĩa trên route hiện tại, chẳng hạn như tham số `{comment}` trong ví dụ bên dưới:
+Vì tất cả các form request đều được mở rộng từ class request của Laravel, nên chúng ta có thể sử dụng phương thức `user` để truy cập vào người dùng hiện tại đang được authenticate. Hãy lưu ý cách gọi đến phương thức `route` trong ví dụ ở trên. Phương thức này cung cấp cho bạn quyền truy cập vào các tham số URI đã được định nghĩa trên route hiện tại, chẳng hạn như tham số `{comment}` trong ví dụ bên dưới:
 
     Route::post('comment/{comment}');
 
-Nếu phương thức `authorize` trả về `false`,  HTTP response có status code 403 sẽ được tự động trả về và phương thức điều khiển của bạn sẽ không được thực thi.
+Nếu phương thức `authorize` trả về `false`,  HTTP response có status code là 403 sẽ được tự động trả về và phương thức trong controller của bạn sẽ không được thực thi.
 
-Nếu bạn dự định có logic authorization trong một phần khác trong application của bạn, hãy trả về `true` từ phương thức `authorize`:
+Nếu bạn muốn logic authorization nằm ở trong một phần khác của application, bạn hãy trả về `true` từ phương thức `authorize`:
 
     /**
      * Determine if the user is authorized to make this request.
@@ -268,7 +268,7 @@ Nếu bạn dự định có logic authorization trong một phần khác trong 
 <a name="customizing-the-error-messages"></a>
 ### Tuỳ biến Error Messages
 
-Bạn có thể tùy biến các thông báo lỗi được sử dụng bởi form request bằng cách ghi đè phương thức `messages`. Phương thức này sẽ trả về một mảng các cặp thuộc tính / quy tắc và các thông báo lỗi tương ứng của chúng:
+Bạn có thể tùy biến các thông báo lỗi được sử dụng bởi form request bằng cách ghi đè phương thức `messages`. Phương thức này sẽ trả về một mảng gồm các cặp thuộc tính / quy tắc và các thông báo lỗi tương ứng của chúng:
 
     /**
      * Get the error messages for the defined validation rules.
@@ -286,7 +286,7 @@ Bạn có thể tùy biến các thông báo lỗi được sử dụng bởi fo
 <a name="manually-creating-validators"></a>
 ## Tạo Validator thủ công
 
-Nếu bạn không muốn sử dụng phương thức `validate` theo request, bạn có thể tạo một instance validator theo cách thủ công bằng cách sử dụng [facade](/docs/{{version}}/facades) `Validator`. Phương thức `make` trên facade tạo ra một instance validator mới:
+Nếu bạn không muốn sử dụng phương thức `validate` theo request, bạn có thể tự tạo một instance validator bằng cách sử dụng [facade](/docs/{{version}}/facades) `Validator`. Phương thức `make` trên facade sẽ tạo ra một instance validator mới:
 
     <?php
 
@@ -321,14 +321,14 @@ Nếu bạn không muốn sử dụng phương thức `validate` theo request, b
         }
     }
 
-Tham số đầu tiên được truyền cho phương thức `make` là dữ liệu sẽ được validation. Đối số thứ hai là các quy tắc validation sẽ được áp dụng cho dữ liệu đó.
+Tham số đầu tiên được truyền cho phương thức `make` là dữ liệu cần được validation. Tham số thứ hai là các quy tắc validation sẽ được áp dụng cho dữ liệu đó.
 
-Sau khi kiểm tra nếu request validation thất bại, bạn có thể sử dụng phương thức `withErrors` để flash các thông báo lỗi vào session. Khi sử dụng phương thức này, biến `$errors` sẽ được tự động chia sẻ với các view của bạn sau khi được chuyển hướng tới, cho phép bạn dễ dàng hiển thị chúng cho người dùng. Phương thức `withErrors` chấp nhận một validator và một` MessageBag` hoặc một PHP `array`.
+Sau khi kiểm tra nếu request validation thất bại, bạn có thể sử dụng phương thức `withErrors` để flash các thông báo lỗi vào session. Khi sử dụng phương thức này, biến `$errors` sẽ được tự động chia sẻ với các view của bạn sau khi được chuyển hướng tới, cho phép bạn dễ dàng hiển thị thông báo lỗi cho người dùng. Phương thức `withErrors` chấp nhận một validator và một `MessageBag` hoặc một PHP `array`.
 
 <a name="automatic-redirection"></a>
 ### Tự dộng chuyển hướng
 
-Nếu bạn muốn tạo một validator instance theo cách thủ công nhưng vẫn tận dụng tính năng chuyển hướng tự động được cung cấp bởi phương thức `validate` của request, bạn có thể gọi phương thức `validate` trên một validator instance đã tồn tại. Nếu validation thất bại, người dùng sẽ tự động được chuyển hướng hoặc trong trường hợp request là AJAX, thì response JSON sẽ được trả về:
+Nếu bạn muốn tự tạo một validator instance nhưng vẫn muốn tận dụng tính năng chuyển hướng tự động được cung cấp bởi phương thức `validate` của request, bạn có thể gọi phương thức `validate` trên một validator instance đã tồn tại. Nếu validation thất bại, người dùng sẽ tự động được chuyển hướng hoặc trong trường hợp request là AJAX, thì response JSON sẽ được trả về:
 
     Validator::make($request->all(), [
         'title' => 'required|unique:posts|max:255',
@@ -338,7 +338,7 @@ Nếu bạn muốn tạo một validator instance theo cách thủ công nhưng 
 <a name="named-error-bags"></a>
 ### Tên của Error Bags
 
-Nếu bạn có nhiều form trên một trang, bạn có thể muốn đặt tên cho `MessageBag`, để bạn có thể truy xuất các thông báo lỗi đó cho một form cụ thể. Hãy truyền tên đó làm tham số thứ hai cho phương thức `withErrors`:
+Nếu bạn có nhiều form trong một trang, bạn có thể muốn đặt tên cho `MessageBag`, để bạn có thể truy xuất vào các thông báo lỗi cho một form cụ thể. Hãy truyền tên đó làm tham số thứ hai cho phương thức `withErrors`:
 
     return redirect('register')
                 ->withErrors($validator, 'login');
@@ -350,7 +350,7 @@ Sau đó, bạn có thể truy cập vào instance `MessageBag` đã được đ
 <a name="after-validation-hook"></a>
 ### After Validation Hook
 
-Validator cũng cho phép bạn gắn các callback sẽ được chạy sau khi validation hoàn tất. Điều này cho phép bạn dễ dàng thực hiện validation thêm hoặc thậm chí thêm nhiều thông báo lỗi vào message collection. Để bắt đầu, hãy sử dụng phương thức `after` trên một instance validator:
+Validator cũng cho phép bạn gắn các callback sẽ được chạy sau khi validation hoàn tất. Điều này cho phép bạn dễ dàng thực hiện validation thêm hoặc thậm chí là thêm nhiều thông báo lỗi vào message collection. Để bắt đầu, hãy sử dụng phương thức `after` trên một instance validator:
 
     $validator = Validator::make(...);
 
@@ -367,7 +367,7 @@ Validator cũng cho phép bạn gắn các callback sẽ được chạy sau khi
 <a name="working-with-error-messages"></a>
 ## Làm việc với Error Messages
 
-Sau khi gọi phương thức `errors` trong một instance `Validator`, bạn sẽ nhận được một instance `Illuminate\Support\MessageBag`, có nhiều phương thức thuận tiện để làm việc với các thông báo lỗi. Biến `$errors` được tự động cung cấp cho tất cả các view cũng là một instance của class `MessageBag`.
+Sau khi gọi phương thức `errors` trong một instance `Validator`, bạn sẽ nhận về một instance `Illuminate\Support\MessageBag`, có nhiều phương thức để làm việc với các thông báo lỗi. Biến `$errors` mà được tự động cung cấp cho các view cũng là một instance của class `MessageBag`.
 
 #### Lấy lỗi đầu tiên của một field
 
@@ -379,13 +379,13 @@ Sau khi gọi phương thức `errors` trong một instance `Validator`, bạn s
 
 #### Lấy tất cả các lỗi của một field
 
-Nếu bạn cần lấy một mảng của tất cả các thông báo cho một field, hãy sử dụng phương thức `get`:
+Nếu bạn cần lấy tất cả các thông báo lỗi cho một field, hãy sử dụng phương thức `get`:
 
     foreach ($errors->get('email') as $message) {
         //
     }
 
-Nếu bạn đang validate trường array form, bạn có thể lấy tất cả các thông báo cho từng thành phần trong mảng bằng ký tự `*`:
+Nếu bạn đang validate một mảng field, bạn có thể lấy tất cả các thông báo lỗi cho từng field trong mảng bằng ký tự `*`:
 
     foreach ($errors->get('attachments.*') as $message) {
         //
@@ -393,7 +393,7 @@ Nếu bạn đang validate trường array form, bạn có thể lấy tất c�
 
 #### Lấy tất cả các lỗi của tất cả các field
 
-Để lấy một mảng của tất cả các thông báo lỗi cho tất cả các field, hãy sử dụng phương thức `all`:
+Để lấy một mảng tất cả các thông báo lỗi cho tất cả các field, hãy sử dụng phương thức `all`:
 
     foreach ($errors->all() as $message) {
         //
@@ -410,7 +410,7 @@ Phương thức `has` có thể được sử dụng để xác định xem có 
 <a name="custom-error-messages"></a>
 ### Tuỳ chỉnh Error Messages
 
-Nếu cần, bạn có thể tùy biến thông báo lỗi cho validation thay vì mặc định. Có một số cách để định nghĩa tùy biến một thông báo lỗi. Đầu tiên, bạn có thể truyền các thông điệp đã được tùy biến làm tham số thứ ba cho phương thức `Validator::make`:
+Nếu cần, bạn có thể tùy biến thông báo lỗi cho validation thay vì mặc định. Có một số cách để định nghĩa tùy biến một thông báo lỗi. Đầu tiên, bạn có thể truyền các thông báo lỗi đã được tùy biến làm tham số thứ ba cho phương thức `Validator::make`:
 
     $messages = [
         'required' => 'The :attribute field is required.',
@@ -418,7 +418,7 @@ Nếu cần, bạn có thể tùy biến thông báo lỗi cho validation thay v
 
     $validator = Validator::make($input, $rules, $messages);
 
-Trong ví dụ này, `:attribute` sẽ được thay thế bằng tên thực sự của field được validation. Bạn cũng có thể sử dụng các attribute khác trong validation messages. Ví dụ:
+Trong ví dụ này, `:attribute` sẽ được thay thế bằng tên thực sự của field mà được validation. Bạn cũng có thể sử dụng các attribute khác trong validation messages. Ví dụ:
 
     $messages = [
         'same'    => 'The :attribute and :other must match.',
@@ -429,7 +429,7 @@ Trong ví dụ này, `:attribute` sẽ được thay thế bằng tên thực s�
 
 #### Chỉ định một Custom Message cho một attribute nhất định
 
-Thỉnh thoảng bạn có thể chỉ định một thông báo lỗi tùy biến chỉ cho một field cụ thể. Bạn có thể làm như vậy bằng cách sử dụng ký hiệu "chấm". Chỉ định tên của attribute và theo sau đó là quy tắc:
+Thỉnh thoảng bạn có thể chỉ định một thông báo lỗi tùy biến chỉ cho một field cụ thể. Bạn có thể làm như vậy bằng cách dùng ký hiệu "chấm". Chỉ định tên của attribute trước và sau đó là đến tên của quy tắc:
 
     $messages = [
         'email.required' => 'We need to know your e-mail address!',
@@ -438,7 +438,7 @@ Thỉnh thoảng bạn có thể chỉ định một thông báo lỗi tùy bi�
 <a name="localization"></a>
 #### Chỉ định Custom Messages trong file Language
 
-Trong hầu hết các trường hợp, bạn có thể sẽ chỉ định các thông điệp tùy biến của bạn vào trong một file language thay vì truyền chúng trực tiếp đến `Validator`. Để làm như vậy, hãy thêm các thông điệp của bạn vào mảng `custom` trong file language `resources/lang/xx/validation.php`.
+Trong hầu hết các trường hợp, bạn có thể sẽ cần chỉ định các thông báo lỗi tùy biến của bạn vào trong một file language thay vì truyền chúng trực tiếp vào `Validator`. Để làm như vậy, hãy thêm các thông báo lỗi của bạn vào mảng `custom` trong file language `resources/lang/xx/validation.php`.
 
     'custom' => [
         'email' => [
@@ -448,7 +448,7 @@ Trong hầu hết các trường hợp, bạn có thể sẽ chỉ định các 
 
 #### Chỉ định Custom Attributes trong file Language
 
-Nếu bạn muốn phần `:attribute` trong thông báo validation của bạn được thay thế bằng tên attribute tùy biến, bạn có thể chỉ định tên tùy biến trong mảng `attributes` của file language `resources/lang/xx/validation.php`:
+Nếu bạn muốn phần `:attribute` trong thông báo validation của bạn được thay thế bằng một tên attribute tùy biến, bạn có thể chỉ định tên tùy biến này trong mảng `attributes` của file language `resources/lang/xx/validation.php`:
 
     'attributes' => [
         'email' => 'email address',
@@ -998,11 +998,11 @@ Tương tự, bạn có thể sử dụng ký tự `*` khi định nghĩa các t
 <a name="using-rule-objects"></a>
 ### Dùng đối tượng Rule
 
-Laravel cung cấp một loạt các quy tắc validation hữu ích; tuy nhiên, bạn có thể muốn khai báo thêm một số quy tắc của riêng bạn. Một phương thức của một đăng ký custom validation rule là dùng các đối tượng rule. Để tạo một đối tượng rule mới, bạn có thể sử dụng lệnh Artisan `make:rule`. Hãy sử dụng lệnh này để tạo rule xác minh chuỗi là chữ hoa. Laravel sẽ tạo rule mới trong thư mục `app/Rules`:
+Laravel cung cấp một loạt các quy tắc validation hữu ích; tuy nhiên, bạn có thể muốn khai báo thêm một số quy tắc của riêng bạn. Một phương thức đăng ký custom validation rule là sử dụng các đối tượng rule. Để tạo một đối tượng rule mới, bạn có thể sử dụng lệnh Artisan `make:rule`. Hãy sử dụng lệnh này để tạo rule xác minh chuỗi là chữ hoa. Laravel sẽ tạo rule mới trong thư mục `app/Rules`:
 
     php artisan make:rule Uppercase
 
-Khi rule đã được tạo, chúng ta đã sẵn sàng xác định hành vi của nó. Một đối tượng rule sẽ chứa hai phương thức: `passes` và `message`. Phương thức `passes` nhận giá trị và tên thuộc tính và sẽ trả về `true` hoặc `false` tùy thuộc vào giá trị thuộc tính có hợp lệ hay không. Còn phương thức `message` sẽ trả về một thông báo lỗi validation, nó sẽ được sử dụng khi validation thất bại:
+Khi rule đã được tạo, chúng ta đã sẵn sàng xác định hành vi của nó. Một đối tượng rule sẽ chứa hai phương thức: `passes` và `message`. Phương thức `passes` nhận vào giá trị và tên thuộc tính và sẽ trả về `true` hoặc `false` tùy thuộc vào giá trị thuộc tính có hợp lệ hay không. Còn phương thức `message` sẽ trả về một thông báo lỗi validation, nó sẽ được sử dụng khi validation thất bại:
 
     <?php
 
@@ -1047,7 +1047,7 @@ Tất nhiên, bạn có thể gọi helper `trans` từ phương thức `message
         return trans('validation.uppercase');
     }
 
-Khi rule đã được định nghĩa xong, bạn có thể gán nó vào một validator bằng cách patruyềnss một instance của đối tượng rule này cùng với các quy tắc validation khác của bạn:
+Khi rule đã được định nghĩa xong, bạn có thể gán nó vào một validator bằng cách truyền một instance của đối tượng rule này cùng với các quy tắc validation khác của bạn:
 
     use App\Rules\Uppercase;
 
@@ -1058,7 +1058,7 @@ Khi rule đã được định nghĩa xong, bạn có thể gán nó vào một 
 <a name="using-extensions"></a>
 ### Dùng Extensions
 
-Một phương thức khác để đăng ký một tùy biến rule validation là sử dụng phương thức `extend` trên [facade](/docs/{{version}}/facades) `Validator`. Hãy sử dụng phương thức này trong một [service provider](/docs/{{version}}/providers) để đăng ký một tùy biến rule validation:
+Một cách khác để đăng ký một tùy biến rule validation là sử dụng phương thức `extend` trên [facade](/docs/{{version}}/facades) `Validator`. Hãy sử dụng phương thức này trong một [service provider](/docs/{{version}}/providers) để đăng ký một tùy biến rule validation:
 
     <?php
 
@@ -1100,7 +1100,7 @@ Bạn cũng có thể truyền một class và phương thức của nó cho ph�
 
 #### Định nghĩa Error Message
 
-Bạn cũng sẽ cần định nghĩa một thông báo lỗi cho quy tắc tùy biến của bạn. Bạn có thể làm như vậy bằng cách sử dụng một mảng thông báo tùy biến hoặc bằng cách thêm một mục vào trong file language validation. Thông báo này phải được đặt ở vị trí đầu tiên của mảng, không nằm trong mảng `custom`, cái mà chỉ dành cho các thông báo lỗi của một thuộc tính cụ thể:
+Bạn cũng sẽ cần định nghĩa một thông báo lỗi cho quy tắc tùy biến của bạn. Bạn có thể làm như vậy bằng cách sử dụng một mảng thông báo tùy biến hoặc bằng cách thêm một mục vào trong file language validation. Thông báo này phải được đặt ở vị trí đầu tiên của mảng, không nằm trong mảng `custom`, mảng `custom` chỉ dành cho các thông báo lỗi của một thuộc tính cụ thể:
 
     "foo" => "Your input was invalid!",
 
@@ -1108,7 +1108,7 @@ Bạn cũng sẽ cần định nghĩa một thông báo lỗi cho quy tắc tùy
 
     // The rest of the validation error messages...
 
-Khi tạo tùy biến quy tắc validation, đôi khi bạn có thể cần định nghĩa các biến đánh dấu chỗ cho các thông báo lỗi. Bạn có thể làm như vậy bằng cách tạo tùy biến Validator như được mô tả ở trên, sau đó thực hiện gọi đến phương thức `replacer` trên facade `Validator`. Bạn có thể làm điều này trong phương thức `boot` của một [service provider](/docs/{{version}}/providers):
+Khi tạo một tùy biến quy tắc validation, đôi khi bạn có thể cần định nghĩa các thông báo lỗi một cách trực tiếp. Bạn có thể làm như vậy bằng cách tạo tùy biến Validator bằng `extend` như được mô tả ở trên, và sau đó thực hiện gọi đến phương thức `replacer` trên facade `Validator`. Bạn có thể làm điều này trong phương thức `boot` của một [service provider](/docs/{{version}}/providers):
 
     /**
      * Bootstrap any application services.
@@ -1126,7 +1126,7 @@ Khi tạo tùy biến quy tắc validation, đôi khi bạn có thể cần đ�
 
 #### Extension ẩn
 
-Theo mặc định, khi một thuộc tính được validate không có hoặc chứa một giá trị trống như được định nghĩa bởi quy tắc [`required`](#rule-required), thì các quy tắc validation thông thường, và cả các extension tùy biến đều sẽ được không chạy. Ví dụ: quy tắc [`unique`](#rule-unique) sẽ không được chạy cho giá trị `null`:
+Mặc định, khi một thuộc tính được validate không có hoặc chứa một giá trị trống như được định nghĩa bởi quy tắc [`required`](#rule-required), thì các quy tắc validation thông thường, và cả các extension tùy biến đều sẽ được không chạy. Ví dụ: quy tắc [`unique`](#rule-unique) sẽ không được chạy cho giá trị `null`:
 
     $rules = ['name' => 'unique'];
 
@@ -1134,10 +1134,10 @@ Theo mặc định, khi một thuộc tính được validate không có hoặc 
 
     Validator::make($input, $rules)->passes(); // true
 
-Để một quy tắc chạy ngay cả khi một thuộc tính trống, quy tắc phải ngụ ý rằng thuộc tính là bắt buộc. Để tạo một phần extension "ẩn" như vậy, hãy sử dụng phương thức `Validator::extendImplicit()`:
+Để một quy tắc chạy ngay cả khi một thuộc tính trống, quy tắc đó phải tưởng tượng rằng thuộc tính là bắt buộc. Để tạo một phần extension "ẩn" như vậy, hãy sử dụng phương thức `Validator::extendImplicit()`:
 
     Validator::extendImplicit('foo', function ($attribute, $value, $parameters, $validator) {
         return $value == 'foo';
     });
 
-> {note} Một extension "ẩn" chỉ _ngụ ý_ rằng thuộc tính đó là bắt buộc. Cho dù nó thực sự làm vô hiệu một thuộc tính bị thiếu hoặc trống là tùy thuộc vào bạn.
+> {note} Một extension "ẩn" chỉ _tưởng tượng_ rằng thuộc tính đó là bắt buộc. Việc nó thực sự validate một thuộc tính bị thiếu hoặc bị trống hay không là tùy thuộc vào bạn.

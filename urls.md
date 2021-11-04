@@ -11,7 +11,7 @@
 <a name="introduction"></a>
 ## Giới thiệu
 
-Laravel cung cấp một số helper để hỗ trợ bạn tạo URL cho application. Tất nhiên, những điều này chủ yếu hữu ích khi tạo các link trong các template và API response hoặc khi tạo response chuyển hướng đến một phần khác trong application của bạn.
+Laravel cung cấp một số helper để hỗ trợ bạn tạo URL cho application của bạn. Tất nhiên, những điều này chủ yếu hữu ích khi tạo link trong các template và API response hoặc khi tạo response chuyển hướng đến một phần khác trong application của bạn.
 
 <a name="the-basics"></a>
 ## Cơ bản
@@ -19,7 +19,7 @@ Laravel cung cấp một số helper để hỗ trợ bạn tạo URL cho applic
 <a name="generating-basic-urls"></a>
 ### Tạo một URL cơ bản
 
-Helper `url` có thể được sử dụng để tạo các URL tùy ý cho application của bạn. URL được tạo ra sẽ tự động sử dụng scheme (HTTP hoặc HTTPS) và host từ request hiện tại:
+Helper `url` có thể được sử dụng để tạo các URL tùy biến cho application của bạn. URL được tạo ra sẽ tự động sử dụng scheme (HTTP hoặc HTTPS) và host từ request hiện tại:
 
     $post = App\Post::find(1);
 
@@ -30,7 +30,7 @@ Helper `url` có thể được sử dụng để tạo các URL tùy ý cho app
 <a name="accessing-the-current-url"></a>
 ### Truy cập vào URL hiện tại
 
-Nếu như không có đường dẫn nào được cung cấp cho helper `url`, thì một instance `Illuminate\Routing\UrlGenerator` sẽ được trả về, cho phép bạn truy cập vào thông tin về URL hiện tại:
+Nếu như không có đường dẫn nào được truyền vào cho helper `url`, thì một instance `Illuminate\Routing\UrlGenerator` sẽ được trả về, cho phép bạn truy cập vào thông tin về URL hiện tại:
 
     // Get the current URL without the query string...
     echo url()->current();
@@ -50,7 +50,7 @@ Các phương thức này cũng có thể được truy cập thông qua [facade
 <a name="urls-for-named-routes"></a>
 ## URLs cho Named Routes
 
-Helper `route` có thể được sử dụng để tạo URL tới một route đã được đặt tên. Các route đã được đặt tên cho phép bạn tạo URL mà không cần thiết phải biết URL thực tế đang được định nghĩa trong route. Do đó, nếu URL của route có thay đổi, thì bạn cũng không cần phải thực hiện thay đổi cho các lệnh gọi hàm `route` của bạn. Ví dụ: hãy tưởng tượng application của bạn chứa một route đang được định nghĩa như sau:
+Helper `route` có thể được sử dụng để tạo URL tới một route đã được đặt tên. Các route đã được đặt tên cho phép bạn tạo URL mà không cần phải biết URL thực tế đang được định nghĩa như thế nào. Do đó, nếu URL của route có thay đổi, thì bạn cũng không cần phải thực hiện thay đổi gì cho các lệnh gọi hàm `route` của bạn. Ví dụ: hãy tưởng tượng application của bạn chứa một route đang được định nghĩa như sau:
 
     Route::get('/post/{post}', function () {
         //
@@ -62,18 +62,18 @@ Helper `route` có thể được sử dụng để tạo URL tới một route 
 
     // http://example.com/post/1
 
-Bạn thường sẽ phải tạo URL bằng primary key của [Eloquent models](/docs/{{version}}/eloquent). Vì lý do đó, bạn có thể truyền các model Eloquent làm giá trị tham số. Helper `route` sẽ tự động lấy primary key của model đó ra:
+Bạn thường sẽ phải tạo URL bằng primary key của [Eloquent models](/docs/{{version}}/eloquent). Vì lý do đó, bạn có thể truyền trực tiếp các model Eloquent làm giá trị tham số. Helper `route` sẽ tự động lấy primary key trong model đó ra:
 
     echo route('post.show', ['post' => $post]);
 
 <a name="urls-for-controller-actions"></a>
 ## URLs cho Controller Actions
 
-Hàm `action` giúp tạo ra một URL cho một controller action. Bạn không cần phải truyền toàn bộ namespace của controller đó. Mà thay vào đó, chỉ cần truyền tên class của controller mà được liên kết với namespace `App\Http\Controllers`:
+Hàm `action` giúp tạo ra một URL cho một controller action. Bạn không cần phải truyền toàn bộ namespace của controller đó vào. Mà thay vào đó, chỉ cần truyền tên class của controller mà được liên kết với namespace `App\Http\Controllers`:
 
     $url = action('HomeController@index');
 
-Nếu phương thức controller chấp nhận route parameter, bạn có thể truyền chúng làm tham số thứ hai cho hàm:
+Nếu phương thức controller yêu cầu truyền một route parameter, bạn có thể truyền chúng làm tham số thứ hai cho hàm như sau:
 
     $url = action('UserController@profile', ['id' => 1]);
 
@@ -105,4 +105,4 @@ Sẽ thật là cồng kềnh khi luôn luôn phải truyền một tham số `l
         }
     }
 
-Khi giá trị mặc định cho tham số `locale` đã được set, bạn sẽ không cần phải truyền giá trị của nó khi tạo URL thông qua helper `route`.
+Khi giá trị mặc định cho tham số `locale` đã được cài đặt, bạn sẽ không cần phải truyền giá trị của nó khi tạo URL thông qua helper `route`.
