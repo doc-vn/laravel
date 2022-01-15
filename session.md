@@ -93,7 +93,7 @@ Có hai cách chính để truy cập vào dữ liệu session trong Laravel: gl
         }
     }
 
-Khi bạn muốn lấy một giá trị từ session, bạn có thể truyền vào một giá trị mặc định làm tham số thứ hai cho phương thức `get`. Giá trị mặc định này sẽ được trả về nếu key bạn muốn lấy không tồn tại trong session. Nếu bạn truyền vào một `Closure` làm giá trị mặc định cho phương thức `get` nếu key được yêu cầu không tồn tại, thì `Closure` sẽ được thực thi và kết quả của nó sẽ được trả về:
+Khi bạn muốn lấy một item từ session, bạn có thể truyền vào một giá trị mặc định làm tham số thứ hai cho phương thức `get`. Giá trị mặc định này sẽ được trả về nếu key bạn muốn lấy không tồn tại trong session. Nếu bạn truyền vào một `Closure` làm giá trị mặc định cho phương thức `get` nếu key được yêu cầu không tồn tại, thì `Closure` sẽ được thực thi và kết quả của nó sẽ được trả về:
 
     $value = $request->session()->get('key', 'default');
 
@@ -126,13 +126,13 @@ Nếu bạn muốn lấy tất cả dữ liệu trong session, bạn có thể s
 
 #### Xác định một item có tồn tại trong session hay không
 
-Để xác định xem một giá trị có trong session hay không, bạn có thể sử dụng phương thức `has`. Phương thức `has` sẽ trả về `true` nếu giá trị tồn tại và khác giá trị `null`:
+Để xác định xem một item có trong session hay không, bạn có thể sử dụng phương thức `has`. Phương thức `has` sẽ trả về `true` nếu item đó tồn tại và khác giá trị `null`:
 
     if ($request->session()->has('users')) {
         //
     }
 
-Để xác định xem một giá trị có trong session hay không, ngay cả khi giá trị của nó là `null`, thì bạn có thể sử dụng phương thức `exists`. Phương thức `exists` trả về `true` nếu giá trị tồn tại:
+Để xác định xem một item có trong session hay không, ngay cả khi giá trị của nó là `null`, thì bạn có thể sử dụng phương thức `exists`. Phương thức `exists` trả về `true` nếu item đó tồn tại:
 
     if ($request->session()->exists('users')) {
         //

@@ -147,7 +147,7 @@ Nếu bạn muốn delay việc gửi notification, bạn có thể kết hợp 
 
 Thỉnh thoảng bạn có thể cần gửi notification cho người mà chưa được lưu trong cơ sở dữ liệu dưới dạng một "user". Sử dụng phương thức `Notification::route`, bạn có thể chỉ định thông tin ad-hoc notification routing trước khi gửi notification:
 
-    Notification::route('mail', 'taylor@laravel.com')
+    Notification::route('mail', 'taylor@example.com')
                 ->route('nexmo', '5555555555')
                 ->notify(new InvoicePaid($invoice));
 
@@ -254,9 +254,10 @@ Khi gửi notifications qua channel `mail`, hệ thống notification sẽ tự 
         /**
          * Route notifications for the mail channel.
          *
+         * @param  \Illuminate\Notifications\Notification  $notification
          * @return string
          */
-        public function routeNotificationForMail()
+        public function routeNotificationForMail($notification)
         {
             return $this->email_address;
         }
@@ -622,9 +623,10 @@ Khi gửi notification qua channel `nexmo`, notification system sẽ tự độn
         /**
          * Route notifications for the Nexmo channel.
          *
+         * @param  \Illuminate\Notifications\Notification  $notification
          * @return string
          */
-        public function routeNotificationForNexmo()
+        public function routeNotificationForNexmo($notification)
         {
             return $this->phone;
         }
@@ -798,9 +800,10 @@ Nếu một số trường đính kèm của bạn chứa Markdown, bạn có th
         /**
          * Route notifications for the Slack channel.
          *
+         * @param  \Illuminate\Notifications\Notification  $notification
          * @return string
          */
-        public function routeNotificationForSlack()
+        public function routeNotificationForSlack($notification)
         {
             return $this->slack_webhook_url;
         }

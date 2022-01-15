@@ -12,10 +12,10 @@ Laravel giúp dễ dàng bảo vệ application của bạn khỏi các cuộc t
 
 Laravel sẽ tự động tạo ra một mã CSRF "token" cho mỗi session người dùng và được quản lý bởi application. Mã token này sẽ được sử dụng để kiểm tra người dùng đã được xác thực chính là người đã thực hiện các request vào application.
 
-Bất cứ khi nào bạn định nghĩa một HTML form trong ứng dụng của bạn, bạn nên tạo một field hidden chứa mã CSRF token để middleware protection CSRF có thể kiểm tra request đó. Bạn có thể sử dụng helper `csrf_field` để tạo field hidden chứa mã token đó:
+Bất cứ khi nào bạn định nghĩa một HTML form trong ứng dụng của bạn, bạn nên tạo một field hidden chứa mã CSRF token để middleware protection CSRF có thể kiểm tra request đó. Bạn có thể sử dụng lệnh `@csrf` của Blade để tạo field hidden chứa mã token đó:
 
     <form method="POST" action="/profile">
-        {{ csrf_field() }}
+        @csrf
         ...
     </form>
 
@@ -51,6 +51,8 @@ Thông thường, bạn nên đặt các loại route này ra ngoài group middl
             'http://example.com/foo/*',
         ];
     }
+
+> {tip} CSRF middleware sẽ tự động bị disable khi [đang chạy test](/docs/{{version}}/testing).
 
 <a name="csrf-x-csrf-token"></a>
 ## X-CSRF-TOKEN

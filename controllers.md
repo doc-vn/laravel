@@ -96,6 +96,10 @@ Khi đăng ký route cho một single action controller, bạn sẽ không cần
 
     Route::get('user/{id}', 'ShowProfile');
 
+Bạn có thể tạo một controller chỉ có một action duy nhất bằng cách sử dụng tùy chọn `--invokable` trong lệnh Artisan `make:controller`:
+
+    php artisan make:controller ShowProfile --invokable
+
 <a name="controller-middleware"></a>
 ## Controller Middleware
 
@@ -174,28 +178,30 @@ Nếu bạn đang sử dụng liên kết model route và muốn các phương t
 
 #### Form Method giả
 
-Vì HTML form không thể tạo các request mà có method là `PUT`, `PATCH`, hoặc `DELETE`, nên bạn cần phải thêm một hidden field `_method` để giả method HTTP. Helper `method_field` có thể tạo field này cho bạn:
+Vì HTML form không thể tạo các request mà có method là `PUT`, `PATCH`, hoặc `DELETE`, nên bạn cần phải thêm một hidden field `_method` để giả method HTTP. Lệnh `@method` của Blade có thể tạo field này cho bạn:
 
-    {{ method_field('PUT') }}
+    <form action="/foo/bar" method="POST">
+        @method('PUT')
+    </form>
 
 <a name="restful-partial-resource-routes"></a>
 ### Partial Resource Routes
 
 Khi khai báo một resource route, bạn có thể chỉ định một tập hợp các hành động mà được controller xử lý thay vì toàn bộ các hành động mặc định:
 
-    Route::resource('photo', 'PhotoController', ['only' => [
+    Route::resource('photos', 'PhotoController')->only([
         'index', 'show'
-    ]]);
+    ]);
 
-    Route::resource('photo', 'PhotoController', ['except' => [
+    Route::resource('photos', 'PhotoController')->except([
         'create', 'store', 'update', 'destroy'
-    ]]);
+    ]);
 
 #### API Resource Routes
 
 Khi khai báo một resource route mà sẽ được sử dụng bởi các API, bạn sẽ muốn loại bỏ các route mà phải nhập form HTML như `create` và` edit`. Để thuận tiện, bạn có thể sử dụng phương thức `apiResource` để tự động loại bỏ hai route trên:
 
-    Route::apiResource('photo', 'PhotoController');
+    Route::apiResource('photos', 'PhotoController');
 
 Bạn có thể đăng ký nhiều resource controller cho API cùng một lúc bằng cách truyền một mảng vào phương thức `apiResources`:
 
@@ -204,27 +210,31 @@ Bạn có thể đăng ký nhiều resource controller cho API cùng một lúc 
         'posts' => 'PostController'
     ]);
 
+Để tạo nhanh một API resource controller mà không chứa các phương thức `create` hoặc `edit`, hãy sử dụng switch `--api` khi chạy lệnh `make:controller`:
+
+    php artisan make:controller API/PhotoController --api
+
 <a name="restful-naming-resource-routes"></a>
 ### Naming Resource Routes
 
 Mặc định, tất cả các hành động của resource controller đều có đi kèm với một tên route; tuy nhiên, bạn có thể ghi đè các tên này bằng cách truyền vào một mảng `names` cùng với các tên mà bạn muốn ghi đè:
 
-    Route::resource('photo', 'PhotoController', ['names' => [
-        'create' => 'photo.build'
-    ]]);
+    Route::resource('photos', 'PhotoController')->names([
+        'create' => 'photos.build'
+    ]);
 
 <a name="restful-naming-resource-route-parameters"></a>
 ### Naming Resource Route Parameters
 
-Mặc định, `Route::resource` sẽ tạo các tham số route cho các resource route dựa trên tên "số ít" của các resource. Bạn có thể dễ dàng ghi đè điều này trên từng resource bằng cách truyền vào một mảng `parameters`. Mảng `parameters` này phải là một mảng kết hợp giữa tên resource và tên tham số:
+Mặc định, `Route::resource` sẽ tạo các tham số route cho các resource route dựa trên tên "số ít" của các resource. Bạn có thể dễ dàng ghi đè điều này trên từng resource bằng cách sử dụng phương thức `parameters`. Mảng được truyền cho phương thức `parameters` này phải là một mảng kết hợp giữa tên resource và tên tham số:
 
-    Route::resource('user', 'AdminUserController', ['parameters' => [
-        'user' => 'admin_user'
-    ]]);
+    Route::resource('users', 'AdminUserController')->parameters([
+        'users' => 'admin_user'
+    ]);
 
 Ví dụ ở trên sẽ tạo ra một URI như ở dưới cho một route `show` của resource:
 
-    /user/{admin_user}
+    /users/{admin_user}
 
 <a name="restful-localizing-resource-uris"></a>
 ### Localizing Resource URIs

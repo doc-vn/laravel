@@ -29,7 +29,7 @@ Mặc định, Valet hỗ trợ những phần sau, nhưng không giới hạn:
 - [Lumen](https://lumen.laravel.com)
 - [Bedrock](https://roots.io/bedrock/)
 - [CakePHP 3](https://cakephp.org)
-- [Concrete5](http://www.concrete5.org/)
+- [Concrete5](https://www.concrete5.org/)
 - [Contao](https://contao.org/en/)
 - [Craft](https://craftcms.com)
 - [Drupal](https://www.drupal.org/)
@@ -55,7 +55,7 @@ Tuy nhiên, bạn có thể mở rộng Valet với [custom drivers](#custom-val
 
 Như bạn đã biết, Laravel cung cấp [Homestead](/docs/{{version}}/homestead), và các môi trường phát triển Laravel khác. Homestead và Valet sẽ khác nhau về đối tượng người dùng, và cách tiếp cận với môi trường phát triển ở local. Homestead cung cấp một máy ảo Ubuntu cùng với cấu hình Nginx. Homestead sẽ là lựa chọn tốt nếu bạn muốn có một môi trường phát triển Linux được ảo hóa hoàn toàn trên Windows / Linux.
 
-Còn Valet chỉ hỗ trợ Mac và yêu cầu bạn cài đặt PHP và database server trực tiếp vào máy local của bạn. Điều này có thể dễ dàng đạt được bằng cách sử dụng [Homebrew] (http://brew.sh/) với các lệnh như `brew install php72` và `brew install mysql`. Valet cung cấp một môi trường phát triển local nhanh chóng với mức tiêu thụ tài nguyên tối thiểu, vì vậy thật tuyệt vời cho các nhà phát triển nếu chỉ cần PHP / MySQL và không cần môi trường phát triển ảo hóa.
+Còn Valet chỉ hỗ trợ Mac và yêu cầu bạn cài đặt PHP và database server trực tiếp vào máy local của bạn. Điều này có thể dễ dàng đạt được bằng cách sử dụng [Homebrew] (http://brew.sh/) với các lệnh như `brew install php` và `brew install mysql`. Valet cung cấp một môi trường phát triển local nhanh chóng với mức tiêu thụ tài nguyên tối thiểu, vì vậy thật tuyệt vời cho các nhà phát triển nếu chỉ cần PHP / MySQL và không cần môi trường phát triển ảo hóa.
 
 Cả Valet và Homestead đều là những lựa chọn tuyệt vời để cấu hình môi trường phát triển Laravel cho bạn. Bạn chọn cái nào đều sẽ phụ thuộc vào sở thích cá nhân hoặc nhu cầu của nhóm phát triển của bạn.
 
@@ -66,7 +66,7 @@ Cả Valet và Homestead đều là những lựa chọn tuyệt vời để c�
 
 <div class="content-list" markdown="1">
 - Cài đặt hoặc cập nhật [Homebrew](http://brew.sh/) mới nhất bằng cách dùng lệnh `brew update`.
-- Cài đặt PHP 7.2 bằng cách dùng lệnh `brew install homebrew/php/php72` thông qua Homebrew.
+- Cài đặt PHP 7.2 bằng cách dùng lệnh `brew install php@7.2` thông qua Homebrew.
 - Cài đặt Valet bằng Composer thông qua lệnh `composer global require laravel/valet`. Và chắc chắn là thư mục `~/.composer/vendor/bin` này đã có trong "PATH" của máy bạn.
 - Chạy lệnh `valet install`. Lệnh này sẽ cấu hình và cài đặt Valet cùng DnsMasq, ngoài ra cũng sẽ đăng ký Valet's daemon chạy mỗi khi máy bạn khởi động.
 </div>
@@ -83,7 +83,7 @@ Ví dụ: nếu bạn muốn sử dụng tên miền `.app` thay vì tên miền
 
 #### Database
 
-Nếu bạn cần một cơ sở dữ liệu, hãy thử dùng MySQL bằng cách chạy `brew install mysql` trên terminal. Khi MySQL đã được cài đặt, bạn có thể khởi động nó bằng lệnh `brew services start mysql`. Sau đó, bạn có thể kết nối đến cơ sở dữ liệu tại địa chỉ `127.0.0.1` với username là `root` và mật khẩu là trống.
+Nếu bạn cần một cơ sở dữ liệu, hãy thử dùng MySQL bằng cách chạy `brew install mysql@5.7` trên terminal. Khi MySQL đã được cài đặt, bạn có thể khởi động nó bằng lệnh `brew services start mysql`. Sau đó, bạn có thể kết nối đến cơ sở dữ liệu tại địa chỉ `127.0.0.1` với username là `root` và mật khẩu là trống.
 
 <a name="upgrading"></a>
 ### Cập nhật
@@ -175,7 +175,7 @@ Hãy xem cách làm mẫu của từng phương thức mà driver Valet của b�
 
 Phương thức `serves` sẽ trả về `true` nếu driver của bạn sẽ xử lý request. Ngược lại, phương thức sẽ trả về `false`. Vì vậy, trong phương thức này, bạn nên xác định xem `$sitePath` đã cho có chứa loại dự án mà bạn đang tạo hay không.
 
-Ví dụ: giả sử chúng ta đang viết một driver `WordPressValetDriver`. Phương thức serve của chúng ta có thể trông giống như thế này:
+Ví dụ: giả sử chúng ta đang viết một driver `WordPressValetDriver`. Phương thức `serves` của chúng ta có thể trông giống như thế này:
 
     /**
      * Determine if the driver serves the request.

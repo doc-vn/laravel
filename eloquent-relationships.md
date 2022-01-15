@@ -120,41 +120,6 @@ Nếu model cha của bạn không sử dụng cột `id` làm khóa chính ho�
         return $this->belongsTo('App\User', 'foreign_key', 'other_key');
     }
 
-<a name="default-models"></a>
-#### Default Models
-
-Quan hệ `belongsTo` cho phép bạn định nghĩa một model mặc định sẽ được trả về nếu trong trường hợp quan hệ đó là `null`. Trường hợp này thường được gọi là [trường hợp đối tượng null](https://en.wikipedia.org/wiki/Null_Object_pattern) và có thể giúp xoá các câu lệnh kiểm tra có trong code của bạn. Trong ví dụ sau, quan hệ `user` sẽ trả về một model `App\User` trống nếu không có `user` nào được đính kèm với post:
-
-    /**
-     * Get the author of the post.
-     */
-    public function user()
-    {
-        return $this->belongsTo('App\User')->withDefault();
-    }
-
-Để thêm các thuộc tính cho model mặc định, bạn có thể truyền vào một mảng hoặc một Closure cho phương thức `withDefault`:
-
-    /**
-     * Get the author of the post.
-     */
-    public function user()
-    {
-        return $this->belongsTo('App\User')->withDefault([
-            'name' => 'Guest Author',
-        ]);
-    }
-
-    /**
-     * Get the author of the post.
-     */
-    public function user()
-    {
-        return $this->belongsTo('App\User')->withDefault(function ($user) {
-            $user->name = 'Guest Author';
-        });
-    }
-
 <a name="one-to-many"></a>
 ### Một - Nhiều
 
@@ -189,7 +154,7 @@ Khi quan hệ đã được định nghĩa xong, bạn có thể truy cập vào
 
 Tất nhiên, vì tất cả các quan hệ cũng đóng vai trò như là một query builder, nên bạn có thể thêm các ràng buộc cho những comment được lấy ra bằng cách gọi phương thức `comments` và tiếp tục thêm các điều kiện vào trong truy vấn:
 
-    $comments = App\Post::find(1)->comments()->where('title', 'foo')->first();
+    $comment = App\Post::find(1)->comments()->where('title', 'foo')->first();
 
 Giống như phương thức `hasOne`, bạn cũng có thể ghi đè các khóa ngoại và khóa chính bằng cách truyền thêm các tham số bổ sung cho phương thức `hasMany`:
 
@@ -225,7 +190,7 @@ Khi quan hệ đã được định nghĩa, chúng ta có thể lấy ra model `
 
     echo $comment->post->title;
 
-Trong ví dụ trên, Eloquent sẽ cố gắng tìm `post_id` từ model `Comment` với một giá trị `id` có trong model `Post`. Eloquent sẽ xác định tên mặc định của khóa ngoại bằng cách lấy tên của phương thức quan hệ và thêm hậu tố `_id`. Tuy nhiên, nếu khóa ngoại trong model `Comment` không phải là `post_id`, bạn có thể truyền một tên khóa ngoại khác làm tham số thứ hai cho phương thức `belongsTo`:
+Trong ví dụ trên, Eloquent sẽ cố gắng tìm `post_id` từ model `Comment` với một giá trị `id` có trong model `Post`. Eloquent sẽ xác định tên mặc định của khóa ngoại bằng cách lấy tên của phương thức quan hệ và thêm hậu tố `_` cùng với tên của cột khoá chính. Tuy nhiên, nếu khóa ngoại trong model `Comment` không phải là `post_id`, bạn có thể truyền một tên khóa ngoại khác làm tham số thứ hai cho phương thức `belongsTo`:
 
     /**
      * Get the post that owns the comment.
@@ -360,7 +325,7 @@ Bạn cũng có thể lọc các kết quả được trả về bởi `belongsT
 
 #### Defining Custom Intermediate Table Models
 
-Nếu bạn muốn định nghĩa một model tùy biến, để biểu diễn bảng trung gian của quan hệ của bạn, bạn có thể gọi phương thức `using` khi định nghĩa quan hệ. Tất cả các model tùy biến được sử dụng để biểu diễn cho các bảng quan hệ trung gian phải được extend từ class `Illuminate\Database\Eloquent\Relations\Pivot`. Ví dụ: chúng ta có thể định nghĩa một `Role` sử dụng model pivot `UserRole` tùy biến như sau:
+Nếu bạn muốn định nghĩa một model tùy biến, để biểu diễn bảng trung gian của quan hệ của bạn, bạn có thể gọi phương thức `using` khi định nghĩa quan hệ. Để tuỳ biến một model pivot nhiều-nhiều bạn cần extend từ class `Illuminate\Database\Eloquent\Relations\Pivot`, còn nếu bạn muốn tuỳ biến model theo đa hình nhiều-nhiều, thì bạn cần extend từ class `Illuminate\Database\Eloquent\Relations\MorphPivot`. Ví dụ: chúng ta có thể định nghĩa một `Role` sử dụng model pivot `UserRole` tùy biến như sau:
 
     <?php
 
@@ -725,6 +690,12 @@ Nếu bạn cần nhiều hơn thế nữa, bạn có thể sử dụng các ph�
         $query->where('content', 'like', 'foo%');
     })->get();
 
+Bạn có thể sử dụng ký hiệu "dấu chấm" để thực hiện truy vấn các mối quan hệ lồng nhau. Ví dụ: truy vấn sau sẽ lấy ra tất cả các bài đăng mà có nhận xét từ các tác giả không bị cấm:
+
+    $posts = App\Post::whereDoesntHave('comments.author', function ($query) {
+        $query->where('banned', 1);
+    })->get();
+
 <a name="counting-related-models"></a>
 ### Đếm các bản ghi theo quan hệ model
 
@@ -935,6 +906,41 @@ Khi xóa một quan hệ `belongsTo`, bạn có thể sử dụng phương thứ
     $user->account()->dissociate();
 
     $user->save();
+
+<a name="default-models"></a>
+#### Model mặc định
+
+Quan hệ `belongsTo` cho phép bạn định nghĩa một model mặc định sẽ được trả về nếu quan hệ đó là `null`. Trường hợp này thường được gọi là [trường hợp đối tượng rỗng](https://en.wikipedia.org/wiki/Null_Object_pattern) và có thể giúp bạn loại bỏ ra các điều kiện có trong code của bạn. Trong ví dụ sau, quan hệ `user` sẽ trả về một model `App\User` trống nếu không có một `user` nào là chủ sở hữu bài đăng đó:
+
+    /**
+     * Get the author of the post.
+     */
+    public function user()
+    {
+        return $this->belongsTo('App\User')->withDefault();
+    }
+
+Để thêm các thuộc tính vào model mặc định, bạn có thể truyền một mảng hoặc một Closure vào phương thức `withDefault`:
+
+    /**
+     * Get the author of the post.
+     */
+    public function user()
+    {
+        return $this->belongsTo('App\User')->withDefault([
+            'name' => 'Guest Author',
+        ]);
+    }
+
+    /**
+     * Get the author of the post.
+     */
+    public function user()
+    {
+        return $this->belongsTo('App\User')->withDefault(function ($user) {
+            $user->name = 'Guest Author';
+        });
+    }
 
 <a name="updating-many-to-many-relationships"></a>
 ### Quan hệ Nhiều - Nhiều

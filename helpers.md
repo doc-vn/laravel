@@ -88,6 +88,7 @@ Laravel chứa một loạt các hàm PHP global "helper". Nhiều trong số c�
 [str_finish](#method-str-finish)
 [str_is](#method-str-is)
 [str_limit](#method-str-limit)
+[Str::orderedUuid](#method-str-ordered-uuid)
 [str_plural](#method-str-plural)
 [str_random](#method-str-random)
 [str_replace_array](#method-str-replace-array)
@@ -100,6 +101,7 @@ Laravel chứa một loạt các hàm PHP global "helper". Nhiều trong số c�
 [title_case](#method-title-case)
 [trans](#method-trans)
 [trans_choice](#method-trans-choice)
+[Str::uuid](#method-str-uuid)
 
 </div>
 
@@ -213,7 +215,7 @@ Hàm `array_collapse` sẽ thu gọn một mảng gồm nhiều mảng con thàn
 
 Hàm `array_divide` trả về hai mảng, một mảng chứa các key và một mảng chứa các giá trị của mảng đã cho:
 
-    list($keys, $values) = array_divide(['name' => 'Desk']);
+    [$keys, $values] = array_divide(['name' => 'Desk']);
 
     // $keys: ['name']
 
@@ -485,7 +487,7 @@ Hàm `array_where` sẽ lọc một mảng bằng cách sử dụng Closure:
         return is_string($value);
     });
 
-    // [1 => 200, 3 => 400]
+    // [1 => '200', 3 => '400']
 
 <a name="method-array-wrap"></a>
 #### `array_wrap()` {#collection-method}
@@ -727,7 +729,7 @@ Hàm `camel_case` chuyển đổi chuỗi đã cho thành `camelCase`:
 <a name="method-e"></a>
 #### `e()` {#collection-method}
 
-Hàm `e` chạy hàm` htmlspecialchars` của PHP với tùy chọn `double_encode` được set thành `false`:
+Hàm `e` chạy hàm` htmlspecialchars` của PHP với tùy chọn `double_encode` được set mặc định thành `true`:
 
     echo e('<html>foo</html>');
 
@@ -854,6 +856,15 @@ Bạn cũng có thể truyền một tham số thứ ba để thay đổi chuỗ
 
     // The quick brown fox (...)
 
+<a name="method-str-ordered-uuid"></a>
+#### `Str::orderedUuid()` {#collection-method}
+
+Phương thức `Str::orderedUuid` sẽ tạo một UUID "timestamp first" có thể được lưu trữ tốt trong một cột được index trong cơ sở dữ liệu:
+
+    use Illuminate\Support\Str;
+
+    return (string) Str::orderedUuid();
+
 <a name="method-str-plural"></a>
 #### `str_plural()` {#collection-method}
 
@@ -944,7 +955,7 @@ Hàm `str_start` sẽ thêm một instance của giá trị đã cho vào một 
 
     // /this/string
 
-    $adjusted = str_start('/this/string/', '/');
+    $adjusted = str_start('/this/string', '/');
 
     // /this/string
 
@@ -983,6 +994,15 @@ Hàm `trans_choice` sẽ dịch các key cần dịch đã cho với một biế
     echo trans_choice('messages.notifications', $unreadCount);
 
 Nếu key cần dịch mà không tồn tại, hàm `trans_choice` sẽ trả về key đó. Vì vậy, nếu sử dụng ví dụ trên, hàm `trans_choice` sẽ trả về `messages.notifications` nếu key cần dịch không tồn tại.
+
+<a name="method-str-uuid"></a>
+#### `Str::uuid()` {#collection-method}
+
+Phương thức `Str::uuid` sẽ tạo ra một UUID (phiên bản 4):
+
+    use Illuminate\Support\Str;
+
+    return (string) Str::uuid();
 
 <a name="urls"></a>
 ## URLs
@@ -1168,7 +1188,7 @@ Bạn có thể thêm các item vào cache bằng cách truyền một mảng c�
 <a name="method-class-uses-recursive"></a>
 #### `class_uses_recursive()` {#collection-method}
 
-Hàm `class_uses_recursive` sẽ trả về tất cả các trait được sử dụng bởi một class, bao gồm cả các trait được sử dụng bởi bất kỳ các class con:
+Hàm `class_uses_recursive` sẽ trả về tất cả các trait được sử dụng bởi một class, bao gồm cả các trait được sử dụng bởi tất cả các class cha của nó:
 
     $traits = class_uses_recursive(App\User::class);
 
@@ -1363,11 +1383,23 @@ Hàm `old` sẽ [lấy ra](/docs/{{version}}/requests#retrieving-input) một gi
 <a name="method-optional"></a>
 #### `optional()` {#collection-method}
 
-Hàm `optional` nhận vào bất kỳ tham số nào và cho phép bạn truy cập các thuộc tính hoặc phương thức được gọi trên đối tượng đó. Nếu đối tượng đã cho là `null`, các thuộc tính và phương thức sẽ trả về `null` thay vì gây ra lỗi:
+Hàm `optional` nhận vào bất kỳ tham số nào và cho phép bạn truy cập các thuộc tính trên đối tượng đó. Nếu đối tượng đã cho là `null`, thì khi truy cập vào thuộc tính, nó sẽ trả về `null` thay vì gây ra lỗi:
 
     return optional($user->address)->street;
 
     {!! old('name', optional($user)->name) !!}
+
+Bạn cũng có thể gọi các phương thức trên đối tượng đó. Giống như việc truy cập vào thuộc tính, nếu đối tượng đã cho là `null`, việc gọi một phương thức sẽ trả về` null` thay vì gây ra lỗi:
+
+    return optional($user)->getTwitterProfile();
+
+Nếu phương thức bạn muốn gọi không thực sự nằm trên chính đối tượng đó, bạn có thể truyền vào một đối số thứ hai là một Closure cho phương thức `option`:
+
+    return optional(User::find($id), function ($user) {
+        return TwitterApi::findUser($user->twitter_id);
+    });
+
+Nếu đối tượng đã cho không phải là `null`, thì Closure sẽ được gọi và giá trị được trả về từ Closure sẽ được trả về như cũ. Nếu đối tượng đã cho là `null`, thì Closure sẽ không được gọi và `optional` sẽ trả về `null` thay vì gây ra lỗi.
 
 <a name="method-policy"></a>
 #### `policy()` {#collection-method}

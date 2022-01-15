@@ -7,20 +7,25 @@
     - [Chạy The Vagrant Box](#launching-the-vagrant-box)
     - [Per Project Installation](#per-project-installation)
     - [Cài đặt MariaDB](#installing-mariadb)
+    - [Cài đặt MongoDB](#installing-mongodb)
     - [Cài đặt Elasticsearch](#installing-elasticsearch)
+    - [Cài đặt Neo4j](#installing-neo4j)
     - [Lối tắt](#aliases)
 - [Daily Usage](#daily-usage)
     - [Accessing Homestead Globally](#accessing-homestead-globally)
     - [Kết nối thông qua SSH](#connecting-via-ssh)
     - [Kết nối tới Databases](#connecting-to-databases)
+    - [Backup Database](#database-backups)
     - [Adding Additional Sites](#adding-additional-sites)
     - [Biến environment](#environment-variables)
     - [Cấu hình Cron Schedules](#configuring-cron-schedules)
     - [Cấu hình Mailhog](#configuring-mailhog)
+    - [Cấu hình Minio](#configuring-minio)
     - [Cổng](#ports)
     - [Chia sẻ biến environment của bạn](#sharing-your-environment)
     - [Multiple PHP Versions](#multiple-php-versions)
     - [Web Servers](#web-servers)
+    - [Mail](#mail)
 - [Network Interfaces](#network-interfaces)
 - [Updating Homestead](#updating-homestead)
 - [Provider Specific Settings](#provider-specific-settings)
@@ -41,7 +46,7 @@ Homestead có thể chạy nhiều hệ điều hành Windows, Mac, hoặc Linux
 ### Software cài đặt sẵn
 
 <div class="content-list" markdown="1">
-- Ubuntu 16.04
+- Ubuntu 18.04
 - Git
 - PHP 7.2
 - PHP 7.1
@@ -59,8 +64,14 @@ Homestead có thể chạy nhiều hệ điều hành Windows, Mac, hoặc Linux
 - Memcached
 - Beanstalkd
 - Mailhog
+- Neo4j (Optional)
+- MongoDB (Optional)
 - Elasticsearch (Optional)
 - ngrok
+- wp-cli
+- Zend Z-Ray
+- Go
+- Minio
 </div>
 
 <a name="installation-and-setup"></a>
@@ -96,7 +107,7 @@ Bạn nên check out một tagged version của Homestead, vì branch `master` k
     cd ~/Homestead
 
     // Clone một bản release cụ thể...
-    git checkout v7.1.2
+    git checkout v7.16.1
 
 Khi mà bạn đã clone xong Homestead repository, hãy chạy lệnh `bash init.sh` từ trong thư mục Homestead để tạo file configuration `Homestead.yaml`, File `Homestead.yaml` này sẽ được lưu vào trong thư mục Homestead:
 
@@ -211,10 +222,19 @@ Nếu bạn thích sử dụng MariaDB thay cho MySQL, bạn có thể thêm opt
     provider: virtualbox
     mariadb: true
 
+<a name="installing-mongodb"></a>
+### Cài đặt MongoDB
+
+Để cài đặt MongoDB Community Edition, hãy cập nhật file `Homestead.yaml` của bạn với tùy chọn cấu hình sau:
+
+    mongodb: true
+
+Mặc định, cài đặt của MongoDB sẽ lưu tên người dùng cơ sở dữ liệu là `homestead` và mật khẩu là `secret`.
+
 <a name="installing-elasticsearch"></a>
 ### Cài đặt Elasticsearch
 
-Để cài đặt Elasticsearch, bạn cần thêm option `elasticsearch` vào file `Homestead.yaml` và phiên bản được support. Mặc định thì nó sẽ tạo ra một cluster với tên là 'homestead'. Bạn đừng nên tạo Elaticsearch hơn một nửa bộ nhớ của hệ điều hành, hãy đảm bảo rằng máy ảo Homestead của bạn có ít nhất là gấp hai lần số mà đã được phân bổ cho Elaticsearch:
+Để cài đặt Elasticsearch, bạn cần thêm option `elasticsearch` vào file `Homestead.yaml` và phiên bản được support, phiên bản này có thể phiên bản chính thức hoặc một phiên bản vụ thể (major.minor.patch). Mặc định thì nó sẽ tạo ra một cluster với tên là 'homestead'. Bạn đừng nên tạo Elaticsearch hơn một nửa bộ nhớ của hệ điều hành, hãy đảm bảo rằng máy ảo Homestead của bạn có ít nhất là gấp hai lần số mà đã được phân bổ cho Elaticsearch:
 
     box: laravel/homestead
     ip: "192.168.10.10"
@@ -224,6 +244,15 @@ Nếu bạn thích sử dụng MariaDB thay cho MySQL, bạn có thể thêm opt
     elasticsearch: 6
 
 > {tip} Hăy đọc [Elasticsearch documentation](https://www.elastic.co/guide/en/elasticsearch/reference/current) để biết làm thế nào để có thể tuỳ biến nó.
+
+<a name="installing-neo4j"></a>
+### Cài đặt Neo4j
+
+[Neo4j](https://neo4j.com/) là một hệ thống quản lý cơ sở dữ liệu theo đồ thị. Để cài đặt Neo4j Community Edition, hãy cập nhật file `Homestead.yaml` của bạn với tùy chọn cấu hình sau:
+
+    neo4j: true
+
+Mặc định, cài đặt của Neo4j sẽ lưu tên người dùng trong cơ sở dữ liệu là `homestead` và mật khẩu là `secret`. Để truy cập vào Neo4j, hãy truy cập vào `http://homestead.test:7474` trên trình duyệt web của bạn. Các cổng `7687` (Bolt), `7474` (HTTP), và `7473` (HTTPS) đã cài đặt sẵn để phục vụ các request từ Neo4j client.
 
 <a name="aliases"></a>
 ### Aliases (Tên viết tắt)
@@ -283,6 +312,15 @@ Một database `homestead` sẽ được cấu hình cho cả MySQL và PostgreS
 Để kết nối đến database MySQL hoặc PostgreSQL từ máy thật của bạn, bạn cần kết nối tới địa chỉ `127.0.0.1` và cổng là `33060` (MySQL) hoặc `54320` (PostgreSQL). Username và Password sẽ là `homestead` và `secret`.
 
 > {note} Bạn chỉ nên sử dụng các cổng không mặc định này khi kết nối với cơ sở dữ liệu từ máy thật của bạn. Bạn sẽ dùng các cổng mặc định 3306 và 5432 trong file cấu hình database vì Laravel đang chạy từ máy ảo chứ không phải máy thật của bạn.
+
+<a name="database-backups"></a>
+### Backup Database
+
+Homestead có thể tự động backup cơ sở dữ liệu của bạn khi Vagrant box của bạn bị phá hủy. Để sử dụng tính năng này, bạn sẽ phải sử dụng Vagrant 2.1.0 trở lên. Hoặc, nếu bạn đang sử dụng phiên bản Vagrant cũ hơn, bạn phải cài đặt plug-in `vagrant-triggers`. Để bật backup cơ sở dữ liệu tự động, hãy thêm dòng sau vào file `Homestead.yaml` của bạn:
+
+    backup: true
+
+Sau khi đã được cấu hình, Homestead sẽ export cơ sở dữ liệu của bạn sang các thư mục `mysql_backup` và `postgres_backup` khi lệnh `vagrant destroy` được thực thi. Bạn có thể tìm thấy những thư mục này trong thư mục mà bạn đã clone Homestead hoặc trong thư mục gốc của project nếu bạn đang sử dụng phương thức [per project installation](#per-project-installation).
 
 <a name="adding-additional-sites"></a>
 ### Thêm một site mới
@@ -365,18 +403,50 @@ Mailhog cho phép bạn dễ dàng gửi email đi và thực hiện việc ki�
     MAIL_PASSWORD=null
     MAIL_ENCRYPTION=null
 
+<a name="configuring-minio"></a>
+### Cấu hình Minio
+
+Minio là một server lưu trữ đối tượng mã nguồn mở có API tương thích với Amazon S3. Để cài đặt Minio, hãy cập nhật file `Homestead.yaml` của bạn với tùy chọn cấu hình sau:
+
+    minio: true
+
+Mặc định, Minio có sẵn trên cổng 9600. Bạn có thể truy cập vào bảng điều khiển của Minio bằng cách truy cập vào `http://homestead:9600/`. Khóa truy cập mặc định là `homestead`, trong khi khóa bí mật mặc định là `secretkey`. Khi truy cập vào Minio, bạn nên sử dụng region `us-east-1`.
+
+Để sử dụng Minio, bạn sẽ cần điều chỉnh cấu hình S3 disk trong file cấu hình `config/filesystems.php` của bạn. Bạn sẽ cần thêm tùy chọn `use_path_style_endpoint` vào cấu hình disk, cũng như thay đổi `url` thành `endpoint`:
+
+    's3' => [
+        'driver' => 's3',
+        'key' => env('AWS_ACCESS_KEY_ID'),
+        'secret' => env('AWS_SECRET_ACCESS_KEY'),
+        'region' => env('AWS_DEFAULT_REGION'),
+        'bucket' => env('AWS_BUCKET'),
+        'endpoint' => env('AWS_URL'),
+        'use_path_style_endpoint' => true
+    ]
+
+Cuối cùng, hãy đảm bảo file `.env` của bạn đã có các tùy chọn sau:
+
+    AWS_ACCESS_KEY_ID=homestead
+    AWS_SECRET_ACCESS_KEY=secretkey
+    AWS_DEFAULT_REGION=us-east-1
+    AWS_URL=http://homestead:9600
+
 <a name="ports"></a>
 ### Ports
 
 Mặc định, các cổng dưới đây sẽ được thiết lập để chuyển tiếp tới môi trường Homestead của bạn:
 
+<div class="content-list" markdown="1">
 - **SSH:** 2222 &rarr; Chuyển tới 22
 - **ngrok UI:** 4040 &rarr; Chuyển tới 4040
 - **HTTP:** 8000 &rarr; Chuyển tới 80
 - **HTTPS:** 44300 &rarr; Chuyển tới 443
 - **MySQL:** 33060 &rarr; Chuyển tới 3306
 - **PostgreSQL:** 54320 &rarr; Chuyển tới 5432
+- **MongoDB:** 27017 &rarr; Chuyển tới 27017
 - **Mailhog:** 8025 &rarr; Chuyển tới 8025
+- **Minio:** 9600 &rarr; Chuyển tới 9600
+</div>
 
 #### Thêm Port
 
@@ -429,6 +499,11 @@ Thêm vào đó, bạn có thể sử dụng bất kỳ phiên bản PHP nào đ
 Mặc đinh, Homestead sẽ dùng server web là Nginx, Tuy nhiên, nó có thể cài đặt thêm cả Apache, nếu `apache` được thiết lập cho một site nào đó. Mặc dù cả hai web server này đều có thể cài đặt cùng nhau, nhưng chúng ta sẽ không thể chạy cả hai cùng một lúc. Nên lệnh shell `flip` sẽ giảm bớt quá trình chuyển đổi giữa các server web. Lệnh `flip` sẽ tự động xác định web server nào đang chạy, tắt nó đi và sau đó khởi động web server còn lại. Để sử dụng lệnh này, SSH vào máy ảo Homestead của bạn và chạy lệnh đó trong terminal của bạn:
 
     flip
+
+<a name="mail"></a>
+### Mail
+
+Mặc định, homestead có chứa hộp thư Postfix đang lắng nghe trên cổng `1025`. Vì vậy, bạn có thể hướng dẫn ứng dụng của bạn sử dụng `smtp` mail driver trên `localhost` với cổng `1025`. Sau đó, tất cả các mail đã gửi sẽ được xử lý bởi Postfix và được Mailhog bắt lấy. Để xem các email đã gửi của bạn, hãy mở [http://localhost:8025](http://localhost:8025) trên trình duyệt web của bạn.
 
 <a name="network-interfaces"></a>
 ## Network Interfaces

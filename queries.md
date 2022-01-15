@@ -57,7 +57,7 @@ Bạn có thể sử dụng phương thức `table` trên facade `DB` để tạ
         }
     }
 
-Phương thức `get` trả về một `Illuminate\Support\Collection` chứa các kết quả trong đó, mỗi kết quả là một instance của đối tượng `StdClass` của PHP. Bạn có thể truy cập vào giá trị của từng cột bằng cách khai báo tên cột như là một tên một thuộc tính của đối tượng:
+Phương thức `get` trả về một `Illuminate\Support\Collection` chứa các kết quả trong đó, mỗi kết quả là một instance của đối tượng `stdClass` của PHP. Bạn có thể truy cập vào giá trị của từng cột bằng cách khai báo tên cột như là một tên một thuộc tính của đối tượng:
 
     foreach ($users as $user) {
         echo $user->name;
@@ -65,7 +65,7 @@ Phương thức `get` trả về một `Illuminate\Support\Collection` chứa c�
 
 #### Retrieving A Single Row / Column From A Table
 
-Nếu bạn chỉ cần lấy ra một hàng từ một bảng cơ sở dữ liệu, bạn có thể sử dụng phương thức `first`. Phương thức này sẽ trả về một đối tượng `StdClass`:
+Nếu bạn chỉ cần lấy ra một hàng từ một bảng cơ sở dữ liệu, bạn có thể sử dụng phương thức `first`. Phương thức này sẽ trả về một đối tượng `stdClass`:
 
     $user = DB::table('users')->where('name', 'John')->first();
 
@@ -127,6 +127,14 @@ Tất nhiên, bạn có thể kết hợp các phương thức này với các c
                     ->where('finalized', 1)
                     ->avg('price');
 
+#### Determining If Records Exist
+
+Thay vì sử dụng phương thức `count` để xác định xem có tồn tại bản ghi nào phù hợp với các ràng buộc ở trong truy vấn hay không, thì bạn có thể sử dụng phương thức `exists` và `doesntExist`:
+
+    return DB::table('orders')->where('finalized', 1)->exists();
+
+    return DB::table('orders')->where('finalized', 1)->doesntExist();
+
 <a name="selects"></a>
 ## Select
 
@@ -182,12 +190,12 @@ Các phương thức `whereRaw` và `orWhereRaw` có thể được sử dụng 
 
 #### `havingRaw / orHavingRaw`
 
-Các phương thức `havingRaw` và `orHavingRaw` có thể được sử dụng để set một chuỗi raw làm giá trị của câu lệnh `having`:
+Các phương thức `havingRaw` và `orHavingRaw` có thể được sử dụng để set một chuỗi raw làm giá trị của câu lệnh `having`. Phương thức này chấp nhận một mảng các tùy chọn tham số được truyền vào làm tham số thứ hai của nó:
 
     $orders = DB::table('orders')
                     ->select('department', DB::raw('SUM(price) as total_sales'))
                     ->groupBy('department')
-                    ->havingRaw('SUM(price) > 2500')
+                    ->havingRaw('SUM(price) > ?', [2500])
                     ->get();
 
 #### `orderByRaw`
@@ -245,6 +253,20 @@ Nếu bạn muốn sử dụng lệnh "where" trong các lệnh join của bạn
                      ->where('contacts.user_id', '>', 5);
             })
             ->get();
+
+#### Sub-Query Joins
+
+Bạn có thể sử dụng các phương thức `joinSub`, `leftJoinSub` và `rightJoinSub` để nối một truy vấn với một truy vấn phụ. Mỗi phương thức này nhận vào ba tham số: một là truy vấn phụ, hai là bí danh của nó và ba là một Closure dùng để xác định các cột liên quan:
+
+    $latestPosts = DB::table('posts')
+                       ->select('user_id', DB::raw('MAX(created_at) as last_post_created_at'))
+                       ->where('is_published', true)
+                       ->groupBy('user_id');
+
+    $users = DB::table('users')
+            ->joinSub($latestPosts, 'latest_posts', function($join) {
+                $join->on('users.id', '=', 'latest_posts.user_id');
+            })->get();
 
 <a name="unions"></a>
 ## Union
@@ -325,7 +347,6 @@ Phương thức `whereNotBetween` sẽ kiểm tra giá trị của một cột n
 
 **whereIn / whereNotIn**
 
-
 Phương thức `whereIn` sẽ kiểm tra giá trị của một cột đã cho có được chứa trong mảng các giá trị đã cho hay không:
 
     $users = DB::table('users')
@@ -381,7 +402,7 @@ Phương thức `whereYear` có thể được sử dụng để so sánh giá t
 Phương thức `whereTime` có thể được sử dụng để so sánh giá trị của một cột với thời gian cụ thể:
 
     $users = DB::table('users')
-                    ->whereTime('created_at', '=', '11:20')
+                    ->whereTime('created_at', '=', '11:20:45')
                     ->get();
 
 **whereColumn**
@@ -413,15 +434,17 @@ Thỉnh thoảng bạn có thể cần tạo ra lệnh where nâng cao như lệ
 
     DB::table('users')
                 ->where('name', '=', 'John')
-                ->orWhere(function ($query) {
+                ->where(function ($query) {
                     $query->where('votes', '>', 100)
-                          ->where('title', '<>', 'Admin');
+                          ->orWhere('title', '=', 'Admin');
                 })
                 ->get();
 
-Như bạn có thể thấy, việc truyền một `Closure` vào phương thức `orWhere` sẽ làm cho query builder bắt đầu tạo ra một nhóm điều kiện. `Closure` sẽ nhận vào một instance query builder mà bạn có thể sử dụng nó để set các điều kiện cần có vào trong nhóm dấu ngoặc đơn. Ví dụ trên sẽ tạo ra SQL như sau:
+Như bạn có thể thấy, việc truyền một `Closure` vào phương thức `where` sẽ làm cho query builder bắt đầu tạo ra một nhóm điều kiện. `Closure` sẽ nhận vào một instance query builder mà bạn có thể sử dụng nó để set các điều kiện cần có vào trong nhóm dấu ngoặc đơn. Ví dụ trên sẽ tạo ra SQL như sau:
 
-    select * from users where name = 'John' or (votes > 100 and title <> 'Admin')
+    select * from users where name = 'John' and (votes > 100 or title = 'Admin')
+
+> {tip} Bạn nên nhóm các lệnh `orWhere` lại với nhau để tránh các hành vi không mong muốn khi sử dụng global scope.
 
 <a name="where-exists-clauses"></a>
 ### Lệnh where exist
@@ -446,7 +469,7 @@ Truy vấn trên sẽ tạo ra lệnh SQL như sau:
 <a name="json-where-clauses"></a>
 ### Lệnh where cho JSON
 
-Laravel cũng hỗ trợ truy vấn vào các cột loại JSON trên cơ sở dữ liệu. Hiện tại, các cột loại JSON đã được hỗ trợ từ MySQL 5.7 và PostgreSQL. Để truy vấn vào cột loại JSON, hãy sử dụng toán tử `->`:
+Laravel cũng hỗ trợ truy vấn vào các cột loại JSON trên cơ sở dữ liệu. Hiện tại, các cột loại JSON đã được hỗ trợ từ MySQL 5.7, PostgreSQL, SQL Server 2016, và SQLite 3.9.0 (với [JSON1 extension](https://www.sqlite.org/json1.html)). Để truy vấn vào cột loại JSON, hãy sử dụng toán tử `->`:
 
     $users = DB::table('users')
                     ->where('options->language', 'en')
@@ -454,6 +477,18 @@ Laravel cũng hỗ trợ truy vấn vào các cột loại JSON trên cơ sở d
 
     $users = DB::table('users')
                     ->where('preferences->dining->meal', 'salad')
+                    ->get();
+
+Bạn có thể sử dụng `whereJsonContains` để truy vấn mảng JSON (không hỗ trợ trên SQLite):
+
+    $users = DB::table('users')
+                    ->whereJsonContains('options->languages', 'en')
+                    ->get();
+
+MySQL và PostgreSQL hỗ trợ `whereJsonContains` với nhiều giá trị khác nhau:
+
+    $users = DB::table('users')
+                    ->whereJsonContains('options->languages', ['en', 'de'])
                     ->get();
 
 <a name="ordering-grouping-limit-and-offset"></a>
@@ -522,7 +557,7 @@ Thỉnh thoảng bạn cũng có thể muốn các câu lệnh chỉ áp dụng 
     $role = $request->input('role');
 
     $users = DB::table('users')
-                    ->when($role, function ($query) use ($role) {
+                    ->when($role, function ($query, $role) {
                         return $query->where('role_id', $role);
                     })
                     ->get();
@@ -534,7 +569,7 @@ Bạn có thể truyền một Closure khác làm tham số thứ ba cho phươn
     $sortBy = null;
 
     $users = DB::table('users')
-                    ->when($sortBy, function ($query) use ($sortBy) {
+                    ->when($sortBy, function ($query, $sortBy) {
                         return $query->orderBy($sortBy);
                     }, function ($query) {
                         return $query->orderBy('name');
@@ -579,7 +614,7 @@ Tất nhiên, ngoài việc thêm các bản ghi vào cơ sở dữ liệu, quer
 <a name="updating-json-columns"></a>
 ### Update JSON Column
 
-Khi cập nhật một cột JSON, bạn nên sử dụng cú pháp `->` để truy cập vào key thích hợp trong đối tượng JSON. Cách này chỉ được hỗ trợ trên các cơ sở dữ liệu mà có hỗ trợ cột loại JSON:
+Khi cập nhật một cột JSON, bạn nên sử dụng cú pháp `->` để truy cập vào key thích hợp trong đối tượng JSON. Cách này chỉ được hỗ trợ trên MySQL 5.7+:
 
     DB::table('users')
                 ->where('id', 1)

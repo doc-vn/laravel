@@ -14,9 +14,10 @@
     - [Tạo Markdown Mailables](#generating-markdown-mailables)
     - [Viết Markdown Messages](#writing-markdown-messages)
     - [Tuỳ biến Components](#customizing-the-components)
-- [Xem trước Mailables trên Browser](#previewing-mailables-in-the-browser)
 - [Gửi Mail](#sending-mail)
     - [Queueing Mail](#queueing-mail)
+- [Hiển thị Mailable](#rendering-mailables)
+    - [Xem trước Mailable trên trình duyệt](#previewing-mailables-in-the-browser)
 - [Mail và Local Development](#mail-and-local-development)
 - [Events](#events)
 
@@ -47,6 +48,15 @@ Các driver dựa trên API như Mailgun và SparkPost thường đơn giản h�
 
     'sparkpost' => [
         'secret' => 'your-sparkpost-key',
+    ],
+
+Nếu cần, bạn cũng có thể cấu hình [API endpoint](https://developers.sparkpost.com/api/#header-endpoints) nào sẽ được sử dụng:
+
+    'sparkpost' => [
+        'secret' => 'your-sparkpost-key',
+        'options' => [
+            'endpoint' => 'https://api.eu.sparkpost.com/api/v1/transmissions',
+        ],
     ],
 
 #### SES Driver
@@ -400,8 +410,8 @@ Component table cho phép bạn chuyển đổi một bảng Markdown thành m�
     @component('mail::table')
     | Laravel       | Table         | Example  |
     | ------------- |:-------------:| --------:|
-    | Col 2 is      | Centered      |      $10 |
-    | Col 3 is      | Right-Aligned |      $20 |
+    | Col 2 is      | Centered      | $10      |
+    | Col 3 is      | Right-Aligned | $20      |
     @endcomponent
 
 <a name="customizing-the-components"></a>
@@ -418,17 +428,6 @@ Lệnh này sẽ export các component mail Markdown sang thư mục `resources/
 Sau khi export các component, thư mục `resources/views/vendor/mail/html/themes` sẽ chứa một file `default.css`. Bạn có thể tùy biến CSS trong file này và các tuỳ biến này của bạn sẽ tự động được nhúng vào trong các hiển thị HTML cho mail Markdown của bạn.
 
 > {tip} Nếu bạn muốn xây dựng một theme hoàn toàn mới cho các component Markdown, hãy viết một file CSS mới trong thư mục `html/themes` và thay đổi tùy chọn `theme` trong file cấu hình `mail` của bạn.
-
-<a name="previewing-mailables-in-the-browser"></a>
-## Xem trước Mailables trên Browser
-
-Khi thiết kế một template cho mailable, sẽ thật cần thiết để xem trước bản mailable được thiết kế trong trình duyệt của bạn giống như các template Blade thông thường. Vì lý do này, Laravel cho phép bạn trả về trực tiếp bất kỳ mailable nào từ một Closure route hoặc controller. Khi một mailable đã được trả lại, nó sẽ được tạo và hiển thị trong trình duyệt, cho phép bạn xem trước thiết kế của nó mà không cần phải gửi nó đến một địa chỉ email thực tế:
-
-    Route::get('/mailable', function () {
-        $invoice = App\Invoice::find(1);
-
-        return new App\Mail\InvoicePaid($invoice);
-    });
 
 <a name="sending-mail"></a>
 ## Gửi Mail
@@ -470,6 +469,26 @@ Tất nhiên, bạn không bị giới hạn chỉ trong khai báo người nh�
         ->cc($moreUsers)
         ->bcc($evenMoreUsers)
         ->send(new OrderShipped($order));
+
+<a name="rendering-mailables"></a>
+## Hiển thị Mailable
+
+Thỉnh thoảng bạn có thể muốn xem nội dung HTML của một mailable mà không cần phải gửi. Để thực hiện điều này, bạn có thể gọi phương thức `render` của mailable. Phương thức này sẽ trả về nội dung của mailable dưới dạng một chuỗi:
+
+    $invoice = App\Invoice::find(1);
+
+    return (new App\Mail\InvoicePaid($invoice))->render();
+
+<a name="previewing-mailables-in-the-browser"></a>
+### Xem trước Mailable trên trình duyệt
+
+Khi thiết kế một template của một mailable, sẽ rất tiện lợi, nếu xem được mailable đó trong trình duyệt web của bạn giống như một template Blade. Vì lý do này, Laravel cho phép bạn trả về một mailable bất kỳ từ một route Closure hoặc controller. Khi một mailable được trả về, nó sẽ được tạo và hiển thị trong trình duyệt, cho phép bạn nhanh chóng xem trước thiết kế của nó mà không cần phải gửi nó đến một địa chỉ email thực tế:
+
+    Route::get('/mailable', function () {
+        $invoice = App\Invoice::find(1);
+
+        return new App\Mail\InvoicePaid($invoice);
+    });
 
 <a name="queueing-mail"></a>
 ### Queueing Mail

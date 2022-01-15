@@ -5,8 +5,10 @@
     - [Public Disk](#the-public-disk)
     - [Local Driver](#the-local-driver)
     - [Yêu cầu Driver](#driver-prerequisites)
+    - [Caching](#caching)
 - [Lấy Disk Instance](#obtaining-disk-instances)
 - [Lấy File](#retrieving-files)
+    - [Tải File](#downloading-files)
     - [File URL](#file-urls)
     - [File Metadata](#file-metadata)
 - [Lưu File](#storing-files)
@@ -53,10 +55,15 @@ Khi sử dụng driver `local`, tất cả các hoạt động của các file �
 
 #### Composer Packages
 
-Trước khi sử dụng driver S3 hoặc Rackspace, bạn sẽ cần cài đặt các package thích hợp thông qua Composer:
+Trước khi sử dụng driver SFTP, S3, hoặc Rackspace, bạn sẽ cần cài đặt các package thích hợp thông qua Composer:
 
+- SFTP: `league/flysystem-sftp ~1.0`
 - Amazon S3: `league/flysystem-aws-s3-v3 ~1.0`
 - Rackspace: `league/flysystem-rackspace ~1.0`
+
+Để tăng hiệu suất, bạn cần phải dùng một cached adapter. Bạn có thể thêm một package cho việc này:
+
+- CachedAdapter: `league/flysystem-cached-adapter ~1.0`
 
 #### S3 Driver Configuration
 
@@ -80,6 +87,26 @@ Flysystem integration của Laravel hoạt động tốt với FTP; tuy nhiên, 
         // 'timeout'  => 30,
     ],
 
+#### SFTP Driver Configuration
+
+Flysystem tích hợp trong Laravel hoạt động tốt với SFTP; tuy nhiên, mặc định một cấu hình mẫu sẽ không có trong file cấu hình `filesystems.php` của framework. Nếu bạn cần cấu hình một hệ thống filesystem SFTP, bạn có thể sử dụng cấu hình ví dụ ở bên dưới:
+
+    'sftp' => [
+        'driver' => 'sftp',
+        'host' => 'example.com',
+        'username' => 'your-username',
+        'password' => 'your-password',
+
+        // Settings for SSH key based authentication...
+        // 'privateKey' => '/path/to/privateKey',
+        // 'password' => 'encryption-password',
+
+        // Optional SFTP Settings...
+        // 'port' => 22,
+        // 'root' => '',
+        // 'timeout' => 30,
+    ],
+
 #### Rackspace Driver Configuration
 
 Flysystem integration của Laravel hoạt động tốt với Rackspace; tuy nhiên, mặc định, cấu hình mẫu dành cho drive này sẽ không được thêm vào trong file cấu hình `filesystems.php` của framework. Nếu bạn cần cấu hình cho file Rackspace, bạn có thể sử dụng cấu hình mẫu ở bên dưới:
@@ -92,6 +119,23 @@ Flysystem integration của Laravel hoạt động tốt với Rackspace; tuy nh
         'endpoint'  => 'https://identity.api.rackspacecloud.com/v2.0/',
         'region'    => 'IAD',
         'url_type'  => 'publicURL',
+    ],
+
+<a name="caching"></a>
+### Caching
+
+Để kích hoạt bộ nhớ cache cho một disk nhất định, bạn có thể thêm tuỳ chọn `cache` vào các tùy chọn cấu hình của disk. Tùy chọn `cache` sẽ phải là một mảng gồm các tùy chọn là tên `disk`, thời gian hết hạn `expire` tính bằng giây và tiền tố `prefix`:
+
+    's3' => [
+        'driver' => 's3',
+
+        // Other Disk Options...
+
+        'cache' => [
+            'store' => 'memcached',
+            'expire' => 600,
+            'prefix' => 'cache-prefix',
+        ],
     ],
 
 <a name="obtaining-disk-instances"></a>
@@ -118,6 +162,15 @@ Phương thức `exists` có thể được sử dụng để xác định xem m
 
     $exists = Storage::disk('s3')->exists('file.jpg');
 
+<a name="downloading-files"></a>
+### Tải File
+
+Phương thức `download` có thể được sử dụng để tạo một response buộc trình duyệt của người dùng tải xuống một file theo đường dẫn đã cho. Phương thức `download` chấp nhận một tên file làm đối số thứ hai cho phương thức, tên file này sẽ hiển thị khi người dùng tải xuống. Cuối cùng, bạn có thể truyền một mảng HTTP header làm đối số thứ ba cho phương thức:
+
+    return Storage::download('file.jpg');
+
+    return Storage::download('file.jpg', $name, $headers);
+
 <a name="file-urls"></a>
 ### File URL
 
@@ -125,7 +178,7 @@ Bạn có thể sử dụng phương thức `url` để lấy ra URL đã cho ch
 
     use Illuminate\Support\Facades\Storage;
 
-    $url = Storage::url('file1.jpg');
+    $url = Storage::url('file.jpg');
 
 > {note} Hãy nhớ rằng, nếu bạn đang sử dụng driver `local`, tất cả các file mà có thể truy cập ở dạng công khai thì nên được lưu trong thư mục `storage/app/public`. Hơn nữa, bạn nên [tạo một link liên kết ảo](#the-public-disk) ở thư mục `public/storage` để trỏ đến thư mục `storage/app/public`.
 
@@ -134,7 +187,7 @@ Bạn có thể sử dụng phương thức `url` để lấy ra URL đã cho ch
 Đối với các file đã được lưu trữ bằng driver `s3` hoặc `rackspace`, bạn có thể tạo một URL tạm thời cho một file bằng cách sử dụng phương thức `temporaryUrl`. Phương thức này chấp nhận một đường dẫn và một instance `DateTime` để định nghĩa khi URL sẽ hết hạn:
 
     $url = Storage::temporaryUrl(
-        'file1.jpg', now()->addMinutes(5)
+        'file.jpg', now()->addMinutes(5)
     );
 
 #### Local URL Host Customization
@@ -155,11 +208,11 @@ Ngoài việc đọc và ghi file, Laravel cũng cung cấp thông tin về các
 
     use Illuminate\Support\Facades\Storage;
 
-    $size = Storage::size('file1.jpg');
+    $size = Storage::size('file.jpg');
 
 Phương thức `lastModified` trả về một UNIX timestamp về lần cuối cùng mà file được sửa:
 
-    $time = Storage::lastModified('file1.jpg');
+    $time = Storage::lastModified('file.jpg');
 
 <a name="storing-files"></a>
 ## Lưu File
@@ -185,7 +238,7 @@ Nếu bạn muốn Laravel tự động quản lý việc streaming một file �
     // Manually specify a file name...
     Storage::putFileAs('photos', new File('/path/to/photo'), 'photo.jpg');
 
-Có một vài điều quan trọng cần phải lưu ý về phương thức `putFile`. Hãy lưu ý rằng chúng ta chỉ khai báo đến của tên thư mục, không phải khai báo đến tên của file. Mặc định, phương thức `putFile` sẽ tạo một unique ID để làm tên file. Đường dẫn đến file sẽ được trả về bởi phương thức `putFile` để bạn có thể lưu trữ đường dẫn đó vào trong cơ sở dữ liệu của bạn, đường dẫn này cũng chứa cả tên file đã được tạo.
+Có một vài điều quan trọng cần phải lưu ý về phương thức `putFile`. Hãy lưu ý rằng chúng ta chỉ khai báo đến của tên thư mục, không phải khai báo đến tên của file. Mặc định, phương thức `putFile` sẽ tạo một unique ID để làm tên file. Phần đuôi mở rộng của file sẽ được xác định bằng cách kiểm tra kiểu MIME của file. Đường dẫn đến file sẽ được trả về bởi phương thức `putFile` để bạn có thể lưu trữ đường dẫn đó vào trong cơ sở dữ liệu của bạn, đường dẫn này cũng chứa cả tên file đã được tạo.
 
 Các phương thức `putFile` và `putFileAs` cũng chấp nhận một than số để khai báo "visibility" của file được lưu trữ. Điều này đặc biệt hữu ích nếu bạn đang lưu trữ file trên một cloud disk như S3 và muốn file này có thể truy cập công khai:
 
@@ -203,9 +256,9 @@ Các phương thức `prepend` và `append` cho phép bạn ghi vào đầu dòn
 
 Phương thức `copy` có thể được sử dụng để sao chép một file hiện có sang một vị trí mới trên disk, trong khi phương thức `move` có thể được sử dụng để đổi tên hoặc di chuyển một file hiện có sang một vị trí mới:
 
-    Storage::copy('old/file1.jpg', 'new/file1.jpg');
+    Storage::copy('old/file.jpg', 'new/file.jpg');
 
-    Storage::move('old/file1.jpg', 'new/file1.jpg');
+    Storage::move('old/file.jpg', 'new/file.jpg');
 
 <a name="file-uploads"></a>
 ### File Uploads
@@ -235,7 +288,7 @@ Trong các application web, một trong những trường hợp hay sử dụng 
         }
     }
 
-Có một vài điều quan trọng cần lưu ý về ví dụ này. Hãy lưu ý rằng chúng ta chỉ khai báo đến tên thư mục, không phải đến tên file. Mặc định, phương thức `store` sẽ tạo một unique ID để làm tên file. Đường dẫn đến file sẽ được trả về từ phương thức `store`, để bạn có thể lưu trữ đường dẫn đó vào trong cơ sở dữ liệu của bạn, đường dẫn này cũng chứa cả tên file đã được tạo.
+Có một vài điều quan trọng cần lưu ý về ví dụ này. Hãy lưu ý rằng chúng ta chỉ khai báo đến tên thư mục, không phải đến tên file. Mặc định, phương thức `store` sẽ tạo một unique ID để làm tên file. Phần đuôi mở rộng của file sẽ được xác định bằng cách kiểm tra kiểu MIME của file. Đường dẫn đến file sẽ được trả về từ phương thức `store`, để bạn có thể lưu trữ đường dẫn đó vào trong cơ sở dữ liệu của bạn, đường dẫn này cũng chứa cả tên file đã được tạo.
 
 Bạn cũng có thể gọi phương thức `putFile` trên facade `Storage` để thực hiện thao tác với file giống như ví dụ trên:
 
@@ -289,7 +342,7 @@ Phương thức `delete` chấp nhận một tên file hoặc một mảng các 
 
     Storage::delete('file.jpg');
 
-    Storage::delete(['file1.jpg', 'file2.jpg']);
+    Storage::delete(['file.jpg', 'file2.jpg']);
 
 Nếu cần, bạn có thể khai báo disk mà file đó sẽ bị xóa:
 
@@ -363,7 +416,7 @@ Tiếp theo, bạn nên tạo một [service provider](/docs/{{version}}/provide
         {
             Storage::extend('dropbox', function ($app, $config) {
                 $client = new DropboxClient(
-                    $config['authorizationToken']
+                    $config['authorization_token']
                 );
 
                 return new Filesystem(new DropboxAdapter($client));

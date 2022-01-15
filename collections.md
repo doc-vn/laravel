@@ -141,6 +141,8 @@ Trong phần còn lại của tài liệu này, chúng ta sẽ thảo luận v�
 [sort](#method-sort)
 [sortBy](#method-sortby)
 [sortByDesc](#method-sortbydesc)
+[sortKeys](#method-sortkeys)
+[sortKeysDesc](#method-sortkeysdesc)
 [splice](#method-splice)
 [split](#method-split)
 [sum](#method-sum)
@@ -161,6 +163,7 @@ Trong phần còn lại của tài liệu này, chúng ta sẽ thảo luận v�
 [whereStrict](#method-wherestrict)
 [whereIn](#method-wherein)
 [whereInStrict](#method-whereinstrict)
+[whereInstanceOf](#method-whereinstanceof)
 [whereNotIn](#method-wherenotin)
 [whereNotInStrict](#method-wherenotinstrict)
 [wrap](#method-wrap)
@@ -467,13 +470,13 @@ Nếu bạn muốn dừng thực thi lệnh sau khi dump collection, hãy sử d
 
 Phương thức `each` sẽ lặp lại các item trong collection và truyền vào từng item đó một callback:
 
-    $collection = $collection->each(function ($item, $key) {
+    $collection->each(function ($item, $key) {
         //
     });
 
 Nếu bạn muốn dừng lặp qua các item, bạn có thể trả về `false` từ callback của bạn:
 
-    $collection = $collection->each(function ($item, $key) {
+    $collection->each(function ($item, $key) {
         if (/* some condition */) {
             return false;
         }
@@ -737,7 +740,7 @@ Phương thức `groupBy` sẽ nhóm các item của collection theo một key �
         ]
     */
 
-Ngoài việc truyền vào một chuỗi `key`, bạn cũng có thể truyền vào một callback. Callback sẽ trả về giá trị key mà bạn muốn nhóm bằng cách như sau:
+Thay vì truyền vào một chuỗi `key`, bạn có thể truyền vào một callback. Callback sẽ trả về giá trị key mà bạn muốn nhóm bằng cách như sau:
 
     $grouped = $collection->groupBy(function ($item, $key) {
         return substr($item['account_id'], -3);
@@ -1223,6 +1226,14 @@ Phương thức `partition` có thể được kết hợp với hàm PHP `list`
         return $i < 3;
     });
 
+    $underThree->all();
+
+    // [1, 2]
+
+    $aboveThree->all();
+
+    // [3, 4, 5, 6]
+
 <a name="method-pipe"></a>
 #### `pipe()` {#collection-method}
 
@@ -1259,6 +1270,21 @@ Bạn cũng có thể khai báo thêm key mà bạn muốn dùng từ collection
     $plucked->all();
 
     // ['prod-100' => 'Desk', 'prod-200' => 'Chair']
+
+Nếu bị trùng khoá, thì phần tử cuối cùng của khoá đó sẽ được thêm vào collection kết quả:
+
+    $collection = collect([
+        ['brand' => 'Tesla',  'color' => 'red'],
+        ['brand' => 'Pagani', 'color' => 'white'],
+        ['brand' => 'Tesla',  'color' => 'black'],
+        ['brand' => 'Pagani', 'color' => 'orange'],
+    ]);
+
+    $plucked = $collection->pluck('color', 'brand');
+
+    $plucked->all();
+
+    // ['Tesla' => 'black', 'Pagani' => 'orange']
 
 <a name="method-pop"></a>
 #### `pop()` {#collection-method}
@@ -1561,6 +1587,34 @@ Bạn cũng có thể truyền vào một callback của riêng bạn để xác
 #### `sortByDesc()` {#collection-method}
 
 Phương thức này có cùng chức năng với phương thức [`sortBy`](#method-sortby), nhưng sẽ sắp xếp collection theo thứ tự ngược lại.
+
+<a name="method-sortkeys"></a>
+#### `sortKeys()` {#collection-method}
+
+Phương thức `sortKeys` sẽ sắp xếp một collection theo các khóa của mảng:
+
+    $collection = collect([
+        'id' => 22345,
+        'first' => 'John',
+        'last' => 'Doe',
+    ]);
+
+    $sorted = $collection->sortKeys();
+
+    $sorted->all();
+
+    /*
+        [
+            'first' => 'John',
+            'id' => 22345,
+            'last' => 'Doe',
+        ]
+    */
+
+<a name="method-sortkeysdesc"></a>
+#### `sortKeysDesc()` {#collection-method}
+
+Phương thức này có cùng dạng với phương thức [`sortKeys`](#method-sortkeys), nhưng nó sẽ sắp xếp collection theo thứ tự ngược lại.
 
 <a name="method-splice"></a>
 #### `splice()` {#collection-method}
@@ -1976,6 +2030,19 @@ Phương thức `whereIn` sử dụng phép so sánh "lỏng lẻo" khi kiểm t
 
 Phương thức này có cùng chức năng với phương thức [`whereIn`](#method-wherein); tuy nhiên, tất cả các giá trị đều được so sánh bằng cách sử dụng so sánh "nghiêm ngặt".
 
+<a name="method-whereinstanceof"></a>
+#### `whereInstanceOf()` {#collection-method}
+
+Phương thức `whereInstanceOf` sẽ lọc collection theo một loại class nhất định:
+
+    $collection = collect([
+        new User,
+        new User,
+        new Post,
+    ]);
+
+    return $collection->whereInstanceOf(User::class);
+
 <a name="method-wherenotin"></a>
 #### `whereNotIn()` {#collection-method}
 
@@ -2045,7 +2112,7 @@ Phương thức `zip` sẽ nối các giá trị của mảng đã cho với cá
 <a name="higher-order-messages"></a>
 ## Higher Order Messages
 
-Collection cũng cung cấp hỗ trợ cho "higher order messages", đó là các cách rút gọn để thực hiện các hành động phổ biến có trên các collection. Các phương thức collection cung cấp các higher order message như sau: `average`, `avg`, `contains`, `each`, `every`, `filter`, `first`, `flatMap`, `map`, `partition`, `reject`, `sortBy`, `sortByDesc`, `sum`, và `unique`.
+Collection cũng cung cấp hỗ trợ cho "higher order messages", đó là các cách rút gọn để thực hiện các hành động phổ biến có trên các collection. Các phương thức collection cung cấp các higher order message như sau: [`average`](#method-average), [`avg`](#method-avg), [`contains`](#method-contains), [`each`](#method-each), [`every`](#method-every), [`filter`](#method-filter), [`first`](#method-first), [`flatMap`](#method-flatmap), [`groupBy`](#method-groupby), [`keyBy`](#method-keyby), [`map`](#method-map), [`max`](#method-max), [`min`](#method-min), [`partition`](#method-partition), [`reject`](#method-reject), [`sortBy`](#method-sortby), [`sortByDesc`](#method-sortbydesc), [`sum`](#method-sum), and [`unique`](#method-unique).
 
 Mỗi higher order message có thể được truy cập giống như một thuộc tính động có trên một instance của collection. Chẳng hạn, hãy sử dụng higher order message `each` để gọi một phương thức ở trên mỗi đối tượng có trong một collection:
 

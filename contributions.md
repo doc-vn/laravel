@@ -30,6 +30,7 @@ Mã nguồn của Laravel được quản lý trên GitHub và có các reposito
 - [Laravel Homestead](https://github.com/laravel/homestead)
 - [Laravel Homestead Build Scripts](https://github.com/laravel/settler)
 - [Laravel Horizon](https://github.com/laravel/horizon)
+- [Laravel Nova](https://github.com/laravel/nova-issues)
 - [Laravel Passport](https://github.com/laravel/passport)
 - [Laravel Scout](https://github.com/laravel/scout)
 - [Laravel Socialite](https://github.com/laravel/socialite)
@@ -39,7 +40,7 @@ Mã nguồn của Laravel được quản lý trên GitHub và có các reposito
 <a name="core-development-discussion"></a>
 ## Các kênh phát triển chính
 
-Bạn có thể đề xuất các tính năng mới hoặc các cải tiến về các hành động của Laravel trong Laravel Internals [issue board](https://github.com/laravel/internals/issues). Nếu bạn đề xuất một tính năng mới, vui lòng làm sẵn một số code cần thiết để hoàn thành tính năng này.
+Bạn có thể đề xuất các tính năng mới hoặc các cải tiến về các hành động của Laravel trong Laravel Ideas [issue board](https://github.com/laravel/ideas/issues). Nếu bạn đề xuất một tính năng mới, vui lòng làm sẵn một số code cần thiết để hoàn thành tính năng này.
 
 Kênh `#internals` của team Slack [LaraChat](https://larachat.co) sẽ thảo luận về các lỗi, tính năng mới và triển khai các tính năng hiện tại. Taylor Otwell, maintainer của Laravel, thường có mặt trong kênh này vào các ngày trong tuần từ 8 giờ sáng đến 5 giờ chiều (UTC-06:00 or America/Chicago) và xuất hiện thường xuyên trong kênh vào các thời điểm khác.
 

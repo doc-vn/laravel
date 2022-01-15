@@ -143,6 +143,10 @@ Bạn cũng có thể định nghĩa các thuộc tính thay thế trong các ch
 
     echo trans_choice('time.minutes_ago', 5, ['value' => 5]);
 
+Nếu bạn muốn hiển thị giá trị integer đã được truyền vào hàm `trans_choice`, bạn có thể sử dụng thuộc tính thay thế `:count`:
+
+    'apples' => '{0} There are none|{1} There is one|[2,*] There are :count',
+
 <a name="overriding-package-language-files"></a>
 ## Ghi đè package file language
 

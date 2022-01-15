@@ -131,6 +131,26 @@ Thỉnh thoảng bạn có thể cần truyền thêm dữ liệu cho một comp
         ...
     @endcomponent
 
+#### Bí danh Component
+
+Nếu các component Blade của bạn được lưu trữ trong một thư mục con, bạn có thể muốn đặt tên bí danh cho chúng để dễ dàng truy cập hơn. Ví dụ, hãy tưởng tượng một component Blade được lưu trữ trong thư mục `resources/views/components/alert.blade.php`. Bạn có thể sử dụng phương thức `component` để đặt tên bí danh cho component từ `components.alert` thành `alert`. Thông thường, điều này nên được thực hiện trong phương thức `boot` của `AppServiceProvider` của bạn:
+
+    use Illuminate\Support\Facades\Blade;
+
+    Blade::component('components.alert', 'alert');
+
+Khi component đã được đặt tên bí danh, bạn có thể render nó bằng cách sử dụng lệnh sau:
+
+    @alert(['type' => 'danger'])
+        You are not allowed to access this resource!
+    @endalert
+
+Bạn có thể bỏ qua các parameter của component nếu nó không có thêm slot:
+
+    @alert
+        You are not allowed to access this resource!
+    @endalert
+
 <a name="displaying-data"></a>
 ## Hiển thị dữ liệu
 
@@ -171,6 +191,30 @@ Tuy nhiên, thay vì gọi thủ công `json_encode`, bạn có thể sử dụn
     <script>
         var app = @json($array);
     </script>
+
+#### Mã hóa thực thể HTML
+
+Mặc định, Blade (cũng như helper `e` của Laravel) sẽ mã hóa kép các thực thể HTML. Nếu bạn không muốn mã hóa kép này, hãy gọi phương thức `Blade::withoutDoubleEncoding` từ phương thức `boot` của `AppServiceProvider` của bạn:
+
+    <?php
+
+    namespace App\Providers;
+
+    use Illuminate\Support\Facades\Blade;
+    use Illuminate\Support\ServiceProvider;
+
+    class AppServiceProvider extends ServiceProvider
+    {
+        /**
+         * Bootstrap any application services.
+         *
+         * @return void
+         */
+        public function boot()
+        {
+            Blade::withoutDoubleEncoding();
+        }
+    }
 
 <a name="blade-and-javascript-frameworks"></a>
 ### Blade và JavaScript Frameworks
@@ -359,14 +403,14 @@ Biến `$loop` cũng chứa nhiều thuộc tính hữu ích khác:
 
 Property  | Description
 ------------- | -------------
-`$loop->index`  |  The index of the current loop iteration (starts at 0).
-`$loop->iteration`  |  The current loop iteration (starts at 1).
-`$loop->remaining`  |  The iteration remaining in the loop.
-`$loop->count`  |  The total number of items in the array being iterated.
-`$loop->first`  |  Whether this is the first iteration through the loop.
-`$loop->last`  |  Whether this is the last iteration through the loop.
-`$loop->depth`  |  The nesting level of the current loop.
-`$loop->parent`  |  When in a nested loop, the parent's loop variable.
+`$loop->index`  |  Index của vòng lặp hiện tại (bắt đầu từ 0).
+`$loop->iteration`  |  Vòng lặp hiện tại (bắt đầu từ 1).
+`$loop->remaining`  |  Các lần lặp còn lại trong vòng lặp.
+`$loop->count`  |  Tổng số item trong mảng đang được lặp lại.
+`$loop->first`  |  Đây có phải là lần lặp đầu tiên của vòng lặp hay không.
+`$loop->last`  |  Đây có phải là lần lặp cuối cùng của vòng lặp hay không.
+`$loop->depth`  |  Mức lồng của vòng lặp hiện tại.
+`$loop->parent`  |  Khi ở trong một vòng lặp lồng nhau, biến này là biến của vòng lặp ngoài.
 
 <a name="comments"></a>
 ### Comments
@@ -448,6 +492,18 @@ Bạn có thể khai báo cho một stack nhiều lần nếu cần. Để hiể
 
         @stack('scripts')
     </head>
+
+Nếu bạn muốn thêm nội dung vào đầu một stack, bạn có thể sử dụng lệnh `@prepend`:
+
+    @push('scripts')
+        This will be second...
+    @endpush
+
+    // Later...
+
+    @prepend('scripts')
+        This will be first...
+    @endprepend
 
 <a name="service-injection"></a>
 ## Service Injection

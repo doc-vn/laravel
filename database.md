@@ -43,17 +43,17 @@ Thỉnh thoảng, bạn cũng có thể muốn sử dụng một kết nối ri�
 
     'mysql' => [
         'read' => [
-            'host' => '192.168.1.1',
+            'host' => ['192.168.1.1'],
         ],
         'write' => [
-            'host' => '196.168.1.2'
+            'host' => ['196.168.1.2'],
         ],
         'sticky'    => true,
         'driver'    => 'mysql',
         'database'  => 'database',
         'username'  => 'root',
         'password'  => '',
-        'charset' => 'utf8mb4',
+        'charset'   => 'utf8mb4',
         'collation' => 'utf8mb4_unicode_ci',
         'prefix'    => '',
     ],
@@ -110,7 +110,7 @@ Khi bạn đã cấu hình các kết nối cơ sở dữ liệu của bạn, b�
 
 Tham số đầu tiên được truyền cho phương thức `select` là một truy vấn SQL raw, còn tham số thứ hai là bất kỳ tham số nào cần thiết cho truy vấn đó thông thường là các giá trị của các mệnh đề `where`. Rằng buộc tham số này sẽ được bảo vệ để chống lại các SQL injection.
 
-Phương thức `select` sẽ luôn trả về một kết quả là `array`. Mỗi kết quả trong mảng sẽ là một đối tượng `StdClass` của PHP, cho phép bạn truy cập vào các giá trị của kết quả đó:
+Phương thức `select` sẽ luôn trả về một kết quả là `array`. Mỗi kết quả trong mảng sẽ là một đối tượng `stdClass` của PHP, cho phép bạn truy cập vào các giá trị của kết quả đó:
 
     foreach ($users as $user) {
         echo $user->name;

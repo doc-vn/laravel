@@ -20,6 +20,8 @@ Khi chạy test thông qua `phpunit`, Laravel sẽ tự động set cấu hình 
 
 Bạn có thể tự do định nghĩa các giá trị cấu hình khác cho môi trường test nếu cần thiết. Các biến môi trường `testing` có thể được cấu hình trong file `phpunit.xml`, nhưng hãy đảm bảo là bạn đã xóa cấu hình cache của bạn bằng cách sử dụng lệnh Artisan `config:clear` trước khi chạy bài test của bạn!
 
+Ngoài ra, bạn có thể tạo file `.env.testing` trong thư mục gốc của project của bạn. File này sẽ ghi đè lên file `.env` khi chạy các bài test PHPUnit hoặc chạy các lệnh Artisan với tùy chọn `--env=testing`.
+
 <a name="creating-and-running-tests"></a>
 ## Tạo và chạy Test
 

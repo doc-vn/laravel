@@ -34,11 +34,13 @@ Bạn cũng có thể chuyển đổi toàn bộ [collection](/docs/{{version}}/
 <a name="serializing-to-json"></a>
 ### Serialize vào JSON
 
-Để chuyển đổi một model thành dạng JSON, bạn có thể sử dụng phương thức `toJson`. Giống như phướng thức `toArray`, phương thức` toJson` cũng là phương thức đệ quy, nên tất cả các thuộc tính và các quan hệ sẽ được chuyển đổi thành dạng JSON:
+Để chuyển đổi một model thành dạng JSON, bạn có thể sử dụng phương thức `toJson`. Giống như phương thức `toArray`, phương thức` toJson` cũng là phương thức đệ quy, nên tất cả các thuộc tính và các quan hệ sẽ được chuyển đổi thành dạng JSON. Ngoài ra, bạn cũng có thể chỉ định thêm các tùy chọn mã hóa JSON [được hỗ trợ bởi PHP](http://php.net/manual/en/function.json-encode.php):
 
     $user = App\User::find(1);
 
     return $user->toJson();
+
+    return $user->toJson(JSON_PRETTY_PRINT);
 
 Ngoài ra, bạn có thể cast một model hoặc một collection thành một chuỗi, nó cũng sẽ được tự động gọi phương thức `toJson` trên các model hoặc các collection đó của bạn:
 
@@ -157,6 +159,17 @@ Ngoài ra, bạn cũng có thể chỉ dẫn instance model thêm các thuộc t
 
 <a name="date-serialization"></a>
 ## Date Serialization
+
+#### Customizing The Date Format Per Attribute
+
+Bạn có thể tùy chỉnh định dạng chuyển đổi của từng thuộc tính date trong Eloquent bằng cách chỉ định định dạng date trong [khai báo](/docs/{{version}}/eloquent-mutators#attribute-casting) của Eloquent đó:
+
+    protected $casts = [
+        'birthday' => 'date:Y-m-d',
+        'joined_at' => 'datetime:Y-m-d H:00',
+    ];
+
+#### Global Customization Via Carbon
 
 Laravel extend thư viện [Carbon](https://github.com/briannesbitt/Carbon) date để cung cấp các tùy biến cho chuyển đổi định dạng JSON. Để tùy biến cách chuyển đổi của tất cả các Carbon date trong application của bạn, hãy sử dụng phương thức `Carbon::serializeUsing`. Phương thức `serializeUsing` chấp nhận một Closure trả về một chuỗi hiển thị cho một date để chuyển nó sang JSON:
 

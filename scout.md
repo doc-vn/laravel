@@ -7,15 +7,18 @@
 - [Configuration](#configuration)
     - [Configuring Model Indexes](#configuring-model-indexes)
     - [Configuring Searchable Data](#configuring-searchable-data)
+    - [Configuring The Model ID](#configuring-the-model-id)
 - [Indexing](#indexing)
     - [Batch Import](#batch-import)
     - [Adding Records](#adding-records)
     - [Updating Records](#updating-records)
     - [Removing Records](#removing-records)
     - [Pausing Indexing](#pausing-indexing)
+    - [Điều kiện Model Searchable](#conditionally-searchable-model-instances)
 - [Searching](#searching)
     - [Where Clauses](#where-clauses)
     - [Pagination](#pagination)
+    - [Soft Deleting](#soft-deleting)
 - [Custom Engines](#custom-engines)
 
 <a name="introduction"></a>
@@ -129,6 +132,33 @@ Mặc định, toàn bộ form `toArray` của một model sẽ được lưu th
         }
     }
 
+<a name="configuring-the-model-id"></a>
+### Configuring The Model ID
+
+Mặc định, Scout sẽ sử dụng khóa chính của model làm ID được lưu trữ trong search index. Nếu bạn cần tùy chỉnh hành vi này, bạn có thể ghi đè phương thức `getScoutKey` trên model đó:
+
+    <?php
+
+    namespace App;
+
+    use Laravel\Scout\Searchable;
+    use Illuminate\Database\Eloquent\Model;
+
+    class User extends Model
+    {
+        use Searchable;
+
+        /**
+         * Get the value used to index the model.
+         *
+         * @return mixed
+         */
+        public function getScoutKey()
+        {
+            return $this->email;
+        }
+    }
+
 <a name="indexing"></a>
 ## Indexing
 
@@ -138,6 +168,10 @@ Mặc định, toàn bộ form `toArray` của một model sẽ được lưu th
 Nếu bạn đang cài đặt Scout cho một project đã tồn tại, có thể bạn đã có các bản ghi trong cơ sở dữ liệu và bạn cần import nó vào driver tìm kiếm của bạn. Scout cung cấp một lệnh Artisan `import` mà bạn có thể sử dụng để import tất cả các bản ghi hiện có vào các index tìm kiếm của bạn:
 
     php artisan scout:import "App\Post"
+
+Lệnh `flush` có thể được sử dụng để xóa tất cả các bản ghi của model ra khỏi các search index của bạn:
+
+    php artisan scout:flush "App\Post"
 
 <a name="adding-records"></a>
 ### Adding Records
@@ -216,6 +250,16 @@ Thỉnh thoảng bạn có thể cần thực hiện một loạt các hành đ�
         // Perform model actions...
     });
 
+<a name="conditionally-searchable-model-instances"></a>
+### Điều kiện Model Searchable
+
+Thỉnh thoảng bạn có thể muốn tìm kiếm trong model searchable có thêm một số điều kiện nhất định. Ví dụ: hãy tưởng tượng bạn có model `App\Post` có thể ở một trong hai trạng thái: "draft" và "published". Bạn có thể chỉ muốn tìm kiếm các bài đăng đã được "published". Để thực hiện điều này, bạn có thể định nghĩa một phương thức `shouldBeSearchable` trên model của bạn:
+
+    public function shouldBeSearchable()
+    {
+        return $this->isPublished();
+    }
+
 <a name="searching"></a>
 ## Searching
 
@@ -268,6 +312,23 @@ Khi bạn đã lấy ra được kết quả, bạn có thể hiển thị kết
     </div>
 
     {{ $orders->links() }}
+
+<a name="soft-deleting"></a>
+### Soft Deleting
+
+Nếu các model index của bạn là loại có thể [soft deleting](/docs/{{version}}/eloquent#soft-deleting) và bạn cần tìm kiếm các model đã bị soft delete của bạn, hãy set tùy chọn `soft_delete` vào trong file cấu hình `config/scout.php` của bạn thành `true`:
+
+    'soft_delete' => true,
+
+Khi tùy chọn cấu hình này thành `true`, Scout sẽ không xóa các model đó ra khỏi search index. Thay vào đó, nó sẽ set thuộc tính ẩn `__soft_deleted` trên bản ghi đó. Và sau đó, bạn có thể sử dụng phương thức `withTrashed` hoặc `onlyTrashed` để lấy ra các bản ghi đã soft delete khi tìm kiếm:
+
+    // Include trashed records when retrieving results...
+    $orders = App\Order::withTrashed()->search('Star Trek')->get();
+
+    // Only include trashed records when retrieving results...
+    $orders = App\Order::onlyTrashed()->search('Star Trek')->get();
+
+> {tip} Khi một model đã bị xóa vĩnh viễn bằng cách sử dụng `forceDelete`, Scout sẽ tự động xóa model đó ra khỏi search index.
 
 <a name="custom-engines"></a>
 ## Custom Engines

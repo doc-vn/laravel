@@ -3,7 +3,7 @@
 - [Giới thiệu](#introduction)
 - [Viết Service Provider](#writing-service-providers)
     - [Phương thức Register](#the-register-method)
-    - [Phương thức  Boot](#the-boot-method)
+    - [Phương thức Boot](#the-boot-method)
 - [Đăng ký các Provider](#registering-providers)
 - [Các Provider hoãn](#deferred-providers)
 
@@ -58,10 +58,45 @@ Chúng ta hãy cùng xem một service provider cơ bản. Trong bất kỳ phư
 
 Service provider này chỉ định nghĩa một phương thức `register` và sử dụng phương thức đó để định nghĩa một implementation của `Riak\Connection` trong service container. Nếu bạn không hiểu cách thức hoạt động của service container, hãy xem [tài liệu về nó](/docs/{{version}}/container).
 
+#### Thuộc tính `bindings` và `singletons`
+
+Nếu service provider của bạn đăng ký nhiều liên kết, thì bạn có thể muốn sử dụng thuộc tính `bindings` và `singletons` để đăng ký thay vì đăng ký thủ công từng liên kết một vào container. Khi service provider được load bởi framework, nó sẽ tự động kiểm tra các thuộc tính này và đăng ký các liên kết mà bạn đã khai báo:
+
+    <?php
+
+    namespace App\Providers;
+
+    use App\Contracts\ServerProvider;
+    use App\Contracts\DowntimeNotifier;
+    use Illuminate\Support\ServiceProvider;
+    use App\Services\PingdomDowntimeNotifier;
+    use App\Services\DigitalOceanServerProvider;
+
+    class AppServiceProvider extends ServiceProvider
+    {
+        /**
+         * All of the container bindings that should be registered.
+         *
+         * @var array
+         */
+        public $bindings = [
+            ServerProvider::class => DigitalOceanServerProvider::class,
+        ];
+
+        /**
+         * All of the container singletons that should be registered.
+         *
+         * @var array
+         */
+        public $singletons = [
+            DowntimeNotifier::class => PingdomDowntimeNotifier::class,
+        ];
+    }
+
 <a name="the-boot-method"></a>
 ### Phương thức Boot
 
-Vậy, điều gì sẽ xảy ra nếu chúng ta cần đăng ký một view composer trong service provider của chúng ta? Điều này nên được thực hiện trong phương thức `boot`. **Phương thức này được gọi sau khi tất cả các service provider khác đã được đăng ký**, nghĩa là bạn có quyền truy cập vào tất cả các service khác đã được đăng ký theo framework:
+Vậy, điều gì sẽ xảy ra nếu chúng ta cần đăng ký một [view composer](/docs/{{version}}/views#view-composers) trong service provider của chúng ta? Điều này nên được thực hiện trong phương thức `boot`. **Phương thức này được gọi sau khi tất cả các service provider khác đã được đăng ký**, nghĩa là bạn có quyền truy cập vào tất cả các service khác đã được đăng ký theo framework:
 
     <?php
 

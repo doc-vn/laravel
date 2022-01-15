@@ -13,6 +13,7 @@
 - [Authorizing Channel](#authorizing-channels)
     - [Định nghĩa Authorization Route](#defining-authorization-routes)
     - [Định nghĩa Authorization Callback](#defining-authorization-callbacks)
+    - [Định nghĩa Channel Class](#defining-channel-classes)
 - [Broadcasting Event](#broadcasting-events)
     - [Only To Others](#only-to-others)
 - [Nhận Broadcast](#receiving-broadcasts)
@@ -90,13 +91,15 @@ Khi broadcaster Redis publish một event, thì nó sẽ được publish trên 
 
 #### Socket.IO
 
-Nếu bạn muốn kết nối broadcaster Redis với một máy chủ Socket.IO, bạn sẽ cần khai báo thêm thư viện client JavaScript của Socket.IO trong element `head` của HTML application. Khi máy chủ Socket.IO được khởi động, nó sẽ tự động hiển thị thư viện JavaScript của client trên một URL. Ví dụ: nếu bạn đang chạy máy chủ Socket.IO trên cùng một domain với application web của bạn, bạn có thể truy cập thư viện client như sau:
+Nếu bạn muốn kết nối broadcaster Redis với một máy chủ Socket.IO, bạn sẽ cần thêm thư viện client JavaScript Socket.IO vào trong application của bạn. Bạn có thể cài đặt nó thông qua NPM package manager:
 
-    <script src="//{{ Request::getHost() }}:6001/socket.io/socket.io.js"></script>
+    npm install --save socket.io-client
 
 Tiếp theo, bạn sẽ cần khởi tạo Echo với connector `socket.io` và một `host`.
 
     import Echo from "laravel-echo"
+
+    window.io = require('socket.io-client');
 
     window.Echo = new Echo({
         broadcaster: 'socket.io',
@@ -155,7 +158,7 @@ Interface `ShouldBroadcast` yêu cầu event của chúng ta cần định nghĩ
     /**
      * Get the channels the event should broadcast on.
      *
-     * @return array
+     * @return \Illuminate\Broadcasting\Channel|array
      */
     public function broadcastOn()
     {
@@ -352,6 +355,55 @@ Giống như các route HTTP, các route channel cũng có thể tận dụng c�
         return $user->id === $order->user_id;
     });
 
+<a name="defining-channel-classes"></a>
+### Định nghĩa Channel Class
+
+Nếu ứng dụng của bạn sử dụng nhiều channel khác nhau, thì file `routes/channels.php` của bạn có thể trở nên rất cồng kềnh. Vì vậy, thay vì sử dụng Closure để cấp quyền cho các channel, bạn có thể sử dụng các class channel. Để tạo một class channel mới, hãy sử dụng lệnh Artisan `make:channel`. Lệnh này sẽ lưu một class channel mới vào trong thư mục `App/Broadcasting`.
+
+    php artisan make:channel OrderChannel
+
+Tiếp theo, đăng ký channel của bạn vào trong file `routes/channels.php`:
+
+    use App\Broadcasting\OrderChannel;
+
+    Broadcast::channel('order.{order}', OrderChannel::class);
+
+Cuối cùng, bạn có thể viết các logic cấp quyền cho channel của bạn vào trong phương thức `join` của class channel. Phương thức `join` sẽ chứa cùng một logic với code mà bạn thường viết trong Closure cấp quyền channel của bạn. Tất nhiên, bạn cũng có thể tận dụng lợi thế của liên kết model channel:
+
+    <?php
+
+    namespace App\Broadcasting;
+
+    use App\User;
+    use App\Order;
+
+    class OrderChannel
+    {
+        /**
+         * Create a new channel instance.
+         *
+         * @return void
+         */
+        public function __construct()
+        {
+            //
+        }
+
+        /**
+         * Authenticate the user's access to the channel.
+         *
+         * @param  \App\User  $user
+         * @param  \App\Order  $order
+         * @return array|bool
+         */
+        public function join(User $user, Order $order)
+        {
+            return $user->id === $order->user_id;
+        }
+    }
+
+> {tip} Giống như nhiều class khác trong Laravel, các class channel sẽ tự động được resolve bởi [service container](/docs/{{version}}/container). Vì vậy, bạn có thể khai báo bất kỳ phụ thuộc nào mà channel của bạn cần trong hàm tạo của nó.
+
 <a name="broadcasting-events"></a>
 ## Broadcasting Event
 
@@ -377,9 +429,9 @@ Tuy nhiên, hàm `broadcast` cũng có phương thức `toOthers` cho phép bạ
             this.tasks.push(response.data);
         });
 
-Tuy nhiên, hãy nhớ rằng chúng ta đang broadcast một event tạo task. Nếu JavaScript của bạn đang listening event này, để thêm task mới vào danh sách task, thì bạn có thể có các task trùng lặp trong danh sách của bạn: một là từ route và một là từ broadcast.
+Tuy nhiên, hãy nhớ rằng chúng ta đang broadcast một event tạo task. Nếu JavaScript của bạn đang listening event này, để thêm task mới vào danh sách task, thì bạn có thể có các task trùng lặp trong danh sách của bạn: một là từ route và một là từ broadcast. Bạn có thể giải quyết điều này bằng cách sử dụng phương thức `toOthers` để hướng dẫn broadcaster không broadcast event tới người dùng hiện tại.
 
-Bạn có thể giải quyết điều này bằng cách sử dụng phương thức `toOthers` để hướng dẫn broadcaster không broadcast event tới người dùng hiện tại.
+> {note} Event của bạn phải sử dụng trait `Illuminate\Broadcasting\InteractsWithSockets` để gọi phương thức `toOthers`.
 
 #### Cấu hình
 
@@ -529,7 +581,11 @@ Bạn có thể listen event tham gia thông qua phương thức `listen` của 
 <a name="client-events"></a>
 ## Client Event
 
-Thỉnh thoảng bạn có thể muốn broadcast một event cho những client được kết nối khác mà không cần gọi application Laravel của bạn. Điều này có thể đặc biệt hữu ích cho những việc như thông báo "đang gõ", bạn muốn thông báo cho người dùng application của bạn rằng có một người dùng khác đang gõ một tin nhắn trên màn hình. Để broadcast các client event, bạn có thể sử dụng phương thức `whisper` của Echo:
+> {tip} Khi sử dụng [Pusher Channels](https://pusher.com/channels), bạn phải bật tùy chọn "Client Events" trong phần "App Settings" của [bảng điều khiển ứng dụng](https://dashboard.pusher.com/) để gửi các client event.
+
+Thỉnh thoảng bạn có thể muốn broadcast một event cho những client được kết nối khác mà không cần gọi application Laravel của bạn. Điều này có thể đặc biệt hữu ích cho những việc như thông báo "đang gõ", bạn muốn thông báo cho người dùng application của bạn rằng có một người dùng khác đang gõ một tin nhắn trên màn hình.
+
+Để broadcast các client event, bạn có thể sử dụng phương thức `whisper` của Echo:
 
     Echo.private('chat')
         .whisper('typing', {

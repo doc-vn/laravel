@@ -92,7 +92,7 @@ Một event class là một data container chứa các thông tin liên quan đ�
         /**
          * Create a new event instance.
          *
-         * @param  Order  $order
+         * @param  \App\Order  $order
          * @return void
          */
         public function __construct(Order $order)
@@ -129,7 +129,7 @@ Tiếp theo, chúng ta hãy xem một listener mẫu cho một event. Listener c
         /**
          * Handle the event.
          *
-         * @param  OrderShipped  $event
+         * @param  \App\Events\OrderShipped  $event
          * @return void
          */
         public function handle(OrderShipped $event)
@@ -325,7 +325,7 @@ Event subscriber là các class có thể đăng ký nhiều event từ trong ch
         /**
          * Register the listeners for the subscriber.
          *
-         * @param  Illuminate\Events\Dispatcher  $events
+         * @param  \Illuminate\Events\Dispatcher  $events
          */
         public function subscribe($events)
         {

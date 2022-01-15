@@ -10,7 +10,7 @@
 <a name="introduction"></a>
 ## Giới thiệu
 
-> {tip} **Nếu bạn muốn bắt đầu nhanh?** Bạn chỉ cần chạy `php artisan make:auth` trong terminal của một application Laravel mới và điều hướng trình duyệt của bạn đến địa chỉ `http://your-app.dev/register` hoặc bất kỳ URL nào khác được gán cho application của bạn. Lệnh này sẽ đảm nhiệm việc hỗ trợ toàn bộ hệ thống xác thực của bạn, bao gồm cả việc reset mật khẩu!
+> {tip} **Nếu bạn muốn bắt đầu nhanh?** Bạn chỉ cần chạy `php artisan make:auth` trong terminal của một application Laravel mới và điều hướng trình duyệt của bạn đến địa chỉ `http://your-app.test/register` hoặc bất kỳ URL nào khác được gán cho application của bạn. Lệnh này sẽ đảm nhiệm việc hỗ trợ toàn bộ hệ thống xác thực của bạn, bao gồm cả việc reset mật khẩu!
 
 Hầu hết các ứng dụng web đều cung cấp một cách để người dùng có thể reset mật khẩu mà họ đã quên. Thay vì buộc bạn phải thực hiện lại điều này trên mỗi ứng dụng, Laravel cung cấp các phương thức thuận tiện để gửi lời nhắc mật khẩu và thực hiện reset mật khẩu.
 

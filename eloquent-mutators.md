@@ -220,3 +220,17 @@ Khi cast đã được định nghĩa xong, bạn có thể truy cập vào thu�
     $user->options = $options;
 
     $user->save();
+
+<a name="date-casting"></a>
+### Date Casting
+
+Khi sử dụng kiểu `date` hoặc `datetime`, bạn có thể chỉ định định dạng của date đó. Định dạng này sẽ được sử dụng khi [model được chuyển hóa thành một mảng hoặc một chuỗi JSON](/docs/{{version}}/eloquent-serialization):
+
+    /**
+     * The attributes that should be cast to native types.
+     *
+     * @var array
+     */
+    protected $casts = [
+        'created_at' => 'datetime:Y-m-d',
+    ];

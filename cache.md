@@ -7,6 +7,7 @@
     - [Lấy item trong cache](#retrieving-items-from-the-cache)
     - [Lưu item trong cache](#storing-items-in-the-cache)
     - [Xoá item trong cache](#removing-items-from-the-cache)
+    - [Atomic Lock](#atomic-locks)
     - [Cache helper](#the-cache-helper)
 - [Cache tag](#cache-tags)
     - [Lưu item vào cache tag](#storing-tagged-cache-items)
@@ -199,6 +200,35 @@ Bạn có thể xóa toàn bộ cache bằng phương thức `flush`:
     Cache::flush();
 
 > {note} Khi xóa toàn bộ cache thì nó sẽ xóa tất cả các item ra khỏi cache mà không tâm đến cache prefix. Hãy xem xét điều này một cách cẩn thận trước khi xóa, nếu cache đó đang được dùng để chia sẻ cho các application khác.
+
+<a name="atomic-locks"></a>
+### Atomic Lock
+
+> {note} Để sử dụng tính năng này, ứng dụng của bạn phải sử dụng cache driver `memcached` hoặc `redis` làm cache driver mặc định. Ngoài ra, tất cả các server phải được giao tiếp với cùng một server cache trung tâm.
+
+Atomic lock cho phép thao tác với các khóa phân tán mà không cần lo lắng về việc nhiều thread cùng truy cập cùng lúc. Ví dụ: [Laravel Forge](https://forge.laravel.com) sử dụng Atomic lock để đảm bảo rằng chỉ có một tác vụ đang được thực thi trên một máy chủ tại một thời điểm. Bạn có thể tạo và quản lý các khóa bằng phương thức `Cache::lock`:
+
+    if (Cache::lock('foo', 10)->get()) {
+        // Lock acquired for 10 seconds...
+
+        Cache::lock('foo')->release();
+    }
+
+Phương thức `get` cũng chấp nhận một Closure. Sau khi thực thi Closure xong, Laravel sẽ tự động giải phóng khóa:
+
+    Cache::lock('foo')->get(function () {
+        // Lock acquired indefinitely and automatically released...
+    });
+
+Nếu khóa chưa sẵn sàng tại thời điểm bạn yêu cầu, bạn có thể hướng dẫn Laravel đợi trong một số giây cụ thể. Nếu không thể lấy được khóa trong thời hạn đã chỉ định, một lỗi `Illuminate\Contracts\Cache\LockTimeoutException` sẽ được đưa ra:
+
+    if (Cache::lock('foo', 10)->block(5)) {
+        // Lock acquired after waiting maximum of 5 seconds...
+    }
+
+    Cache::lock('foo', 10)->block(5, function () {
+        // Lock acquired after waiting maximum of 5 seconds...
+    });
 
 <a name="the-cache-helper"></a>
 ### Cache helper

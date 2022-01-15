@@ -165,7 +165,18 @@ Tuy nhiên, cách dễ nhất để tùy biến các view của phân trang là 
 
     php artisan vendor:publish --tag=laravel-pagination
 
-Lệnh này sẽ lưu các view vào trong thư mục `resources/views/vendor/pagination`. File `default.blade.php` trong thư mục này tương ứng với view mặc định của phân trang. Sửa file này sẽ sửa đổi HTML của phân trang.
+Lệnh này sẽ lưu các view vào trong thư mục `resources/views/vendor/pagination`. File `bootstrap-4.blade.php` trong thư mục này tương ứng với view mặc định của phân trang. Bạn có thể sửa file này sẽ sửa đổi HTML của phân trang.
+
+Nếu bạn muốn chỉ định một file khác làm pagination view mặc định, bạn có thể sử dụng phương thức `defaultView` và `defaultSimpleView` của paginator trong `AppServiceProvider` của bạn:
+
+    use Illuminate\Pagination\Paginator;
+
+    public function boot()
+    {
+        Paginator::defaultView('pagination::view');
+
+        Paginator::defaultSimpleView('pagination::view');
+    }
 
 <a name="paginator-instance-methods"></a>
 ## Các phương thức có sẵn
@@ -179,6 +190,7 @@ Mỗi instance phân trang cung cấp thêm các thông tin phân trang thông q
 - `$results->lastItem()`
 - `$results->lastPage() (Not available when using simplePaginate)`
 - `$results->nextPageUrl()`
+- `$results->onFirstPage()`
 - `$results->perPage()`
 - `$results->previousPageUrl()`
 - `$results->total() (Not available when using simplePaginate)`

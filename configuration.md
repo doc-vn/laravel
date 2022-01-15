@@ -2,6 +2,7 @@
 
 - [Giới thiệu](#introduction)
 - [Biến môi trường](#environment-configuration)
+    - [Loại biến môi trường](#environment-variable-types)
     - [Nhận về giá trị biến môi trường](#retrieving-environment-configuration)
     - [Xác định môi trường hiện tại](#determining-the-current-environment)
 - [Nhận về biến config](#accessing-configuration-values)
@@ -25,6 +26,26 @@ File `.env` không nên commit vào trong source code của bạn, bởi vì m�
 Nếu bạn đang phát triển cùng với một team, bạn nên thêm file `.env.example` vào trong project của bạn, sau đó, thêm cái giá trị ví dụ vào trong file `.env.example`, các nhà phát triển tiếp theo sẽ hiểu rõ ràng hơn về các biến môi trường cần được cài đặt để chạy application của bạn, bạn cũng có thể tạo một file `.env.testing`. File này sẽ ghi đè vào file `.env` khi chạy PHPUnit để test hoặc khi chạy lệnh Artisan với lựa chọn là `--env=testing`.
 
 > {tip} Tất cả các biến trong file `.env` có thể bị ghi đè bởi biến môi trường bên ngoài như là biến môi trường server hoặc system.
+
+<a name="environment-variable-types"></a>
+### Loại biến môi trường
+
+Tất cả các biến trong file `.env` của bạn đều được nhận dạng là dưới dạng kiểu string, vì vậy có một số giá trị đã được tạo để cho phép bạn trả về nhiều kiểu hơn từ hàm `env()`:
+
+`.env` Value  | `env()` Value
+------------- | -------------
+true | (bool) true
+(true) | (bool) true
+false | (bool) false
+(false) | (bool) false
+empty | (string) ''
+(empty) | (string) ''
+null | (null) null
+(null) | (null) null
+
+Nếu bạn cần định nghĩa một biến môi trường có chứa khoảng trắng, bạn có thể làm như vậy bằng cách đặt giá trị đó vào trong dấu ngoặc kép.
+
+    APP_NAME="My Application"
 
 <a name="retrieving-environment-configuration"></a>
 ### Nhận về giá trị biến môi trường
@@ -86,6 +107,10 @@ Khi application của bạn đang trong chế độ bảo trì, thì một giao 
 Bạn cũng có thể cho thêm một `message` và một `retry` vào trong lệnh `down`. Giá trị `message` sẽ là giá trị được dùng để hiển thị message trong màn hình bảo trì, trong khi giá trị `retry` sẽ được set vào giá trị `Retry-After` của HTTP header:
 
     php artisan down --message="Upgrading Database" --retry=60
+
+Ngay cả khi ở chế độ bảo trì, các địa chỉ IP hoặc các mạng cụ thể có thể được phép truy cập ứng dụng của bạn bằng cách sử dụng tùy chọn `allow`:
+
+    php artisan down --allow=127.0.0.1 --allow=192.168.0.0/16
 
 Để tắt chế độ bảo trì, hãy dùng lệnh `up`:
 

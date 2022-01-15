@@ -3,6 +3,7 @@
 - [Giới thiệu](#introduction)
 - [Bus Fake](#bus-fake)
 - [Event Fake](#event-fake)
+    - [Scoped Event Fakes](#scoped-event-fakes)
 - [Mail Fake](#mail-fake)
 - [Notification Fake](#notification-fake)
 - [Queue Fake](#queue-fake)
@@ -79,7 +80,50 @@ Thay cho việc làm giả, bạn có thể sử dụng phương thức `fake` c
                 return $e->order->id === $order->id;
             });
 
+            // Assert an event was dispatched twice...
+            Event::assertDispatched(OrderShipped::class, 2);
+
+            // Assert an event was not dispatched...
+
             Event::assertNotDispatched(OrderFailedToShip::class);
+        }
+    }
+
+> {note} Sau khi bạn gọi `Event::fake()`, thì sẽ không có event listener nào được thực thi. Vì vậy, nếu các bài test của bạn đang sử dụng các model factory mà có dựa vào các event, chẳng hạn như tạo UUID trong event `creating` của một model, thì bạn nên gọi `Event::fake()` **sau khi** sử dụng các factory đó của bạn.
+
+<a name="scoped-event-fakes"></a>
+### Scoped Event Fakes
+
+Nếu bạn chỉ muốn làm giả một event listener trong một phần bài test của bạn, bạn có thể sử dụng phương thức `fakeFor`:
+
+    <?php
+
+    namespace Tests\Feature;
+
+    use App\Order;
+    use Tests\TestCase;
+    use App\Events\OrderCreated;
+    use Illuminate\Support\Facades\Event;
+    use Illuminate\Foundation\Testing\RefreshDatabase;
+    use Illuminate\Foundation\Testing\WithoutMiddleware;
+
+    class ExampleTest extends TestCase
+    {
+        /**
+         * Test order process.
+         */
+        public function testOrderProcess()
+        {
+            $order = Event::fakeFor(function () {
+                $order = factory(Order::class)->create();
+
+                Event::assertDispatched(OrderCreated::class);
+
+                return $order;
+            });
+
+            // Events are dispatched as normal and observers will run ...
+            $order->update([...]);
         }
     }
 

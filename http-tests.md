@@ -60,12 +60,14 @@ Bạn có thể sử dụng phương thức `withHeaders` để tùy biến các
             ])->json('POST', '/user', ['name' => 'Sally']);
 
             $response
-                ->assertStatus(200)
+                ->assertStatus(201)
                 ->assertJson([
                     'created' => true,
                 ]);
         }
     }
+
+> {tip} CSRF middleware sẽ tự động bị vô hiệu hóa khi chạy test.
 
 <a name="session-and-authentication"></a>
 ## Session / Authentication
@@ -124,7 +126,7 @@ Laravel cũng cung cấp một số helper để kiểm tra API JSON và respons
             $response = $this->json('POST', '/user', ['name' => 'Sally']);
 
             $response
-                ->assertStatus(200)
+                ->assertStatus(201)
                 ->assertJson([
                     'created' => true,
                 ]);
@@ -152,7 +154,7 @@ Nếu bạn muốn kiểm tra một mảng đã cho là giống **chính xác** 
             $response = $this->json('POST', '/user', ['name' => 'Sally']);
 
             $response
-                ->assertStatus(200)
+                ->assertStatus(201)
                 ->assertExactJson([
                     'created' => true,
                 ]);
@@ -180,12 +182,14 @@ Class `Illuminate\Http\UploadedFile` cung cấp một phương thức `fake` có
         {
             Storage::fake('avatars');
 
+            $file = UploadedFile::fake()->image('avatar.jpg');
+
             $response = $this->json('POST', '/avatar', [
-                'avatar' => UploadedFile::fake()->image('avatar.jpg')
+                'avatar' => $file,
             ]);
 
             // Assert the file was stored...
-            Storage::disk('avatars')->assertExists('avatar.jpg');
+            Storage::disk('avatars')->assertExists($file->hashName());
 
             // Assert a file does not exist...
             Storage::disk('avatars')->assertMissing('missing.jpg');
@@ -225,26 +229,35 @@ Laravel cung cấp nhiều phương thức assertion để tùy biến cho các 
 
 [assertCookie](#assert-cookie)
 [assertCookieExpired](#assert-cookie-expired)
+[assertCookieNotExpired](#assert-cookie-not-expired)
 [assertCookieMissing](#assert-cookie-missing)
 [assertDontSee](#assert-dont-see)
 [assertDontSeeText](#assert-dont-see-text)
 [assertExactJson](#assert-exact-json)
+[assertForbidden](#assert-forbidden)
 [assertHeader](#assert-header)
 [assertHeaderMissing](#assert-header-missing)
 [assertJson](#assert-json)
+[assertJsonCount](#assert-json-count)
 [assertJsonFragment](#assert-json-fragment)
 [assertJsonMissing](#assert-json-missing)
 [assertJsonMissingExact](#assert-json-missing-exact)
 [assertJsonStructure](#assert-json-structure)
 [assertJsonValidationErrors](#assert-json-validation-errors)
+[assertLocation](#assert-location)
+[assertNotFound](#assert-not-found)
+[assertOk](#assert-ok)
 [assertPlainCookie](#assert-plain-cookie)
 [assertRedirect](#assert-redirect)
 [assertSee](#assert-see)
+[assertSeeInOrder](#assert-see-in-order)
 [assertSeeText](#assert-see-text)
+[assertSeeTextInOrder](#assert-see-text-in-order)
 [assertSessionHas](#assert-session-has)
 [assertSessionHasAll](#assert-session-has-all)
 [assertSessionHasErrors](#assert-session-has-errors)
 [assertSessionHasErrorsIn](#assert-session-has-errors-in)
+[assertSessionHasNoErrors](#assert-session-has-no-errors)
 [assertSessionMissing](#assert-session-missing)
 [assertStatus](#assert-status)
 [assertSuccessful](#assert-successful)
@@ -268,6 +281,13 @@ Yêu cầu response phải chứa cookie đã cho:
 Yêu cầu response phải chứa cookie đã cho và nó đã hết hạn:
 
     $response->assertCookieExpired($cookieName);
+
+<a name="assert-cookie-not-expired"></a>
+#### assertCookieNotExpired
+
+Yêu cầu response phải chứa cookie đã cho và nó chưa hết hạn:
+
+    $response->assertCookieNotExpired($cookieName);
 
 <a name="assert-cookie-missing"></a>
 #### assertCookieMissing
@@ -297,6 +317,13 @@ Yêu cầu response phải chứa kết quả khớp chính xác với dữ li�
 
     $response->assertExactJson(array $data);
 
+<a name="assert-forbidden"></a>
+#### assertForbidden
+
+Yêu cầu response phải chứa một forbidden status code:
+
+    $response->assertForbidden();
+
 <a name="assert-header"></a>
 #### assertHeader
 
@@ -317,6 +344,13 @@ Yêu cầu header đã cho không có trong response:
 Yêu cầu response phải chứa dữ liệu JSON đã cho:
 
     $response->assertJson(array $data);
+
+<a name="assert-json-count"></a>
+#### assertJsonCount
+
+Yêu cầu JSON response phải chứa một mảng với số lượng item nhất định trong một key đã cho:
+
+    $response->assertJsonCount($count, $key = null);
 
 <a name="assert-json-fragment"></a>
 #### assertJsonFragment
@@ -353,6 +387,28 @@ Yêu cầu JSON response trả về lỗi validation cho các key:
 
     $response->assertJsonValidationErrors($keys);
 
+<a name="assert-location"></a>
+#### assertLocation
+
+Yêu cầu response có giá trị URI trong header `Location`:
+
+    $response->assertLocation($uri);
+
+<a name="assert-not-found"></a>
+#### assertNotFound
+
+
+Yêu cầu response có một not found status code:
+
+    $response->assertNotFound();
+
+<a name="assert-ok"></a>
+#### assertOk
+
+Yêu cầu response có một status code 200:
+
+    $response->assertOk();
+
 <a name="assert-plain-cookie"></a>
 #### assertPlainCookie
 
@@ -374,12 +430,26 @@ Yêu cầu chuỗi đã cho có trong response:
 
     $response->assertSee($value);
 
+<a name="assert-see-in-order"></a>
+#### assertSeeInOrder
+
+Yêu cầu các chuỗi đã cho được chứa trong response theo thứ tự:
+
+    $response->assertSeeInOrder(array $values);
+
 <a name="assert-see-text"></a>
 #### assertSeeText
 
 Yêu cầu chuỗi đã cho có trong text response:
 
     $response->assertSeeText($value);
+
+<a name="assert-see-text-in-order"></a>
+#### assertSeeTextInOrder
+
+Yêu cầu các chuỗi đã cho được chứa theo thứ tự trong response text:
+
+    $response->assertSeeTextInOrder(array $values);
 
 <a name="assert-session-has"></a>
 #### assertSessionHas
@@ -408,6 +478,13 @@ Yêu cầu session có chứa lỗi của các field đã cho:
 Yêu cầu session có chứa lỗi đã cho:
 
     $response->assertSessionHasErrorsIn($errorBag, $keys = [], $format = null);
+
+<a name="assert-session-has-no-errors"></a>
+#### assertSessionHasNoErrors
+
+Yêu cầu session không chứa lỗi:
+
+    $response->assertSessionHasNoErrors();
 
 <a name="assert-session-missing"></a>
 #### assertSessionMissing
