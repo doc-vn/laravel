@@ -5,6 +5,7 @@
     - [Tạo một URL cơ bản](#generating-basic-urls)
     - [Truy cập vào URL hiện tại](#accessing-the-current-url)
 - [URLs cho Named Routes](#urls-for-named-routes)
+    - [Signed URLs](#signed-urls)
 - [URLs cho Controller Actions](#urls-for-controller-actions)
 - [Giá trị mặc định](#default-values)
 
@@ -65,6 +66,58 @@ Helper `route` có thể được sử dụng để tạo URL tới một route 
 Bạn thường sẽ phải tạo URL bằng primary key của [Eloquent models](/docs/{{version}}/eloquent). Vì lý do đó, bạn có thể truyền trực tiếp các model Eloquent làm giá trị tham số. Helper `route` sẽ tự động lấy primary key trong model đó ra:
 
     echo route('post.show', ['post' => $post]);
+
+<a name="signed-urls"></a>
+### Signed URLs
+
+Laravel cho phép bạn dễ dàng tạo các URL "signed" tới các route đã được đặt tên. Các URL này có một "signed" hash được thêm vào sau chuỗi truy vấn cho phép Laravel xác minh được rằng URL sẽ không bị sửa kể từ khi nó được tạo ra. URL signed đặc biệt hữu ích cho các route có thể truy cập công khai nhưng cần thêm một lớp bảo vệ để chống lại việc sửa đổi URL.
+
+Ví dụ: bạn có thể sử dụng các signed URL để tạo link "hủy đăng ký" được gửi qua email cho khách hàng của bạn. Để tạo một signed URL cho một route đã được đặt tên, hãy sử dụng phương thức `signedRoute` trong facade `URL`:
+
+    use Illuminate\Support\Facades\URL;
+
+    return URL::signedRoute('unsubscribe', ['user' => 1]);
+
+Nếu bạn muốn tạo một route URL signed tạm thời, bạn có thể sử dụng phương thức `temporarySignedRoute`:
+
+    use Illuminate\Support\Facades\URL;
+
+    return URL::temporarySignedRoute(
+        'unsubscribe', now()->addMinutes(30), ['user' => 1]
+    );
+
+#### Validating Signed Route Requests
+
+Để xác minh một request có signed hợp lệ hay không, bạn có thể gọi phương thức `hasValidSignature` trên `Request` đó:
+
+    use Illuminate\Http\Request;
+
+    Route::get('/unsubscribe/{user}', function (Request $request) {
+        if (! $request->hasValidSignature()) {
+            abort(401);
+        }
+
+        // ...
+    })->name('unsubscribe');
+
+Ngoài ra, bạn có thể gán một middleware `Illuminate\Routing\Middleware\ValidateSignature` cho một route. Nếu bạn chưa đăng ký middleware này, bạn nên gán cho middleware đó một khóa trong mảng `routeMiddleware` của file kernel HTTP của bạn:
+
+    /**
+     * The application's route middleware.
+     *
+     * These middleware may be assigned to groups or used individually.
+     *
+     * @var array
+     */
+    protected $routeMiddleware = [
+        'signed' => \Illuminate\Routing\Middleware\ValidateSignature::class,
+    ];
+
+Sau khi bạn đã đăng ký xong middleware trong file kernel của bạn, bạn có thể gán nó vào một route. Nếu have không có chữ ký hợp lệ, middleware sẽ tự động trả về response lỗi `403`:
+
+    Route::post('/unsubscribe/{user}', function (Request $request) {
+        // ...
+    })->name('unsubscribe')->middleware('signed');
 
 <a name="urls-for-controller-actions"></a>
 ## URLs cho Controller Actions

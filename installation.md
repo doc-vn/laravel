@@ -10,7 +10,7 @@
 <a name="installation"></a>
 ## Cài đặt
 
-> {video} Bạn có muốn học trực tuyến không? Laracasts cung cấp một [dịch vụ miễn phí giới thiệu Laravel](http://laravelfromscratch.com) cho người mới bắt đầu. Nó là một nơi tốt để bạn có thể bắt đầu.
+> {video} Laracasts cung cấp một [dịch vụ miễn phí giới thiệu Laravel](http://laravelfromscratch.com) cho người mới bắt đầu. Nó là một nơi tốt để bạn có thể bắt đầu.
 
 <a name="server-requirements"></a>
 ### Yêu cầu server
@@ -20,12 +20,14 @@ Laravel framework có nhiều yêu cầu về server. Dĩ nhiên, tất cả nh�
 Tuy nhiên, nếu bạn không muốn dùng Homestead, thì bạn hãy chắc chắn là server của bạn đã cài đặt những package dưới đây:
 
 <div class="content-list" markdown="1">
-- PHP >= 7.0.0
+- PHP >= 7.1.3
 - OpenSSL PHP Extension
 - PDO PHP Extension
 - Mbstring PHP Extension
 - Tokenizer PHP Extension
 - XML PHP Extension
+- Ctype PHP Extension
+- JSON PHP Extension
 </div>
 
 <a name="installing-laravel"></a>
@@ -54,7 +56,7 @@ Sau khi đã cài đặt xong, lệnh `laravel new` sẽ tạo một project m�
 
 Hoặc, bạn cũng có thể cài đặt laravel bằng cách chạy lệnh `create-project` trong terminal của bạn:
 
-    composer create-project --prefer-dist laravel/laravel blog "5.5.*"
+    composer create-project --prefer-dist laravel/laravel blog "5.6.*"
 
 #### Local Development Server
 
@@ -109,7 +111,7 @@ Laravel có sẵn một file `public/.htaccess`, file này sẽ được dùng �
 
 Nếu file `.htaccess` đi cùng với Laravel không hoạt động với Apache bạn đã cài, thì bạn hãy thử dòng lệnh dưới đây:
 
-    Options +FollowSymLinks
+    Options +FollowSymLinks -Indexes
     RewriteEngine On
 
     RewriteCond %{REQUEST_FILENAME} !-d

@@ -28,7 +28,7 @@ Nếu bạn muốn loại bỏ các frontend ra khỏi application của bạn, 
 <a name="writing-css"></a>
 ## Viết CSS
 
-File `package.json` của Laravel có chứa sẵn một số package `bootstrap-sass` để giúp bạn bắt đầu tạo một trang cho application của bạn bằng Bootstrap. Tuy nhiên, bạn có thêm hoặc xóa các package này ra khỏi file `package.json` cho application của bạn. Bạn không bắt buộc phải sử dụng framework Bootstrap để xây dựng application Laravel của bạn - nó được cung cấp như là một điểm khởi đầu tốt cho những người chọn sử dụng nó.
+File `package.json` của Laravel có chứa sẵn một số package `bootstrap` để giúp bạn bắt đầu tạo một trang cho application của bạn bằng Bootstrap. Tuy nhiên, bạn có thêm hoặc xóa các package này ra khỏi file `package.json` cho application của bạn. Bạn không bắt buộc phải sử dụng framework Bootstrap để xây dựng application Laravel của bạn - nó được cung cấp như là một điểm khởi đầu tốt cho những người chọn sử dụng nó.
 
 Trước khi biên dịch CSS của bạn, hãy cài đặt các library fontent vào project của bạn bằng cách sử dụng [Node package manager (NPM)](https://www.npmjs.org):
 
@@ -43,7 +43,7 @@ Sau khi các library đã được cài đặt xong bằng cách sử dụng `np
 <a name="writing-javascript"></a>
 ## Viết JavaScript
 
-Tất cả các library JavaScript được yêu cầu bởi application của bạn có thể được tìm thấy trong file `package.json` trong thư mục gốc của project. File này tương tự như file `composer.json` ngoại trừ việc nó định nghĩa các library của JavaScript thay vì library của PHP. Bạn có thể cài đặt các library này bằng [Node package manager (NPM)](https://www.npmjs.org):
+Tất cả các library JavaScript được yêu cầu bởi application của bạn có thể được tìm thấy trong file `package.json` trong thư mục gốc của project. File này tương tự như file `composer.json` ngoại trừ việc nó định nghĩa các library của JavaScript thay vì library của PHP. Bạn có thể cài đặt các library này bằng [Node package manager (NPM)](https://www.npmjs.org):
 
     npm install
 

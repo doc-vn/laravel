@@ -20,11 +20,11 @@ Tất cả các cấu hình worker của bạn được lưu trong một file c�
 <a name="installation"></a>
 ## Cài đặt
 
-> {note} Do sử dụng tín hiệu process không đồng bộ, nên Horizon yêu cầu PHP 7.1+.
+> {note} Do sử dụng tín hiệu process không đồng bộ, nên Horizon yêu cầu PHP 7.1+. Thứ hai, bạn nên đảm bảo rằng queue driver của bạn đã được set thành `redis` trong file cấu hình `queue` của bạn.
 
 Bạn có thể sử dụng Composer để cài đặt Horizon vào project Laravel của bạn:
 
-    composer require laravel/horizon
+    composer require laravel/horizon "^2.0"
 
 Sau khi cài đặt Horizon, hãy export asset của nó bằng lệnh Artisan `vendor:publish`:
 
@@ -46,7 +46,7 @@ Chiến lược `auto` sẽ điều chỉnh số lượng process worker trên m
 <a name="dashboard-authentication"></a>
 ### Authentication vào bảng điều khiển
 
-Horizon hiển thị bảng điều khiển tại `/horizon`. Mặc định, bạn sẽ chỉ có thể truy cập được vào bảng điều khiển này trong môi trường `local`. Để định nghĩa quyền truy cập cụ thể hơn cho bảng điều khiển, bạn nên sử dụng phương thức `Horizon::auth`. Phương thức `auth` chấp nhận một callback trả về kết quả `true` hoặc `false`, cho biết liệu người dùng hiện tại có thể truy cập vào bảng điều khiển Horizon hay không:
+Horizon hiển thị bảng điều khiển tại `/horizon`. Mặc định, bạn sẽ chỉ có thể truy cập được vào bảng điều khiển này trong môi trường `local`. Để định nghĩa quyền truy cập cụ thể hơn cho bảng điều khiển, bạn nên sử dụng phương thức `Horizon::auth`. Phương thức `auth` chấp nhận một callback trả về kết quả `true` hoặc `false`, cho biết liệu người dùng hiện tại có thể truy cập vào bảng điều khiển Horizon hay không. Thông thường, bạn nên gọi `Horizon::auth` trong phương thức `boot` của `AppServiceProvider`:
 
     Horizon::auth(function ($request) {
         // return true / false;
@@ -73,10 +73,6 @@ Bạn có thể huỷ một process Horizon master trên máy của bạn bằng
 ### Deploy Horizon
 
 Nếu bạn đang deploy Horizon đến một server thật, bạn nên cài đặt một process giám sát để theo dõi lệnh `php artisan horizon` và khởi động lại nếu nó bị thoát bất ngờ. Khi deploy code mới đến server của bạn, bạn sẽ cần phải bảo process Horizon master dừng lại để nó có thể được khởi động lại bởi process giám sát của bạn và nhận được các thay đổi của code của bạn.
-
-Bạn có thể dừng process master của Horizon trên máy của bạn bằng lệnh Artisan `horizon:terminate`. Tất cả các job mà Horizon đang xử lý sẽ được hoàn tất rồi sau đó Horizon sẽ được huỷ:
-
-    php artisan horizon:terminate
 
 #### Supervisor Configuration
 
@@ -168,7 +164,7 @@ Nếu bạn muốn tự định nghĩa tag cho một trong các đối tượng 
 <a name="notifications"></a>
 ## Thông báo
 
-> **Lưu ý:** Trước khi sử dụng thông báo, bạn nên thêm package Composer `guzzlehttp/guzzle` vào trong project của bạn. Khi cấu hình Horizon để gửi thông báo như SMS, thì bạn cũng nên xem lại [các yêu cầu của driver thông báo Nexmo](https://laravel.com/docs/5.5/notifications#sms-notifications).
+> **Lưu ý:** Trước khi sử dụng thông báo, bạn nên thêm package Composer `guzzlehttp/guzzle` vào trong project của bạn. Khi cấu hình Horizon để gửi thông báo như SMS, thì bạn cũng nên xem lại [các yêu cầu của driver thông báo Nexmo](https://laravel.com/docs/5.6/notifications#sms-notifications).
 
 Nếu bạn muốn nhận được thông báo khi một trong các queue của bạn có thời gian chờ quá lâu, bạn có thể sử dụng các phương thức `Horizon::routeMailNotificationsTo`, `Horizon::routeSlackNotificationsTo`, và `Horizon::routeSmsNotificationsTo`. Bạn có thể gọi các phương thức này từ `AppServiceProvider`:
 

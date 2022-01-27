@@ -2,7 +2,7 @@
 
 - [Giới thiệu](#introduction)
     - [Connection và Queue](#connections-vs-queues)
-    - [Yêu cầu Driver](#driver-prerequisites)
+    - [Driver chú ý và điều kiện](#driver-prerequisites)
 - [Tạo Job](#creating-jobs)
     - [Tạo class Job](#generating-job-classes)
     - [Cấu trúc class](#class-structure)
@@ -51,7 +51,7 @@ Một số application có thể không cần phải tạo nhiều job trong nhi
     php artisan queue:work --queue=high,default
 
 <a name="driver-prerequisites"></a>
-### Yêu cầu Driver
+### Driver chú ý và điều kiện
 
 #### Database
 
@@ -65,6 +65,8 @@ Một số application có thể không cần phải tạo nhiều job trong nhi
 
 Để sử dụng driver `redis` queue, bạn nên cấu hình connection tới Redis database trong file cấu hình `config/database.php` của bạn.
 
+**Redis Cluster**
+
 Nếu connection Redis của bạn sử dụng một Cluster Redis, thì tên queue của bạn phải chứa một [key hash tag](https://redis.io/topics/cluster-spec#keys-hash-tags). Điều này là bắt buộc để đảm bảo rằng tất cả các key Redis cho queue sẽ được set vào cùng một vị trí hash:
 
     'redis' => [
@@ -73,6 +75,22 @@ Nếu connection Redis của bạn sử dụng một Cluster Redis, thì tên qu
         'queue' => '{default}',
         'retry_after' => 90,
     ],
+
+**Blocking**
+
+Khi sử dụng queue Redis, bạn có thể sử dụng tùy chọn cấu hình `block_for` để chỉ định khoảng thời gian mà driver sẽ đợi cho job được bắt đầu trước khi nó lặp lại vòng lặp worker và thăm dò lại cơ sở dữ liệu Redis.
+
+Điều chỉnh giá trị này dựa trên queue load của bạn, nó có thể hiệu quả hơn việc liên tục thăm dò cơ sở dữ liệu Redis để tìm ra các job mới. Ví dụ: bạn có thể set giá trị là `5` để chỉ ra rằng driver sẽ chặn năm giây trong khi chờ job sẵn sàng:
+
+    'redis' => [
+        'driver' => 'redis',
+        'connection' => 'default',
+        'queue' => 'default',
+        'retry_after' => 90,
+        'block_for' => 5,
+    ],
+
+> {note} Chặn pop là một tính năng thử nghiệm. Có một sô khả năng nhỏ là queue job có thể bị mất nếu server Redis hoặc worker gặp sự cố cùng lúc với lúc job đang được lấy ra.
 
 #### Other Driver Prerequisites
 
@@ -218,6 +236,15 @@ Kết hợp job cho phép bạn khai báo một danh sách các queued job sẽ 
         new OptimizePodcast,
         new ReleasePodcast
     ])->dispatch();
+
+#### Chain Connection & Queue
+
+Nếu bạn muốn chỉ định kết nối và queue mặc định sẽ được sử dụng cho một chuỗi job, bạn có thể sử dụng phương thức `allOnConnection` và `allOnQueue`. Các phương thức này sẽ chỉ định kết nối queue và tên queue sẽ được sử dụng trừ khi queue job của bạn được chỉ định trong một kết nối hoặc một queue khác:
+
+    ProcessPodcast::withChain([
+        new OptimizePodcast,
+        new ReleasePodcast
+    ])->dispatch()->allOnConnection('redis')->allOnQueue('podcasts');
 
 <a name="customizing-the-queue-and-connection"></a>
 ### Tuỳ biến Queue và Connection
@@ -458,7 +485,7 @@ Tùy chọn cấu hình `retry_after` và tùy chọn CLI `--timeout` tuy khác 
 
 #### Worker Sleep Duration
 
-Khi job đã được tạo trong queue, worker sẽ tiếp tục xử lý các job mà không có thời gian nghỉ giữa chúng. Tuy nhiên, với tùy chọn `sleep` sẽ xác định xem worker sẽ "sleep" trong bao lâu nếu không có job mới. Trong khi sleep, worker sẽ không xử lý bất kỳ job mới nào - các job đó sẽ được xử lý sau khi thời gian worker đã nghỉ.
+Khi job đã được tạo trong queue, worker sẽ tiếp tục xử lý các job mà không có thời gian nghỉ giữa chúng. Tuy nhiên, với tùy chọn `sleep` sẽ xác định xem worker sẽ "sleep" trong bao nhiêu (giây) nếu không có job mới. Trong khi sleep, worker sẽ không xử lý bất kỳ job mới nào - các job đó sẽ được xử lý sau khi thời gian worker đã nghỉ.
 
     php artisan queue:work --sleep=3
 
@@ -574,7 +601,7 @@ Bạn có thể định nghĩa một phương thức `failed` trực tiếp vào
 <a name="failed-job-events"></a>
 ### Event Job failed
 
-Nếu bạn muốn đăng ký một event sẽ được gọi khi một job thất bại, bạn có thể sử dụng phương thức `Queue::failing`. Event này là một cách tuyệt vời để thông báo cho team của bạn qua email hoặc [HipChat](https://www.hipchat.com). Ví dụ: chúng ta có thể đính kèm một callback cho event này từ `AppServiceProvider` được chứa trong Laravel:
+Nếu bạn muốn đăng ký một event sẽ được gọi khi một job thất bại, bạn có thể sử dụng phương thức `Queue::failing`. Event này là một cách tuyệt vời để thông báo cho team của bạn qua email hoặc [Stride](https://www.stride.com). Ví dụ: chúng ta có thể đính kèm một callback cho event này từ `AppServiceProvider` được chứa trong Laravel:
 
     <?php
 

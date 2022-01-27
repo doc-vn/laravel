@@ -232,6 +232,16 @@ Phương thức `download` có thể được sử dụng để tạo response b
 
 > {note} Quản lý file download Symfony HttpFoundation yêu cầu file download phải có tên file là ASCII.
 
+#### Streamed Downloads
+
+Thỉnh thoảng bạn có thể muốn biến chuỗi response của một hoạt động nhất định thành một download response mà không cần phải ghi nội dung của hoạt động đó vào disk. Bạn có thể sử dụng phương thức `streamDownload` trong trường hợp đó. Phương thức này chấp nhận một callback, một tên file và một mảng header tùy chọn làm tham số của nó:
+
+    return response()->streamDownload(function () {
+        echo GitHub::api('repo')
+                    ->contents()
+                    ->readme('laravel', 'laravel')['contents'];
+    }, 'laravel-readme.md');
+
 <a name="file-responses"></a>
 ### File Responses
 

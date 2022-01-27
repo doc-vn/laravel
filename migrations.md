@@ -15,6 +15,7 @@
     - [Xoá Column](#dropping-columns)
 - [Index](#indexes)
     - [Tạo Index](#creating-indexes)
+    - [Đổi tên Index](#renaming-indexes)
     - [Xoá Index](#dropping-indexes)
     - [Rằng buộc khoá ngoại](#foreign-key-constraints)
 
@@ -236,7 +237,7 @@ Lệnh  |  Mô tả
 `$table->mediumIncrements('id');`  |  Tương đương với cột (primary key) tự động tăng và là số dương kiểu MEDIUMINT.
 `$table->mediumInteger('votes');`  |  Tương đương với cột kiểu MEDIUMINT.
 `$table->mediumText('description');`  |  Tương đương với cột kiểu MEDIUMTEXT.
-`$table->morphs('taggable');`  |  Thêm cột `taggable_id` kiểu INTEGER luôn dương và cột `taggable_type` kiểu VARCHARs.
+`$table->morphs('taggable');`  |  Thêm cột `taggable_id` kiểu BIGINT luôn dương và cột `taggable_type` kiểu VARCHARs.
 `$table->multiLineString('positions');`  |  Tương đương với cột kiểu MULTILINESTRING.
 `$table->multiPoint('positions');`  |  Tương đương với cột kiểu MULTIPOINT.
 `$table->multiPolygon('positions');`  |  Tương đương với cột kiểu MULTIPOLYGON.
@@ -380,6 +381,8 @@ Laravel sẽ tự động tạo một tên index phù hợp, nhưng bạn có th
 
 #### Available Index Types
 
+Mỗi phương thức của index chấp nhận một đối số thứ hai tùy chọn để chỉ định tên của index. Nếu bỏ qua tuỳ chọn này, thì tên sẽ được lấy từ tên của (các) bảng và cột.
+
 Command  |  Description
 -------  |  -----------
 `$table->primary('id');`  |  Thêm một primary key.
@@ -406,6 +409,13 @@ Laravel sử dụng ký tự mặc định là `utf8mb4`, hỗ trợ lưu trữ 
 
 Ngoài ra, bạn có thể kích hoạt tùy chọn `innodb_large_prefix` cho cơ sở dữ liệu của bạn. Tham khảo tài liệu của cơ sở dữ liệu của bạn để biết thêm hướng dẫn về cách bật tùy chọn này.
 
+<a name="renaming-indexes"></a>
+### Đổi tên Index
+
+Để đổi tên một index, bạn có thể sử dụng phương thức `renameIndex`. Phương thức này chấp nhận tên index hiện tại làm đối số đầu tiên và tên mong muốn làm đối số thứ hai:
+
+    $table->renameIndex('from', 'to')
+
 <a name="dropping-indexes"></a>
 ### Xoá Index
 
@@ -430,7 +440,7 @@ Nếu bạn truyền một mảng gồm các cột vào trong một phương th�
 Laravel cũng cung cấp hỗ trợ để tạo các ràng buộc khóa ngoại, được sử dụng để đảm bảo tính toàn vẹn cho cơ sở dữ liệu. Ví dụ: hãy định nghĩa một cột `user_id` trong bảng `posts` là khoá ngoại của cột `id` trong bảng` users`:
 
     Schema::table('posts', function (Blueprint $table) {
-        $table->integer('user_id')->unsigned();
+        $table->unsignedInteger('user_id');
 
         $table->foreign('user_id')->references('id')->on('users');
     });

@@ -6,7 +6,9 @@
     - [Schedule Queued Job](#scheduling-queued-jobs)
     - [Lệnh Shell Schedule](#scheduling-shell-commands)
     - [Tuỳ chọn tần suất Schedule](#schedule-frequency-options)
+    - [Timezones](#timezones)
     - [Ngăn task chồng nhau](#preventing-task-overlaps)
+    - [Chạy task trên một server](#running-tasks-on-one-server)
     - [Chế độ bảo trì](#maintenance-mode)
 - [Task Output](#task-output)
 - [Task Hook](#task-hooks)
@@ -22,7 +24,7 @@ Lệnh schedule của Laravel cho phép bạn định nghĩa một cách đơn g
 
 Khi sử dụng schedule, bạn chỉ cần thêm Cron dưới đây vào server của bạn. Nếu bạn không biết cách thêm Cron vào server của bạn, hãy xem xét sử dụng một dịch vụ như [Laravel Forge](https://forge.laravel.com) để có thể quản lý Cron cho bạn:
 
-    * * * * * php /path-to-your-project/artisan schedule:run >> /dev/null 2>&1
+    * * * * * cd /path-to-your-project && php artisan schedule:run >> /dev/null 2>&1
 
 Cron này sẽ gọi lệnh schedule của Laravel mỗi phút. Khi lệnh `schedule:run` được thực thi, Laravel sẽ tìm các task theo schedule của bạn và chạy các task đã đến hạn.
 
@@ -64,6 +66,10 @@ Bạn có thể định nghĩa tất cả các task đã được schedule của
         }
     }
 
+Ngoài việc tạo schedule bằng Closures, bạn cũng có thể sử dụng [các đối tượng invokable](http://php.net/manual/en/language.oop5.magic.php#object.invoke). Đối tượng invokable là các class PHP đơn giản có chứa phương thức `__invoke`:
+
+    $schedule->call(new DeleteRecentUsers)->daily();
+
 <a name="scheduling-artisan-commands"></a>
 ### Các lệnh Artisan Schedule
 
@@ -80,6 +86,9 @@ Phương thức `job` có thể được sử dụng để tạo schedule cho m�
 
     $schedule->job(new Heartbeat)->everyFiveMinutes();
 
+    // Dispatch the job to the "heartbeats" queue...
+    $schedule->job(new Heartbeat, 'heartbeats')->everyFiveMinutes();
+
 <a name="scheduling-shell-commands"></a>
 ### Lệnh Shell Schedule
 
@@ -94,7 +103,7 @@ Tất nhiên, sẽ có nhiều schedule mà bạn có thể khai báo cho task c
 
 Method  | Description
 ------------- | -------------
-`->cron('* * * * * *');`  |  Chạy task theo một tùy chỉnh Cron schedule
+`->cron('* * * * *');`  |  Chạy task theo một tùy chỉnh Cron schedule
 `->everyMinute();`  |  Chạy task mỗi phút
 `->everyFiveMinutes();`  |  Chạy task năm phút một lần
 `->everyTenMinutes();`  |   Chạy task mười phút một lần
@@ -106,6 +115,7 @@ Method  | Description
 `->dailyAt('13:00');`  |  Chạy task hàng ngày vào lúc 13:00
 `->twiceDaily(1, 13);`  | Chạy task hàng ngày vào lúc 1:00 và 13:00
 `->weekly();`  |  Chạy task hàng tuần
+`->weeklyOn(1, '8:00');`  |  Chạy task hàng tuần vào thứ hai lúc 8:00
 `->monthly();`  | Chạy task hàng tháng
 `->monthlyOn(4, '15:00');`  |  Chạy task hàng ngày vào ngày thứ 4 của tháng và vào lúc 15:00
 `->quarterly();` |  Chạy task hàng quý
@@ -171,6 +181,17 @@ Phương thức `skip` có thể được xem là ngược lại với phương 
 
 Khi sử dụng kết hợp nhiều phương thức `when`, lệnh đã được schedule sẽ chỉ được thực thi nếu tất cả các điều kiện `when` đều trả về giá trị `true`.
 
+<a name="timezones"></a>
+### Timezones
+
+Sử dụng phương thức `timezone`, bạn có thể chỉ định thời gian của một task schedule sẽ được sử dụng trong một timezone nhất định:
+
+    $schedule->command('report:generate')
+             ->timezone('America/New_York')
+             ->at('02:00')
+
+> {note} Hãy nhớ rằng một số timezone sử dụng quy ước giờ mùa hè. Khi các thay đổi về quy ước giờ mùa hè xảy ra, schedule task của bạn có thể chạy hai lần hoặc thậm chí là hoàn toàn không chạy. Vì lý do này, chúng tôi khuyên bạn nên tránh tạo schedule timezone khi có thể.
+
 <a name="preventing-task-overlaps"></a>
 ### Ngăn task chồng nhau
 
@@ -183,6 +204,20 @@ Mặc định, các task đã được schedule sẽ được chạy, ngay cả 
 Nếu cần, bạn có thể chỉ định số phút mà sau khi task được thực hiện thì khóa "chống lặp" hết hạn. Mặc định, khóa này sẽ hết hạn sau 24 giờ:
 
     $schedule->command('emails:send')->withoutOverlapping(10);
+
+<a name="running-tasks-on-one-server"></a>
+### Chạy task trên một server
+
+> {note} Để sử dụng tính năng này, ứng dụng của bạn phải sử dụng driver cache `memcached` hoặc `redis` làm driver cache mặc định của ứng dụng của bạn. Ngoài ra, tất cả các server phải được giao tiếp với cùng một server cache trung tâm.
+
+Nếu ứng dụng của bạn đang chạy trên nhiều server, bạn có thể giới hạn schedule job chỉ được chạy trên một server duy nhất. Ví dụ: giả sử bạn đang có một task schedule là tạo một báo cáo vào mỗi tối thứ Sáu. Nếu schedule của bạn đang chạy trên ba server worker, thì task schedule sẽ được chạy trên cả ba server và tạo báo cáo ba lần. Không tốt!
+
+Để yêu cầu task chỉ được chạy trên một server, hãy sử dụng phương thức `onOneServer` khi bạn định nghĩa task schedule. Server đầu tiên nhận được task sẽ dùng một atomic lock trên job đó để ngăn các server khác chạy cùng một task vào cùng một thời điểm:
+
+    $schedule->command('report:generate')
+                    ->fridays()
+                    ->at('17:00')
+                    ->onOneServer();
 
 <a name="maintenance-mode"></a>
 ### Chế độ bảo trì
@@ -213,7 +248,7 @@ Sử dụng phương thức `emailOutputTo`, bạn có thể gửi email output 
              ->sendOutputTo($filePath)
              ->emailOutputTo('foo@example.com');
 
-> {note} Các phương thức `emailOutputTo`, `sendOutputTo` và `appendOutputTo` sẽ chỉ được dùng với phương thức `command` và không hỗ trợ cho  phương thức `call`.
+> {note} Các phương thức `emailOutputTo`, `sendOutputTo` và `appendOutputTo` sẽ chỉ được dùng với phương thức `command` và phương thức `exec`.
 
 <a name="task-hooks"></a>
 ## Task Hook

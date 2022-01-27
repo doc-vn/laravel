@@ -59,7 +59,7 @@ Trước khi sử dụng Cashier, chúng ta cũng cần [chuẩn bị cơ sở d
 
     Schema::create('subscriptions', function ($table) {
         $table->increments('id');
-        $table->integer('user_id');
+        $table->unsignedInteger('user_id');
         $table->string('name');
         $table->string('stripe_id');
         $table->string('stripe_plan');
@@ -131,7 +131,7 @@ Trước khi sử dụng Cashier, chúng ta cũng cần [chuẩn bị cơ sở d
 
     Schema::create('subscriptions', function ($table) {
         $table->increments('id');
-        $table->integer('user_id');
+        $table->unsignedInteger('user_id');
         $table->string('name');
         $table->string('braintree_id');
         $table->string('braintree_plan');
@@ -374,6 +374,14 @@ Phương thức này sẽ set ngày kết thúc của thời gian dùng thử v�
 
 > {note} Nếu subscription của khách hàng không bị hủy trước ngày kết thúc dùng thử, họ sẽ bị tính phí ngay khi hết hạn dùng thử, vì vậy bạn nên chắc chắn là đã thông báo cho khách hàng biết về ngày kết thúc dùng thử của họ.
 
+Phương thức `trialUntil` cho phép bạn cung cấp một instance `DateTime` để chỉ định khi nào thời gian dùng thử kết thúc:
+
+    use Carbon\Carbon;
+
+    $user->newSubscription('main', 'monthly')
+                ->trialUntil(Carbon::now()->addDays(10))
+                ->create($stripeToken);
+
 Bạn có thể xác định xem người dùng hiện tại có đang trong thời gian dùng thử hay không bằng cách sử dụng phương thức `onTrial` trên instance người dùng hoặc phương thức `onTrial` trên instance subscription. Hai ví dụ dưới đây có kết quả giống hệt nhau:
 
     if ($user->onTrial('main')) {
@@ -460,6 +468,13 @@ Cashier sẽ tự động xử lý hủy subscription nếu như các lần chi 
             // Handle The Event
         }
     }
+
+Tiếp theo, định nghĩa một route đến Cashier controller của bạn trong file `routes/web.php`:
+
+    Route::post(
+        'stripe/webhook',
+        '\App\Http\Controllers\WebhookController@handleWebhook'
+    );
 
 <a name="handling-failed-subscriptions"></a>
 ### Subscription bị thất bại
@@ -576,6 +591,12 @@ Hóa đơn sẽ được tính ngay lập tức với thẻ tín dụng của ng
 
     $user->invoiceFor('One Time Fee', 500, [
         'custom-option' => $value,
+    ]);
+
+Nếu bạn đang sử dụng Braintree làm nhà cung cấp dịch vụ thanh toán của bạn, bạn phải thêm tùy chọn `description` khi gọi phương thức `invoiceFor`:
+
+    $user->invoiceFor('One Time Fee', 500, [
+        'description' => 'your invoice description here',
     ]);
 
 > {note} Phương thức `invoiceFor` sẽ tạo ra một hóa đơn Stripe sẽ thử lại sau các lần thanh toán không thành công. Nếu bạn không muốn hóa đơn thử lại sau các lần trả phí không thành công, bạn sẽ cần phải close chúng bằng API Stripe sau lần tính phí không thành công đầu tiên.

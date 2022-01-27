@@ -22,6 +22,7 @@
 - [Validating mảng](#validating-arrays)
 - [Tuỳ biến Validation Rules](#custom-validation-rules)
     - [Dùng đối tượng Rule](#using-rule-objects)
+    - [Using Closures](#using-closures)
     - [Dùng Extensions](#using-extensions)
 
 <a name="introduction"></a>
@@ -197,6 +198,8 @@ Class được tạo ra sẽ được lưu trong thư mục `app/Http/Requests`.
         ];
     }
 
+> {tip} Bạn có thể khai báo bất kỳ phụ thuộc nào mà bạn cần trong phương thức `rule`. Những phụ thuộc đó sẽ được tự động resolve thông qua Laravel [service container](/docs/{{version}}/container).
+
 Vậy, các quy tắc validation sẽ được so sánh như thế nào? Tất cả những gì bạn cần làm là khai báo nó cho request trong phương thức controller của bạn. Form request đến sẽ được validate trước khi phương thức controller được gọi, nghĩa là bạn không cần làm lộn xộn controller của bạn với bất kỳ logic validate nào:
 
     /**
@@ -208,6 +211,9 @@ Vậy, các quy tắc validation sẽ được so sánh như thế nào? Tất c
     public function store(StoreBlogPost $request)
     {
         // The incoming request is valid...
+
+        // Retrieve the validated input data...
+        $validated = $request->validated();
     }
 
 Nếu validation thất bại, một response chuyển hướng sẽ được tạo và đưa người dùng trở về vị trí trước đó của họ. Các lỗi cũng sẽ được flash vào session để chúng có thể được hiển thị. Nếu request là loại request AJAX, response HTTP có status code 422 sẽ được trả về cho người dùng chứa một data JSON gồm các lỗi validation.
@@ -215,6 +221,7 @@ Nếu validation thất bại, một response chuyển hướng sẽ được t�
 #### Thêm After Hooks vào Form Requests
 
 Nếu bạn muốn thêm một "after" hook vào một form request, bạn có thể sử dụng phương thức `withValidator`. Phương thức này nhận vào một validator đã được khởi tạo, cho phép bạn gọi bất kỳ phương thức nào trước khi các quy tắc validation thực sự được so sánh:
+
     /**
      * Configure the validator instance.
      *
@@ -264,6 +271,8 @@ Nếu bạn muốn logic authorization nằm ở trong một phần khác của 
     {
         return true;
     }
+
+> {tip} Bạn có thể khai báo bất kỳ phụ thuộc nào mà bạn cần trong phương thức `authorize`. Những phụ thuộc đó sẽ được tự động resolve thông qua Laravel [service container](/docs/{{version}}/container).
 
 <a name="customizing-the-error-messages"></a>
 ### Tuỳ biến Error Messages
@@ -480,6 +489,7 @@ Dưới đây là danh sách tất cả các quy tắc validation có sẵn và 
 [Alpha Dash](#rule-alpha-dash)
 [Alpha Numeric](#rule-alpha-num)
 [Array](#rule-array)
+[Bail](#rule-bail)
 [Before (Date)](#rule-before)
 [Before Or Equal (Date)](#rule-before-or-equal)
 [Between](#rule-between)
@@ -497,18 +507,23 @@ Dưới đây là danh sách tất cả các quy tắc validation có sẵn và 
 [Exists (Database)](#rule-exists)
 [File](#rule-file)
 [Filled](#rule-filled)
+[Greater Than](#rule-gt)
+[Greater Than Or Equal](#rule-gte)
 [Image (File)](#rule-image)
 [In](#rule-in)
 [In Array](#rule-in-array)
 [Integer](#rule-integer)
 [IP Address](#rule-ip)
 [JSON](#rule-json)
+[Less Than](#rule-lt)
+[Less Than Or Equal](#rule-lte)
 [Max](#rule-max)
 [MIME Types](#rule-mimetypes)
 [MIME Type By File Extension](#rule-mimes)
 [Min](#rule-min)
-[Nullable](#rule-nullable)
 [Not In](#rule-not-in)
+[Not Regex](#rule-not-regex)
+[Nullable](#rule-nullable)
 [Numeric](#rule-numeric)
 [Present](#rule-present)
 [Regular Expression](#rule-regex)
@@ -574,10 +589,16 @@ Field được validation phải hoàn toàn là các ký tự chữ cái và s�
 
 Field được validation phải là một PHP `array`.
 
+<a name="rule-bail"></a>
+#### bail
+
+Dừng chạy các validation rule nếu lần validation đầu tiên không thành công.
+
 <a name="rule-before"></a>
 #### before:_date_
 
 Field được validation là một giá trị trước ngày đã cho. Tham số date sẽ được truyền vào hàm `strtotime` của PHP.
+
 <a name="rule-before-or-equal"></a>
 #### before\_or\_equal:_date_
 
@@ -673,6 +694,8 @@ Field được validation phải tồn tại trong một bảng cơ sở dữ li
 
     'state' => 'exists:states'
 
+Nếu tùy chọn `column` không được chỉ định, thì tên field đó sẽ được sử dụng.
+
 #### Tùy chỉnh tên cột
 
     'state' => 'exists:states,abbreviation'
@@ -703,6 +726,16 @@ Field được validation phải là một tệp được tải lên thành côn
 #### filled
 
 Field được validation phải không được trống khi nó có tồn tại.
+
+<a name="rule-gt"></a>
+#### gt:_field_
+
+Field được validation phải lớn hơn _field_ đã cho. Hai field phải cùng loại. Các loại chuỗi, số, mảng và file sẽ được đánh giá bằng cách sử dụng các quy ước giống như quy ước của `size`.
+
+<a name="rule-gte"></a>
+#### gte:_field_
+
+Field được validation phải lớn hơn hoặc bằng _field_ đã cho. Hai field phải cùng loại. Các loại chuỗi, số, mảng và file sẽ được đánh giá bằng cách sử dụng các quy ước giống như quy ước của `size`.
 
 <a name="rule-image"></a>
 #### image
@@ -751,6 +784,16 @@ Field được validation phải là một địa chỉ IPv6.
 
 Field được validation phải là một chuỗi JSON.
 
+<a name="rule-lt"></a>
+#### lt:_field_
+
+Field được validation phải nhỏ hơn _field_ đã cho. Hai field phải cùng loại. Các loại chuỗi, số, mảng và file sẽ được đánh giá bằng cách sử dụng các quy ước giống như quy ước của `size`.
+
+<a name="rule-lte"></a>
+#### lte:_field_
+
+Field được validation phải nhỏ hơn hoặc bằng _field_ đã cho. Hai field phải cùng loại. Các loại chuỗi, số, mảng và file sẽ được đánh giá bằng cách sử dụng các quy ước giống như quy ước của `size`.
+
 <a name="rule-max"></a>
 #### max:_value_
 
@@ -783,11 +826,6 @@ Một danh sách đầy đủ các loại MIME và các extension tương ứng 
 
 Field được validation phải có _value_ tối thiểu. Chuỗi, số, mảng và file sẽ được so sánh theo cùng một quy tắc với quy tắc [`size`](#rule-size).
 
-<a name="rule-nullable"></a>
-#### nullable
-
-Field được validation có thể là `null`. Điều này đặc biệt hữu ích khi validate các loại nguyên thủy như chuỗi và số nguyên có thể chứa các giá trị `null`.
-
 <a name="rule-not-in"></a>
 #### not_in:_foo_,_bar_,...
 
@@ -801,6 +839,18 @@ Field được validation không được chứa trong một danh sách giá tr�
             Rule::notIn(['sprinkles', 'cherries']),
         ],
     ]);
+
+<a name="rule-not-regex"></a>
+#### not_regex:_pattern_
+
+Field được validation phải không được khớp với biểu thức chính quy đã cho.
+
+**Note:** Khi sử dụng mẫu `regex` hoặc `not_regex`, có thể cần phải khai báo các quy tắc trong một mảng thay vì sử dụng các dấu "|" để phân cách, đặc biệt nếu biểu thức chính quy của bạn chứa ký tự đó.
+
+<a name="rule-nullable"></a>
+#### nullable
+
+Field được validation có thể là `null`. Điều này đặc biệt hữu ích khi validation loại dữ liệu nguyên thủy chẳng hạn như chuỗi hoặc số nguyên có thể chứa giá trị `null`.
 
 <a name="rule-numeric"></a>
 #### numeric
@@ -817,7 +867,7 @@ Field được validation phải có tồn tại trong dữ liệu input nhưng 
 
 Field được validation phải phù hợp với biểu thức chính quy định.
 
-**Note:** Khi sử dụng mẫu `regex`, có thể cần phải khai báo các quy tắc trong một mảng thay vì sử dụng các dấu "|" để phân cách, đặc biệt nếu biểu thức chính quy của bạn chứa ký tự đó.
+**Note:** Khi sử dụng mẫu `regex` hoặc `not_regex`, có thể cần phải khai báo các quy tắc trong một mảng thay vì sử dụng các dấu "|" để phân cách, đặc biệt nếu biểu thức chính quy của bạn chứa ký tự đó.
 
 <a name="rule-required"></a>
 #### required
@@ -912,6 +962,10 @@ Field được validation phải là duy nhất trong một bảng cơ sở dữ
             Rule::unique('users')->ignore($user->id),
         ],
     ]);
+
+Bạn có thể chỉ định tên cột được validation bằng cách sử dụng tham số thứ hai của phương thức `unique`. Nếu không có tham số đó, tên field cần validation sẽ được sử dụng làm tên cột:
+
+    'email' => Rule::unique('users', 'email_address')
 
 Nếu bảng của bạn sử dụng tên cột khóa chính khác với `id`, bạn có thể chỉ định tên của cột khi gọi phương thức `ignore`:
 
@@ -1052,7 +1106,24 @@ Khi rule đã được định nghĩa xong, bạn có thể gán nó vào một 
     use App\Rules\Uppercase;
 
     $request->validate([
-        'name' => ['required', new Uppercase],
+        'name' => ['required', 'string', new Uppercase],
+    ]);
+
+<a name="using-closures"></a>
+### Using Closures
+
+Nếu bạn cần chức năng của một rule tùy chỉnh trong đúng một lần trong toàn bộ ứng dụng của bạn, bạn có thể sử dụng Closure thay vì một đối tượng rule. Closure nhận vào tên của thuộc tính, giá trị của thuộc tính đó và một callback `$fail` sẽ được gọi nếu quá trình validation không thành công:
+
+    $validator = Validator::make($request->all(), [
+        'title' => [
+            'required',
+            'max:255',
+            function($attribute, $value, $fail) {
+                if ($value === 'foo') {
+                    return $fail($attribute.' is invalid.');
+                }
+            },
+        ],
     ]);
 
 <a name="using-extensions"></a>

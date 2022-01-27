@@ -1,76 +1,25 @@
-# Errors & Logging
+# Error Handling
 
 - [Giới thiệu](#introduction)
 - [Cấu hình](#configuration)
-    - [Chi tiết về error](#error-detail)
-    - [Lưu trữ log](#log-storage)
-    - [Cấp độ log](#log-severity-levels)
-    - [Tuỳ biến cấu hình Monolog](#custom-monolog-configuration)
 - [Xử lý exception](#the-exception-handler)
     - [Phương thức report](#report-method)
     - [Phương thức render](#render-method)
     - [Reportable và Renderable Exceptions](#renderable-exceptions)
 - [HTTP Exceptions](#http-exceptions)
     - [Tuỳ biến page HTTP Error](#custom-http-error-pages)
-- [Logging](#logging)
 
 <a name="introduction"></a>
 ## Giới thiệu
 
 Khi bạn bắt đầu một dự án mới, các xử lý lỗi và các ngoại lệ đã được cấu hình sẵn cho bạn. Class `App\Exceptions\Handler` là nơi mà tất cả các ngoại lệ sẽ được gọi tới trong application, tại đó các ngoại lệ sẽ được log và sau đó được hiển thị trở lại cho người dùng. Chúng ta sẽ đi sâu hơn vào class này trong các phần còn lại của tài liệu.
 
-Để log, Laravel sử dụng thư viện [Monolog](https://github.com/Seldaek/monolog), nó cung cấp và hỗ trợ cho nhiều xử lý log mạnh mẽ. Laravel đã cấu hình sẵn cho bạn một số xử lý, cho phép bạn có thể chọn giữa log ra một file, hoặc log ra nhiều file theo thứ tự ngày tháng năm hoặc ghi thông tin lỗi vào log system.
-
 <a name="configuration"></a>
 ## Cấu hình
-
-<a name="error-detail"></a>
-### Chi tiết về error
 
 Tùy chọn `debug` trong file cấu hình `config/app.php` của bạn sẽ định nghĩa lượng thông tin về lỗi sẽ được hiển thị cho người dùng. Mặc định, tùy chọn này được khai báo từ giá trị biến môi trường `APP_DEBUG` được lưu trữ trong file `.env` của bạn.
 
 Nếu môi trường phát triển ở local, thì bạn nên lưu biến môi trường `APP_DEBUG` thành `true`. Nếu môi trường chạy product, thì bạn nên lưu giá trị này là `false`. Nếu giá trị được lưu thành `true` trong môi trường product, bạn có thể có nguy cơ lộ các giá trị cấu hình nhạy cảm cho người dùng application.
-
-<a name="log-storage"></a>
-### Lưu trữ log
-
-Mặc định, Laravel hỗ trợ ghi log vào `single` file, `daily` file, `syslog` và `errorlog`. Để cấu hình cơ chế nào sẽ được Laravel sử dụng, bạn có thể sửa đổi tùy chọn `log` trong file cấu hình `config/app.php` của bạn. Ví dụ: nếu bạn muốn dùng các file log daily thay vì một file single, bạn nên lưu giá trị `log` trong file cấu hình `app` của bạn là `daily`:
-
-    'log' => 'daily'
-
-#### Maximum của file daily log
-
-Khi sử dụng chế độ log `daily`, Laravel mặc định sẽ chỉ lưu file log trong năm ngày. Nếu bạn muốn điều chỉnh số lượng file được lưu, bạn có thể thêm giá trị cấu hình `log_max_files` vào file cấu hình `app` của bạn:
-
-    'log_max_files' => 30
-
-<a name="log-severity-levels"></a>
-### Cấp độ log
-
-Khi sử dụng Monolog, thông báo log có thể có các mức độ nghiêm trọng khác nhau. Mặc định, Laravel sẽ ghi tất cả các cấp độ log vào trong bộ lưu trữ. Tuy nhiên, trong môi trường production, bạn có thể muốn cấu hình mức độ nghiêm trọng tối thiểu cần được ghi lại bằng cách thêm tùy chọn `log_level` vào file cấu hình `app.php` của bạn.
-
-Khi tùy chọn này đã được cấu hình, Laravel sẽ chỉ ghi lại tất cả các cấp độ log mà lớn hơn hoặc bằng với mức độ nghiêm trọng đã được cấu hình. Ví dụ: nếu `log_level` của bạn là `error` thì các log sẽ log ra là **error**, **critical**, **alert**, và **emergency**:
-
-    'log_level' => env('APP_LOG_LEVEL', 'error'),
-
-> {tip} Monolog có thể nhận ra các mức độ nghiêm trọng theo thứ tự như sau - từ mức độ nghiêm trọng thấp nhất đến mức độ nghiêm trọng cao nhất: `debug`, `info`, `notice`, `warning`, `error`, `critical`, `alert`, `emergency`.
-
-<a name="custom-monolog-configuration"></a>
-### Tuỳ biến cấu hình Monolog
-
-Nếu bạn muốn có toàn quyền kiểm soát cách Monolog được cấu hình trong application của bạn, bạn có thể sử dụng phương thức `configureMonologUsing` của application. Bạn nên gọi đến phương thức này trong file `bootstrap/app.php` ngay trước khi biến `$app` được trả về bởi file đó:
-
-    $app->configureMonologUsing(function ($monolog) {
-        $monolog->pushHandler(...);
-    });
-
-    return $app;
-
-#### Tuỳ biến tên channel
-
-Mặc định, Monolog được khởi tạo với tên trùng với tên môi trường hiện tại, chẳng hạn như `production` hoặc `local`. Để thay đổi giá trị này, hãy thêm tùy chọn `log_channel` vào file cấu hình `app.php` của bạn:
-
-    'log_channel' => env('APP_LOG_CHANNEL', 'my-app-name'),
 
 <a name="the-exception-handler"></a>
 ## Xử lý exception
@@ -98,6 +47,8 @@ Ví dụ, nếu bạn cần report các loại ngoại lệ khác nhau theo các
 
         return parent::report($exception);
     }
+
+> {tip} Thay vì thực hiện nhiều kiểm tra `instanceof` trong phương thức `report` của bạn, hãy thử sử dụng [reportable exceptions](/docs/{{version}}/errors#renderable-exceptions)
 
 #### Helper `report`
 
@@ -204,55 +155,3 @@ Helper `abort` sẽ ngay lập tức đưa ra một ngoại lệ mà được x�
 Laravel giúp dễ dàng tuỳ biến các trang error có HTTP status code khác nhau. Ví dụ: nếu bạn muốn tùy biến trang erorr có HTTP status code 404, hãy tạo một file `resources/views/errors/404.blade.php`. File sẽ được hiển thị cho tất cả các erorr 404 do application của bạn tạo ra. Các view trong thư mục này phải được đặt tên khớp với HTTP status code tương ứng. Một instance `HttpException` sẽ được đưa ra bởi hàm `abort` và sẽ được chuyển đến view như là một biến `$exception`:
 
     <h2>{{ $exception->getMessage() }}</h2>
-
-<a name="logging"></a>
-## Logging
-
-Laravel cung cấp một lớp trừu tượng đơn giản trên thư viện [Monolog](https://github.com/seldaek/monolog) mạnh mẽ. Theo mặc định, Laravel được cấu hình để tạo file log cho application của bạn trong thư mục `storage/logs`. Bạn có thể viết thông tin vào log bằng cách sử dụng [facade](/docs/{{version}}/facades) `Log`:
-
-    <?php
-
-    namespace App\Http\Controllers;
-
-    use App\User;
-    use Illuminate\Support\Facades\Log;
-    use App\Http\Controllers\Controller;
-
-    class UserController extends Controller
-    {
-        /**
-         * Show the profile for the given user.
-         *
-         * @param  int  $id
-         * @return Response
-         */
-        public function showProfile($id)
-        {
-            Log::info('Showing user profile for user: '.$id);
-
-            return view('user.profile', ['user' => User::findOrFail($id)]);
-        }
-    }
-
-Logger cung cấp tám cấp độ ghi log được định nghĩa trong [RFC 5424](https://tools.ietf.org/html/rfc5424): **emergency**, **alert**, **critical**, **error**, **warning**, **notice**, **info** và **debug**.
-
-    Log::emergency($message);
-    Log::alert($message);
-    Log::critical($message);
-    Log::error($message);
-    Log::warning($message);
-    Log::notice($message);
-    Log::info($message);
-    Log::debug($message);
-
-#### Context data
-
-Một mảng dữ liệu context data cũng có thể được truyền vào trong các phương thức log. Dữ liệu context data này sẽ được định dạng và hiển thị với thông điệp log:
-
-    Log::info('User failed to login.', ['id' => $user->id]);
-
-#### Truy cập vào istance Monolog
-
-Monolog có nhiều xử lý khác mà có thể bạn cần sử dụng để log. Nếu cần, bạn có thể truy cập vào instance Monolog đang được sử dụng bởi Laravel:
-
-    $monolog = Log::getMonolog();

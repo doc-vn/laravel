@@ -64,7 +64,7 @@ Nếu bạn đang deploy application của bạn đến một server đang chạ
 
 Khi deploy application vào production, hãy chắc chắn là bạn đã tối ưu hoá class autoloader map của Composer, để Composer có thể nhanh chóng tìm thấy file thích hợp cho một class:
 
-    composer install --optimize-autoloader
+    composer install --optimize-autoloader --no-dev
 
 > {tip} Ngoài việc tối ưu autoloader, bạn cũng nên chắc chắn là luôn có file `composer.lock` trong project source code của bạn. Các library trong project của bạn có thể cài đặt nhanh hơn khi mà có file `composer.lock` này.
 
@@ -76,6 +76,8 @@ Khi deploy application vào production, bạn cũng nên đảm bảo là bạn 
     php artisan config:cache
 
 Lệnh này sẽ nối tất cả các file config của Laravel thành một file và được lưu vào trong bộ nhớ cache, giúp giảm đáng kể số lượng trao đổi giữa framework với filesystem khi tải các value config của bạn.
+
+> {note} Nếu bạn chạy lệnh `config:cache` trong quá trình deploy, bạn nên đảm bảo là bạn chỉ gọi hàm `env` từ trong các file cấu hình của bạn. Khi các file cấu hình đã được lưu vào trong bộ nhớ cache, thì file `.env` sẽ không được load và tất cả các code được gọi đến hàm `env` sẽ đều trả về `null`.
 
 <a name="optimizing-route-loading"></a>
 ### Tối ưu load route

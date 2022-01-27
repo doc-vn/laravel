@@ -19,6 +19,7 @@
 - [Query Scope](#query-scopes)
     - [Global Scope](#global-scopes)
     - [Local Scope](#local-scopes)
+- [So sánh Model](#comparing-models)
 - [Event](#events)
     - [Observer](#observers)
 
@@ -36,13 +37,13 @@ Trước khi bắt đầu, bạn hãy chắc chắn là đã cấu hình kết n
 
 Cách dễ nhất để tạo một instance model là sử dụng [lệnh Artisan](/docs/{{version}}/artisan) `make: model`:
 
-    php artisan make:model User
+    php artisan make:model Flight
 
 Nếu bạn muốn tạo cả file [migration cho cơ sở dữ liệu](/docs/{{version}}/migrations) khi bạn tạo model, bạn có thể sử dụng tùy chọn `--migration` hoặc `-m`:
 
-    php artisan make:model User --migration
+    php artisan make:model Flight --migration
 
-    php artisan make:model User -m
+    php artisan make:model Flight -m
 
 <a name="eloquent-model-conventions"></a>
 ### Quy ước tên Eloquent Model
@@ -628,6 +629,10 @@ Nếu bạn muốn xóa một global trong cho một truy vấn nhất định, 
 
     User::withoutGlobalScope(AgeScope::class)->get();
 
+Hoặc, nếu bạn đã định nghĩa global scope dùng Closure:
+
+    User::withoutGlobalScope('age')->get();
+
 Nếu bạn muốn xóa một vài hoặc thậm chí là tất cả các global scope, bạn cũng có thể sử dụng phương thức `withoutGlobalScopes`:
 
     // Remove all of the global scopes...
@@ -711,12 +716,23 @@ Bây giờ, bạn có thể truyền tham số khi gọi scope:
 
     $users = App\User::ofType('admin')->get();
 
+<a name="comparing-models"></a>
+## So sánh Model
+
+Thỉnh thoảng bạn có thể cần xác định xem hai model có "giống nhau" hay không. Phương thức `is` có thể được sử dụng để xác minh hai model đó có cùng khóa chính,cùng bảng và cùng kết nối cơ sở dữ liệu:
+
+    if ($post->is($anotherPost)) {
+        //
+    }
+
 <a name="events"></a>
 ## Event
 
-Các eloquent model sẽ kích hoạt một số event, cho phép bạn hook đến các chỗ khác trong vòng đời của một model: `retrieved`, `creating`, `created`, `updating`, `updated`, `saving`, `saved`, `deleting`, `deleted`, `restoring`, `restored`. Event cho phép bạn dễ dàng thực thi code mỗi khi một class model cụ thể nào đó được lưu hoặc được cập nhật vào trong cơ sở dữ liệu.
+Các eloquent model sẽ kích hoạt một số event, cho phép bạn hook đến các chỗ khác trong vòng đời của một model: `retrieved`, `creating`, `created`, `updating`, `updated`, `saving`, `saved`, `deleting`, `deleted`, `restoring`, `restored`. Event cho phép bạn dễ dàng thực thi code mỗi khi một class model cụ thể nào đó được lưu hoặc được cập nhật vào trong cơ sở dữ liệu. Mỗi event sẽ nhận về một instance của model đó thông qua phương thức khởi tạo của event đó.
 
 Event `retrieved` sẽ được kích hoạt khi một model được lấy ra khỏi cơ sở dữ liệu. Khi một model mới được lưu vào lần đầu tiên, các event `creating` và `created` sẽ kích hoạt. Nếu một model đã có trong cơ sở dữ liệu và phương thức `save` được gọi, thì các event `updating` và `updated` sẽ kích hoạt. Tuy nhiên, trong cả hai trường hợp trên, thì các event `saving` / `saved` cũng sẽ kích hoạt.
+
+> {note} Khi bạn cập nhật một loạt dữ liệu thông qua Eloquent, thì các event của model như `saved` và `updated` sẽ không được kích hoạt cho các model đó. Điều này là do các model không thực sự được lấy ra khi bạn chạy các cập nhật đó.
 
 Để bắt đầu, hãy định nghĩa một thuộc tính `$dispatchesEvents` trên model Eloquent của bạn để nối các thời điểm khác nhau trong vòng đời của model Eloquent đó vào các [event classes](/docs/{{version}}/events) của bạn:
 
@@ -747,7 +763,13 @@ Event `retrieved` sẽ được kích hoạt khi một model được lấy ra k
 <a name="observers"></a>
 ### Observer
 
-Nếu bạn đang listen nhiều event trên một model, bạn có thể sử dụng các observer để nhóm tất cả các listen của bạn vào trong một class duy nhất. Các class observer có tên phương thức chính là tên các event Eloquent mà bạn muốn listen. Mỗi phương thức này nhận vào một model làm tham số duy nhất của chúng. Laravel không chứa một thư mục mặc định cho observer, vì vậy bạn có thể tạo bất kỳ thư mục nào mà bạn muốn để chứa các class observer của bạn:
+#### Defining Observers
+
+Nếu bạn đang listen nhiều event trên một model, bạn có thể sử dụng các observer để nhóm tất cả các listen của bạn vào trong một class duy nhất. Các class observer có tên phương thức chính là tên các event Eloquent mà bạn muốn listen. Mỗi phương thức này nhận vào một model làm tham số duy nhất của chúng. Lệnh Artisan `make:Observer` là cách dễ nhất để tạo một class observer mới:
+
+    php artisan make:observer UserObserver --model=User
+
+Lệnh này sẽ lưu file observer mới vào trong thư mục `App/Observers` của bạn. Nếu thư mục này không tồn tại, Artisan sẽ tạo nó cho bạn. Class observer mới của bạn sẽ trông giống như sau:
 
     <?php
 
@@ -758,7 +780,7 @@ Nếu bạn đang listen nhiều event trên một model, bạn có thể sử d
     class UserObserver
     {
         /**
-         * Listen to the User created event.
+         * Handle to the User "created" event.
          *
          * @param  \App\User  $user
          * @return void
@@ -769,12 +791,23 @@ Nếu bạn đang listen nhiều event trên một model, bạn có thể sử d
         }
 
         /**
-         * Listen to the User deleting event.
+         * Handle the User "updated" event.
          *
          * @param  \App\User  $user
          * @return void
          */
-        public function deleting(User $user)
+        public function updated(User $user)
+        {
+            //
+        }
+
+        /**
+         * Handle the User "deleted" event.
+         *
+         * @param  \App\User  $user
+         * @return void
+         */
+        public function deleted(User $user)
         {
             //
         }

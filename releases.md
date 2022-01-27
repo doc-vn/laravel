@@ -2,7 +2,7 @@
 
 - [Cấu trúc phiên bản](#versioning-scheme)
 - [Chính sách hỗ trợ](#support-policy)
-- [Laravel 5.5](#laravel-5.5)
+- [Laravel 5.6](#laravel-5.6)
 
 <a name="versioning-scheme"></a>
 ## Cấu trúc phiên bản
@@ -13,480 +13,179 @@ Khi sủ dụng framework Laravel hoặc các component của nó từ applicati
 
 Các bản phát hành thay đổi Paradigm được phân tách qua nhiều năm và đại diện cho những thay đổi căn bản trong kiến trúc và quy ước của framework. Hiện tại, chưa có bản phát hành nào mà cần phải thay đổi Paradigm được phát triển trong hiện tại.
 
-#### Tại sao Laravel không sử dụng phiên bản Semantic?
-
-Ngoài ra, tất cả các component tùy chọn của Laravel như (Cashier, Dusk, Valet, Socialite, vv...) **đều** sử dụng phiên bản Semantic. Tuy nhiên, bản thân framework Laravel thì không. Lý do cho điều này là bởi vì phiên bản Semantic là một cách "tiếp cận" để xác định xem hai đoạn mã có tương thích hay không. Ngay cả khi sử dụng phiên bản Semantic, bạn vẫn phải cài đặt các package nâng cấp và phải chạy lại bộ test suite của bạn để biết được rằng liệu có gì đó *thực sự* không tương thích với code của bạn không.
-
-Vì vậy, thay vào đó, framework Laravel sử dụng cấu trúc phiên bản có tính truyền đạt cao hơn về phạm vi phát hành thực tế. Hơn nữa, vì các bản phát hành nhỏ sẽ **không bao giờ** chứa các thay đổi mà dẫn đến hệ thống của bạn bị lỗi, nên bạn sẽ không bao giờ nhận được các thay đổi nào mà có thể gây lỗi hệ thống, chừng nào các ràng buộc phiên bản của bạn vẫn tuân theo quy ước `paradigm.major.*`.
-
 <a name="support-policy"></a>
 ## Chính sách hỗ trợ
 
 Đối với các bản phát hành hỗ trợ dài hạn, chẳng hạn như Laravel 5.5, các bản sửa lỗi được cung cấp trong 2 năm và các bản sửa lỗi bảo mật được cung cấp trong 3 năm. Những bản phát hành này cung cấp các hỗ trợ và bảo trì dài nhất. Đối với các bản phát hành bình thường, các bản sửa lỗi được cung cấp trong 6 tháng và các bản sửa lỗi bảo mật được cung cấp trong 1 năm.
 
-<a name="laravel-5.5"></a>
-## Laravel 5.5 (LTS)
+| Version | Release | Bug Fixes Until | Security Fixes Until |
+| --- | --- | --- | --- |
+| 5.0 | ngày 4 tháng 2 năm 2015 | ngày 4 tháng 8 năm 2015 | ngày 4 tháng 2 năm 2016 |
+| 5.1 (LTS) | ngày 9 tháng 6 năm 2015 | ngày 9 tháng 6 năm 2017 | ngày 9 tháng 6 năm 2018 |
+| 5.2 | ngày 21 tháng 12 năm 2015 | ngày 6 tháng 12 năm 2016 | ngày 21 tháng 12 năm 2016 |
+| 5.3 | ngày 23 tháng 8 năm 2016 | ngày 23 tháng 2 năm 2016 | ngày 23 tháng 8 năm 2017 |
+| 5.4 | ngày 24 tháng 1 năm 2017 | ngày 24 tháng 7 năm 2017| ngày 24 tháng 1 năm 2018 |
+| 5.5 (LTS) | ngày 30 tháng 8 năm 2017 | ngày 30 tháng 8 năm 2019 | ngày 30 tháng 8 năm 2020 |
+| 5.6 | ngày 7 tháng 2 năm 2018 | ngày 7 tháng 8 năm 2018 | ngày 7 tháng 2 năm 2019 |
 
-Laravel 5.5 tiếp tục các cải tiến được thực hiện trong Laravel 5.4 bằng cách thêm tính năng tự động phát hiện package, API resources / chuyển đổi, tự động đăng ký các lệnh console, kết hợp nhiều queued job trong một lần thực hiện, giới hạn queued job, thời gian job được chạy, tạo mailable, tạo và báo cáo các exception, xử lý exception sẽ phù hợp hơn, cải thiện việc test cơ sở dữ liệu, dễ dàng chỉnh sửa validation rule hơn, hỗ trợ React, các phương thức `Route::view` và `Route::redirect`, "locks" các driver bộ nhớ cache như Memcached và Redis, thông báo, hỗ trợ Chrome trong Dusk, các shortcut trong Blade sẽ tiện lợi, hỗ trợ trust proxy, và nhiều hơn thế nữa.
+<a name="laravel-5.6"></a>
+## Laravel 5.6
 
-Ngoài ra, Laravel 5.5 cũng trùng với việc phát hành [Laravel Horizon](https://horizon.laravel.com), một bảng điều khiển queue mới và hệ thống cấu hình cho các queue Laravel mà được dựa trên Redis của bạn.
+Laravel 5.6 tiếp tục những cải tiến đã được thực hiện trong Laravel 5.5 bằng cách nâng cấp hệ thống ghi log, task schedule trên một server, cải tiến chuyển hoá model, giới hạn số lượt truy cập, các class broadcast channel, API resource controller, cải tiến định dạng ngày tháng của Eloquent, bí danh Blade component, hỗ trợ hàm hash Argon2, thêm package Collision và hơn thế nữa. Ngoài ra, tất cả các front-end đã được nâng cấp lên Bootstrap 4.
 
-> {tip} Tài liệu này sẽ chỉ tóm tắt những cải tiến cần chú ý nhất đối với framework; nhưng, nếu bạn cần xem các thay đổi một cách kỹ lưỡng hơn thì bạn có thể xem [trên GitHub](https://github.com/laravel/framework/blob/5.5/CHANGELOG-5.5.md).
+Tất cả các component của Symfony mà được Laravel sử dụng đều đã được nâng cấp lên phiên bản Symfony `~4.0`.
 
-### Laravel Horizon
+Việc phát hành Laravel 5.6 trùng với việc phát hành [Spark 6.0](https://spark.laravel.com), đây là bản nâng cấp lớn đầu tiên của Laravel Spark kể từ khi phát hành. Spark 6.0 giới thiệu giá per-seat cho Stripe và Braintree, localization, Bootstrap 4, giao diện người dùng nâng cao và hỗ trợ Stripe Elements.
 
-Horizon cung cấp một bảng điều khiển đẹp mắt và cấu hình code-driven cho các queue Redis được hỗ trợ bởi Laravel của bạn. Horizon cho phép bạn dễ dàng theo dõi các số liệu chính của hệ thống queue của bạn như job được thông qua, thời gian chạy và job bị thất bại.
+> {tip} Tài liệu này sẽ chỉ tóm tắt những cải tiến cần chú ý nhất đối với framework; nhưng, nếu bạn cần xem các thay đổi một cách kỹ lưỡng hơn thì bạn có thể xem [trên GitHub](https://github.com/laravel/framework/blob/5.6/CHANGELOG-5.6.md)..
 
-Tất cả các cấu hình worker của bạn được lưu trữ trong một file cấu hình đơn giản, cho phép các cấu hình của bạn lưu vào trong source control nơi mà toàn bộ nhóm của bạn có thể làm việc cùng nhau.
+### Logging Improvements
 
-Để biết thêm thông tin về Horizon, hãy xem [tài liệu đầy đủ của Horizon](/docs/{{version}}/horizon)
+Laravel 5.6 mang đến những cải tiến lớn cho hệ thống ghi log. Tất cả cấu hình ghi log được lưu trong file cấu hình `config/logging.php` mới. Giờ đây, bạn có thể dễ dàng xây dựng các "stack" logging để gửi tlog message đến nhiều trình xử lý log khác nhau. Ví dụ: bạn có thể gửi tất cả các message cấp độ `debug` vào log hệ thống trong khi gửi các message cấp độ `error` vào Slack để team của bạn có thể nhanh chóng xử lý các lỗi:
 
-### Package Discovery
+    'channels' => [
+        'stack' => [
+            'driver' => 'stack',
+            'channels' => ['syslog', 'slack'],
+        ],
+    ],
 
-> {video} Có một [video hướng dẫn](https://laracasts.com/series/whats-new-in-laravel-5-5/episodes/5) miễn phí cho tính năng này ở trên Laracasts.
+Ngoài ra, giờ đây việc tùy chỉnh các channel log cũng dễ dàng hơn bằng cách sử dụng chức năng "tap" mới của hệ thống ghi log. Để biết thêm thông tin, hãy xem [tài liệu đầy đủ về ghi log](/docs/{{version}}/logging).
 
-Trong các phiên bản trước của Laravel, việc cài đặt package thường yêu cầu thêm một số bước như là thêm service provider vào file cấu hình `app` của bạn và đăng ký các facade liên quan. Tuy nhiên, với Laravel 5.5, Laravel có thể tự động phát hiện và tự động đăng ký service provider và các facade cho bạn.
+### Single Server Task Scheduling
 
-Ví dụ, bạn có thể trải nghiệm điều này bằng cách cài đặt một package rất phổ biến là `barryvdh/laravel-debugbar` vào application Laravel của bạn. Khi package đã được cài đặt qua Composer, debug bar sẽ tự động thêm vào cho application của bạn mà không cần cấu hình thêm bất cứ thứ gì khác:
+> {note} Để sử dụng tính năng này, ứng dụng của bạn phải sử dụng driver cache `memcached` hoặc `redis` làm driver cache mặc định của ứng dụng của bạn. Ngoài ra, tất cả các server phải được giao tiếp với cùng một server cache trung tâm.
 
-    composer require barryvdh/laravel-debugbar
+Nếu ứng dụng của bạn đang chạy trên nhiều server, bạn có thể giới hạn schedule job chỉ được chạy trên một server duy nhất. Ví dụ: giả sử bạn đang có một task schedule là tạo một báo cáo vào mỗi tối thứ Sáu. Nếu schedule của bạn đang chạy trên ba server worker, thì task schedule sẽ được chạy trên cả ba server và tạo báo cáo ba lần. Không tốt!
 
-Các nhà phát triển package cũng chỉ cần thêm các service provider và các facade của họ vào file `composer.json` trong package của họ:
+Để yêu cầu task chỉ được chạy trên một server, hãy sử dụng phương thức `onOneServer` khi bạn định nghĩa task schedule. Server đầu tiên nhận được task sẽ dùng một atomic lock trên job đó để ngăn các server khác chạy cùng một task vào cùng một thời điểm:
 
-    "extra": {
-        "laravel": {
-            "providers": [
-                "Laravel\\Tinker\\TinkerServiceProvider"
-            ]
-        }
-    },
+    $schedule->command('report:generate')
+             ->fridays()
+             ->at('17:00')
+             ->onOneServer();
 
-Để biết thêm thông tin về việc tự thêm service provider và các facade cho các package mà bạn đã phát triển, hãy xem tài liệu đầy đủ về [phát triển package](/docs/{{version}}/packages).
+### Dynamic Rate Limiting
 
-### API Resources
+Khi chỉ định [giới hạn số lượt truy cập](/docs/{{version}}/routing#rate-limiting) trên một nhóm các route trong các bản phát hành trước của Laravel, bạn buộc phải cung cấp số lượng request tối đa:
 
-Khi xây dựng API, bạn có thể cần một lớp chuyển đổi nằm giữa các model Eloquent của bạn và các response JSON được trả về cho người dùng application. Các class resource của Laravel cho phép bạn chuyển đổi một cách rõ ràng và dễ hiểu các model và các collection model của bạn thành JSON.
-
-Một class resource sẽ đại diện cho một model cần được chuyển đổi thành cấu trúc JSON. Ví dụ, đây là một class `UserResource` đơn giản:
-
-    <?php
-
-    namespace App\Http\Resources;
-
-    use Illuminate\Http\Resources\Json\Resource;
-
-    class UserResource extends Resource
-    {
-        /**
-         * Transform the resource into an array.
-         *
-         * @param  \Illuminate\Http\Request
-         * @return array
-         */
-        public function toArray($request)
-        {
-            return [
-                'id' => $this->id,
-                'name' => $this->name,
-                'email' => $this->email,
-                'created_at' => $this->created_at,
-                'updated_at' => $this->updated_at,
-            ];
-        }
-    }
-
-Tất nhiên, đây chỉ là ví dụ cơ bản nhất về API resource. Laravel cũng cung cấp nhiều phương thức khác nhau để giúp bạn xây dựng các resources hoặc các resource collection cho bạn. Để biết thêm thông tin, hãy xem [tài liệu đầy đủ](/docs/{{version}}/eloquent-resources) trên API resource.
-
-### Console Command Auto-Registration
-
-> {video} Có một [video hướng dẫn](https://laracasts.com/series/whats-new-in-laravel-5-5/episodes/12) miễn phí cho tính năng này ở trên Laracasts.
-
-Khi tạo các lệnh console mới, bạn sẽ không còn phải bắt buộc liệt kê chúng vào trong thuộc tính `$commands` trong file Console kernel của bạn. Thay vào đó, một phương thức `load` mới sẽ được gọi từ phương thức `commands` trong file kernel của bạn, nó sẽ quét một thư mục nhất định và sẽ tự động đăng ký bất kỳ lệnh console nào có trong thư mục đó:
-
-    /**
-     * Register the commands for the application.
-     *
-     * @return void
-     */
-    protected function commands()
-    {
-        $this->load(__DIR__.'/Commands');
-
-        // ...
-    }
-
-### New Frontend Presets
-
-> {video} Có một [video hướng dẫn](https://laracasts.com/series/whats-new-in-laravel-5-5/episodes/4) miễn phí cho tính năng này ở trên Laracasts.
-
-Mặc dù Vue scaffolding vẫn có sẵn trong Laravel 5.5, nhưng bạn cũng có thêm một số tùy chọn cài đặt frontend mới mà bạn có thể sử dụng. Trong một application Laravel mới, bạn có thể thay đổi Vue scaffolding thành React scaffolding bằng lệnh `preset`:
-
-    php artisan preset react
-
-Hoặc, bạn có thể xoá hoàn toàn JavaScript và CSS framework scaffolding bằng cách sử dụng cài đặt `none`. Cài đặt này sẽ để lại application của bạn, một file Sass và một vài tiện ích JavaScript đơn giản:
-
-    php artisan preset none
-
-> {note} Các lệnh này chỉ nên chạy trên các bản application Laravel mới. Chúng không nên được sử dụng trên các application đã tồn tại.
-
-### Queued Job Chaining
-
-Kết hợp job cho phép bạn khai báo một danh sách các queued job sẽ được chạy theo một trình tự nhất định. Nếu một job trong danh sách bị thất bại, thì các job còn lại sẽ không được chạy. Để thực thi một danh sách queued job, bạn có thể sử dụng phương thức `withChain` trên bất kỳ dispatchable job nào của bạn:
-
-    ProvisionServer::withChain([
-        new InstallNginx,
-        new InstallPhp
-    ])->dispatch();
-
-### Queued Job Rate Limiting
-
-Nếu application của bạn tương tác với Redis, thì bây giờ bạn có thể điều tiết các queued job của bạn theo thời gian hoặc đồng thời. Tính năng này có thể hỗ trợ khi các queued job của bạn đang tương tác với các API mà đang bị giới hạn về tỷ lệ chạy. Ví dụ, bạn có thể điều tiết một loại job nhất định chỉ chạy 10 lần trong 60 giây.
-
-    Redis::throttle('key')->allow(10)->every(60)->then(function () {
-        // Job logic...
-    }, function () {
-        // Could not obtain lock...
-
-        return $this->release(10);
+    Route::middleware('auth:api', 'throttle:60,1')->group(function () {
+        Route::get('/user', function () {
+            //
+        });
     });
 
-> {tip} Trong ví dụ trên, `key` có thể là bất kỳ một chuỗi nào dùng để xác định một loại job mà bạn muốn giới hạn tỷ lệ chạy. Ví dụ, bạn có thể muốn khởi tạo một key dựa trên tên class của job đó và ID của model Eloquent mà nó đang dùng.
+Trong Laravel 5.6, bạn có thể linh hoạt chỉ định số lượng request tối đa dựa vào một thuộc tính của model `User`. Ví dụ: nếu model `User` của bạn chứa thuộc tính `rate_limit`, bạn có thể truyền tên của thuộc tính đó vào middleware `throttle` để nó sử dụng để tính toán số lượng request tối đa:
 
-Ngoài ra, bạn có thể khai báo số lượng worker tối đa có thể xử lý đồng thời một job nhất định. Điều này có thể hữu ích khi một queued job đang sửa một resource thì chỉ được sửa bởi một job tại một thời điểm. Ví dụ, bạn có thể giới hạn các job mà thuộc một loại đã cho chỉ được xử lý bởi một worker tại một thời điểm:
-
-    Redis::funnel('key')->limit(1)->then(function () {
-        // Job logic...
-    }, function () {
-        // Could not obtain lock...
-
-        return $this->release(10);
+    Route::middleware('auth:api', 'throttle:rate_limit,1')->group(function () {
+        Route::get('/user', function () {
+            //
+        });
     });
 
-### Time Based Job Attempts
+### Broadcast Channel Classes
 
-Thay thế cho việc định nghĩa số lần một job có thể được thử lại trước khi nó thất bại, bạn có thể định nghĩa thời gian mà job đó sẽ hết hạn. Điều này cho phép một job có thể thử thoải mái trong một khoảng thời gian nhất định. Để định nghĩa thời gian mà một job sẽ hết hạn, hãy thêm phương thức `retryUntil` vào class job của bạn:
+Nếu ứng dụng của bạn sử dụng nhiều channel khác nhau, thì file `routes/channels.php` của bạn có thể trở nên rất cồng kềnh. Vì vậy, thay vì sử dụng Closure để cấp quyền cho các channel, bạn có thể sử dụng các class channel. Để tạo một class channel mới, hãy sử dụng lệnh Artisan `make:channel`. Lệnh này sẽ lưu một class channel mới vào trong thư mục `App/Broadcasting`.
 
-    /**
-     * Determine the time at which the job should timeout.
-     *
-     * @return \DateTime
-     */
-    public function retryUntil()
-    {
-        return now()->addSeconds(5);
-    }
+    php artisan make:channel OrderChannel
 
-> {tip} Bạn cũng có thể định nghĩa phương thức `retryUntil` trên các queued event listener của bạn.
+Tiếp theo, đăng ký channel của bạn vào trong file `routes/channels.php`:
 
-### Validation Rule Objects
+    use App\Broadcasting\OrderChannel;
 
-> {video} Có một [video hướng dẫn](https://laracasts.com/series/whats-new-in-laravel-5-5/episodes/7) miễn phí cho tính năng này ở trên Laracasts.
+    Broadcast::channel('order.{order}', OrderChannel::class);
 
-Các đối tượng validation rule cung cấp một cách nhỏ gọn để thêm các validation rule vào application của bạn. Trong các phiên bản trước của Laravel, phương thức `Validator::extend` đã được sử dụng để thêm các validation rule thông qua Closures. Tuy nhiên, điều này có thể trở lên rất cồng kềnh. Trong Laravel 5.5, lệnh Artisan `make:rule` mới sẽ tạo ra một file validation rule mới trong thư mục `app/Rules`:
-
-    php artisan make:rule ValidName
-
-Một đối tượng validation rule chỉ có hai phương thức là: `passes` và `message`. Phương thức `passes` nhận vào giá trị và tên của thuộc tính và sẽ trả về `true` hoặc `false` tùy thuộc vào giá trị thuộc tính có hợp lệ hay không. Phương thức `message` sẽ trả về thông báo lỗi của validation, nó sẽ được sử dụng khi validation thất bại:
+Cuối cùng, bạn có thể viết các logic cấp quyền cho channel của bạn vào trong phương thức `join` của class channel. Phương thức `join` sẽ chứa cùng một logic với code mà bạn thường viết trong Closure cấp quyền channel của bạn. Tất nhiên, bạn cũng có thể tận dụng lợi thế của liên kết model channel:
 
     <?php
 
-    namespace App\Rules;
+    namespace App\Broadcasting;
 
-    use Illuminate\Contracts\Validation\Rule;
+    use App\User;
+    use App\Order;
 
-    class ValidName implements Rule
+    class OrderChannel
     {
         /**
-         * Determine if the validation rule passes.
-         *
-         * @param  string  $attribute
-         * @param  mixed  $value
-         * @return bool
-         */
-        public function passes($attribute, $value)
-        {
-            return strlen($value) === 6;
-        }
-
-        /**
-         * Get the validation error message.
-         *
-         * @return string
-         */
-        public function message()
-        {
-            return 'The name must be six characters long.';
-        }
-    }
-
-Khi rule đã được định nghĩa, bạn có thể sử dụng rule đó bằng cách truyền một instance của đối tượng rule đó với các rule validation khác của bạn:
-
-    use App\Rules\ValidName;
-
-    $request->validate([
-        'name' => ['required', new ValidName],
-    ]);
-
-### Trusted Proxy Integration
-
-Khi application của bạn đang chạy sau một hệ thống load balancer, mà không dùng chứng chỉ TLS / SSL để connect đến server của bạn. Đôi khi bạn sẽ cảm thấy rằng application của bạn không thể trả về các request HTTPS. Thông thường, điều này là do application của bạn đang bị chuyển tiếp lưu lượng truy cập từ load balancer vào cổng 80 và không biết rằng nó đang tạo ra các request không an toàn.
-
-Để giải quyết vấn đề này, nhiều người dùng Laravel đã cài đặt package [Trusted Proxies](https://github.com/fideloper/TrustedProxy) của Chris Fidao. Vì đây là một trường hợp phổ biến, nên package của Chris cũng đã được sử dụng mặc định ở trong Laravel 5.5.
-
-Một middleware `App\Http\Middleware\TrustProxies` mới đã có mặc định trong application Laravel 5.5. Middleware này cho phép bạn tùy chỉnh các proxy sẽ được application của bạn tin tưởng:
-
-    <?php
-
-    namespace App\Http\Middleware;
-
-    use Illuminate\Http\Request;
-    use Fideloper\Proxy\TrustProxies as Middleware;
-
-    class TrustProxies extends Middleware
-    {
-        /**
-         * The trusted proxies for this application.
-         *
-         * @var array
-         */
-        protected $proxies;
-
-        /**
-         * The current proxy header mappings.
-         *
-         * @var array
-         */
-        protected $headers = [
-            Request::HEADER_FORWARDED => 'FORWARDED',
-            Request::HEADER_X_FORWARDED_FOR => 'X_FORWARDED_FOR',
-            Request::HEADER_X_FORWARDED_HOST => 'X_FORWARDED_HOST',
-            Request::HEADER_X_FORWARDED_PORT => 'X_FORWARDED_PORT',
-            Request::HEADER_X_FORWARDED_PROTO => 'X_FORWARDED_PROTO',
-        ];
-    }
-
-### On-Demand Notifications
-
-Thỉnh thoảng bạn có thể cần gửi thông báo cho người dùng mà thông tin người dùng đó chưa có trong bảng cơ sở dữ liệu. Sử dụng phương thức `Notification::route`, bạn có thể chỉ định thông tin ad-hoc notification routing trước khi gửi thông báo:
-
-    Notification::route('mail', 'taylor@laravel.com')
-                ->route('nexmo', '5555555555')
-                ->send(new InvoicePaid($invoice));
-
-### Renderable Mailables
-
-> {video} Có một [video hướng dẫn](https://laracasts.com/series/whats-new-in-laravel-5-5/episodes/6) miễn phí cho tính năng này ở trên Laracasts.
-
-Mailable có thể được trả về trực tiếp từ route, cho phép bạn xem trước các thiết kế mailable của bạn trên trình duyệt:
-
-    Route::get('/mailable', function () {
-        $invoice = App\Invoice::find(1);
-
-        return new App\Mail\InvoicePaid($invoice);
-    });
-
-### Renderable & Reportable Exceptions
-
-> {video} Có một [video hướng dẫn](https://laracasts.com/series/whats-new-in-laravel-5-5/episodes/18) miễn phí cho tính năng này ở trên Laracasts.
-
-Trong các phiên bản trước của Laravel, bạn có thể bạn đã phải dùng đến "kiểu kiểm tra kiểu của ngoại lệ" trong xử lý ngoại lệ của bạn để hiển thị các response tùy biến cho một kiểu ngoại lệ nhất định. Chẳng hạn, bạn có thể đã từng viết code như thế này trong phương thức `render` của xử lý ngoại lệ của bạn:
-
-    /**
-     * Render an exception into an HTTP response.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \Exception  $exception
-     * @return \Illuminate\Http\Response
-     */
-    public function render($request, Exception $exception)
-    {
-        if ($exception instanceof SpecialException) {
-            return response(...);
-        }
-
-        return parent::render($request, $exception);
-    }
-
-Trong Laravel 5.5, bây giờ bạn có thể định nghĩa một phương thức `render` trực tiếp trên các ngoại lệ của bạn. Điều này cho phép bạn tạo các logic tạo response trực tiếp lên trên ngoại lệ, giúp tránh việc cồng kềnh các logic có nhiều điều kiện trong quá trình xử lý ngoại lệ của bạn. Nếu bạn cũng muốn tùy biến logic report cho một ngoại lệ, bạn có thể định nghĩa một phương thức `report` trong class này:
-
-    <?php
-
-    namespace App\Exceptions;
-
-    use Exception;
-
-    class SpecialException extends Exception
-    {
-        /**
-         * Report the exception.
+         * Create a new channel instance.
          *
          * @return void
          */
-        public function report()
+        public function __construct()
         {
             //
         }
 
         /**
-         * Report the exception.
+         * Authenticate the user's access to the channel.
          *
-         * @param  \Illuminate\Http\Request
-         * @return void
+         * @param  \App\User  $user
+         * @param  \App\Order  $order
+         * @return array|bool
          */
-        public function render($request)
+        public function join(User $user, Order $order)
         {
-            return response(...);
+            return $user->id === $order->user_id;
         }
     }
 
-### Request Validation
+### API Controller Generation
 
-> {video} Có một [video hướng dẫn](https://laracasts.com/series/whats-new-in-laravel-5-5/episodes/2) miễn phí cho tính năng này ở trên Laracasts.
+Khi khai báo một resource route mà sẽ được sử dụng bởi các API, bạn sẽ muốn loại bỏ các route mà phải nhập form HTML như `create` và` edit`. Để tạo một API resource controller mà không chứa các phương thức đó, bây giờ bạn có thể sử dụng switch `--api` khi chạy lệnh `make:controller`:
 
-Hiện tại, đối tượng `Illuminate\Http\Request` cung cấp phương thức `validate`, cho phép bạn validate một request đến từ một route Closure hoặc một controller:
+    php artisan make:controller API/PhotoController --api
 
-    use Illuminate\Http\Request;
+### Model Serialization Improvements
 
-    Route::get('/comment', function (Request $request) {
-        $request->validate([
-            'title' => 'required|string',
-            'body' => 'required|string',
-        ]);
+Trong các bản phát hành trước của Laravel, các model queue sẽ không khôi phục lại được các quan hệ mà đã được load. Trong Laravel 5.6, các quan hệ mà đã được load trên model thì khi queue model, nó sẽ được tự động load lại khi job được queue xử lý.
 
-        // ...
-    });
+### Eloquent Date Casting
 
-### Consistent Exception Handling
+Giờ đây, bạn có thể tùy biến định dạng của cột date trong Eloquent. Để bắt đầu, hãy chỉ định định dạng date mà bạn mong muốn trong khai báo cast. Sau khi đã được chỉ định, định dạng đó sẽ được sử dụng khi chuyển hóa model thành một mảng hoặc JSON:
 
-Xử lý ngoại lệ của validation hiện đã nhất quán trong toàn bộ framework. Trước đây, có nhiều vị trí trong framework yêu cầu phải được tùy biến để thay đổi các format cho các phản hồi lỗi JSON validation. Ngoài ra, hiện tại, các format mặc định cho các phản hồi JSON validation trong Laravel 5.5 cũng đã tuân thủ quy ước sau:
+    protected $casts = [
+        'birthday' => 'date:Y-m-d',
+        'joined_at' => 'datetime:Y-m-d H:00',
+    ];
 
-    {
-        "message": "The given data was invalid.",
-        "errors": {
-            "field-1": [
-                "Error 1",
-                "Error 2"
-            ],
-            "field-2": [
-                "Error 1",
-                "Error 2"
-            ],
-        }
-    }
+### Blade Component Aliases
 
-Tất cả định dạng lỗi JSON validation có thể được kiểm soát bằng cách định nghĩa một phương thức trên class `App\Exceptions\Handler` của bạn. Ví dụ, code sau đây sẽ định dạng các phản hồi JSON validation sử dụng theo quy ước của bản Laravel 5.4.
+Nếu các component Blade của bạn được lưu trữ trong một thư mục con, bạn có thể muốn đặt tên bí danh cho chúng để dễ dàng truy cập hơn. Ví dụ, hãy tưởng tượng một component Blade được lưu trữ trong thư mục `resources/views/components/alert.blade.php`. Bạn có thể sử dụng phương thức `component` để đặt tên bí danh cho component từ `components.alert` thành `alert`.
 
-    use Illuminate\Validation\ValidationException;
+    Blade::component('components.alert', 'alert');
 
-    /**
-     * Convert a validation exception into a JSON response.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \Illuminate\Validation\ValidationException  $exception
-     * @return \Illuminate\Http\JsonResponse
-     */
-    protected function invalidJson($request, ValidationException $exception)
-    {
-        return response()->json($exception->errors(), $exception->status);
-    }
+Khi component đã được đặt tên bí danh, bạn có thể render nó bằng cách sử dụng lệnh sau:
 
-### Cache Locks
+    @alert('alert', ['type' => 'danger'])
+        You are not allowed to access this resource!
+    @endalert
 
-Các driver bộ nhớ cache như Redis và Memcached hiện có hỗ trợ để lấy và giải phóng các "locks". Điều này cung cấp một phương thức đơn giản để có được các locks tùy ý mà không phải lo lắng khi nhiều threads cùng truy cập vào cùng một lúc khi muốn thay đổi dữ liệu. Ví dụ: trước khi thực hiện một tác vụ, bạn có thể muốn có được một lock để không có bất kỳ một process nào khác có thể thực hiện cùng một tác vụ đang diễn ra:
+Bạn có thể bỏ qua các parameter của component nếu nó không có thêm slot:
 
-    if (Cache::lock('lock-name', 60)->get()) {
-        // Lock obtained for 60 seconds, continue processing...
+    @alert
+        You are not allowed to access this resource!
+    @endalert
 
-        Cache::lock('lock-name')->release();
-    } else {
-        // Lock was not able to be obtained...
-    }
+### Argon2 Password Hashing
 
-Hoặc, bạn có thể truyền vào một Closure cho phương thức `get`. Closure sẽ chỉ được thực hiện nếu có thể lấy được lock và lock sẽ tự động được giải phóng sau khi thực hiện xong Closure:
+Nếu bạn đang xây dựng ứng dụng từ PHP 7.2.0 trở lên, Laravel hiện hỗ trợ hàm hash mật khẩu thông qua thuật toán Argon2. Driver hash mặc định cho ứng dụng của bạn được lưu trong file cấu hình `config/hashing.php` mới.
 
-    Cache::lock('lock-name', 60)->get(function () {
-        // Lock obtained for 60 seconds...
-    });
+### UUID Methods
 
-Ngoài ra, bạn có thể "chặn" cho đến khi lock đó sẵn sàng trở lại:
+Laravel 5.6 giới thiệu hai phương thức mới để tạo UUID: `Str::uuid` và `Str::orderedUuid`. Phương thức `orderedUuid` sẽ tạo một timestamp vào đầu UUID để lập index dễ dàng và hiệu quả hơn cho các cơ sở dữ liệu như MySQL. Mỗi phương thức này trả về một đối tượng `Ramsey\Uuid\Uuid`:
 
-    if (Cache::lock('lock-name', 60)->block(10)) {
-        // Wait for a maximum of 10 seconds for the lock to become available...
-    }
+    use Illuminate\Support\Str;
 
-### Blade Improvements
+    return (string) Str::uuid();
 
-> {video} Có một [video hướng dẫn](https://laracasts.com/series/whats-new-in-laravel-5-5/episodes/10) miễn phí cho tính năng này ở trên Laracasts.
+    return (string) Str::orderedUuid();
 
-Lập trình một lệnh tùy biến đôi khi phức tạp hơn là khi định nghĩa các câu lệnh điều kiện tùy biến đơn giản. Vì lý do đó, Blade hiện cung cấp một phương thức `Blade::if` cho phép bạn định nghĩa các câu lệnh điều kiện tùy biến bằng cách sử dụng Closures. Ví dụ: hãy định nghĩa một câu lệnh điều kiện tùy biến kiểm tra môi trường của application hiện tại. Chúng ta có thể làm điều này trong phương thức `boot` của `AppServiceProvider`:
+### Collision
 
-    use Illuminate\Support\Facades\Blade;
+Từ bây giờ, mặc định ứng dụng `laravel/laravel` chứa một phụ thuộc Composer `dev` cho package [Collision](https://github.com/nunomaduro/collision) do Nuno Maduro tạo ra. Package này cung cấp các báo cáo lỗi tuyệt vời khi tương tác với ứng dụng Laravel của bạn trên dòng lệnh:
 
-    /**
-     * Perform post-registration booting of services.
-     *
-     * @return void
-     */
-    public function boot()
-    {
-        Blade::if('env', function ($environment) {
-            return app()->environment($environment);
-        });
-    }
+<img src="https://raw.githubusercontent.com/nunomaduro/collision/stable/docs/example.png" width="600" height="388">
 
-Khi câu lệnh điều kiện tùy biến này đã được định nghĩa xong, chúng ta có thể dễ dàng sử dụng nó trên các template của bạn:
+### Bootstrap 4
 
-    @env('local')
-        // The application is in the local environment...
-    @else
-        // The application is not in the local environment...
-    @endenv
-
-Ngoài khả năng dễ dàng định nghĩa các câu lệnh điều kiện tùy biến, các shortcut mới cũng đã được thêm vào để nhanh chóng kiểm tra trạng thái xác thực của người dùng hiện tại:
-
-    @auth
-        // The user is authenticated...
-    @endauth
-
-    @guest
-        // The user is not authenticated...
-    @endguest
-
-### New Routing Methods
-
-> {video} Có một [video hướng dẫn](https://laracasts.com/series/whats-new-in-laravel-5-5/episodes/16) miễn phí cho tính năng này ở trên Laracasts.
-
-Nếu bạn đang định nghĩa một route để chuyển hướng đến một URI khác, bây giờ bạn có thể sử dụng phương thức `Route::redirect`. Phương thức này cung cấp một shortcut thuận tiện để bạn không phải định nghĩa lại một route hoặc một controller mới cho việc thực hiện chuyển hướng:
-
-    Route::redirect('/here', '/there', 301);
-
-Nếu route của bạn chỉ cần trả về một view, thì bây giờ bạn có thể sử dụng phương thức `Route::view`. Giống như phương thức `redirect`, phương thức này cung cấp một shortcut đơn giản để bạn không phải định nghĩa một route hoặc một controller. Phương thức `view` chấp nhận một URI làm tham số đầu tiên và tên view làm tham số thứ hai. Ngoài ra, bạn có thể cung cấp một mảng dữ liệu để truyền đến view dưới dạng tham số thứ ba tùy chọn:
-
-    Route::view('/welcome', 'welcome');
-
-    Route::view('/welcome', 'welcome', ['name' => 'Taylor']);
-
-### "Sticky" Database Connections
-
-#### The `sticky` Option
-
-Khi cấu hình đọc / ghi cho các kết nối cơ sở dữ liệu, một tùy chọn cấu hình `stick` mới cũng có thể được sử dụng:
-
-    'mysql' => [
-        'read' => [
-            'host' => '192.168.1.1',
-        ],
-        'write' => [
-            'host' => '196.168.1.2'
-        ],
-        'sticky'    => true,
-        'driver'    => 'mysql',
-        'database'  => 'database',
-        'username'  => 'root',
-        'password'  => '',
-        'charset' => 'utf8mb4',
-        'collation' => 'utf8mb4_unicode_ci',
-        'prefix'    => '',
-    ],
-
-Tùy chọn `stick` là một giá trị *tùy chọn* có thể được sử dụng để cho phép bạn đọc ngay các bản ghi đã được ghi vào cơ sở dữ liệu trong request hiện tại. Nếu tùy chọn `stick` được bật và các thao tác "ghi" đã được thực hiện đối với cơ sở dữ liệu trong request hiện tại, thì mọi thao tác "đọc" tiếp theo sau thao tác "ghi" đó sẽ sử dụng kết nối mà thao tác "ghi" đó đã được gọi. Điều này đảm bảo rằng mọi dữ liệu đã được ghi trong cùng một request có thể được đọc lại ngay lập tức sau thao tác "ghi" đó. Tùy thuộc vào application của bạn, mà bạn có thể quyết định xem đây có phải là một hành động mong muốn cho application của bạn hay không.
+Tất cả các giao diện người dùng như phần authentication và Vue component mẫu đều đã được nâng cấp lên [Bootstrap 4](https://blog.getbootstrap.com/2018/01/18/bootstrap-4/). Mặc định, việc tạo các link phân trang cũng được set mặc định là Bootstrap 4.

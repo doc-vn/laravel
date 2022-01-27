@@ -33,7 +33,7 @@
 <a name="introduction"></a>
 ## Giới thiệu
 
-Laravel đã giúp bạn dễ dàng thực hiện authentication thông qua các form đăng nhập truyền thống, nhưng còn API thì sao? API thường sử dụng token để authenticate người dùng và không duy trì trạng thái session giữa các request. Laravel giúp authenticate API dễ dàng bằng cách sử dụng Laravel Passport, cung cấp một implementation OAuth2 server đầy đủ cho application Laravel của bạn trong vài phút. Passport được xây dựng trên top của [League OAuth2 server](https://github.com/thephpleague/oauth2-server) được duy trì bởi Alex Bilbie.
+Laravel đã giúp bạn dễ dàng thực hiện authentication thông qua các form đăng nhập truyền thống, nhưng còn API thì sao? API thường sử dụng token để authenticate người dùng và không duy trì trạng thái session giữa các request. Laravel giúp authenticate API dễ dàng bằng cách sử dụng Laravel Passport, cung cấp một implementation OAuth2 server đầy đủ cho application Laravel của bạn trong vài phút. Passport được xây dựng trên top của [League OAuth2 server](https://github.com/thephpleague/oauth2-server) được duy trì bởi Andy Millington và Simon Hamp.
 
 > {note} Tài liệu này giả định rằng bạn đã biết OAuth2. Nếu bạn chưa biết về OAuth2, hãy xem xét việc tự học với các thuật ngữ và tính năng chung của OAuth2 trước khi tiếp tục.
 
@@ -42,7 +42,7 @@ Laravel đã giúp bạn dễ dàng thực hiện authentication thông qua các
 
 Để bắt đầu, hãy cài đặt Passport thông qua Composer package manager:
 
-    composer require laravel/passport=~4.0
+    composer require laravel/passport
 
 Passport service provider sẽ đăng ký thư mục database migration của riêng nó với framework, nên vì thế bạn nên migrate cơ sở dữ liệu của bạn sau khi đăng ký provider. Việc migrate của Passport sẽ tạo ra các table mà application của bạn cần để lưu trữ client và access token:
 
@@ -164,7 +164,7 @@ Khi deploy Passport lần đầu đến server production của bạn, bạn có
 <a name="token-lifetimes"></a>
 ### Thời gian sống token
 
-Mặc định, Passport phát hành các access token tồn tại lâu dài mà không bao giờ cần phải refresh. Nếu bạn muốn cấu hình vòng đời token ngắn hơn, bạn có thể sử dụng các phương thức `tokensExpireIn` và `refreshTokensExpireIn`. Các phương thức này phải được gọi từ phương thức `boot` của `AuthServiceProvider`:
+Mặc định, Passport phát hành các access token tồn tại lâu dài có thời hạn một năm. Nếu bạn muốn cấu hình vòng đời token dài hoặc ngắn hơn, bạn có thể sử dụng các phương thức `tokensExpireIn` và `refreshTokensExpireIn`. Các phương thức này phải được gọi từ phương thức `boot` của `AuthServiceProvider`:
 
     /**
      * Register any authentication / authorization services.
@@ -629,7 +629,7 @@ Khi một request được authenticate bằng access token đã vào đến app
 
 Khi xây dựng một API, nó có thể rất hữu ích khi sử dụng API của riêng bạn từ application JavaScript. Cách tiếp cận này cho phép application của bạn sử dụng cùng API mà bạn đang chia sẻ với mọi người. API tương tự cũng có thể được sử dụng bởi application web, application di động, application của bên thứ ba hoặc bất kỳ SDK nào bạn có thể publish trên các trình quản lý package khác nhau.
 
-Thông thường, nếu bạn muốn sử dụng API từ application JavaScript của bạn, bạn cần phải tự gửi access token đến application và truyền nó theo mỗi request đến application của bạn. Tuy nhiên, Passport có chứa một middleware có thể xử lý việc này cho bạn. Tất cả những gì bạn cần làm là thêm một middleware `CreateFreshApiToken` vào middleware group `web` của bạn:
+Thông thường, nếu bạn muốn sử dụng API từ application JavaScript của bạn, bạn cần phải tự gửi access token đến application và truyền nó theo mỗi request đến application của bạn. Tuy nhiên, Passport có chứa một middleware có thể xử lý việc này cho bạn. Tất cả những gì bạn cần làm là thêm một middleware `CreateFreshApiToken` vào middleware group `web` trong file `app/Http/Kernel.php` của bạn:
 
     'web' => [
         // Other middleware...

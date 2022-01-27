@@ -5,6 +5,7 @@
 - [Reset database sau mỗi lần test](#resetting-the-database-after-each-test)
 - [Viết Factory](#writing-factories)
     - [Factory States](#factory-states)
+    - [Factory Callbacks](#factory-callbacks)
 - [Dùng Factory](#using-factories)
     - [Tạo Model](#creating-models)
     - [Lưu trữ Model](#persisting-models)
@@ -92,6 +93,8 @@ Closure đóng vai trò là định nghĩa của factory, bạn có thể trả 
 
 Bạn cũng có thể tạo thêm các file factory cho từng model để tổ chức tốt hơn. Ví dụ: bạn có thể tạo các file `UserFactory.php` và `CommentFactory.php` trong thư mục `database/factories` của bạn. Tất cả các file trong thư mục `factories` sẽ tự động được load bởi Laravel.
 
+> {tip} Bạn có thể cài đặt ngôn ngữ của Faker bằng cách thêm tùy chọn `faker_locale` vào file cấu hình `config/app.php` của bạn.
+
 <a name="factory-states"></a>
 ### Factory States
 
@@ -107,6 +110,29 @@ Nếu state của bạn mà yêu cầu tính toán hoặc một instance `$faker
         return [
             'address' => $faker->address,
         ];
+    });
+
+<a name="factory-callbacks"></a>
+### Factory Callbacks
+
+Các lệnh Factory callback sẽ được đăng ký bằng cách sử dụng các phương thức `afterMaking` và `afterCreating`, đồng thời cho phép bạn thực hiện thêm các tác vụ sau khi making hoặc creating một model. Ví dụ: bạn có thể sử dụng callback để liên kết các model mới với model đã được tạo:
+
+    $factory->afterMaking(App\User::class, function ($user, $faker) {
+        // ...
+    });
+
+    $factory->afterCreating(App\User::class, function ($user, $faker) {
+        $user->accounts()->save(factory(App\Account::class)->make());
+    });
+
+Bạn cũng có thể định nghĩa callback cho [factory states](#factory-states):
+
+    $factory->afterMakingState(App\User::class, 'delinquent', function ($user, $faker) {
+        // ...
+    });
+
+    $factory->afterCreatingState(App\User::class, 'delinquent', function ($user, $faker) {
+        // ...
     });
 
 <a name="using-factories"></a>

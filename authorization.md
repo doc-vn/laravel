@@ -4,6 +4,7 @@
 - [Gates](#gates)
     - [Viết Gates](#writing-gates)
     - [Authorizing Actions](#authorizing-actions-via-gates)
+    - [Chặn Gate Check](#intercepting-gate-checks)
 - [Tạo Policies](#creating-policies)
     - [Tạo Policies](#generating-policies)
     - [Đăng ký Policies](#registering-policies)
@@ -75,7 +76,7 @@ Bạn cũng có thể định nghĩa nhiều hành động trong Gate cùng mộ
     Gate::define('posts.update', 'App\Policies\PostPolicy@update');
     Gate::define('posts.delete', 'App\Policies\PostPolicy@delete');
 
-Mặc định, các hành động `view`, `create`, `update`, và `delete` sẽ được định nghĩa. Bạn có thể ghi đè hoặc thêm vào các hành động khác bằng cách truyền một mảng làm tham số thứ ba cho phương thức `resource`. Các key của mảng đó cần định nghĩa các tên của hành động trong khi các giá trị sẽ định nghĩa các tên của phương thức. Ví dụ: đoạn code sau sẽ tạo ra hai định nghĩa Gate mới là `posts.image` và `posts.photo`:
+Mặc định, các hành động `view`, `create`, `update`, và `delete` sẽ được định nghĩa. Bạn có thể ghi đè các hành động khác bằng cách truyền một mảng làm tham số thứ ba cho phương thức `resource`. Các key của mảng đó cần định nghĩa các tên của hành động trong khi các giá trị sẽ định nghĩa các tên của phương thức. Ví dụ: đoạn code sau sẽ chỉ tạo ra hai định nghĩa Gate mới là `posts.image` và `posts.photo`:
 
     Gate::resource('posts', 'PostPolicy', [
         'image' => 'updateImage',
@@ -104,6 +105,25 @@ Còn nếu bạn muốn kiểm tra một user cụ thể nào đó có được 
     if (Gate::forUser($user)->denies('update-post', $post)) {
         // The user can't update the post...
     }
+
+<a name="intercepting-gate-checks"></a>
+#### Chặn Gate Check
+
+Thỉnh thoảng, bạn có thể muốn cho phép tất cả các hành động cho một người dùng cụ thể. Bạn có thể sử dụng phương thức `before` để định nghĩa một callback sẽ được chạy trước khi tất cả các authorization khác được check:
+
+    Gate::before(function ($user, $ability) {
+        if ($user->isSuperAdmin()) {
+            return true;
+        }
+    });
+
+Nếu callback `before` trả về một kết quả khác null thì kết quả đó sẽ được coi là kết quả của việc kiểm tra.
+
+Bạn có thể sử dụng phương thức `after` để định nghĩa một callback sẽ được thực thi sau mỗi lần authorization check. Tuy nhiên, bạn không thể đổi được kết quả authorization check từ phương thức `after`:
+
+    Gate::after(function ($user, $ability, $result, $arguments) {
+        //
+    });
 
 <a name="creating-policies"></a>
 ## Tạo Policies

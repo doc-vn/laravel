@@ -19,9 +19,9 @@ Khi xây dựng API, bạn có thể cần một class chuyển đổi nằm gi�
 <a name="generating-resources"></a>
 ## Tạo Resources
 
-Để tạo một class resource, bạn có thể sử dụng lệnh Artisan `make:resource`. Mặc định, resource sẽ được lưu vào trong thư mục `app/Http/Resources` của application của bạn. Các resource sẽ được extend từ class `Illuminate\Http\Resources\Json\Resource`:
+Để tạo một class resource, bạn có thể sử dụng lệnh Artisan `make:resource`. Mặc định, resource sẽ được lưu vào trong thư mục `app/Http/Resources` của application của bạn. Các resource sẽ được extend từ class `Illuminate\Http\Resources\Json\JsonResource`:
 
-    php artisan make:resource UserResource
+    php artisan make:resource User
 
 #### Resource Collections
 
@@ -38,15 +38,15 @@ Ngoài việc tạo các resource dùng để chuyển đổi cho các model ri�
 
 > {tip} Đây là tổng quan về resource và resource collection. Bạn được khuyến khích đọc các phần khác của tài liệu này để hiểu sâu hơn về khả năng tùy biến và sức mạnh của các resource có thể cung cấp cho bạn.
 
-Trước khi đi sâu vào tất cả các tùy chọn có sẵn cho bạn khi bạn viết resource, trước tiên chúng ta hãy xem về cách sử dụng resource trong Laravel. Một class resource sẽ đại diện cho một model cần chuyển đổi thành dạng JSON. Ví dụ, đây là một class `UserResource` đơn giản:
+Trước khi đi sâu vào tất cả các tùy chọn có sẵn cho bạn khi bạn viết resource, trước tiên chúng ta hãy xem về cách sử dụng resource trong Laravel. Một class resource sẽ đại diện cho một model cần chuyển đổi thành dạng JSON. Ví dụ, đây là một resource class `User` đơn giản:
 
     <?php
 
     namespace App\Http\Resources;
 
-    use Illuminate\Http\Resources\Json\Resource;
+    use Illuminate\Http\Resources\Json\JsonResource;
 
-    class UserResource extends Resource
+    class User extends JsonResource
     {
         /**
          * Transform the resource into an array.
@@ -69,7 +69,7 @@ Trước khi đi sâu vào tất cả các tùy chọn có sẵn cho bạn khi b
 Mọi class resource đều định nghĩa một phương thức `toArray` trả về mảng các thuộc tính sẽ được chuyển đổi thành JSON trước khi gửi về response. Lưu ý rằng chúng ta có thể truy cập vào các thuộc tính của model trực tiếp từ biến `$this`. Điều này là do class resource sẽ tự động chuyển hướng các thuộc tính và phương thức truy cập vào model để dễ dàng hơn khi truy cập. Khi resource đã được định nghĩa xong, nó có thể được trả về từ một route hoặc một controller:
 
     use App\User;
-    use App\Http\Resources\UserResource;
+    use App\Http\Resources\User as UserResource;
 
     Route::get('/user', function () {
         return new UserResource(User::find(1));
@@ -80,7 +80,7 @@ Mọi class resource đều định nghĩa một phương thức `toArray` trả
 Nếu bạn đang trả về một resource collection hoặc một response đang được phân trang, bạn có thể sử dụng phương thức `collection` khi tạo instance resource trong route hoặc controller của bạn:
 
     use App\User;
-    use App\Http\Resources\UserResource;
+    use App\Http\Resources\User as UserResource;
 
     Route::get('/user', function () {
         return UserResource::collection(User::all());
@@ -137,9 +137,9 @@ Về bản chất, resource rất đơn giản. Nó chỉ cần chuyển đổi 
 
     namespace App\Http\Resources;
 
-    use Illuminate\Http\Resources\Json\Resource;
+    use Illuminate\Http\Resources\Json\JsonResource;
 
-    class UserResource extends Resource
+    class User extends JsonResource
     {
         /**
          * Transform the resource into an array.
@@ -162,7 +162,7 @@ Về bản chất, resource rất đơn giản. Nó chỉ cần chuyển đổi 
 Khi một resource đã được định nghĩa xong, nó có thể được trả về trực tiếp từ một route hoặc một controller:
 
     use App\User;
-    use App\Http\Resources\UserResource;
+    use App\Http\Resources\User as UserResource;
 
     Route::get('/user', function () {
         return new UserResource(User::find(1));
@@ -184,7 +184,7 @@ Nếu bạn muốn thêm các quan hệ vào trong một response của bạn, b
             'id' => $this->id,
             'name' => $this->name,
             'email' => $this->email,
-            'posts' => Post::collection($this->posts),
+            'posts' => PostResource::collection($this->posts),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];
@@ -197,7 +197,7 @@ Nếu bạn muốn thêm các quan hệ vào trong một response của bạn, b
 Trong khi các resource sẽ chuyển một model thành một mảng, thì các resource collection sẽ chuyển một collection của model thành một mảng. Không nhất thiết phải định nghĩa một class resource collection cho từng loại model của bạn vì tất cả các resource đều được cung cấp một phương thức `collection` để tạo các resource collection "ad-hoc" một cách nhanh chóng:
 
     use App\User;
-    use App\Http\Resources\UserResource;
+    use App\Http\Resources\User as UserResource;
 
     Route::get('/user', function () {
         return UserResource::collection(User::all());
@@ -414,21 +414,19 @@ Các response được phân trang luôn chứa các key `meta` và `links` cùn
             'id' => $this->id,
             'name' => $this->name,
             'email' => $this->email,
-            'secret' => $this->when($this->isAdmin(), 'secret-value'),
+            'secret' => $this->when(Auth::user()->isAdmin(), 'secret-value'),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];
     }
 
-Trong ví dụ này, khóa `secret` sẽ chỉ được trả về trong response resource nếu phương thức `$this->isAdmin()` trả về giá trị `true`. Nếu phương thức trả về giá trị `false`, thì khóa `secret` sẽ bị xóa khỏi response resource trước khi nó được gửi về cho client. Phương thức `when` cho phép bạn định nghĩa một resource mà không cần dùng đến các câu lệnh có điều kiện khi xây dựng một mảng.
+Trong ví dụ này, khóa `secret` sẽ chỉ được trả về trong response resource nếu phương thức `$this->isAdmin()` của người dùng hiện tại trả về giá trị `true`. Nếu phương thức trả về giá trị `false`, thì khóa `secret` sẽ bị xóa khỏi response resource trước khi nó được gửi về cho client. Phương thức `when` cho phép bạn định nghĩa một resource mà không cần dùng đến các câu lệnh có điều kiện khi xây dựng một mảng.
 
 Phương thức `when` cũng chấp nhận một Closure là tham số thứ hai của nó, cho phép bạn tính toán giá trị trả về nếu điều kiện đã cho là `true`:
 
-    'secret' => $this->when($this->isAdmin(), function () {
+    'secret' => $this->when(Auth::user()->isAdmin(), function () {
         return 'secret-value';
     }),
-
-> {tip} Hãy nhớ rằng, phương thức được gọi trên resource sẽ được chuyển hướng đến instance model. Vì vậy, trong trường hợp này, phương thức `isAdmin` cũng sẽ được chuyển hướng đến model Eloquent ban đầu, cái mà bạn đang chuyển cho resource.
 
 #### Merging Điều kiện cho thuộc tính
 
@@ -446,7 +444,7 @@ Thỉnh thoảng bạn có thể có một số thuộc tính chỉ được đ�
             'id' => $this->id,
             'name' => $this->name,
             'email' => $this->email,
-            $this->mergeWhen($this->isAdmin(), [
+            $this->mergeWhen(Auth::user()->isAdmin(), [
                 'first-secret' => 'value',
                 'second-secret' => 'value',
             ]),
@@ -478,7 +476,7 @@ Cuối cùng, điều này cũng sẽ giúp bạn dễ dàng tránh được cá
             'id' => $this->id,
             'name' => $this->name,
             'email' => $this->email,
-            'posts' => Post::collection($this->whenLoaded('posts')),
+            'posts' => PostResource::collection($this->whenLoaded('posts')),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];
@@ -584,7 +582,7 @@ Bạn cũng có thể thêm dữ liệu khi khởi tạo một instance resource
 Như bạn đã đọc, resources có thể được trả về trực tiếp từ một route hoặc một controller:
 
     use App\User;
-    use App\Http\Resources\UserResource;
+    use App\Http\Resources\User as UserResource;
 
     Route::get('/user', function () {
         return new UserResource(User::find(1));
@@ -593,7 +591,7 @@ Như bạn đã đọc, resources có thể được trả về trực tiếp t�
 Tuy nhiên, thỉnh thoảng bạn có thể cần tùy biến HTTP response trước khi nó được gửi về client. Có hai cách để thực hiện điều này. Đầu tiên, bạn có thể gắn thêm phương thức `response` vào trong resource. Phương thức này sẽ trả về một instance `Illuminate\Http\Response`, cho phép bạn toàn quyền kiểm soát các header của response:
 
     use App\User;
-    use App\Http\Resources\UserResource;
+    use App\Http\Resources\User as UserResource;
 
     Route::get('/user', function () {
         return (new UserResource(User::find(1)))
@@ -607,9 +605,9 @@ Ngoài ra, bạn cũng có thể định nghĩa một phương thức `withRespo
 
     namespace App\Http\Resources;
 
-    use Illuminate\Http\Resources\Json\Resource;
+    use Illuminate\Http\Resources\Json\JsonResource;
 
-    class UserResource extends Resource
+    class User extends JsonResource
     {
         /**
          * Transform the resource into an array.

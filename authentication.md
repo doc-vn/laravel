@@ -14,8 +14,11 @@
     - [Các phương thức authentication khác](#other-authentication-methods)
 - [HTTP Basic Authentication](#http-basic-authentication)
     - [Stateless HTTP Basic Authentication](#stateless-http-basic-authentication)
+[Logging Out](#logging-out)
+    - [Vô hiệu hoá session trên các thiết bị khác](#invalidating-sessions-on-other-devices)
 - [Authentication bằng bên thứ ba](https://github.com/laravel/socialite)
 - [Thêm tuỳ biến guard](#adding-custom-guards)
+    - [Closure Request Guards](#closure-request-guards)
 - [Thêm tuỳ biến user provider](#adding-custom-user-providers)
     - [User Provider Contract](#the-user-provider-contract)
     - [Authenticatable Contract](#the-authenticatable-contract)
@@ -24,7 +27,7 @@
 <a name="introduction"></a>
 ## Giới thiệu
 
-> {tip} **Bạn có muốn bắt đầu nhanh không?** Bạn chỉ cần chạy `php artisan make:auth` và `php artisan migrate` trong terminal của một application Laravel mới. Sau đó, chuyển hướng url trên trình duyệt của bạn đến `http://your-app.dev/register` hoặc bất kỳ URL nào được gán đến cho application của bạn. Hai lệnh này sẽ đảm nhiệm việc tạo ra toàn bộ hệ thống authentication của bạn!
+> {tip} **Bạn có muốn bắt đầu nhanh không?** Bạn chỉ cần chạy `php artisan make:auth` và `php artisan migrate` trong terminal của một application Laravel mới. Sau đó, chuyển hướng url trên trình duyệt của bạn đến `http://your-app.test/register` hoặc bất kỳ URL nào được gán đến cho application của bạn. Hai lệnh này sẽ đảm nhiệm việc tạo ra toàn bộ hệ thống authentication của bạn!
 
 Laravel làm cho việc thực hiện authentication trở nên rất đơn giản. Trong thực tế, hầu hết mọi thứ đã được cài đặt sẵn cho bạn. File cấu hình authentication sẽ được đặt tại `config/auth.php`, nó sẽ chứa một số tùy chọn cùng theo document để điều chỉnh các hành vi của các service authentication.
 
@@ -74,6 +77,8 @@ Hiện tại bạn đã có các route và các view đã được setup sẵn t
 Khi người dùng được authenticate thành công, họ sẽ được chuyển hướng đến URI `/home`. Bạn có thể tùy chỉnh vị trí được chuyển hướng đến sau khi authenticate thành công bằng cách định nghĩa thêm một thuộc tính `redirectTo` trong `LoginController`, `RegisterController` và `ResetPasswordController`:
 
     protected $redirectTo = '/';
+
+Tiếp theo, bạn cần sửa phương thức `handle` trong middleware `RedirectIfAuthenticated` dùng URI mới của bạn khi chuyển hướng người dùng.
 
 Nếu redirect path cần thêm một số logic để tuỳ chỉnh, thì bạn có thể định nghĩa phương thức `redirectTo` thay vì thuộc tính `redirectTo`:
 
@@ -175,6 +180,22 @@ Tất nhiên, nếu bạn đang sử dụng [controllers](/docs/{{version}}/cont
         $this->middleware('auth');
     }
 
+#### Chuyển hướng người dùng chưa authentication
+
+Khi middleware `auth` phát hiện người dùng chưa được unauthorized, nó sẽ gửi về response JSON `401` hoặc, nếu request không phải là request AJAX, thì nó sẽ chuyển hướng người dùng tới [route mà đã được đặt tên là](/docs/{{version}}/routing#named-routes) `login`.
+
+Bạn có thể sửa hành động này bằng cách định nghĩa một hàm `unauthenticated` trong file `app/Exceptions/Handler.php`:
+
+    use Illuminate\Auth\AuthenticationException;
+
+    protected function unauthenticated($request, AuthenticationException $exception)
+    {
+        return $request->expectsJson()
+                    ? response()->json(['message' => $exception->getMessage()], 401)
+                    : redirect()->guest(route('login'));
+    }
+
+
 #### Chỉ định một guard
 
 Khi gắn middleware `auth` vào một route, bạn cũng có thể chỉ định guard nào sẽ được sử dụng để authenticate người dùng. Guard được chỉ định sẽ phải nằm trong các key trong mảng `guards` của file cấu hình `auth.php` của bạn:
@@ -200,6 +221,7 @@ Chúng ta sẽ truy cập các service authentication của Laravel thông qua [
 
     namespace App\Http\Controllers;
 
+    use Illuminate\Http\Request;
     use Illuminate\Support\Facades\Auth;
 
     class LoginController extends Controller
@@ -207,11 +229,15 @@ Chúng ta sẽ truy cập các service authentication của Laravel thông qua [
         /**
          * Handle an authentication attempt.
          *
+         * @param  \Illuminate\Http\Request $request
+         *
          * @return Response
          */
-        public function authenticate()
+        public function authenticate(Request $request)
         {
-            if (Auth::attempt(['email' => $email, 'password' => $password])) {
+            $credentials = $request->only('email', 'password');
+
+            if (Auth::attempt($credentials)) {
                 // Authentication passed...
                 return redirect()->intended('dashboard');
             }
@@ -340,8 +366,7 @@ Bạn cũng có thể sử dụng HTTP Basic Authentication mà không cần ph�
          */
         public function handle($request, $next)
         {
-            Auth::onceBasic();
-            return $next($request);
+            return Auth::onceBasic() ?: $next($request);
         }
 
     }
@@ -351,6 +376,34 @@ Tiếp theo, [đăng ký route middleware](/docs/{{version}}/middleware#register
     Route::get('api/user', function () {
         // Only authenticated users may enter...
     })->middleware('auth.basic.once');
+
+<a name="logging-out"></a>
+## Logging Out
+
+Để đăng xuất người dùng ra khỏi application của bạn, bạn có thể sử dụng phương thức `logout` trên facade `Auth`. Phương thức này sẽ xóa đi các thông tin xác thực có trong session của người dùng hiện tại:
+
+    use Illuminate\Support\Facades\Auth;
+
+    Auth::logout();
+
+<a name="invalidating-sessions-on-other-devices"></a>
+### Vô hiệu hoá session trên các thiết bị khác
+
+Laravel cũng cung cấp các cơ chế để vô hiệu hoá session và "đăng xuất" người dùng ra khỏi các thiết bị khác của họ mà không vô hiệu hoá session hiện tại của họ. Trước khi bắt đầu, bạn nên đảm bảo là middleware `Illuminate\Session\Middleware\AuthenticateSession` đã được tháo comment trong group middleware `web` trong class `app/Http/Kernel.php` của bạn:
+
+    'web' => [
+        // ...
+        \Illuminate\Session\Middleware\AuthenticateSession::class,
+        // ...
+    ],
+
+Sau đó, bạn có thể sử dụng phương thức `logoutOtherDevices` trên facade `Auth`. Phương thức này sẽ yêu cầu người dùng cung cấp mật khẩu hiện tại của họ:
+
+    use Illuminate\Support\Facades\Auth;
+
+    Auth::logoutOtherDevices($password);
+
+> {note} Khi phương thức `logoutOtherDevices` được gọi, thì các session khác của người dùng sẽ bị vô hiệu hoàn toàn, có nghĩa là họ sẽ bị "đăng xuất" ra khỏi tất cả các guard mà họ đã được đăng nhập trước đó.
 
 <a name="adding-custom-guards"></a>
 ## Thêm tuỳ biến guard
@@ -390,6 +443,39 @@ Như bạn có thể thấy trong ví dụ trên, hàm callback được truyề
         'api' => [
             'driver' => 'jwt',
             'provider' => 'users',
+        ],
+    ],
+
+<a name="closure-request-guards"></a>
+### Closure Request Guards
+
+Cách đơn giản nhất để làm một hệ thống xác thực tùy biến dựa trên HTTP request là sử dụng phương thức `Auth::viaRequest`. Phương thức này sẽ cho phép bạn nhanh chóng định nghĩa quy trình xác thực của bạn bằng một Closure duy nhất.
+
+Để bắt đầu, hãy gọi phương thức `Auth::viaRequest` trong hàm `boot` của class `AuthServiceProvider`. Phương thức `viaRequest` sẽ chấp nhận một tên guard làm đối số đầu tiên của nó. Tên guard này có thể là bất kỳ chuỗi nào mà mô tả guard tùy biến của bạn. Đối số thứ hai được truyền cho phương thức sẽ là một Closure nhận vào một HTTP request và sẽ trả về một instance người dùng hoặc nếu xác thực không thành công, thì sẽ là `null`:
+
+    use App\User;
+    use Illuminate\Http\Request;
+    use Illuminate\Support\Facades\Auth;
+
+    /**
+     * Register any application authentication / authorization services.
+     *
+     * @return void
+     */
+    public function boot()
+    {
+        $this->registerPolicies();
+
+        Auth::viaRequest('custom-token', function ($request) {
+            return User::where('token', $request->token)->first();
+        });
+    }
+
+Sau khi guard tùy biến của bạn đã được định nghĩa, bạn có thể sử dụng guard này trong cấu hình `guard` trong file cấu hình `auth.php` của bạn:
+
+    'guards' => [
+        'api' => [
+            'driver' => 'custom-token',
         ],
     ],
 
@@ -467,7 +553,7 @@ Hàm `retrieveById` sẽ nhận một khóa đại diện cho người dùng, ch
 
 Hàm `retrieveByToken` lấy ra một người dùng bằng unique `$identifier` của nó và "remember me" `$token`, được lưu trữ trong field `remember_token`. Giống như phương thức trước đó, implementation `Authenticatable` sẽ thực hiện việc trả về.
 
-Phương thức `updateRememberToken` sẽ cập nhật field `remember_token` với `$token` mới của `$user`. Mã token mới có thể là mã token mới, được chỉ định khi đăng nhập với "remember me" thành công hoặc khi người dùng đăng xuất.
+Phương thức `updateRememberToken` sẽ cập nhật field `remember_token` với `$token` mới của `$user`. Một mã token mới sẽ được chỉ định khi đăng nhập "remember me" thành công hoặc khi người dùng đăng xuất.
 
 Phương thức `retrieveByCredentials` sẽ nhận một mảng thông tin đăng nhập được truyền vào phương thức `Auth::attempt` khi đăng nhập vào application. Phương thức này sẽ "truy vấn" bộ lưu trữ bên dưới để lấy ra người dùng khớp với các thông tin đăng nhập. Thông thường, phương thức này sẽ chạy một truy vấn với điều kiện "where" trên `$credentials['username']`. Phương thức này sẽ trả về một đối tượng đã được implementation `Authenticatable`. **Phương thức này không nên thực hiện bất kỳ hành động authentication hoặc validation mật khẩu nào.**
 
@@ -476,7 +562,7 @@ Phương thức `validateCredentials` sẽ so sánh `$user` đã nhận với `$
 <a name="the-authenticatable-contract"></a>
 ### Authenticatable Contract
 
-Sau khi chúng ta đã khám phá các phương thức trên `UserProvider`, bây giờ chúng ta hãy xem contract `Authenticatable`. Hãy nhớ rằng, provider nên trả về các đối tượng mà đã implementation của interface này từ các phương thức `retrieveById` và `retrieveByCredentials`:
+Sau khi chúng ta đã khám phá các phương thức trên `UserProvider`, bây giờ chúng ta hãy xem contract `Authenticatable`. Hãy nhớ rằng, provider nên trả về các đối tượng mà đã implementation của interface này từ các phương thức `retrieveById`, `retrieveByToken` và `retrieveByCredentials`:
 
     <?php
 

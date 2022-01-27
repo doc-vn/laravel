@@ -32,9 +32,10 @@
     - [Tạo Component](#generating-components)
     - [Dùng Component](#using-components)
 - [Test tích hợp](#continuous-integration)
-    - [Travis CI](#running-tests-on-travis-ci)
     - [CircleCI](#running-tests-on-circle-ci)
     - [Codeship](#running-tests-on-codeship)
+    - [Heroku CI](#running-tests-on-heroku-ci)
+    - [Travis CI](#running-tests-on-travis-ci)
 
 <a name="introduction"></a>
 ## Giới thiệu
@@ -46,7 +47,7 @@ Laravel Dusk cung cấp một cách kiểm thử API và tự động hóa trìn
 
 Để bắt đầu, bạn cần thêm library `laravel/dusk` cho Composer trong project của bạn:
 
-    composer require --dev laravel/dusk:"^2.0"
+    composer require --dev laravel/dusk:"^4.0"
 
 Khi Dusk đã được cài đặt xong, bạn cần đăng ký service provider `Laravel\Dusk\DuskServiceProvider`. Thông thường, việc này sẽ được thực hiện thông qua đăng ký tự động service provider của Laravel.
 
@@ -365,6 +366,8 @@ Phương thức `attach` có thể được sử dụng để đính kèm một 
 
     $browser->attach('photo', __DIR__.'/photos/me.png');
 
+> {note} Chức năng đính kèm sẽ yêu cầu bạn cài đặt và enable PHP extension `Zip` trong server của bạn.
+
 <a name="using-the-keyboard"></a>
 ### Dùng Keyboard
 
@@ -478,6 +481,10 @@ Khi thực hiện kiểm tra đường dẫn, chẳng hạn như `$browser->asse
 
     $browser->waitForLocation('/secret');
 
+Bạn cũng có thể đợi location của một route đã được đặt tên:
+
+    $browser->waitForRoute($routeName, $parameters);
+
 #### Waiting for Page Reloads
 
 Nếu bạn cần thực hiện các kiểm tra sau khi một trang đã được reload, hãy sử dụng phương thức `waitForReload`:
@@ -547,49 +554,409 @@ Bạn có thể kiểm tra trạng thái của Vue component như sau:
 <a name="available-assertions"></a>
 ## Assertion có sẵn
 
-Dusk cung cấp rất nhiều cách kiểm tra mà bạn có thể thực hiện đối với application của bạn. Tất cả cách kiểm tra có sẵn đều được ghi lại trong bảng dưới đây:
+Dusk cung cấp nhiều yêu cầu kiểm tra mà bạn có thể đưa ra đối với ứng dụng của bạn. Tất cả các yêu cầu kiểm tra có sẵn đều được ghi lại trong danh sách dưới đây:
 
-Assertion  | Description
-------------- | -------------
-`$browser->assertTitle($title)`  |  Kiểm tra tiêu đề của trang phải phù hợp với văn bản đã cho.
-`$browser->assertTitleContains($title)`  |  Kiểm tra tiêu đề của trang phải chứa văn bản đã cho.
-`$browser->assertUrlIs($url)`  |  Kiểm tra URL hiện tại của trang (lưu ý không chứa chuỗi parameter đằng sau url) khớp với chuỗi đã cho.
-`$browser->assertPathBeginsWith($path)`  |  Kiểm tra đường dẫn URL hiện tại phải bắt đầu bằng đường dẫn đã cho.
-`$browser->assertPathIs('/home')`  |  Kiểm tra đường dẫn hiện tại phải khớp với đường dẫn đã cho.
-`$browser->assertPathIsNot('/home')`  |  Kiểm tra đường dẫn hiện tại phải không khớp với đường dẫn đã cho.
-`$browser->assertRouteIs($name, $parameters)`  |  Kiểm tra URL hiện tại phải khớp với URL tên của một route.
-`$browser->assertQueryStringHas($name, $value)`  |  Kiểm tra tham số query string đã cho phải tồn tại và có giá trị đã cho.
-`$browser->assertQueryStringMissing($name)`  |  Kiểm tra tham số query string đã cho phải là không có.
-`$browser->assertHasQueryStringParameter($name)`  |  Kiểm tra rằng tham số query string đã cho phải tồn tại.
-`$browser->assertHasCookie($name)`  |  Kiểm tra cookie đã cho phải tồn tại.
-`$browser->assertCookieMissing($name)`  |  Kiểm tra rằng cookie đã cho không tồn tại.
-`$browser->assertCookieValue($name, $value)`  |  Kiểm tra một cookie phải có một giá trị nhất định.
-`$browser->assertPlainCookieValue($name, $value)`  |  Kiểm tra một cookie không được mã hóa phải có một giá trị nhất định.
-`$browser->assertSee($text)`  |  Kiểm tra text đã cho phải tồn tại trên trang.
-`$browser->assertDontSee($text)`  |  Kiểm tra text đã cho phải không có trên trang.
-`$browser->assertSeeIn($selector, $text)`  |  Kiểm tra text đã cho phải tồn tại trong selector.
-`$browser->assertDontSeeIn($selector, $text)`  |  Kiểm tra text đã cho phải không có trong selector.
-`$browser->assertSourceHas($code)`  |  Kiểm tra rằng source code đã cho phải tồn tại trên trang.
-`$browser->assertSourceMissing($code)`  |  Kiểm tra rằng source code đã cho phải không có trên trang.
-`$browser->assertSeeLink($linkText)`  |  Kiểm tra link đã cho phải tồn tại trên trang.
-`$browser->assertDontSeeLink($linkText)`  |  Kiểm tra link đã cho phải không có trên trang.
-`$browser->assertInputValue($field, $value)`  |  Kiểm tra field input đã cho phải có giá trị đã cho tương ứng.
-`$browser->assertInputValueIsNot($field, $value)`  |  Kiểm tra field input đã cho phải không có giá trị đã cho tương ứng.
-`$browser->assertChecked($field)`  |  Kiểm tra checkbox đã cho phải được chọn.
-`$browser->assertNotChecked($field)`  |  Kiểm tra checkbox đã cho phải không được chọn.
-`$browser->assertRadioSelected($field, $value)`  |  Kiểm tra field radio đã cho phải được chọn.
-`$browser->assertRadioNotSelected($field, $value)` |  Kiểm tra field radio đã cho phải không được chọn.
-`$browser->assertSelected($field, $value)`  |  Kiểm tra dropdown đã cho phải có giá trị đã cho tương ứng.
-`$browser->assertNotSelected($field, $value)`  |  Kiểm tra dropdown đã cho phải không có giá trị đã cho tương ứng.
-`$browser->assertSelectHasOptions($field, $values)`  |  Kiểm tra một mảng các giá trị đã cho có thể được chọn.
-`$browser->assertSelectMissingOptions($field, $values)`  |  Kiểm tra một mảng các giá trị đã cho không thể được chọn.
-`$browser->assertSelectHasOption($field, $value)`  |  Kiểm tra giá trị đã cho có thể được chọn trên field đã cho.
-`$browser->assertValue($selector, $value)`  |  Kiểm tra element giống với selector đã cho có giá trị đã cho tương ứng.
-`$browser->assertVisible($selector)`  |  Kiểm tra element giống với selector đã cho phải được hiển thị.
-`$browser->assertMissing($selector)`  |  Kiểm tra element giống với selector đã cho không được hiển thị.
-`$browser->assertDialogOpened($message)`  |  Kiểm tra một dialog JavaScript với một thông báo đã cho đã phải đang được hiển thị.
-`$browser->assertVue($property, $value, $component)`  |  Kiểm tra một thuộc tính data của Vue component đã cho giống với giá trị đã cho tương úng.
-`$browser->assertVueIsNot($property, $value, $component)`  |  Kiểm tra một thuộc tính data của Vue component đã cho không giống với giá trị đã cho tương úng.
+<style>
+    .collection-method-list > p {
+        column-count: 3; -moz-column-count: 3; -webkit-column-count: 3;
+        column-gap: 2em; -moz-column-gap: 2em; -webkit-column-gap: 2em;
+    }
+
+    .collection-method-list a {
+        display: block;
+    }
+</style>
+
+<div class="collection-method-list" markdown="1">
+[assertTitle](#assert-title)
+[assertTitleContains](#assert-title-contains)
+[assertUrlIs](#assert-url-is)
+[assertPathBeginsWith](#assert-path-begins-with)
+[assertPathIs](#assert-path-is)
+[assertPathIsNot](#assert-path-is-not)
+[assertRouteIs](#assert-route-is)
+[assertQueryStringHas](#assert-query-string-has)
+[assertQueryStringMissing](#assert-query-string-missing)
+[assertFragmentIs](#assert-fragment-is)
+[assertFragmentBeginsWith](#assert-fragment-begins-with)
+[assertFragmentIsNot](#assert-fragment-is-not)
+[assertHasCookie](#assert-has-cookie)
+[assertCookieMissing](#assert-cookie-missing)
+[assertCookieValue](#assert-cookie-value)
+[assertPlainCookieValue](#assert-plain-cookie-value)
+[assertSee](#assert-see)
+[assertDontSee](#assert-dont-see)
+[assertSeeIn](#assert-see-in)
+[assertDontSeeIn](#assert-dont-see-in)
+[assertSourceHas](#assert-source-has)
+[assertSourceMissing](#assert-source-missing)
+[assertSeeLink](#assert-see-link)
+[assertDontSeeLink](#assert-dont-see-link)
+[assertInputValue](#assert-input-value)
+[assertInputValueIsNot](#assert-input-value-is-not)
+[assertChecked](#assert-checked)
+[assertNotChecked](#assert-not-checked)
+[assertRadioSelected](#assert-radio-selected)
+[assertRadioNotSelected](#assert-radio-not-selected)
+[assertSelected](#assert-selected)
+[assertNotSelected](#assert-not-selected)
+[assertSelectHasOptions](#assert-select-has-options)
+[assertSelectMissingOptions](#assert-select-missing-options)
+[assertSelectHasOption](#assert-select-has-option)
+[assertValue](#assert-value)
+[assertVisible](#assert-visible)
+[assertPresent](#assert-present)
+[assertMissing](#assert-missing)
+[assertDialogOpened](#assert-dialog-opened)
+[assertEnabled](#assert-enabled)
+[assertDisabled](#assert-disabled)
+[assertFocused](#assert-focused)
+[assertNotFocused](#assert-not-focused)
+[assertVue](#assert-vue)
+[assertVueIsNot](#assert-vue-is-not)
+[assertVueContains](#assert-vue-contains)
+[assertVueDoesNotContain](#assert-vue-does-not-contain)
+</div>
+
+<a name="assert-title"></a>
+#### assertTitle
+
+Yêu cầu title của page phải đúng với text đã cho:
+
+    $browser->assertTitle($title);
+
+<a name="assert-title-contains"></a>
+#### assertTitleContains
+
+Yêu cầu title của page phải chứa text đã cho:
+
+    $browser->assertTitleContains($title);
+
+<a name="assert-url-is"></a>
+#### assertUrlIs
+
+Yêu cầu URL hiện tại (bỏ phần query string) phải đúng với chuỗi đã cho:
+
+    $browser->assertUrlIs($url);
+
+<a name="assert-path-begins-with"></a>
+#### assertPathBeginsWith
+
+Yêu cầu path của URL hiện tại phải bắt đầu từ path đã cho:
+
+    $browser->assertPathBeginsWith($path);
+
+<a name="assert-path-is"></a>
+#### assertPathIs
+
+Yêu cầu path hiện tại phải đúng với path đã cho:
+
+    $browser->assertPathIs('/home');
+
+<a name="assert-path-is-not"></a>
+#### assertPathIsNot
+
+Yêu cầu path hiện tại không phải là path đã cho:
+
+    $browser->assertPathIsNot('/home');
+
+<a name="assert-route-is"></a>
+#### assertRouteIs
+
+Yêu cầu URL hiện tại phải đúng với URL của một route đã cho:
+
+    $browser->assertRouteIs($name, $parameters);
+
+<a name="assert-query-string-has"></a>
+#### assertQueryStringHas
+
+Yêu cầu tham số query string phải tồn tại:
+
+    $browser->assertQueryStringHas($name);
+
+Yêu cầu tham số query string phải tồn tại và có giá trị đã cho:
+
+    $browser->assertQueryStringHas($name, $value);
+
+<a name="assert-query-string-missing"></a>
+#### assertQueryStringMissing
+
+Yêu cầu tham số query string bị thiếu:
+
+    $browser->assertQueryStringMissing($name);
+    
+<a name="assert-fragment-is"></a>
+#### assertFragmentIs
+
+Yêu cầu fragment hiệnt tại phải đúng với fragment đã cho:
+
+    $browser->assertFragmentIs('anchor');
+    
+<a name="assert-fragment-begins-with"></a>
+#### assertFragmentBeginsWith
+
+Yêu cầu fragment hiệnt tại phải bắt đầu từ fragment đã cho:
+
+    $browser->assertFragmentBeginsWith('anchor');
+    
+<a name="assert-fragment-is-not"></a>
+#### assertFragmentIsNot
+
+Yêu cầu fragment hiệnt tại không phải là fragment đã cho:
+
+    $browser->assertFragmentIsNot('anchor');
+
+<a name="assert-has-cookie"></a>
+#### assertHasCookie
+
+Yêu cầu cookie đã cho phải tồn tại:
+
+    $browser->assertHasCookie($name);
+
+<a name="assert-cookie-missing"></a>
+#### assertCookieMissing
+
+Yêu cầu cookie đã cho phải không tồn tại:
+
+    $browser->assertCookieMissing($name);
+
+<a name="assert-cookie-value"></a>
+#### assertCookieValue
+
+Yêu cầu cookie phải có một giá trị đã cho:
+
+    $browser->assertCookieValue($name, $value);
+
+<a name="assert-plain-cookie-value"></a>
+#### assertPlainCookieValue
+
+Yêu cầu một cookie chưa được mã hóa có một giá trị nhất định:
+
+    $browser->assertPlainCookieValue($name, $value);
+
+<a name="assert-see"></a>
+#### assertSee
+
+Yêu cầu text đã cho có trong page:
+
+    $browser->assertSee($text);
+
+<a name="assert-dont-see"></a>
+#### assertDontSee
+
+Yêu cầu text đã cho không có trong page:
+
+    $browser->assertDontSee($text);
+
+<a name="assert-see-in"></a>
+#### assertSeeIn
+
+Yêu cầu text đã cho phải có trong selector:
+
+    $browser->assertSeeIn($selector, $text);
+
+<a name="assert-dont-see-in"></a>
+#### assertDontSeeIn
+
+Yêu cầu text đã cho không có trong selector:
+
+    $browser->assertDontSeeIn($selector, $text);
+
+<a name="assert-source-has"></a>
+#### assertSourceHas
+
+Yêu cầu source code đã cho có trong page:
+
+    $browser->assertSourceHas($code);
+
+<a name="assert-source-missing"></a>
+#### assertSourceMissing
+
+Yêu cầu source code đã cho không có trong page:
+
+    $browser->assertSourceMissing($code);
+
+<a name="assert-see-link"></a>
+#### assertSeeLink
+
+Yêu cầu link đã cho có trong page:
+
+    $browser->assertSeeLink($linkText);
+
+<a name="assert-dont-see-link"></a>
+#### assertDontSeeLink
+
+Yêu cầu link đã cho không có trong page:
+
+    $browser->assertDontSeeLink($linkText);
+
+<a name="assert-input-value"></a>
+#### assertInputValue
+
+Yêu cầu input field phải có giá trị đã cho:
+
+    $browser->assertInputValue($field, $value);
+
+<a name="assert-input-value-is-not"></a>
+#### assertInputValueIsNot
+
+Yêu cầu input field phải không có giá trị đã cho:
+
+    $browser->assertInputValueIsNot($field, $value);
+
+<a name="assert-checked"></a>
+#### assertChecked
+
+Yêu cầu checkbox phải được chọn:
+
+    $browser->assertChecked($field);
+
+<a name="assert-not-checked"></a>
+#### assertNotChecked
+
+Yêu cầu checkbox không được chọn:
+
+    $browser->assertNotChecked($field);
+
+<a name="assert-radio-selected"></a>
+#### assertRadioSelected
+
+Yêu cầu radio phải chọn giá trị đã cho:
+
+    $browser->assertRadioSelected($field, $value);
+
+<a name="assert-radio-not-selected"></a>
+#### assertRadioNotSelected
+
+Yêu cầu radio không được chọn giá trị đã cho:
+
+    $browser->assertRadioNotSelected($field, $value);
+
+<a name="assert-selected"></a>
+#### assertSelected
+
+Yêu cầu dropdown phải chọn giá trị đã cho:
+
+    $browser->assertSelected($field, $value);
+
+<a name="assert-not-selected"></a>
+#### assertNotSelected
+
+Yêu cầu dropdown không được chọn giá trị đã cho:
+
+    $browser->assertNotSelected($field, $value);
+
+<a name="assert-select-has-options"></a>
+#### assertSelectHasOptions
+
+Yêu cầu một mảng giá trị có thể được chọn:
+
+    $browser->assertSelectHasOptions($field, $values);
+
+<a name="assert-select-missing-options"></a>
+#### assertSelectMissingOptions
+
+Yêu cầu một mảng giá trị không thể được chọn:
+
+    $browser->assertSelectMissingOptions($field, $values);
+
+<a name="assert-select-has-option"></a>
+#### assertSelectHasOption
+
+Yêu cầu một giá trị có thể được chọn trên một field:
+
+    $browser->assertSelectHasOption($field, $value);
+
+<a name="assert-value"></a>
+#### assertValue
+
+Yêu cầu element giống với selector đã cho:
+
+    $browser->assertValue($selector, $value);
+
+<a name="assert-visible"></a>
+#### assertVisible
+
+Yêu cầu element giống với selector đã cho là hiển thị:
+
+    $browser->assertVisible($selector);
+
+<a name="assert-present"></a>
+#### assertPresent
+
+Yêu cầu element giống với selector đã cho là tồn tại:
+
+    $browser->assertPresent($selector);
+
+<a name="assert-missing"></a>
+#### assertMissing
+
+Yêu cầu element giống với selector đã cho là không hiển thị:
+
+    $browser->assertMissing($selector);
+
+<a name="assert-dialog-opened"></a>
+#### assertDialogOpened
+
+Yêu cầu một dialog JavaScript cũng với message đã cho đang được hiển thị:
+
+    $browser->assertDialogOpened($message);
+
+<a name="assert-enabled"></a>
+#### assertEnabled
+
+Yêu cầu field đã cho đang được enabled:
+
+    $browser->assertEnabled($field);
+
+<a name="assert-disabled"></a>
+#### assertDisabled
+
+Yêu cầu field đã cho đang bị disable:
+
+    $browser->assertDisabled($field);
+
+<a name="assert-focused"></a>
+#### assertFocused
+
+Yêu cầu field đã cho đang bị focus:
+
+    $browser->assertFocused($field);
+
+<a name="assert-not-focused"></a>
+#### assertNotFocused
+
+Yêu cầu field đã cho không bị focus:
+
+    $browser->assertNotFocused($field);
+
+<a name="assert-vue"></a>
+#### assertVue
+
+Yêu cầu một thuộc tính dữ liệu của Vue component giống với giá trị đã cho:
+
+    $browser->assertVue($property, $value, $componentSelector = null);
+
+<a name="assert-vue-is-not"></a>
+#### assertVueIsNot
+
+Yêu cầu một thuộc tính dữ liệu của Vue component khác với giá trị đã cho:
+
+    $browser->assertVueIsNot($property, $value, $componentSelector = null);
+
+<a name="assert-vue-contains"></a>
+#### assertVueContains
+
+Yêu cầu một thuộc tính dữ liệu của Vue component là một mảng và có chứa giá trị đã cho:
+
+    $browser->assertVueContains($property, $value, $componentSelector = null);
+
+<a name="assert-vue-does-not-contain"></a>
+#### assertVueDoesNotContain
+
+Yêu cầu một thuộc tính dữ liệu của Vue component là một mảng và không chứa giá trị đã cho:
+
+    $browser->assertVueDoesNotContain($property, $value, $componentSelector = null);
 
 <a name="pages"></a>
 ## Page
@@ -843,28 +1210,6 @@ Khi component đã được định nghĩa xong, chúng ta có thể dễ dàng 
 <a name="continuous-integration"></a>
 ## Test tích hợp
 
-<a name="running-tests-on-travis-ci"></a>
-### Travis CI
-
-Để chạy các bài test của bạn trên Travis CI, chúng ta sẽ cần sử dụng môi trường Ubuntu 14.04 (Trusty) với "sudo-enabled". Vì Travis CI không phải là một môi trường đồ họa, nên chúng ta sẽ cần thực hiện thêm một số bước để khởi chạy trình duyệt Chrome. Ngoài ra, chúng ta sẽ sử dụng lệnh `php artisan serve` để khởi chạy web server của PHP:
-
-    sudo: required
-    dist: trusty
-
-    addons:
-       chrome: stable
-
-    install:
-       - cp .env.testing .env
-       - travis_retry composer install --no-interaction --prefer-dist --no-suggest
-
-    before_script:
-       - google-chrome-stable --headless --disable-gpu --remote-debugging-port=9222 http://localhost &
-       - php artisan serve &
-
-    script:
-       - php artisan dusk
-
 <a name="running-tests-on-circle-ci"></a>
 ### CircleCI
 
@@ -930,3 +1275,45 @@ Nếu bạn đang sử dụng CircleCI 2.0 để chạy các bài test, bạn c�
     nohup bash -c "./vendor/laravel/dusk/bin/chromedriver-linux 2>&1 &"
     nohup bash -c "php artisan serve 2>&1 &" && sleep 5
     php artisan dusk
+
+<a name="running-tests-on-heroku-ci"></a>
+### Heroku CI
+
+Để chạy các bài Dusk test trên [Heroku CI](https://www.heroku.com/continuous-integration), hãy thêm gói và tập lệnh sau của Google Chrome vào file Heroku `app.json` của bạn:
+
+    {
+      "environments": {
+        "test": {
+          "buildpacks": [
+            { "url": "heroku/php" },
+            { "url": "https://github.com/heroku/heroku-buildpack-google-chrome" }
+          ],
+          "scripts": {
+            "test-setup": "cp .env.testing .env",
+            "test": "nohup bash -c './vendor/laravel/dusk/bin/chromedriver-linux > /dev/null 2>&1 &' && nohup bash -c 'php artisan serve > /dev/null 2>&1 &' && php artisan dusk"
+          }
+        }
+      }
+    }
+
+<a name="running-tests-on-travis-ci"></a>
+### Travis CI
+
+Để chạy các bài Dusk test của bạn trên Travis CI, chúng ta sẽ cần sử dụng môi trường Ubuntu 14.04 (Trusty) "sudo-enabled". Vì Travis CI không phải là một môi trường đồ họa, nên chúng ta sẽ cần thực hiện thêm một số bước để chạy trình duyệt Chrome. Ngoài ra, chúng ta cũng sẽ sử dụng `php artisan serve` để chạy server web tích hợp sẵn của PHP:
+
+    sudo: required
+    dist: trusty
+
+    addons:
+       chrome: stable
+
+    install:
+       - cp .env.testing .env
+       - travis_retry composer install --no-interaction --prefer-dist --no-suggest
+
+    before_script:
+       - google-chrome-stable --headless --disable-gpu --remote-debugging-port=9222 http://localhost &
+       - php artisan serve &
+
+    script:
+       - php artisan dusk

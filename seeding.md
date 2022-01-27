@@ -46,6 +46,8 @@ Ví dụ, hãy sửa class `DatabaseSeeder` mặc định và thêm một câu s
         }
     }
 
+> {tip} Bạn có thể khai báo bất kỳ phụ thuộc nào mà bạn cần trong phương thức `run`. Những phụ thuộc đó sẽ được tự động resolve thông qua Laravel [service container](/docs/{{version}}/container).
+
 <a name="using-model-factories"></a>
 ### Dùng Model Factory
 

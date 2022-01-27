@@ -21,7 +21,7 @@ Ngoài những cách authentication thông thường dựa trên form, Laravel c
 
 Để bắt đầu với Socialite, hãy sử dụng Composer để thêm package của nó vào library project của bạn:
 
-    composer require laravel/socialite
+    composer require laravel/socialite "^3.2.0"
 
 <a name="configuration"></a>
 ## Cấu hình

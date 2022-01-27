@@ -54,7 +54,7 @@ Sau khi đã tạo xong command, bạn hãy thay đổi các thuộc tính `sign
 
 > {tip} Để code của bạn có thể tái sử dụng tốt hơn, thì cách tốt nhất là giữ cho các command của bạn được "nhẹ" và hãy để các application service hoàn thành nhiệm vụ đó cho bạn. Trong ví dụ dưới đây, hãy chú ý rằng chúng ta sẽ inject một service class để thực hiện một "công việc nặng" như việc gửi e-mail.
 
-Chúng ta hãy xem một ví dụ về command. Lưu ý rằng chúng ta có thể inject bất kỳ service nào mà chúng ta muốn vào hàm constructor của command. Laravel [service container](/docs/{{version}}/container) sẽ tự động inject tất cả các phụ thuộc mà được khai báo trong hàm constructor:
+Chúng ta hãy xem một ví dụ về command. Lưu ý rằng chúng ta có thể inject bất kỳ service nào mà chúng ta muốn vào hàm constructor hoặc hàm `handle` của command. Laravel [service container](/docs/{{version}}/container) sẽ tự động inject tất cả các phụ thuộc mà có trong khai báo của hàm constructor hoặc hàm `handle`:
 
     <?php
 
@@ -374,7 +374,7 @@ Phương thức `table` sẽ giúp bạn dễ dàng định dạng chính xác n
 
     $bar->finish();
 
-Để biết các tùy chọn nâng cao, hãy xem [Tài liệu component Symfony Progress Bar](https://symfony.com/doc/2.7/components/console/helpers/progressbar.html).
+Để biết các tùy chọn nâng cao, hãy xem [Tài liệu component Symfony Progress Bar](https://symfony.com/doc/current/components/console/helpers/progressbar.html).
 
 <a name="registering-commands"></a>
 ## Đăng ký Command
@@ -403,7 +403,7 @@ Bạn cũng có thể tự đăng ký các command của bạn bằng cách thê
 <a name="programmatically-executing-commands"></a>
 ## Chạy command bên ngoài CLI
 
-Thỉnh thoảng bạn có thể muốn chạy một command Artisan bên ngoài CLI. Ví dụ: bạn có thể chạy một command Artisan từ route hoặc controller. Bạn có thể sử dụng phương thức `call` trên facade `Artisan` để thực hiện điều này. Phương thức `call` chấp nhận tên của command làm tham số đầu tiên và một mảng các tham số của command đó làm tham số thứ hai. Exit code sẽ được trả về:
+Thỉnh thoảng bạn có thể muốn chạy một command Artisan bên ngoài CLI. Ví dụ: bạn có thể chạy một command Artisan từ route hoặc controller. Bạn có thể sử dụng phương thức `call` trên facade `Artisan` để thực hiện điều này. Phương thức `call` chấp nhận tên một command hoặc tên một class làm tham số đầu tiên và một mảng các tham số của command đó làm tham số thứ hai. Exit code sẽ được trả về:
 
     Route::get('/foo', function () {
         $exitCode = Artisan::call('email:send', [

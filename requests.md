@@ -367,7 +367,7 @@ Nếu bạn không muốn tên tệp được tự động tạo, bạn có th�
 
 Khi application của bạn đang chạy sau một hệ thống load balancer, mà không dùng chứng chỉ TLS / SSL để kết nối đến server của bạn. Đôi khi bạn sẽ cảm thấy rằng application của bạn sẽ không trả về liên kết HTTPS. Thông thường, điều này là do application của bạn đang bị chuyển tiếp lưu lượng truy cập từ load balancer vào cổng 80 và không biết rằng nó đang tạo ra các liên kết không an toàn.
 
-Để giải quyết vấn đề này, bạn có thể sử dụng middleware `App\Http\Middleware\TrustProxies` có trong application Laravel của bạn, cho phép bạn nhanh chóng tùy chỉnh các load balancer hoặc các proxy mà application đang sử dụng, mà bạn tin tưởng. Các proxy mà bạn tin tưởng nên được liệt kê dưới dạng một mảng trong thuộc tính `$proxies` của middleware này. Ngoài việc cấu hình proxy tin tưởng, bạn có thể cấu hình các header đang được gửi bởi proxy của bạn với thông tin về original request:
+Để giải quyết vấn đề này, bạn có thể sử dụng middleware `App\Http\Middleware\TrustProxies` có trong application Laravel của bạn, cho phép bạn nhanh chóng tùy chỉnh các load balancer hoặc các proxy mà application đang sử dụng, mà bạn tin tưởng. Các proxy mà bạn tin tưởng nên được liệt kê dưới dạng một mảng trong thuộc tính `$proxies` của middleware này. Ngoài việc cấu hình proxy tin tưởng, bạn cũng có thể cấu hình proxy `$headers` mà bạn tin tưởng:
 
     <?php
 
@@ -389,26 +389,22 @@ Khi application của bạn đang chạy sau một hệ thống load balancer, m
         ];
 
         /**
-         * The current proxy header mappings.
+         * The headers that should be used to detect proxies.
          *
-         * @var array
+         * @var string
          */
-        protected $headers = [
-            Request::HEADER_FORWARDED => 'FORWARDED',
-            Request::HEADER_X_FORWARDED_FOR => 'X_FORWARDED_FOR',
-            Request::HEADER_X_FORWARDED_HOST => 'X_FORWARDED_HOST',
-            Request::HEADER_X_FORWARDED_PORT => 'X_FORWARDED_PORT',
-            Request::HEADER_X_FORWARDED_PROTO => 'X_FORWARDED_PROTO',
-        ];
+        protected $headers = Request::HEADER_X_FORWARDED_ALL;
     }
+
+> {tip} Nếu bạn đang sử dụng AWS Elastic Load Balancing, thì giá trị `$headers` của bạn phải là `Request::HEADER_X_FORWARDED_AWS_ELB`. Để biết thêm thông tin về các hằng số có thể được sử dụng trong thuộc tính `$headers`, hãy xem tài liệu của Symfony về [trusting proxies](http://symfony.com/doc/current/deployment/proxies.html).
 
 #### Trusting tất cả Proxies
 
-Nếu bạn đang sử dụng Amazon AWS hoặc các "cloud" khác cung cấp load balancer, bạn có thể không biết địa chỉ IP thật sự của load balancer. Trong trường hợp này, bạn có thể sử dụng `**` để trust tất cả các proxy:
+Nếu bạn đang sử dụng Amazon AWS hoặc các "cloud" khác cung cấp load balancer, bạn có thể không biết địa chỉ IP thật sự của load balancer. Trong trường hợp này, bạn có thể sử dụng `*` để trust tất cả các proxy:
 
     /**
      * The trusted proxies for this application.
      *
      * @var array
      */
-    protected $proxies = '**';
+    protected $proxies = '*';

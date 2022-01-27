@@ -25,7 +25,7 @@ Có một số middleware đã có sẵn trong framework Laravel, bao gồm cả
 
     php artisan make:middleware CheckAge
 
-Lệnh này sẽ lưu một class `CheckAge` mới vào trong thư mục `app/Http/Middleware` của bạn. Trong middleware này, chúng ta sẽ chỉ cho phép truy cập vào route nếu `age` nhập vào lớn hơn 200. Và nếu không, chúng ta sẽ chuyển hướng người dùng trở lại URI `home`.
+Lệnh này sẽ lưu một class `CheckAge` mới vào trong thư mục `app/Http/Middleware` của bạn. Trong middleware này, chúng ta sẽ chỉ cho phép truy cập vào route nếu `age` nhập vào lớn hơn 200. Và nếu không, chúng ta sẽ chuyển hướng người dùng trở lại URI `home`:
 
     <?php
 
@@ -55,6 +55,8 @@ Lệnh này sẽ lưu một class `CheckAge` mới vào trong thư mục `app/Ht
 Như bạn có thể thấy, nếu `age` đã cho nhỏ hơn hoặc bằng `200`, middleware sẽ trả về một chuyển hướng HTTP cho client; nếu không, request sẽ được tiếp tục vào ứng dụng. Để request tiếp tục vào ứng dụng, hãy gọi một callback là `$next` cùng với `$request`.
 
 Tốt nhất là bạn hãy hình dung middleware như là các "layers" mà các HTTP request phải vượt qua trước khi chúng đến được với ứng dụng của bạn. Mỗi layer có thể kiểm tra request và thậm chí từ chối nó hoàn toàn.
+
+> {tip} Tất cả các middleware đều được resolve thông qua [service container](/docs/{{version}}/container), vì vậy bạn có thể khai báo bất kỳ phụ thuộc nào mà bạn cần trong phương thức khởi tạo của middleware.
 
 ### Trước và Sau khi Middleware
 
@@ -223,7 +225,7 @@ Các tham số middleware có thể được định nghĩa khi tạo route bằ
 <a name="terminable-middleware"></a>
 ## Middleware kết thúc
 
-Đôi khi, một middleware có thể cần thực hiện một số công việc sau khi response HTTP đã được gửi về trình duyệt. Ví dụ: middleware "session" đi kèm với Laravel sẽ ghi dữ liệu session vào bộ nhớ sau khi response đã được gửi về trình duyệt. Nếu bạn định nghĩa một phương thức `terminate` trong middleware của bạn, thì nó sẽ tự động được gọi sau khi response được gửi về trình duyệt.
+Đôi khi, một middleware có thể cần thực hiện một số công việc sau khi response HTTP đã được tạo ra. Ví dụ: middleware "session" đi kèm với Laravel sẽ ghi dữ liệu session vào bộ nhớ sau khi response đã được tạo. Nếu bạn định nghĩa một phương thức `terminate` trong middleware của bạn, thì nó sẽ tự động được gọi sau khi response đã sẵn sàng để gửi về trình duyệt.
 
     <?php
 

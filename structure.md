@@ -13,6 +13,7 @@
     - [Thư mục `tests`](#the-tests-directory)
     - [Thư mục `vendor`](#the-vendor-directory)
 - [Thư mục App](#the-app-directory)
+    - [Thư mục `Broadcasting`](#the-broadcasting-directory)
     - [Thư mục `Console`](#the-console-directory)
     - [Thư mục `Events`](#the-events-directory)
     - [Thư mục `Exceptions`](#the-exceptions-directory)
@@ -32,8 +33,7 @@ Cấu trúc thư mục mặc định của Laravel nhằm cung cấp một khở
 
 #### Thư mục Model sẽ ở đâu?
 
-Khi mới bắt đầu với Laravel, nhiều người phát triển cảm thấy bị thiếu thư mục `models`. Tuy nhiên, việc thiếu đó là chủ đích của chúng tôi. Chúng tôi thấy từ "models" rất là mơ hồ, vì nó có nhiều ý nghĩa khác nhau tuỳ theo nhà phát triển.
-Một số nhà phát triển nghĩ rằng "model" sẽ là tổng hợp tất cả business logic, nhưng một số khác lại cho rằng "model" là một lớp tương tác với database.
+Khi mới bắt đầu với Laravel, nhiều người phát triển cảm thấy bị thiếu thư mục `models`. Tuy nhiên, việc thiếu đó là chủ đích của chúng tôi. Chúng tôi thấy từ "models" rất là mơ hồ, vì nó có nhiều ý nghĩa khác nhau tuỳ theo nhà phát triển. Một số nhà phát triển nghĩ rằng "model" sẽ là tổng hợp tất cả business logic, nhưng một số khác lại cho rằng "model" là một lớp tương tác với database.
 
 Vì lý do đó, chúng tôi đã chọn nơi chứa mặc định của Eloquent model là ở trong thư mục `app`, và cho phép nhà phát triển lưu lại nơi chứa nếu họ muốn.
 
@@ -73,8 +73,7 @@ Thư mục `resources` chứa file view cũng như file raw, và các file chưa
 <a name="the-routes-directory"></a>
 #### Thư mục Routes
 
-Thư mục `routes` chứa tất cả các file định nghĩa route cho application của bạn.
-Mặc đinh, sẽ bao gồm những file sau đây: `web.php`, `api.php`, `console.php` và `channels.php`.
+Thư mục `routes` chứa tất cả các file định nghĩa route cho application của bạn. Mặc đinh, sẽ bao gồm những file sau đây: `web.php`, `api.php`, `console.php` và `channels.php`.
 
 File `web.php` sẽ chứa những route mà được load bởi file `RouteServiceProvider` và lưu trữ những route đó vào trong một group middleware có tên là `web`, middleware này cung cấp session, bảo vệ route trước các cuộc tấn công CSRF và mã hoá cookie. Nếu application của bạn chỉ dùng session và không dùng RESTful API, thì tất cả route của bạn có thế được định nghĩa trong file `web.php`.
 
@@ -106,12 +105,16 @@ Thư mục `vendor` chứa những library mà được quản lý bởi [Compos
 
 Phần lớn application của bạn sẽ được lưu trong thư mục `app`. Mặc định, thư mục này sẽ được lưu dưới tên là `App` và được autoloaded bởi Composer dùng chuẩn [PSR-4 autoloading standard](http://www.php-fig.org/psr/psr-4/).
 
-Thư mục `app` sẽ chứa một số thư mục bổ sung như `Console`, `Http`, và `Providers`. Hãy nghĩ các thư mục `Console` và `Http` như là các thư mục cung cấp API cho phần core của application của bạn.
-Giao thức HTTP và CLI đều là các cơ chế để bên ngoài tương tác với application của bạn, nhưng thực tế chúng lại không hay chứa logic của application. Nói cách khác, chúng là hai cách để gọi đến application của bạn. Thư mục `Console` chứa tất cả các lệnh Artisan của bạn, và thư mục `Http` chứa các class controllers, middleware, và requests của bạn.
+Thư mục `app` sẽ chứa một số thư mục bổ sung như `Console`, `Http`, và `Providers`. Hãy nghĩ các thư mục `Console` và `Http` như là các thư mục cung cấp API cho phần core của application của bạn. Giao thức HTTP và CLI đều là các cơ chế để bên ngoài tương tác với application của bạn, nhưng thực tế chúng lại không hay chứa logic của application. Nói cách khác, chúng là hai cách để gọi đến application của bạn. Thư mục `Console` chứa tất cả các lệnh Artisan của bạn, và thư mục `Http` chứa các class controllers, middleware, và requests của bạn.
 
 Các thư mục khác sẽ được tạo trong thư mục `app` khi bạn dùng lệnh Artisan `make` để tạo các class tương ứng với thư mục đó. Ví dụ, bình thường, thư mục `app/Jobs` sẽ không tồn tại cho đến khi bạn chạy lệnh Artisan `make:job` để tạo class job.
 
 > {tip} Nhiều class trong thư mục `app` có thể được tạo ra thông qua lệnh Artisan. Để có thể xem các lệnh đó, bạn có chạy lệnh `php artisan list make` trên terminal của bạn.
+
+<a name="the-broadcasting-directory"></a>
+#### Thư mục `Broadcasting`
+
+Thư mục `Broadcasting` chứa tất cả các class broadcast channel cho ứng dụng của bạn. Các class này được tạo ra bằng lệnh `make:channel`. Mặc định, thư mục này không tồn tại, nhưng nó sẽ được tạo ra cho bạn khi bạn tạo channel đầu tiên. Để tìm hiểu thêm về các channel, hãy xem tài liệu về [event broadcasting](/docs/{{version}}/broadcasting).
 
 <a name="the-console-directory"></a>
 #### Thư mục Console

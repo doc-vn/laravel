@@ -17,6 +17,8 @@
 - [Liên kết Route Model](#route-model-binding)
     - [Liên kết ngầm](#implicit-binding)
     - [Liên kết rõ ràng](#explicit-binding)
+- [Route dự phòng](#fallback-routes)
+- [Rate Limiting](#rate-limiting)
 - [Form Method giả](#form-method-spoofing)
 - [Truy cập vào Route hiện tại](#accessing-the-current-route)
 
@@ -33,7 +35,7 @@ Các route cơ bản của Laravel chấp nhận một URI và một `Closure`, 
 
 Tất cả các route của Laravel được định nghĩa trong các file route, và được lưu trong thư mục `routes`. Các file này được tự động load bởi framework. File `routes/web.php` định nghĩa các route dành cho giao diện web của bạn. Các route này sẽ được gán với nhóm middleware `web`, cung cấp các tính năng như trạng thái session và bảo vệ CSRF. Các route trong `routes/api.php` là các route không có trạng thái và được gán với nhóm middleware `api`.
 
-Đối với hầu hết các application, bạn sẽ bắt đầu bằng cách định nghĩa các route trong file `routes/web.php`. Các route đã được tạo trong file `routes/web.php` có thể được truy cập bằng cách nhập URL của route đó vào trong trình duyệt web của bạn. Ví dụ: bạn có thể truy cập vào route sau bằng cách nhập url là `http://your-app.dev/user` trong trình duyệt web của bạn:
+Đối với hầu hết các application, bạn sẽ bắt đầu bằng cách định nghĩa các route trong file `routes/web.php`. Các route đã được tạo trong file `routes/web.php` có thể được truy cập bằng cách nhập URL của route đó vào trong trình duyệt web của bạn. Ví dụ: bạn có thể truy cập vào route sau bằng cách nhập url là `http://your-app.test/user` trong trình duyệt web của bạn:
 
     Route::get('/user', 'UserController@index');
 
@@ -65,7 +67,7 @@ Thỉnh thoảng, bạn có thể cần phải đăng ký một route với nhi�
 Bất kỳ form HTML nào mà trỏ đến các route `POST`, `PUT` hoặc `DELETE` được định nghĩa trong file route `web`, đều phải chứa một field CSRF token. Nếu không có field đó, request sẽ bị từ chối. Bạn có thể đọc thêm về bảo vệ CSRF trong [tài liệu CSRF](/docs/{{version}}/csrf):
 
     <form method="POST" action="/profile">
-        {{ csrf_field() }}
+        @csrf
         ...
     </form>
 
@@ -169,7 +171,7 @@ Các tên của route cho phép tạo các URL hoặc các chuyển hướng đ�
 
 Bạn cũng có thể đặt tên route cho các hành động của controller:
 
-    Route::get('user/profile', 'UserController@showProfile')->name('profile');
+    Route::get('user/profile', 'UserProfileController@show')->name('profile');
 
 #### Tạo URLs từ tên route
 
@@ -317,7 +319,7 @@ Nếu bạn muốn tuỳ biến một liên kết của một model mà sử d�
 
 Tiếp theo, hãy định nghĩa một route chứa tham số `{user}`:
 
-    Route::get('profile/{user}', function ($user) {
+    Route::get('profile/{user}', function (App\User $user) {
         //
     });
 
@@ -338,6 +340,36 @@ Nếu bạn muốn sử dụng tuỳ chỉnh logic phụ thuộc của bạn, b�
         });
     }
 
+<a name="fallback-routes"></a>
+## Route dự phòng
+
+Sử dụng phương thức `Route::fallback`, bạn có thể định nghĩa một route sẽ được thực thi khi không có một route nào khác phù hợp với request đến. Thông thường, các request chưa được xử lý sẽ tự động hiển thị trang "404" thông qua trình xử lý exception của ứng dụng của bạn. Tuy nhiên, vì bạn có thể định nghĩa route dự phòng trong file `routes/web.php` của bạn, nên tất cả midddleware trong nhóm midddleware `web` sẽ được áp dụng cho route này. Tất nhiên, bạn có thể thoải mái thêm midddleware vào trong route này nếu cần:
+
+    Route::fallback(function () {
+        //
+    });
+
+<a name="rate-limiting"></a>
+## Rate Limiting
+
+Laravel có chứa một [middleware](/docs/{{version}}/middleware) để giới hạn số lượt truy cập vào một route trong ứng dụng của bạn. Để bắt đầu, hãy gán middleware `throttle` cho một route hoặc một nhóm các route. Middleware `throttle` sẽ chấp nhận hai tham số xác định số lượng request tối đa có thể được thực hiện trong một số phút nhất định. Ví dụ: hãy thử định nghĩa là người dùng hiện tại có thể truy cập vào một nhóm route 60 lần cho một phút:
+
+    Route::middleware('auth:api', 'throttle:60,1')->group(function () {
+        Route::get('/user', function () {
+            //
+        });
+    });
+
+#### Dynamic Rate Limiting
+
+Bạn có thể linh hoạt chỉ định số lượng request tối đa dựa vào một thuộc tính của model `User`. Ví dụ: nếu model `User` của bạn chứa thuộc tính `rate_limit`, bạn có thể truyền tên của thuộc tính đó vào middleware `throttle` để nó sử dụng để tính toán số lượng request tối đa:
+
+    Route::middleware('auth:api', 'throttle:rate_limit,1')->group(function () {
+        Route::get('/user', function () {
+            //
+        });
+    });
+
 <a name="form-method-spoofing"></a>
 ## Form Method giả
 
@@ -348,9 +380,12 @@ Các HTML form không hỗ trợ các action `PUT`, `PATCH` hoặc `DELETE`. Vì
         <input type="hidden" name="_token" value="{{ csrf_token() }}">
     </form>
 
-Bạn có thể dùng helper `method_field` để tạo input `_method`:
+Bạn có thể dùng lệnh `@method` của Blade để tạo ra input `_method`:
 
-    {{ method_field('PUT') }}
+    <form action="/foo/bar" method="POST">
+        @method('PUT')
+        @csrf
+    </form>
 
 <a name="accessing-the-current-route"></a>
 ## Truy cập vào Route hiện tại

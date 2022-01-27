@@ -290,14 +290,17 @@ Khi sao chép một thư mục, phương thức `copy` sẽ xoá hết các thư
 
 Nhiều developer muốn thêm một hậu tố timestamp hoặc unique token vào sau các assets đã được biên dịch của họ để buộc các trình duyệt tải lại các assets mới thay vì dùng lại các bản cũ của assets. Mix có thể xử lý việc này cho bạn bằng cách sử dụng phương thức `version`.
 
-Phương thức `version` sẽ tự động nối một chuỗi hash duy nhất vào tên file mà đã được biên dịch, cho phép tạo bộ đệm cache thuận tiện hơn:
+Phương thức `version` sẽ tạo một chuỗi hash duy nhất cho tất cả các file đã được biên dịch và dùng chuỗi hash đó khi thêm các file từ template của bạn. Điều này sẽ cung cấp một cơ chế tạo bộ nhớ đệm cache một cách thuận tiện hơn:
 
     mix.js('resources/assets/js/app.js', 'public/js')
+       .sass('resources/assets/sass/app.scss', 'public/css')
        .version();
 
-Sau khi tạo file đã được version, bạn sẽ không biết chính xác tên file là gì. Vì vậy, bạn nên sử dụng hàm global helper `mix` của Laravel trong [views](/docs/{{version}}/views) để load asset đã được hash. Hàm `mix` sẽ tự động xác định tên file hiện tại đã được hash:
+Sau khi tạo file đã được version, bạn nên sử dụng hàm global helper `mix` của Laravel trong [views](/docs/{{version}}/views) của bạn để tạo ra các URL version asset thích hợp:
 
     <link rel="stylesheet" href="{{ mix('/css/app.css') }}">
+
+    <script src="{{ mix('/js/app.js') }}"></script>
 
 Vì các file version thường không cần thiết trong quá trình phát triển, nên bạn có thể thêm điều kiện để tạo file version chỉ chạy trong khi `npm run production`:
 
