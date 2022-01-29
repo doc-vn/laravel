@@ -1,7 +1,7 @@
 # Contribution Guide
 
-- [BáoêBug](#bug-reports)
-- [Các kệnh phát triển chính](#core-development-discussion)
+- [Báo Bug](#bug-reports)
+- [Các kênh phát triển chính](#core-development-discussion)
 - [Branch nào?](#which-branch)
 - [Lỗ hổng bảo mật](#security-vulnerabilities)
 - [Coding Style](#coding-style)
