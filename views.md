@@ -28,7 +28,7 @@ Vì view được lưu ở trong `resources/views/greeting.blade.php`, nên chú
 
 Như bạn có thể thấy, tham số đầu tiên được truyền tới helper `view` là tên của file view có trong thư mục `resources/views`. Tham số thứ hai là một mảng dữ liệu được truyền vào view. Trong trường hợp này, chúng ta đang truyền biến `name` cho view, và được hiển thị trong view bằng [Blade syntax](/docs/{{version}}/blade).
 
-Tất nhiên, view cũng có thể được nằm trong một thư mục con của thư mục `resources/views`. Ký tự "chấm" có thể được sử dụng để gọi đến những thư mục view con đó. Ví dụ: nếu view của bạn được lưu trữ tại `resources/views/admin/profile.blade.php`, bạn có thể gọi đến chúng như sau:
+View cũng có thể được nằm trong một thư mục con của thư mục `resources/views`. Ký tự "chấm" có thể được sử dụng để gọi đến những thư mục view con đó. Ví dụ: nếu view của bạn được lưu trữ tại `resources/views/admin/profile.blade.php`, bạn có thể gọi đến chúng như sau:
 
     return view('admin.profile', $data);
 
@@ -48,7 +48,7 @@ Sử dụng phương thức `first`, bạn có thể trả về view đầu tiê
 
     return view()->first(['custom.admin', 'admin'], $data);
 
-Tất nhiên, bạn cũng có thể gọi phương thức này thông qua [facade](/docs/{{version}}/facades) `View`:
+Bạn cũng có thể gọi phương thức này thông qua [facade](/docs/{{version}}/facades) `View`:
 
     use Illuminate\Support\Facades\View;
 
@@ -104,7 +104,7 @@ Khi truyền thông tin theo cách này, dữ liệu phải là một mảng v�
 
 Các View composer là các callback hoặc là các phương thức class được gọi khi một view được render. Nếu bạn có dữ liệu mà bạn muốn liên kết nó với một view mỗi khi view đó được render, thì một view composer có thể giúp bạn sắp xếp logic đó.
 
-Trong ví dụ này, hãy đăng ký các view composer trong một [service provider](/docs/{{version}}/providers). Chúng ta sẽ sử dụng facade `View` để truy cập vào contract implementation của `Illuminate\Contracts\View\Factory`. Hãy nhớ rằng, Laravel không chứa một thư mục mặc định cho các view composer. Bạn có thể tổ chức chúng theo cách bạn muốn. Ví dụ: bạn có thể tạo thư mục `app/Http/ViewComposers`:
+Trong ví dụ này, hãy đăng ký các view composer trong một [service provider](/docs/{{version}}/providers). Chúng ta sẽ sử dụng facade `View` để truy cập vào contract implementation của `Illuminate\Contracts\View\Factory`. Hãy nhớ rằng, Laravel không chứa một thư mục mặc định cho các view composer. Bạn có thể tổ chức chúng theo cách bạn muốn. Ví dụ: bạn có thể tạo thư mục `app/Http/View/Composers`:
 
     <?php
 
@@ -113,7 +113,7 @@ Trong ví dụ này, hãy đăng ký các view composer trong một [service pro
     use Illuminate\Support\Facades\View;
     use Illuminate\Support\ServiceProvider;
 
-    class ComposerServiceProvider extends ServiceProvider
+    class ViewServiceProvider extends ServiceProvider
     {
         /**
          * Register bindings in the container.
@@ -124,7 +124,7 @@ Trong ví dụ này, hãy đăng ký các view composer trong một [service pro
         {
             // Using class based composers...
             View::composer(
-                'profile', 'App\Http\ViewComposers\ProfileComposer'
+                'profile', 'App\Http\View\Composers\ProfileComposer'
             );
 
             // Using Closure based composers...
@@ -150,7 +150,7 @@ Sau khi chúng ta đã đăng ký xong composer, phương thức `ProfileCompose
 
     <?php
 
-    namespace App\Http\ViewComposers;
+    namespace App\Http\View\Composers;
 
     use Illuminate\View\View;
     use App\Repositories\UserRepository;
@@ -198,7 +198,7 @@ Bạn có thể gắn một view composer cho nhiều view cùng một lúc bằ
 
     View::composer(
         ['profile', 'dashboard'],
-        'App\Http\ViewComposers\MyViewComposer'
+        'App\Http\View\Composers\MyViewComposer'
     );
 
 Phương thức `composer` cũng chấp nhận một ký tự `*` làm ký tự đại diện, cho phép bạn gắn một composer cho tất cả các view:
@@ -211,4 +211,4 @@ Phương thức `composer` cũng chấp nhận một ký tự `*` làm ký tự 
 
 View **creators** giống với view composer; tuy nhiên, chúng được thực thi ngay lập tức sau khi view được khởi tạo thay vì đợi cho đến khi view sắp được hiển thị. Để đăng ký một view creator, hãy sử dụng phương thức `creator`:
 
-    View::creator('profile', 'App\Http\ViewCreators\ProfileCreator');
+    View::creator('profile', 'App\Http\View\Creators\ProfileCreator');

@@ -1,4 +1,4 @@
-# Envoy Task Runner
+# Laravel Envoy
 
 - [Giới thiệu](#introduction)
     - [Cài đặt](#installation)
@@ -54,7 +54,7 @@ Bạn có thể bắt buộc một tập lệnh phải chạy ở local bằng c
 <a name="setup"></a>
 ### Thiết lập
 
-Thỉnh thoảng, bạn có thể cần phải thực thi một số code PHP trước khi thực hiện các task của Envoy. Bạn có thể sử dụng lệnh ```@setup``` để khai báo các biến và thực hiện các công việc chung khác của PHP trước khi bất kỳ task nào của bạn được thực thi:
+Thỉnh thoảng, bạn có thể cần phải thực thi một số code PHP trước khi thực hiện các task của Envoy. Bạn có thể sử dụng lệnh `@setup` để khai báo các biến và thực hiện các công việc chung khác của PHP trước khi bất kỳ task nào của bạn được thực thi:
 
     @setup
         $now = new DateTime();
@@ -77,7 +77,7 @@ Nếu cần, bạn có thể truyền các giá trị tùy chọn vào các task
 
     envoy run deploy --branch=master
 
-Bạn có thể truy cập đến các tùy chọn này trong task của bạn thông qua cú pháp "echo" của Blade. Tất nhiên, bạn cũng có thể sử dụng các câu lệnh `if` và vòng lặp trong các task của bạn. Ví dụ, hãy kiểm tra sự tồn tại của biến `$branch` trước khi thực hiện lệnh `git pull`:
+Bạn có thể truy cập đến các tùy chọn này trong task của bạn thông qua cú pháp "echo" của Blade. Bạn cũng có thể sử dụng các câu lệnh `if` và vòng lặp trong các task của bạn. Ví dụ, hãy kiểm tra sự tồn tại của biến `$branch` trước khi thực hiện lệnh `git pull`:
 
     @servers(['web' => '192.168.1.1'])
 

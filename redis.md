@@ -29,10 +29,17 @@ Cấu hình Redis cho application của bạn nằm trong file cấu hình `conf
         'client' => 'predis',
 
         'default' => [
-            'host' => env('REDIS_HOST', 'localhost'),
+            'host' => env('REDIS_HOST', '127.0.0.1'),
             'password' => env('REDIS_PASSWORD', null),
             'port' => env('REDIS_PORT', 6379),
-            'database' => 0,
+            'database' => env('REDIS_DB', 0),
+        ],
+
+        'cache' => [
+            'host' => env('REDIS_HOST', '127.0.0.1'),
+            'password' => env('REDIS_PASSWORD', null),
+            'port' => env('REDIS_PORT', 6379),
+            'database' => env('REDIS_CACHE_DB', 1),
         ],
 
     ],
@@ -92,8 +99,6 @@ Ngoài các tùy chọn cấu hình server mặc định như là `host`, `port`
 <a name="phpredis"></a>
 ### PhpRedis
 
-> {note} Nếu bạn đã cài đặt PHP extension PhpRedis thông qua PECL, bạn sẽ cần đổi tên `Redis` alias trong file cấu hình  `config/app.php` của bạn.
-
 Để sử dụng extension PhpRedis, bạn nên thay đổi tùy chọn `client` trong file cấu hình Redis của bạn thành `phpredis`. Tùy chọn này có thể được tìm thấy trong file cấu hình `config/database.php` của bạn:
 
     'redis' => [
@@ -141,7 +146,7 @@ Bạn có thể tương tác với Redis bằng cách gọi các phương thức
         }
     }
 
-Tất nhiên, như đã đề cập ở trên, bạn có thể gọi bất kỳ lệnh Redis nào trên facade `Redis`. Laravel sẽ sử dụng các phương thức magic để truyền các lệnh này đến server Redis, do đó, hãy truyền các tham số mà lệnh Redis yêu cầu:
+Như đã đề cập ở trên, bạn có thể gọi bất kỳ lệnh Redis nào trên facade `Redis`. Laravel sẽ sử dụng các phương thức magic để truyền các lệnh này đến server Redis, do đó, hãy truyền các tham số mà lệnh Redis yêu cầu:
 
     Redis::set('name', 'Taylor');
 

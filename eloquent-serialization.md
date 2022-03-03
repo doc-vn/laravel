@@ -34,7 +34,7 @@ Bạn cũng có thể chuyển đổi toàn bộ [collection](/docs/{{version}}/
 <a name="serializing-to-json"></a>
 ### Serialize vào JSON
 
-Để chuyển đổi một model thành dạng JSON, bạn có thể sử dụng phương thức `toJson`. Giống như phương thức `toArray`, phương thức` toJson` cũng là phương thức đệ quy, nên tất cả các thuộc tính và các quan hệ sẽ được chuyển đổi thành dạng JSON. Ngoài ra, bạn cũng có thể chỉ định thêm các tùy chọn mã hóa JSON [được hỗ trợ bởi PHP](http://php.net/manual/en/function.json-encode.php):
+Để chuyển đổi một model thành dạng JSON, bạn có thể sử dụng phương thức `toJson`. Giống như phương thức `toArray`, phương thức` toJson` cũng là phương thức đệ quy, nên tất cả các thuộc tính và các quan hệ sẽ được chuyển đổi thành dạng JSON. Ngoài ra, bạn cũng có thể chỉ định thêm các tùy chọn mã hóa JSON [được hỗ trợ bởi PHP](https://secure.php.net/manual/en/function.json-encode.php):
 
     $user = App\User::find(1);
 

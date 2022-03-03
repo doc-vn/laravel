@@ -15,7 +15,7 @@
 
 Khi test các application của Laravel, bạn có thể muốn "làm giả" các khía cạnh nhất định của application để chúng không thực sự được thực thi trong khi test. Ví dụ: khi test một controller gửi một event, bạn có thể muốn làm giả một event listener để chúng không thực sự được thực thi trong quá trình test. Điều này cho phép bạn chỉ kiểm tra HTTP response của controller mà không phải lo lắng về việc thực thi của event listener, vì các event listener có thể được kiểm tra trong một test case của riêng nó.
 
-Mặc định, Laravel cung cấp helper để làm giả các event, job và facade. Những helper này chủ yếu cung cấp một layer dựa trên Mockery để bạn không phải tự thực hiện các việc gọi phương thức Mockery phức tạp. Tất nhiên, bạn có thể tự do sử dụng [Mockery](http://docs.mockery.io/en/latest/) hoặc PHPUnit để làm giả hoặc spy của riêng bạn.
+Mặc định, Laravel cung cấp helper để làm giả các event, job và facade. Những helper này chủ yếu cung cấp một layer dựa trên Mockery để bạn không phải tự thực hiện các việc gọi phương thức Mockery phức tạp. Tuy nhiên, bạn cũng có thể sử dụng [Mockery](http://docs.mockery.io/en/latest/) hoặc PHPUnit để làm giả hoặc spy của riêng bạn.
 
 <a name="bus-fake"></a>
 ## Bus Fake
@@ -84,12 +84,32 @@ Thay cho việc làm giả, bạn có thể sử dụng phương thức `fake` c
             Event::assertDispatched(OrderShipped::class, 2);
 
             // Assert an event was not dispatched...
-
             Event::assertNotDispatched(OrderFailedToShip::class);
         }
     }
 
 > {note} Sau khi bạn gọi `Event::fake()`, thì sẽ không có event listener nào được thực thi. Vì vậy, nếu các bài test của bạn đang sử dụng các model factory mà có dựa vào các event, chẳng hạn như tạo UUID trong event `creating` của một model, thì bạn nên gọi `Event::fake()` **sau khi** sử dụng các factory đó của bạn.
+
+#### Giả một tập hợp các event
+
+Nếu bạn chỉ muốn làm giả event listener cho một nhóm event cụ thể, thì bạn có thể truyền chúng sang phương thức `fake` hoặc `fakeFor`:
+
+    /**
+     * Test order process.
+     */
+    public function testOrderProcess()
+    {
+        Event::fake([
+            OrderCreated::class,
+        ]);
+
+        $order = factory(Order::class)->create();
+
+        Event::assertDispatched(OrderCreated::class);
+
+        // Other events are dispatched as normal...
+        $order->update([...]);
+    }
 
 <a name="scoped-event-fakes"></a>
 ### Scoped Event Fakes
@@ -148,6 +168,9 @@ Bạn có thể sử dụng phương thức `fake` của facade `Mail` để ng�
         {
             Mail::fake();
 
+            // Assert that no mailables were sent...
+            Mail::assertNothingSent();
+
             // Perform order shipping...
 
             Mail::assertSent(OrderShipped::class, function ($mail) use ($order) {
@@ -186,6 +209,7 @@ Bạn có thể sử dụng phương thức `fake` của facade `Notification` �
     use Tests\TestCase;
     use App\Notifications\OrderShipped;
     use Illuminate\Support\Facades\Notification;
+    use Illuminate\Notifications\AnonymousNotifiable;
     use Illuminate\Foundation\Testing\RefreshDatabase;
     use Illuminate\Foundation\Testing\WithoutMiddleware;
 
@@ -194,6 +218,9 @@ Bạn có thể sử dụng phương thức `fake` của facade `Notification` �
         public function testOrderShipping()
         {
             Notification::fake();
+
+            // Assert that no notifications were sent...
+            Notification::assertNothingSent();
 
             // Perform order shipping...
 
@@ -213,6 +240,11 @@ Bạn có thể sử dụng phương thức `fake` của facade `Notification` �
             // Assert a notification was not sent...
             Notification::assertNotSentTo(
                 [$user], AnotherNotification::class
+            );
+
+            // Assert a notification was sent via Notification::route() method...
+            Notification::assertSentTo(
+                new AnonymousNotifiable, OrderShipped::class
             );
         }
     }
@@ -238,6 +270,9 @@ Thay cho việc làm giả, bạn có thể sử dụng phương thức `fake` c
         {
             Queue::fake();
 
+            // Assert that no jobs were pushed...
+            Queue::assertNothingPushed();
+
             // Perform order shipping...
 
             Queue::assertPushed(ShipOrder::class, function ($job) use ($order) {
@@ -252,6 +287,12 @@ Thay cho việc làm giả, bạn có thể sử dụng phương thức `fake` c
 
             // Assert a job was not pushed...
             Queue::assertNotPushed(AnotherJob::class);
+
+            // Assert a job was pushed with a specific chain...
+            Queue::assertPushedWithChain(ShipOrder::class, [
+                AnotherJob::class,
+                FinalJob::class
+            ]);
         }
     }
 

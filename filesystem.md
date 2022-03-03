@@ -28,7 +28,7 @@ Laravel cung cấp một abstraction filesystem mạnh mẽ nhờ package PHP [F
 
 File cấu hình của filesystem được lưu tại `config/filesystems.php`. Trong file này, bạn có thể cấu hình tất cả các "disks" của bạn. Mỗi disk sẽ được đại diện cho một driver lưu trữ với một vị trí lưu trữ cụ thể. Các cấu hình mẫu cho các driver được hỗ trợ cũng đã được khai báo sẵn vào trong file cấu hình. Vì vậy, bạn có thể sửa cấu hình để đúng với tuỳ chọn lưu trữ của bạn và thông tin của chúng.
 
-Tất nhiên, bạn có thể cấu hình bao nhiêu disk tùy ý của bạn và thậm chí có thể có nhiều disk sử dụng cùng một driver.
+Bạn có thể cấu hình bao nhiêu disk tùy ý của bạn và thậm chí có thể có nhiều disk sử dụng cùng một driver.
 
 <a name="the-public-disk"></a>
 ### Public Disk
@@ -39,7 +39,7 @@ Tất nhiên, bạn có thể cấu hình bao nhiêu disk tùy ý của bạn v�
 
     php artisan storage:link
 
-Tất nhiên, một khi một file đã được lưu trữ và link liên kết ảo đã được tạo xong, bạn có thể tạo URL tới các file này bằng cách sử dụng helper `asset`:
+Một khi một file đã được lưu trữ và link liên kết ảo đã được tạo xong, bạn có thể tạo URL tới các file này bằng cách sử dụng helper `asset`:
 
     echo asset('storage/file.txt');
 
@@ -302,7 +302,7 @@ Nếu bạn không muốn tên file được tự động gán cho file, bạn c
         'avatars', $request->user()->id
     );
 
-Tất nhiên, bạn cũng có thể sử dụng phương thức `putFileAs` trên facade `Storage`, sẽ thực hiện thao tác với file tương tự như ví dụ trên:
+Bạn cũng có thể sử dụng phương thức `putFileAs` trên facade `Storage`, sẽ thực hiện thao tác với file tương tự như ví dụ trên:
 
     $path = Storage::putFileAs(
         'avatars', $request->file('avatar'), $request->user()->id
@@ -436,4 +436,11 @@ Tiếp theo, bạn nên tạo một [service provider](/docs/{{version}}/provide
 
 Tham số đầu tiên của phương thức `extend` là tên của driver và tham số thứ hai là một Closure nhận các biến `$app` và `$config`. Closure này cần trả về một instance của `League\Flysystem\Filesystem`. Biến `$config` sẽ chứa các giá trị được định nghĩa trong file `config/filesystems.php` cho disk mà bạn đang khai báo.
 
-Khi bạn đã tạo xong service provider để đăng ký extension, bạn có thể sử dụng driver `dropbox` trong file cấu hình `config/filesystems.php`.
+Next, register the service provider in your `config/app.php` configuration file:
+
+    'providers' => [
+        // ...
+        App\Providers\DropboxServiceProvider::class,
+    ];
+
+Khi bạn đã tạo và đăng ký xong service provider, bạn có thể sử dụng driver `dropbox` trong file cấu hình `config/filesystems.php`.

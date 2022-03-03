@@ -14,6 +14,9 @@
     - [Biến loop](#the-loop-variable)
     - [Comments](#comments)
     - [PHP](#php)
+- [Forms](#forms)
+    - [CSRF Field](#csrf-field)
+    - [Method Field](#method-field)
 - [Thêm Sub-Views](#including-sub-views)
     - [Tạo Views cho Collections](#rendering-views-for-collections)
 - [Stacks](#stacks)
@@ -164,11 +167,11 @@ Bạn có thể hiển thị nội dung của biến `name` như thế này:
 
     Hello, {{ $name }}.
 
-Tất nhiên, bạn không bị giới hạn trong việc hiển thị nội dung của các biến đã được truyền đến view. Bạn cũng có thể echo ra kết quả với bất kỳ hàm PHP nào tương tự. Thực tế, bạn có thể set bất kỳ code PHP nào mà bạn muốn vào trong lệnh echo của Blade:
+> {tip} Các câu lệnh Blade `{{ }}` này sẽ được tự động gửi qua hàm `htmlspecialchars` của PHP để ngăn chặn các cuộc tấn công XSS.
+
+Bạn không bị giới hạn trong việc hiển thị nội dung của các biến đã được truyền đến view. Bạn cũng có thể echo ra kết quả với bất kỳ hàm PHP nào tương tự. Thực tế, bạn có thể set bất kỳ code PHP nào mà bạn muốn vào trong lệnh echo của Blade:
 
     The current UNIX timestamp is {{ time() }}.
-
-> {tip} Các câu lệnh Blade `{{ }}` này sẽ được tự động gửi qua hàm `htmlspecialchars` của PHP để ngăn chặn các cuộc tấn công XSS.
 
 #### Hiển thị dữ liệu unescaped
 
@@ -430,6 +433,31 @@ Trong một số trường hợp, có thể bạn cần nhúng code PHP vào tro
 
 > {tip} Mặc dù Blade cung cấp tính năng này, nhưng việc sử dụng nó thường xuyên có thể là một tín hiệu cho thấy bạn đang có quá nhiều logic đang được nhúng vào trong template của bạn.
 
+<a name="forms"></a>
+## Forms
+
+<a name="csrf-field"></a>
+### CSRF Field
+
+Bất cứ khi nào bạn định nghĩa một HTML form trong ứng dụng của bạn, bạn nên thêm một trường hidden CSRF token vào trong form của bạn để middleware [bảo vệ CSRF](https://laravel.com/docs/{{version}}/csrf) có thể xác thực request đó. Bạn có thể sử dụng lệnh Blade `@csrf` để tạo trường token đó:
+
+    <form method="POST" action="/profile">
+        @csrf
+
+        ...
+    </form>
+
+<a name="method-field"></a>
+### Method Field
+
+Vì các HTML form không thể tạo các request `PUT`, `PATCH` hoặc `DELETE`, nên bạn sẽ cần thêm trường `_method` hidden vào để làm giả các hành động cho các HTTP này. Lệnh Blade `@method` có thể tạo ra trường như vậy cho bạn:
+
+    <form action="/foo/bar" method="POST">
+        @method('PUT')
+
+        ...
+    </form>
+
 <a name="including-sub-views"></a>
 ## Thêm Sub-Views
 
@@ -447,7 +475,7 @@ Mặc dù view được thêm sẽ kế thừa tất cả các dữ liệu có s
 
     @include('view.name', ['some' => 'data'])
 
-Tất nhiên, nếu bạn thử `@include` một view không tồn tại, thì Laravel sẽ đưa ra một lỗi. Nếu bạn muốn thêm một view có thể có hoặc có thể không tồn tại, thì bạn nên sử dụng lệnh `@includeIf`:
+Nếu bạn thử `@include` một view không tồn tại, thì Laravel sẽ đưa ra một lỗi. Nếu bạn muốn thêm một view có thể có hoặc có thể không tồn tại, thì bạn nên sử dụng lệnh `@includeIf`:
 
     @includeIf('view.name', ['some' => 'data'])
 
@@ -460,6 +488,22 @@ Nếu bạn muốn `@include` một view tùy thuộc vào một điều kiện 
     @includeFirst(['custom.admin', 'admin'], ['some' => 'data'])
 
 > {note} Bạn nên tránh sử dụng các hằng số `__DIR__` và `__FILE__` trong view Blade của bạn, vì chúng sẽ dẫn đến vị trí view sẽ được cache và compile.
+
+#### Bí danh
+
+Nếu các Blade con của bạn được lưu trữ trong một thư mục con, bạn có thể muốn đặt bí danh cho chúng để dễ dàng truy cập hơn. Ví dụ, hãy tưởng tượng một Blade con được lưu trữ tại `resources/views/includes/input.blade.php` với nội dung như sau:
+
+    <input type="{{ $type ?? 'text' }}">
+
+Bạn có thể sử dụng phương thức `include` để đặt bí danh cho Blade con từ `includes.input` thành `input`. Thông thường, điều này phải được thực hiện trong phương thức `boot` của `AppServiceProvider` của bạn:
+
+    use Illuminate\Support\Facades\Blade;
+
+    Blade::include('includes.input', 'input');
+
+Sau khi Blade con đã được đặt bí danh, bạn có thể hiển thị nó bằng cách sử dụng tên bí danh như một lệnh Blade:
+
+    @input(['type' => 'email'])
 
 <a name="rendering-views-for-collections"></a>
 ### Tạo Views cho Collections

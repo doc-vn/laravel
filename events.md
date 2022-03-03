@@ -24,7 +24,7 @@ Các event đóng vai trò là một cách tuyệt vời để tách các khía 
 <a name="registering-events-and-listeners"></a>
 ## Đăng ký Event và Listener
 
-`EventServiceProvider` đi kèm trong application Laravel cung cấp một cách đăng ký dễ dàng cho tất cả các listener event trong application của bạn. Thuộc tính `listen` chứa một mảng gồm các event (là các key) và listener (là các giá trị). Tất nhiên, bạn có thể thêm nhiều event vào mảng này khi application của bạn yêu cầu. Ví dụ: hãy thêm một event `OrderShipped` như sau:
+`EventServiceProvider` đi kèm trong application Laravel cung cấp một cách đăng ký dễ dàng cho tất cả các listener event trong application của bạn. Thuộc tính `listen` chứa một mảng gồm các event (là các key) và listener (là các giá trị). Bạn có thể thêm nhiều event vào mảng này khi application của bạn yêu cầu. Ví dụ: hãy thêm một event `OrderShipped` như sau:
 
     /**
      * The event listener mappings for the application.
@@ -40,7 +40,7 @@ Các event đóng vai trò là một cách tuyệt vời để tách các khía 
 <a name="generating-events-and-listeners"></a>
 ### Tạo Event và Listener
 
-Tất nhiên, việc tạo bằng tay các file cho các event và listener này là rất công kềnh. Thay vào đó, hãy thêm listener và event của nó vào trong `EventServiceProvider` của bạn và sử dụng lệnh `event:generate`. Lệnh này sẽ tạo ra bất kỳ các event hoặc các listener nào được liệt kê trong mảng `EventServiceProvider`. Dĩ nhiên, các event và listener đã được tạo thì sẽ không bị ảnh hưởng:
+Tất nhiên, việc tạo bằng tay các file cho các event và listener này là rất công kềnh. Thay vào đó, hãy thêm listener và event của nó vào trong `EventServiceProvider` của bạn và sử dụng lệnh `event:generate`. Lệnh này sẽ tạo ra bất kỳ các event hoặc các listener nào được liệt kê trong mảng `EventServiceProvider`. Các event và listener đã được tạo thì sẽ không bị ảnh hưởng:
 
     php artisan event:generate
 
@@ -167,7 +167,7 @@ Và chỉ có thế! Bây giờ, khi listener này được gọi trong một ev
 
 #### Customizing The Queue Connection & Queue Name
 
-Nếu bạn muốn tùy chỉnh kết nối của queue và tên queue được sử dụng bởi event listener, bạn có thể định nghĩa các thuộc tính `$connection` và `$queue` trong class listener của bạn:
+Nếu bạn muốn tùy chỉnh kết nối của queue, tên queue hoặc delay time của queue được sử dụng bởi event listener, bạn có thể định nghĩa các thuộc tính `$connection`, `$queue`, hoặc `$delay` trong class listener của bạn:
 
     <?php
 
@@ -191,6 +191,13 @@ Nếu bạn muốn tùy chỉnh kết nối của queue và tên queue được 
          * @var string|null
          */
         public $queue = 'listeners';
+
+        /**
+         * The time (seconds) before the job should be processed.
+         *
+         * @var int
+         */
+        public $delay = 60;
     }
 
 <a name="manually-accessing-the-queue"></a>
@@ -339,7 +346,6 @@ Event subscriber là các class có thể đăng ký nhiều event từ trong ch
                 'App\Listeners\UserEventSubscriber@onUserLogout'
             );
         }
-
     }
 
 <a name="registering-event-subscribers"></a>

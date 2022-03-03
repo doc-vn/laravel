@@ -76,7 +76,15 @@ Bất kỳ form HTML nào mà trỏ đến các route `POST`, `PUT` hoặc `DELE
 
 Nếu bạn đang định nghĩa route chuyển hướng đến một URI khác, bạn có thể sử dụng phương thức `Route::redirect`. Phương pháp này cung cấp một lối tắt thuận tiện để bạn không phải định nghĩa một route đầy đủ hoặc một controller để thực hiện một chuyển hướng đơn giản:
 
+    Route::redirect('/here', '/there');
+
+Mặc định, `Route::redirect` sẽ trả về status code là `302`. Bạn có thể tùy chỉnh status code này bằng cách sử dụng tham số thứ ba:
+
     Route::redirect('/here', '/there', 301);
+
+Bạn có thể sử dụng phương thức `Route::permanentRedirect` để trả về status code là `301`:
+
+    Route::permanentRedirect('/here', '/there');
 
 <a name="view-routes"></a>
 ### View Routes
@@ -93,7 +101,7 @@ Nếu route của bạn chỉ cần trả về một view, thì bạn có thể 
 <a name="required-parameters"></a>
 ### Tham số bắt buộc
 
-Tất nhiên, đôi khi bạn sẽ cần phải lấy các tham số của URI trong route của bạn. Ví dụ: bạn có thể cần lấy ID người dùng từ URL. Bạn có thể làm như vậy bằng cách định nghĩa các route parameter:
+Đôi khi bạn sẽ cần phải lấy các tham số của URI trong route của bạn. Ví dụ: bạn có thể cần lấy ID người dùng từ URL. Bạn có thể làm như vậy bằng cách định nghĩa các route parameter:
 
     Route::get('user/{id}', function ($id) {
         return 'User '.$id;
@@ -160,6 +168,17 @@ Sau khi pattern đã được định nghĩa xong, nó sẽ tự động đượ
         // Only executed if {id} is numeric...
     });
 
+<a name="parameters-encoded-forward-slashes"></a>
+#### Encoded Forward Slashes
+
+Component component của Laravel cho phép tất cả các ký tự được thông qua ngoại trừ ký tự `/`. Đối với ký tự `/` bạn phải cho phép nó là một phần thay thế bằng cách sử dụng một biểu thức chính quy điều kiện `where`:
+
+    Route::get('search/{search}', function ($search) {
+        return $search;
+    })->where('search', '.*');
+
+> {note} Encoded forward slashes chỉ hỗ trợ tham số cuối cùng của route.
+
 <a name="named-routes"></a>
 ## Tên của Route
 
@@ -215,6 +234,8 @@ Nếu bạn muốn xác định xem request hiện tại có đúng với một 
 ## Nhóm Route
 
 Nhóm route cho phép bạn chia sẻ các thuộc tính route, chẳng hạn như middleware hoặc namespaces trên một số lượng lớn các route mà không cần phải định nghĩa các thuộc tính đó trên mỗi route. Các thuộc tính được chia sẻ sẽ được chỉ định trong một mảng là tham số đầu tiên của phương thức `Route::group`.
+
+Đối với các nhóm lồng nhau thì sẽ thử "merge" các thuộc tính nhóm nhỏ với nhóm to hơn. Middleware và điều kiện `where` sẽ được merge trong khi tên, namespace và tiền tố sẽ được thêm vào. Dấu phân cách namespace và dấu gạch chéo trong tiền tố URI cũng sẽ tự động được thêm vào chỗ thích hợp.
 
 <a name="route-group-middleware"></a>
 ### Middleware
@@ -331,6 +352,11 @@ Nếu không tìm thấy model instance phù hợp trong cơ sở dữ liệu, p
 
 Nếu bạn muốn sử dụng tuỳ chỉnh logic phụ thuộc của bạn, bạn có thể sử dụng phương thức `Route::bind`. `Closure` của bạn sẽ được truyền đến phương thức `bind` và nhận vào giá trị của tham số URI, sau đó sẽ trả về một instance của class, và sẽ được inject vào trong route trước đó:
 
+    /**
+     * Bootstrap any application services.
+     *
+     * @return void
+     */
     public function boot()
     {
         parent::boot();
@@ -338,6 +364,19 @@ Nếu bạn muốn sử dụng tuỳ chỉnh logic phụ thuộc của bạn, b�
         Route::bind('user', function ($value) {
             return App\User::where('name', $value)->first() ?? abort(404);
         });
+    }
+
+Ngoài ra, bạn có thể ghi đè phương thức `resolveRouteBinding` trên model Eloquent của bạn. Phương thức này sẽ nhận vào giá trị phân đoạn của tham số URI và sẽ trả về một instance của class sẽ được đưa vào route:
+
+    /**
+     * Retrieve the model for a bound value.
+     *
+     * @param  mixed  $value
+     * @return \Illuminate\Database\Eloquent\Model|null
+     */
+    public function resolveRouteBinding($value)
+    {
+        return $this->where('name', $value)->first() ?? abort(404);
     }
 
 <a name="fallback-routes"></a>
@@ -348,6 +387,8 @@ Sử dụng phương thức `Route::fallback`, bạn có thể định nghĩa m�
     Route::fallback(function () {
         //
     });
+
+> {note} Route dự phòng phải luôn là route cuối cùng được đăng ký bởi application của bạn.
 
 <a name="rate-limiting"></a>
 ## Rate Limiting

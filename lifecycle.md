@@ -45,6 +45,6 @@ Khi application đã được khởi động và tất cả các service provide
 
 Service providers là chìa khóa để khởi động một apllication Laravel. Đầu tiên, Instance application sẽ được khởi tạo, sau đó các service provider sẽ được đăng ký và request sẽ được xử lý bởi application đã được khởi tạo. Nó thực sự đơn giản!
 
-Nắm vững cách thức một ứng dụng Laravel được xây dựng và được khởi động thông qua các service providers là rất có giá trị. Dĩ nhiên, các service providers mặc định của application của bạn sẽ được lưu trữ trong thư mục `app/Providers`.
+Nắm vững cách thức một ứng dụng Laravel được xây dựng và được khởi động thông qua các service providers là rất có giá trị. Các service providers mặc định của application của bạn sẽ được lưu trữ trong thư mục `app/Providers`.
 
-Mặc định, `AppServiceProvider` là trống. Provider này là một nơi tuyệt vời để thêm phần khởi động dành riêng cho application của bạn và các service container bindings. Tất nhiên, đối với các ứng dụng lớn, bạn có thể muốn tạo nhiều service providers, mỗi loại lại có cách khởi động khác nhau.
+Mặc định, `AppServiceProvider` là trống. Provider này là một nơi tuyệt vời để thêm phần khởi động dành riêng cho application của bạn và các service container bindings. Đối với các ứng dụng lớn, bạn có thể muốn tạo nhiều service providers, mỗi loại lại có cách khởi động khác nhau.

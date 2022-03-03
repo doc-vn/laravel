@@ -25,7 +25,7 @@ Laravel làm cho việc tương tác với cơ sở dữ liệu trở nên cực
 
 Cấu hình cơ sở dữ liệu cho application của bạn được lưu trong file `config/database.php`. Trong file này, bạn có thể định nghĩa tất cả các connection đến các cơ sở dữ liệu của bạn, cũng như khai báo connection nào sẽ là connection mặc định sẽ được sử dụng. Một ví dụ mẫu cho các cơ sở dữ liệu này cũng đã được cung cấp sẵn trong file này.
 
-Mặc định, Laravel đã cài đặt sẵn một [cấu hình môi trường](/docs/{{version}}/configuration#environment-configuration) mẫu cho việc sử dụng với [Laravel Homestead](/docs/{{version}}/homestead), đây là một máy ảo tiện lợi để thực hiện phát triển Laravel trên local của bạn. Tất nhiên, bạn có thể thoải mái sửa lại cấu hình này cho phù hợp với cơ sở dữ liệu trên máy local của bạn.
+Mặc định, Laravel đã cài đặt sẵn một [cấu hình môi trường](/docs/{{version}}/configuration#environment-configuration) mẫu cho việc sử dụng với [Laravel Homestead](/docs/{{version}}/homestead), đây là một máy ảo tiện lợi để thực hiện phát triển Laravel trên local của bạn. Bạn có thể thoải mái sửa lại cấu hình này cho phù hợp với cơ sở dữ liệu trên máy local của bạn.
 
 #### SQLite Configuration
 
@@ -33,6 +33,13 @@ Sau khi đã tạo cơ sở dữ liệu SQLite mới bằng cách sử dụng c�
 
     DB_CONNECTION=sqlite
     DB_DATABASE=/absolute/path/to/database.sqlite
+
+Để enable các ràng buộc khóa ngoại cho các kết nối SQLite, bạn nên thêm tùy chọn `foreign_key_constraints` vào file cấu hình `config/database.php` của bạn:
+
+    'sqlite' => [
+        // ...
+        'foreign_key_constraints' => true,
+    ],
 
 <a name="read-and-write-connections"></a>
 ### Đọc và viết thông qua Connection

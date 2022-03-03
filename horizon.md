@@ -3,7 +3,7 @@
 - [Giới thiệu](#introduction)
 - [Cài đặt](#installation)
     - [Cấu hình](#configuration)
-    - [Authentication vào bảng điều khiển](#dashboard-authentication)
+    - [Authorization vào bảng điều khiển](#dashboard-authorization)
 - [Chạy Horizon](#running-horizon)
     - [Deploy Horizon](#deploying-horizon)
 - [Tags](#tags)
@@ -20,15 +20,21 @@ Tất cả các cấu hình worker của bạn được lưu trong một file c�
 <a name="installation"></a>
 ## Cài đặt
 
-> {note} Do sử dụng tín hiệu process không đồng bộ, nên Horizon yêu cầu PHP 7.1+. Thứ hai, bạn nên đảm bảo rằng queue driver của bạn đã được set thành `redis` trong file cấu hình `queue` của bạn.
+> {note} Bạn nên đảm bảo rằng queue driver của bạn đã được set thành `redis` trong file cấu hình `queue` của bạn.
 
 Bạn có thể sử dụng Composer để cài đặt Horizon vào project Laravel của bạn:
 
-    composer require laravel/horizon "^2.0"
+    composer require laravel/horizon
 
-Sau khi cài đặt Horizon, hãy export asset của nó bằng lệnh Artisan `vendor:publish`:
+Sau khi cài đặt Horizon, hãy export asset của nó bằng lệnh Artisan `horizon:install`:
 
-    php artisan vendor:publish --provider="Laravel\Horizon\HorizonServiceProvider"
+    php artisan horizon:install
+
+Bạn cũng nên tạo bảng `failed_jobs` mà Laravel sẽ sử dụng để lưu các [queue job bị thất bại](/docs/{{version}}/queues#dealing-with-failed-jobs):
+
+    php artisan queue:failed-table
+
+    php artisan migrate
 
 <a name="configuration"></a>
 ### Cấu hình
@@ -37,20 +43,41 @@ Sau khi export asset của Horizon xong, file cấu hình của nó sẽ đượ
 
 #### Balance Options
 
-Horizon cho phép bạn chọn từ ba chiến lược balance: `simple`, `auto`, và `false`. Chiến lược `simple` là mặc định, chia đều các incoming job giữa các process:
+Horizon cho phép bạn chọn từ ba chiến lược balance: `simple`, `auto`, và `false`. Chiến lược `simple` sẽ được cấu hình làm cấu hình mặc định, và nó sẽ chia đều các incoming job giữa các process:
 
     'balance' => 'simple',
 
 Chiến lược `auto` sẽ điều chỉnh số lượng process worker trên mỗi queue dựa trên khối lượng job hiện tại của queue. Ví dụ: nếu queue `notifications` của bạn có 1.000 job đang chờ trong khi queue `render` của bạn thì trống không làm gì, Horizon sẽ phân bổ nhiều worker hơn vào queue `notifications` của bạn cho đến khi nó trống. Khi tùy chọn `balance` là `false`, thì mặc định hành vi của Laravel sẽ được sử dụng, nó sẽ xử lý các queue theo thứ tự mà chúng được liệt kê trong cấu hình của bạn.
 
-<a name="dashboard-authentication"></a>
-### Authentication vào bảng điều khiển
+#### Job Trimming
 
-Horizon hiển thị bảng điều khiển tại `/horizon`. Mặc định, bạn sẽ chỉ có thể truy cập được vào bảng điều khiển này trong môi trường `local`. Để định nghĩa quyền truy cập cụ thể hơn cho bảng điều khiển, bạn nên sử dụng phương thức `Horizon::auth`. Phương thức `auth` chấp nhận một callback trả về kết quả `true` hoặc `false`, cho biết liệu người dùng hiện tại có thể truy cập vào bảng điều khiển Horizon hay không. Thông thường, bạn nên gọi `Horizon::auth` trong phương thức `boot` của `AppServiceProvider`:
+File cấu hình `horizon` sẽ cho phép bạn cấu hình thời gian tồn tại của các job gần đây và các job bị thất bại (tính bằng phút). Mặc định, các job gần đây được lưu trong một giờ trong khi các job bị thất bại được lưu trong một tuần:
 
-    Horizon::auth(function ($request) {
-        // return true / false;
-    });
+    'trim' => [
+        'recent' => 60,
+        'failed' => 10080,
+    ],
+
+<a name="dashboard-authorization"></a>
+### Authorization vào bảng điều khiển
+
+Trong file `app/Providers/HorizonServiceProvider.php` của bạn, có một phương thức là `gate`. Gate authorization này sẽ kiểm soát quyền truy cập vào Horizon trong các môi trường **không phải là local**. Bạn có thể thoải mái sửa gate này nếu cần để hạn chế quyền truy cập vào các cài đặt Horizon của bạn:
+
+    /**
+     * Register the Horizon gate.
+     *
+     * This gate determines who can access Horizon in non-local environments.
+     *
+     * @return void
+     */
+    protected function gate()
+    {
+        Gate::define('viewHorizon', function ($user) {
+            return in_array($user->email, [
+                'taylor@laravel.com',
+            ]);
+        });
+    }
 
 <a name="running-horizon"></a>
 ## Chạy Horizon
@@ -164,9 +191,9 @@ Nếu bạn muốn tự định nghĩa tag cho một trong các đối tượng 
 <a name="notifications"></a>
 ## Thông báo
 
-> **Lưu ý:** Trước khi sử dụng thông báo, bạn nên thêm package Composer `guzzlehttp/guzzle` vào trong project của bạn. Khi cấu hình Horizon để gửi thông báo như SMS, thì bạn cũng nên xem lại [các yêu cầu của driver thông báo Nexmo](https://laravel.com/docs/5.6/notifications#sms-notifications).
+> **Lưu ý:** Trước khi sử dụng thông báo, bạn nên thêm package Composer `guzzlehttp/guzzle` vào trong project của bạn. Khi cấu hình Horizon để gửi thông báo như SMS, thì bạn cũng nên xem lại [các yêu cầu của driver thông báo Nexmo](https://laravel.com/docs/{{version}}/notifications#sms-notifications).
 
-Nếu bạn muốn nhận được thông báo khi một trong các queue của bạn có thời gian chờ quá lâu, bạn có thể sử dụng các phương thức `Horizon::routeMailNotificationsTo`, `Horizon::routeSlackNotificationsTo`, và `Horizon::routeSmsNotificationsTo`. Bạn có thể gọi các phương thức này từ `AppServiceProvider`:
+Nếu bạn muốn nhận được thông báo khi một trong các queue của bạn có thời gian chờ quá lâu, bạn có thể sử dụng các phương thức `Horizon::routeMailNotificationsTo`, `Horizon::routeSlackNotificationsTo`, và `Horizon::routeSmsNotificationsTo`. Bạn có thể gọi các phương thức này từ `HorizonServiceProvider`:
 
     Horizon::routeMailNotificationsTo('example@example.com');
     Horizon::routeSlackNotificationsTo('slack-webhook-url', '#channel');

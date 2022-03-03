@@ -41,7 +41,7 @@ Dưới đây là một ví dụ về một class controller cơ bản. Lưu ý 
          * Show the profile for the given user.
          *
          * @param  int  $id
-         * @return Response
+         * @return View
          */
         public function show($id)
         {
@@ -53,7 +53,7 @@ Bạn có định nghĩa một route tới một controller này như sau:
 
     Route::get('user/{id}', 'UserController@show');
 
-Bây giờ, khi một request khớp với URI route mà đã được đinh nghĩa, phương thức `show` trong class `UserController` sẽ được thực thi. Dĩ nhiên, các tham số route cũng sẽ được truyền đến phương thức này.
+Bây giờ, khi một request khớp với URI route mà đã được đinh nghĩa, phương thức `show` trong class `UserController` sẽ được thực thi. Các tham số route cũng sẽ được truyền đến phương thức này.
 
 > {tip} Các controller không **yêu cầu** bạn phải extend từ một class cơ sở. Nhưng, bạn sẽ không thể truy cập vào một số phương thức tiện lợi như các phương thức `middleware`, `validate` và `dispatch`.
 
@@ -84,7 +84,7 @@ Nếu bạn muốn định nghĩa một controller chỉ xử lý cho một hàn
          * Show the profile for the given user.
          *
          * @param  int  $id
-         * @return Response
+         * @return View
          */
         public function __invoke($id)
         {
@@ -305,7 +305,7 @@ Laravel [service container](/docs/{{version}}/container) sẽ được sử dụ
         }
     }
 
-Và dĩ nhiên, bạn cũng có thể khai báo bất kỳ [Laravel contract](/docs/{{version}}/contracts) nào bạn muốn. Nếu container có thể resolve nó, bạn có thể khai báo nó. Tùy thuộc vào ứng dụng của bạn, việc đưa các phụ thuộc của bạn vào controller có thể cung cấp khả năng kiểm tra tốt hơn.
+Bạn cũng có thể khai báo bất kỳ [Laravel contract](/docs/{{version}}/contracts) nào bạn muốn. Nếu container có thể resolve nó, bạn có thể khai báo nó. Tùy thuộc vào ứng dụng của bạn, việc đưa các phụ thuộc của bạn vào controller có thể cung cấp khả năng kiểm tra tốt hơn.
 
 #### Method Injection
 

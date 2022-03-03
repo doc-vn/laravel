@@ -228,7 +228,7 @@ Phương thức `download` có thể được sử dụng để tạo response b
 
     return response()->download($pathToFile, $name, $headers);
 
-    return response()->download($pathToFile)->deleteFileAfterSend(true);
+    return response()->download($pathToFile)->deleteFileAfterSend();
 
 > {note} Quản lý file download Symfony HttpFoundation yêu cầu file download phải có tên file là ASCII.
 

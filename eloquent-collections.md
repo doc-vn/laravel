@@ -9,7 +9,7 @@
 
 Tất cả các kết quả được trả về từ Eloquent đều là các instance của đối tượng `Illuminate\Database\Eloquent\Collection`, bao gồm cả kết quả được truy xuất thông qua phương thức `get` hoặc truy vấn thông qua quan hệ. Đối tượng collection Eloquent được extend từ [base collection](/docs/{{version}}/collections), do đó, nó thừa hưởng nhiều phương thức có thể được dùng để làm việc dễ dàng hơn với mảng model Eloquent.
 
-Tất nhiên, tất cả các collection này cũng có vai trò như là một vòng lặp, cho phép bạn lặp qua nó như thể nó là một mảng PHP đơn thuần:
+Tất cả các collection này cũng có vai trò như là một vòng lặp, cho phép bạn lặp qua nó như thể nó là một mảng PHP đơn thuần:
 
     $users = App\User::where('active', 1)->get();
 
@@ -115,6 +115,7 @@ Tất cả các collection Eloquent đều được extend từ đối tượng 
 [shift](/docs/{{version}}/collections#method-shift)
 [shuffle](/docs/{{version}}/collections#method-shuffle)
 [slice](/docs/{{version}}/collections#method-slice)
+[some](/docs/{{version}}/collections#method-some)
 [sort](/docs/{{version}}/collections#method-sort)
 [sortBy](/docs/{{version}}/collections#method-sortby)
 [sortByDesc](/docs/{{version}}/collections#method-sortbydesc)

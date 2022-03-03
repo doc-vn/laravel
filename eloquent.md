@@ -3,6 +3,7 @@
 - [Giới thiệu](#introduction)
 - [Định nghĩa Model](#defining-models)
     - [Quy ước tên Eloquent Model](#eloquent-model-conventions)
+    - [Giá trị thuộc tính mặc định](#default-attribute-values)
 - [Lấy ra Model](#retrieving-models)
     - [Collection](#collections)
     - [Phân kết quả](#chunking-results)
@@ -155,14 +156,35 @@ Mặc định, tất cả các model Eloquent sẽ sử dụng kết nối cơ s
         protected $connection = 'connection-name';
     }
 
+<a name="default-attribute-values"></a>
+### Giá trị thuộc tính mặc định
+
+Nếu bạn muốn định nghĩa giá trị mặc định cho một số thuộc tính của model, bạn có thể định nghĩa thuộc tính `$attributes` trên model của bạn:
+
+    <?php
+
+    namespace App;
+
+    use Illuminate\Database\Eloquent\Model;
+
+    class Flight extends Model
+    {
+        /**
+         * The model's default values for attributes.
+         *
+         * @var array
+         */
+        protected $attributes = [
+            'delayed' => false,
+        ];
+    }
+
 <a name="retrieving-models"></a>
 ## Lấy ra Model
 
 Khi bạn đã tạo một model và [bảng cơ sở dữ liệu được liên kết với model đó](/docs/{{version}}/migrations#writing-migrations), bạn có thể bắt đầu truy xuất dữ liệu từ cơ sở dữ liệu của bạn. Hãy nghĩ về mỗi model Eloquent như là một [query builder](/docs/{{version}}/queries) cho phép bạn truy vấn vào bảng cơ sở dữ liệu được liên kết với model đó. Ví dụ:
 
     <?php
-
-    use App\Flight;
 
     $flights = App\Flight::all();
 
@@ -181,6 +203,24 @@ Phương thức `all` của Eloquent sẽ trả về tất cả các bản ghi c
 
 > {tip} Vì các model Eloquent là các query builder, nên bạn nên xem lại tất cả các phương thức có sẵn trên [query builder](/docs/{{version}}/queries). Bạn có thể sử dụng bất kỳ phương thức nào có trong các truy vấn Eloquent của bạn.
 
+#### Refreshing Models
+
+Bạn có thể refresh các model bằng cách sử dụng các phương thức `fresh` và `refresh`. Phương thức `fresh` sẽ lấy ra một model mới từ cơ sở dữ liệu. Instance model hiện tại sẽ không bị ảnh hưởng:
+
+    $flight = App\Flight::where('number', 'FR 900')->first();
+
+    $freshFlight = $flight->fresh();
+
+Phương thức `refresh` sẽ tái tạo lại model hiện tại bằng cách sử dụng dữ liệu mới từ cơ sở dữ liệu. Ngoài ra, tất cả các quan hệ đã được load cũng sẽ bị refresh:
+
+    $flight = App\Flight::where('number', 'FR 900')->first();
+
+    $flight->number = 'FR 456';
+
+    $flight->refresh();
+
+    $flight->number; // "FR 900"
+
 <a name="collections"></a>
 ### Collection
 
@@ -190,7 +230,7 @@ Phương thức `all` của Eloquent sẽ trả về tất cả các bản ghi c
         return $flight->cancelled;
     });
 
-Tất nhiên, bạn cũng có thể chạy một vòng lặp cho collection giống như đối với một mảng:
+Bạn cũng có thể chạy một vòng lặp cho collection giống như đối với một mảng:
 
     foreach ($flights as $flight) {
         echo $flight->name;
@@ -220,7 +260,7 @@ Phương thức `cursor` cho phép bạn lặp qua các bản ghi trong cơ sở
 <a name="retrieving-single-models"></a>
 ## Lấy ra một Model / một thống kê
 
-Tất nhiên, ngoài việc truy xuất tất cả các bản ghi có trong một bảng, bạn cũng có thể truy xuất một bản ghi bằng cách sử dụng phương thức `find` hoặc `first`. Thay vì trả về một tập hợp các model, thì các phương thức này sẽ trả về một instance model duy nhất:
+Ngoài việc truy xuất tất cả các bản ghi có trong một bảng, bạn cũng có thể truy xuất một bản ghi bằng cách sử dụng phương thức `find` hoặc `first`. Thay vì trả về một tập hợp các model, thì các phương thức này sẽ trả về một instance model duy nhất:
 
     // Retrieve a model by its primary key...
     $flight = App\Flight::find(1);
@@ -351,7 +391,7 @@ Nếu bạn đã có một instance model, bạn có thể sử dụng phương 
 
 #### Guarding Attributes
 
-Trong khi `$fillable` đóng vai trò là một "danh sách trắng" cho các thuộc tính có thể được sử dụng để mass assignable, thì bạn cũng có thể chọn sử dụng `$guarded`. Thuộc tính `$guarded` sẽ chứa một mảng các thuộc tính mà bạn không muốn được sử dụng cho mass assignable. Tất cả các thuộc tính khác không có trong mảng này sẽ được sử dụng cho mass assignable. Vì vậy, thuộc tính `$guarded` giống như là một "danh sách đen". Tất nhiên, bạn nên sử dụng `$fillable` hoặc `$guarded` - nhưng không phải là cả hai. Trong ví dụ dưới đây, tất cả các thuộc tính **ngoại trừ `price`** sẽ được sử dụng cho mass assignable:
+Trong khi `$fillable` đóng vai trò là một "danh sách trắng" cho các thuộc tính có thể được sử dụng để mass assignable, thì bạn cũng có thể chọn sử dụng `$guarded`. Thuộc tính `$guarded` sẽ chứa một mảng các thuộc tính mà bạn không muốn được sử dụng cho mass assignable. Tất cả các thuộc tính khác không có trong mảng này sẽ được sử dụng cho mass assignable. Vì vậy, thuộc tính `$guarded` giống như là một "danh sách đen". Một điều quan trọng là bạn nên sử dụng `$fillable` hoặc `$guarded` - nhưng không phải là cả hai. Trong ví dụ dưới đây, tất cả các thuộc tính **ngoại trừ `price`** sẽ được sử dụng cho mass assignable:
 
     <?php
 
@@ -425,17 +465,19 @@ Bạn cũng có thể gặp các tình huống mà bạn muốn cập nhật m�
 
 #### Deleting An Existing Model By Key
 
-Trong ví dụ trên, chúng ta đang lấy một model từ cơ sở dữ liệu trước khi gọi phương thức `delete`. Tuy nhiên, nếu bạn biết khóa chính của model, bạn có thể xóa trực tiếp model này mà không cần phải truy xuất nó ra. Để làm như vậy, hãy gọi phương thức `destroy`:
+Trong ví dụ trên, chúng ta đang lấy một model từ cơ sở dữ liệu trước khi gọi phương thức `delete`. Tuy nhiên, nếu bạn biết khóa chính của model, bạn có thể xóa trực tiếp model này mà không cần phải truy xuất nó ra bằng cách gọi phương thức `destroy`. Ngoài một khóa chính làm tham số của nó ra, phương thức `destroy` cũng sẽ chấp nhận nhiều khóa chính cùng một lúc như một mảng khóa chính hoặc một [collection](/docs/{{version}}/collections) khóa chính:
 
     App\Flight::destroy(1);
 
+    App\Flight::destroy(1, 2, 3);
+
     App\Flight::destroy([1, 2, 3]);
 
-    App\Flight::destroy(1, 2, 3);
+    App\Flight::destroy(collect([1, 2, 3]));
 
 #### Deleting Models By Query
 
-Dĩ nhiên, bạn cũng có thể chạy một câu lệnh xóa trên một tập các model. Trong ví dụ này, chúng ta sẽ xóa tất cả các flight có đánh dấu là không hoạt động. Giống như mass update, mass delete cũng sẽ không kích hoạt bất kỳ event nào của model khi các model bị xóa:
+Bạn cũng có thể chạy một câu lệnh xóa trên một tập các model. Trong ví dụ này, chúng ta sẽ xóa tất cả các flight có đánh dấu là không hoạt động. Giống như mass update, mass delete cũng sẽ không kích hoạt bất kỳ event nào của model khi các model bị xóa:
 
     $deletedRows = App\Flight::where('active', 0)->delete();
 
@@ -465,9 +507,9 @@ Ngoài việc xóa các bản ghi ra khỏi cơ sở dữ liệu của bạn, El
         protected $dates = ['deleted_at'];
     }
 
-Tất nhiên, bạn cần thêm cột `deleted_at` vào bảng cơ sở dữ liệu của bạn. [Schema builder](/docs/{{version}}/migrations) của Laravel có chứa một phương thức helper để tạo cột này:
+Bạn cũng cần thêm cột `deleted_at` vào bảng cơ sở dữ liệu của bạn. [Schema builder](/docs/{{version}}/migrations) của Laravel có chứa một phương thức helper để tạo cột này:
 
-    Schema::table('flights', function ($table) {
+    Schema::table('flights', function (Blueprint $table) {
         $table->softDeletes();
     });
 
@@ -702,8 +744,8 @@ Thỉnh thoảng bạn cũng có thể muốn định nghĩa một scope nhận 
         /**
          * Scope a query to only include users of a given type.
          *
-         * @param \Illuminate\Database\Eloquent\Builder $query
-         * @param mixed $type
+         * @param  \Illuminate\Database\Eloquent\Builder $query
+         * @param  mixed $type
          * @return \Illuminate\Database\Eloquent\Builder
          */
         public function scopeOfType($query, $type)
@@ -760,6 +802,8 @@ Event `retrieved` sẽ được kích hoạt khi một model được lấy ra k
         ];
     }
 
+Sau khi định nghĩa và ánh xạ các event Eloquent của bạn, bạn có thể sử dụng [event listener](https://laravel.com/docs/{{version}}/events#defining-listeners) để xử lý các event đó.
+
 <a name="observers"></a>
 ### Observer
 
@@ -780,7 +824,7 @@ Lệnh này sẽ lưu file observer mới vào trong thư mục `App/Observers` 
     class UserObserver
     {
         /**
-         * Handle to the User "created" event.
+         * Handle the User "created" event.
          *
          * @param  \App\User  $user
          * @return void

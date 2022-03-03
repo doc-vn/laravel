@@ -11,6 +11,7 @@
 - [Viết Policies](#writing-policies)
     - [Các phương thức trong Policy](#policy-methods)
     - [Các phương thức không dùng Models](#methods-without-models)
+    - [Guest Users](#guest-users)
     - [Policy Filters](#policy-filters)
 - [Authorizing Actions dùng Policies](#authorizing-actions-using-policies)
     - [Thông qua User Model](#via-the-user-model)
@@ -119,11 +120,15 @@ Thỉnh thoảng, bạn có thể muốn cho phép tất cả các hành động
 
 Nếu callback `before` trả về một kết quả khác null thì kết quả đó sẽ được coi là kết quả của việc kiểm tra.
 
-Bạn có thể sử dụng phương thức `after` để định nghĩa một callback sẽ được thực thi sau mỗi lần authorization check. Tuy nhiên, bạn không thể đổi được kết quả authorization check từ phương thức `after`:
+Bạn có thể sử dụng phương thức `after` để định nghĩa một callback sẽ được thực thi sau tất cả các lần authorization check.
 
     Gate::after(function ($user, $ability, $result, $arguments) {
-        //
+        if ($user->isSuperAdmin()) {
+            return true;
+        }
     });
+
+Tương tự như callback `before`, nếu callback `after` trả về một kết quả khác null thì kết quả đó sẽ được coi là kết quả của việc kiểm tra.
 
 <a name="creating-policies"></a>
 ## Tạo Policies
@@ -215,7 +220,7 @@ Phương thức `update` sẽ nhận vào một `User` và một `Post` làm tha
 
 Bạn có thể tiếp tục định nghĩa thêm các phương thức mà bạn cần authorize cho các hành động khác. Ví dụ: bạn có thể định nghĩa thêm authorize các phương thức `view` hoặc `delete` dành cho một `Post`, ngoài ra bạn cũng có thể tạo thêm bất kỳ các phương thức policy với bất kỳ cái tên nào mà bạn mong muốn.
 
-> {tip} Nếu bạn đã sử dụng option `--model` khi tạo policy thông qua Artisan console, thì nó sẽ chứa sẵn các phương thức cho các hành động `view`, `create`, `update`, và `delete`.
+> {tip} Nếu bạn đã sử dụng option `--model` khi tạo policy thông qua Artisan console, thì nó sẽ chứa sẵn các phương thức cho các hành động `view`, `create`, `update`, `delete`, `restore`, và `forceDelete`.
 
 <a name="methods-without-models"></a>
 ### Các phương thức không dùng Models
@@ -233,6 +238,33 @@ Khi định nghĩa các phương thức policy không nhận vào tham số th�
     public function create(User $user)
     {
         //
+    }
+
+<a name="guest-users"></a>
+### Guest Users
+
+Mặc định, tất cả các gate và policy sẽ tự động trả về `false` nếu request đó không được tạo bởi một người dùng đã được authenticate. Tuy nhiên, nếu bạn muốn, bạn cũng có thể cho phép các request này đi qua các gate và policy của bạn bằng cách khai báo thêm "optional" hoặc cung cấp giá trị `null` mặc định cho định nghĩa tham số user:
+
+    <?php
+
+    namespace App\Policies;
+
+    use App\User;
+    use App\Post;
+
+    class PostPolicy
+    {
+        /**
+         * Determine if the given post can be updated by the user.
+         *
+         * @param  \App\User  $user
+         * @param  \App\Post  $post
+         * @return bool
+         */
+        public function update(?User $user, Post $post)
+        {
+            return $user->id === $post->user_id;
+        }
     }
 
 <a name="policy-filters"></a>
@@ -342,6 +374,30 @@ Như đã thảo luận ở phía trên, một số hành động như `create` 
 
         // The current user can create blog posts...
     }
+
+#### Authorizing Resource Controllers
+
+Nếu bạn đang sử dụng [resource controller](/docs/{{version}}/controllers##resource-controllers), bạn có thể sử dụng phương thức `authorizeResource` trong hàm constructor của controller đó. Phương thức này sẽ gán một định nghĩa middleware `can` thích hợp cho các phương thức trong resource controller đó.
+
+Phương thức `authorizeResource` sẽ nhận tên class của model làm tham số đầu tiên và tên của tham số route chứa ID của model làm tham số thứ hai của nó:
+
+    <?php
+
+    namespace App\Http\Controllers;
+
+    use App\Post;
+    use Illuminate\Http\Request;
+    use App\Http\Controllers\Controller;
+
+    class PostController extends Controller
+    {
+        public function __construct()
+        {
+            $this->authorizeResource(Post::class, 'post');
+        }
+    }
+
+> {tip} Bạn có thể sử dụng lệnh `make:policy` với tùy chọn `--model` để tạo nhanh một class policy cho một model nhất định: `php artisan make:policy PostPolicy --model=Post`.
 
 <a name="via-blade-templates"></a>
 ### Thông qua Blade Templates

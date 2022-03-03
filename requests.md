@@ -118,7 +118,7 @@ Phương thức `method` sẽ trả về mothed HTTP của request. Bạn có th
 <a name="psr7-requests"></a>
 ### PSR-7 Requests
 
-[Tiêu chuẩn PSR-7](http://www.php-fig.org/psr/psr-7/) định nghĩa interface cho các message HTTP, bao gồm cả các request và response. Nếu bạn muốn có một instance của PSR-7 request thay vì Laravel request, trước tiên bạn sẽ cần cài đặt một vài thư viện. Laravel sẽ sử dụng component *Symfony HTTP Message Bridge* để chuyển đổi các request và response của Laravel thành các implementation tương thích PSR-7:
+[Tiêu chuẩn PSR-7](https://www.php-fig.org/psr/psr-7/) định nghĩa interface cho các message HTTP, bao gồm cả các request và response. Nếu bạn muốn có một instance của PSR-7 request thay vì Laravel request, trước tiên bạn sẽ cần cài đặt một vài thư viện. Laravel sẽ sử dụng component *Symfony HTTP Message Bridge* để chuyển đổi các request và response của Laravel thành các implementation tương thích PSR-7:
 
     composer require symfony/psr-http-message-bridge
     composer require zendframework/zend-diactoros
@@ -164,6 +164,10 @@ Khi làm việc với các form có chứa một mảng input, hãy sử dụng 
     $name = $request->input('products.0.name');
 
     $names = $request->input('products.*.name');
+
+Bạn có thể gọi phương thức `input` mà không có bất kỳ tham số nào để lấy ra tất cả các giá trị input dưới dạng một mảng:
+
+    $input = $request->input();
 
 #### Lấy Input từ Query String
 
@@ -341,7 +345,7 @@ Class `UploadedFile` cũng chứa các phương thức có thể truy cập đ�
 
 #### Other File Methods
 
-Có nhiều phương thức khác có sẵn trong các instance `UploadedFile`. Hãy kiểm tra [tài liệu API cho class này](http://api.symfony.com/3.0/Symfony/Component/HttpFoundation/File/UploadedFile.html) để biết thêm thông tin về các phương thức này.
+Có nhiều phương thức khác có sẵn trong các instance `UploadedFile`. Hãy kiểm tra [tài liệu API cho class này](https://api.symfony.com/3.0/Symfony/Component/HttpFoundation/File/UploadedFile.html) để biết thêm thông tin về các phương thức này.
 
 <a name="storing-uploaded-files"></a>
 ### Lưu file upload
@@ -396,7 +400,7 @@ Khi application của bạn đang chạy sau một hệ thống load balancer, m
         protected $headers = Request::HEADER_X_FORWARDED_ALL;
     }
 
-> {tip} Nếu bạn đang sử dụng AWS Elastic Load Balancing, thì giá trị `$headers` của bạn phải là `Request::HEADER_X_FORWARDED_AWS_ELB`. Để biết thêm thông tin về các hằng số có thể được sử dụng trong thuộc tính `$headers`, hãy xem tài liệu của Symfony về [trusting proxies](http://symfony.com/doc/current/deployment/proxies.html).
+> {tip} Nếu bạn đang sử dụng AWS Elastic Load Balancing, thì giá trị `$headers` của bạn phải là `Request::HEADER_X_FORWARDED_AWS_ELB`. Để biết thêm thông tin về các hằng số có thể được sử dụng trong thuộc tính `$headers`, hãy xem tài liệu của Symfony về [trusting proxies](https://symfony.com/doc/current/deployment/proxies.html).
 
 #### Trusting tất cả Proxies
 

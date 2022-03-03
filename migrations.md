@@ -147,7 +147,7 @@ Lệnh `migrate:fresh` sẽ xóa tất cả các bảng ra khỏi cơ sở dữ 
         $table->increments('id');
     });
 
-Tất nhiên, khi tạo bảng, bạn có thể sử dụng bất kỳ [column methods](#creating-columns) nào của schema builder để định nghĩa các cột của bảng.
+Khi tạo bảng, bạn có thể sử dụng bất kỳ [column methods](#creating-columns) nào của schema builder để định nghĩa các cột của bảng.
 
 #### Checking For Table / Column Existence
 
@@ -182,6 +182,7 @@ Command  |  Description
 ### Đổi tên / Xoá Table
 
 Để đổi tên một bảng đã tồn tại trong cơ sở dữ liệu, hãy sử dụng phương thức `rename`:
+
     Schema::rename($from, $to);
 
 Để xóa một bảng hiện có, bạn có thể sử dụng các phương thức `drop` hoặc `dropIfExists`:
@@ -208,7 +209,7 @@ Phương thức `table` trên facade `Schema` có thể được sử dụng đ�
 
 #### Available Column Types
 
-Tất nhiên, schema builder cũng sẽ chứa nhiều loại cột mà bạn có thể khai báo khi xây dựng các bảng cho bạn:
+Schema builder cũng sẽ chứa nhiều loại cột mà bạn có thể khai báo khi xây dựng các bảng cho bạn:
 
 Lệnh  |  Mô tả
 -------  |  -----------
@@ -286,7 +287,7 @@ Modifier  |  Mô tả
 `->autoIncrement()`  |  Set một cột kiểu INTEGER là tự động tăng (primary key)
 `->charset('utf8')`  |  Khai báo character set cho cột (MySQL)
 `->collation('utf8_unicode_ci')`  |  Khai báo collation cho cột (MySQL/SQL Server)
-`->comment('my comment')`  |  Thêm comment vào một column (MySQL)
+`->comment('my comment')`  |  Thêm comment vào một column (MySQL/PostgreSQL)
 `->default($value)`  |  Khai báo giá trị "default" cho cột
 `->first()`  |  Set một column vào vị trí "đầu tiên" trong table (MySQL)
 `->nullable($value = true)`  |  Cho phép giá trị mặc định là NULL khi tạo bản ghi mới
@@ -294,6 +295,8 @@ Modifier  |  Mô tả
 `->unsigned()`  |  Set một cột kiểu INTEGER là luôn dương (MySQL)
 `->useCurrent()`  |  Set cột TIMESTAMP dùng CURRENT_TIMESTAMP làm giá trị mặc định
 `->virtualAs($expression)`  |  Tạo một cột lấy data từ cột khác nhưng không được lưu trữ (MySQL)
+`->generatedAs($expression)`  |  Tạo một cột identity với tùy chọn tăng dần được chỉ định (PostgreSQL)
+`->always()`  |  Định nghĩa mức độ ưu tiên của các giá trị tăng dần so với giá trị đầu vào cho một cột identity (PostgreSQL)
 
 <a name="modifying-columns"></a>
 ### Sửa Column
@@ -451,7 +454,7 @@ Bạn cũng có thể khai báo hành động mong muốn cho các thuộc tính
           ->references('id')->on('users')
           ->onDelete('cascade');
 
-Để xoá khóa ngoại, bạn có thể sử dụng phương thức `dropForeign`. Các ràng buộc khóa ngoại sẽ được sử dụng theo quy ước đặt tên giống với các index. Vì vậy, chúng ta sẽ nối tên bảng và tên cột trong ràng buộc, sau đó thêm hậu tố "_foreign":
+Để xoá khóa ngoại, bạn có thể sử dụng phương thức `dropForeign`. Các ràng buộc khóa ngoại sẽ được sử dụng theo quy ước đặt tên giống với các index. Vì vậy, chúng ta sẽ nối tên bảng và tên cột trong ràng buộc, sau đó thêm hậu tố "\_foreign":
 
     $table->dropForeign('posts_user_id_foreign');
 
@@ -464,3 +467,5 @@ Bạn có thể bật hoặc tắt các ràng buộc khóa ngoại trong migrati
     Schema::enableForeignKeyConstraints();
 
     Schema::disableForeignKeyConstraints();
+
+> {note} Mặc định, SQLite sẽ vô hiệu hóa các ràng buộc khóa ngoại. Khi sử dụng SQLite, bạn hãy chắc chắn rằng là [đã bật hỗ trợ khóa ngoại](/docs/{{version}}/database#configuration) trong cấu hình cơ sở dữ liệu của bạn trước khi tạo chúng trong quá trình migration của bạn.

@@ -26,27 +26,27 @@ Laravel chứa một loạt các hàm PHP global "helper". Nhiều trong số c�
 
 <div class="collection-method-list" markdown="1">
 
-[array_add](#method-array-add)
-[array_collapse](#method-array-collapse)
-[array_divide](#method-array-divide)
-[array_dot](#method-array-dot)
-[array_except](#method-array-except)
-[array_first](#method-array-first)
-[array_flatten](#method-array-flatten)
-[array_forget](#method-array-forget)
-[array_get](#method-array-get)
-[array_has](#method-array-has)
-[array_last](#method-array-last)
-[array_only](#method-array-only)
-[array_pluck](#method-array-pluck)
-[array_prepend](#method-array-prepend)
-[array_pull](#method-array-pull)
-[array_random](#method-array-random)
-[array_set](#method-array-set)
-[array_sort](#method-array-sort)
-[array_sort_recursive](#method-array-sort-recursive)
-[array_where](#method-array-where)
-[array_wrap](#method-array-wrap)
+[Arr::add](#method-array-add)
+[Arr::collapse](#method-array-collapse)
+[Arr::divide](#method-array-divide)
+[Arr::dot](#method-array-dot)
+[Arr::except](#method-array-except)
+[Arr::first](#method-array-first)
+[Arr::flatten](#method-array-flatten)
+[Arr::forget](#method-array-forget)
+[Arr::get](#method-array-get)
+[Arr::has](#method-array-has)
+[Arr::last](#method-array-last)
+[Arr::only](#method-array-only)
+[Arr::pluck](#method-array-pluck)
+[Arr::prepend](#method-array-prepend)
+[Arr::pull](#method-array-pull)
+[Arr::random](#method-array-random)
+[Arr::set](#method-array-set)
+[Arr::sort](#method-array-sort)
+[Arr::sortRecursive](#method-array-sort-recursive)
+[Arr::where](#method-array-where)
+[Arr::wrap](#method-array-wrap)
 [data_fill](#method-data-fill)
 [data_get](#method-data-get)
 [data_set](#method-data-set)
@@ -74,31 +74,31 @@ Laravel chứa một loạt các hàm PHP global "helper". Nhiều trong số c�
 <div class="collection-method-list" markdown="1">
 
 [\__](#method-__)
-[camel_case](#method-camel-case)
+[Str::camel](#method-camel-case)
 [class_basename](#method-class-basename)
 [e](#method-e)
-[ends_with](#method-ends-with)
-[kebab_case](#method-kebab-case)
+[Str::endsWith](#method-ends-with)
+[Str::kebab](#method-kebab-case)
 [preg_replace_array](#method-preg-replace-array)
-[snake_case](#method-snake-case)
-[starts_with](#method-starts-with)
-[str_after](#method-str-after)
-[str_before](#method-str-before)
-[str_contains](#method-str-contains)
-[str_finish](#method-str-finish)
-[str_is](#method-str-is)
-[str_limit](#method-str-limit)
+[Str::snake](#method-snake-case)
+[Str::startsWith](#method-starts-with)
+[Str::after](#method-str-after)
+[Str::before](#method-str-before)
+[Str::contains](#method-str-contains)
+[Str::finish](#method-str-finish)
+[Str::is](#method-str-is)
+[Str::limit](#method-str-limit)
 [Str::orderedUuid](#method-str-ordered-uuid)
-[str_plural](#method-str-plural)
-[str_random](#method-str-random)
-[str_replace_array](#method-str-replace-array)
-[str_replace_first](#method-str-replace-first)
-[str_replace_last](#method-str-replace-last)
-[str_singular](#method-str-singular)
-[str_slug](#method-str-slug)
-[str_start](#method-str-start)
-[studly_case](#method-studly-case)
-[title_case](#method-title-case)
+[Str::plural](#method-str-plural)
+[Str::random](#method-str-random)
+[Str::replaceArray](#method-str-replace-array)
+[Str::replaceFirst](#method-str-replace-first)
+[Str::replaceLast](#method-str-replace-last)
+[Str::singular](#method-str-singular)
+[Str::slug](#method-str-slug)
+[Str::start](#method-str-start)
+[Str::studly](#method-studly-case)
+[Str::title](#method-title-case)
 [trans](#method-trans)
 [trans_choice](#method-trans-choice)
 [Str::uuid](#method-str-uuid)
@@ -193,64 +193,76 @@ Laravel chứa một loạt các hàm PHP global "helper". Nhiều trong số c�
 ## Arrays & Objects
 
 <a name="method-array-add"></a>
-#### `array_add()` {#collection-method .first-collection-method}
+#### `Arr::add()` {#collection-method .first-collection-method}
 
-Hàm `array_add` sẽ thêm một cặp key / giá trị đã cho vào một mảng nếu key đã cho không tồn tại trong mảng:
+Hàm `Arr::add` sẽ thêm một cặp key / giá trị đã cho vào một mảng nếu key đã cho không tồn tại trong mảng:
 
-    $array = array_add(['name' => 'Desk'], 'price', 100);
+    use Illuminate\Support\Arr;
+
+    $array = Arr::add(['name' => 'Desk'], 'price', 100);
 
     // ['name' => 'Desk', 'price' => 100]
 
 <a name="method-array-collapse"></a>
-#### `array_collapse()` {#collection-method}
+#### `Arr::collapse()` {#collection-method}
 
-Hàm `array_collapse` sẽ thu gọn một mảng gồm nhiều mảng con thành một mảng duy nhất:
+Hàm `Arr::collapse` sẽ thu gọn một mảng gồm nhiều mảng con thành một mảng duy nhất:
 
-    $array = array_collapse([[1, 2, 3], [4, 5, 6], [7, 8, 9]]);
+    use Illuminate\Support\Arr;
+
+    $array = Arr::collapse([[1, 2, 3], [4, 5, 6], [7, 8, 9]]);
 
     // [1, 2, 3, 4, 5, 6, 7, 8, 9]
 
 <a name="method-array-divide"></a>
-#### `array_divide()` {#collection-method}
+#### `Arr::divide()` {#collection-method}
 
-Hàm `array_divide` trả về hai mảng, một mảng chứa các key và một mảng chứa các giá trị của mảng đã cho:
+Hàm `Arr::divide` trả về hai mảng, một mảng chứa các key và một mảng chứa các giá trị của mảng đã cho:
 
-    [$keys, $values] = array_divide(['name' => 'Desk']);
+    use Illuminate\Support\Arr;
+
+    [$keys, $values] = Arr::divide(['name' => 'Desk']);
 
     // $keys: ['name']
 
     // $values: ['Desk']
 
 <a name="method-array-dot"></a>
-#### `array_dot()` {#collection-method}
+#### `Arr::dot()` {#collection-method}
 
-Hàm `array_dot` sẽ làm ngang hàng một mảng nhiều chiều thành một mảng một chiều sử dụng ký hiệu "dot" để biểu thị độ sâu:
+Hàm `Arr::dot` sẽ làm ngang hàng một mảng nhiều chiều thành một mảng một chiều sử dụng ký hiệu "dot" để biểu thị độ sâu:
+
+    use Illuminate\Support\Arr;
 
     $array = ['products' => ['desk' => ['price' => 100]]];
 
-    $flattened = array_dot($array);
+    $flattened = Arr::dot($array);
 
     // ['products.desk.price' => 100]
 
 <a name="method-array-except"></a>
-#### `array_except()` {#collection-method}
+#### `Arr::except()` {#collection-method}
 
-Hàm `array_except` loại bỏ các cặp key / giá trị đã cho ra khỏi một mảng:
+Hàm `Arr::except` loại bỏ các cặp key / giá trị đã cho ra khỏi một mảng:
+
+    use Illuminate\Support\Arr;
 
     $array = ['name' => 'Desk', 'price' => 100];
 
-    $filtered = array_except($array, ['price']);
+    $filtered = Arr::except($array, ['price']);
 
     // ['name' => 'Desk']
 
 <a name="method-array-first"></a>
-#### `array_first()` {#collection-method}
+#### `Arr::first()` {#collection-method}
 
-Hàm `array_first` trả về phần tử đầu tiên của mảng pass qua một số điều kiện đã cho:
+Hàm `Arr::first` trả về phần tử đầu tiên của mảng pass qua một số điều kiện đã cho:
+
+    use Illuminate\Support\Arr;
 
     $array = [100, 200, 300];
 
-    $first = array_first($array, function ($value, $key) {
+    $first = Arr::first($array, function ($value, $key) {
         return $value >= 150;
     });
 
@@ -258,70 +270,84 @@ Hàm `array_first` trả về phần tử đầu tiên của mảng pass qua m�
 
 Một giá trị mặc định cũng có thể được truyền làm tham số thứ ba cho phương thức. Giá trị này sẽ được trả về nếu không có giá trị nào được pass qua điều kiện:
 
-    $first = array_first($array, $callback, $default);
+    use Illuminate\Support\Arr;
+
+    $first = Arr::first($array, $callback, $default);
 
 <a name="method-array-flatten"></a>
-#### `array_flatten()` {#collection-method}
+#### `Arr::flatten()` {#collection-method}
 
-Hàm `array_flatten` làm ngang hàng một mảng nhiều chiều thành một mảng một chiều:
+Hàm `Arr::flatten` làm ngang hàng một mảng nhiều chiều thành một mảng một chiều:
+
+    use Illuminate\Support\Arr;
 
     $array = ['name' => 'Joe', 'languages' => ['PHP', 'Ruby']];
 
-    $flattened = array_flatten($array);
+    $flattened = Arr::flatten($array);
 
     // ['Joe', 'PHP', 'Ruby']
 
 <a name="method-array-forget"></a>
-#### `array_forget()` {#collection-method}
+#### `Arr::forget()` {#collection-method}
 
-Hàm `array_forget` xóa một cặp key / giá trị đã cho ra khỏi một mảng bị lồng vào nhau bằng cách sử dụng ký hiệu "dot":
+Hàm `Arr::forget` xóa một cặp key / giá trị đã cho ra khỏi một mảng bị lồng vào nhau bằng cách sử dụng ký hiệu "dot":
+
+    use Illuminate\Support\Arr;
 
     $array = ['products' => ['desk' => ['price' => 100]]];
 
-    array_forget($array, 'products.desk');
+    Arr::forget($array, 'products.desk');
 
     // ['products' => []]
 
 <a name="method-array-get"></a>
-#### `array_get()` {#collection-method}
+#### `Arr::get()` {#collection-method}
 
-Hàm `array_get` lấy một giá trị từ một mảng bị lồng vào nhau bằng cách sử dụng ký hiệu "dot":
+Hàm `Arr::get` lấy một giá trị từ một mảng bị lồng vào nhau bằng cách sử dụng ký hiệu "dot":
+
+    use Illuminate\Support\Arr;
 
     $array = ['products' => ['desk' => ['price' => 100]]];
 
-    $price = array_get($array, 'products.desk.price');
+    $price = Arr::get($array, 'products.desk.price');
 
     // 100
 
-Hàm `array_get` cũng chấp nhận một giá trị mặc định, sẽ được trả về nếu không tìm thấy key:
+Hàm `Arr::get` cũng chấp nhận một giá trị mặc định, sẽ được trả về nếu không tìm thấy key:
 
-    $discount = array_get($array, 'products.desk.discount', 0);
+    use Illuminate\Support\Arr;
+
+    $discount = Arr::get($array, 'products.desk.discount', 0);
 
     // 0
 
 <a name="method-array-has"></a>
-#### `array_has()` {#collection-method}
+#### `Arr::has()` {#collection-method}
 
-Hàm `array_has` sẽ kiểm tra xem một item hoặc các item đã cho có tồn tại trong một mảng hay không bằng cách sử dụng ký hiệu "dot":
+Hàm `Arr::has` sẽ kiểm tra xem một item hoặc các item đã cho có tồn tại trong một mảng hay không bằng cách sử dụng ký hiệu "dot":
+
+    use Illuminate\Support\Arr;
 
     $array = ['product' => ['name' => 'Desk', 'price' => 100]];
 
-    $contains = array_has($array, 'product.name');
+    $contains = Arr::has($array, 'product.name');
 
     // true
 
-    $contains = array_has($array, ['product.price', 'product.discount']);
+    $contains = Arr::has($array, ['product.price', 'product.discount']);
 
     // false
 
 <a name="method-array-last"></a>
-#### `array_last()` {#collection-method}
+#### `Arr::last()` {#collection-method}
 
-Hàm `array_last` trả về phần tử cuối cùng của mảng pass qua một số điều kiện đã cho:
+Hàm `Arr::last` trả về phần tử cuối cùng của mảng pass qua một số điều kiện đã cho:
+
+    use Illuminate\Support\Arr;
 
     $array = [100, 200, 300, 110];
 
-    $last = array_last($array, function ($value, $key) {
+    $last = Arr::last($array, function ($value, $key) {
         return $value >= 150;
     });
 
@@ -329,66 +355,80 @@ Hàm `array_last` trả về phần tử cuối cùng của mảng pass qua mộ
 
 Một giá trị mặc định có thể được truyền làm tham số thứ ba cho phương thức. Giá trị này sẽ được trả về nếu không có giá trị nào pass qua điều kiện:
 
-    $last = array_last($array, $callback, $default);
+    use Illuminate\Support\Arr;
+
+    $last = Arr::last($array, $callback, $default);
 
 <a name="method-array-only"></a>
-#### `array_only()` {#collection-method}
+#### `Arr::only()` {#collection-method}
 
-Hàm `array_only` chỉ trả về các cặp key / giá trị được chỉ định từ mảng đã cho:
+Hàm `Arr::only` chỉ trả về các cặp key / giá trị được chỉ định từ mảng đã cho:
+
+    use Illuminate\Support\Arr;
 
     $array = ['name' => 'Desk', 'price' => 100, 'orders' => 10];
 
-    $slice = array_only($array, ['name', 'price']);
+    $slice = Arr::only($array, ['name', 'price']);
 
     // ['name' => 'Desk', 'price' => 100]
 
 <a name="method-array-pluck"></a>
-#### `array_pluck()` {#collection-method}
+#### `Arr::pluck()` {#collection-method}
 
-Hàm `array_pluck` lấy tất cả các giá trị cho một key đã cho từ một mảng:
+Hàm `Arr::pluck` lấy tất cả các giá trị cho một key đã cho từ một mảng:
+
+    use Illuminate\Support\Arr;
 
     $array = [
         ['developer' => ['id' => 1, 'name' => 'Taylor']],
         ['developer' => ['id' => 2, 'name' => 'Abigail']],
     ];
 
-    $names = array_pluck($array, 'developer.name');
+    $names = Arr::pluck($array, 'developer.name');
 
     // ['Taylor', 'Abigail']
 
 Bạn cũng có thể khai báo thêm key cho mảng đó:
 
-    $names = array_pluck($array, 'developer.name', 'developer.id');
+    use Illuminate\Support\Arr;
+
+    $names = Arr::pluck($array, 'developer.name', 'developer.id');
 
     // [1 => 'Taylor', 2 => 'Abigail']
 
 <a name="method-array-prepend"></a>
-#### `array_prepend()` {#collection-method}
+#### `Arr::prepend()` {#collection-method}
 
-Hàm `array_prepend` sẽ thêm một item lên đầu của một mảng:
+Hàm `Arr::prepend` sẽ thêm một item lên đầu của một mảng:
+
+    use Illuminate\Support\Arr;
 
     $array = ['one', 'two', 'three', 'four'];
 
-    $array = array_prepend($array, 'zero');
+    $array = Arr::prepend($array, 'zero');
 
     // ['zero', 'one', 'two', 'three', 'four']
 
 Nếu cần, bạn có thể khai báo key cho giá trị đó:
 
+    use Illuminate\Support\Arr;
+
     $array = ['price' => 100];
 
-    $array = array_prepend($array, 'Desk', 'name');
+    $array = Arr::prepend($array, 'Desk', 'name');
 
     // ['name' => 'Desk', 'price' => 100]
 
 <a name="method-array-pull"></a>
-#### `array_pull()` {#collection-method}
+#### `Arr::pull()` {#collection-method}
 
-Hàm `array_pull` trả về và xóa một cặp key / giá trị ra khỏi một mảng:
+Hàm `Arr::pull` trả về và xóa một cặp key / giá trị ra khỏi một mảng:
+
+    use Illuminate\Support\Arr;
 
     $array = ['name' => 'Desk', 'price' => 100];
 
-    $name = array_pull($array, 'name');
+    $name = Arr::pull($array, 'name');
 
     // $name: Desk
 
@@ -396,48 +436,60 @@ Hàm `array_pull` trả về và xóa một cặp key / giá trị ra khỏi m�
 
 Một giá trị mặc định có thể được truyền làm tham số thứ ba cho phương thức. Giá trị này sẽ được trả về nếu key không tồn tại:
 
-    $value = array_pull($array, $key, $default);
+    use Illuminate\Support\Arr;
+
+    $value = Arr::pull($array, $key, $default);
 
 <a name="method-array-random"></a>
-#### `array_random()` {#collection-method}
+#### `Arr::random()` {#collection-method}
 
-Hàm `array_random` sẽ trả về một giá trị ngẫu nhiên từ một mảng:
+Hàm `Arr::random` sẽ trả về một giá trị ngẫu nhiên từ một mảng:
+
+    use Illuminate\Support\Arr;
 
     $array = [1, 2, 3, 4, 5];
 
-    $random = array_random($array);
+    $random = Arr::random($array);
 
     // 4 - (retrieved randomly)
 
 Bạn cũng có thể chỉ định số lượng item sẽ được trả về làm tham số thứ hai. Lưu ý rằng việc cung cấp tham số này sẽ trả về một mảng, ngay cả khi chỉ có một item mong muốn:
 
-    $items = array_random($array, 2);
+    use Illuminate\Support\Arr;
+
+    $items = Arr::random($array, 2);
 
     // [2, 5] - (retrieved randomly)
 
 <a name="method-array-set"></a>
-#### `array_set()` {#collection-method}
+#### `Arr::set()` {#collection-method}
 
-Hàm `array_set` sẽ set một giá trị trong một mảng bị lồng nhau bằng cách sử dụng ký hiệu "dot":
+Hàm `Arr::set` sẽ set một giá trị trong một mảng bị lồng nhau bằng cách sử dụng ký hiệu "dot":
+
+    use Illuminate\Support\Arr;
 
     $array = ['products' => ['desk' => ['price' => 100]]];
 
-    array_set($array, 'products.desk.price', 200);
+    Arr::set($array, 'products.desk.price', 200);
 
     // ['products' => ['desk' => ['price' => 200]]]
 
 <a name="method-array-sort"></a>
-#### `array_sort()` {#collection-method}
+#### `Arr::sort()` {#collection-method}
 
-Hàm `array_sort` sẽ sắp xếp một mảng theo các giá trị của nó:
+Hàm `Arr::sort` sẽ sắp xếp một mảng theo các giá trị của nó:
+
+    use Illuminate\Support\Arr;
 
     $array = ['Desk', 'Table', 'Chair'];
 
-    $sorted = array_sort($array);
+    $sorted = Arr::sort($array);
 
     // ['Chair', 'Desk', 'Table']
 
 Bạn cũng có thể sắp xếp mảng theo kết quả của Closure đã cho:
+
+    use Illuminate\Support\Arr;
 
     $array = [
         ['name' => 'Desk'],
@@ -445,7 +497,7 @@ Bạn cũng có thể sắp xếp mảng theo kết quả của Closure đã cho
         ['name' => 'Chair'],
     ];
 
-    $sorted = array_values(array_sort($array, function ($value) {
+    $sorted = array_values(Arr::sort($array, function ($value) {
         return $value['name'];
     }));
 
@@ -458,53 +510,63 @@ Bạn cũng có thể sắp xếp mảng theo kết quả của Closure đã cho
     */
 
 <a name="method-array-sort-recursive"></a>
-#### `array_sort_recursive()` {#collection-method}
+#### `Arr::sortRecursive()` {#collection-method}
 
-Hàm `array_sort_recursive` sẽ sắp xếp đệ quy một mảng bằng cách sử dụng hàm `sort`:
+Hàm `Arr::sortRecursive` sẽ sắp xếp đệ quy một mảng bằng cách sử dụng hàm `sort` cho mảng không có key, còn nếu mảng có key thì sẽ dùng hàm `ksort`:
+
+    use Illuminate\Support\Arr;
 
     $array = [
         ['Roman', 'Taylor', 'Li'],
         ['PHP', 'Ruby', 'JavaScript'],
+        ['one' => 1, 'two' => 2, 'three' => 3],
     ];
 
-    $sorted = array_sort_recursive($array);
+    $sorted = Arr::sortRecursive($array);
 
     /*
         [
-            ['Li', 'Roman', 'Taylor'],
             ['JavaScript', 'PHP', 'Ruby'],
+            ['one' => 1, 'three' => 3, 'two' => 2],
+            ['Li', 'Roman', 'Taylor'],
         ]
     */
 
 <a name="method-array-where"></a>
-#### `array_where()` {#collection-method}
+#### `Arr::where()` {#collection-method}
 
-Hàm `array_where` sẽ lọc một mảng bằng cách sử dụng Closure:
+Hàm `Arr::where` sẽ lọc một mảng bằng cách sử dụng Closure:
+
+    use Illuminate\Support\Arr;
 
     $array = [100, '200', 300, '400', 500];
 
-    $filtered = array_where($array, function ($value, $key) {
+    $filtered = Arr::where($array, function ($value, $key) {
         return is_string($value);
     });
 
     // [1 => '200', 3 => '400']
 
 <a name="method-array-wrap"></a>
-#### `array_wrap()` {#collection-method}
+#### `Arr::wrap()` {#collection-method}
 
-Hàm `array_wrap` sẽ bao bọc giá trị đã cho vào trong một mảng. Nếu giá trị đã cho là một mảng, nó sẽ không bị thay đổi:
+Hàm `Arr::wrap` sẽ bao bọc giá trị đã cho vào trong một mảng. Nếu giá trị đã cho là một mảng, nó sẽ không bị thay đổi:
+
+    use Illuminate\Support\Arr;
 
     $string = 'Laravel';
 
-    $array = array_wrap($string);
+    $array = Arr::wrap($string);
 
     // ['Laravel']
 
 Nếu giá trị đã cho là null, một mảng trống sẽ được trả về:
 
+    use Illuminate\Support\Arr;
+
     $nothing = null;
 
-    $array = array_wrap($nothing);
+    $array = Arr::wrap($nothing);
 
     // []
 
@@ -560,6 +622,17 @@ Hàm `data_get` cũng chấp nhận một giá trị mặc định, sẽ đượ
 
     // 0
 
+Phương thức cũng chấp nhận các ký tự đại diện sử dụng bằng dấu hoa thị để có thể lấy ra bất kỳ khóa nào có trong một mảng hoặc một đối tượng:
+
+    $data = [
+        'product-one' => ['name' => 'Desk 1', 'price' => 100],
+        'product-two' => ['name' => 'Desk 2', 'price' => 150],
+    ];
+
+    data_get($data, '*.name');
+
+    // ['Desk 1', 'Desk 2'];
+
 <a name="method-data-set"></a>
 #### `data_set()` {#collection-method}
 
@@ -591,7 +664,7 @@ Hàm này cũng chấp nhận ký tự đại diện và để set giá trị ch
         ]
     */
 
-Mặc định, bất kỳ giá trị hiện có sẽ bị ghi đè. Nếu bạn chỉ muốn set một giá trị nếu nó không tồn tại, bạn có thể truyền `false` làm tham số thứ ba:
+Mặc định, bất kỳ giá trị hiện có sẽ bị ghi đè. Nếu bạn chỉ muốn set một giá trị nếu nó không tồn tại, bạn có thể truyền `false` làm tham số thứ tư:
 
     $data = ['products' => ['desk' => ['price' => 100]]];
 
@@ -683,7 +756,7 @@ Hàm `resource_path` trả về đường dẫn đến thư mục `resource`. B�
 
     $path = resource_path();
 
-    $path = resource_path('assets/sass/app.scss');
+    $path = resource_path('sass/app.scss');
 
 <a name="method-storage-path"></a>
 #### `storage_path()` {#collection-method}
@@ -709,11 +782,13 @@ Hàm `__` sẽ dịch chuỗi cần được dịch hoặc key cần được d�
 Nếu chuỗi hoặc key cần được dịch không tồn tại, hàm `__` sẽ trả về giá trị được đưa vào. Vì vậy, nếu sử dụng ví dụ mẫu trên, hàm `__` sẽ trả về `messages.welcome` nếu key cần được dịch đó không tồn tại.
 
 <a name="method-camel-case"></a>
-#### `camel_case()` {#collection-method}
+#### `Str::camel()` {#collection-method}
 
-Hàm `camel_case` chuyển đổi chuỗi đã cho thành `camelCase`:
+Hàm `Str::camel` chuyển đổi chuỗi đã cho thành `camelCase`:
 
-    $converted = camel_case('foo_bar');
+    use Illuminate\Support\Str;
+
+    $converted = Str::camel('foo_bar');
 
     // fooBar
 
@@ -736,20 +811,24 @@ Hàm `e` chạy hàm` htmlspecialchars` của PHP với tùy chọn `double_enco
     // &lt;html&gt;foo&lt;/html&gt;
 
 <a name="method-ends-with"></a>
-#### `ends_with()` {#collection-method}
+#### `Str::endsWith()` {#collection-method}
 
-Hàm `ends_with` sẽ kiểm tra chuỗi đã cho có kết thúc bằng giá trị đã cho hay không:
+Hàm `Str::endsWith` sẽ kiểm tra chuỗi đã cho có kết thúc bằng giá trị đã cho hay không:
 
-    $result = ends_with('This is my name', 'name');
+    use Illuminate\Support\Str;
+
+    $result = Str::endsWith('This is my name', 'name');
 
     // true
 
 <a name="method-kebab-case"></a>
-#### `kebab_case()` {#collection-method}
+#### `Str::kebab()` {#collection-method}
 
-Hàm `kebab_case` chuyển đổi chuỗi đã cho thành` kebab-case`:
+Hàm `Str::kebab` chuyển đổi chuỗi đã cho thành` kebab-case`:
 
-    $converted = kebab_case('fooBar');
+    use Illuminate\Support\Str;
+
+    $converted = Str::kebab('fooBar');
 
     // foo-bar
 
@@ -765,94 +844,114 @@ Hàm `preg_replace_array` sẽ thay thế một pattern vào trong một chuỗi
     // The event will take place between 8:30 and 9:00
 
 <a name="method-snake-case"></a>
-#### `snake_case()` {#collection-method}
+#### `Str::snake()` {#collection-method}
 
-Hàm `snake_case` sẽ chuyển đổi chuỗi đã cho thành` snake_case`:
+Hàm `Str::snake` sẽ chuyển đổi chuỗi đã cho thành` Str::snake`:
 
-    $converted = snake_case('fooBar');
+    use Illuminate\Support\Str;
+
+    $converted = Str::snake('fooBar');
 
     // foo_bar
 
 <a name="method-starts-with"></a>
-#### `starts_with()` {#collection-method}
+#### `Str::startsWith()` {#collection-method}
 
 Hàm `started_with` sẽ kiểm tra chuỗi đã cho có bắt đầu bằng giá trị đã cho hay không:
 
-    $result = starts_with('This is my name', 'This');
+    use Illuminate\Support\Str;
+
+    $result = Str::startsWith('This is my name', 'This');
 
     // true
 
 <a name="method-str-after"></a>
-#### `str_after()` {#collection-method}
+#### `Str::after()` {#collection-method}
 
-Hàm `str_after` trả về mọi thứ đứng sau giá trị đã cho có trong một chuỗi:
+Hàm `Str::after` trả về mọi thứ đứng sau giá trị đã cho có trong một chuỗi:
 
-    $slice = str_after('This is my name', 'This is');
+    use Illuminate\Support\Str;
+
+    $slice = Str::after('This is my name', 'This is');
 
     // ' my name'
 
 <a name="method-str-before"></a>
-#### `str_before()` {#collection-method}
+#### `Str::before()` {#collection-method}
 
-Hàm `str_before` sẽ trả về mọi thứ đứng trước giá trị đã cho có trong một chuỗi:
+Hàm `Str::before` sẽ trả về mọi thứ đứng trước giá trị đã cho có trong một chuỗi:
 
-    $slice = str_before('This is my name', 'my name');
+    use Illuminate\Support\Str;
+
+    $slice = Str::before('This is my name', 'my name');
 
     // 'This is '
 
 <a name="method-str-contains"></a>
-#### `str_contains()` {#collection-method}
+#### `Str::contains()` {#collection-method}
 
-Hàm `str_contains` xác định xem chuỗi đã cho có chứa giá trị đã cho hay không (phân biệt chữ hoa chữ thường):
+Hàm `Str::contains` xác định xem chuỗi đã cho có chứa giá trị đã cho hay không (phân biệt chữ hoa chữ thường):
 
-    $contains = str_contains('This is my name', 'my');
+    use Illuminate\Support\Str;
+
+    $contains = Str::contains('This is my name', 'my');
 
     // true
 
 Bạn cũng có thể truyền vào một mảng các giá trị để xác định xem chuỗi đã cho có chứa bất kỳ giá trị nào trong mảng không:
 
-    $contains = str_contains('This is my name', ['my', 'foo']);
+    use Illuminate\Support\Str;
+
+    $contains = Str::contains('This is my name', ['my', 'foo']);
 
     // true
 
 <a name="method-str-finish"></a>
-#### `str_finish()` {#collection-method}
+#### `Str::finish()` {#collection-method}
 
-Hàm `str_finish` sẽ thêm một instance của giá trị đã cho vào một chuỗi nếu nó chưa kết thúc bằng giá trị đó:
+Hàm `Str::finish` sẽ thêm một instance của giá trị đã cho vào một chuỗi nếu nó chưa kết thúc bằng giá trị đó:
 
-    $adjusted = str_finish('this/string', '/');
+    use Illuminate\Support\Str;
+
+    $adjusted = Str::finish('this/string', '/');
 
     // this/string/
 
-    $adjusted = str_finish('this/string/', '/');
+    $adjusted = Str::finish('this/string/', '/');
 
     // this/string/
 
 <a name="method-str-is"></a>
-#### `str_is()` {#collection-method}
+#### `Str::is()` {#collection-method}
 
-Hàm `str_is` sẽ xác định xem một chuỗi đã cho có khớp với pattern đã cho hay không. Dấu hoa thị có thể được sử dụng để làm ký tự đại diện:
+Hàm `Str::is` sẽ xác định xem một chuỗi đã cho có khớp với pattern đã cho hay không. Dấu hoa thị có thể được sử dụng để làm ký tự đại diện:
 
-    $matches = str_is('foo*', 'foobar');
+    use Illuminate\Support\Str;
+
+    $matches = Str::is('foo*', 'foobar');
 
     // true
 
-    $matches = str_is('baz*', 'foobar');
+    $matches = Str::is('baz*', 'foobar');
 
     // false
 
 <a name="method-str-limit"></a>
-#### `str_limit()` {#collection-method}
+#### `Str::limit()` {#collection-method}
 
-Hàm `str_limit` sẽ cắt ngắn chuỗi đã cho ở độ dài nhất định:
+Hàm `Str::limit` sẽ cắt ngắn chuỗi đã cho ở độ dài nhất định:
 
-    $truncated = str_limit('The quick brown fox jumps over the lazy dog', 20);
+    use Illuminate\Support\Str;
+
+    $truncated = Str::limit('The quick brown fox jumps over the lazy dog', 20);
 
     // The quick brown fox...
 
 Bạn cũng có thể truyền một tham số thứ ba để thay đổi chuỗi sẽ được nối vào cuối chuỗi:
 
-    $truncated = str_limit('The quick brown fox jumps over the lazy dog', 20, ' (...)');
+    use Illuminate\Support\Str;
+
+    $truncated = Str::limit('The quick brown fox jumps over the lazy dog', 20, ' (...)');
 
     // The quick brown fox (...)
 
@@ -866,114 +965,136 @@ Phương thức `Str::orderedUuid` sẽ tạo một UUID "timestamp first" có t
     return (string) Str::orderedUuid();
 
 <a name="method-str-plural"></a>
-#### `str_plural()` {#collection-method}
+#### `Str::plural()` {#collection-method}
 
-Hàm `str_plural` sẽ chuyển đổi một chuỗi thành dạng số nhiều của nó. Chức năng này hiện tại chỉ hỗ trợ ngôn ngữ tiếng Anh:
+Hàm `Str::plural` sẽ chuyển đổi một chuỗi thành dạng số nhiều của nó. Chức năng này hiện tại chỉ hỗ trợ ngôn ngữ tiếng Anh:
 
-    $plural = str_plural('car');
+    use Illuminate\Support\Str;
+
+    $plural = Str::plural('car');
 
     // cars
 
-    $plural = str_plural('child');
+    $plural = Str::plural('child');
 
     // children
 
 Bạn có thể cung cấp một số nguyên dưới dạng tham số thứ hai cho hàm để lấy dạng số ít hoặc số nhiều của chuỗi:
 
-    $plural = str_plural('child', 2);
+    use Illuminate\Support\Str;
+
+    $plural = Str::plural('child', 2);
 
     // children
 
-    $plural = str_plural('child', 1);
+    $plural = Str::plural('child', 1);
 
     // child
 
 <a name="method-str-random"></a>
-#### `str_random()` {#collection-method}
+#### `Str::random()` {#collection-method}
 
-Hàm `str_random` sẽ tạo ra một chuỗi ngẫu nhiên có độ dài được chỉ định. Hàm này sử dụng hàm `random_bytes` của PHP:
+Hàm `Str::random` sẽ tạo ra một chuỗi ngẫu nhiên có độ dài được chỉ định. Hàm này sử dụng hàm `random_bytes` của PHP:
 
-    $random = str_random(40);
+    use Illuminate\Support\Str;
+
+    $random = Str::random(40);
 
 <a name="method-str-replace-array"></a>
-#### `str_replace_array()` {#collection-method}
+#### `Str::replaceArray()` {#collection-method}
 
-Hàm `str_replace_array` sẽ thay thế một giá trị đã cho vào trong một chuỗi sequentially bằng cách sử dụng một mảng:
+Hàm `Str::replaceArray` sẽ thay thế một giá trị đã cho vào trong một chuỗi sequentially bằng cách sử dụng một mảng:
+
+    use Illuminate\Support\Str;
 
     $string = 'The event will take place between ? and ?';
 
-    $replaced = str_replace_array('?', ['8:30', '9:00'], $string);
+    $replaced = Str::replaceArray('?', ['8:30', '9:00'], $string);
 
     // The event will take place between 8:30 and 9:00
 
 <a name="method-str-replace-first"></a>
-#### `str_replace_first()` {#collection-method}
+#### `Str::replaceFirst()` {#collection-method}
 
-Hàm `str_replace_first` sẽ thay thế giá trị đầu tiên có trong chuỗi:
+Hàm `Str::replaceFirst` sẽ thay thế giá trị đầu tiên có trong chuỗi:
 
-    $replaced = str_replace_first('the', 'a', 'the quick brown fox jumps over the lazy dog');
+    use Illuminate\Support\Str;
+
+    $replaced = Str::replaceFirst('the', 'a', 'the quick brown fox jumps over the lazy dog');
 
     // a quick brown fox jumps over the lazy dog
 
 <a name="method-str-replace-last"></a>
-#### `str_replace_last()` {#collection-method}
+#### `Str::replaceLast()` {#collection-method}
 
-Hàm `str_replace_last` sẽ thay thế giá trị cuối cùng có trong chuỗi:
+Hàm `Str::replaceLast` sẽ thay thế giá trị cuối cùng có trong chuỗi:
 
-    $replaced = str_replace_last('the', 'a', 'the quick brown fox jumps over the lazy dog');
+    use Illuminate\Support\Str;
+
+    $replaced = Str::replaceLast('the', 'a', 'the quick brown fox jumps over the lazy dog');
 
     // the quick brown fox jumps over a lazy dog
 
 <a name="method-str-singular"></a>
-#### `str_singular()` {#collection-method}
+#### `Str::singular()` {#collection-method}
 
-Hàm `str_singular` sẽ chuyển đổi một chuỗi thành dạng số ít của nó. Chức năng này hiện tại chỉ hỗ trợ ngôn ngữ tiếng Anh:
+Hàm `Str::singular` sẽ chuyển đổi một chuỗi thành dạng số ít của nó. Chức năng này hiện tại chỉ hỗ trợ ngôn ngữ tiếng Anh:
 
-    $singular = str_singular('cars');
+    use Illuminate\Support\Str;
+
+    $singular = Str::singular('cars');
 
     // car
 
-    $singular = str_singular('children');
+    $singular = Str::singular('children');
 
     // child
 
 <a name="method-str-slug"></a>
-#### `str_slug()` {#collection-method}
+#### `Str::slug()` {#collection-method}
 
-Hàm `str_slug` sẽ tạo ra một URL "slug" từ chuỗi đã cho:
+Hàm `Str::slug` sẽ tạo ra một URL "slug" từ chuỗi đã cho:
 
-    $slug = str_slug('Laravel 5 Framework', '-');
+    use Illuminate\Support\Str;
+
+    $slug = Str::slug('Laravel 5 Framework', '-');
 
     // laravel-5-framework
 
 <a name="method-str-start"></a>
-#### `str_start()` {#collection-method}
+#### `Str::start()` {#collection-method}
 
-Hàm `str_start` sẽ thêm một instance của giá trị đã cho vào một chuỗi nếu nó chưa bắt đầu bằng giá trị đó:
+Hàm `Str::start` sẽ thêm một instance của giá trị đã cho vào một chuỗi nếu nó chưa bắt đầu bằng giá trị đó:
 
-    $adjusted = str_start('this/string', '/');
+    use Illuminate\Support\Str;
+
+    $adjusted = Str::start('this/string', '/');
 
     // /this/string
 
-    $adjusted = str_start('/this/string', '/');
+    $adjusted = Str::start('/this/string', '/');
 
     // /this/string
 
 <a name="method-studly-case"></a>
-#### `studly_case()` {#collection-method}
+#### `Str::studly()` {#collection-method}
 
-Hàm `studly_case` chuyển đổi chuỗi đã cho thành` StudlyCase`:
+Hàm `Str::studly` chuyển đổi chuỗi đã cho thành` StudlyCase`:
 
-    $converted = studly_case('foo_bar');
+    use Illuminate\Support\Str;
+
+    $converted = Str::studly('foo_bar');
 
     // FooBar
 
 <a name="method-title-case"></a>
-#### `title_case()` {#collection-method}
+#### `Str::title()` {#collection-method}
 
-Hàm `title_case` chuyển đổi chuỗi đã cho thành` Title Case`:
+Hàm `Str::title` chuyển đổi chuỗi đã cho thành` Title Case`:
 
-    $converted = title_case('a nice title uses the correct case');
+    use Illuminate\Support\Str;
+
+    $converted = Str::title('a nice title uses the correct case');
 
     // A Nice Title Uses The Correct Case
 
@@ -1014,6 +1135,8 @@ Hàm `action` sẽ tạo ra một URL cho một action của controller đã cho
 
     $url = action('HomeController@index');
 
+    $url = action([HomeController::class, 'index']);
+
 Nếu phương thức chấp nhận tham số cho route, bạn có thể truyền chúng làm tham số thứ hai cho phương thức:
 
     $url = action('UserController@profile', ['id' => 1]);
@@ -1024,6 +1147,12 @@ Nếu phương thức chấp nhận tham số cho route, bạn có thể truyề
 Hàm `asset` sẽ tạo URL cho một asset bằng cách sử dụng scheme hiện tại của request (HTTP hoặc HTTPS):
 
     $url = asset('img/photo.jpg');
+
+Bạn có thể cấu hình URL host cho asset bằng cách set biến `ASSET_URL` trong file `.env` của bạn. Điều này có thể hữu ích nếu bạn đang lưu trữ các asset của bạn trong một dịch vụ bên ngoài như Amazon S3:
+
+    // ASSET_URL=http://example.com/assets
+
+    $url = asset('img/photo.jpg'); // http://example.com/assets/img/photo.jpg
 
 <a name="method-secure-asset"></a>
 #### `secure_asset()` {#collection-method}
@@ -1276,6 +1405,8 @@ Hàm `dump` sẽ dump các biến đã cho:
 
 Nếu bạn muốn dừng thực thi lệnh sau khi dump các biến, hãy sử dụng hàm [`dd`](#method-dd) để thay thế.
 
+> {tip} Bạn có thể sử dụng lệnh `dump-server` của Artisan để chặn tất cả các lệnh `dump` và hiển thị chúng trong console thay vì trình duyệt của bạn.
+
 <a name="method-encrypt"></a>
 #### `encrypt()` {#collection-method}
 
@@ -1332,7 +1463,7 @@ Hàm `filled` sẽ trả về giá trị đã cho không là "blank" hay không:
 <a name="method-info"></a>
 #### `info()` {#collection-method}
 
-Hàm `info` sẽ ghi thông tin vào [log](/docs/{{version}}/errors#logging):
+Hàm `info` sẽ ghi thông tin vào [log](/docs/{{version}}/logging):
 
     info('Some helpful information!');
 
@@ -1343,7 +1474,7 @@ Một mảng dữ liệu theo ngữ cảnh cũng có thể được truyền cho
 <a name="method-logger"></a>
 #### `logger()` {#collection-method}
 
-Hàm `logger` có thể được sử dụng để viết một thông báo ở mức `debug` vào [log](/docs/{{version}}/errors#logging):
+Hàm `logger` có thể được sử dụng để viết một thông báo ở mức `debug` vào [log](/docs/{{version}}/logging):
 
     logger('Debug message');
 
@@ -1383,23 +1514,17 @@ Hàm `old` sẽ [lấy ra](/docs/{{version}}/requests#retrieving-input) một gi
 <a name="method-optional"></a>
 #### `optional()` {#collection-method}
 
-Hàm `optional` nhận vào bất kỳ tham số nào và cho phép bạn truy cập các thuộc tính trên đối tượng đó. Nếu đối tượng đã cho là `null`, thì khi truy cập vào thuộc tính, nó sẽ trả về `null` thay vì gây ra lỗi:
+Hàm `optional` nhận vào bất kỳ tham số nào và cho phép bạn truy cập vào các thuộc tính hoặc các phương thức trên đối tượng đó. Nếu đối tượng đã cho là `null`, thì các thuộc tính hoặc các phương thức đó sẽ trả về `null` thay vì gây ra lỗi:
 
     return optional($user->address)->street;
 
     {!! old('name', optional($user)->name) !!}
 
-Bạn cũng có thể gọi các phương thức trên đối tượng đó. Giống như việc truy cập vào thuộc tính, nếu đối tượng đã cho là `null`, việc gọi một phương thức sẽ trả về` null` thay vì gây ra lỗi:
-
-    return optional($user)->getTwitterProfile();
-
-Nếu phương thức bạn muốn gọi không thực sự nằm trên chính đối tượng đó, bạn có thể truyền vào một đối số thứ hai là một Closure cho phương thức `option`:
+Phương thức `optional` cũng chấp nhận một Closure làm tham số thứ hai của nó. Closure sẽ được gọi nếu giá trị tham số đầu tiên không phải là một giá trị null:
 
     return optional(User::find($id), function ($user) {
-        return TwitterApi::findUser($user->twitter_id);
+        return new DummyUser;
     });
-
-Nếu đối tượng đã cho không phải là `null`, thì Closure sẽ được gọi và giá trị được trả về từ Closure sẽ được trả về như cũ. Nếu đối tượng đã cho là `null`, thì Closure sẽ không được gọi và `optional` sẽ trả về `null` thay vì gây ra lỗi.
 
 <a name="method-policy"></a>
 #### `policy()` {#collection-method}

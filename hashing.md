@@ -14,9 +14,9 @@
 <a name="configuration"></a>
 ## Cấu hình
 
-Driver hashing mặc định cho ứng dụng của bạn sẽ được cấu hình trong file cấu hình `config/hashing.php`. Hiện tại có hai driver được hỗ trợ: [Bcrypt](https://en.wikipedia.org/wiki/Bcrypt) và [Argon2](https://en.wikipedia.org/wiki/Argon2).
+Driver hashing mặc định cho ứng dụng của bạn sẽ được cấu hình trong file cấu hình `config/hashing.php`. Hiện tại có hai driver được hỗ trợ: [Bcrypt](https://en.wikipedia.org/wiki/Bcrypt) và [Argon2](https://en.wikipedia.org/wiki/Argon2) (Argon2i và biến thể Argon2id).
 
-> {note} Driver Argon2 yêu cầu PHP 7.2.0 hoặc hợn.
+> {note} Driver Argon2i yêu cầu PHP 7.2.0 hoặc hơn và Driver Argon2id yêu cầu PHP 7.3.0 hoặc hơn.
 
 <a name="basic-usage"></a>
 ## Cách dùng cơ bản
@@ -67,7 +67,7 @@ Nếu bạn đang sử dụng thuật toán Argon2, phương thức `make` cho p
         'threads' => 2,
     ]);
 
-> {tip} Để biết thêm thông tin về các tùy chọn này, hãy xem [tài liệu PHP chính thức](http://php.net/manual/en/function.password-hash.php).
+> {tip} Để biết thêm thông tin về các tùy chọn này, hãy xem [tài liệu PHP chính thức](https://secure.php.net/manual/en/function.password-hash.php).
 
 #### Verifying A Password Against A Hash
 

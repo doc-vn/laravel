@@ -6,6 +6,7 @@
     - [Global Middleware](#global-middleware)
     - [Gán Middleware vào Routes](#assigning-middleware-to-routes)
     - [Middleware Groups](#middleware-groups)
+    - [Sắp xếp Middleware](#sorting-middleware)
 - [Middleware Parameters](#middleware-parameters)
 - [Middleware kết thúc](#terminable-middleware)
 
@@ -14,7 +15,7 @@
 
 Middleware cung cấp một cơ chế thuận tiện để lọc các request HTTP vào ứng dụng của bạn. Ví dụ: Laravel có chứa một middleware để xác minh người dùng vào ứng dụng của bạn đã được xác thực hay chưa. Nếu người dùng chưa được xác thực, middleware sẽ chuyển hướng người dùng đến màn hình login. Và, nếu người dùng đã được xác thực, middleware sẽ cho phép request đó tiếp tục vào ứng dụng.
 
-Và dĩ nhiên, bạn có thể muốn viết thêm các middleware khác để thực hiện các nhiệm vụ khác, ngoài việc xác thực. Một middleware CORS có thể chịu trách nhiệm cho việc thêm một thuộc tính header vào tất cả các response mà application của bạn gửi về client. Hoặc là một middleware logging có thể log tất cả các request đến application của bạn.
+Bạn có thể muốn viết thêm các middleware khác để thực hiện các nhiệm vụ khác, ngoài việc xác thực. Một middleware CORS có thể chịu trách nhiệm cho việc thêm một thuộc tính header vào tất cả các response mà application của bạn gửi về client. Hoặc là một middleware logging có thể log tất cả các request đến application của bạn.
 
 Có một số middleware đã có sẵn trong framework Laravel, bao gồm cả middleware để xác thực và bảo vệ CSRF. Tất cả các middleware này đều nằm trong thư mục `app/Http/Middleware`.
 
@@ -109,17 +110,20 @@ Nếu bạn muốn một middleware chạy trong mỗi request HTTP đến appli
 <a name="assigning-middleware-to-routes"></a>
 ### Gán Middleware với Routes
 
-Nếu bạn muốn gán một middleware cho một route cụ thể, trước tiên bạn nên gán middleware đó với một khoá trong file `app/Http/Kernel.php` của bạn. Mặc định, thuộc tính `$routeMiddleware` của class này sẽ chứa sẵn một danh sách middleware đi kèm với Laravel. Để thêm middleware của bạn, hãy thêm nó vào danh sách này và gán cho nó một khóa mà bạn chọn. Ví dụ:
+Nếu bạn muốn gán một middleware cho một route cụ thể, trước tiên bạn nên gán middleware đó với một khoá trong file `app/Http/Kernel.php` của bạn. Mặc định, thuộc tính `$routeMiddleware` của class này sẽ chứa sẵn một danh sách middleware đi kèm với Laravel. Để thêm middleware của bạn, hãy thêm nó vào danh sách này và gán cho nó một khóa mà bạn chọn:
 
     // Within App\Http\Kernel Class...
 
     protected $routeMiddleware = [
-        'auth' => \Illuminate\Auth\Middleware\Authenticate::class,
+        'auth' => \App\Http\Middleware\Authenticate::class,
         'auth.basic' => \Illuminate\Auth\Middleware\AuthenticateWithBasicAuth::class,
         'bindings' => \Illuminate\Routing\Middleware\SubstituteBindings::class,
+        'cache.headers' => \Illuminate\Http\Middleware\SetCacheHeaders::class,
         'can' => \Illuminate\Auth\Middleware\Authorize::class,
         'guest' => \App\Http\Middleware\RedirectIfAuthenticated::class,
+        'signed' => \Illuminate\Routing\Middleware\ValidateSignature::class,
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
+        'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
     ];
 
 Khi middleware đã được định nghĩa trong HTTP kernel, bạn có thể sử dụng phương thức `middleware` để gán middleware đó cho một route:
@@ -181,6 +185,27 @@ Các group middleware có thể được gán cho một route hoặc một contr
     });
 
 > {tip} Mặc định, group middleware `web` sẽ được tự động gán cho file `routes/web.php` bởi `RouteServiceProvider`.
+
+<a name="sorting-middleware"></a>
+### Sắp xếp Middleware
+
+Hiếm khi, bạn cần middleware của bạn thực thi theo một thứ tự cụ thể nhưng lại không thể sắp xếp thứ tự của chúng khi chúng được chỉ định cho route. Trong trường hợp này, bạn có thể chỉ định mức độ ưu tiên middleware của bạn bằng cách sử dụng thuộc tính `$middlewarePriority` trong file `app/Http/Kernel.php` của bạn:
+
+    /**
+     * The priority-sorted list of middleware.
+     *
+     * This forces non-global middleware to always be in the given order.
+     *
+     * @var array
+     */
+    protected $middlewarePriority = [
+        \Illuminate\Session\Middleware\StartSession::class,
+        \Illuminate\View\Middleware\ShareErrorsFromSession::class,
+        \App\Http\Middleware\Authenticate::class,
+        \Illuminate\Session\Middleware\AuthenticateSession::class,
+        \Illuminate\Routing\Middleware\SubstituteBindings::class,
+        \Illuminate\Auth\Middleware\Authorize::class,
+    ];
 
 <a name="middleware-parameters"></a>
 ## Middleware Parameters

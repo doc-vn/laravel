@@ -36,6 +36,7 @@
     - [Formatting Slack Notifications](#formatting-slack-notifications)
     - [Đính kèm vào message slack](#slack-attachments)
     - [Routing Slack Notifications](#routing-slack-notifications)
+- [Ngôn ngữ trong Notifications](#localizing-notifications)
 - [Notification Events](#notification-events)
 - [Tuỳ biến Channels](#custom-channels)
 
@@ -456,7 +457,7 @@ Bạn cũng có thể sử dụng cập nhật hàng loạt để đánh dấu t
 
     $user->unreadNotifications()->update(['read_at' => now()]);
 
-Tất nhiên, bạn cũng có thể 'xóa' các notification này, để xóa chúng ra khỏi bảng bạn có thể làm như sau:
+Bạn cũng có thể 'xóa' các notification này, để xóa chúng ra khỏi bảng bạn có thể làm như sau:
 
     $user->notifications()->delete();
 
@@ -805,9 +806,45 @@ Nếu một số trường đính kèm của bạn chứa Markdown, bạn có th
          */
         public function routeNotificationForSlack($notification)
         {
-            return $this->slack_webhook_url;
+            return 'https://hooks.slack.com/services/...';
         }
     }
+
+<a name="localizing-notifications"></a>
+## Ngôn ngữ trong Notifications
+
+Laravel cho phép bạn gửi các notification bằng ngôn ngữ khác, khác với ngôn ngữ hiện tại của application và thậm chí sẽ nhớ ngôn ngữ này nếu notification đang được queue.
+
+Để thực hiện điều này, class `Illuminate\Notifications\Notification` có cung cấp một phương thức `locale` để set ngôn ngữ mà bạn mong muốn. Application sẽ chuyển đổi thành ngôn ngữ này khi định dạng notification và sau đó quay lại về ngôn ngữ trước đó khi quá trình định dạng này hoàn tất:
+
+    $user->notify((new InvoicePaid($invoice))->locale('es'));
+
+Set ngôn ngữ cho nhiều notification cũng có thể đạt được thông qua facade `Notification`:
+
+    Notification::locale('es')->send($users, new InvoicePaid($invoice));
+
+### User Preferred Locales
+
+Thỉnh thoảng, các application sẽ lưu lại ngôn ngữ ưa thích của mỗi người dùng. Bằng cách implement contract `HasLocalePreference` trên một model notifiable của bạn, bạn có thể hướng dẫn Laravel sử dụng ngôn ngữ này khi gửi notification:
+
+    use Illuminate\Contracts\Translation\HasLocalePreference;
+
+    class User extends Model implements HasLocalePreference
+    {
+        /**
+         * Get the user's preferred locale.
+         *
+         * @return string
+         */
+        public function preferredLocale()
+        {
+            return $this->locale;
+        }
+    }
+
+Khi bạn đã implement xong interface này, Laravel sẽ tự động sử dụng ngôn ngữ này khi gửi notification và mailable tới model. Do đó, không cần phải gọi phương thức `locale` khi bạn sử dụng interface này:
+
+    $user->notify(new InvoicePaid($invoice));
 
 <a name="notification-events"></a>
 ## Notification Events
@@ -840,6 +877,7 @@ Trong một event listener, bạn có thể truy cập vào các thuộc tính `
         // $event->channel
         // $event->notifiable
         // $event->notification
+        // $event->response
     }
 
 <a name="custom-channels"></a>

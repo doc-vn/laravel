@@ -112,6 +112,19 @@ Bạn có thể dừng xử lý các đoạn tiếp theo bằng cách trả về
         return false;
     });
 
+Nếu bạn đang cập nhật bản ghi cơ sở dữ liệu trong khi chunking kết quả, thì kết quả đang được chunking của bạn có thể bị thay đổi theo những cách mà bạn không mong muốn. Vì vậy, khi cập nhật các bản ghi cơ sở dữ liệu trong khi đang chunking, thì tốt nhất bạn nên sử dụng phương thức `chunkById`. Phương thức này sẽ tự động chunking các kết quả dựa theo khóa chính của bản ghi:
+
+    DB::table('users')->where('active', false)
+        ->chunkById(100, function ($users) {
+            foreach ($users as $user) {
+                DB::table('users')
+                    ->where('id', $user->id)
+                    ->update(['active' => true]);
+            }
+        });
+
+> {note} Khi cập nhật hoặc xóa các bản ghi bên trong lệnh callback của phương thức chunk, bất kỳ thay đổi nào đối với các khóa chính hoặc khóa ngoại đều có thể ảnh hưởng đến kết quả truy vấn của phương thức chunk. Điều này có thể dẫn đến việc một số bản ghi sẽ không được đưa vào bên trong kết quả chunk.
+
 <a name="aggregates"></a>
 ### Thống kê
 
@@ -121,7 +134,7 @@ Query builder cũng cung cấp nhiều phương thức thống kê khác nhau nh
 
     $price = DB::table('orders')->max('price');
 
-Tất nhiên, bạn có thể kết hợp các phương thức này với các câu lệnh khác:
+Bạn có thể kết hợp các phương thức này với các câu lệnh khác:
 
     $price = DB::table('orders')
                     ->where('finalized', 1)
@@ -140,7 +153,7 @@ Thay vì sử dụng phương thức `count` để xác định xem có tồn t�
 
 #### Specifying A Select Clause
 
-Tất nhiên, không phải lúc nào bạn cũng muốn select tất cả các cột từ bảng cơ sở dữ liệu. Sử dụng phương thức `select`, bạn có thể khai báo một lệnh `select` tùy chỉnh cho query:
+Không phải lúc nào bạn cũng muốn select tất cả các cột từ bảng cơ sở dữ liệu. Sử dụng phương thức `select`, bạn có thể khai báo một lệnh `select` tùy chỉnh cho query:
 
     $users = DB::table('users')->select('name', 'email as user_email')->get();
 
@@ -211,7 +224,7 @@ Phương thức `orderByRaw` có thể được sử dụng để set một chu�
 
 #### Inner Join Clause
 
-Query builder cũng có thể được sử dụng để viết các câu lệnh join. Để thực hiện một "inner join" cơ bản, bạn có thể sử dụng phương thức `join` trên một instance của query builder. Tham số đầu tiên được truyền vào cho phương thức `join` là tên của bảng mà bạn cần join, trong khi các tham số còn lại là khai báo các cột dành cho phép join. Tất nhiên, như bạn có thể thấy, bạn có thể join nhiều bảng trong cùng một query duy nhất:
+Query builder cũng có thể được sử dụng để viết các câu lệnh join. Để thực hiện một "inner join" cơ bản, bạn có thể sử dụng phương thức `join` trên một instance của query builder. Tham số đầu tiên được truyền vào cho phương thức `join` là tên của bảng mà bạn cần join, trong khi các tham số còn lại là khai báo các cột dành cho phép join. Bạn thậm chí có thể join nhiều bảng trong cùng một query duy nhất:
 
     $users = DB::table('users')
                 ->join('contacts', 'users.id', '=', 'contacts.user_id')
@@ -219,12 +232,16 @@ Query builder cũng có thể được sử dụng để viết các câu lệnh
                 ->select('users.*', 'contacts.phone', 'orders.price')
                 ->get();
 
-#### Left Join Clause
+#### Left Join Clause / Right Join Clause
 
-Nếu bạn muốn thực hiện "left join" thay vì "inner join", hãy sử dụng phương thức `leftJoin`. Phương thức `leftJoin` có cùng tham số với phương thức `join`:
+Nếu bạn muốn thực hiện "left join" hoặc "right join" thay vì "inner join", hãy sử dụng phương thức `leftJoin` hoặc `rightJoin`. Những phương thức này có cùng tham số với phương thức `join`:
 
     $users = DB::table('users')
                 ->leftJoin('posts', 'users.id', '=', 'posts.user_id')
+                ->get();
+
+    $users = DB::table('users')
+                ->rightJoin('posts', 'users.id', '=', 'posts.user_id')
                 ->get();
 
 #### Cross Join Clause
@@ -264,7 +281,7 @@ Bạn có thể sử dụng các phương thức `joinSub`, `leftJoinSub` và `r
                        ->groupBy('user_id');
 
     $users = DB::table('users')
-            ->joinSub($latestPosts, 'latest_posts', function($join) {
+            ->joinSub($latestPosts, 'latest_posts', function ($join) {
                 $join->on('users.id', '=', 'latest_posts.user_id');
             })->get();
 
@@ -298,7 +315,7 @@ Ví dụ: đây là một truy vấn kiểm tra giá trị của cột "votes" b
 
     $users = DB::table('users')->where('votes', 100)->get();
 
-Dĩ nhiên, bạn có thể sử dụng các toán tử khác khi viết lệnh `where`:
+Bạn có thể sử dụng các toán tử khác khi viết lệnh `where`:
 
     $users = DB::table('users')
                     ->where('votes', '>=', 100)
@@ -491,6 +508,16 @@ MySQL và PostgreSQL hỗ trợ `whereJsonContains` với nhiều giá trị kh�
                     ->whereJsonContains('options->languages', ['en', 'de'])
                     ->get();
 
+Bạn có thể sử dụng `whereJsonLength` để truy vấn mảng JSON theo độ dài của chúng:
+
+    $users = DB::table('users')
+                    ->whereJsonLength('options->languages', 0)
+                    ->get();
+
+    $users = DB::table('users')
+                    ->whereJsonLength('options->languages', '>', 1)
+                    ->get();
+
 <a name="ordering-grouping-limit-and-offset"></a>
 ## Ordering, Grouping, Limit, và Offset
 
@@ -605,11 +632,23 @@ Nếu bảng có set id tự động tăng, hãy sử dụng phương thức `in
 <a name="updates"></a>
 ## Update
 
-Tất nhiên, ngoài việc thêm các bản ghi vào cơ sở dữ liệu, query builder cũng có thể cập nhật các bản ghi hiện có bằng phương thức `update`. Phương thức `update`, giống như phương thức `insert`, chấp nhận một mảng các cặp cột và giá trị để cập nhật. Bạn có thể thêm điều kiện vào lệnh `update` bằng cách sử dụng lệnh `where`:
+Ngoài việc thêm các bản ghi vào cơ sở dữ liệu, query builder cũng có thể cập nhật các bản ghi hiện có bằng phương thức `update`. Phương thức `update`, giống như phương thức `insert`, chấp nhận một mảng các cặp cột và giá trị để cập nhật. Bạn có thể thêm điều kiện vào lệnh `update` bằng cách sử dụng lệnh `where`:
 
     DB::table('users')
                 ->where('id', 1)
                 ->update(['votes' => 1]);
+
+#### Cập nhật hoặc thêm
+
+Thỉnh thoảng bạn có thể muốn cập nhật một bản ghi hiện có trong cơ sở dữ liệu hoặc tạo mới nếu không có bản ghi nào phù hợp. Trong trường hợp đó, phương thức `updateOrInsert` có thể được sử dụng. Phương thức `updateOrInsert` chấp nhận hai tham số: một là mảng các điều kiện để tìm ra bản ghi và hai là một mảng các giá trị gồm các cột và các giá trị sẽ được cập nhật.
+
+Phương thức `updateOrInsert` trước tiên sẽ thử tìm một bản ghi trong cơ sở dữ liệu bằng cách sử dụng các cặp giá trị của tham số đầu tiên. Nếu bản ghi tồn tại, nó sẽ cập nhật các giá trị trong tham số thứ hai vào bản ghi được tìm thấy. Nếu không thể tìm thấy bản ghi, thì một bản ghi mới sẽ được thêm vào cơ sở dữ liệu, các giá trị của bản ghi này là sự kết hợp của cả hai tham số một và hai:
+
+    DB::table('users')
+        ->updateOrInsert(
+            ['email' => 'john@example.com', 'name' => 'John'],
+            ['votes' => '2']
+        );
 
 <a name="updating-json-columns"></a>
 ### Update JSON Column

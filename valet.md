@@ -33,7 +33,7 @@ Mặc định, Valet hỗ trợ những phần sau, nhưng không giới hạn:
 - [Contao](https://contao.org/en/)
 - [Craft](https://craftcms.com)
 - [Drupal](https://www.drupal.org/)
-- [Jigsaw](http://jigsaw.tighten.co)
+- [Jigsaw](https://jigsaw.tighten.co)
 - [Joomla](https://www.joomla.org/)
 - [Katana](https://github.com/themsaid/katana)
 - [Kirby](https://getkirby.com/)
@@ -55,18 +55,19 @@ Tuy nhiên, bạn có thể mở rộng Valet với [custom drivers](#custom-val
 
 Như bạn đã biết, Laravel cung cấp [Homestead](/docs/{{version}}/homestead), và các môi trường phát triển Laravel khác. Homestead và Valet sẽ khác nhau về đối tượng người dùng, và cách tiếp cận với môi trường phát triển ở local. Homestead cung cấp một máy ảo Ubuntu cùng với cấu hình Nginx. Homestead sẽ là lựa chọn tốt nếu bạn muốn có một môi trường phát triển Linux được ảo hóa hoàn toàn trên Windows / Linux.
 
-Còn Valet chỉ hỗ trợ Mac và yêu cầu bạn cài đặt PHP và database server trực tiếp vào máy local của bạn. Điều này có thể dễ dàng đạt được bằng cách sử dụng [Homebrew] (http://brew.sh/) với các lệnh như `brew install php` và `brew install mysql`. Valet cung cấp một môi trường phát triển local nhanh chóng với mức tiêu thụ tài nguyên tối thiểu, vì vậy thật tuyệt vời cho các nhà phát triển nếu chỉ cần PHP / MySQL và không cần môi trường phát triển ảo hóa.
+Còn Valet chỉ hỗ trợ Mac và yêu cầu bạn cài đặt PHP và database server trực tiếp vào máy local của bạn. Điều này có thể dễ dàng đạt được bằng cách sử dụng [Homebrew](https://brew.sh/) với các lệnh như `brew install php` và `brew install mysql`. Valet cung cấp một môi trường phát triển local nhanh chóng với mức tiêu thụ tài nguyên tối thiểu, vì vậy thật tuyệt vời cho các nhà phát triển nếu chỉ cần PHP / MySQL và không cần môi trường phát triển ảo hóa.
 
 Cả Valet và Homestead đều là những lựa chọn tuyệt vời để cấu hình môi trường phát triển Laravel cho bạn. Bạn chọn cái nào đều sẽ phụ thuộc vào sở thích cá nhân hoặc nhu cầu của nhóm phát triển của bạn.
 
 <a name="installation"></a>
 ## Cài đặt
 
-**Valet yêu cầu macOS và [Homebrew](http://brew.sh/). Trước khi cài đặt, bạn nên đảm bảo rằng không có chương trình nào như Apache hoặc Nginx đang chạy ở cổng 80 trên máy local của bạn.**
+**Valet yêu cầu macOS và [Homebrew](https://brew.sh/). Trước khi cài đặt, bạn nên đảm bảo rằng không có chương trình nào như Apache hoặc Nginx đang chạy ở cổng 80 trên máy local của bạn.**
 
 <div class="content-list" markdown="1">
 - Cài đặt hoặc cập nhật [Homebrew](http://brew.sh/) mới nhất bằng cách dùng lệnh `brew update`.
-- Cài đặt PHP 7.2 bằng cách dùng lệnh `brew install php@7.2` thông qua Homebrew.
+- Cài đặt PHP 7.3 bằng cách dùng lệnh `brew install php` thông qua Homebrew.
+- Cài đặt [Composer](https://getcomposer.org).
 - Cài đặt Valet bằng Composer thông qua lệnh `composer global require laravel/valet`. Và chắc chắn là thư mục `~/.composer/vendor/bin` này đã có trong "PATH" của máy bạn.
 - Chạy lệnh `valet install`. Lệnh này sẽ cấu hình và cài đặt Valet cùng DnsMasq, ngoài ra cũng sẽ đăng ký Valet's daemon chạy mỗi khi máy bạn khởi động.
 </div>
@@ -77,13 +78,21 @@ Valet sẽ tự động khởi động daemon của nó mỗi khi máy bạn kh�
 
 #### Dùng tên miền khác
 
-Mặc định, Valet sẽ cung cấp project của bạn dưới tên miền `.test`. Nếu bạn muốn sử dụng một tên miền khác, bạn có thể sử dụng lệnh `valet domain tld-name`.
+Mặc định, Valet sẽ cung cấp project của bạn dưới tên miền `.test`. Nếu bạn muốn sử dụng một tên miền khác, bạn có thể sử dụng lệnh `valet tld tld-name`.
 
-Ví dụ: nếu bạn muốn sử dụng tên miền `.app` thay vì tên miền `.test`, hãy chạy `valet domain app` và Valet sẽ tự động thay đổi tên miền project của bạn sang `*.app`.
+Ví dụ: nếu bạn muốn sử dụng tên miền `.app` thay vì tên miền `.test`, hãy chạy `valet tld app` và Valet sẽ tự động thay đổi tên miền project của bạn sang `*.app`.
 
 #### Database
 
-Nếu bạn cần một cơ sở dữ liệu, hãy thử dùng MySQL bằng cách chạy `brew install mysql@5.7` trên terminal. Khi MySQL đã được cài đặt, bạn có thể khởi động nó bằng lệnh `brew services start mysql`. Sau đó, bạn có thể kết nối đến cơ sở dữ liệu tại địa chỉ `127.0.0.1` với username là `root` và mật khẩu là trống.
+Nếu bạn cần một cơ sở dữ liệu, hãy thử dùng MySQL bằng cách chạy `brew install mysql@5.7` trên terminal. Khi MySQL đã được cài đặt, bạn có thể khởi động nó bằng lệnh `brew services start mysql@5.7`. Sau đó, bạn có thể kết nối đến cơ sở dữ liệu tại địa chỉ `127.0.0.1` với username là `root` và mật khẩu là trống.
+
+#### PHP Versions
+
+Valet cho phép bạn chuyển đổi các phiên bản PHP khác nhau bằng lệnh `valet use php@version`. Valet sẽ cài đặt phiên bản PHP được chỉ định thông qua Brew nếu nó chưa được cài đặt:
+
+    valet use php@7.2
+
+    valet use php
 
 <a name="upgrading"></a>
 ### Cập nhật
@@ -130,7 +139,7 @@ Sau khi Valet được cài đặt xong, bạn có thể bắt đầu tạo site
 Lệnh `link` cũng được dùng để tạo site cho bạn. Lệnh này hữu ích nếu bạn muốn tạo một site trong một thư mục chứ không phải là toàn bộ thư mục.
 
 <div class="content-list" markdown="1">
-- Để dùng lệnh này, bạn cần trỏ vào project mà bạn đang muốn tạo site, và chạy lệnh `valet link app-name` trong terminal. Valet sẽ tạo một link ảo trong thư mục `~/.valet/Sites`, và nó sẽ trỏ đến thư mục mà bạn đang chạy lệnh ở trên.
+- Để dùng lệnh này, bạn cần trỏ vào project mà bạn đang muốn tạo site, và chạy lệnh `valet link app-name` trong terminal. Valet sẽ tạo một link ảo trong thư mục `~/.config/valet/Sites`, và nó sẽ trỏ đến thư mục mà bạn đang chạy lệnh ở trên.
 - Sau khi bạn đã chạy lệnh `link`, bạn có thể truy cập vào site của bạn trên web browser với link là `http://app-name.test`.
 </div>
 
@@ -158,16 +167,14 @@ Valet đã chứa một lệnh để chia sẻ các trang web ở local của b�
 
 Để ngừng chia sẻ trang web của bạn, hãy nhấn `Control + C` để hủy quá trình.
 
-> {note} `valet share` hiện không hỗ trợ chia sẻ các trang web đã được bảo mật bằng lệnh `valet secure`.
-
 <a name="custom-valet-drivers"></a>
 ## Tuỳ chỉnh Valet Drivers
 
-Bạn có thể viết Valet "driver" của riêng bạn để tạo các application PHP chạy trên framework khác hoặc CMS khác mà không được Valet hỗ trợ. Khi bạn cài đặt Valet, một thư mục `~/.valet/Drivers` sẽ được tạo và chứa file `SampleValetDriver.php`. File này sẽ chứa một driver mẫu để trình bày cách viết một driver tuỳ chỉnh. Để viết một driver tuỳ chỉnh thì nó chỉ yêu cầu bạn kế thừa 3 phương thức: `serves`, `isStaticFile`, và `frontControllerPath`.
+Bạn có thể viết Valet "driver" của riêng bạn để tạo các application PHP chạy trên framework khác hoặc CMS khác mà không được Valet hỗ trợ. Khi bạn cài đặt Valet, một thư mục `~/.config/valet/Drivers` sẽ được tạo và chứa file `SampleValetDriver.php`. File này sẽ chứa một driver mẫu để trình bày cách viết một driver tuỳ chỉnh. Để viết một driver tuỳ chỉnh thì nó chỉ yêu cầu bạn kế thừa 3 phương thức: `serves`, `isStaticFile`, và `frontControllerPath`.
 
 Tất cả 3 phương thức này đều nhận các giá trị là `$sitePath`, `$siteName`, và `$uri` làm đối số của chúng. `$sitePath` là đường dẫn đến trang web mà đã được tạo trên máy của bạn, chẳng hạn như `/Users/Lisa/Sites/my-project`. `$siteName` là phần "host" hoặc phần "site name" của tên miền(`my-project`). `$uri` là request URI (`/foo/bar`).
 
-Khi mà bạn đã tuỳ chỉnh xong Valet driver, hãy lưu nó vào trong thư mục `~/.valet/Drivers` bằng cách sử dụng quy ước đặt tên như sau `FrameworkValetDriver.php`. Ví dụ: nếu bạn đang viết valet driver cho WordPress, thì nên đặt tên file của bạn phải là `WordPressValetDriver.php`.
+Khi mà bạn đã tuỳ chỉnh xong Valet driver, hãy lưu nó vào trong thư mục `~/.config/valet/Drivers` bằng cách sử dụng quy ước đặt tên như sau `FrameworkValetDriver.php`. Ví dụ: nếu bạn đang viết valet driver cho WordPress, thì nên đặt tên file của bạn phải là `WordPressValetDriver.php`.
 
 Hãy xem cách làm mẫu của từng phương thức mà driver Valet của bạn nên làm.
 

@@ -8,11 +8,13 @@
     - [Cấu trúc class](#class-structure)
 - [Dispatching Job](#dispatching-jobs)
     - [Delayed Dispatching](#delayed-dispatching)
+    - [Đồng bộ Dispatching](#synchronous-dispatching)
     - [Kết hợp Job](#job-chaining)
     - [Tuỳ biến Queue và Connection](#customizing-the-queue-and-connection)
     - [Khai báo số lần chạy Job tối đa / giá trị timeout](#max-job-attempts-and-timeout)
     - [Giới hạn tỷ lệ chạy](#rate-limiting)
     - [Xử lý Error](#error-handling)
+- [Queueing Closures](#queueing-closures)
 - [Chạy Queue Worker](#running-the-queue-worker)
     - [Queue ưu tiên](#queue-priorities)
     - [Queue Worker và Deployment](#queue-workers-and-deployment)
@@ -22,6 +24,7 @@
     - [Dọn dẹp sau khi Job failed](#cleaning-up-after-failed-jobs)
     - [Event Job failed](#failed-job-events)
     - [Chạy lại Job failed](#retrying-failed-jobs)
+    - [Bỏ qua các model bị thiếu](#ignoring-missing-models)
 - [Job Event](#job-events)
 
 <a name="introduction"></a>
@@ -164,6 +167,14 @@ Trong ví dụ trên, hãy lưu ý rằng chúng ta có thể truyền một [El
 
 Phương thức `handle` được gọi khi job được xử lý bởi queue. Lưu ý rằng chúng ta có thể khai báo các phụ thuộc vào phương thức `handle` của job. Laravel [service container](/docs/{{version}}/container) sẽ tự động inject các phụ thuộc này.
 
+Nếu bạn muốn toàn quyền kiểm soát cách container đưa các phụ thuộc vào phương thức `handle`, bạn có thể sử dụng phương thức `bindMethod` của container. Phương thức `bindMethod` chấp nhận một callback nhận vào một job và container. Trong lệnh callback, bạn có thể thoải mái gọi phương thức `handle` theo bất kỳ cách nào mà bạn muốn. Thông thường, bạn nên gọi phương thức này từ một [service provider](/docs/{{version}}/providers):
+
+    use App\Jobs\ProcessPodcast;
+
+    $this->app->bindMethod(ProcessPodcast::class.'@handle', function ($job, $app) {
+        return $job->handle($app->make(AudioProcessor::class));
+    });
+
 > {note} Dữ liệu nhị phân, chẳng hạn như một nội dung ảnh thô, phải được truyền qua hàm `base64_encode` trước khi được truyền đến một queued job. Nếu không làm điều này, thì job đó có thể serialize thành chuỗi JSON không đúng khi được đặt lên queue.
 
 <a name="dispatching-jobs"></a>
@@ -225,7 +236,36 @@ Nếu bạn muốn delay việc thực hiện một queued job, bạn có thể 
         }
     }
 
-> {note} service SQS queue của Amazon có thời gian delay đa là 15 phút.
+> {note} service SQS queue của Amazon có thời gian delay tối đa là 15 phút.
+
+<a name="synchronous-dispatching"></a>
+### Đồng bộ Dispatching
+
+Nếu bạn muốn gửi một job được chạy ngay lập tức (một cách đồng bộ), bạn có thể sử dụng phương thức `dispatchNow`. Khi sử dụng phương thức này, job sẽ không được queue và sẽ được chạy ngay lập tức trong process hiện tại:
+
+    <?php
+
+    namespace App\Http\Controllers;
+
+    use Illuminate\Http\Request;
+    use App\Jobs\ProcessPodcast;
+    use App\Http\Controllers\Controller;
+
+    class PodcastController extends Controller
+    {
+        /**
+         * Store a new podcast.
+         *
+         * @param  Request  $request
+         * @return Response
+         */
+        public function store(Request $request)
+        {
+            // Create podcast...
+
+            ProcessPodcast::dispatchNow($podcast);
+        }
+    }
 
 <a name="job-chaining"></a>
 ### Kết hợp Job
@@ -236,6 +276,8 @@ Kết hợp job cho phép bạn khai báo một danh sách các queued job sẽ 
         new OptimizePodcast,
         new ReleasePodcast
     ])->dispatch();
+
+> {note} Việc xóa các job bằng phương thức `$this->delete()` sẽ không ngăn một chuỗi job ngừng xử lý. Chuỗi job sẽ chỉ bị ngừng xử lý nếu một job trong chuỗi job đó bị thất bại.
 
 #### Chain Connection & Queue
 
@@ -305,7 +347,7 @@ Nếu bạn đang làm việc với nhiều queue connection, bạn có thể kh
         }
     }
 
-Tất nhiên, bạn có thể kết hợp các phương thức `onConnection` và `onQueue` để khai báo connection và queue cho một job:
+Bạn có thể kết hợp các phương thức `onConnection` và `onQueue` để khai báo connection và queue cho một job:
 
     ProcessPodcast::dispatch($podcast)
                   ->onConnection('sqs')
@@ -382,7 +424,9 @@ Tuy nhiên, bạn cũng có thể định nghĩa thời gian hết hạn của m
 
 > {note} Tính năng này yêu cầu application của bạn cài đặt một [Redis server](/docs/{{version}}/redis).
 
-Nếu application của bạn có tương tác với Redis, bạn có thể điều tiết các queued job chạy theo thời gian hoặc đồng thời. Tính năng này có thể hỗ trợ khi các queued job của bạn mà đang tương tác với các API mà có giới hạn về tỷ lệ chạy. Ví dụ, bằng cách sử dụng phương thức `throttle`, bạn có thể điều tiết một loại job sẽ chỉ được chạy 10 lần trong vòng 60 giây. Nếu không thể lấy được lock, bạn nên giải phóng job đó trở lại queue để có thể chạy lại ở lần sau:
+Nếu application của bạn có tương tác với Redis, bạn có thể điều tiết các queued job chạy theo thời gian hoặc đồng thời. Tính năng này có thể hỗ trợ khi các queued job của bạn mà đang tương tác với các API mà có giới hạn về tỷ lệ chạy.
+
+Ví dụ, bằng cách sử dụng phương thức `throttle`, bạn có thể điều tiết một loại job sẽ chỉ được chạy 10 lần trong vòng 60 giây. Nếu không thể lấy được lock, bạn nên giải phóng job đó trở lại queue để có thể chạy lại ở lần sau:
 
     Redis::throttle('key')->allow(10)->every(60)->then(function () {
         // Job logic...
@@ -393,6 +437,8 @@ Nếu application của bạn có tương tác với Redis, bạn có thể đi�
     });
 
 > {tip} Trong ví dụ trên, `key` có thể là bất kỳ chuỗi nào dùng để xác định một loại job mà bạn muốn giới hạn tỷ lệ chạy. Ví dụ, bạn có thể muốn khởi tạo một key dựa trên tên class của job đó và một ID của model Eloquent mà nó hoạt động.
+
+> {note} Việc giải phóng một job được điều tiết trở lại về queue thì vẫn sẽ làm tăng tổng số `attempts` của job đó.
 
 Ngoài ra, bạn có thể khai báo số lượng worker tối đa mà có thể xử lý đồng thời một job. Điều này có thể hữu ích khi một queued job đang sửa một resource thì chỉ được sửa trên một job tại một thời điểm nhất định. Ví dụ, bằng cách sử dụng phương thức `funnel`, bạn có thể giới hạn các job thuộc loại đã cho chỉ được xử lý bởi một worker tại một thời điểm:
 
@@ -411,6 +457,19 @@ Ngoài ra, bạn có thể khai báo số lượng worker tối đa mà có th�
 
 Nếu một ngoại lệ được đưa ra trong khi job đang được xử lý, thì job đó sẽ tự động được giải phóng trở lại vào queue để có thể chạy lại lần sau. Job đó sẽ tiếp tục được chạy lại cho đến khi nó được chạy quá số lần tối đa cho phép của application của bạn. Số lần chạy tối đa được xác định bởi switch `--tries` được sử dụng trên lệnh Artisan `queue:work`. Ngoài ra, số lần chạy tối đa này cũng có thể được xác định trên chính class của job. Thông tin chi tiết về việc chạy queue worker [có thể được tìm thấy ở bên dưới](#running-the-queue-worker).
 
+<a name="queueing-closures"></a>
+## Queueing Closures
+
+Thay vì gửi một job loại class vào queue, thì bạn cũng có thể gửi một Closure. Điều này rất tốt cho các công việc cần nhanh chóng, đơn giản và được thực hiện bên ngoài chu kỳ request hiện tại:
+
+    $podcast = App\Podcast::find(1);
+
+    dispatch(function () use ($podcast) {
+        $podcast->publish();
+    });
+
+Khi gửi Closure vào queue, nội dung của Closure đó sẽ được ký bằng mật mã để không thể bị sửa đổi trong quá trình gửi.
+
 <a name="running-the-queue-worker"></a>
 ## Chạy Queue Worker
 
@@ -422,12 +481,6 @@ Laravel có chứa một queue worker sẽ xử lý các job mới khi chúng đ
 
 Hãy nhớ rằng, các queue worker là các process tồn tại lâu dài và lưu trữ trạng thái của application vào trong bộ nhớ. Do đó, chúng sẽ không nhận biết dược những thay đổi trong source code của bạn sau khi bạn đã chạy chúng. Vì vậy, trong khi quá trình deploy của bạn, hãy đảm bảo là [bạn đã khởi động lại queue worker của bạn](#queue-workers-and-deployment).
 
-#### Processing A Single Job
-
-Tùy chọn `--once` có thể được sử dụng để lệnh worker chỉ xử lý một job duy nhất từ queue:
-
-    php artisan queue:work --once
-
 #### Specifying The Connection & Queue
 
 Bạn cũng có thể khai báo queue connection mà worker sẽ sử dụng. Tên connection được truyền vào lệnh `work` phải tương ứng với một trong các connection đã được khai báo ở trong file cấu hình `config/queue.php` của bạn:
@@ -437,6 +490,18 @@ Bạn cũng có thể khai báo queue connection mà worker sẽ sử dụng. T�
 Bạn cũng có thể tùy chỉnh queue worker của bạn nhiều hơn nữa bằng cách chỉ xử lý các queue cụ thể cho một connection nhất định. Ví dụ: nếu tất cả các email của bạn được xử lý trong queue `emails` trên một connection là `redis`, thì bạn có thể gọi lệnh sau để chạy một worker chỉ xử lý cho riêng queue đó:
 
     php artisan queue:work redis --queue=emails
+
+#### Processing A Single Job
+
+Tùy chọn `--once` có thể được sử dụng để lệnh worker chỉ xử lý một job duy nhất từ queue:
+
+    php arti
+
+#### Processing All Queued Jobs & Then Exiting
+
+Tùy chọn `--stop-when-empty` có thể được sử dụng để hướng dẫn worker xử lý tất cả các job và sau đó sẽ thoát nếu không còn job nữa. Tùy chọn này có thể hữu ích khi làm việc với các queue Laravel trong một Docker container nếu bạn muốn tắt container đó sau khi queue được trống:
+
+    php artisan queue:work --stop-when-empty
 
 #### Resource Considerations
 
@@ -514,7 +579,7 @@ Các file cấu hình của Supervisor thường được lưu trong thư mục 
     redirect_stderr=true
     stdout_logfile=/home/forge/app.com/worker.log
 
-Trong ví dụ trên, lệnh `numprocs` sẽ hướng dẫn Supervisor chạy 8 process `queue:work` và giám sát tất cả chúng, tự động khởi động lại nếu chúng thất bại. Tất nhiên, bạn nên thay đổi phần `queue:work sqs` của lệnh `command` để phản ánh queue connection mà bạn mong muốn.
+Trong ví dụ trên, lệnh `numprocs` sẽ hướng dẫn Supervisor chạy 8 process `queue:work` và giám sát tất cả chúng, tự động khởi động lại nếu chúng thất bại. Bạn nên thay đổi phần `queue:work sqs` của lệnh `command` để phản ánh queue connection mà bạn mong muốn.
 
 #### Starting Supervisor
 
@@ -601,7 +666,7 @@ Bạn có thể định nghĩa một phương thức `failed` trực tiếp vào
 <a name="failed-job-events"></a>
 ### Event Job failed
 
-Nếu bạn muốn đăng ký một event sẽ được gọi khi một job thất bại, bạn có thể sử dụng phương thức `Queue::failing`. Event này là một cách tuyệt vời để thông báo cho team của bạn qua email hoặc [Stride](https://www.stride.com). Ví dụ: chúng ta có thể đính kèm một callback cho event này từ `AppServiceProvider` được chứa trong Laravel:
+Nếu bạn muốn đăng ký một event sẽ được gọi khi một job thất bại, bạn có thể sử dụng phương thức `Queue::failing`. Event này là một cách tuyệt vời để thông báo cho team của bạn qua email hoặc [Slack](https://www.slack.com). Ví dụ: chúng ta có thể đính kèm một callback cho event này từ `AppServiceProvider` được chứa trong Laravel:
 
     <?php
 
@@ -660,6 +725,20 @@ Nếu bạn muốn xóa một job bị thất bại, bạn có thể sử dụng
 Để xóa tất cả các job bị thất bại, bạn có thể sử dụng lệnh `queue:flush`:
 
     php artisan queue:flush
+
+<a name="ignoring-missing-models"></a>
+### Bỏ qua các model bị thiếu
+
+Khi đưa một model Eloquent vào một job, nó sẽ được tự động chuyển đổi trước khi được đưa vào queue và được khôi phục lại khi job được xử lý. Tuy nhiên, nếu model bị xóa trong khi job đang chờ được xử lý, thì job của bạn có thể bị thất bại với một `ModelNotFoundException`.
+
+Để thuận tiện, bạn có thể chọn tự động xóa các job nếu model bị thiếu bằng cách set thuộc tính `deleteWhenMissingModels` của job thành `true`:
+
+    /**
+     * Delete the job if its models no longer exist.
+     *
+     * @var bool
+     */
+    public $deleteWhenMissingModels = true;
 
 <a name="job-events"></a>
 ## Job Event

@@ -68,9 +68,9 @@ Tiếp theo, bạn nên cấu hình thông tin đăng nhập Channel của bạn
         'useTLS' => true
     ],
 
-Khi sử dụng Channel và [Laravel Echo](#installing-laravel-echo), bạn nên chỉ định `pusher` là broadcaster mà bạn muốn dùng, khi khởi tạo một instance Echo trong file `resources/assets/js/bootstrap.js` của bạn:
+Khi sử dụng Channel và [Laravel Echo](#installing-laravel-echo), bạn nên chỉ định `pusher` là broadcaster mà bạn muốn dùng, khi khởi tạo một instance Echo trong file `resources/js/bootstrap.js` của bạn:
 
-    import Echo from "laravel-echo"
+    import Echo from "laravel-echo";
 
     window.Pusher = require('pusher-js');
 
@@ -158,7 +158,7 @@ Interface `ShouldBroadcast` yêu cầu event của chúng ta cần định nghĩ
     /**
      * Get the channels the event should broadcast on.
      *
-     * @return \Illuminate\Broadcasting\Channel|array
+     * @return array
      */
     public function broadcastOn()
     {
@@ -332,6 +332,16 @@ Phương thức `Broadcast::routes` sẽ tự động đăng ký route của nó
 
     Broadcast::routes($attributes);
 
+#### Tuỳ biến điểm cuối để Authorization
+
+Mặc định, Echo sẽ sử dụng điểm cuối `/broadcasting/auth` để authorize quyền truy cập vào channel. Tuy nhiên, bạn có thể chỉ định điểm cuối authorize của riêng bạn bằng cách thêm tùy chọn cấu hình `authEndpoint` cho instance Echo của bạn:
+
+    window.Echo = new Echo({
+        broadcaster: 'pusher',
+        key: 'your-pusher-channels-key',
+        authEndpoint: '/custom/endpoint/auth'
+    });
+
 <a name="defining-authorization-callbacks"></a>
 ### Định nghĩa Authorization Callback
 
@@ -368,7 +378,7 @@ Tiếp theo, đăng ký channel của bạn vào trong file `routes/channels.php
 
     Broadcast::channel('order.{order}', OrderChannel::class);
 
-Cuối cùng, bạn có thể viết các logic cấp quyền cho channel của bạn vào trong phương thức `join` của class channel. Phương thức `join` sẽ chứa cùng một logic với code mà bạn thường viết trong Closure cấp quyền channel của bạn. Tất nhiên, bạn cũng có thể tận dụng lợi thế của liên kết model channel:
+Cuối cùng, bạn có thể viết các logic cấp quyền cho channel của bạn vào trong phương thức `join` của class channel. Phương thức `join` sẽ chứa cùng một logic với code mà bạn thường viết trong Closure cấp quyền channel của bạn. Bạn cũng có thể tận dụng lợi thế của liên kết model channel:
 
     <?php
 
@@ -451,7 +461,7 @@ Laravel Echo là một thư viện JavaScript khiến cho việc theo dõi các 
 
     npm install --save laravel-echo pusher-js
 
-Khi Echo đã được cài đặt, bạn đã sẵn sàng tạo một instance Echo mới trong JavaScript của application. Một nơi tuyệt vời để làm điều này là ở dưới cùng file `resources/assets/js/bootstrap.js` được đi kèm trong framework Laravel:
+Khi Echo đã được cài đặt, bạn đã sẵn sàng tạo một instance Echo mới trong JavaScript của application. Một nơi tuyệt vời để làm điều này là ở dưới cùng file `resources/js/bootstrap.js` được đi kèm trong framework Laravel:
 
     import Echo from "laravel-echo"
 
@@ -467,6 +477,18 @@ Khi tạo một instance Echo sử dụng kết nối `pusher`, bạn cũng có 
         key: 'your-pusher-channels-key',
         cluster: 'eu',
         forceTLS: true
+    });
+
+#### Sử dụng instance client đang tồn tại
+
+Nếu bạn đã có một Pusher Channel hoặc một instance Socket.io client mà bạn muốn cho Echo sử dụng, bạn có thể truyền nó cho Echo thông qua tùy chọn cấu hình `client`:
+
+    const client = require('pusher-js');
+
+    window.Echo = new Echo({
+        broadcaster: 'pusher',
+        key: 'your-pusher-channels-key',
+        client: client
     });
 
 <a name="listening-for-events"></a>
@@ -489,7 +511,11 @@ Nếu bạn muốn listen các event trên một private channel, hãy sử dụ
 <a name="leaving-a-channel"></a>
 ### Rời một Channel
 
-Để rời khỏi một channel, bạn có thể gọi phương thức `leave` trên instance Echo của bạn:
+Để rời khỏi một channel, bạn có thể gọi phương thức `leaveChannel` trên instance Echo của bạn:
+
+    Echo.leaveChannel('orders');
+
+Nếu bạn muốn rời khỏi một channel cũng như các channel riêng tư và presence channel khác, bạn có thể gọi phương thức `leave`:
 
     Echo.leave('orders');
 
@@ -507,7 +533,7 @@ Bạn có thể đã nhận thấy trong các ví dụ ở trên, chúng ta khô
 Ngoài ra, bạn có thể thêm tiền tố cho các class event với một dấu `.` khi theo dõi các event bằng Echo. Điều này sẽ cho phép bạn chỉ định tên class:
 
     Echo.channel('orders')
-        .listen('.Namespace.Event.Class', (e) => {
+        .listen('.Namespace\\Event\\Class', (e) => {
             //
         });
 

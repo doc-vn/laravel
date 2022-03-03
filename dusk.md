@@ -8,6 +8,7 @@
     - [Chạy Test](#running-tests)
     - [Xử lý file môi trường](#environment-handling)
     - [Tạo Browser](#creating-browsers)
+    - [Browser Macros](#browser-macros)
     - [Authentication](#authentication)
     - [Database Migration](#migrations)
 - [Tương tác với Element](#interacting-with-elements)
@@ -17,6 +18,7 @@
     - [Dùng Forms](#using-forms)
     - [Đính kèm Files](#attaching-files)
     - [Dùng Keyboard](#using-the-keyboard)
+    - [JavaScript Dialogs](#javascript-dialogs)
     - [Dùng Mouse](#using-the-mouse)
     - [Scoping Selectors](#scoping-selectors)
     - [Chờ Elements](#waiting-for-elements)
@@ -47,9 +49,7 @@ Laravel Dusk cung cấp một cách kiểm thử API và tự động hóa trìn
 
 Để bắt đầu, bạn cần thêm library `laravel/dusk` cho Composer trong project của bạn:
 
-    composer require --dev laravel/dusk:"^4.0"
-
-Khi Dusk đã được cài đặt xong, bạn cần đăng ký service provider `Laravel\Dusk\DuskServiceProvider`. Thông thường, việc này sẽ được thực hiện thông qua đăng ký tự động service provider của Laravel.
+    composer require --dev laravel/dusk:"^5.0"
 
 > {note} Nếu bạn đang đăng ký thủ công service provider của Dusk, thì bạn **đừng bao giờ** đăng ký nó trong môi trường production của bạn, vì làm như vậy sẽ có thể dẫn đến bất kỳ người dùng nào cũng có thể được authenticate vào application của bạn.
 
@@ -62,6 +62,12 @@ Một thư mục `Browser` sẽ được tạo trong thư mục `tests` và sẽ
 Để chạy các bài test của bạn, hãy sử dụng lệnh Artisan `dusk`. Lệnh `dusk` chấp nhận tất cả các tham số mà lệnh `phpunit` chấp nhận:
 
     php artisan dusk
+
+Khi bạn chạy lệnh `dusk`, nếu bạn gặp lỗi ở chỗ cuối cùng, thì bạn có thể tiết kiệm thời gian bằng cách chạy lại chỗ lỗi cuối cùng đó trước bằng lệnh `dusk:fails`:
+
+    php artisan dusk:fails
+
+> {note} Dusk sẽ yêu cầu file `chromedriver` của nó phải có quyền chạy. Nếu như bạn đang gặp lỗi khi chạy Dusk, thì bạn nên đảm bảo là file đó đã có quyền chạy bằng lệnh sau: `chmod -R 0755 vendor/laravel/dusk/bin/`.
 
 <a name="using-other-browsers"></a>
 ### Dùng Browser khác
@@ -111,6 +117,10 @@ Tiếp theo, bạn cần phải sửa phương thức `driver` để kết nối
 Để chạy test browser của bạn, hãy sử dụng lệnh Artisan `dusk`:
 
     php artisan dusk
+
+Khi bạn chạy lệnh `dusk`, nếu bạn gặp lỗi ở chỗ cuối cùng, thì bạn có thể tiết kiệm thời gian bằng cách chạy lại chỗ lỗi cuối cùng đó trước bằng lệnh `dusk:fails`:
+
+    php artisan dusk:fails
 
 Lệnh `dusk` chấp nhận tất cả các tham số mà PHPUnit test chấp nhận, cho phép bạn chỉ chạy các bài test cho một [group](https://phpunit.de/manual/current/en/appendixes.annotations.html#appendixes.annotations.group) nhất định, vv...:
 
@@ -223,6 +233,43 @@ Bạn có thể sử dụng phương thức `resize` để điều chỉnh kích
 Phương thức `maximize` có thể được sử dụng để set browser window ở chế độ full screen:
 
     $browser->maximize();
+
+<a name="browser-macros"></a>
+### Browser Macros
+
+Nếu bạn muốn định nghĩa một phương thức trình duyệt tùy biến mà bạn có thể sử dụng lại trong nhiều bài test của bạn, bạn có thể sử dụng phương thức `macro` trên class `Browser`. Thông thường, bạn nên gọi phương thức này từ phương thức `boot` của [service provider](/docs/{{version}}/providers):
+
+    <?php
+
+    namespace App\Providers;
+
+    use Laravel\Dusk\Browser;
+    use Illuminate\Support\ServiceProvider;
+
+    class DuskServiceProvider extends ServiceProvider
+    {
+        /**
+         * Register the Dusk's browser macros.
+         *
+         * @return void
+         */
+        public function boot()
+        {
+            Browser::macro('scrollToElement', function ($element = null) {
+                $this->script("$('html, body').animate({ scrollTop: $('$element').offset().top }, 0);");
+
+                return $this;
+            });
+        }
+    }
+
+Phương thức `macro` chấp nhận một tên làm tham số đầu tiên và một Closure làm tham số thứ hai của nó. Closure của macro sẽ được chạy khi bạn gọi macro dưới dạng một phương thức trên một implementation của `Browser`:
+
+    $this->browse(function ($browser) use ($user) {
+        $browser->visit('/pay')
+                ->scrollToElement('#credit-card-details')
+                ->assertSee('Enter Credit Card Details');
+    });
 
 <a name="authentication"></a>
 ### Authentication
@@ -409,6 +456,28 @@ Hoặc, bạn có thể kéo một element theo một hướng:
     $browser->dragUp('.selector', 10);
     $browser->dragDown('.selector', 10);
 
+<a name="javascript-dialogs"></a>
+### JavaScript Dialogs
+
+Dusk cung cấp nhiều phương thức khác nhau để tương tác với JavaScript Dialog:
+
+    // Wait for a dialog to appear:
+    $browser->waitForDialog($seconds = null);
+
+    // Assert that a dialog has been displayed and that its message matches the given value:
+    $browser->assertDialogOpened('value');
+
+    // Type the given value in an open JavaScript prompt dialog:
+    $browser->typeInDialog('Hello World');
+
+Để đóng một JavaScript Dialog đang được mở và nhấp vào nút OK:
+
+    $browser->acceptDialog();
+
+Để đóng một JavaScript Dialog đang được mở và nhấp vào nút Cancel (chỉ dành cho dialog confirm):
+
+    $browser->dismissDialog();
+
 <a name="scoping-selectors"></a>
 ### Scoping Selectors
 
@@ -505,6 +574,16 @@ Thỉnh thoảng bạn có thể muốn tạm dừng việc kiểm tra cho đế
     // Wait a maximum of one second for the expression to be true...
     $browser->waitUntil('App.data.servers.length > 0', 1);
 
+#### Waiting On Vue Expressions
+
+Các phương thức sau có thể được sử dụng để đợi cho đến khi một thuộc tính Vue component có một giá trị nhất định:
+
+    // Wait until the component attribute contains the given value...
+    $browser->waitUntilVue('user.name', 'Taylor', '@user');
+
+    // Wait until the component attribute doesn't contain the given value...
+    $browser->waitUntilVueIsNot('user.name', null, '@user');
+
 #### Waiting With A Callback
 
 Nhiều phương thức "chờ" trong Dusk được dựa trên phương thức `waitUsing` bên dưới. Bạn có thể sử dụng phương thức này trực tiếp để chờ cho đến khi một callback trả về giá trị `true`. Phương thức `waitUsing` nhận vào số giây chờ tối đa mà bài test có thể được thực hiện và một khoảng thời gian lặp cho Closure và một Closure và một tuỳ chọn thông báo lỗi:
@@ -571,6 +650,12 @@ Dusk cung cấp nhiều yêu cầu kiểm tra mà bạn có thể đưa ra đố
 [assertTitle](#assert-title)
 [assertTitleContains](#assert-title-contains)
 [assertUrlIs](#assert-url-is)
+[assertSchemeIs](#assert-scheme-is)
+[assertSchemeIsNot](#assert-scheme-is-not)
+[assertHostIs](#assert-host-is)
+[assertHostIsNot](#assert-host-is-not)
+[assertPortIs](#assert-port-is)
+[assertPortIsNot](#assert-port-is-not)
 [assertPathBeginsWith](#assert-path-begins-with)
 [assertPathIs](#assert-path-is)
 [assertPathIsNot](#assert-path-is-not)
@@ -638,6 +723,48 @@ Yêu cầu title của page phải chứa text đã cho:
 Yêu cầu URL hiện tại (bỏ phần query string) phải đúng với chuỗi đã cho:
 
     $browser->assertUrlIs($url);
+
+<a name="assert-scheme-is"></a>
+#### assertSchemeIs
+
+Yêu cầu scheme của URL hiện tại phải đúng với scheme đã cho:
+
+    $browser->assertSchemeIs($scheme);
+
+<a name="assert-scheme-is-not"></a>
+#### assertSchemeIsNot
+
+Yêu cầu scheme của URL hiện tại không phải scheme đã cho:
+
+    $browser->assertSchemeIsNot($scheme);
+
+<a name="assert-host-is"></a>
+#### assertHostIs
+
+Yêu cầu host của URL hiện tại phải đúng với host đã cho:
+
+    $browser->assertHostIs($host);
+
+<a name="assert-host-is-not"></a>
+#### assertHostIsNot
+
+Yêu cầu host của URL hiện tại không phải host đã cho:
+
+    $browser->assertHostIsNot($host);
+
+<a name="assert-port-is"></a>
+#### assertPortIs
+
+Yêu cầu port của URL hiện tại phải đúng với port đã cho:
+
+    $browser->assertPortIs($port);
+
+<a name="assert-port-is-not"></a>
+#### assertPortIsNot
+
+Yêu cầu port của URL hiện tại không phải port đã cho:
+
+    $browser->assertPortIsNot($port);
 
 <a name="assert-path-begins-with"></a>
 #### assertPathBeginsWith
@@ -1159,10 +1286,10 @@ Như câu lệnh ở trên, một "date picker" có thể là một ví dụ m�
          *
          * @param  \Laravel\Dusk\Browser  $browser
          * @param  int  $month
-         * @param  int  $year
+         * @param  int  $day
          * @return void
          */
-        public function selectDate($browser, $month, $year)
+        public function selectDate($browser, $month, $day)
         {
             $browser->click('@date-field')
                     ->within('@month-list', function ($browser) use ($month) {
@@ -1213,36 +1340,12 @@ Khi component đã được định nghĩa xong, chúng ta có thể dễ dàng 
 <a name="running-tests-on-circle-ci"></a>
 ### CircleCI
 
-#### CircleCI 1.0
+Nếu bạn đang sử dụng CircleCI để chạy các bài test, bạn có thể sử dụng file cấu hình này làm file khởi đầu. Giống như TravisCI, chúng ta sẽ sử dụng lệnh `php artisan serve` để khởi chạy web server của PHP:
 
-Nếu bạn đang sử dụng CircleCI 1.0 để chạy các bài test, bạn có thể sử dụng file cấu hình này làm file khởi đầu. Giống như TravisCI, chúng ta sẽ sử dụng lệnh `php artisan serve` để khởi chạy web server của PHP:
-
-	dependencies:
-	  pre:
-	      - curl -L -o google-chrome.deb https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
-	      - sudo dpkg -i google-chrome.deb
-	      - sudo sed -i 's|HERE/chrome\"|HERE/chrome\" --disable-setuid-sandbox|g' /opt/google/chrome/google-chrome
-	      - rm google-chrome.deb
-
-    test:
-        pre:
-            - "./vendor/laravel/dusk/bin/chromedriver-linux":
-                background: true
-            - cp .env.testing .env
-            - "php artisan serve":
-                background: true
-
-        override:
-            - php artisan dusk
-
- #### CircleCI 2.0
-
-Nếu bạn đang sử dụng CircleCI 2.0 để chạy các bài test, bạn có thể thêm các bước sau vào bản build của bạn:
-
-     version: 2
-     jobs:
-         build:
-             steps:
+    version: 2
+    jobs:
+        build:
+            steps:
                 - run: sudo apt-get install -y libsqlite3-dev
                 - run: cp .env.testing .env
                 - run: composer install -n --ignore-platform-reqs
@@ -1251,28 +1354,29 @@ Nếu bạn đang sử dụng CircleCI 2.0 để chạy các bài test, bạn c�
                 - run: vendor/bin/phpunit
 
                 - run:
-                   name: Start Chrome Driver
-                   command: ./vendor/laravel/dusk/bin/chromedriver-linux
-                   background: true
+                    name: Start Chrome Driver
+                    command: ./vendor/laravel/dusk/bin/chromedriver-linux
+                    background: true
 
                 - run:
-                   name: Run Laravel Server
-                   command: php artisan serve
-                   background: true
+                    name: Run Laravel Server
+                    command: php artisan serve
+                    background: true
 
                 - run:
-                   name: Run Laravel Dusk Tests
-                   command: php artisan dusk
+                    name: Run Laravel Dusk Tests
+                    command: php artisan dusk
 
 <a name="running-tests-on-codeship"></a>
 ### Codeship
 
-Để chạy các bài test trên [Codeship](https://codeship.com), hãy thêm các lệnh sau vào Codeship project của bạn. Tất nhiên, các lệnh này là các lệnh cơ bản và bạn có thể tự do thêm các lệnh khác khi cần:
+Để chạy các bài test trên [Codeship](https://codeship.com), hãy thêm các lệnh sau vào Codeship project của bạn. Các lệnh này là các lệnh cơ bản và bạn có thể tự do thêm các lệnh khác khi cần:
 
-    phpenv local 7.1
+    phpenv local 7.2
     cp .env.testing .env
-    composer install --no-interaction
-    nohup bash -c "./vendor/laravel/dusk/bin/chromedriver-linux 2>&1 &"
+    mkdir -p ./bootstrap/cache
+    composer install --no-interaction --prefer-dist
+    php artisan key:generate
     nohup bash -c "php artisan serve 2>&1 &" && sleep 5
     php artisan dusk
 
@@ -1299,21 +1403,28 @@ Nếu bạn đang sử dụng CircleCI 2.0 để chạy các bài test, bạn c�
 <a name="running-tests-on-travis-ci"></a>
 ### Travis CI
 
-Để chạy các bài Dusk test của bạn trên Travis CI, chúng ta sẽ cần sử dụng môi trường Ubuntu 14.04 (Trusty) "sudo-enabled". Vì Travis CI không phải là một môi trường đồ họa, nên chúng ta sẽ cần thực hiện thêm một số bước để chạy trình duyệt Chrome. Ngoài ra, chúng ta cũng sẽ sử dụng `php artisan serve` để chạy server web tích hợp sẵn của PHP:
+Để chạy các bài Dusk test của bạn trên [Travis CI](https://travis-ci.org), bạn có thể dùng file cấu hình `.travis.yml` sau. Vì Travis CI không phải là một môi trường đồ họa, nên chúng ta sẽ cần thực hiện thêm một số bước để chạy trình duyệt Chrome. Ngoài ra, chúng ta cũng sẽ sử dụng `php artisan serve` để chạy server web tích hợp sẵn của PHP:
 
-    sudo: required
-    dist: trusty
+    language: php
+
+    php:
+      - 7.3
 
     addons:
-       chrome: stable
+      chrome: stable
 
     install:
-       - cp .env.testing .env
-       - travis_retry composer install --no-interaction --prefer-dist --no-suggest
+      - cp .env.testing .env
+      - travis_retry composer install --no-interaction --prefer-dist --no-suggest
+      - php artisan key:generate
 
     before_script:
-       - google-chrome-stable --headless --disable-gpu --remote-debugging-port=9222 http://localhost &
-       - php artisan serve &
+      - google-chrome-stable --headless --disable-gpu --remote-debugging-port=9222 http://localhost &
+      - php artisan serve &
 
     script:
-       - php artisan dusk
+      - php artisan dusk
+
+Trong file `.env.testing` của bạn, hãy điều chỉnh giá trị của `APP_URL`:
+
+    APP_URL=http://127.0.0.1:8000

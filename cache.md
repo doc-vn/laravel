@@ -124,7 +124,7 @@ Bạn thậm chí có thể truyền vào một `Closure` làm giá trị mặc 
 
 #### Checking For Item Existence
 
-Phương thức `has` có thể được sử dụng để xác định xem một item có tồn tại trong cache hay không. Phương thức này sẽ trả về `false` nếu giá trị là `null` hoặc là `false`:
+Phương thức `has` có thể được sử dụng để xác định xem một item có tồn tại trong cache hay không. Phương thức này sẽ trả về `false` nếu giá trị là `null`:
 
     if (Cache::has('key')) {
         //
@@ -151,7 +151,7 @@ Nếu item đó không tồn tại trong cache, thì `Closure` được truyền
 
 Bạn có thể sử dụng phương thức `rememberForever` để lấy một item từ cache và lưu trữ nó mãi mãi:
 
-    $value = Cache::rememberForever('users', function() {
+    $value = Cache::rememberForever('users', function () {
         return DB::table('users')->get();
     });
 
@@ -222,8 +222,14 @@ Phương thức `get` cũng chấp nhận một Closure. Sau khi thực thi Clos
 
 Nếu khóa chưa sẵn sàng tại thời điểm bạn yêu cầu, bạn có thể hướng dẫn Laravel đợi trong một số giây cụ thể. Nếu không thể lấy được khóa trong thời hạn đã chỉ định, một lỗi `Illuminate\Contracts\Cache\LockTimeoutException` sẽ được đưa ra:
 
-    if (Cache::lock('foo', 10)->block(5)) {
+    use Illuminate\Contracts\Cache\LockTimeoutException;
+
+    try {
+        Cache::lock('foo', 10)->block(5);
+
         // Lock acquired after waiting maximum of 5 seconds...
+    } catch (LockTimeoutException $e) {
+        // Unable to acquire lock...
     }
 
     Cache::lock('foo', 10)->block(5, function () {
@@ -242,6 +248,12 @@ Nếu bạn gọi tới hàm helper đó với một mảng gồm các cặp key
     cache(['key' => 'value'], $minutes);
 
     cache(['key' => 'value'], now()->addSeconds(10));
+
+Khi phương thức `cache` được gọi mà không truyền vào bất kỳ tham số nào, thì nó sẽ trả về một instance của `Illuminate\Contracts\Cache\Factory` implementation, cho phép bạn gọi các phương thức khác trong bộ nhớ đệm:
+
+    cache()->remember('users', $minutes, function () {
+        return DB::table('users')->get();
+    });
 
 > {tip} Khi testing cần gọi đến hàm global `cache`, bạn có thể sử dụng phương thức `Cache::shouldReceive` giống như khi bạn [testing một facade](/docs/{{version}}/mocking#mocking-facades).
 

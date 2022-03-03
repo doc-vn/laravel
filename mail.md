@@ -18,13 +18,14 @@
     - [Queueing Mail](#queueing-mail)
 - [Hiển thị Mailable](#rendering-mailables)
     - [Xem trước Mailable trên trình duyệt](#previewing-mailables-in-the-browser)
+- [Ngôn ngữ trong Mailable](#localizing-mailables)
 - [Mail và Local Development](#mail-and-local-development)
 - [Events](#events)
 
 <a name="introduction"></a>
 ## Giới thiệu
 
-Laravel cung cấp một API đơn giản, gọn gàng trên thư viện [SwiftMailer](https://swiftmailer.symfony.com/) với các driver như SMTP, Mailgun, SparkPost, Amazon SES, hàm `mail` của PHP và `sendmail`, cho phép bạn nhanh chóng bắt đầu gửi mail thông qua dịch vụ trên đám mây hoặc local mà bạn chọn.
+Laravel cung cấp một API đơn giản, gọn gàng trên thư viện [SwiftMailer](https://swiftmailer.symfony.com/) với các driver như SMTP, Mailgun, SparkPost, Amazon SES và `sendmail`, cho phép bạn nhanh chóng bắt đầu gửi mail thông qua dịch vụ trên đám mây hoặc local mà bạn chọn.
 
 <a name="driver-prerequisites"></a>
 ### Yêu cầu driver
@@ -40,6 +41,14 @@ Các driver dựa trên API như Mailgun và SparkPost thường đơn giản h�
     'mailgun' => [
         'domain' => 'your-mailgun-domain',
         'secret' => 'your-mailgun-key',
+    ],
+
+Nếu bạn không sử dụng [Mailgun khu vực](https://documentation.mailgun.com/en/latest/api-intro.html#mailgun-regions) "Hoa Kỳ", thì bạn có thể cần định nghĩa endpoint khu vực của bạn trong file cấu hình `services`:
+
+    'mailgun' => [
+        'domain' => 'your-mailgun-domain',
+        'secret' => 'your-mailgun-key',
+        'endpoint' => 'api.eu.mailgun.net',
     ],
 
 #### SparkPost Driver
@@ -71,6 +80,23 @@ Tiếp theo hãy set tùy chọn `driver` trong file cấu hình `config/mail.ph
         'key' => 'your-ses-key',
         'secret' => 'your-ses-secret',
         'region' => 'ses-region',  // e.g. us-east-1
+    ],
+
+Nếu bạn cần thêm [một số tùy chọn bổ sung](https://docs.aws.amazon.com/aws-sdk-php/v3/api/api-email-2010-12-01.html#sendrawemail) khi thực hiện request SES `SendRawEmail`, bạn có thể cần định nghĩa thêm một mảng `options` trong cấu hình `ses` của bạn:
+
+    'ses' => [
+        'key' => 'your-ses-key',
+        'secret' => 'your-ses-secret',
+        'region' => 'ses-region',  // e.g. us-east-1
+        'options' => [
+            'ConfigurationSetName' => 'MyConfigurationSet',
+            'Tags' => [
+                [
+                    'Name' => 'foo',
+                    'Value' => 'bar',
+                ],
+            ],
+        ],
     ],
 
 <a name="generating-mailables"></a>
@@ -108,6 +134,10 @@ Trước tiên, hãy xem cấu hình người gửi email. Hay nói cách khác,
 Tuy nhiên, nếu application của bạn sử dụng cùng một địa chỉ "from" cho tất cả các email, thì nó có thể trở nên cồng kềnh khi gọi phương thức `from` trong mỗi class mailable mà bạn tạo. Thay vào đó, bạn có thể khai báo một địa chỉ "from" global trong file cấu hình `config/mail.php`. Địa chỉ này sẽ được sử dụng nếu không có địa chỉ "from" nào được khai báo trong class mailable:
 
     'from' => ['address' => 'example@example.com', 'name' => 'App Name'],
+
+Ngoài ra, bạn có thể cần định nghĩa một địa chỉ "reply_to" global trong file cấu hình `config/mail.php` của bạn:
+
+    'reply_to' => ['address' => 'example@example.com', 'name' => 'App Name'],
 
 <a name="configuring-the-view"></a>
 ### Cấu hình View
@@ -255,49 +285,92 @@ Khi dữ liệu đã được truyền đến phương thức `with`, nó sẽ t
 
 Để thêm một file đính kèm vào email, hãy sử dụng phương thức `attach` trong phương thức `build` của class mailable. Phương thức `attach` chấp nhận một đường dẫn đầy đủ đến file làm tham số đầu tiên của nó:
 
-        /**
-         * Build the message.
-         *
-         * @return $this
-         */
-        public function build()
-        {
-            return $this->view('emails.orders.shipped')
-                        ->attach('/path/to/file');
-        }
+    /**
+        * Build the message.
+        *
+        * @return $this
+        */
+    public function build()
+    {
+        return $this->view('emails.orders.shipped')
+                    ->attach('/path/to/file');
+    }
 
 Khi đính kèm file một vào một email, bạn cũng có thể khai báo tên hiển thị hoặc loại MIME bằng cách truyền một `array` làm tham số thứ hai cho phương thức `attach`:
 
-        /**
-         * Build the message.
-         *
-         * @return $this
-         */
-        public function build()
-        {
-            return $this->view('emails.orders.shipped')
-                        ->attach('/path/to/file', [
-                            'as' => 'name.pdf',
-                            'mime' => 'application/pdf',
-                        ]);
-        }
+    /**
+        * Build the message.
+        *
+        * @return $this
+        */
+    public function build()
+    {
+        return $this->view('emails.orders.shipped')
+                    ->attach('/path/to/file', [
+                        'as' => 'name.pdf',
+                        'mime' => 'application/pdf',
+                    ]);
+    }
+
+#### Đính kèm file từ disk
+
+Nếu bạn đã lưu một file trên một trong các [filesystem disk](/docs/{{version}}/filesystem), thì bạn có thể đính kèm file đó vào email bằng phương thức `attachFromStorage`:
+
+    /**
+     * Build the message.
+     *
+     * @return $this
+     */
+    public function build()
+    {
+       return $this->view('email.orders.shipped')
+                   ->attachFromStorage('/path/to/file');
+    }
+
+Nếu cần, bạn có thể chỉ định tên file đính kèm và các tùy chọn bổ sung bằng cách sử dụng tham số thứ hai và thứ ba cho phương thức `attachFromStorage`:
+
+    /**
+     * Build the message.
+     *
+     * @return $this
+     */
+    public function build()
+    {
+       return $this->view('email.orders.shipped')
+                   ->attachFromStorage('/path/to/file', 'name.pdf', [
+                       'mime' => 'application/pdf'
+                   ]);
+    }
+
+Phương thức `attachFromStorageDisk` có thể được sử dụng nếu bạn muốn chỉ định một disk khác, khác với disk mặc định của bạn:
+
+    /**
+     * Build the message.
+     *
+     * @return $this
+     */
+    public function build()
+    {
+       return $this->view('email.orders.shipped')
+                   ->attachFromStorageDisk('s3', '/path/to/file');
+    }
 
 #### Raw Data Attachments
 
 Phương thức `attachData` có thể được sử dụng để đính kèm một chuỗi raw byte dưới dạng file đính kèm. Ví dụ: bạn có thể sử dụng phương thức này nếu bạn đã tạo một file PDF trong bộ nhớ và muốn đính kèm file đó vào email mà không muốn ghi nó ra disk. Phương thức `attachData` chấp nhận các raw byte dữ liệu làm tham số đầu tiên và tên của file làm tham số thứ hai ngoài ra một mảng các tùy chọn làm tham số thứ ba của nó:
 
-        /**
-         * Build the message.
-         *
-         * @return $this
-         */
-        public function build()
-        {
-            return $this->view('emails.orders.shipped')
-                        ->attachData($this->pdf, 'name.pdf', [
-                            'mime' => 'application/pdf',
-                        ]);
-        }
+    /**
+        * Build the message.
+        *
+        * @return $this
+        */
+    public function build()
+    {
+        return $this->view('emails.orders.shipped')
+                    ->attachData($this->pdf, 'name.pdf', [
+                        'mime' => 'application/pdf',
+                    ]);
+    }
 
 <a name="inline-attachments"></a>
 ### Inline Attachments
@@ -307,7 +380,7 @@ Nhúng hình ảnh vào trong email của bạn thường rất cồng kềnh; t
     <body>
         Here is an image:
 
-        <img src="{{ $message->embed($pathToFile) }}">
+        <img src="{{ $message->embed($pathToImage) }}">
     </body>
 
 > {note} biến `$message` không thể sử dụng trong các nội dung markdown.
@@ -327,20 +400,20 @@ Nếu bạn đã có một chuỗi raw dữ liệu mà bạn muốn nhúng vào 
 
 Phương thức `withSwiftMessage` của class `Mailable` cho phép bạn đăng ký một callback sẽ được gọi với một instance message raw SwiftMailer trước khi gửi message. Điều này cung cấp cho bạn một cách để tùy biến message trước khi nó được gửi đi:
 
-        /**
-         * Build the message.
-         *
-         * @return $this
-         */
-        public function build()
-        {
-            $this->view('emails.orders.shipped');
+    /**
+        * Build the message.
+        *
+        * @return $this
+        */
+    public function build()
+    {
+        $this->view('emails.orders.shipped');
 
-            $this->withSwiftMessage(function ($message) {
-                $message->getHeaders()
-                        ->addTextHeader('Custom-Header', 'HeaderValue');
-            });
-        }
+        $this->withSwiftMessage(function ($message) {
+            $message->getHeaders()
+                    ->addTextHeader('Custom-Header', 'HeaderValue');
+        });
+    }
 
 <a name="markdown-mailables"></a>
 ## Markdown Mailables
@@ -389,9 +462,9 @@ Các markdown mailable sử dụng kết hợp các component của Blade và c�
 
 #### Button Component
 
-Component button sẽ tạo ra một link button ở chính giữa. Component này chấp nhận hai tham số, một là `url` và một là tùy chọn `color`. Các màu được hỗ trợ là `blue`, `green` và `red`. Bạn có thể thêm các component button vào message nếu muốn:
+Component button sẽ tạo ra một link button ở chính giữa. Component này chấp nhận hai tham số, một là `url` và một là tùy chọn `color`. Các màu được hỗ trợ là `primary`, `success` và `error`. Bạn có thể thêm các component button vào message nếu muốn:
 
-    @component('mail::button', ['url' => $url, 'color' => 'green'])
+    @component('mail::button', ['url' => $url, 'color' => 'success'])
     View Order
     @endcomponent
 
@@ -463,7 +536,7 @@ Sau khi export các component, thư mục `resources/views/vendor/mail/html/them
         }
     }
 
-Tất nhiên, bạn không bị giới hạn chỉ trong khai báo người nhận "to" khi gửi message. Mà bạn có thể tự do set "to", "cc" và "bcc" cho người nhận, tất cả có thể được kết hợp trong một chuỗi phương thức duy nhất:
+Bạn không bị giới hạn chỉ trong khai báo người nhận "to" khi gửi message. Mà bạn có thể tự do set "to", "cc" và "bcc" cho người nhận, tất cả có thể được kết hợp trong một chuỗi phương thức duy nhất:
 
     Mail::to($request->user())
         ->cc($moreUsers)
@@ -484,7 +557,7 @@ Thỉnh thoảng bạn có thể muốn xem nội dung HTML của một mailable
 
 Khi thiết kế một template của một mailable, sẽ rất tiện lợi, nếu xem được mailable đó trong trình duyệt web của bạn giống như một template Blade. Vì lý do này, Laravel cho phép bạn trả về một mailable bất kỳ từ một route Closure hoặc controller. Khi một mailable được trả về, nó sẽ được tạo và hiển thị trong trình duyệt, cho phép bạn nhanh chóng xem trước thiết kế của nó mà không cần phải gửi nó đến một địa chỉ email thực tế:
 
-    Route::get('/mailable', function () {
+    Route::get('mailable', function () {
         $invoice = App\Invoice::find(1);
 
         return new App\Mail\InvoicePaid($invoice);
@@ -502,7 +575,7 @@ Vì việc gửi email có thể mất nhiều thời gian của application, n�
         ->bcc($evenMoreUsers)
         ->queue(new OrderShipped($order));
 
-Phương thức này sẽ tự động đảm nhận việc tạo một job lên queue để message sẽ được gửi trong background. Tất nhiên, bạn sẽ cần [cấu hình queue](/docs/{{version}}/queues) trước khi sử dụng tính năng này.
+Phương thức này sẽ tự động đảm nhận việc tạo một job lên queue để message sẽ được gửi trong background. Bạn sẽ cần [cấu hình queue](/docs/{{version}}/queues) trước khi sử dụng tính năng này.
 
 #### Delayed Message Queueing
 
@@ -538,6 +611,40 @@ Nếu bạn có class mailable mà luôn muốn sử dụng queue, bạn có th�
     {
         //
     }
+
+<a name="localizing-mailables"></a>
+## Ngôn ngữ trong Mailable
+
+Laravel cho phép bạn gửi mailable bằng ngôn ngữ khác, khác với ngôn ngữ hiện tại của application và thậm chí sẽ nhớ ngôn ngữ này nếu mail đang được queue.
+
+Để thực hiện điều này, facade `Mail` có cung cấp một phương thức `locale` để set ngôn ngữ mà bạn mong muốn. Application sẽ chuyển đổi thành ngôn ngữ này khi định dạng mailable và sau đó quay lại về ngôn ngữ trước đó khi quá trình định dạng này hoàn tất:
+
+    Mail::to($request->user())->locale('es')->send(
+        new OrderShipped($order)
+    );
+
+### User Preferred Locales
+
+Thỉnh thoảng, các application sẽ lưu lại ngôn ngữ ưa thích của mỗi người dùng. Bằng cách implement contract `HasLocalePreference` trên một hoặc nhiều model của bạn, bạn có thể hướng dẫn Laravel sử dụng ngôn ngữ này khi gửi mail:
+
+    use Illuminate\Contracts\Translation\HasLocalePreference;
+
+    class User extends Model implements HasLocalePreference
+    {
+        /**
+         * Get the user's preferred locale.
+         *
+         * @return string
+         */
+        public function preferredLocale()
+        {
+            return $this->locale;
+        }
+    }
+
+Khi bạn đã implement xong interface này, Laravel sẽ tự động sử dụng ngôn ngữ này khi gửi mailable và notification tới model. Do đó, không cần phải gọi phương thức `locale` khi bạn sử dụng interface này:
+
+    Mail::to($request->user())->send(new OrderShipped($order));
 
 <a name="mail-and-local-development"></a>
 ## Mail và Local Development

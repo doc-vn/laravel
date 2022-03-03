@@ -51,7 +51,7 @@ Trước khi đi sâu vào tất cả các tùy chọn có sẵn cho bạn khi b
         /**
          * Transform the resource into an array.
          *
-         * @param  \Illuminate\Http\Request
+         * @param  \Illuminate\Http\Request  $request
          * @return array
          */
         public function toArray($request)
@@ -86,7 +86,7 @@ Nếu bạn đang trả về một resource collection hoặc một response đa
         return UserResource::collection(User::all());
     });
 
-Tất nhiên, điều này sẽ không cho phép bạn thêm bất kỳ dữ liệu meta nào để có thể được trả về cùng với collection. Nếu bạn muốn tùy chỉnh response của resource collection, bạn có thể tạo một resource chuyên dụng để tạo collection:
+Chú ý rằng điều này sẽ không cho phép bạn thêm bất kỳ dữ liệu meta nào để có thể được trả về cùng với collection. Nếu bạn muốn tùy chỉnh response của resource collection, bạn có thể tạo một resource chuyên dụng để tạo collection:
 
     php artisan make:resource UserCollection
 
@@ -103,7 +103,7 @@ Khi class resource collection đã được tạo, bạn có thể dễ dàng đ
         /**
          * Transform the resource collection into an array.
          *
-         * @param  \Illuminate\Http\Request
+         * @param  \Illuminate\Http\Request  $request
          * @return array
          */
         public function toArray($request)
@@ -126,6 +126,28 @@ Sau khi định nghĩa xong resource collection của bạn, nó có thể đư�
         return new UserCollection(User::all());
     });
 
+#### Tùy biến Resource Class cơ bản
+
+Thông thường, thuộc tính `$this->collection` của một resource collection sẽ được tự động nối với kết quả của việc ánh xạ của từng item của collection với class resource của nó. Class resource được giả định là tên class của collection mà không có chuỗi `Collection` ở đằng sau.
+
+Ví dụ: `UserCollection` sẽ thử ánh xạ các instance user vào một resource có thể `User`. Để tùy biến hành động này, bạn có thể ghi đè thuộc tính `$collects` của resource collection của bạn:
+
+    <?php
+
+    namespace App\Http\Resources;
+
+    use Illuminate\Http\Resources\Json\ResourceCollection;
+
+    class UserCollection extends ResourceCollection
+    {
+        /**
+         * The resource that this resource collects.
+         *
+         * @var string
+         */
+        public $collects = 'App\Http\Resources\Member';
+    }
+
 <a name="writing-resources"></a>
 ## Viết Resources
 
@@ -144,7 +166,7 @@ Về bản chất, resource rất đơn giản. Nó chỉ cần chuyển đổi 
         /**
          * Transform the resource into an array.
          *
-         * @param  \Illuminate\Http\Request
+         * @param  \Illuminate\Http\Request  $request
          * @return array
          */
         public function toArray($request)
@@ -175,7 +197,7 @@ Nếu bạn muốn thêm các quan hệ vào trong một response của bạn, b
     /**
      * Transform the resource into an array.
      *
-     * @param  \Illuminate\Http\Request
+     * @param  \Illuminate\Http\Request  $request
      * @return array
      */
     public function toArray($request)
@@ -216,7 +238,7 @@ Tuy nhiên, nếu bạn cần tùy chỉnh dữ liệu meta được trả về 
         /**
          * Transform the resource collection into an array.
          *
-         * @param  \Illuminate\Http\Request
+         * @param  \Illuminate\Http\Request  $request
          * @return array
          */
         public function toArray($request)
@@ -297,7 +319,7 @@ Nếu bạn muốn vô hiệu hóa việc bao bọc resource này, bạn có th�
 
 Bạn có toàn quyền tự do định nghĩa các quan hệ của resource của bạn được bao bọc. Nếu bạn muốn tất cả các resource collection được bao bọc bởi một key `data`, kể cả việc chúng lồng nhau, bạn nên định nghĩa một class resource collection cho mỗi resource và trả về collection đó trong một key `data`.
 
-Tất nhiên, bạn có thể tự hỏi liệu rằng điều này có khiến resource ngoài cùng của bạn có bị bao bọc trong hai key `data`. Đừng lo lắng, Laravel sẽ không bao giờ để resource của bạn vô tình bị bao bọc lặp lại như vậy, vì vậy bạn không phải lo lắng về mức độ lồng nhau của resource collection mà bạn đang chuyển đổi:
+Bạn có thể tự hỏi liệu rằng điều này có khiến resource ngoài cùng của bạn có bị bao bọc trong hai key `data`. Đừng lo lắng, Laravel sẽ không bao giờ để resource của bạn vô tình bị bao bọc lặp lại như vậy, vì vậy bạn không phải lo lắng về mức độ lồng nhau của resource collection mà bạn đang chuyển đổi:
 
     <?php
 
@@ -310,7 +332,7 @@ Tất nhiên, bạn có thể tự hỏi liệu rằng điều này có khiến 
         /**
          * Transform the resource collection into an array.
          *
-         * @param  \Illuminate\Http\Request
+         * @param  \Illuminate\Http\Request  $request
          * @return array
          */
         public function toArray($request)
@@ -405,7 +427,7 @@ Các response được phân trang luôn chứa các key `meta` và `links` cùn
     /**
      * Transform the resource into an array.
      *
-     * @param  \Illuminate\Http\Request
+     * @param  \Illuminate\Http\Request  $request
      * @return array
      */
     public function toArray($request)
@@ -435,7 +457,7 @@ Thỉnh thoảng bạn có thể có một số thuộc tính chỉ được đ�
     /**
      * Transform the resource into an array.
      *
-     * @param  \Illuminate\Http\Request
+     * @param  \Illuminate\Http\Request  $request
      * @return array
      */
     public function toArray($request)
@@ -467,7 +489,7 @@ Cuối cùng, điều này cũng sẽ giúp bạn dễ dàng tránh được cá
     /**
      * Transform the resource into an array.
      *
-     * @param  \Illuminate\Http\Request
+     * @param  \Illuminate\Http\Request  $request
      * @return array
      */
     public function toArray($request)
@@ -491,7 +513,7 @@ Ngoài việc thêm các thông tin quan hệ có điều kiện vào trong các
     /**
      * Transform the resource into an array.
      *
-     * @param  \Illuminate\Http\Request
+     * @param  \Illuminate\Http\Request  $request
      * @return array
      */
     public function toArray($request)
@@ -499,8 +521,27 @@ Ngoài việc thêm các thông tin quan hệ có điều kiện vào trong các
         return [
             'id' => $this->id,
             'name' => $this->name,
-            'expires_at' => $this->whenPivotLoaded('role_users', function () {
+            'expires_at' => $this->whenPivotLoaded('role_user', function () {
                 return $this->pivot->expires_at;
+            }),
+        ];
+    }
+
+Nếu bảng trung gian của bạn đang sử dụng một tên accessor khác không phải là `pivot`, bạn có thể sử dụng phương thức `whenPivotLoadedAs`:
+
+    /**
+     * Transform the resource into an array.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return array
+     */
+    public function toArray($request)
+    {
+        return [
+            'id' => $this->id,
+            'name' => $this->name,
+            'expires_at' => $this->whenPivotLoadedAs('subscription', 'role_user', function () {
+                return $this->subscription->expires_at;
             }),
         ];
     }
@@ -513,7 +554,7 @@ Một số tiêu chuẩn API JSON sẽ yêu cầu thêm dữ liệu meta vào c�
     /**
      * Transform the resource into an array.
      *
-     * @param  \Illuminate\Http\Request
+     * @param  \Illuminate\Http\Request  $request
      * @return array
      */
     public function toArray($request)
@@ -543,7 +584,7 @@ Thỉnh thoảng bạn có thể chỉ muốn thêm một số dữ liệu meta 
         /**
          * Transform the resource collection into an array.
          *
-         * @param  \Illuminate\Http\Request
+         * @param  \Illuminate\Http\Request  $request
          * @return array
          */
         public function toArray($request)
@@ -554,7 +595,7 @@ Thỉnh thoảng bạn có thể chỉ muốn thêm một số dữ liệu meta 
         /**
          * Get additional data that should be returned with the resource array.
          *
-         * @param \Illuminate\Http\Request  $request
+         * @param  \Illuminate\Http\Request  $request
          * @return array
          */
         public function with($request)
@@ -612,7 +653,7 @@ Ngoài ra, bạn cũng có thể định nghĩa một phương thức `withRespo
         /**
          * Transform the resource into an array.
          *
-         * @param  \Illuminate\Http\Request
+         * @param  \Illuminate\Http\Request  $request
          * @return array
          */
         public function toArray($request)
@@ -625,7 +666,7 @@ Ngoài ra, bạn cũng có thể định nghĩa một phương thức `withRespo
         /**
          * Customize the outgoing response for the resource.
          *
-         * @param  \Illuminate\Http\Request
+         * @param  \Illuminate\Http\Request  $request
          * @param  \Illuminate\Http\Response
          * @return void
          */

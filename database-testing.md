@@ -28,7 +28,7 @@ Laravel cung cấp nhiều công cụ hữu ích để giúp bạn dễ dàng te
 
 Bạn cũng có thể sử dụng helper `assertDatabaseMissing` để yêu cầu dữ liệu phải không được có trong cơ sở dữ liệu.
 
-Tất nhiên, phương thức `assertDatabaseHas` và những phương thức helper khác giống như nó là để cho thuận tiện hơn. Bạn có thể tự do sử dụng bất kỳ phương thức kiểm tra nào của PHPUnit để bổ sung cho các bài test của bạn.
+Phương thức `assertDatabaseHas` và những phương thức helper khác giống như nó là để cho thuận tiện hơn. Bạn có thể tự do sử dụng bất kỳ phương thức kiểm tra nào của PHPUnit để bổ sung cho các bài test của bạn.
 
 <a name="generating-factories"></a>
 ## Tạo Factory
@@ -78,14 +78,16 @@ Việc reset lại cơ sở dữ liệu của bạn sau mỗi lần kiểm tra t
 
 Trước khi test, bạn có thể cần thêm một vài bản ghi vào trong cơ sở dữ liệu của bạn trước khi thực hiện test. Thay vì khai báo thủ công các giá trị cho từng cột khi bạn tạo dữ liệu test này, Laravel cho phép bạn định nghĩa một loạt các thuộc tính mặc định cho từng [Eloquent models](/docs/{{version}}/eloquent) bằng cách sử dụng các model factory. Để bắt đầu, hãy xem file `database/factories/UserFactory.php` trong ứng dụng của bạn. Mặc định, file này chứa sẵn một định nghĩa của factory:
 
+    use Illuminate\Support\Str;
     use Faker\Generator as Faker;
 
     $factory->define(App\User::class, function (Faker $faker) {
         return [
             'name' => $faker->name,
             'email' => $faker->unique()->safeEmail,
+            'email_verified_at' => now(),
             'password' => '$2y$10$TKh8H1.PfQx37YgCzwiKb.KjNyWgaHb9cbcoQgdIVFlYg7B77UdFm', // secret
-            'remember_token' => str_random(10),
+            'remember_token' => Str::random(10),
         ];
     });
 
@@ -200,8 +202,8 @@ Trong ví dụ này, chúng ta sẽ gắn thêm một quan hệ cho một số m
 
     $users = factory(App\User::class, 3)
                ->create()
-               ->each(function ($u) {
-                    $u->posts()->save(factory(App\Post::class)->make());
+               ->each(function ($user) {
+                    $user->posts()->save(factory(App\Post::class)->make());
                 });
 
 #### Relations & Attribute Closures
