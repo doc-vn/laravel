@@ -11,6 +11,7 @@
     - [Tạo Form Requests](#creating-form-requests)
     - [Authorizing Form Requests](#authorizing-form-requests)
     - [Tuỳ biến Error Messages](#customizing-the-error-messages)
+    - [Tuỳ biến thuộc tính Validation](#customizing-the-validation-attributes)
 - [Tạo Validator thủ công](#manually-creating-validators)
     - [Tự dộng chuyển hướng](#automatic-redirection)
     - [Tên của Error Bags](#named-error-bags)
@@ -44,7 +45,7 @@ Laravel cung cấp một số cách tiếp cận khác nhau để validate dữ 
 
     Route::post('post', 'PostController@store');
 
-Dĩ nhiên, route `GET` sẽ hiển thị một form cho người dùng để tạo một bài đăng mới trong blog, trong khi route `POST` sẽ lưu trữ bài đăng đó vào trong blog trong cơ sở dữ liệu.
+Route `GET` sẽ hiển thị một form cho người dùng để tạo một bài đăng mới trong blog, trong khi route `POST` sẽ lưu trữ bài đăng đó vào trong blog trong cơ sở dữ liệu.
 
 <a name="quick-creating-the-controller"></a>
 ### Tạo Controller
@@ -292,6 +293,23 @@ Bạn có thể tùy biến các thông báo lỗi được sử dụng bởi fo
         ];
     }
 
+<a name="customizing-the-validation-attributes"></a>
+### Tuỳ biến thuộc tính Validation
+
+Nếu bạn muốn phần `:attribute` của message validation được thay thế bằng tên một thuộc tính tùy chỉnh, bạn có thể chỉ định các tên tùy chỉnh đó bằng cách ghi đè phương thức `attributes`. Phương thức này sẽ trả về một mảng gồm thuộc tính và tên:
+
+    /**
+     * Get custom attributes for validator errors.
+     *
+     * @return array
+     */
+    public function attributes()
+    {
+        return [
+            'email' => 'email address',
+        ];
+    }
+
 <a name="manually-creating-validators"></a>
 ## Tạo Validator thủ công
 
@@ -463,6 +481,30 @@ Nếu bạn muốn phần `:attribute` trong thông báo validation của bạn 
         'email' => 'email address',
     ],
 
+#### Chỉ định Custom Values trong file Language
+
+Thỉnh thoảng bạn có thể cần thay thế phần `:value` trong message validation của bạn bằng một giá trị tuỳ biến. Ví dụ: hãy xem xét rule sau, nó sẽ quy đinh rằng số thẻ tín dụng là bắt buộc nếu `payment_type` có giá trị là `cc`:
+
+    $request->validate([
+        'credit_card_number' => 'required_if:payment_type,cc'
+    ]);
+
+Nếu rule validation này không thành công, thì nó sẽ tạo ra một thông báo lỗi như sau:
+
+    The credit card number field is required when payment type is cc.
+
+Thay vì hiển thị `cc` làm giá trị của payment type, bạn có thể chỉ định giá trị tùy biến trong file ngôn ngữ `validation` của bạn bằng cách định nghĩa mảng `values`:
+
+    'values' => [
+        'payment_type' => [
+            'cc' => 'credit card'
+        ],
+    ],
+
+Bây giờ, nếu rule validation không thành công, thì nó sẽ tạo ra thông báo lỗi như sau:
+
+    The credit card number field is required when payment type is credit card.
+
 <a name="available-validation-rules"></a>
 ## Các Validation Rule có sẵn
 
@@ -536,10 +578,12 @@ Dưới đây là danh sách tất cả các quy tắc validation có sẵn và 
 [Required Without All](#rule-required-without-all)
 [Same](#rule-same)
 [Size](#rule-size)
+[Starts With](#rule-starts-with)
 [String](#rule-string)
 [Timezone](#rule-timezone)
 [Unique (Database)](#rule-unique)
 [URL](#rule-url)
+[UUID](#rule-uuid)
 
 </div>
 
@@ -597,12 +641,12 @@ Dừng chạy các validation rule nếu lần validation đầu tiên không th
 <a name="rule-before"></a>
 #### before:_date_
 
-Field được validation là một giá trị trước ngày đã cho. Tham số date sẽ được truyền vào hàm `strtotime` của PHP.
+Field được validation là một giá trị trước ngày đã cho. Tham số date sẽ được truyền vào hàm `strtotime` của PHP. Ngoài ra, giống như quy tắc [`after`](#rule-after), tên của một field khác cũng có thể được cung cấp dưới dạng như một giá trị kiểu `date`.
 
 <a name="rule-before-or-equal"></a>
 #### before\_or\_equal:_date_
 
-Field được validation là một giá trị trước hoặc bằng với ngày đã cho. Tham số date sẽ được truyền vào hàm `strtotime` của PHP.
+Field được validation là một giá trị trước hoặc bằng với ngày đã cho. Tham số date sẽ được truyền vào hàm `strtotime` của PHP. Ngoài ra, giống như quy tắc [`after`](#rule-after), tên của một field khác cũng có thể được cung cấp dưới dạng như một giá trị kiểu `date`.
 
 <a name="rule-between"></a>
 #### between:_min_,_max_
@@ -622,7 +666,7 @@ Field được validation phải có field là `foo_confirmation`. Ví dụ: n�
 <a name="rule-date"></a>
 #### date
 
-Field được validation phải là một ngày hợp lệ theo hàm PHP `strtotime`.
+Field được validation phải là một ngày hợp lệ và non-relative theo hàm PHP `strtotime`.
 
 <a name="rule-date-equals"></a>
 #### date_equals:_date_
@@ -757,7 +801,7 @@ Field được validation phải có trong danh sách các giá trị đã cho. 
     ]);
 
 <a name="rule-in-array"></a>
-#### in_array:_anotherfield_
+#### in_array:_anotherfield_.*
 
 Field được validation phải tồn tại trong các giá trị của _anotherfield_.
 
@@ -845,6 +889,8 @@ Field được validation không được chứa trong một danh sách giá tr�
 
 Field được validation phải không được khớp với biểu thức chính quy đã cho.
 
+Quy tắc này sử dụng hàm `preg_match` trong PHP. Biểu thức được chỉ định phải tuân theo một định dạng được yêu cầu bởi `preg_match` và do đó, nó cũng chứa các dấu phân cách. Ví dụ: `'email' => 'not_regex:/^.+$/i'`.
+
 **Note:** Khi sử dụng mẫu `regex` hoặc `not_regex`, có thể cần phải khai báo các quy tắc trong một mảng thay vì sử dụng các dấu "|" để phân cách, đặc biệt nếu biểu thức chính quy của bạn chứa ký tự đó.
 
 <a name="rule-nullable"></a>
@@ -867,7 +913,9 @@ Field được validation phải có tồn tại trong dữ liệu input nhưng 
 
 Field được validation phải phù hợp với biểu thức chính quy định.
 
-**Note:** Khi sử dụng mẫu `regex` hoặc `not_regex`, có thể cần phải khai báo các quy tắc trong một mảng thay vì sử dụng các dấu "|" để phân cách, đặc biệt nếu biểu thức chính quy của bạn chứa ký tự đó.
+Quy tắc này sử dụng hàm `preg_match` trong PHP. Biểu thức được chỉ định phải tuân theo một định dạng được yêu cầu bởi `preg_match` và do đó, nó cũng chứa các dấu phân cách. Ví dụ: `'email' => 'regex:/^.+@.+$/i'`.
+
+**Note:** Khi sử dụng quy tắc `regex` hoặc `not_regex`, có thể bạn cần phải khai báo các quy tắc đó vào trong một mảng thay vì sử dụng các dấu "|" để phân cách, đặc biệt nếu biểu thức chính quy của bạn có chứa ký tự đó.
 
 <a name="rule-required"></a>
 #### required
@@ -887,6 +935,20 @@ Field được validation phải có tồn tại trong dữ liệu input và kh�
 #### required_if:_anotherfield_,_value_,...
 
 Field được validation phải có tồn tại và không được trống nếu trường _anotherfield_ bằng với giá trị _value_.
+
+Nếu bạn muốn tạo một điều kiện phức tạp hơn cho quy tắc `required_if`, thì bạn có thể sử dụng phương thức `Rule::requiredIf`. Phương thức này chấp nhận một boolean hoặc một Closure. Khi bạn truyền vào một Closure, thì Closure này sẽ trả về một giá trị `true` hoặc `false` để xem field đang được validation có bắt buộc hay không:
+
+    use Illuminate\Validation\Rule;
+
+    Validator::make($request->all(), [
+        'role_id' => Rule::requiredIf($request->user()->is_admin),
+    ]);
+
+    Validator::make($request->all(), [
+        'role_id' => Rule::requiredIf(function () use ($request) {
+            return $request->user()->is_admin;
+        }),
+    ]);
 
 <a name="rule-required-unless"></a>
 #### required_unless:_anotherfield_,_value_,...
@@ -923,6 +985,11 @@ _field_ đã cho phải match với field được validation.
 
 Field được validation phải có kích thước khớp với _value_ đã cho. Đối với dữ liệu chuỗi, _value_ tương ứng với số lượng ký tự. Đối với dữ liệu số, _value_ tương ứng với một giá trị số nguyên đã cho. Đối với một mảng, _size_ tương ứng với `count` của mảng. Đối với file, _size_ tương ứng với kích thước file tính bằng kilobyte.
 
+<a name="rule-starts-with"></a>
+#### starts_with:_foo_,_bar_,...
+
+Field được validation phải bắt đầu bằng một trong các giá trị đã cho.
+
 <a name="rule-string"></a>
 #### string
 
@@ -950,7 +1017,7 @@ Field được validation phải là duy nhất trong một bảng cơ sở dữ
 
 **Bỏ qua một ID nhất định:**
 
-Đôi khi, bạn có thể muốn bỏ qua một ID nhất định trong khi kiểm tra unique. Ví dụ: hãy xem thử màn hình "update profile" bao gồm tên người dùng, địa chỉ email và vị trí. Tất nhiên, bạn sẽ muốn kiểm tra rằng địa chỉ email có là unique hay không. Tuy nhiên, nếu người dùng chỉ thay đổi field tên chứ không phải field e-mail, bạn không thể tạo ra lỗi validate vì người dùng đã là chủ sở hữu của địa chỉ email đó.
+Đôi khi, bạn có thể muốn bỏ qua một ID nhất định trong khi kiểm tra unique. Ví dụ: hãy xem thử màn hình "update profile" bao gồm tên người dùng, địa chỉ email và vị trí. Bạn có thể sẽ muốn kiểm tra rằng địa chỉ email có là unique hay không. Tuy nhiên, nếu người dùng chỉ thay đổi field tên chứ không phải field e-mail, bạn không thể tạo ra lỗi validate vì người dùng đã là chủ sở hữu của địa chỉ email đó.
 
 Để hướng dẫn validator bỏ qua ID của người dùng, chúng ta sẽ sử dụng class `Rule` để dễ dàng khai báo quy tắc. Trong ví dụ này, chúng ta cũng sẽ khai báo các quy tắc validation là một mảng thay vì sử dụng ký tự `|` để phân chia các quy tắc:
 
@@ -963,13 +1030,13 @@ Field được validation phải là duy nhất trong một bảng cơ sở dữ
         ],
     ]);
 
-Bạn có thể chỉ định tên cột được validation bằng cách sử dụng tham số thứ hai của phương thức `unique`. Nếu không có tham số đó, tên field cần validation sẽ được sử dụng làm tên cột:
-
-    'email' => Rule::unique('users', 'email_address')
-
 Nếu bảng của bạn sử dụng tên cột khóa chính khác với `id`, bạn có thể chỉ định tên của cột khi gọi phương thức `ignore`:
 
-    'email' => Rule::unique('users')->ignore($user->id, 'user_id')
+    Rule::unique('users')->ignore($user->id, 'user_id')
+
+Mặc định, quy tắc `unique` sẽ kiểm tra tính duy nhất của cột mà khớp với tên của thuộc tính đang được validation. Tuy nhiên, bạn có thể truyền tên một cột khác làm tham số thứ hai cho phương thức `unique`:
+
+    Rule::unique('users', 'email_address')->ignore($user->id),
 
 **Thêm điều kiện where:**
 
@@ -983,6 +1050,11 @@ Bạn cũng có thể khai báo thêm các điều kiện truy vấn bằng các
 #### url
 
 Field được validation phải là một URL hợp lệ.
+
+<a name="rule-uuid"></a>
+#### uuid
+
+Field được validation phải là một mã định danh (UUID) RFC 4122 (phiên bản 1, 3, 4 hoặc 5).
 
 <a name="conditionally-adding-rules"></a>
 ## Thêm điều kiện cho Rule
@@ -1089,7 +1161,7 @@ Khi rule đã được tạo, chúng ta đã sẵn sàng xác định hành vi c
         }
     }
 
-Tất nhiên, bạn có thể gọi helper `trans` từ phương thức `message` nếu bạn muốn trả về một thông báo lỗi từ các file language của bạn:
+Bạn có thể gọi helper `trans` từ phương thức `message` nếu bạn muốn trả về một thông báo lỗi từ các file language của bạn:
 
     /**
      * Get the validation error message.
@@ -1118,9 +1190,9 @@ Nếu bạn cần chức năng của một rule tùy chỉnh trong đúng một 
         'title' => [
             'required',
             'max:255',
-            function($attribute, $value, $fail) {
+            function ($attribute, $value, $fail) {
                 if ($value === 'foo') {
-                    return $fail($attribute.' is invalid.');
+                    $fail($attribute.' is invalid.');
                 }
             },
         ],
@@ -1197,11 +1269,11 @@ Khi tạo một tùy biến quy tắc validation, đôi khi bạn có thể cầ
 
 #### Extension ẩn
 
-Mặc định, khi một thuộc tính được validate không có hoặc chứa một giá trị trống như được định nghĩa bởi quy tắc [`required`](#rule-required), thì các quy tắc validation thông thường, và cả các extension tùy biến đều sẽ được không chạy. Ví dụ: quy tắc [`unique`](#rule-unique) sẽ không được chạy cho giá trị `null`:
+Mặc định, khi một thuộc tính được validate không tồn tại hoặc là một chuỗi trống, thì các quy tắc validation thông thường, và cả các extension tùy biến đều sẽ được không chạy. Ví dụ: quy tắc [`unique`](#rule-unique) sẽ không được chạy cho một chuỗi trống:
 
-    $rules = ['name' => 'unique'];
+    $rules = ['name' => 'unique:users,name'];
 
-    $input = ['name' => null];
+    $input = ['name' => ''];
 
     Validator::make($input, $rules)->passes(); // true
 

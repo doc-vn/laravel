@@ -1,6 +1,7 @@
 # Localization
 
 - [Giới thiệu](#introduction)
+    - [Cấu hình ngôn ngữ](#configuring-the-locale)
 - [Định nghĩa chuỗi translation](#defining-translation-strings)
     - [Sử dụng short key](#using-short-keys)
     - [Sử dụng chuỗi translation như key](#using-translation-strings-as-keys)
@@ -29,9 +30,10 @@ Tất cả các file ngôn ngữ đều trả về một mảng của các chu�
         'welcome' => 'Welcome to our application'
     ];
 
+<a name="configuring-the-locale"></a>
 ### Cấu hình ngôn ngữ
 
-Ngôn ngữ mặc định cho application của bạn được lưu trữ trong file cấu hình `config/app.php`. Tất nhiên, bạn có thể sửa đổi giá trị này cho phù hợp với nhu cầu application của bạn. Bạn cũng có thể thay đổi ngôn ngữ hoạt động trong lúc chạy bằng cách sử dụng phương thức `setLocale` trên facade `App`:
+Ngôn ngữ mặc định cho application của bạn được lưu trữ trong file cấu hình `config/app.php`. Bạn có thể sửa đổi giá trị này cho phù hợp với nhu cầu application của bạn. Bạn cũng có thể thay đổi ngôn ngữ hoạt động trong lúc chạy bằng cách sử dụng phương thức `setLocale` trên facade `App`:
 
     Route::get('welcome/{locale}', function ($locale) {
         App::setLocale($locale);
@@ -98,13 +100,15 @@ Bạn có thể lấy các chuỗi đã được dịch từ các file ngôn ng�
 
     echo __('I love programming.');
 
-Tất nhiên, nếu bạn đang sử dụng [Blade templating engine](/docs/{{version}}/blade), bạn có thể sử dụng cú pháp `{{ }}` để echo một chuỗi đã được dịch hoặc sử dụng lệnh `@lang`:
+Nếu bạn đang sử dụng [Blade templating engine](/docs/{{version}}/blade), bạn có thể sử dụng cú pháp `{{ }}` để echo một chuỗi đã được dịch hoặc sử dụng lệnh `@lang`:
 
     {{ __('messages.welcome') }}
 
     @lang('messages.welcome')
 
 Nếu chuỗi cần dịch được chỉ định không tồn tại, hàm `__` sẽ trả về khóa của chuỗi cần dịch. Vì vậy, nếu sử dụng ví dụ trên, thì hàm `__` sẽ trả về `messages.welcome` nếu chuỗi cần dịch không tồn tại.
+
+> {note} Lệnh `@lang` không loại bỏ các ký tự đặc biệt ra khỏi output. Bạn cần phải **chịu trách nhiệm** về việc loại bỏ các ký tự đặc biệt ra khỏi output của bạn khi sử dụng lệnh này.
 
 <a name="replacing-parameters-in-translation-strings"></a>
 ### Thay thế parameter trong chuỗi translation

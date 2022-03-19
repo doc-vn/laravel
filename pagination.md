@@ -21,7 +21,7 @@ Trong các framework khác, phân trang có thể rất khổ. Mặc định, tr
 <a name="paginating-query-builder-results"></a>
 ### Phân trang từ một query builder
 
-Có một số cách để phân trang. Đơn giản nhất là sử dụng phương thức `paginate` trong một [query builder](/docs/{{version}}/queries) hoặc một [Eloquent query](/docs/{{version}}/eloquent). Phương thức `paginate` sẽ tự động đảm nhiệm việc set giới hạn và offset dựa trên trang hiện tại đang được người dùng xem. Mặc định, trang hiện tại sẽ được dò tìm giá trị của tham số `page` trong HTTP request. Dĩ nhiên, giá trị này sẽ được tự động dò tìm bởi Laravel và cũng được tự động thêm vào sau các link sau quá trình phân trang.
+Có một số cách để phân trang. Đơn giản nhất là sử dụng phương thức `paginate` trong một [query builder](/docs/{{version}}/queries) hoặc một [Eloquent query](/docs/{{version}}/eloquent). Phương thức `paginate` sẽ tự động đảm nhiệm việc set giới hạn và offset dựa trên trang hiện tại đang được người dùng xem. Mặc định, trang hiện tại sẽ được dò tìm giá trị của tham số `page` trong HTTP request. Giá trị này sẽ được tự động dò tìm bởi Laravel và cũng được tự động thêm vào sau các link sau quá trình phân trang.
 
 Trong ví dụ này, chỉ có một tham số duy nhất được truyền vào phương thức `paginate` đó là số lượng dữ liệu mà bạn muốn hiển thị "trên mỗi trang". Trong trường hợp này, hãy khai báo chúng ta muốn hiển thị `15` dữ liệu trên mỗi trang:
 
@@ -62,7 +62,7 @@ Bạn cũng có thể phân trang bằng các truy vấn [Eloquent](/docs/{{vers
 
     $users = App\User::paginate(15);
 
-Tất nhiên là, bạn có thể gọi `paginate` sau khi set các điều kiện cho truy vấn, chẳng hạn như câu lệnh `where`:
+Bạn có thể gọi `paginate` sau khi set các điều kiện cho truy vấn, chẳng hạn như câu lệnh `where`:
 
     $users = User::where('votes', '>', 100)->paginate(15);
 
@@ -117,6 +117,12 @@ Bạn có thể nối thêm các tham số vào các link phân trang bằng ph�
 Nếu bạn muốn nối thêm một "hash fragment" vào các URL của trình phân trang, bạn có thể sử dụng phương thức `fragment`. Ví dụ: để nối `#foo` vào cuối của mỗi link phân trang, hãy thực hiện gọi đến phương thức `fragment` như sau:
 
     {{ $users->fragment('foo')->links() }}
+
+#### Adjusting The Pagination Link Window
+
+Bạn có thể kiểm soát số lượng link được hiển thị ở mỗi bên của "window" URL của paginator. Mặc định, ba link sẽ được hiển thị ở mỗi bên của các link paginator chính. Tuy nhiên, bạn có thể kiểm soát số link này bằng phương thức `onEachSide`:
+
+    {{ $users->onEachSide(5)->links() }}
 
 <a name="converting-results-to-json"></a>
 ### Chuyển kết quả thành JSON
@@ -173,9 +179,9 @@ Nếu bạn muốn chỉ định một file khác làm pagination view mặc đ�
 
     public function boot()
     {
-        Paginator::defaultView('pagination::view');
+        Paginator::defaultView('view-name');
 
-        Paginator::defaultSimpleView('pagination::view');
+        Paginator::defaultSimpleView('view-name');
     }
 
 <a name="paginator-instance-methods"></a>
@@ -183,15 +189,19 @@ Nếu bạn muốn chỉ định một file khác làm pagination view mặc đ�
 
 Mỗi instance phân trang cung cấp thêm các thông tin phân trang thông qua các phương thức có sẵn sau:
 
-- `$results->count()`
-- `$results->currentPage()`
-- `$results->firstItem()`
-- `$results->hasMorePages()`
-- `$results->lastItem()`
-- `$results->lastPage() (Not available when using simplePaginate)`
-- `$results->nextPageUrl()`
-- `$results->onFirstPage()`
-- `$results->perPage()`
-- `$results->previousPageUrl()`
-- `$results->total() (Not available when using simplePaginate)`
-- `$results->url($page)`
+Method  |  Description
+-------  |  -----------
+`$results->count()`  |  Lấy số lượng các item cho trang hiện tại.
+`$results->currentPage()`  |  Lấy page number trong trang hiện tại.
+`$results->firstItem()`  |  Lấy số lượng kết quả của item đầu tiên trong kết quả.
+`$results->getOptions()`  |  Lấy các tùy chọn paginator.
+`$results->getUrlRange($start, $end)`  |  Tạo một loạt các URL phân trang.
+`$results->hasMorePages()`  |  Kiểm tra xem có đủ mục để chia thành nhiều trang hay không.
+`$results->lastItem()`  |  Lấy số lượng kết quả của item cuối cùng trong kết quả.
+`$results->lastPage()`  |  Lấy page number của trang cuối cùng có sẵn. (Không khả dụng khi sử dụng `simplePaginate`).
+`$results->nextPageUrl()`  |  Lấy URL cho trang tiếp theo.
+`$results->onFirstPage()`  |  Kiểm tra xem paginator có đang ở trang đầu tiên hay không.
+`$results->perPage()`  |  Số lượng item được hiển thị trên mỗi trang.
+`$results->previousPageUrl()`  |  Lấy URL cho trang trước đó.
+`$results->total()`  |  Kiểm tra tổng số mục phù hợp trong data store. (Không khả dụng khi sử dụng `simplePaginate`).
+`$results->url($page)`  |  Lấy URL cho một trang nhất định.

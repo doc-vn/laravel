@@ -1,6 +1,7 @@
 # Laravel Cashier
 
 - [Giới thiệu](#introduction)
+- [Cập nhật Cashier](#upgrading-cashier)
 - [Cấu hình](#configuration)
     - [Stripe](#stripe-configuration)
     - [Braintree](#braintree-configuration)
@@ -11,19 +12,31 @@
     - [Thay đổi Plan](#changing-plans)
     - [Subscription số lượng lớn](#subscription-quantity)
     - [Thuế của Subscription](#subscription-taxes)
+    - [Subscription cố định ngày](#subscription-anchor-date)
     - [Huỷ Subscription](#cancelling-subscriptions)
     - [Resume Subscription](#resuming-subscriptions)
     - [Cập nhật thẻ Credit](#updating-credit-cards)
 - [Subscription dành cho dùng thử](#subscription-trials)
     - [Khai báo trước thẻ credit](#with-credit-card-up-front)
     - [Khai báo thẻ credit sau](#without-credit-card-up-front)
+- [Customers](#customers)
+    - [Tạo Customers](#creating-customers)
+- [Cards](#cards)
+    - [Nhận Credit Cards](#retrieving-credit-cards)
+    - [Kiểm tra một card liên kết với một tài khoản](#determining-if-a-card-is-on-file)
+    - [Cập nhật Credit Cards](#updating-credit-cards)
+    - [Xoá Credit Cards](#deleting-credit-cards)
 - [Xử lý Stripe Webhook](#handling-stripe-webhooks)
     - [Định nghĩa xử lý Webhook Event](#defining-webhook-event-handlers)
     - [Subscription bị thất bại](#handling-failed-subscriptions)
+    - [Kiểm tra Webhook Signatures](#verifying-webhook-signatures)
 - [Xử lý Braintree Webhooks](#handling-braintree-webhooks)
     - [Định nghĩa xử lý Webhook Event](#defining-braintree-webhook-event-handlers)
     - [Subscription bị thất bại](#handling-braintree-failed-subscriptions)
 - [Phí](#single-charges)
+    - [Tính phí đơn giản](#simple-charge)
+    - [Tính phí với hoá đơn](#charge-with-invoice)
+    - [Hoàn trả](#refunding-charges)
 - [Hoá đơn](#invoices)
     - [Tạo hoá đơn PDF](#generating-invoice-pdfs)
 
@@ -33,6 +46,11 @@
 Laravel Cashier cung cấp một interface dễ hiểu, rõ ràng cho các dịch vụ thanh toán subscription trực tuyến như [Stripe's](https://stripe.com) và [Braintree's](https://www.braintreepayments.com). Nó gần như đã xử lý tất cả các đoạn code mà bạn đang sợ viết mà có liên quan đến các phần thanh toán subscription. Ngoài quản lý subscription cơ bản, Cashier cũng có thể xử lý cả các phiếu giảm giá, chuyển đổi subscription, đăng ký "nhiều" subscription, thời hạn hủy bỏ và thậm chí là tạo các file hóa đơn PDF.
 
 > {note} Nếu bạn chỉ muốn thực hiện các khoản phí "một lần" và không cung cấp chế độ subscription, thì bạn không nên sử dụng Cashier. Thay vào đó, hãy sử dụng trực tiếp SDK của Stripe và Braintree.
+
+<a name="upgrading-cashier"></a>
+## Cập nhật Cashier
+
+Khi nâng cấp lên phiên bản mới của Cashier, điều quan trọng là bạn phải xem kỹ [hướng dẫn nâng cấp](https://github.com/laravel/cashier/blob/master/UPGRADE.md).
 
 <a name="configuration"></a>
 ## Cấu hình
@@ -44,16 +62,16 @@ Laravel Cashier cung cấp một interface dễ hiểu, rõ ràng cho các dịc
 
 Đầu tiên, thêm package Cashier cho Stripe vào trong các library của bạn:
 
-    composer require "laravel/cashier":"~7.0"
+    composer require laravel/cashier
 
 #### Database Migrations
 
 Trước khi sử dụng Cashier, chúng ta cũng cần [chuẩn bị cơ sở dữ liệu](/docs/{{version}}/migrations). Chúng ta cần thêm một số cột vào bảng `users` của bạn và tạo thêm một bảng `subscriptions` mới để lưu trữ tất cả các subscription cho khách hàng của bạn:
 
     Schema::table('users', function ($table) {
-        $table->string('stripe_id')->nullable();
+        $table->string('stripe_id')->nullable()->collation('utf8mb4_bin');
         $table->string('card_brand')->nullable();
-        $table->string('card_last_four')->nullable();
+        $table->string('card_last_four', 4)->nullable();
         $table->timestamp('trial_ends_at')->nullable();
     });
 
@@ -61,7 +79,7 @@ Trước khi sử dụng Cashier, chúng ta cũng cần [chuẩn bị cơ sở d
         $table->increments('id');
         $table->unsignedInteger('user_id');
         $table->string('name');
-        $table->string('stripe_id');
+        $table->string('stripe_id')->collation('utf8mb4_bin');
         $table->string('stripe_plan');
         $table->integer('quantity');
         $table->timestamp('trial_ends_at')->nullable();
@@ -322,6 +340,32 @@ Phương thức `taxPercentage` cho phép bạn áp dụng thuế suất cho t�
 
 > {note} Phương thức `taxPercentage` chỉ áp dụng cho các loại subscription. Nếu bạn sử dụng Cashier để thực hiện các khoản tính phí "một lần", bạn sẽ cần khai báo thuế suất thủ công tại thời điểm đó.
 
+#### Syncing Tax Percentages
+
+Khi thay đổi giá trị được trả về từ phương pháp `taxPercentage`, thì các cài đặt thuế có trên các subscription hiện có của người dùng sẽ vẫn giữ nguyên. Nếu bạn muốn cập nhật giá trị thuế cho các subscription hiện có với giá trị `taxPercentage` được trả về, bạn cần gọi phương thức `syncTaxPercentage` trên instance subscription của user đó:
+
+    $user->subscription('main')->syncTaxPercentage();
+
+<a name="subscription-anchor-date"></a>
+### Subscription cố định ngày
+
+> {note} Việc sửa ngày cố định của subscription chỉ được hỗ trợ trong phiên bản Stripe của Cashier.
+
+Mặc định, ngày cố định thanh toán là ngày đã tạo ra subscription hoặc nếu có thời gian dùng thử, thì ngày dùng thử kết thúc sẽ là ngày thanh toán. Nếu bạn muốn sửa ngày cố định thanh toán, bạn có thể sử dụng phương thức `anchorBillingCycleOn`:
+
+    use App\User;
+    use Carbon\Carbon;
+
+    $user = User::find(1);
+
+    $anchor = Carbon::parse('first day of next month');
+
+    $user->newSubscription('main', 'premium')
+                ->anchorBillingCycleOn($anchor->startOfDay())
+                ->create($stripeToken);
+
+Để biết thêm thông tin về cách quản lý chu kỳ thanh toán của subscription, hãy tham khảo [tài liệu về chu kỳ thanh toán của Stripe](https://stripe.com/docs/billing/subscriptions/billing-cycle)
+
 <a name="cancelling-subscriptions"></a>
 ### Huỷ Subscription
 
@@ -349,12 +393,6 @@ Nếu một người dùng đã hủy subscription của họ và bạn muốn r
     $user->subscription('main')->resume();
 
 Nếu người dùng đã hủy subscription nhưng sau đó lại muốn resume tiếp subscription đó trước khi subscription hết hạn, họ sẽ không bị tính tiền ngay lập tức. Thay vào đó, subscription của họ sẽ được kích hoạt lại và họ sẽ thanh toán theo đúng chu kỳ thanh toán ban đầu của họ.
-<a name="updating-credit-cards"></a>
-### Cập nhật thẻ Credit
-
-Phương thức `updateCard` có thể được sử dụng để cập nhật thông tin thẻ tín dụng cho khách hàng của bạn. Phương thức này chấp nhận một Stripe token và sẽ được gắn với một thẻ tín dụng mới làm thanh toán mặc định:
-
-    $user->updateCard($stripeToken);
 
 <a name="subscription-trials"></a>
 ## Subscription dành cho dùng thử
@@ -422,6 +460,71 @@ Khi bạn đã sẵn sàng tạo một subscription thực sự cho người dù
 
     $user->newSubscription('main', 'monthly')->create($stripeToken);
 
+<a name="customers"></a>
+## Customers
+
+<a name="creating-customers"></a>
+### Tạo Customers
+
+Đôi khi, bạn có thể muốn tạo customer cho Stripe mà không cần phải đăng ký. Bạn có thể làm việc này bằng phương thức `createAsStripeCustomer`:
+
+    $user->createAsStripeCustomer();
+
+Khi một customer đã được tạo ra trong Stripe, thì bạn có thể bắt đầu một subscription vào một ngày sau đó.
+
+> {tip} Phương thức của bên Braintree tương ứng với phương thức này là phương thức `createAsBraintreeCustomer`.
+
+<a name="cards"></a>
+## Cards
+
+<a name="retrieving-credit-cards"></a>
+### Nhận Credit Cards
+
+Phương thức `cards` trên instance model billable sẽ trả về một list các instance `Laravel\Cashier\Card`:
+
+    $cards = $user->cards();
+
+Để nhận một card mặc định, thì có thể dùng phương thức `defaultCard`;
+
+    $card = $user->defaultCard();
+
+<a name="determining-if-a-card-is-on-file"></a>
+### Kiểm tra một card liên kết với một tài khoản
+
+Bạn có thể kiểm tra một khách hàng có một thẻ tín dụng có được liên kết với tài khoản của họ hay không bằng cách sử dụng phương thức `hasCardOnFile`:
+
+    if ($user->hasCardOnFile()) {
+        //
+    }
+
+<a name="updating-credit-cards"></a>
+### Cập nhật Credit Cards
+
+Phương thức `updateCard` có thể được sử dụng để cập nhật thông tin thẻ tín dụng của khách hàng. Phương thức này chấp nhận một token Stripe và sẽ chỉ định một thẻ tín dụng mới làm cách thanh toán mặc định:
+
+    $user->updateCard($stripeToken);
+
+Để đồng bộ thông tin thẻ của bạn với thông tin thẻ mặc định của khách hàng trong Stripe, bạn có thể sử dụng phương thức `updateCardFromStripe`:
+
+    $user->updateCardFromStripe();
+
+<a name="deleting-credit-cards"></a>
+### Xoá Credit Cards
+
+Để xóa một thẻ, trước tiên bạn nên lấy thẻ của khách hàng ra bằng phương thức `cards`. Sau đó, bạn có thể gọi phương thức `delete` trên instance của thẻ mà bạn muốn xóa:
+
+    foreach ($user->cards() as $card) {
+        $card->delete();
+    }
+
+> {note} Nếu bạn muốn xóa thẻ mặc định, thì hãy đảm bảo là bạn đã đồng bộ thẻ mặc định mới vào cơ sở dữ liệu của bạn bằng phương thức `updateCardFromStripe`.
+
+Phương thức `deleteCards` sẽ xóa tất cả các thông tin thẻ mà được ứng dụng của bạn lưu trữ:
+
+    $user->deleteCards();
+
+> {note} Nếu người dùng đang có một subscription đang hoạt động, thì bạn nên xem xét việc ngăn họ xóa cách thanh toán cuối cùng mà bạn có.
+
 <a name="handling-stripe-webhooks"></a>
 ## Xử lý Stripe Webhook
 
@@ -434,7 +537,9 @@ Cả Stripe và Braintree đều có thể thông báo cho application của b�
 
 > {note} Khi mà bạn đã đăng ký route xong, hãy đảm bảo là cấu hình URL webhook đúng với URL trong bảng cài đặt control panel ở bên phía Stripe.
 
-Mặc định, controller này sẽ tự động xử lý hủy subscription khi mà có quá nhiều lần chi trả không thành công (được định nghĩa trong cài đặt Stripe của bạn); tuy nhiên, bạn sẽ sớm khám phá ra rằng bạn có thể extend controller này để xử lý bất kỳ event webhook nào mà bạn muốn trong phần ở dưới.
+Mặc định, controller này sẽ tự động xử lý hủy subscription khi mà có quá nhiều lần chi trả không thành công (được định nghĩa trong cài đặt Stripe của bạn), cập nhật khách hàng, xóa khách hàng, cập nhật subscription và thay đổi thẻ tín dụng; tuy nhiên, bạn sẽ sớm khám phá ra rằng bạn có thể extend controller này để xử lý bất kỳ event webhook nào mà bạn muốn trong phần ở dưới.
+
+> {note} Hãy đảm bảo là bạn đã bảo vệ các request bằng các middleware [kiểm tra webhook signature](/docs/{{version}}/billing#verifying-webhook-signatures) của Cashier.
 
 #### Webhooks & CSRF Protection
 
@@ -458,10 +563,10 @@ Cashier sẽ tự động xử lý hủy subscription nếu như các lần chi 
     class WebhookController extends CashierController
     {
         /**
-         * Handle a Stripe webhook.
+         * Handle invoice payment succeeded.
          *
          * @param  array  $payload
-         * @return Response
+         * @return \Symfony\Component\HttpFoundation\Response
          */
         public function handleInvoicePaymentSucceeded($payload)
         {
@@ -487,6 +592,13 @@ Vậy, nếu thẻ tín dụng của khách hàng hết hạn thì sao? Đừng 
     );
 
 Đó là tất cả! Các khoản thanh toán không thành công sẽ được kiểm soát và xử lý bởi controller. Controller này sẽ hủy subscription của khách hàng khi Stripe xác định rằng subscription không thành công (thông thường là sau ba lần thanh toán không thành công).
+
+<a name="verifying-webhook-signatures"></a>
+### Kiểm tra Webhook Signatures
+
+Để bảo mật webhook của bạn, bạn có thể sử dụng [webhook signature của Stripe](https://stripe.com/docs/webhooks/signatures). Để thuận tiện, Cashier đã tự động thêm một middleware để kiểm tra các request webhook Stripe đến application là hợp lệ.
+
+Để bật kiểm tra webhook, hãy đảm bảo là giá trị cấu hình `stripe.webhook.secret` đã được set trong file cấu hình `services` của bạn. Webhook `secret` có thể được lấy ra từ trang tài khoản Stripe của bạn.
 
 <a name="handling-braintree-webhooks"></a>
 ## Xử lý Braintree Webhooks
@@ -525,14 +637,14 @@ Cashier sẽ tự động xử lý hủy subscription nếu như các lần chi 
     class WebhookController extends CashierController
     {
         /**
-         * Handle a Braintree webhook.
+         * Handle a new dispute.
          *
-         * @param  WebhookNotification  $webhook
-         * @return Response
+         * @param  \Braintree\WebhookNotification  $webhook
+         * @return \Symfony\Component\HttpFoundation\Responses
          */
-        public function handleDisputeOpened(WebhookNotification $notification)
+        public function handleDisputeOpened(WebhookNotification $webhook)
         {
-            // Handle The Event
+            // Handle The Webhook...
         }
     }
 
@@ -551,14 +663,15 @@ Vậy, nếu thẻ tín dụng của khách hàng hết hạn thì sao? Đừng 
 <a name="single-charges"></a>
 ## Phí
 
-### Simple Charge
+<a name="simple-charge"></a>
+### Tính phí đơn giản
 
 > {note} Khi sử dụng Stripe, phương thức `charge` chấp nhận số tiền mà bạn muốn tính phí theo **loại tiền được set trong application của bạn**. Tuy nhiên, khi sử dụng Braintree, bạn nên chuyển toàn bộ số tiền đó sang đô la rồi truyền vào phương thức `charge`:
 
 Nếu bạn muốn thực hiện một khoản tính phí "một lần" đối với các thẻ tín dụng của khách hàng đã subscription, bạn có thể sử dụng phương thức `charge` trên một instance model billable.
 
     // Stripe Accepts Charges In Cents...
-    $user->charge(100);
+    $stripeCharge = $user->charge(100);
 
     // Braintree Accepts Charges In Dollars...
     $user->charge(1);
@@ -577,7 +690,8 @@ Phương thức `charge` sẽ đưa ra một ngoại lệ nếu việc tính ph�
         //
     }
 
-### Charge With Invoice
+<a name="charge-with-invoice"></a>
+### Tính phí với hoá đơn
 
 Thỉnh thoảng bạn có thể cần phải tạo tính phí một lần nhưng cũng cần tạo cả một hóa đơn cho khoản phí đó để bạn có thể cung cấp hóa đơn PDF đó cho khách hàng của bạn. Phương thức `invoiceFor` cho phép bạn làm điều đó. Ví dụ: hãy gửi hóa đơn "phí một lần" cho khách hàng của bạn là $5.00:
 
@@ -587,10 +701,12 @@ Thỉnh thoảng bạn có thể cần phải tạo tính phí một lần nhưn
     // Braintree Accepts Charges In Dollars...
     $user->invoiceFor('One Time Fee', 5);
 
-Hóa đơn sẽ được tính ngay lập tức với thẻ tín dụng của người dùng. Phương thức `invoiceFor` cũng chấp nhận một mảng làm tham số thứ ba của nó, cho phép bạn truyền vào bất kỳ tùy chọn nào mà bạn muốn cho việc tạo phí của Stripe hoặc Braintree:
+Hóa đơn sẽ được tính ngay lập tức với thẻ tín dụng của người dùng. Phương thức `invoiceFor` cũng chấp nhận một mảng làm tham số thứ ba của nó. Mảng này sẽ chứa các tùy chọn thanh toán cho các hàng được thanh toán. Tham số thứ tư được phương thức chấp nhận cũng là một mảng. Tham số cuối cùng này chấp nhận các tùy chọn thanh toán cho chính hóa đơn đó:
 
-    $user->invoiceFor('One Time Fee', 500, [
-        'custom-option' => $value,
+    $user->invoiceFor('Stickers', 500, [
+        'quantity' => 50,
+    ], [
+        'tax_percent' => 21,
     ]);
 
 Nếu bạn đang sử dụng Braintree làm nhà cung cấp dịch vụ thanh toán của bạn, bạn phải thêm tùy chọn `description` khi gọi phương thức `invoiceFor`:
@@ -600,6 +716,15 @@ Nếu bạn đang sử dụng Braintree làm nhà cung cấp dịch vụ thanh t
     ]);
 
 > {note} Phương thức `invoiceFor` sẽ tạo ra một hóa đơn Stripe sẽ thử lại sau các lần thanh toán không thành công. Nếu bạn không muốn hóa đơn thử lại sau các lần trả phí không thành công, bạn sẽ cần phải close chúng bằng API Stripe sau lần tính phí không thành công đầu tiên.
+
+<a name="refunding-charges"></a>
+### Hoàn trả
+
+Nếu bạn cần hoàn trả một phí đã được thanh toán trong Stripe, bạn có thể sử dụng phương thức `refund`. Phương thức này chấp nhận ID phí đã được thanh toán làm tham số duy nhất của nó:
+
+    $stripeCharge = $user->charge(100);
+
+    $user->refund($stripeCharge->id);
 
 <a name="invoices"></a>
 ## Hoá đơn

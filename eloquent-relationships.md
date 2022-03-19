@@ -7,8 +7,11 @@
     - [Một - Nhiều (Ngược lại)](#one-to-many-inverse)
     - [Nhiều - Nhiều](#many-to-many)
     - [Quan hệ thông qua trung gian](#has-many-through)
-    - [Quan hệ đa hình](#polymorphic-relations)
-    - [Quan hệ đa hình Nhiều - Nhiều](#many-to-many-polymorphic-relations)
+- [Quan hệ đa hình](#polymorphic-relationships)
+    - [Một - Một](#one-to-one-polymorphic-relations)
+    - [Một - Nhiều](#one-to-many-polymorphic-relations)
+    - [Nhiều - Nhiều](#many-to-many-polymorphic-relations)
+    - [Tuỳ biến quan hệ đa hình](#custom-polymorphic-types)
 - [Query theo quan hệ](#querying-relations)
     - [Phương thức quan hệ và thuộc tính động](#relationship-methods-vs-dynamic-properties)
     - [Query quan hệ tồn tại](#querying-relationship-existence)
@@ -29,12 +32,15 @@
 
 Các bảng cơ sở dữ liệu thường được quan hệ với nhau. Ví dụ: một bài post trên một blog có thể có nhiều comment hoặc một order có thể có quan hệ với người dùng đã đặt nó. Eloquent giúp quản lý và làm việc với những quan hệ này một cách dễ dàng hơn và hỗ trợ một số loại quan hệ khác nhau như sau:
 
+<div class="content-list" markdown="1">
 - [Một - Một](#one-to-one)
 - [Một - Nhiều](#one-to-many)
 - [Nhiều - Nhiều](#many-to-many)
 - [Quan hệ thông qua trung gian](#has-many-through)
-- [Quan hệ đa hình](#polymorphic-relations)
-- [Quan hệ đa hình Nhiều - Nhiều](#many-to-many-polymorphic-relations)
+- [Một - Một (đa hình)](#one-to-one-polymorphic-relations)
+- [Một - Nhiều (đa hình)](#one-to-many-polymorphic-relations)
+- [Nhiều - Nhiều (đa hình)](#many-to-many-polymorphic-relations)
+</div>
 
 <a name="defining-relationships"></a>
 ## Định nghĩa quan hệ
@@ -123,7 +129,7 @@ Nếu model cha của bạn không sử dụng cột `id` làm khóa chính ho�
 <a name="one-to-many"></a>
 ### Một - Nhiều
 
-Quan hệ "một-nhiều" có thể được sử dụng để định nghĩa các quan hệ mà trong đó một model sở hữu nhiều model khác. Ví dụ, một post trên blog có thể có nhiều comment. Giống như tất cả các quan hệ Eloquent khác, quan hệ một-nhiều được định nghĩa bằng cách set một hàm trên model Eloquent của bạn:
+Quan hệ một-nhiều có thể được sử dụng để định nghĩa các quan hệ mà trong đó một model sở hữu nhiều model khác. Ví dụ, một post trên blog có thể có nhiều comment. Giống như tất cả các quan hệ Eloquent khác, quan hệ một-nhiều được định nghĩa bằng cách set một hàm trên model Eloquent của bạn:
 
     <?php
 
@@ -152,7 +158,7 @@ Khi quan hệ đã được định nghĩa xong, bạn có thể truy cập vào
         //
     }
 
-Tất nhiên, vì tất cả các quan hệ cũng đóng vai trò như là một query builder, nên bạn có thể thêm các ràng buộc cho những comment được lấy ra bằng cách gọi phương thức `comments` và tiếp tục thêm các điều kiện vào trong truy vấn:
+Vì tất cả các quan hệ cũng đóng vai trò như là một query builder, nên bạn có thể thêm các ràng buộc cho những comment được lấy ra bằng cách gọi phương thức `comments` và tiếp tục thêm các điều kiện vào trong truy vấn:
 
     $comment = App\Post::find(1)->comments()->where('title', 'foo')->first();
 
@@ -242,7 +248,7 @@ Khi quan hệ đã được định nghĩa xong, bạn có thể truy cập đ�
         //
     }
 
-Tất nhiên, giống như tất cả các loại quan hệ khác, bạn có thể gọi phương thức `roles` để tiếp tục thêm các ràng buộc truy vấn trên quan hệ đó:
+Giống như tất cả các loại quan hệ khác, bạn có thể gọi phương thức `roles` để tiếp tục thêm các ràng buộc truy vấn trên quan hệ đó:
 
     $roles = App\User::find(1)->roles()->orderBy('name')->get();
 
@@ -357,6 +363,30 @@ Khi định nghĩa model `UserRole`, chúng ta sẽ extend nó từ class `Pivot
         //
     }
 
+Bạn có thể kết hợp `using` và `withPivot` để lấy ra các cột từ bảng trung gian. Ví dụ: bạn có thể lấy ra cột `created_by` và `updated_by` từ bảng trung gian `UserRole` bằng cách truyền tên cột vào phương thức `withPivot`:
+
+    <?php
+
+    namespace App;
+
+    use Illuminate\Database\Eloquent\Model;
+
+    class Role extends Model
+    {
+        /**
+         * The users that belong to the role.
+         */
+        public function users()
+        {
+            return $this->belongsToMany('App\User')
+                            ->using('App\UserRole')
+                            ->withPivot([
+                                'created_by',
+                                'updated_by'
+                            ]);
+        }
+    }
+
 <a name="has-many-through"></a>
 ### Quan hệ thông qua trung gian
 
@@ -416,12 +446,99 @@ Các quy ước thông thường dành cho các khóa ngoại Eloquent cũng s�
         }
     }
 
-<a name="polymorphic-relations"></a>
-### Quan hệ đa hình
+<a name="polymorphic-relationships"></a>
+## Quan hệ đa hình
+
+Quan hệ đa hình cho phép một model mục tiêu thuộc về nhiều loại model khác nhau bằng cách sử dụng một kết nối duy nhất.
+
+<a name="one-to-one-polymorphic-relations"></a>
+### Một - Một (đa hình)
 
 #### Table Structure
 
-Quan hệ đa hình cho phép một model thuộc về nhiều hơn một model trên một liên kết. Ví dụ: hãy tưởng tượng user trong application của bạn có thể "comment" cả post và video. Sử dụng các quan hệ đa hình, bạn có thể sử dụng bảng `comments` cho cả hai tình huống này. Trước tiên, hãy xem cấu trúc bảng cần thiết để xây dựng quan hệ này:
+Quan hệ đa hình một - một tương tự như quan hệ một - một đơn giản; tuy nhiên, model mục tiêu có thể thuộc về nhiều loại model khác nhau trên một liên kết duy nhất. Ví dụ: một blog `Post` và một `User` có thể chia sẻ mối quan hệ với model `Image`. Sử dụng quan hệ đa hình 1-1 cho phép bạn có một list các hình ảnh duy nhất được sử dụng cho cả post trên blog và tài khoản user. Đầu tiên, hãy xem cấu trúc bảng sau:
+
+    posts
+        id - integer
+        name - string
+
+    users
+        id - integer
+        name - string
+
+    images
+        id - integer
+        url - string
+        imageable_id - integer
+        imageable_type - string
+
+Hãy chú ý đến các cột `imageable_id` và `imageable_type` trong bảng `images`. Cột `imageable_id` sẽ chứa giá trị ID của post hoặc user, trong khi cột `imageable_type` sẽ chứa tên class của model được kết nối. Cột `imageable_type` sẽ được sử dụng bởi Eloquent để xác định xem "loại" model nào sẽ trả về khi truy xuất quan hệ `imageable`.
+
+#### Cấu trúc Model
+
+Tiếp theo, hãy xem xét đến các định nghĩa model cần thiết để xây dựng mối quan hệ này:
+
+    <?php
+
+    namespace App;
+
+    use Illuminate\Database\Eloquent\Model;
+
+    class Image extends Model
+    {
+        /**
+         * Get all of the owning imageable models.
+         */
+        public function imageable()
+        {
+            return $this->morphTo();
+        }
+    }
+
+    class Post extends Model
+    {
+        /**
+         * Get the post's image.
+         */
+        public function image()
+        {
+            return $this->morphOne('App\Image', 'imageable');
+        }
+    }
+
+    class User extends Model
+    {
+        /**
+         * Get the user's image.
+         */
+        public function image()
+        {
+            return $this->morphOne('App\Image', 'imageable');
+        }
+    }
+
+#### Lấy qua quan hệ
+
+Khi bảng cơ sở dữ liệu và các model của bạn đã được xác định xong, bạn có thể lấy ra các mối quan hệ của bạn thông qua các model. Ví dụ, để lấy ra image cho một post, chúng ta có thể sử dụng thuộc tính động `image`:
+
+    $post = App\Post::find(1);
+
+    $image = $post->image;
+
+Bạn cũng có thể lấy ra model gốc từ model đa hình bằng cách truy cập vào tên của phương thức mà thực hiện lệnh gọi đến `morphTo`. Trong trường hợp này, đó là phương thức `imageable` trên model `Image`. Vì vậy, chúng ta sẽ truy cập vào phương thức đó dưới dạng một thuộc tính động như sau:
+
+    $image = App\Image::find(1);
+
+    $imageable = $image->imageable;
+
+Quan hệ `imageable` trên model `Image` sẽ trả về một instance `Post` hoặc `User`, tùy thuộc vào loại model nào sở hữu image đó.
+
+<a name="one-to-many-polymorphic-relations"></a>
+### Một - Nhiều (đa hình)
+
+#### Table Structure
+
+Quan hệ đa hình một-nhiều sẽ giống với quan hệ một-nhiều bình thường; tuy nhiên phía nhiều cho phép nhiều hơn một model trên một liên kết. Ví dụ: hãy tưởng tượng user trong application của bạn có thể "comment" cả post và video. Sử dụng các quan hệ đa hình, bạn có thể sử dụng bảng `comments` cho cả hai tình huống này. Trước tiên, hãy xem cấu trúc bảng cần thiết để xây dựng quan hệ này:
 
     posts
         id - integer
@@ -439,9 +556,7 @@ Quan hệ đa hình cho phép một model thuộc về nhiều hơn một model 
         commentable_id - integer
         commentable_type - string
 
-Hai cột quan trọng nhất cần lưu ý ở đây là cột `commentable_id` và cột `commentable_type` trong bảng `comments`. Cột `commentable_id` sẽ chứa giá trị ID của post hoặc video, trong khi cột `commentable_type` sẽ chứa tên class của model sở hữu nó. Cột `commentable_type` là cách ORM sẽ xác định "loại" của model nào sẽ trả về khi truy cập vào quan hệ `commentable`.
-
-#### Model Structure
+#### Cấu trúc Model
 
 Tiếp theo, hãy xem các định nghĩa model cần thiết để xây dựng quan hệ này:
 
@@ -484,7 +599,7 @@ Tiếp theo, hãy xem các định nghĩa model cần thiết để xây dựng 
         }
     }
 
-#### Retrieving Quan hệ đa hình
+#### Lấy quan hệ
 
 Khi bảng cơ sở dữ liệu và model của bạn đã được định nghĩa xong, bạn có thể truy cập vào quan hệ này thông qua các model của bạn. Ví dụ: để truy cập đến tất cả các comment cho một post, chúng ta có thể sử dụng thuộc tính động `comments`:
 
@@ -502,25 +617,12 @@ Bạn cũng có thể lấy ra chủ sở hữu của một quan hệ đa hình 
 
 Quan hệ `commentable` trên model `Comment` sẽ trả về một instance `Post` hoặc `Video`, tùy thuộc vào loại model nào đang sở hữu comment đó.
 
-#### Custom Polymorphic Types
-
-Mặc định, Laravel sẽ sử dụng tên của class để lưu vào loại model cho quan hệ này. Chẳng hạn, như ví dụ mẫu ở trên, một `Comment` có thể thuộc về một `Post` hoặc một `Video`, thì mặc định cột `commentable_type` sẽ phải lưu một giá trị là `App\Post` hoặc `App\Video`. Tuy nhiên, nếu bạn muốn tách cơ sở dữ liệu ra khỏi cấu trúc folder trong application của bạn. Trong trường hợp đó, bạn có thể định nghĩa một "morph map" quan hệ để hướng dẫn Eloquent sử dụng một cái tên khác cho các model thay vì sử dụng tên class của các model đó:
-
-    use Illuminate\Database\Eloquent\Relations\Relation;
-
-    Relation::morphMap([
-        'posts' => 'App\Post',
-        'videos' => 'App\Video',
-    ]);
-
-Bạn có thể đăng ký `morphMap` trong hàm `boot` của `AppServiceProvider` hoặc tạo một service provider riêng nếu bạn muốn.
-
 <a name="many-to-many-polymorphic-relations"></a>
-### Quan hệ đa hình Nhiều - Nhiều
+### Nhiều - Nhiều (đa hình)
 
 #### Table Structure
 
-Ngoài các kiểu quan hệ đa hình truyền thống, bạn cũng có thể định nghĩa thêm các kiểu quan hệ đa hình "nhiều-nhiều". Ví dụ: model `Post` và `Video` của một blog có thể dùng quan hệ đa hình với một model `Tag`. Sử dụng quan hệ đa hình nhiều-nhiều cho phép bạn có một danh sách các tag được dùng trên các post và video. Đầu tiên, hãy xem cấu trúc bảng:
+Quan hệ đa hình nhiều-nhiều phức tạp hơn một chút so với quan hệ `morphOne` và `morphMany`. Ví dụ: model `Post` và `Video` của một blog có thể dùng quan hệ đa hình với một model `Tag`. Sử dụng quan hệ đa hình nhiều-nhiều cho phép bạn có một danh sách các tag được dùng trên các post và video. Đầu tiên, hãy xem cấu trúc bảng:
 
     posts
         id - integer
@@ -539,7 +641,7 @@ Ngoài các kiểu quan hệ đa hình truyền thống, bạn cũng có thể �
         taggable_id - integer
         taggable_type - string
 
-#### Model Structure
+#### Cấu trúc Model
 
 Tiếp theo, chúng ta đã sẵn sàng để định nghĩa các quan hệ cho các model. Các model `Post` và `Video` đều sẽ có một phương thức `tags` gọi đến phương thức `morphToMany` trên class Eloquent:
 
@@ -589,7 +691,7 @@ Tiếp theo, trên model `Tag`, bạn sẽ định nghĩa một phương thức 
         }
     }
 
-#### Retrieving The Relationship
+#### Lấy qua quan hệ
 
 Khi các bảng và các model của bạn đã được định nghĩa xong, bạn có thể truy cập vào các quan hệ này thông qua model của bạn. Ví dụ: để truy cập vào tất cả các tag của một post, bạn có thể sử dụng thuộc tính động `tags`:
 
@@ -606,6 +708,20 @@ Bạn cũng có thể lấy ra một chủ sở hữu của một quan hệ đa 
     foreach ($tag->videos as $video) {
         //
     }
+
+<a name="custom-polymorphic-types"></a>
+### Custom Polymorphic Types
+
+Mặc định, Laravel sẽ sử dụng tên của class để lưu vào loại model cho quan hệ này. Chẳng hạn, như ví dụ như quan hệ một-nhiều ở trên, một `Comment` có thể thuộc về một `Post` hoặc một `Video`, mặc định cột `commentable_type` sẽ phải lưu một giá trị là `App\Post` hoặc `App\Video`. Tuy nhiên, nếu bạn muốn tách cơ sở dữ liệu ra khỏi cấu trúc folder trong application của bạn. Trong trường hợp đó, bạn có thể định nghĩa một "morph map" quan hệ để hướng dẫn Eloquent sử dụng một cái tên khác cho các model thay vì sử dụng tên class của các model đó:
+
+    use Illuminate\Database\Eloquent\Relations\Relation;
+
+    Relation::morphMap([
+        'posts' => 'App\Post',
+        'videos' => 'App\Video',
+    ]);
+
+Bạn có thể đăng ký `morphMap` trong hàm `boot` của `AppServiceProvider` hoặc tạo một service provider riêng nếu bạn muốn.
 
 <a name="querying-relations"></a>
 ## Query theo quan hệ
@@ -667,15 +783,20 @@ Bạn cũng có thể khai báo thêm các toán tử và số lượng để t�
 
 Các câu lệnh `has` lồng nhau cũng có thể được khởi tạo bằng cách sử dụng ký tự "chấm". Ví dụ: bạn có thể lấy ra tất cả các post có ít nhất một comment và một vote:
 
-    // Retrieve all posts that have at least one comment with votes...
+    // Retrieve posts that have at least one comment with votes...
     $posts = App\Post::has('comments.votes')->get();
 
 Nếu bạn cần nhiều hơn thế nữa, bạn có thể sử dụng các phương thức `whereHas` hoặc `orWhereHas` để set các điều kiện "where" trên các truy vấn `has` của bạn. Các phương thức này cho phép bạn thêm các ràng buộc tùy biến vào một ràng buộc quan hệ, chẳng hạn như kiểm tra nội dung của một comment:
 
-    // Retrieve all posts with at least one comment containing words like foo%
+    // Retrieve posts with at least one comment containing words like foo%
     $posts = App\Post::whereHas('comments', function ($query) {
         $query->where('content', 'like', 'foo%');
     })->get();
+
+    // Retrieve posts with at least ten comments containing words like foo%
+    $posts = App\Post::whereHas('comments', function ($query) {
+        $query->where('content', 'like', 'foo%');
+    }, '>=', 10)->get();
 
 <a name="querying-relationship-absence"></a>
 ### Query quan hệ không tồn tại
@@ -728,6 +849,14 @@ Bạn cũng có thể thêm tên gọi khác cho một kết quả đếm quan h
     echo $posts[0]->comments_count;
 
     echo $posts[0]->pending_comments_count;
+
+Nếu bạn đang kết hợp `withCount` với câu lệnh `select`, thì hãy đảm bảo là bạn đang gọi phương thức `withCount` sau phương thức `select`:
+
+    $query = App\Post::select(['title', 'body'])->withCount('comments');
+
+    echo $posts[0]->title;
+    echo $posts[0]->body;
+    echo $posts[0]->comments_count;
 
 <a name="eager-loading"></a>
 ## Eager Loading
@@ -798,17 +927,19 @@ Bạn có thể không phải lúc nào cũng cần mọi cột của quan hệ 
 <a name="constraining-eager-loads"></a>
 ### Rằng buộc khi eager loading
 
-Thỉnh thoảng bạn có thể muốn eager load một quan hệ, nhưng cũng muốn khai báo thêm các ràng buộc truy vấn cho quan hệ eager load đó. Và đây là một ví dụ cho điều đó:
+Thỉnh thoảng bạn có thể muốn eager load một quan hệ, nhưng cũng muốn khai báo thêm các điều kiện truy vấn cho quan hệ eager load đó. Và đây là một ví dụ cho điều đó:
 
     $users = App\User::with(['posts' => function ($query) {
         $query->where('title', 'like', '%first%');
     }])->get();
 
-Trong ví dụ này, Eloquent sẽ chỉ eager load các post mà trong đó cột `title` của post sẽ chứa từ `first`. Tất nhiên, bạn có thể gọi các phương thức [query builder](/docs/{{version}}/queries) khác để tùy biến thêm cho thao tác eager loading:
+Trong ví dụ này, Eloquent sẽ chỉ eager load các post mà trong đó cột `title` của post sẽ chứa từ `first`. Bạn có thể gọi các phương thức [query builder](/docs/{{version}}/queries) khác để tùy biến thêm cho thao tác eager loading:
 
     $users = App\User::with(['posts' => function ($query) {
         $query->orderBy('created_at', 'desc');
     }])->get();
+
+> {note} Phương thức query builder `limit` và `take` có thể không sử dụng được khi bạn đang eager loading.
 
 <a name="lazy-eager-loading"></a>
 ### Lazy Eager Loading
@@ -864,6 +995,18 @@ Nếu bạn cần lưu nhiều model quan hệ trong cùng một lúc, bạn có
         new App\Comment(['message' => 'Another comment.']),
     ]);
 
+<a name="the-push-method"></a>
+#### Lưu đệ quy quan hệ và model
+
+Nếu bạn muốn `save` model của bạn và tất cả các quan hệ liên quan đến nó, bạn có thể sử dụng phương thức `push`:
+
+    $post = App\Post::find(1);
+
+    $post->comments[0]->message = 'Message';
+    $post->comments[0]->author->name = 'Author Name';
+
+    $post->push();
+
 <a name="the-create-method"></a>
 ### Phương thức create
 
@@ -889,6 +1032,8 @@ Bạn có thể sử dụng phương thức `createMany` để tạo nhiều mod
             'message' => 'Another new comment.',
         ],
     ]);
+
+Bạn cũng có thể sử dụng các phương thức `findOrNew`, `firstOrNew`, `firstOrCreate` và `updateOrCreate` để [tạo và cập nhật model trên các quan hệ](https://laravel.com/docs/{{version}}/eloquent#other-creation-methods).
 
 <a name="updating-belongs-to-relationships"></a>
 ### Quan hệ thuộc về

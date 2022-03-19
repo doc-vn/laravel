@@ -19,7 +19,7 @@ Hầu hết các ứng dụng web đều cung cấp một cách để người d
 <a name="resetting-database"></a>
 ## Các chú ý về database
 
-Để bắt đầu, hãy chú ý model `App\User` của bạn phải được implement từ contract `Illuminate\Contracts\Auth\CanResetPassword`. Tất nhiên, model `App\User` đi kèm với framework Laravel đã implement interface này và sử dụng trait `Illuminate\Auth\Passwords\CanResetPassword` để chứa các phương thức để implement interface đó.
+Để bắt đầu, hãy chú ý model `App\User` của bạn phải được implement từ contract `Illuminate\Contracts\Auth\CanResetPassword`. Model `App\User` đi kèm với framework Laravel đã implement interface này và sử dụng trait `Illuminate\Auth\Passwords\CanResetPassword` để chứa các phương thức để implement interface đó.
 
 #### Generating The Reset Token Table Migration
 
@@ -94,4 +94,3 @@ Bạn có thể dễ dàng sửa class notification được sử dụng để g
     {
         $this->notify(new ResetPasswordNotification($token));
     }
-

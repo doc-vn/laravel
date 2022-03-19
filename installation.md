@@ -15,7 +15,7 @@
 <a name="server-requirements"></a>
 ### Yêu cầu server
 
-Laravel framework có nhiều yêu cầu về server. Dĩ nhiên, tất cả những yêu cầu đó đều đã được máy ảo [Laravel Homestead](/docs/{{version}}/homestead) cung cấp, vì vậy chúng tôi rất khuyến khích bạn dùng Homestead làm nơi phát triển ở local.
+Laravel framework có nhiều yêu cầu về server. Tất cả những yêu cầu đó đều đã được máy ảo [Laravel Homestead](/docs/{{version}}/homestead) cung cấp, vì vậy chúng tôi rất khuyến khích bạn dùng Homestead làm nơi phát triển ở local.
 
 Tuy nhiên, nếu bạn không muốn dùng Homestead, thì bạn hãy chắc chắn là server của bạn đã cài đặt những package dưới đây:
 
@@ -28,6 +28,7 @@ Tuy nhiên, nếu bạn không muốn dùng Homestead, thì bạn hãy chắc ch
 - XML PHP Extension
 - Ctype PHP Extension
 - JSON PHP Extension
+- BCMath PHP Extension
 </div>
 
 <a name="installing-laravel"></a>
@@ -39,7 +40,7 @@ Laravel dùng [Composer](https://getcomposer.org) để quản lý các library.
 
 Đầu tiên, hãy download Laravel Installer bằng câu lệnh composer dưới đây:
 
-    composer global require "laravel/installer"
+    composer global require laravel/installer
 
 Hãy chắc chắn rằng laravel installer đã được cài đặt vào trong thư mục global của composer, để bạn có thể chạy lệnh `laravel` này tại bất kỳ thư mục nào mà bạn muốn tạo project. Thư mục global của composer này sẽ tồn tại ở các vị trí khác nhau tuỳ theo hệ điều hành của bạn, nhưng dưới đây là một số vị trí cơ bản theo hệ điều hành:
 
@@ -56,7 +57,7 @@ Sau khi đã cài đặt xong, lệnh `laravel new` sẽ tạo một project m�
 
 Hoặc, bạn cũng có thể cài đặt laravel bằng cách chạy lệnh `create-project` trong terminal của bạn:
 
-    composer create-project --prefer-dist laravel/laravel blog "5.6.*"
+    composer create-project --prefer-dist laravel/laravel blog "5.7.*"
 
 #### Local Development Server
 
@@ -64,7 +65,7 @@ Nếu bạn đã cài đặt PHP trong local của bạn, bạn muốn dùng l�
 
     php artisan serve
 
-Và dĩ nhiên, bạn sẽ có nhiều lựa chọn hơn thông qua [Homestead](/docs/{{version}}/homestead) và [Valet](/docs/{{version}}/valet).
+Bạn sẽ có nhiều lựa chọn hơn thông qua [Homestead](/docs/{{version}}/homestead) và [Valet](/docs/{{version}}/valet).
 
 <a name="configuration"></a>
 ### Cấu hình
@@ -114,6 +115,9 @@ Nếu file `.htaccess` đi cùng với Laravel không hoạt động với Apach
     Options +FollowSymLinks -Indexes
     RewriteEngine On
 
+    RewriteCond %{HTTP:Authorization} .
+    RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteRule ^ index.php [L]
@@ -126,4 +130,4 @@ Nếu bạn đang sử dụng Nginx, lệnh dưới đây nằm trong file confi
         try_files $uri $uri/ /index.php?$query_string;
     }
 
-Và dĩ nhiên, khi bạn dùng [Homestead](/docs/{{version}}/homestead) hoặc [Valet](/docs/{{version}}/valet), URLs sẽ được tự động cài đặt.
+Khi bạn dùng [Homestead](/docs/{{version}}/homestead) hoặc [Valet](/docs/{{version}}/valet), URLs sẽ được tự động cài đặt.

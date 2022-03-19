@@ -23,7 +23,7 @@ Bất cứ khi nào bạn định nghĩa một HTML form trong ứng dụng củ
 
 #### CSRF Tokens và JavaScript
 
-Khi xây dụng một application mà điều khiển bằng JavaScript, sẽ rất thuận tiện nếu thư viện JavaScript HTTP của bạn tự động gắn mã token CSRF vào mỗi request. Mặc định, file `resources/assets/js/bootstrap.js` sẽ đăng ký giá trị của thẻ meta `csrf-token` với thư viện Axios HTTP. Nếu bạn không sử dụng thư viện này, bạn sẽ cần phải tự cài đặt hành vi này cho application của bạn.
+Khi xây dụng một application mà điều khiển bằng JavaScript, sẽ rất thuận tiện nếu thư viện JavaScript HTTP của bạn tự động gắn mã token CSRF vào mỗi request. Mặc định, file `resources/js/bootstrap.js` sẽ đăng ký giá trị của thẻ meta `csrf-token` với thư viện Axios HTTP. Nếu bạn không sử dụng thư viện này, bạn sẽ cần phải tự cài đặt hành vi này cho application của bạn.
 
 <a name="csrf-excluding-uris"></a>
 ## Loại bỏ các URI khỏi CSRF Protection
@@ -69,7 +69,7 @@ Sau khi bạn đã tạo thẻ `meta`, bạn có thể cài đặt một thư vi
         }
     });
 
-> {tip} Mặc định, file `resources/assets/js/bootstrap.js` đã cài đặt giá trị của thẻ meta `csrf-token` với thư viện Axios HTTP. Nên nếu bạn không sử dụng thư viện này, bạn sẽ cần phải tự cài đặt hành vi này cho ứng dụng của bạn.
+> {tip} Mặc định, file `resources/js/bootstrap.js` đã cài đặt giá trị của thẻ meta `csrf-token` với thư viện Axios HTTP. Nên nếu bạn không sử dụng thư viện này, bạn sẽ cần phải tự cài đặt hành vi này cho ứng dụng của bạn.
 
 <a name="csrf-x-xsrf-token"></a>
 ## X-XSRF-TOKEN

@@ -2,21 +2,21 @@
 
 - [Cấu trúc phiên bản](#versioning-scheme)
 - [Chính sách hỗ trợ](#support-policy)
-- [Laravel 5.6](#laravel-5.6)
+- [Laravel 5.7](#laravel-5.7)
 
 <a name="versioning-scheme"></a>
 ## Cấu trúc phiên bản
 
 Cấu trúc của phiên bản của Laravel được duy trì theo quy ước như sau: `paradigm.major.minor`. Các phiên bản được phát hành chính thức của framework được phát hành sáu tháng một lần (tháng 2 và tháng 8), trong khi các bản phát hành nhỏ hơn có thể được phát hành thường xuyên hơn, có thể là mỗi tuần. Các bản phát hành nhỏ sẽ **không bao giờ** chứa các thay đổi mà có thể dẫn đến hệ thống của bạn bị lỗi.
 
-Khi sủ dụng framework Laravel hoặc các component của nó từ application của bạn hoặc từ package, bạn phải luôn luôn sử dụng một ràng buộc phiên bản, chẳng hạn như là `5.5.*`, Vì các bản phát hành chính thức của Laravel có thể chứa các thay đổi mà có thể làm hệ thống của bạn bị lỗi. Tuy nhiên, chúng tôi sẽ cố gắng đảm bảo rằng: bạn có thể cập nhật lên bản phát hành chính thức trong một ngày hoặc ít hơn.
+Khi sủ dụng framework Laravel hoặc các component của nó từ application của bạn hoặc từ package, bạn phải luôn luôn sử dụng một ràng buộc phiên bản, chẳng hạn như là `5.7.*`, Vì các bản phát hành chính thức của Laravel có thể chứa các thay đổi mà có thể làm hệ thống của bạn bị lỗi. Tuy nhiên, chúng tôi sẽ cố gắng đảm bảo rằng: bạn có thể cập nhật lên bản phát hành chính thức trong một ngày hoặc ít hơn.
 
 Các bản phát hành thay đổi Paradigm được phân tách qua nhiều năm và đại diện cho những thay đổi căn bản trong kiến trúc và quy ước của framework. Hiện tại, chưa có bản phát hành nào mà cần phải thay đổi Paradigm được phát triển trong hiện tại.
 
 <a name="support-policy"></a>
 ## Chính sách hỗ trợ
 
-Đối với các bản phát hành hỗ trợ dài hạn, chẳng hạn như Laravel 5.5, các bản sửa lỗi được cung cấp trong 2 năm và các bản sửa lỗi bảo mật được cung cấp trong 3 năm. Những bản phát hành này cung cấp các hỗ trợ và bảo trì dài nhất. Đối với các bản phát hành bình thường, các bản sửa lỗi được cung cấp trong 6 tháng và các bản sửa lỗi bảo mật được cung cấp trong 1 năm.
+Đối với các bản phát hành hỗ trợ dài hạn, chẳng hạn như Laravel 5.5, các bản sửa lỗi được cung cấp trong 2 năm và các bản sửa lỗi bảo mật được cung cấp trong 3 năm. Những bản phát hành này cung cấp các hỗ trợ và bảo trì dài nhất. Đối với các bản phát hành bình thường, các bản sửa lỗi được cung cấp trong 6 tháng và các bản sửa lỗi bảo mật được cung cấp trong 1 năm. Đối với tất cả các thư viện, bao gồm cả Lumen, chỉ bản phát hành mới nhất mới nhận được các bản sửa lỗi.
 
 | Version | Release | Bug Fixes Until | Security Fixes Until |
 | --- | --- | --- | --- |
@@ -27,165 +27,124 @@ Các bản phát hành thay đổi Paradigm được phân tách qua nhiều nă
 | 5.4 | ngày 24 tháng 1 năm 2017 | ngày 24 tháng 7 năm 2017| ngày 24 tháng 1 năm 2018 |
 | 5.5 (LTS) | ngày 30 tháng 8 năm 2017 | ngày 30 tháng 8 năm 2019 | ngày 30 tháng 8 năm 2020 |
 | 5.6 | ngày 7 tháng 2 năm 2018 | ngày 7 tháng 8 năm 2018 | ngày 7 tháng 2 năm 2019 |
+| 5.7 | ngày 4 tháng 9 năm 2018 | ngày 4 tháng 3 năm 2019 | ngày 4 tháng 9 năm 2019 |
 
-<a name="laravel-5.6"></a>
-## Laravel 5.6
+<a name="laravel-5.7"></a>
+## Laravel 5.7
 
-Laravel 5.6 tiếp tục những cải tiến đã được thực hiện trong Laravel 5.5 bằng cách nâng cấp hệ thống ghi log, task schedule trên một server, cải tiến chuyển hoá model, giới hạn số lượt truy cập, các class broadcast channel, API resource controller, cải tiến định dạng ngày tháng của Eloquent, bí danh Blade component, hỗ trợ hàm hash Argon2, thêm package Collision và hơn thế nữa. Ngoài ra, tất cả các front-end đã được nâng cấp lên Bootstrap 4.
+Laravel 5.7 sẽ tiếp tục những cải tiến mà được thực hiện trong Laravel 5.6 bằng cách giới thiệu [Laravel Nova](https://nova.laravel.com) với tùy chọn xác minh email cho authentication scaffolding, hỗ trợ guest user trong authorization gate và policy, cải tiến việc test trên console, tích hợp Symfony `dump-server`, hỗ trợ ngôn ngữ trong thông báo và một hàng loạt các bản sửa lỗi và cải tiến sử dụng khác.
 
-Tất cả các component của Symfony mà được Laravel sử dụng đều đã được nâng cấp lên phiên bản Symfony `~4.0`.
+### Laravel Nova
 
-Việc phát hành Laravel 5.6 trùng với việc phát hành [Spark 6.0](https://spark.laravel.com), đây là bản nâng cấp lớn đầu tiên của Laravel Spark kể từ khi phát hành. Spark 6.0 giới thiệu giá per-seat cho Stripe và Braintree, localization, Bootstrap 4, giao diện người dùng nâng cao và hỗ trợ Stripe Elements.
+[Laravel Nova](https://nova.laravel.com) là một bảng điều khiển quản trị tốt và đẹp nhất dành cho các ứng dụng Laravel. Tính năng chính của Nova là khả năng quản lý các bản ghi cơ sở dữ liệu của bạn bằng Eloquent. Ngoài ra, Nova cung cấp các hỗ trợ cho các bộ lọc, tìm kiếm chuyên sâu, hành động, queue action, số liệu, authorization, custom tool, custom card, custom field, và nhiều hơn thế nữa.
 
-> {tip} Tài liệu này sẽ chỉ tóm tắt những cải tiến cần chú ý nhất đối với framework; nhưng, nếu bạn cần xem các thay đổi một cách kỹ lưỡng hơn thì bạn có thể xem [trên GitHub](https://github.com/laravel/framework/blob/5.6/CHANGELOG-5.6.md)..
+Để tìm hiểu thêm về Laravel Nova, hãy xem [Nova website](https://nova.laravel.com).
 
-### Logging Improvements
+### Email Verification
 
-Laravel 5.6 mang đến những cải tiến lớn cho hệ thống ghi log. Tất cả cấu hình ghi log được lưu trong file cấu hình `config/logging.php` mới. Giờ đây, bạn có thể dễ dàng xây dựng các "stack" logging để gửi tlog message đến nhiều trình xử lý log khác nhau. Ví dụ: bạn có thể gửi tất cả các message cấp độ `debug` vào log hệ thống trong khi gửi các message cấp độ `error` vào Slack để team của bạn có thể nhanh chóng xử lý các lỗi:
+Laravel 5.7 giới thiệu thêm tùy chọn xác minh email vào authentication scaffolding trong framework. Để phù hợp với tính năng này, cột timestamp `email_verified_at` đã được thêm vào migration của bảng `users` mặc định trong framework.
 
-    'channels' => [
-        'stack' => [
-            'driver' => 'stack',
-            'channels' => ['syslog', 'slack'],
-        ],
-    ],
-
-Ngoài ra, giờ đây việc tùy chỉnh các channel log cũng dễ dàng hơn bằng cách sử dụng chức năng "tap" mới của hệ thống ghi log. Để biết thêm thông tin, hãy xem [tài liệu đầy đủ về ghi log](/docs/{{version}}/logging).
-
-### Single Server Task Scheduling
-
-> {note} Để sử dụng tính năng này, ứng dụng của bạn phải sử dụng driver cache `memcached` hoặc `redis` làm driver cache mặc định của ứng dụng của bạn. Ngoài ra, tất cả các server phải được giao tiếp với cùng một server cache trung tâm.
-
-Nếu ứng dụng của bạn đang chạy trên nhiều server, bạn có thể giới hạn schedule job chỉ được chạy trên một server duy nhất. Ví dụ: giả sử bạn đang có một task schedule là tạo một báo cáo vào mỗi tối thứ Sáu. Nếu schedule của bạn đang chạy trên ba server worker, thì task schedule sẽ được chạy trên cả ba server và tạo báo cáo ba lần. Không tốt!
-
-Để yêu cầu task chỉ được chạy trên một server, hãy sử dụng phương thức `onOneServer` khi bạn định nghĩa task schedule. Server đầu tiên nhận được task sẽ dùng một atomic lock trên job đó để ngăn các server khác chạy cùng một task vào cùng một thời điểm:
-
-    $schedule->command('report:generate')
-             ->fridays()
-             ->at('17:00')
-             ->onOneServer();
-
-### Dynamic Rate Limiting
-
-Khi chỉ định [giới hạn số lượt truy cập](/docs/{{version}}/routing#rate-limiting) trên một nhóm các route trong các bản phát hành trước của Laravel, bạn buộc phải cung cấp số lượng request tối đa:
-
-    Route::middleware('auth:api', 'throttle:60,1')->group(function () {
-        Route::get('/user', function () {
-            //
-        });
-    });
-
-Trong Laravel 5.6, bạn có thể linh hoạt chỉ định số lượng request tối đa dựa vào một thuộc tính của model `User`. Ví dụ: nếu model `User` của bạn chứa thuộc tính `rate_limit`, bạn có thể truyền tên của thuộc tính đó vào middleware `throttle` để nó sử dụng để tính toán số lượng request tối đa:
-
-    Route::middleware('auth:api', 'throttle:rate_limit,1')->group(function () {
-        Route::get('/user', function () {
-            //
-        });
-    });
-
-### Broadcast Channel Classes
-
-Nếu ứng dụng của bạn sử dụng nhiều channel khác nhau, thì file `routes/channels.php` của bạn có thể trở nên rất cồng kềnh. Vì vậy, thay vì sử dụng Closure để cấp quyền cho các channel, bạn có thể sử dụng các class channel. Để tạo một class channel mới, hãy sử dụng lệnh Artisan `make:channel`. Lệnh này sẽ lưu một class channel mới vào trong thư mục `App/Broadcasting`.
-
-    php artisan make:channel OrderChannel
-
-Tiếp theo, đăng ký channel của bạn vào trong file `routes/channels.php`:
-
-    use App\Broadcasting\OrderChannel;
-
-    Broadcast::channel('order.{order}', OrderChannel::class);
-
-Cuối cùng, bạn có thể viết các logic cấp quyền cho channel của bạn vào trong phương thức `join` của class channel. Phương thức `join` sẽ chứa cùng một logic với code mà bạn thường viết trong Closure cấp quyền channel của bạn. Tất nhiên, bạn cũng có thể tận dụng lợi thế của liên kết model channel:
+Để nhắc người dùng mới phải đăng ký xác minh email của họ, model `User` phải được implement bằng interface `MustVerifyEmail`:
 
     <?php
 
-    namespace App\Broadcasting;
+    namespace App;
 
-    use App\User;
-    use App\Order;
+    use Illuminate\Notifications\Notifiable;
+    use Illuminate\Contracts\Auth\MustVerifyEmail;
+    use Illuminate\Foundation\Auth\User as Authenticatable;
 
-    class OrderChannel
+    class User extends Authenticatable implements MustVerifyEmail
     {
-        /**
-         * Create a new channel instance.
-         *
-         * @return void
-         */
-        public function __construct()
-        {
-            //
-        }
-
-        /**
-         * Authenticate the user's access to the channel.
-         *
-         * @param  \App\User  $user
-         * @param  \App\Order  $order
-         * @return array|bool
-         */
-        public function join(User $user, Order $order)
-        {
-            return $user->id === $order->user_id;
-        }
+        // ...
     }
 
-### API Controller Generation
+Sau khi model `User` đã được implement bằng interface `MustVerifyEmail`, người dùng mới sẽ nhận được một email chứa link xác minh. Khi link này đã được nhấp vào, Laravel sẽ tự động ghi lại thời gian xác minh của người dùng đó vào trong cơ sở dữ liệu và chuyển hướng người dùng đến vị trí bạn chọn.
 
-Khi khai báo một resource route mà sẽ được sử dụng bởi các API, bạn sẽ muốn loại bỏ các route mà phải nhập form HTML như `create` và` edit`. Để tạo một API resource controller mà không chứa các phương thức đó, bây giờ bạn có thể sử dụng switch `--api` khi chạy lệnh `make:controller`:
+A `verified` middleware has been added to the default application's HTTP kernel. This middleware may be attached to routes that should only allow verified users:
+Mặc định, một middleware `verified` đã được thêm vào file HTTP kernel của ứng dụng. Middleware này có thể được gắn với các route chỉ cho phép những người dùng đã được xác minh mới có thể được đi qua:
 
-    php artisan make:controller API/PhotoController --api
+    'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
 
-### Model Serialization Improvements
+> {tip} Để tìm hiểu thêm về xác minh email, hãy xem [tài liệu đầy đủ hơn về nó](/docs/{{version}}/verification).
 
-Trong các bản phát hành trước của Laravel, các model queue sẽ không khôi phục lại được các quan hệ mà đã được load. Trong Laravel 5.6, các quan hệ mà đã được load trên model thì khi queue model, nó sẽ được tự động load lại khi job được queue xử lý.
+### Guest User Gates / Policies
 
-### Eloquent Date Casting
+Trong các phiên bản trước của Laravel, các authorization gate và policy sẽ tự động trả về giá trị `false` cho những người chưa được authenticate vào ứng dụng của bạn. Tuy nhiên, bây giờ bạn có thể cho phép những người dùng đó pass qua kiểm tra authorization này bằng cách khai báo "optional" hoặc cung cấp giá trị mặc định là `null` cho tham số người dùng:
 
-Giờ đây, bạn có thể tùy biến định dạng của cột date trong Eloquent. Để bắt đầu, hãy chỉ định định dạng date mà bạn mong muốn trong khai báo cast. Sau khi đã được chỉ định, định dạng đó sẽ được sử dụng khi chuyển hóa model thành một mảng hoặc JSON:
+    Gate::define('update-post', function (?User $user, Post $post) {
+        // ...
+    });
 
-    protected $casts = [
-        'birthday' => 'date:Y-m-d',
-        'joined_at' => 'datetime:Y-m-d H:00',
-    ];
+### Symfony Dump Server
 
-### Blade Component Aliases
+Laravel 5.7 cung cấp khả năng tích hợp với lệnh `dump-server` của Symfony thông qua [một package bởi Marcel Pociot](https://github.com/beyondcode/laravel-dump-server). Để bắt đầu, hãy chạy lệnh Artisan `dump-server`:
 
-Nếu các component Blade của bạn được lưu trữ trong một thư mục con, bạn có thể muốn đặt tên bí danh cho chúng để dễ dàng truy cập hơn. Ví dụ, hãy tưởng tượng một component Blade được lưu trữ trong thư mục `resources/views/components/alert.blade.php`. Bạn có thể sử dụng phương thức `component` để đặt tên bí danh cho component từ `components.alert` thành `alert`.
+    php artisan dump-server
 
-    Blade::component('components.alert', 'alert');
+Khi máy chủ đã được khởi động, tất cả các lệnh gọi đến hàm `dump` sẽ được hiển thị trong cửa sổ console `dump-server` thay vì trong trình duyệt của bạn, cho phép bạn kiểm tra các giá trị mà không làm ảnh hưởng đến HTTP response output của bạn.
 
-Khi component đã được đặt tên bí danh, bạn có thể render nó bằng cách sử dụng lệnh sau:
+### Notification Localization
 
-    @alert('alert', ['type' => 'danger'])
-        You are not allowed to access this resource!
-    @endalert
+Laravel bây giờ đã cho phép bạn gửi các thông báo bằng những ngôn ngữ khác, khác với ngôn ngữ mặc định của application và thậm chí sẽ ghi nhớ ngôn ngữ này nếu thông báo được queue.
 
-Bạn có thể bỏ qua các parameter của component nếu nó không có thêm slot:
+Để thực hiện điều này, class `Illuminate\Notifications\Notification` đã cung cấp một phương thức `locale` để set ngôn ngữ mà bạn mong muốn. Ứng dụng của bạn sẽ thay đổi thành ngôn ngữ này khi thông báo đang được định dạng và sau đó hoàn trả về ngôn ngữ trước đó khi quá trình định dạng hoàn tất:
 
-    @alert
-        You are not allowed to access this resource!
-    @endalert
+    $user->notify((new InvoicePaid($invoice))->locale('es'));
 
-### Argon2 Password Hashing
+Thay đổi ngôn ngữ cho nhiều thông báo cùng một lúc cũng có thể đạt được thông qua facade `Notification`:
 
-Nếu bạn đang xây dựng ứng dụng từ PHP 7.2.0 trở lên, Laravel hiện hỗ trợ hàm hash mật khẩu thông qua thuật toán Argon2. Driver hash mặc định cho ứng dụng của bạn được lưu trong file cấu hình `config/hashing.php` mới.
+    Notification::locale('es')->send($users, new InvoicePaid($invoice));
 
-### UUID Methods
+### Console Testing
 
-Laravel 5.6 giới thiệu hai phương thức mới để tạo UUID: `Str::uuid` và `Str::orderedUuid`. Phương thức `orderedUuid` sẽ tạo một timestamp vào đầu UUID để lập index dễ dàng và hiệu quả hơn cho các cơ sở dữ liệu như MySQL. Mỗi phương thức này trả về một đối tượng `Ramsey\Uuid\Uuid`:
+Laravel 5.7 cho phép bạn dễ dàng "mô phỏng" một input đầu vào của người dùng cho các lệnh trên console của bạn bằng phương thức `expectsQuestion`. Ngoài ra, bạn có thể chỉ định exit code và text mà bạn muốn output cho lệnh console bằng cách sử dụng phương thức `assertExitCode` và `expectsOutput`. Ví dụ: hãy xem xét lệnh console sau:
 
-    use Illuminate\Support\Str;
+    Artisan::command('question', function () {
+        $name = $this->ask('What is your name?');
 
-    return (string) Str::uuid();
+        $language = $this->choice('Which language do you program in?', [
+            'PHP',
+            'Ruby',
+            'Python',
+        ]);
 
-    return (string) Str::orderedUuid();
+        $this->line('Your name is '.$name.' and you program in '.$language.'.');
+    });
 
-### Collision
+Bạn có thể kiểm tra lệnh này bằng bài test sau sử dụng các phương thức `expectsQuestion`, `expectsOutput`, và `assertExitCode`:
 
-Từ bây giờ, mặc định ứng dụng `laravel/laravel` chứa một phụ thuộc Composer `dev` cho package [Collision](https://github.com/nunomaduro/collision) do Nuno Maduro tạo ra. Package này cung cấp các báo cáo lỗi tuyệt vời khi tương tác với ứng dụng Laravel của bạn trên dòng lệnh:
+    /**
+     * Test a console command.
+     *
+     * @return void
+     */
+    public function test_console_command()
+    {
+        $this->artisan('question')
+             ->expectsQuestion('What is your name?', 'Taylor Otwell')
+             ->expectsQuestion('Which language do you program in?', 'PHP')
+             ->expectsOutput('Your name is Taylor Otwell and you program in PHP.')
+             ->assertExitCode(0);
+    }
 
-<img src="https://raw.githubusercontent.com/nunomaduro/collision/stable/docs/example.png" width="600" height="388">
+### URL Generator & Callable Syntax
 
-### Bootstrap 4
+Thay vì chỉ chấp nhận các chuỗi string, trình tạo URL của Laravel bây giờ đã chấp nhận cú pháp "callable" khi tạo URL cho các action của controller:
 
-Tất cả các giao diện người dùng như phần authentication và Vue component mẫu đều đã được nâng cấp lên [Bootstrap 4](https://blog.getbootstrap.com/2018/01/18/bootstrap-4/). Mặc định, việc tạo các link phân trang cũng được set mặc định là Bootstrap 4.
+    action([UserController::class, 'index']);
+
+### Paginator Links
+
+Laravel 5.7 cho phép bạn kiểm soát số lượng link sẽ được hiển thị ở mỗi bên của "window" URL của paginator. Theo mặc định, ba link sẽ được hiển thị ở mỗi bên của paginator chính. Tuy nhiên, bạn có thể kiểm soát số này bằng phương thức `onEachSide`:
+
+    {{ $paginator->onEachSide(5)->links() }}
+
+### Filesystem Read / Write Streams
+
+Tích hợp Flysystem của Laravel bây giờ cung cấp các phương thức `readStream` và `writeStream`:
+
+    Storage::disk('s3')->writeStream(
+        'remote-file.zip',
+        Storage::disk('local')->readStream('local-file.zip')
+    );

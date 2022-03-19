@@ -9,6 +9,7 @@
     - [Timezones](#timezones)
     - [Ngăn task chồng nhau](#preventing-task-overlaps)
     - [Chạy task trên một server](#running-tasks-on-one-server)
+    - [Background Tasks](#background-tasks)
     - [Chế độ bảo trì](#maintenance-mode)
 - [Task Output](#task-output)
 - [Task Hook](#task-hooks)
@@ -37,7 +38,7 @@ Bạn có thể định nghĩa tất cả các task đã được schedule của
 
     namespace App\Console;
 
-    use DB;
+    use Illuminate\Support\Facades\DB;
     use Illuminate\Console\Scheduling\Schedule;
     use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 
@@ -99,7 +100,7 @@ Phương thức `exec` có thể được sử dụng để ra lệnh cho hệ �
 <a name="schedule-frequency-options"></a>
 ### Tuỳ chọn tần suất Schedule
 
-Tất nhiên, sẽ có nhiều schedule mà bạn có thể khai báo cho task của bạn:
+Sẽ có nhiều schedule mà bạn có thể khai báo cho task của bạn:
 
 Method  | Description
 ------------- | -------------
@@ -141,6 +142,7 @@ Dưới đây là danh sách các ràng buộc schedule có thể được thêm
 Method  | Description
 ------------- | -------------
 `->weekdays();`  |  Giới hạn task chỉ chạy vào các ngày trong tuần
+`->weekends();`  |  Giới hạn task chỉ chạy vào cuối tuần
 `->sundays();`  |  Giới hạn task chỉ chạy vào chủ nhật
 `->mondays();`  |  Giới hạn task chỉ chạy vào thứ hai
 `->tuesdays();`  |  Giới hạn task chỉ chạy vào thứ ba
@@ -150,6 +152,7 @@ Method  | Description
 `->saturdays();`  |  Giới hạn task chỉ chạy vào thứ bảy
 `->between($start, $end);`  | Giới hạn task chỉ chạy chỉ chạy vào giữa thời gian start và end
 `->when(Closure);`  |  Giới hạn task chỉ chạy trên một điều kiện đúng
+`->environments($env);`  |  Giới hạn task trong các môi trường cụ thể
 
 #### Between Time Constraints
 
@@ -180,6 +183,14 @@ Phương thức `skip` có thể được xem là ngược lại với phương 
     });
 
 Khi sử dụng kết hợp nhiều phương thức `when`, lệnh đã được schedule sẽ chỉ được thực thi nếu tất cả các điều kiện `when` đều trả về giá trị `true`.
+
+#### Environment Constraints
+
+Phương thức `environments` có thể được sử dụng để chỉ thực thi các task trong các môi trường đã cho:
+
+    $schedule->command('emails:send')
+                ->daily()
+                ->environments(['staging', 'production']);
 
 <a name="timezones"></a>
 ### Timezones
@@ -218,6 +229,15 @@ Nếu ứng dụng của bạn đang chạy trên nhiều server, bạn có th�
                     ->fridays()
                     ->at('17:00')
                     ->onOneServer();
+
+<a name="background-tasks"></a>
+### Background Tasks
+
+Mặc định, nhiều lệnh được schedule vào cùng một thời gian sẽ phải chạy theo tuần tự. Nếu bạn có những lệnh cần phải chạy dài, thì điều này có thể khiến các lệnh tiếp theo sẽ chạy muộn hơn so với dự kiến. Nếu bạn muốn chạy các lệnh trong background để tất cả chúng có thể được chạy đồng thời, thì bạn có thể sử dụng phương thức `runInBackground`:
+
+    $schedule->command('analytics:report')
+             ->daily()
+             ->runInBackground();
 
 <a name="maintenance-mode"></a>
 ### Chế độ bảo trì
@@ -273,6 +293,13 @@ Sử dụng các phương thức `pingBefore` và `thenPing`, schedule có thể
              ->pingBefore($url)
              ->thenPing($url);
 
-Sử dụng tính năng `pingBefore($url)` hoặc `thenPing($url)` sẽ cần thư viện Guzzle HTTP. Bạn có thể thêm thư viện Guzzle này vào dự án của bạn bằng trình quản lý package Composer:
+Các phương thức `pingBeforeIf` và `thenPingIf` chỉ có thể được sử dụng để ping đến một URL nếu điều kiện đưa vào là `true`:
+
+    $schedule->command('emails:send')
+             ->daily()
+             ->pingBeforeIf($condition, $url)
+             ->thenPingIf($condition, $url);
+
+Tất cả các phương thức ping sẽ đều cần thư viện Guzzle HTTP. Bạn có thể thêm thư viện Guzzle này vào project của bạn bằng trình quản lý package Composer:
 
     composer require guzzlehttp/guzzle

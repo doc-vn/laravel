@@ -12,7 +12,7 @@
 <a name="introduction"></a>
 ## Giới thiệu
 
-Laravel cung cấp một số helper để hỗ trợ bạn tạo URL cho application của bạn. Tất nhiên, những điều này chủ yếu hữu ích khi tạo link trong các template và API response hoặc khi tạo response chuyển hướng đến một phần khác trong application của bạn.
+Laravel cung cấp một số helper để hỗ trợ bạn tạo URL cho application của bạn. Những điều này chủ yếu hữu ích khi tạo link trong các template và API response hoặc khi tạo response chuyển hướng đến một phần khác trong application của bạn.
 
 <a name="the-basics"></a>
 ## Cơ bản
@@ -66,6 +66,16 @@ Helper `route` có thể được sử dụng để tạo URL tới một route 
 Bạn thường sẽ phải tạo URL bằng primary key của [Eloquent models](/docs/{{version}}/eloquent). Vì lý do đó, bạn có thể truyền trực tiếp các model Eloquent làm giá trị tham số. Helper `route` sẽ tự động lấy primary key trong model đó ra:
 
     echo route('post.show', ['post' => $post]);
+
+Helper `route` cũng có thể được sử dụng để tạo URL cho các route có nhiều tham số:
+
+    Route::get('/post/{post}/comment/{comment}', function () {
+        //
+    })->name('comment.show');
+
+    echo route('comment.show', ['post' => 1, 'comment' => 3]);
+
+    // http://example.com/post/1/comment/3
 
 <a name="signed-urls"></a>
 ### Signed URLs
@@ -125,6 +135,12 @@ Sau khi bạn đã đăng ký xong middleware trong file kernel của bạn, b�
 Hàm `action` giúp tạo ra một URL cho một controller action. Bạn không cần phải truyền toàn bộ namespace của controller đó vào. Mà thay vào đó, chỉ cần truyền tên class của controller mà được liên kết với namespace `App\Http\Controllers`:
 
     $url = action('HomeController@index');
+
+Bạn cũng có thể tham chiếu đến các action với cú pháp mảng:
+
+    use App\Http\Controllers\HomeController;
+
+    $url = action([HomeController::class, 'index']);
 
 Nếu phương thức controller yêu cầu truyền một route parameter, bạn có thể truyền chúng làm tham số thứ hai cho hàm như sau:
 

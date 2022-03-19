@@ -1,6 +1,7 @@
 # Artisan Console
 
 - [Giới thiệu](#introduction)
+    - [Tinker (REPL)](#tinker)
 - [Viết Command](#writing-commands)
     - [Tạo Command](#generating-commands)
     - [Cấu trúc Command](#command-structure)
@@ -29,11 +30,32 @@ Mỗi lệnh cũng chứa một lệnh "help" để hiển thị và mô tả c�
 
     php artisan help migrate
 
-#### Laravel REPL
+<a name="tinker"></a>
+### Tinker (REPL)
 
 Tất cả các application của Laravel đều chứa Tinker, một REPL cung cấp bởi package [PsySH](https://github.com/bobthecow/psysh). Tinker cho phép bạn tương tác trực tiếp với toàn bộ application Laravel của bạn trên command line, bao gồm ORM Eloquent, job, event, vv... Để vào được môi trường Tinker, hãy chạy lệnh Artisan `tinker`:
 
     php artisan tinker
+
+Bạn có thể export file cấu hình của Tinker bằng lệnh `vendor:publish`:
+
+    php artisan vendor:publish --provider="Laravel\Tinker\TinkerServiceProvider"
+
+#### Command Whitelist
+
+Tinker có sử dụng một danh sách trắng để xác định các lệnh Artisan nào được phép chạy. Mặc định, bạn có thể chạy các lệnh `clear-compiled`, `down`, `env`, `inspire`, `migrate`, `optimize`, và `up`. Nếu bạn muốn thêm các lệnh khác, bạn có thể thêm chúng vào mảng `commands` trong file cấu hình `tinker.php` của bạn:
+
+    'commands' => [
+        // App\Console\Commands\ExampleCommand::class,
+    ],
+
+#### Alias Blacklist
+
+Thông thường, Tinker sẽ tự động đặt bí danh cho các class khi bạn require chúng vào trong Tinker. Tuy nhiên, bạn có thể muốn không đặt bí danh cho một số class. Bạn có thể thực hiện điều này bằng cách thêm các class đó vào trong mảng `dont_alias` của file cấu hình `tinker.php` của bạn:
+
+    'dont_alias' => [
+        App\User::class,
+    ],
 
 <a name="writing-commands"></a>
 ## Viết Commands
@@ -54,7 +76,7 @@ Sau khi đã tạo xong command, bạn hãy thay đổi các thuộc tính `sign
 
 > {tip} Để code của bạn có thể tái sử dụng tốt hơn, thì cách tốt nhất là giữ cho các command của bạn được "nhẹ" và hãy để các application service hoàn thành nhiệm vụ đó cho bạn. Trong ví dụ dưới đây, hãy chú ý rằng chúng ta sẽ inject một service class để thực hiện một "công việc nặng" như việc gửi e-mail.
 
-Chúng ta hãy xem một ví dụ về command. Lưu ý rằng chúng ta có thể inject bất kỳ service nào mà chúng ta muốn vào hàm constructor hoặc hàm `handle` của command. Laravel [service container](/docs/{{version}}/container) sẽ tự động inject tất cả các phụ thuộc mà có trong khai báo của hàm constructor hoặc hàm `handle`:
+Chúng ta hãy xem một ví dụ về command. Lưu ý rằng chúng ta có thể inject bất kỳ service nào mà chúng ta muốn vào hàm `handle` của command. Laravel [service container](/docs/{{version}}/container) sẽ tự động inject tất cả các phụ thuộc đã được khai báo có trong phương thức đó:
 
     <?php
 
@@ -81,33 +103,24 @@ Chúng ta hãy xem một ví dụ về command. Lưu ý rằng chúng ta có th�
         protected $description = 'Send drip e-mails to a user';
 
         /**
-         * The drip e-mail service.
-         *
-         * @var DripEmailer
-         */
-        protected $drip;
-
-        /**
          * Create a new command instance.
          *
-         * @param  DripEmailer  $drip
          * @return void
          */
-        public function __construct(DripEmailer $drip)
+        public function __construct()
         {
             parent::__construct();
-
-            $this->drip = $drip;
         }
 
         /**
          * Execute the console command.
          *
+         * @param  \App\DripEmailer  $drip
          * @return mixed
          */
-        public function handle()
+        public function handle(DripEmailer $drip)
         {
-            $this->drip->send(User::find($this->argument('user')));
+            $drip->send(User::find($this->argument('user')));
         }
     }
 

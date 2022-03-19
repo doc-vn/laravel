@@ -20,7 +20,7 @@ Laravel sử dụng thư viện [Monolog](https://github.com/Seldaek/monolog) đ
 <a name="configuration"></a>
 ## Cấu hình
 
-Tất cả cấu hình cho hệ thống ghi log của ứng dụng của bạn được lưu trong file cấu hình `config/logging.php`. File này cho phép bạn cấu hình các channel log, vì vậy hãy đảm bảo là bạn đã xem qua các channel hiện có và các tùy chọn của chúng. Dĩ nhiên, chúng ta cũng sẽ xem xét một số tùy chọn phổ biến ở bên dưới.
+Tất cả cấu hình cho hệ thống ghi log của ứng dụng của bạn được lưu trong file cấu hình `config/logging.php`. File này cho phép bạn cấu hình các channel log, vì vậy hãy đảm bảo là bạn đã xem qua các channel hiện có và các tùy chọn của chúng. Chúng ta cũng sẽ xem xét một số tùy chọn phổ biến ở bên dưới.
 
 Mặc định, Laravel sẽ sử dụng channel `stack` để ghi log. Channel `stack` có thể được sử dụng để tổng hợp nhiều channel log thành một channel. Để biết thêm thông tin về cách xây dựng stack, hãy xem [tài liệu ở bên dưới](#building-log-stacks).
 
@@ -48,6 +48,16 @@ Name | Description
 `custom` | Một driver gọi một factory cụ thể để tạo ra một channel
 
 > {tip} Xem tài liệu về [tùy chỉnh channel nâng cao](#advanced-monolog-channel-customization) để tìm hiểu thêm về driver `monolog` và `custom`.
+
+#### Configuring The Single and Daily Channels
+
+Các channel `single` và `daily` có thêm ba tùy chọn cấu hình khác: `bubble`, `permission`, và `locking`.
+
+Name | Description | Default
+------------- | ------------- | -------------
+`bubble` | Cho biết messages đang được xử lý có được gửi sang channel khác sau khi xử lý xong hay không | `true`
+`permission` | Quyền của file log | `0644`
+`locking` | Cố gắng khóa file log trước khi ghi vào nó | `false`
 
 #### Configuring The Slack Channel
 

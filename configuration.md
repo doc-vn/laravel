@@ -5,6 +5,7 @@
     - [Loại biến môi trường](#environment-variable-types)
     - [Nhận về giá trị biến môi trường](#retrieving-environment-configuration)
     - [Xác định môi trường hiện tại](#determining-the-current-environment)
+    - [Ẩn các biến môi trường khỏi các trang gỡ lỗi](#hiding-environment-variables-from-debug)
 - [Nhận về biến config](#accessing-configuration-values)
 - [Caching các biến config](#configuration-caching)
 - [Chế độ bảo trì](#maintenance-mode)
@@ -74,6 +75,34 @@ Bạn cũng có thể truyền vào hàm `environment` tên của một môi tr�
     }
 
 > {tip} Môi trường hiện tại của application có thể bị ghi đè bởi một biến môi trường `APP_ENV` khác ở mức độ server. Nó có thể hữu ích khi mà bạn cần chia sẻ một application cho những môi trường khác, ví dụ bạn có thể ghi đè tên host đúng với môi trường mà bạn mong muốn trong config của server bạn.
+
+<a name="hiding-environment-variables-from-debug"></a>
+### Ẩn các biến môi trường khỏi các trang gỡ lỗi
+
+Khi có một lỗi và biến môi trường `APP_DEBUG` bằng `true`, thì trang gỡ lỗi sẽ hiển thị tất cả các biến môi trường và nội dung của chúng. Trong một số trường hợp, bạn có thể muốn không hiển thị một số biến nhất định. Bạn có thể thực hiện việc này bằng cách cập nhật tùy chọn `debug_blacklist` trong file cấu hình `config/app.php` của bạn.
+
+Có một số biến có trong cả biến môi trường và requet dữ liệu server. Do đó, bạn có thể cần đưa chúng vào blacklist cho cả `$_ENV` và `$_SERVER`:
+
+    return [
+
+        // ...
+
+        'debug_blacklist' => [
+            '_ENV' => [
+                'APP_KEY',
+                'DB_PASSWORD',
+            ],
+
+            '_SERVER' => [
+                'APP_KEY',
+                'DB_PASSWORD',
+            ],
+
+            '_POST' => [
+                'password',
+            ],
+        ],
+    ];
 
 <a name="accessing-configuration-values"></a>
 ## Nhận về biến config

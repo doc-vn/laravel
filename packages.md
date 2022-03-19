@@ -19,7 +19,7 @@
 
 Package là cách chính để thêm chức năng khác nhau cho Laravel. Các package có thể là bất cứ thứ gì từ việc làm việc với thời gian như [Carbon](https://github.com/briannesbitt/Carbon) hoặc toàn bộ framework BDD testing như [Behat](https://github.com/Behat/Behat).
 
-Tất nhiên, có nhiều loại package khác nhau. Một số package là độc lập, có nghĩa là chúng hoạt động với bất kỳ framework PHP nào. Carbon và Behat là các ví dụ về các package độc lập. Bất kỳ package nào trong số này có thể được sử dụng với Laravel bằng cách khai báo chúng vào trong file `composer.json` của bạn.
+Có nhiều loại package khác nhau. Một số package là độc lập, có nghĩa là chúng hoạt động với bất kỳ framework PHP nào. Carbon và Behat là các ví dụ về các package độc lập. Bất kỳ package nào trong số này có thể được sử dụng với Laravel bằng cách khai báo chúng vào trong file `composer.json` của bạn.
 
 Mặt khác, có các package khác sẽ được dành riêng để sử dụng với Laravel. Các package này có thể có các route, controller, view và được cấu hình dành riêng cho mục đích sử dụng application Laravel. Các hướng dẫn ở bên dưới sẽ chủ yếu nói về các package dành riêng cho Laravel.
 
@@ -95,7 +95,7 @@ Thông thường, bạn sẽ cần export file cấu hình của package vào th
         ]);
     }
 
-Bây giờ, khi người dùng chạy lệnh `vendor:publish` của Laravel, thì file cấu hình của bạn sẽ được sao chép đến vị trí export đã được chỉ định. Tất nhiên, khi file cấu hình của bạn đã được export, thì các giá trị của nó cũng có thể được truy cập như bất kỳ file cấu hình bình thường nào khác:
+Bây giờ, khi người dùng chạy lệnh `vendor:publish` của Laravel, thì file cấu hình của bạn sẽ được sao chép đến vị trí export đã được chỉ định. Khi file cấu hình của bạn đã được export, thì các giá trị của nó cũng có thể được truy cập như bất kỳ file cấu hình bình thường nào khác:
 
     $value = config('courier.option');
 

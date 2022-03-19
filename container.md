@@ -152,7 +152,7 @@ Thỉnh thoảng bạn cũng có thể có hai class sử dụng chung một int
                   return Storage::disk('local');
               });
 
-    $this->app->when(VideoController::class)
+    $this->app->when([VideoController::class, UploadController::class])
               ->needs(Filesystem::class)
               ->give(function () {
                   return Storage::disk('s3');
@@ -184,7 +184,7 @@ Khi các service đã được gắn thẻ, bạn có thể dễ dàng resolve t
 
 Phương thức `extend` cho phép sửa đổi các service đã được resolve. Ví dụ: khi một service đã được resolve, bạn có thể chạy thêm code để bổ sung hoặc cấu hình service đó. Phương thức `extend` chấp nhận một closure, sẽ trả về service đã được sửa đổi:
 
-    $this->app->extend(Service::class, function($service) {
+    $this->app->extend(Service::class, function ($service) {
         return new DecoratedService($service);
     });
 
@@ -277,4 +277,4 @@ Service container của Laravel là một implement của một interface [PSR-1
         //
     });
 
-> {note} Gọi phương thức `get` sẽ đưa ra một exception nếu tên đó chưa được liên kết vào container.
+Một ngoại lệ sẽ được đưa ra nếu định dang đã cho không thể resolve được. Ngoại lệ này sẽ là một instance của `Psr\Container\NotFoundExceptionInterface` nếu định dang này không bị ràng buộc. Nếu định dang này bị ràng buộc nhưng không thể resolve được, thì một instance của `Psr\Container\ContainerExceptionInterface` sẽ được đưa ra.

@@ -60,6 +60,8 @@ Laravel cung cấp một cách nhanh chóng để hỗ trợ tất cả các rou
 
 Lệnh này nên được sử dụng trên các application mới và sẽ cài đặt một số màn hình như màn hình đăng ký hoặc màn hình đăng nhập, ngoài ra lệnh này cũng cài đặt thêm một số route cho việc authentication. Một `HomeController` cũng sẽ được tạo để xử lý các request đăng nhập để vào màn hình chính của application của bạn.
 
+> {tip} Nếu ứng dụng của bạn không cần chức năng đăng ký, bạn có thể vô hiệu hóa nó bằng cách xóa class `RegisterController` và sửa khai báo route của bạn là: `Auth::routes(['register' => false]);`.
+
 <a name="included-views"></a>
 ### Views
 
@@ -74,7 +76,7 @@ Hiện tại bạn đã có các route và các view đã được setup sẵn t
 
 #### Tuỳ chỉnh path
 
-Khi người dùng được authenticate thành công, họ sẽ được chuyển hướng đến URI `/home`. Bạn có thể tùy chỉnh vị trí được chuyển hướng đến sau khi authenticate thành công bằng cách định nghĩa thêm một thuộc tính `redirectTo` trong `LoginController`, `RegisterController` và `ResetPasswordController`:
+Khi người dùng được authenticate thành công, họ sẽ được chuyển hướng đến URI `/home`. Bạn có thể tùy chỉnh vị trí được chuyển hướng đến sau khi authenticate thành công bằng cách định nghĩa thêm một thuộc tính `redirectTo` vào trong `LoginController`, `RegisterController`, `ResetPasswordController`, và `VerificationController`:
 
     protected $redirectTo = '/';
 
@@ -173,7 +175,7 @@ Ngoài ra, khi người dùng đã được authenticate, bạn có thể truy c
         // Only authenticated users may enter...
     })->middleware('auth');
 
-Tất nhiên, nếu bạn đang sử dụng [controllers](/docs/{{version}}/controllers), bạn có thể gọi phương thức `middleware` từ hàm khởi tạo của controller thay vì gắn trực tiếp vào định nghĩa route:
+Nếu bạn đang sử dụng [controllers](/docs/{{version}}/controllers), bạn có thể gọi phương thức `middleware` từ hàm khởi tạo của controller thay vì gắn trực tiếp vào định nghĩa route:
 
     public function __construct()
     {
@@ -182,19 +184,18 @@ Tất nhiên, nếu bạn đang sử dụng [controllers](/docs/{{version}}/cont
 
 #### Chuyển hướng người dùng chưa authentication
 
-Khi middleware `auth` phát hiện người dùng chưa được unauthorized, nó sẽ gửi về response JSON `401` hoặc, nếu request không phải là request AJAX, thì nó sẽ chuyển hướng người dùng tới [route mà đã được đặt tên là](/docs/{{version}}/routing#named-routes) `login`.
+Khi middleware `auth` phát hiện người dùng chưa được unauthorized, nó sẽ gửi về response JSON `401` hoặc, nếu request không phải là request AJAX, thì nó sẽ chuyển hướng người dùng tới [route mà đã được đặt tên là](/docs/{{version}}/routing#named-routes) `login`. Bạn có thể sửa hành động này bằng cách cập nhật phương thức `redirectTo` trong file `app/Http/Middleware/Authenticate.php` của bạn:
 
-Bạn có thể sửa hành động này bằng cách định nghĩa một hàm `unauthenticated` trong file `app/Exceptions/Handler.php`:
-
-    use Illuminate\Auth\AuthenticationException;
-
-    protected function unauthenticated($request, AuthenticationException $exception)
+    /**
+     * Get the path the user should be redirected to.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return string
+     */
+    protected function redirectTo($request)
     {
-        return $request->expectsJson()
-                    ? response()->json(['message' => $exception->getMessage()], 401)
-                    : redirect()->guest(route('login'));
+        return route('login');
     }
-
 
 #### Chỉ định một guard
 
@@ -213,7 +214,7 @@ Nếu bạn đang sử dụng class `LoginController` có sẵn của Laravel, t
 <a name="authenticating-users"></a>
 ## Authenticate user thủ công
 
-Tất nhiên, bạn không bắt buộc phải sử dụng các controller authentication đi kèm với Laravel. Nếu bạn chọn xóa các controller này, bạn sẽ cần quản lý authentication người dùng bằng cách sử dụng trực tiếp các lớp authentication Laravel. Đừng lo lắng, nó rất là dễ dàng!
+Chú ý là bạn không bị bắt buộc phải sử dụng các controller authentication đi kèm với Laravel. Nếu bạn chọn xóa các controller này, bạn sẽ cần quản lý authentication người dùng bằng cách sử dụng trực tiếp các lớp authentication Laravel. Đừng lo lắng, nó rất là dễ dàng!
 
 Chúng ta sẽ truy cập các service authentication của Laravel thông qua [facade](/docs/{{version}}/facades) `Auth`, vì vậy chúng ta cần đảm bảo là đã import facade `Auth` vào đầu class. Tiếp theo, hãy kiểm tra bằng phương thức `attempt`:
 
@@ -279,7 +280,7 @@ Tên được truyền vào trong phương thức `guard` phải là một trong
 <a name="remembering-users"></a>
 ### Nhớ tài khoản user
 
-Nếu bạn muốn cung cấp chức năng "remember me" trong application của bạn, bạn có thể truyền một giá trị boolean làm tham số thứ hai cho phương thức `attempt`, nó sẽ giữ cho người dùng được authenticate vô thời hạn hoặc cho đến khi họ đăng xuất. Tất nhiên, bảng `users` của bạn phải có cột `remember_token`, chuỗi này sẽ được sử dụng để lưu trữ mã token "remember me".
+Nếu bạn muốn cung cấp chức năng "remember me" trong application của bạn, bạn có thể truyền một giá trị boolean làm tham số thứ hai cho phương thức `attempt`, nó sẽ giữ cho người dùng được authenticate vô thời hạn hoặc cho đến khi họ đăng xuất. Bảng `users` của bạn phải có cột `remember_token`, chuỗi này sẽ được sử dụng để lưu trữ mã token "remember me".
 
     if (Auth::attempt(['email' => $email, 'password' => $password], $remember)) {
         // The user is being remembered...
@@ -298,14 +299,14 @@ Nếu bạn đang "remembering" một người dùng, bạn có thể sử dụn
 
 #### Authenticate với một instance user
 
-Nếu bạn cần đăng nhập một instance user hiện tại vào application của bạn, thì bạn có thể gọi phương thức `login` với instance user đó. Với điều kiện là đối tượng mà được truyền vào phải là một implementation của [contract](/docs/{{version}}/contracts) `Illuminate\Contracts\Auth\Authenticatable`. Tất nhiên, model `App\User` đi kèm với Laravel đã implement interface này:
+Nếu bạn cần đăng nhập một instance user hiện tại vào application của bạn, thì bạn có thể gọi phương thức `login` với instance user đó. Với điều kiện là đối tượng mà được truyền vào phải là một implementation của [contract](/docs/{{version}}/contracts) `Illuminate\Contracts\Auth\Authenticatable`. Model `App\User` đi kèm với Laravel đã implement interface này:
 
     Auth::login($user);
 
     // Login and "remember" the given user...
     Auth::login($user, true);
 
-Tất nhiên, bạn có thể chỉ định instance guard nào mà bạn muốn sử dụng:
+Bạn có thể chỉ định instance guard nào mà bạn muốn sử dụng:
 
     Auth::guard('admin')->login($user);
 

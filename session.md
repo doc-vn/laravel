@@ -179,7 +179,11 @@ Nếu bạn cần lưu dữ liệu flash của mình cho một số request, b�
 
 Phương thức `forget` sẽ xóa một phần dữ liệu ra khỏi session. Nếu bạn muốn xóa tất cả dữ liệu ra khỏi session, bạn có thể sử dụng phương thức `flush`:
 
+    // Forget a single key...
     $request->session()->forget('key');
+
+    // Forget multiple keys...
+    $request->session()->forget(['key1', 'key2']);
 
     $request->session()->flush();
 

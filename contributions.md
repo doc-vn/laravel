@@ -3,6 +3,7 @@
 - [Báo Bug](#bug-reports)
 - [Các kênh phát triển chính](#core-development-discussion)
 - [Branch nào?](#which-branch)
+- [Biên dịch Asset](#compiled-assets)
 - [Lỗ hổng bảo mật](#security-vulnerabilities)
 - [Coding Style](#coding-style)
     - [PHPDoc](#phpdoc)
@@ -30,10 +31,10 @@ Mã nguồn của Laravel được quản lý trên GitHub và có các reposito
 - [Laravel Homestead](https://github.com/laravel/homestead)
 - [Laravel Homestead Build Scripts](https://github.com/laravel/settler)
 - [Laravel Horizon](https://github.com/laravel/horizon)
-- [Laravel Nova](https://github.com/laravel/nova-issues)
 - [Laravel Passport](https://github.com/laravel/passport)
 - [Laravel Scout](https://github.com/laravel/scout)
 - [Laravel Socialite](https://github.com/laravel/socialite)
+- [Laravel Telescope](https://github.com/laravel/telescope)
 - [Laravel Website](https://github.com/laravel/laravel.com)
 </div>
 
@@ -42,18 +43,23 @@ Mã nguồn của Laravel được quản lý trên GitHub và có các reposito
 
 Bạn có thể đề xuất các tính năng mới hoặc các cải tiến về các hành động của Laravel trong Laravel Ideas [issue board](https://github.com/laravel/ideas/issues). Nếu bạn đề xuất một tính năng mới, vui lòng làm sẵn một số code cần thiết để hoàn thành tính năng này.
 
-Kênh `#internals` của team Slack [LaraChat](https://larachat.co) sẽ thảo luận về các lỗi, tính năng mới và triển khai các tính năng hiện tại. Taylor Otwell, maintainer của Laravel, thường có mặt trong kênh này vào các ngày trong tuần từ 8 giờ sáng đến 5 giờ chiều (UTC-06:00 or America/Chicago) và xuất hiện thường xuyên trong kênh vào các thời điểm khác.
+Kênh `#internals` của [Laravel Discord server](https://discordapp.com/invite/mPZNm7A) sẽ thảo luận về các lỗi, tính năng mới và triển khai các tính năng hiện tại. Taylor Otwell, maintainer của Laravel, thường có mặt trong kênh này vào các ngày trong tuần từ 8 giờ sáng đến 5 giờ chiều (UTC-06:00 or America/Chicago) và xuất hiện thường xuyên trong kênh vào các thời điểm khác.
 
 <a name="which-branch"></a>
 ## Branch nào?
 
-**Tất cả** các bản sửa lỗi phải được gửi đến branch ổn định mới nhất hoặc tới các branch LTS và branch hiện tại là (5.5). Các bản sửa lỗi sẽ **không** được gửi đến branch `master` trừ khi chúng sửa các tính năng đã tồn tại trong bản phát hành sắp tới.
+**Tất cả** các bản sửa lỗi phải được gửi đến branch ổn định mới nhất hoặc tới các [branch LTS hiện tại](/docs/{{version}}/releases#support-policy). Các bản sửa lỗi sẽ **không** được gửi đến branch `master` trừ khi chúng sửa các tính năng đã tồn tại trong bản phát hành sắp tới.
 
 Các tính năng **phụ** có **tương thích** với bản phát hành Laravel hiện tại thì có thể được gửi đến branch ổn định mới nhất.
 
 Các tính năng **chính** mới phải luôn được gửi đến branch `master`, nơi chứa bản phát hành Laravel sắp tới.
 
-Nếu bạn không chắc chắn tính năng của bạn là chính hay là phụ, vui lòng hỏi Taylor Otwell trong kênh `#internals` của nhóm Slack [LaraChat](https://larachat.co).
+Nếu bạn không chắc chắn tính năng của bạn là chính hay là phụ, vui lòng hỏi Taylor Otwell trong kênh `#internals` của [Laravel Discord server](https://discordapp.com/invite/mPZNm7A).
+
+<a name="compiled-assets"></a>
+## Biên dịch Asset
+
+Nếu bạn đang gửi một thay đổi sẽ ảnh hưởng đến các file đã được biên dịch, chẳng hạn như các file ở trong `resources/sass` hoặc `resources/js` của repository `laravel/laravel`, thì đừng commit các file đã biên dịch trên. Bởi vì, trên thực tế, do kích thước của file đó quá lớn, nên chúng sẽ không thể được review bởi người quản lý. Và điều này cũng có thể bị khai thác như là một cách để đưa mã độc vào trong source code của Laravel. Để ngăn chặn điều này, tất cả các file đã biên dịch sẽ được tạo và commit bởi những người quản lý source Laravel.
 
 <a name="security-vulnerabilities"></a>
 ## Lỗ hổng bảo mật
@@ -77,6 +83,7 @@ Dưới đây là một ví dụ mẫu về Laravel documentation hợp lệ. L�
      * @param  \Closure|string|null  $concrete
      * @param  bool  $shared
      * @return void
+     * @throws \Exception
      */
     public function bind($abstract, $concrete = null, $shared = false)
     {

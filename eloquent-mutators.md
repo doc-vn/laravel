@@ -49,7 +49,7 @@ Như bạn có thể thấy, giá trị ban đầu của cột được truyền
 
     $firstName = $user->first_name;
 
-Tất nhiên, bạn cũng có thể sử dụng accessor để trả về các giá trị mới, được tính toán từ các thuộc tính hiện có:
+Bạn cũng có thể sử dụng accessor để trả về các giá trị mới, được tính toán từ các thuộc tính hiện có:
 
     /**
      * Get the user's full name.
@@ -60,6 +60,8 @@ Tất nhiên, bạn cũng có thể sử dụng accessor để trả về các g
     {
         return "{$this->first_name} {$this->last_name}";
     }
+
+> {tip} Nếu bạn muốn thêm các giá trị đã được tính toán này vào mảng hoặc JSON được chuyển đổi của model, [bạn sẽ cần thêm chúng vào](https://laravel.com/docs/{{version}}/eloquent-serialization#appending-values-to-json).
 
 <a name="defining-a-mutator"></a>
 ### Định nghĩa một Mutator
@@ -97,7 +99,7 @@ Trong ví dụ này, hàm `setFirstNameAttribute` sẽ được gọi với giá
 <a name="date-mutators"></a>
 ## Date Mutator
 
-Mặc định, Eloquent sẽ chuyển đổi các cột `created_at` và `update_at` thành các instance của [Carbon](https://github.com/briannesbitt/Carbon), đây là một class được extend từ class `DateTime` của PHP, cung cấp rất nhiều phương thức hữu ích. Bạn có thể tùy biến những date nào sẽ bị chuyển đổi hay thậm chí là vô hiệu hoá những chuyển đổi này, bằng cách ghi đè thuộc tính `$dates` trong model của bạn:
+Mặc định, Eloquent sẽ chuyển đổi các cột `created_at` và `update_at` thành các instance của [Carbon](https://github.com/briannesbitt/Carbon), đây là một class được extend từ class `DateTime` của PHP, cung cấp rất nhiều phương thức hữu ích. Bạn có thể thêm các thuộc tính date bằng cách set thuộc tính `$dates` trong model của bạn:
 
     <?php
 
@@ -113,13 +115,13 @@ Mặc định, Eloquent sẽ chuyển đổi các cột `created_at` và `update
          * @var array
          */
         protected $dates = [
-            'created_at',
-            'updated_at',
-            'deleted_at'
+            'seen_at',
         ];
     }
 
-Khi một cột được coi là một date, bạn có thể set giá trị của nó thành một UNIX timestamp, một date string (`Y-m-d`), date-time string, và tất nhiên là một instance `DateTime` hoặc một instance `Carbon`, và các giá trị của date này sẽ tự động được lưu chính xác vào trong cơ sở dữ liệu của bạn:
+> {tip} Bạn có thể vô hiệu hóa các timestamp mặc định `create_at` và `updated_at` bằng cách set thuộc tính public `$timestamps` của model thành `false`.
+
+Khi một cột được coi là một date, thì bạn có thể set giá trị của nó thành một UNIX timestamp, một date string (`Y-m-d`), date-time string, hoặc là một instance `DateTime` / `Carbon`. Các giá trị của date này sẽ được chuyển đổi và lưu chính xác vào trong cơ sở dữ liệu của bạn:
 
     $user = App\User::find(1);
 
@@ -156,7 +158,7 @@ Mặc định, timestamp sẽ được định dạng là `'Y-m-d H:i:s'`. Nếu
 <a name="attribute-casting"></a>
 ## Attribute Casting
 
-Thuộc tính `$casts` trên model của bạn cung cấp một phương thức thuận tiện để chuyển đổi các thuộc tính thành các kiểu dữ liệu phổ biến. Thuộc tính `$casts` phải là một mảng trong đó khóa là tên của thuộc tính mà bạn muốn được chuyển và giá trị là loại bạn muốn chuyển đổi đến. Các kiểu cast được hỗ trợ là: `integer`, `real`, `float`, `double`, `string`, `boolean`, `object`, `array`, `collection`, `date`, `datetime`, và `timestamp`.
+Thuộc tính `$casts` trên model của bạn cung cấp một phương thức thuận tiện để chuyển đổi các thuộc tính thành các kiểu dữ liệu phổ biến. Thuộc tính `$casts` phải là một mảng trong đó khóa là tên của thuộc tính mà bạn muốn được chuyển và giá trị là loại bạn muốn chuyển đổi đến. Các kiểu cast được hỗ trợ là: `integer`, `real`, `float`, `double`, `decimal:<digits>`, `string`, `boolean`, `object`, `array`, `collection`, `date`, `datetime`, và `timestamp`. Khi chuyển sang loại `decimal`, bạn nên định nghĩa số ký tự, ví dụ như: `decimal:2`.
 
 Ví dụ: hãy chuyển thuộc tính `is_admin`, được lưu trong cơ sở dữ liệu của chúng ta dưới dạng một số integer (`0` và `1`) thành giá trị boolean:
 

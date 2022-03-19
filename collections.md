@@ -138,6 +138,7 @@ Trong phần còn lại của tài liệu này, chúng ta sẽ thảo luận v�
 [shift](#method-shift)
 [shuffle](#method-shuffle)
 [slice](#method-slice)
+[some](#method-some)
 [sort](#method-sort)
 [sortBy](#method-sortby)
 [sortByDesc](#method-sortbydesc)
@@ -156,14 +157,20 @@ Trong phần còn lại của tài liệu này, chúng ta sẽ thảo luận v�
 [unique](#method-unique)
 [uniqueStrict](#method-uniquestrict)
 [unless](#method-unless)
+[unlessEmpty](#method-unlessempty)
+[unlessNotEmpty](#method-unlessnotempty)
 [unwrap](#method-unwrap)
 [values](#method-values)
 [when](#method-when)
+[whenEmpty](#method-whenempty)
+[whenNotEmpty](#method-whennotempty)
 [where](#method-where)
 [whereStrict](#method-wherestrict)
+[whereBetween](#method-wherebetween)
 [whereIn](#method-wherein)
 [whereInStrict](#method-whereinstrict)
 [whereInstanceOf](#method-whereinstanceof)
+[whereNotBetween](#method-wherenotbetween)
 [whereNotIn](#method-wherenotin)
 [whereNotInStrict](#method-wherenotinstrict)
 [wrap](#method-wrap)
@@ -224,7 +231,7 @@ Phương thức `chunk` chia collection thành nhiều collection nhỏ hơn v�
 
     // [[1, 2, 3, 4], [5, 6, 7]]
 
-Phương thức này đặc biệt hữu ích trong [views](/docs/{{version}}/views) khi làm việc với các hệ thống grid như [Bootstrap](https://getbootstrap.com/css/#grid). Hãy tưởng tượng bạn có một collection các model [Eloquent](/docs/{{version}}/eloquent) mà bạn muốn hiển thị trong một grid:
+Phương thức này đặc biệt hữu ích trong [views](/docs/{{version}}/views) khi làm việc với các hệ thống grid như [Bootstrap](https://getbootstrap.com/docs/4.1/layout/grid/). Hãy tưởng tượng bạn có một collection các model [Eloquent](/docs/{{version}}/eloquent) mà bạn muốn hiển thị trong một grid:
 
     @foreach ($products->chunk(3) as $chunk)
         <div class="row">
@@ -250,7 +257,7 @@ Phương thức `collapse` sẽ thu gọn một tập hợp các mảng nhỏ th
 <a name="method-combine"></a>
 #### `combine()` {#collection-method}
 
-Phương thức `combine` sẽ kết hợp các key của collection với các giá trị của một mảng hoặc một collection khác:
+Phương thức `combine` sẽ lấy các value của collection để làm key và các giá trị sẽ lấy từ mảng hoặc một collection khác:
 
     $collection = collect(['name', 'age']);
 
@@ -509,6 +516,16 @@ Phương thức `every` có thể được sử dụng để xác minh rằng t�
     });
 
     // false
+
+Nếu một collection là trống, thì phương thức `every` sẽ trả về true:
+
+    $collection = collect([]);
+
+    $collection->every(function($value, $key) {
+        return $value > 2;
+    });
+
+    // true
 
 <a name="method-except"></a>
 #### `except()` {#collection-method}
@@ -806,11 +823,19 @@ Nếu bạn có nhiều tiêu chí nhóm, bạn có thể truyền vào dưới 
 
 Phương thức `has` sẽ xác định nếu một key đã cho có tồn tại trong collection hay không:
 
-    $collection = collect(['account_id' => 1, 'product' => 'Desk']);
+    $collection = collect(['account_id' => 1, 'product' => 'Desk', 'amount' => 5]);
 
     $collection->has('product');
 
     // true
+
+    $collection->has(['product', 'amount']);
+
+    // true
+
+    $collection->has(['amount', 'price']);
+
+    // false
 
 <a name="method-implode"></a>
 #### `implode()` {#collection-method}
@@ -1011,8 +1036,8 @@ Phương thức `mapSpread` sẽ lặp qua các item của collection, và truy�
 
     $chunks = $collection->chunk(2);
 
-    $sequence = $chunks->mapSpread(function ($odd, $even) {
-        return $odd + $even;
+    $sequence = $chunks->mapSpread(function ($even, $odd) {
+        return $even + $odd;
     });
 
     $sequence->all();
@@ -1048,7 +1073,7 @@ Phương thức `mapToGroups` sẽ nhóm các item của collection theo hàm ca
     /*
         [
             'Sales' => ['John Doe', 'Jane Doe'],
-            'Marketing' => ['Johhny Doe'],
+            'Marketing' => ['Johnny Doe'],
         ]
     */
 
@@ -1222,7 +1247,7 @@ Phương thức `partition` có thể được kết hợp với hàm PHP `list`
 
     $collection = collect([1, 2, 3, 4, 5, 6]);
 
-    list($underThree, $aboveThree) = $collection->partition(function ($i) {
+    list($underThree, $equalOrAboveThree) = $collection->partition(function ($i) {
         return $i < 3;
     });
 
@@ -1230,7 +1255,7 @@ Phương thức `partition` có thể được kết hợp với hàm PHP `list`
 
     // [1, 2]
 
-    $aboveThree->all();
+    $equalOrAboveThree->all();
 
     // [3, 4, 5, 6]
 
@@ -1521,6 +1546,11 @@ Nếu bạn muốn giới hạn kích thước của phần được trả về,
 
 Phần được trả lại sẽ mặc định giữ nguyên các key. Nếu bạn không muốn giữ các key gốc, bạn có thể sử dụng phương thức [`values`](#method-values) để reindex lại chúng.
 
+<a name="method-some"></a>
+#### `some()` {#collection-method}
+
+Bí danh cho phương thức [`contains`](#method-contains).
+
 <a name="method-sort"></a>
 #### `sort()` {#collection-method}
 
@@ -1761,7 +1791,7 @@ Phương thức tĩnh `times` sẽ tạo ra một collection mới bằng cách 
 Phương pháp này có thể hữu ích khi được kết hợp với các factory để tạo các model [Eloquent](/docs/{{version}}/eloquent):
 
     $categories = Collection::times(3, function ($number) {
-        return factory(Category::class)->create(['name' => 'Category #'.$number]);
+        return factory(Category::class)->create(['name' => "Category No. $number"]);
     });
 
     $categories->all();
@@ -1911,6 +1941,16 @@ Phương thức `unless` sẽ chạy hàm callback đã cho nếu như tham số
 
 Đối ngược với phương thức `unless`, hãy xem phương thức [`when`](#method-when).
 
+<a name="method-unlessempty"></a>
+#### `unlessEmpty()` {#collection-method}
+
+Bí danh cho phương thức [`whenNotEmpty`](#method-whennotempty).
+
+<a name="method-unlessnotempty"></a>
+#### `unlessNotEmpty()` {#collection-method}
+
+Bí danh cho phương thức [`whenEmpty`](#method-whenempty).
+
 <a name="method-unwrap"></a>
 #### `unwrap()` {#collection-method}
 
@@ -1970,6 +2010,88 @@ Phương thức `when` sẽ chạy callback đã cho khi mà tham số đầu ti
 
 Đối ngược với phương thức `when`, hãy xem phương thức [`unless`](#method-unless).
 
+<a name="method-whenempty"></a>
+#### `whenEmpty()` {#collection-method}
+
+Phương thức `whenEmpty` sẽ thực hiện lệnh callback đã cho khi collection là trống:
+
+    $collection = collect(['michael', 'tom']);
+
+    $collection->whenEmpty(function ($collection) {
+        return $collection->push('adam');
+    });
+
+    $collection->all();
+
+    // ['michael', 'tom']
+
+
+    $collection = collect();
+
+    $collection->whenEmpty(function ($collection) {
+        return $collection->push('adam');
+    });
+
+    $collection->all();
+
+    // ['adam']
+
+
+    $collection = collect(['michael', 'tom']);
+
+    $collection->whenEmpty(function($collection) {
+        return $collection->push('adam');
+    }, function($collection) {
+        return $collection->push('taylor');
+    });
+
+    $collection->all();
+
+    // ['michael', 'tom', 'taylor']
+
+Đối ngược với phương thức `whenEmpty`, hãy xem phương thức [`whenNotEmpty`](#method-whennotempty).
+
+<a name="method-whennotempty"></a>
+#### `whenNotEmpty()` {#collection-method}
+
+Phương thức `whenNotEmpty` sẽ thực hiện lệnh callback đã cho khi collection không trống:
+
+    $collection = collect(['michael', 'tom']);
+
+    $collection->whenNotEmpty(function ($collection) {
+        return $collection->push('adam');
+    });
+
+    $collection->all();
+
+    // ['michael', 'tom', 'adam']
+
+
+    $collection = collect();
+
+    $collection->whenNotEmpty(function ($collection) {
+        return $collection->push('adam');
+    });
+
+    $collection->all();
+
+    // []
+
+
+    $collection = collect();
+
+    $collection->whenNotEmpty(function($collection) {
+        return $collection->push('adam');
+    }, function($collection) {
+        return $collection->push('taylor');
+    });
+
+    $collection->all();
+
+    // ['taylor']
+
+Đối ngược với phương thức `whenNotEmpty`, hãy xem phương thức [`whenEmpty`](#method-whenempty).
+
 <a name="method-where"></a>
 #### `where()` {#collection-method}
 
@@ -1999,6 +2121,31 @@ Phương thức `where` sẽ sử dụng phép so sánh "lỏng lẻo" khi kiể
 #### `whereStrict()` {#collection-method}
 
 Phương thức này có cùng chức năng với phương thức [`where`](#method-where); tuy nhiên, tất cả các giá trị đều được so sánh bằng cách sử dụng so sánh "nghiêm ngặt".
+
+<a name="method-wherebetween"></a>
+#### `whereBetween()` {#collection-method}
+
+Phương thức `whereBetween` sẽ lọc collection trong một phạm vi nhất định:
+
+    $collection = collect([
+        ['product' => 'Desk', 'price' => 200],
+        ['product' => 'Chair', 'price' => 80],
+        ['product' => 'Bookcase', 'price' => 150],
+        ['product' => 'Pencil', 'price' => 30],
+        ['product' => 'Door', 'price' => 100],
+    ]);
+
+    $filtered = $collection->whereBetween('price', [100, 200]);
+
+    $filtered->all();
+
+    /*
+        [
+            ['product' => 'Desk', 'price' => 200],
+            ['product' => 'Bookcase', 'price' => 150],
+            ['product' => 'Door', 'price' => 100],
+        ]
+    */
 
 <a name="method-wherein"></a>
 #### `whereIn()` {#collection-method}
@@ -2042,6 +2189,30 @@ Phương thức `whereInstanceOf` sẽ lọc collection theo một loại class 
     ]);
 
     return $collection->whereInstanceOf(User::class);
+
+<a name="method-wherenotbetween"></a>
+#### `whereNotBetween()` {#collection-method}
+
+Phương thức `whereNotBetween` sẽ lọc bộ sưu tập trong một phạm vi nhất định:
+
+    $collection = collect([
+        ['product' => 'Desk', 'price' => 200],
+        ['product' => 'Chair', 'price' => 80],
+        ['product' => 'Bookcase', 'price' => 150],
+        ['product' => 'Pencil', 'price' => 30],
+        ['product' => 'Door', 'price' => 100],
+    ]);
+
+    $filtered = $collection->whereNotBetween('price', [100, 200]);
+
+    $filtered->all();
+
+    /*
+        [
+            ['product' => 'Chair', 'price' => 80],
+            ['product' => 'Pencil', 'price' => 30],
+        ]
+    */
 
 <a name="method-wherenotin"></a>
 #### `whereNotIn()` {#collection-method}
@@ -2112,7 +2283,7 @@ Phương thức `zip` sẽ nối các giá trị của mảng đã cho với cá
 <a name="higher-order-messages"></a>
 ## Higher Order Messages
 
-Collection cũng cung cấp hỗ trợ cho "higher order messages", đó là các cách rút gọn để thực hiện các hành động phổ biến có trên các collection. Các phương thức collection cung cấp các higher order message như sau: [`average`](#method-average), [`avg`](#method-avg), [`contains`](#method-contains), [`each`](#method-each), [`every`](#method-every), [`filter`](#method-filter), [`first`](#method-first), [`flatMap`](#method-flatmap), [`groupBy`](#method-groupby), [`keyBy`](#method-keyby), [`map`](#method-map), [`max`](#method-max), [`min`](#method-min), [`partition`](#method-partition), [`reject`](#method-reject), [`sortBy`](#method-sortby), [`sortByDesc`](#method-sortbydesc), [`sum`](#method-sum), and [`unique`](#method-unique).
+Collection cũng cung cấp hỗ trợ cho "higher order messages", đó là các cách rút gọn để thực hiện các hành động phổ biến có trên các collection. Các phương thức collection cung cấp các higher order message như sau: [`average`](#method-average), [`avg`](#method-avg), [`contains`](#method-contains), [`each`](#method-each), [`every`](#method-every), [`filter`](#method-filter), [`first`](#method-first), [`flatMap`](#method-flatmap), [`groupBy`](#method-groupby), [`keyBy`](#method-keyby), [`map`](#method-map), [`max`](#method-max), [`min`](#method-min), [`partition`](#method-partition), [`reject`](#method-reject), [`some`](#method-some), [`sortBy`](#method-sortby), [`sortByDesc`](#method-sortbydesc), [`sum`](#method-sum), anvad [`unique`](#method-unique).
 
 Mỗi higher order message có thể được truy cập giống như một thuộc tính động có trên một instance của collection. Chẳng hạn, hãy sử dụng higher order message `each` để gọi một phương thức ở trên mỗi đối tượng có trong một collection:
 

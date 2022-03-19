@@ -1,6 +1,7 @@
 # Laravel Socialite
 
 - [Giới thiệu](#introduction)
+- [Cập nhật Socialite](#upgrading-socialite)
 - [Cài đặt](#installation)
 - [Cấu hình](#configuration)
 - [Routing](#routing)
@@ -12,25 +13,32 @@
 <a name="introduction"></a>
 ## Giới thiệu
 
-Ngoài những cách authentication thông thường dựa trên form, Laravel cũng cung cấp thêm một số cách đơn giản, thuận tiện để authentication với các provider OAuth khác bằng cách sử dụng [Laravel Socialite](https://github.com/laravel/socialite). Socialite hiện hỗ trợ authentication với Facebook, Twitter, LinkedIn, Google, GitHub và Bitbucket.
+Ngoài những cách authentication thông thường dựa trên form, Laravel cũng cung cấp thêm một số cách đơn giản, thuận tiện để authentication với các provider OAuth khác bằng cách sử dụng [Laravel Socialite](https://github.com/laravel/socialite). Socialite hiện hỗ trợ authentication với Facebook, Twitter, LinkedIn, Google, GitHub, GitLab và Bitbucket.
 
 > {tip} Bộ chuyển đổi cho các nền tảng này được liệt kê trong trang web [Socialite Providers](https://socialiteproviders.netlify.com/) do cộng đồng phát triển.
+
+<a name="upgrading-socialite"></a>
+## Cập nhật Socialite
+
+Khi nâng cấp lên phiên bản mới của Socialite, điều quan trọng là bạn phải xem kỹ [hướng dẫn nâng cấp](https://github.com/laravel/socialite/blob/master/UPGRADE.md).
 
 <a name="installation"></a>
 ## Cài đặt
 
 Để bắt đầu với Socialite, hãy sử dụng Composer để thêm package của nó vào library project của bạn:
 
-    composer require laravel/socialite "^3.2.0"
+    composer require laravel/socialite:4.4.1
+
+> {note} Phiên bản mới nhất của Socialite không hỗ trợ Laravel 5.7. Phiên bản cuối cùng hỗ trợ Laravel 5.7 là Socialite 4.4.1.
 
 <a name="configuration"></a>
 ## Cấu hình
 
-Trước khi sử dụng Socialite, bạn cũng sẽ cần phải thêm thông tin các dịch vụ OAuth mà application của bạn đang muốn sử dụng. Các thông tin này phải được set trong file cấu hình `config/services.php` của bạn và sử dụng các key `facebook`, `twitter`, `linkedin`, `google`, `github` hoặc `bitbucket`, tùy thuộc vào provider application của bạn yêu cầu. Ví dụ:
+Trước khi sử dụng Socialite, bạn cũng sẽ cần phải thêm thông tin các dịch vụ OAuth mà application của bạn đang muốn sử dụng. Các thông tin này phải được set trong file cấu hình `config/services.php` của bạn và sử dụng các key `facebook`, `twitter`, `linkedin`, `google`, `github`, `gitlab` hoặc `bitbucket`, tùy thuộc vào provider application của bạn yêu cầu. Ví dụ:
 
     'github' => [
-        'client_id' => env('GITHUB_CLIENT_ID'),         // Your GitHub Client ID
-        'client_secret' => env('GITHUB_CLIENT_SECRET'), // Your GitHub Client Secret
+        'client_id' => env('GITHUB_CLIENT_ID'),
+        'client_secret' => env('GITHUB_CLIENT_SECRET'),
         'redirect' => 'http://your-callback-url',
     ],
 
@@ -74,7 +82,7 @@ Tiếp theo, bạn đã sẵn sàng để authenticate người dùng! Bạn s�
 
 Phương thức `redirect` đảm nhiệm việc gửi người dùng đến provider OAuth, trong khi phương thức `user` sẽ đọc request gửi về và lấy ra thông tin của người dùng từ provider.
 
-Tất nhiên là, bạn sẽ cần phải định nghĩa các route đến các phương thức của controller của bạn:
+Bạn sẽ cần phải định nghĩa các route đến các phương thức của controller của bạn:
 
     Route::get('login/github', 'Auth\LoginController@redirectToProvider');
     Route::get('login/github/callback', 'Auth\LoginController@handleProviderCallback');

@@ -26,6 +26,7 @@ Ví dụ, hãy sửa class `DatabaseSeeder` mặc định và thêm một câu s
 
     <?php
 
+    use Illuminate\Support\Str;
     use Illuminate\Database\Seeder;
     use Illuminate\Support\Facades\DB;
 
@@ -39,8 +40,8 @@ Ví dụ, hãy sửa class `DatabaseSeeder` mặc định và thêm một câu s
         public function run()
         {
             DB::table('users')->insert([
-                'name' => str_random(10),
-                'email' => str_random(10).'@gmail.com',
+                'name' => Str::random(10),
+                'email' => Str::random(10).'@gmail.com',
                 'password' => bcrypt('secret'),
             ]);
         }
@@ -62,8 +63,8 @@ Ví dụ: hãy tạo 50 người dùng và gán một quan hệ với mỗi ngư
      */
     public function run()
     {
-        factory(App\User::class, 50)->create()->each(function ($u) {
-            $u->posts()->save(factory(App\Post::class)->make());
+        factory(App\User::class, 50)->create()->each(function ($user) {
+            $user->posts()->save(factory(App\Post::class)->make());
         });
     }
 

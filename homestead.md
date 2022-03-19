@@ -27,6 +27,7 @@
     - [Web Servers](#web-servers)
     - [Mail](#mail)
 - [Network Interfaces](#network-interfaces)
+- [Mở rộng Homestead](#extending-homestead)
 - [Updating Homestead](#updating-homestead)
 - [Provider Specific Settings](#provider-specific-settings)
     - [VirtualBox](#provider-specific-virtualbox)
@@ -34,11 +35,11 @@
 <a name="introduction"></a>
 ## Giới thiệu
 
-Laravel cố gắng làm cho toàn bộ trải nghiệm phát triển PHP của bạn trở nên thú vị, bao gồm cả môi trường phát triển local của bạn. [Vagrant] (https://www.vagrantup.com) cung cấp một cách đơn giản, dễ hiểu để quản lý và cung cấp Virtual Machines.
+Laravel cố gắng làm cho toàn bộ trải nghiệm phát triển PHP của bạn trở nên thú vị, bao gồm cả môi trường phát triển local của bạn. [Vagrant](https://www.vagrantup.com) cung cấp một cách đơn giản, dễ hiểu để quản lý và cung cấp Virtual Machines.
 
 Laravel Homestead là một Vagrant box đóng gói sẵn, chính thức, cung cấp cho bạn một môi trường phát triển tuyệt vời mà không yêu cầu bạn phải cài đặt PHP, server web hoặc bất kỳ phần mềm server nào khác trên máy local của bạn. Bạn sẽ không cần lo lắng về việc làm rối tung hệ điều hành của bạn! Vagrant box hoàn toàn sẵn sàng để dùng. Nếu xảy ra sự cố, bạn có thể xoá và tạo lại một box mới trong vài phút!
 
-Homestead có thể chạy nhiều hệ điều hành Windows, Mac, hoặc Linux, và chứa server web Nginx, PHP 7.2, PHP 7.1, PHP 7.0, PHP 5.6, MySQL, PostgreSQL, Redis, Memcached, Node, và những công cụ tuyệt vời khác để giúp bạn phát triển application của bạn.
+Homestead có thể chạy nhiều hệ điều hành Windows, Mac, hoặc Linux, và chứa server web Nginx, PHP 7.3, PHP 7.2, PHP 7.1, PHP 5.6, MySQL, PostgreSQL, Redis, Memcached, Node, và những công cụ tuyệt vời khác để giúp bạn phát triển application của bạn.
 
 > {note} Nếu bạn đang dùng Windows, bạn có thể cần bật hardware virtualization (VT-x). Nó có thể được bật thông qua BIOS của bạn. Nếu bạn đang dùng Hyper-V trên hệ thống UEFI, bạn có thể cần phải tắt Hyper-V để có thể truy cập vào VT-x.
 
@@ -48,10 +49,9 @@ Homestead có thể chạy nhiều hệ điều hành Windows, Mac, hoặc Linux
 <div class="content-list" markdown="1">
 - Ubuntu 18.04
 - Git
+- PHP 7.3
 - PHP 7.2
 - PHP 7.1
-- PHP 7.0
-- PHP 5.6
 - Nginx
 - Apache (Optional)
 - MySQL
@@ -80,7 +80,7 @@ Homestead có thể chạy nhiều hệ điều hành Windows, Mac, hoặc Linux
 <a name="first-steps"></a>
 ### Bước đầu tiên
 
-Trước khi chạy môi trường Homestead của bạn, bạn cần phải cài đặt [VirtualBox 5.2](https://www.virtualbox.org/wiki/Downloads), [VMWare](https://www.vmware.com), [Parallels](https://www.parallels.com/products/desktop/) hoặc [Hyper-V](https://docs.microsoft.com/en-us/virtualization/hyper-v-on-windows/quick-start/enable-hyper-v) tốt nhất là [Vagrant](https://www.vagrantup.com/downloads.html). Tất cả các phần mềm này đều cung cấp một cài đặt dễ dàng dành cho các hệ điều hành phổ biến hiện nay.
+Trước khi chạy môi trường Homestead của bạn, bạn cần phải cài đặt [VirtualBox](https://www.virtualbox.org/wiki/Downloads), [VMWare](https://www.vmware.com), [Parallels](https://www.parallels.com/products/desktop/) hoặc [Hyper-V](https://docs.microsoft.com/en-us/virtualization/hyper-v-on-windows/quick-start/enable-hyper-v) tốt nhất là [Vagrant](https://www.vagrantup.com/downloads.html). Tất cả các phần mềm này đều cung cấp một cài đặt dễ dàng dành cho các hệ điều hành phổ biến hiện nay.
 
 Để dùng phần mềm VMware, bạn sẽ cần mua bản quyền cả VMware Fusion / Workstation và [VMware Vagrant plug-in](https://www.vagrantup.com/vmware). Mặc dù nó không miễn phí, nhưng VMware có thể cung cấp những hiệu năng tốt khi chia sẻ thư mục nhanh hơn.
 
@@ -107,7 +107,7 @@ Bạn nên check out một tagged version của Homestead, vì branch `master` k
     cd ~/Homestead
 
     // Clone một bản release cụ thể...
-    git checkout v7.16.1
+    git checkout v8.0.1
 
 Khi mà bạn đã clone xong Homestead repository, hãy chạy lệnh `bash init.sh` từ trong thư mục Homestead để tạo file configuration `Homestead.yaml`, File `Homestead.yaml` này sẽ được lưu vào trong thư mục Homestead:
 
@@ -150,7 +150,7 @@ Nếu bạn chỉ cần tạo một vài trang web, thì ánh xạ chung này s�
           to: /home/vagrant/code
           type: "nfs"
 
-> {note} Khi dùng NFS, bạn nên cân nhắc cài đặt plug-in [vagrant-bindfs](https://github.com/gael-ian/vagrant-bindfs). Plug-in này duy trì chính xác các quyền user và group cho các file và các thư mục trong Homestead.
+> {note} Khi dùng NFS, bạn nên cân nhắc cài đặt plug-in [vagrant-winnfsd](https://github.com/winnfsd/vagrant-winnfsd). Plug-in này duy trì chính xác các quyền user và group cho các file và các thư mục trong Homestead.
 
 Bạn cũng có thể thêm vào các option khác được hỗ trợ bởi Vagrant [Synced Folders](https://www.vagrantup.com/docs/synced-folders/basic_usage.html) bằng cách liệt kê chúng dưới từ khoá `options`:
 
@@ -168,7 +168,7 @@ Nếu bạn chưa biết Nginx? Không sao cả. Thuộc tính `sites` cho phép
 
     sites:
         - map: homestead.test
-          to: /home/vagrant/code/Laravel/public
+          to: /home/vagrant/code/my-project/public
 
 Nếu bạn muốn thay đổi thuộc tính `sites` khi Homestead đã được cài đặt, thì bạn nên chạy lại lệnh `vagrant reload --provision` để cập nhật cấu hình Nginx trên máy ảo.
 
@@ -329,7 +329,7 @@ Khi môi trường Homestead của bạn đã được cài đặt và chạy xo
 
     sites:
         - map: homestead.test
-          to: /home/vagrant/code/Laravel/public
+          to: /home/vagrant/code/my-project/public
         - map: another.test
           to: /home/vagrant/code/another/public
 
@@ -347,7 +347,7 @@ Homestead hỗ trợ nhiều loại site khác nhau, cho phép bạn dễ dàng 
 
     sites:
         - map: symfony2.test
-          to: /home/vagrant/code/Symfony/web
+          to: /home/vagrant/code/my-symfony-project/web
           type: "symfony2"
 
 Các loại site được hỗ trợ là: `apache`, `laravel` (mặc định), `proxy`, `silverstripe`, `statamic`, `symfony2`, và `symfony4`.
@@ -359,7 +359,7 @@ Bạn có thể thêm các giá trị Nginx `fastcgi_param` vào site của bạ
 
     sites:
         - map: homestead.test
-          to: /home/vagrant/code/Laravel/public
+          to: /home/vagrant/code/my-project/public
           params:
               - key: FOO
                 value: BAR
@@ -386,7 +386,7 @@ Nếu bạn muốn lệnh `schedule:run` sẽ chạy cho một site trong Homest
 
     sites:
         - map: homestead.test
-          to: /home/vagrant/code/Laravel/public
+          to: /home/vagrant/code/my-project/public
           schedule: true
 
 Cron job cho site sẽ được thiết lập trong thư mục `/etc/cron.d` trong máy ảo.
@@ -402,6 +402,8 @@ Mailhog cho phép bạn dễ dàng gửi email đi và thực hiện việc ki�
     MAIL_USERNAME=null
     MAIL_PASSWORD=null
     MAIL_ENCRYPTION=null
+
+Khi Mailhog đã được cấu hình xong, bạn có thể truy cập vào bảng điều khiển của Mailhog tại `http://localhost:8025`.
 
 <a name="configuring-minio"></a>
 ### Cấu hình Minio
@@ -430,6 +432,16 @@ Cuối cùng, hãy đảm bảo file `.env` của bạn đã có các tùy chọ
     AWS_SECRET_ACCESS_KEY=secretkey
     AWS_DEFAULT_REGION=us-east-1
     AWS_URL=http://homestead:9600
+
+Để cung cấp các bucket, hãy thêm tuỳ chọn `buckets` vào trong file cấu hình Homestead của bạn:
+
+    buckets:
+        - name: your-bucket
+          policy: public
+        - name: your-private-bucket
+          policy: none
+
+Các giá trị `policy` được hỗ trợ là: `none`, `download`, `upload`, và `public`.
 
 <a name="ports"></a>
 ### Ports
@@ -464,7 +476,7 @@ Nếu bạn muốn, bạn có thể thêm port vào Vagrant, và cũng có thể
 
 Đôi khi bạn có thể muốn chia sẻ những gì bạn đang làm việc với đồng nghiệp hoặc khách hàng. Vagrant có một cách để hỗ trợ điều này thông qua `share vagrant`; tuy nhiên, điều này sẽ không hoạt động nếu bạn có nhiều trang đang được cấu hình trong file `Homestead.yaml`.
 
-Để giải quyết vấn đề này, Homestead chứa một lệnh `share` của riêng nó. Để bắt đầu, hãy SSH vào máy ảo Homestead của bạn thông qua `vagrant ssh` và chạy `share homestead.test`. Điều này sẽ chia sẻ trang web `homestead.test` từ file cấu hình` Homestead.yaml` của bạn. Tất nhiên, bạn có thể thay thế `homestead.test` thành bất kỳ trang web nào mà bạn muốn:
+Để giải quyết vấn đề này, Homestead chứa một lệnh `share` của riêng nó. Để bắt đầu, hãy SSH vào máy ảo Homestead của bạn thông qua `vagrant ssh` và chạy `share homestead.test`. Điều này sẽ chia sẻ trang web `homestead.test` từ file cấu hình` Homestead.yaml` của bạn. Bạn có thể thay thế `homestead.test` thành bất kỳ trang web nào mà bạn muốn:
 
     share homestead.test
 
@@ -477,21 +489,18 @@ Sau khi chạy lệnh, bạn sẽ thấy một màn hình Ngrok xuất hiện ch
 <a name="multiple-php-versions"></a>
 ### Chạy nhiều phiên bản PHP
 
-> {note} Tính năng này chỉ tương thích với Nginx.
-
-Homestead 6 đã giới thiệu chức năng hỗ trợ cho nhiều phiên bản PHP trên cùng một máy ảo. Bạn có thể chỉ định phiên bản PHP nào sẽ sử dụng cho một trang web nhất định trong file `Homestead.yaml` của bạn. Các phiên bản PHP có sẵn là: "5.6", "7.0", "7.1" và "7.2" (mặc định):
+Homestead 6 đã giới thiệu chức năng hỗ trợ cho nhiều phiên bản PHP trên cùng một máy ảo. Bạn có thể chỉ định phiên bản PHP nào sẽ sử dụng cho một trang web nhất định trong file `Homestead.yaml` của bạn. Các phiên bản PHP có sẵn là: "7.1", "7.2" và "7.3" (mặc định):
 
     sites:
         - map: homestead.test
-          to: /home/vagrant/code/Laravel/public
-          php: "5.6"
+          to: /home/vagrant/code/my-project/public
+          php: "7.1"
 
 Thêm vào đó, bạn có thể sử dụng bất kỳ phiên bản PHP nào được hỗ trợ thông qua CLI:
 
-    php5.6 artisan list
-    php7.0 artisan list
     php7.1 artisan list
     php7.2 artisan list
+    php7.3 artisan list
 
 <a name="web-servers"></a>
 ### Server Web
@@ -527,18 +536,42 @@ Thuộc tính `networks` của `Homestead.yaml` sẽ cấu hình các network in
         - type: "public_network"
           bridge: "en1: Wi-Fi (AirPort)"
 
+<a name="extending-homestead"></a>
+## Mở rộng Homestead
+
+Bạn có thể mở rộng Homestead bằng cách sử dụng script `after.sh` trong thư mục gốc của thư mục Homestead. Trong file này, bạn có thể thêm bất kỳ lệnh shell nào mà bạn muốn để cấu hình và tùy chỉnh máy ảo của bạn.
+
+Khi đang tùy chỉnh Homestead, Ubuntu có thể hỏi bạn muốn giữ cấu hình ban đầu của package hay ghi đè cấu hình đó bằng file cấu hình mới. Để tránh điều này, bạn nên sử dụng lệnh sau khi cài đặt các package để tránh ghi đè lên bất kỳ cấu hình nào đã được Homestead viết trước đó:
+
+    sudo apt-get -y \
+        -o Dpkg::Options::="--force-confdef" \
+        -o Dpkg::Options::="--force-confold" \
+        install your-package
+
 <a name="updating-homestead"></a>
 ## Cập nhật Homestead
 
-Bạn có thể cập nhật Homestead qua 2 bước đơn giản như sau, Đầu tiên, bạn nên cập nhật Vagrant bằng cách dùng lệnh `vagrant box update`:
+Bạn có thể cập nhật Homestead qua một số bước đơn giản như sau, Đầu tiên, bạn nên cập nhật Vagrant bằng cách dùng lệnh `vagrant box update`:
 
     vagrant box update
 
-Tiếp theo, bạn cần cập nhật mã nguồn Homestead. Nếu bạn clone từ repository Homestead, bạn có thể chạy lệnh `git pull origin master` từ thư mục mà bạn đã clone để cập nhật.
+Tiếp theo, bạn cần cập nhật mã nguồn Homestead. Nếu bạn clone từ repository Homestead, bạn có thể chạy những lệnh dưới đây từ thư mục mà bạn đã clone để cập nhật.
 
-Nếu bạn cài đặt Homestead thông qua file `composer.json` trong project của bạn, bạn nên sửa version Homestead thành `"laravel/homestead": "^7"` trong file đó, rồi sau đó bạn chỉ cần cập nhật thư viện thông qua composer:
+    git fetch
+
+    git checkout v8.0.1
+
+Các lệnh pull code này sẽ lấy source code Homestead mới nhất từ GitHub repository, nó sẽ tìm các tag mới nhất và sau đó kiểm tra phiên bản release mà được gắn với tag mới nhất. Bạn có thể tìm thấy phiên bản release mới nhất trên [trang release GitHub](https://github.com/laravel/homestead/releases).
+
+Nếu bạn cài đặt Homestead thông qua file `composer.json` trong project của bạn, bạn nên sửa version Homestead thành `"laravel/homestead": "^8"` trong file đó, rồi sau đó bạn chỉ cần cập nhật thư viện thông qua composer:
 
     composer update
+
+Cuối cùng, bạn sẽ cần phải xoá và tạo lại Homestead của bạn để sử dụng bản cài đặt Vagrant mới nhất. Để thực hiện điều này, hãy chạy các lệnh sau trong thư mục Homestead của bạn:
+
+    vagrant destroy
+
+    vagrant up
 
 <a name="provider-specific-settings"></a>
 ## Cài đặt Provider cụ thể

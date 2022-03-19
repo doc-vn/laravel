@@ -45,7 +45,7 @@ Ví dụ, nếu bạn cần report các loại ngoại lệ khác nhau theo các
             //
         }
 
-        return parent::report($exception);
+        parent::report($exception);
     }
 
 > {tip} Thay vì thực hiện nhiều kiểm tra `instanceof` trong phương thức `report` của bạn, hãy thử sử dụng [reportable exceptions](/docs/{{version}}/errors#renderable-exceptions)
@@ -155,3 +155,7 @@ Helper `abort` sẽ ngay lập tức đưa ra một ngoại lệ mà được x�
 Laravel giúp dễ dàng tuỳ biến các trang error có HTTP status code khác nhau. Ví dụ: nếu bạn muốn tùy biến trang erorr có HTTP status code 404, hãy tạo một file `resources/views/errors/404.blade.php`. File sẽ được hiển thị cho tất cả các erorr 404 do application của bạn tạo ra. Các view trong thư mục này phải được đặt tên khớp với HTTP status code tương ứng. Một instance `HttpException` sẽ được đưa ra bởi hàm `abort` và sẽ được chuyển đến view như là một biến `$exception`:
 
     <h2>{{ $exception->getMessage() }}</h2>
+
+Bạn có thể export các trang template lỗi của Laravel bằng lệnh Artisan `vendor:publish`. Khi các template này đã được export, bạn có thể tùy chỉnh chúng theo ý thích của bạn:
+
+    php artisan vendor:publish --tag=laravel-errors

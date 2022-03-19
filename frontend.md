@@ -38,7 +38,7 @@ Sau khi các library đã được cài đặt xong bằng cách sử dụng `np
 
     npm run dev
 
-`webpack.mix.js` mặc định đi kèm cùng với Laravel sẽ biên dịch file SASS `resources/assets/sass/app.scss`. File `app.scss` này sẽ import một file các biến SASS và load Bootstrap, cung cấp một điểm khởi đầu tốt cho hầu hết các application. Hãy thoải mái tùy chỉnh file `app.scss` này theo cách mà bạn muốn hoặc thậm chí sử dụng một pre-processor hoàn toàn khác bằng cách [cấu hình Laravel Mix](/docs/{{version}}/mix).
+`webpack.mix.js` mặc định đi kèm cùng với Laravel sẽ biên dịch file SASS `resources/sass/app.scss`. File `app.scss` này sẽ import một file các biến SASS và load Bootstrap, cung cấp một điểm khởi đầu tốt cho hầu hết các application. Hãy thoải mái tùy chỉnh file `app.scss` này theo cách mà bạn muốn hoặc thậm chí sử dụng một pre-processor hoàn toàn khác bằng cách [cấu hình Laravel Mix](/docs/{{version}}/mix).
 
 <a name="writing-javascript"></a>
 ## Viết JavaScript
@@ -53,14 +53,14 @@ Khi các package đã được cài đặt xong, bạn có thể sử dụng l�
 
     npm run dev
 
-Mặc định, file `webpack.mix.js` của Laravel sẽ biên dịch file SASS của bạn và file `resources/assets/js/app.js`. Trong file `app.js`, bạn có thể đăng ký các Vue component của bạn hoặc, nếu bạn thích một framework khác, hãy cấu hình application JavaScript của riêng bạn. Các file JavaScript đã được biên dịch thường sẽ được lưu trong thư mục `public/js`.
+Mặc định, file `webpack.mix.js` của Laravel sẽ biên dịch file SASS của bạn và file `resources/js/app.js`. Trong file `app.js`, bạn có thể đăng ký các Vue component của bạn hoặc, nếu bạn thích một framework khác, hãy cấu hình application JavaScript của riêng bạn. Các file JavaScript đã được biên dịch thường sẽ được lưu trong thư mục `public/js`.
 
-> {tip} File `app.js` sẽ load file `resources/assets/js/bootstrap.js` để khởi động và cấu hình Vue, Axios, jQuery và tất cả các library JavaScript khác. Nếu bạn muốn cấu hình thêm các library JavaScript khác, bạn có thể làm như vậy trong file này.
+> {tip} File `app.js` sẽ load file `resources/js/bootstrap.js` để khởi động và cấu hình Vue, Axios, jQuery và tất cả các library JavaScript khác. Nếu bạn muốn cấu hình thêm các library JavaScript khác, bạn có thể làm như vậy trong file này.
 
 <a name="writing-vue-components"></a>
 ### Viết Vue component
 
-Theo mặc định, các application Laravel mới có chứa một ví dụ mẫu Vue component `ExampleComponent.vue` nằm trong thư mục `resources/assets/js/components`. File `ExampleComponent.vue` là một ví dụ về [single file Vue component](https://vuejs.org/guide/single-file-components) định nghĩa template JavaScript và HTML của nó trong cùng một file. Các single file component cung cấp một cách tiếp cận rất thuận tiện để xây dựng các application JavaScript. Example component đã được đăng ký sẵn trong file `app.js` của bạn:
+Theo mặc định, các application Laravel mới có chứa một ví dụ mẫu Vue component `ExampleComponent.vue` nằm trong thư mục `resources/js/components`. File `ExampleComponent.vue` là một ví dụ về [single file Vue component](https://vuejs.org/guide/single-file-components) định nghĩa template JavaScript và HTML của nó trong cùng một file. Các single file component cung cấp một cách tiếp cận rất thuận tiện để xây dựng các application JavaScript. Example component đã được đăng ký sẵn trong file `app.js` của bạn:
 
     Vue.component(
         'example-component',
@@ -77,7 +77,7 @@ Theo mặc định, các application Laravel mới có chứa một ví dụ m�
 
 > {tip} Hãy nhớ rằng, bạn nên chạy lệnh `npm run dev` mỗi khi bạn thay đổi code của Vue component. Hoặc, bạn có thể chạy lệnh `npm run watch` để theo dõi và tự động biên dịch lại các component của bạn mỗi khi chúng được thay đổi.
 
-Tất nhiên, nếu bạn muốn tìm hiểu thêm về cách viết các Vue component, bạn nên đọc [Vue documentation](https://vuejs.org/guide/), cung cấp tổng quan kỹ lưỡng, dễ đọc về toàn bộ Vue framework.
+Nếu bạn muốn tìm hiểu thêm về cách viết các Vue component, bạn nên đọc [Vue documentation](https://vuejs.org/guide/), cung cấp tổng quan kỹ lưỡng, dễ đọc về toàn bộ Vue framework.
 
 <a name="using-react"></a>
 ### Dùng React

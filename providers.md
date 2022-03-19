@@ -14,7 +14,7 @@ Các service provider là trung tâm của tất cả quá trình khởi động
 
 Nhưng, "bootstrapped" nghĩa là gì? Nói chung, ý của chúng tôi có nghĩa là **đăng ký** những thứ, bao gồm cả đăng ký liên kết service container, event listener, middleware và thậm chí là cả các route. Các Service provider là trung tâm để cấu hình application của bạn.
 
-Nếu bạn mở file `config/app.php` đi cùng với Laravel, bạn sẽ thấy một mảng các `providers`. Đây là tất cả các class service provider sẽ được load cho application của bạn. Tất nhiên, nhiều trong số này là các provider "hoãn", nghĩa là nó sẽ không được load trong mọi request, mà chỉ khi các service này thực sự cần thiết nó mới được load.
+Nếu bạn mở file `config/app.php` đi cùng với Laravel, bạn sẽ thấy một mảng các `providers`. Đây là tất cả các class service provider sẽ được load cho application của bạn. Nhiều trong số này là các provider "hoãn", nghĩa là nó sẽ không được load trong mọi request, mà chỉ khi các service này thực sự cần thiết nó mới được load.
 
 Trong phần tổng quan này, bạn sẽ học cách viết các service provider của riêng bạn và đăng ký chúng với application Laravel.
 
@@ -191,5 +191,4 @@ Laravel sẽ biên dịch và lưu trữ một danh sách tất cả các servic
         {
             return [Connection::class];
         }
-
     }

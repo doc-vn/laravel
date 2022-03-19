@@ -29,7 +29,7 @@
 <a name="introduction"></a>
 ## Giới thiệu
 
-Cấu trúc thư mục mặc định của Laravel nhằm cung cấp một khởi đầu tốt cho tất cả các application lớn và nhỏ. Dĩ nhiên là bạn có thể tự tổ chức theo cách mà bạn muốn. Laravel sẽ gần như không áp đặt một hạn chế nào về mặt vị trí cho bất cứ class nào, miễn là Composer có thể load class đó.
+Cấu trúc thư mục mặc định của Laravel nhằm cung cấp một khởi đầu tốt cho tất cả các application lớn và nhỏ. Nhưng bạn có thể tự tổ chức theo cách mà bạn muốn. Laravel sẽ gần như không áp đặt một hạn chế nào về mặt vị trí cho bất cứ class nào, miễn là Composer có thể load class đó.
 
 #### Thư mục Model sẽ ở đâu?
 
@@ -93,7 +93,7 @@ Thư mục `storage/app/public` có thể được dùng để lưu trữ các f
 <a name="the-tests-directory"></a>
 #### Thư mục Tests
 
-Thư mục `tests` sẽ chứa các file tự động test. Ví dụ [PHPUnit](https://phpunit.de/) sẽ được cung cấp mặc định. Mỗi class test nên lưu lại với hậu tố là `Test`. Bạn có thể chạy test của bạn bằng câu lệnh `phpunit` hoặc `php vendor/bin/phpunit`.
+Thư mục `tests` sẽ chứa các file test tự động. Mặc định, một ví dụ [PHPUnit](https://phpunit.de/) test mẫu sẽ được khởi tạo sẵn trong project. Mỗi class test nên lưu lại với hậu tố là `Test`. Bạn có thể chạy test của bạn bằng câu lệnh `phpunit` hoặc `php vendor/bin/phpunit`.
 
 <a name="the-vendor-directory"></a>
 #### Thư mục Vendor
@@ -103,7 +103,7 @@ Thư mục `vendor` chứa những library mà được quản lý bởi [Compos
 <a name="the-app-directory"></a>
 ## Thư mục App
 
-Phần lớn application của bạn sẽ được lưu trong thư mục `app`. Mặc định, thư mục này sẽ được lưu dưới tên là `App` và được autoloaded bởi Composer dùng chuẩn [PSR-4 autoloading standard](http://www.php-fig.org/psr/psr-4/).
+Phần lớn application của bạn sẽ được lưu trong thư mục `app`. Mặc định, thư mục này sẽ được lưu dưới tên là `App` và được autoloaded bởi Composer dùng chuẩn [PSR-4 autoloading standard](https://www.php-fig.org/psr/psr-4/).
 
 Thư mục `app` sẽ chứa một số thư mục bổ sung như `Console`, `Http`, và `Providers`. Hãy nghĩ các thư mục `Console` và `Http` như là các thư mục cung cấp API cho phần core của application của bạn. Giao thức HTTP và CLI đều là các cơ chế để bên ngoài tương tác với application của bạn, nhưng thực tế chúng lại không hay chứa logic của application. Nói cách khác, chúng là hai cách để gọi đến application của bạn. Thư mục `Console` chứa tất cả các lệnh Artisan của bạn, và thư mục `Http` chứa các class controllers, middleware, và requests của bạn.
 
@@ -124,7 +124,7 @@ Thư mục `Console` sẽ chứa tất cả các câu lệnh Artisan của bạn
 <a name="the-events-directory"></a>
 #### Thư mục Events
 
-Mặc định, thư mục này sẽ không tồn tại, nhưng nó sẽ được tạo khi bạn chạy lệnh Artisan `event:generate` và `make:event`. Thư mục `Events`, đúng như ý nghĩa của nó, nó chứa các [event classes](/docs/{{version}}/events). Events có thể được dùng thông báo cho các phần khác trong application của bạn rằng một hành động nào đó đã xảy ra, vì vậy nó rất linh hoạt và tách biệt.
+Mặc định, thư mục này sẽ không tồn tại, nhưng nó sẽ được tạo khi bạn chạy lệnh Artisan `event:generate` và `make:event`. Thư mục `Events` sẽ chứa các [event classes](/docs/{{version}}/events). Events có thể được dùng thông báo cho các phần khác trong application của bạn rằng một hành động nào đó đã xảy ra, vì vậy nó rất linh hoạt và tách biệt.
 
 <a name="the-exceptions-directory"></a>
 #### Thư mục Exceptions

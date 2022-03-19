@@ -19,7 +19,9 @@
     - [Where Clauses](#where-clauses)
     - [Pagination](#pagination)
     - [Soft Deleting](#soft-deleting)
+    - [Tuỳ chỉnh Engine Search](#customizing-engine-searches)
 - [Custom Engines](#custom-engines)
+- [Builder Macros](#builder-macros)
 
 <a name="introduction"></a>
 ## Giới thiệu
@@ -69,7 +71,7 @@ Khi bạn đã cấu hình xong queue driver, hãy set giá trị của tùy ch�
 
 Khi sử dụng driver Algolia, bạn nên cấu hình thông tin đăng nhập `id` và `secret` trong file cấu hình `config/scout.php` của bạn. Khi thông tin đăng nhập của bạn đã được cấu hình xong, bạn cũng sẽ cần cài đặt thêm SDK PHP Algolia thông qua package manager Composer:
 
-    composer require algolia/algoliasearch-client-php
+    composer require algolia/algoliasearch-client-php:^2.2
 
 <a name="configuration"></a>
 ## Configuration
@@ -260,6 +262,20 @@ Thỉnh thoảng bạn có thể muốn tìm kiếm trong model searchable có t
         return $this->isPublished();
     }
 
+Phương thức `shouldBeSearchable` chỉ được áp dụng khi bạn thao tác với model thông qua phương thức `save` hoặc các câu lệnh truy vấn hoặc các quan hệ. Bạn gọi trực tiếp phương thức `searchable` qua model hoặc qua các collection searchable, thì nó sẽ ghi đè kết quả của phương thức `shouldBeSearchable`:
+
+    // Will respect "shouldBeSearchable"...
+    App\Order::where('price', '>', 100)->searchable();
+
+    $user->orders()->searchable();
+
+    $order->save();
+
+    // Will override "shouldBeSearchable"...
+    $orders->searchable();
+
+    $order->searchable();
+
 <a name="searching"></a>
 ## Searching
 
@@ -330,6 +346,22 @@ Khi tùy chọn cấu hình này thành `true`, Scout sẽ không xóa các mode
 
 > {tip} Khi một model đã bị xóa vĩnh viễn bằng cách sử dụng `forceDelete`, Scout sẽ tự động xóa model đó ra khỏi search index.
 
+<a name="customizing-engine-searches"></a>
+### Tuỳ chỉnh Engine Search
+
+Nếu bạn cần tùy chỉnh hành động tìm kiếm của một engine, bạn có thể truyền một lệnh callback làm tham số thứ hai cho phương thức `search`. Ví dụ: bạn có thể sử dụng lệnh callback này để thêm dữ liệu vị trí vào các tùy chọn tìm kiếm trước khi câu lệnh tìm kiếm được truyền đến Algolia:
+
+    use Algolia\AlgoliaSearch\SearchIndex;
+
+    App\Order::search('Star Trek', function (SearchIndex $algolia, string $query, array $options) {
+        $options['body']['query']['bool']['filter']['geo_distance'] = [
+            'distance' => '1000km',
+            'location' => ['lat' => 36, 'lon' => 111],
+        ];
+
+        return $algolia->search($query, $options);
+    })->get();
+
 <a name="custom-engines"></a>
 ## Custom Engines
 
@@ -346,6 +378,7 @@ Nếu một trong những engine tìm kiếm của Scout không phù hợp với
     abstract public function mapIds($results);
     abstract public function map($results, $model);
     abstract public function getTotalCount($results);
+    abstract public function flush($model);
 
 Bạn có thể tham khảo class `Laravel\Scout\Engines\AlgoliaEngine` để biết thêm cách bạn nên implement các phương thức đó như thế nào. Class này sẽ cung cấp cho bạn một điểm khởi đầu tốt để bạn có thể học cách implement từng phương thức này trong engine của riêng bạn.
 
@@ -370,3 +403,37 @@ Khi bạn đã viết xong engine mới của bạn, bạn có thể đăng ký 
 Khi engine của bạn đã được đăng ký, bạn có thể khai báo nó làm Scout `driver` mặc định trong file cấu hình `config/scout.php` của bạn:
 
     'driver' => 'mysql',
+
+<a name="builder-macros"></a>
+## Builder Macros
+
+Nếu bạn muốn định nghĩa một phương thức builder tùy chỉnh, bạn có thể sử dụng phương thức `macro` trên class `Laravel\Scout\Builder`. Thông thường, "macro" phải được định nghĩa trong phương thức `boot` của một [service provider](/docs/{{version}}/providers):
+
+    <?php
+
+    namespace App\Providers;
+
+    use Laravel\Scout\Builder;
+    use Illuminate\Support\ServiceProvider;
+    use Illuminate\Support\Facades\Response;
+
+    class ScoutMacroServiceProvider extends ServiceProvider
+    {
+        /**
+         * Register the application's scout macros.
+         *
+         * @return void
+         */
+        public function boot()
+        {
+            Builder::macro('count', function () {
+                return $this->engine->getTotalCount(
+                    $this->engine()->search($this)
+                );
+            });
+        }
+    }
+
+Phương thức `macro` chấp nhận một tên làm tham số đầu tiên và một Closure làm tham số thứ hai của nó. Closure của macro sẽ được chạy khi bạn gọi tên macro này từ một implementation `Laravel\Scout\Builder`:
+
+    App\Order::search('Star Trek')->count();

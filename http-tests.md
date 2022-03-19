@@ -85,7 +85,7 @@ Laravel cũng cung cấp một số helper để làm việc với session trong
         }
     }
 
-Tất nhiên, cách dùng chủ yếu của session là để duy trì trạng thái người dùng đã được xác thực. Phương thức helper `actingAs` sẽ cung cấp một cách đơn giản để xác thực một người dùng. Ví dụ: chúng ta có thể sử dụng một [model factory](/docs/{{version}}/database-testing#writing-factories) để tạo và xác thực một người dùng:
+Cách dùng chủ yếu của session là để duy trì trạng thái người dùng đã được xác thực. Phương thức helper `actingAs` sẽ cung cấp một cách đơn giản để xác thực một người dùng. Ví dụ: chúng ta có thể sử dụng một [model factory](/docs/{{version}}/database-testing#writing-factories) để tạo và xác thực một người dùng:
 
     <?php
 
@@ -216,7 +216,7 @@ Laravel cung cấp nhiều phương thức assertion để tùy biến cho các 
 
 <style>
     .collection-method-list > p {
-        column-count: 3; -moz-column-count: 3; -webkit-column-count: 3;
+        column-count: 2; -moz-column-count: 2; -webkit-column-count: 2;
         column-gap: 2em; -moz-column-gap: 2em; -webkit-column-gap: 2em;
     }
 
@@ -242,6 +242,7 @@ Laravel cung cấp nhiều phương thức assertion để tùy biến cho các 
 [assertJsonFragment](#assert-json-fragment)
 [assertJsonMissing](#assert-json-missing)
 [assertJsonMissingExact](#assert-json-missing-exact)
+[assertJsonMissingValidationErrors](#assert-json-missing-validation-errors)
 [assertJsonStructure](#assert-json-structure)
 [assertJsonValidationErrors](#assert-json-validation-errors)
 [assertLocation](#assert-location)
@@ -258,6 +259,7 @@ Laravel cung cấp nhiều phương thức assertion để tùy biến cho các 
 [assertSessionHasErrors](#assert-session-has-errors)
 [assertSessionHasErrorsIn](#assert-session-has-errors-in)
 [assertSessionHasNoErrors](#assert-session-has-no-errors)
+[assertSessionDoesntHaveErrors](#assert-session-doesnt-have-errors)
 [assertSessionMissing](#assert-session-missing)
 [assertStatus](#assert-status)
 [assertSuccessful](#assert-successful)
@@ -373,6 +375,13 @@ Yêu cầu response không chứa chính xác đoạn JSON đã cho:
 
     $response->assertJsonMissingExact(array $data);
 
+<a name="assert-json-missing-validation-errors"></a>
+#### assertJsonMissingValidationErrors
+
+Yêu cầu response không chứa các lỗi JSON validation cho các khóa đã cho:
+
+    $response->assertJsonMissingValidationErrors($keys);
+
 <a name="assert-json-structure"></a>
 #### assertJsonStructure
 
@@ -396,7 +405,6 @@ Yêu cầu response có giá trị URI trong header `Location`:
 
 <a name="assert-not-found"></a>
 #### assertNotFound
-
 
 Yêu cầu response có một not found status code:
 
@@ -485,6 +493,13 @@ Yêu cầu session có chứa lỗi đã cho:
 Yêu cầu session không chứa lỗi:
 
     $response->assertSessionHasNoErrors();
+
+<a name="assert-session-doesnt-have-errors"></a>
+#### assertSessionDoesntHaveErrors
+
+Yêu cầu session không chứa các lỗi cho các khóa đã cho:
+
+    $response->assertSessionDoesntHaveErrors($keys = [], $format = null, $errorBag = 'default');
 
 <a name="assert-session-missing"></a>
 #### assertSessionMissing
