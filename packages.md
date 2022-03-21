@@ -84,7 +84,7 @@ Một service provider sẽ được extend từ class `Illuminate\Support\Servi
 Thông thường, bạn sẽ cần export file cấu hình của package vào thư mục `config` của application. Điều này cho phép người dùng package của bạn dễ dàng ghi đè các tùy chọn cấu hình mặc định mà bạn đã thiết lập. Để các file cấu hình của bạn có thể export, hãy gọi phương thức `publishes` từ trong phương thức `boot` của service provider của bạn:
 
     /**
-     * Perform post-registration booting of services.
+     * Bootstrap any application services.
      *
      * @return void
      */
@@ -125,7 +125,7 @@ Bạn cũng có thể merge file cấu hình package của bạn với một b�
 Nếu package của bạn chứa các route, thì bạn có thể load chúng bằng phương thức `loadRoutesFrom`. Phương thức này sẽ tự động kiểm tra xem các route hiện tại của application có đang được lưu trong bộ nhớ cache hay không và sẽ không tải lại file route của bạn nếu file route đó đã được lưu trong bộ nhớ cache:
 
     /**
-     * Perform post-registration booting of services.
+     * Bootstrap any application services.
      *
      * @return void
      */
@@ -140,7 +140,7 @@ Nếu package của bạn chứa các route, thì bạn có thể load chúng b�
 Nếu package của bạn chứa [database migrations](/docs/{{version}}/migrations), bạn có thể sử dụng phương thức `loadMigationsFrom` để thông báo cho Laravel biết cách load chúng. Phương thức `loadMigationsFrom` chấp nhận một đường dẫn đến các file migration của package của bạn như là tham số duy nhất của nó:
 
     /**
-     * Perform post-registration booting of services.
+     * Bootstrap any application services.
      *
      * @return void
      */
@@ -157,7 +157,7 @@ Khi file migration package của bạn đã được đăng ký, chúng sẽ đ�
 Nếu package của bạn chứa các [translation files](/docs/{{version}}/localization), bạn có thể sử dụng phương thức `loadTranslationsFrom` để thông báo cho Laravel biết cách load chúng. Ví dụ: nếu package của bạn có tên là `courier`, thì bạn nên thêm code sau vào phương thức `boot` của service provider:
 
     /**
-     * Perform post-registration booting of services.
+     * Bootstrap any application services.
      *
      * @return void
      */
@@ -175,7 +175,7 @@ Các bản translation của package của bạn sẽ được tham chiếu bằ
 Nếu bạn muốn export các bản translation của package của bạn sang thư mục `resources/lang/vendor` của application, bạn có thể sử dụng phương thức `publishes` của service provider. Phương thức `publishes` chấp nhận một mảng các đường dẫn đến file translation của package và vị trí export mà bạn mong muốn. Ví dụ, để export các file translation cho package `courier`, bạn có thể làm như sau:
 
     /**
-     * Perform post-registration booting of services.
+     * Bootstrap any application services.
      *
      * @return void
      */
@@ -196,7 +196,7 @@ Bây giờ, khi người dùng package của bạn chạy lệnh Artisan `vendor
 Để đăng ký [views](/docs/{{version}}/views) của package với Laravel, bạn cần cho Laravel biết vị trí của các view. Bạn có thể làm điều này bằng cách sử dụng phương thức `loadViewsFrom` của service provider. Phương thức `loadViewsFrom` chấp nhận hai tham số: một là đường dẫn đến các view template và hai là tên của package của bạn. Ví dụ: nếu tên của package của bạn là `courier`, thì bạn nên thêm dòng sau vào phương thức `boot` của service provider:
 
     /**
-     * Perform post-registration booting of services.
+     * Bootstrap any application services.
      *
      * @return void
      */
@@ -220,7 +220,7 @@ Khi bạn sử dụng phương thức `loadViewsFrom`, Laravel sẽ đăng ký h
 Nếu bạn muốn export các view vào thư mục `resources/views/vendor` của application, bạn có thể sử dụng phương thức` publishes` của service provider. Phương thức `publishes` chấp nhận một mảng các đường dẫn view package của bạn và vị trí export mà bạn mong muốn:
 
     /**
-     * Perform post-registration booting of services.
+     * Bootstrap any application services.
      *
      * @return void
      */
@@ -261,7 +261,7 @@ Bây giờ, nếu người dùng package của bạn chạy lệnh Artisan `vend
 Package của bạn có thể có các asset như JavaScript, CSS và hình ảnh. Để export các asset này vào thư mục `public` của application, hãy sử dụng phương thức `publishes` của service provider. Trong ví dụ này, chúng ta cũng sẽ thêm một tag group `public`, tag này có thể được sử dụng để export các group liên quan:
 
     /**
-     * Perform post-registration booting of services.
+     * Bootstrap any application services.
      *
      * @return void
      */
@@ -282,7 +282,7 @@ Bây giờ, khi người dùng package của bạn chạy lệnh `vendor:publish
 Bạn có thể muốn export riêng rẽ các group asset và các resources của package. Chẳng hạn, bạn có thể muốn cho phép người dùng của bạn export các file cấu hình của package mà không phải export asset của package. Bạn có thể làm điều này bằng cách "gắn tag" cho chúng khi bạn gọi phương thức `publishes` từ service provider của package. Ví dụ: hãy sử dụng các tag để định nghĩa hai group export trong phương thức `boot` của service provider package:
 
     /**
-     * Perform post-registration booting of services.
+     * Bootstrap any application services.
      *
      * @return void
      */

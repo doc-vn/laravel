@@ -64,7 +64,7 @@ Theo mặc định, các application Laravel mới có chứa một ví dụ m�
 
     Vue.component(
         'example-component',
-        require('./components/ExampleComponent.vue')
+        require('./components/ExampleComponent.vue').default
     );
 
 Để sử dụng component này trong application của bạn, bạn có thể set nó vào một trong các template HTML của bạn. Ví dụ, sau khi chạy lệnh Artisan `make:auth` để tạo màn hình authentication và màn hình đăng ký cho application của bạn, bạn có thể set component vào template Blade `home.blade.php`:

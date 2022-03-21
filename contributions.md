@@ -25,7 +25,6 @@ Mã nguồn của Laravel được quản lý trên GitHub và có các reposito
 - [Laravel Art](https://github.com/laravel/art)
 - [Laravel Documentation](https://github.com/laravel/docs)
 - [Laravel Cashier](https://github.com/laravel/cashier)
-- [Laravel Cashier for Braintree](https://github.com/laravel/cashier-braintree)
 - [Laravel Envoy](https://github.com/laravel/envoy)
 - [Laravel Framework](https://github.com/laravel/framework)
 - [Laravel Homestead](https://github.com/laravel/homestead)
@@ -35,7 +34,7 @@ Mã nguồn của Laravel được quản lý trên GitHub và có các reposito
 - [Laravel Scout](https://github.com/laravel/scout)
 - [Laravel Socialite](https://github.com/laravel/socialite)
 - [Laravel Telescope](https://github.com/laravel/telescope)
-- [Laravel Website](https://github.com/laravel/laravel.com)
+- [Laravel Website](https://github.com/laravel/laravel.com-next)
 </div>
 
 <a name="core-development-discussion"></a>
@@ -50,9 +49,9 @@ Kênh `#internals` của [Laravel Discord server](https://discordapp.com/invite/
 
 **Tất cả** các bản sửa lỗi phải được gửi đến branch ổn định mới nhất hoặc tới các [branch LTS hiện tại](/docs/{{version}}/releases#support-policy). Các bản sửa lỗi sẽ **không** được gửi đến branch `master` trừ khi chúng sửa các tính năng đã tồn tại trong bản phát hành sắp tới.
 
-Các tính năng **phụ** có **tương thích** với bản phát hành Laravel hiện tại thì có thể được gửi đến branch ổn định mới nhất.
+Các tính năng **phụ** có **tương thích** với bản phát hành hiện tại thì có thể được gửi đến branch ổn định mới nhất.
 
-Các tính năng **chính** mới phải luôn được gửi đến branch `master`, nơi chứa bản phát hành Laravel sắp tới.
+Các tính năng **chính** mới phải luôn được gửi đến branch `master`, nơi chứa code của các bản phát hành sắp tới.
 
 Nếu bạn không chắc chắn tính năng của bạn là chính hay là phụ, vui lòng hỏi Taylor Otwell trong kênh `#internals` của [Laravel Discord server](https://discordapp.com/invite/mPZNm7A).
 
@@ -83,6 +82,7 @@ Dưới đây là một ví dụ mẫu về Laravel documentation hợp lệ. L�
      * @param  \Closure|string|null  $concrete
      * @param  bool  $shared
      * @return void
+     *
      * @throws \Exception
      */
     public function bind($abstract, $concrete = null, $shared = false)

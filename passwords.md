@@ -59,6 +59,11 @@ Trong file cấu hình `auth.php` của bạn, bạn có thể cấu hình nhi�
 
     use Illuminate\Support\Facades\Auth;
 
+    /**
+     * Get the guard to be used during password reset.
+     *
+     * @return \Illuminate\Contracts\Auth\StatefulGuard
+     */
     protected function guard()
     {
         return Auth::guard('guard-name');
@@ -75,7 +80,7 @@ Trong file cấu hình `auth.php` của bạn, bạn có thể cấu hình nhi�
      *
      * @return PasswordBroker
      */
-    protected function broker()
+    public function broker()
     {
         return Password::broker('name');
     }

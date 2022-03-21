@@ -339,10 +339,10 @@ Nếu các model index của bạn là loại có thể [soft deleting](/docs/{{
 Khi tùy chọn cấu hình này thành `true`, Scout sẽ không xóa các model đó ra khỏi search index. Thay vào đó, nó sẽ set thuộc tính ẩn `__soft_deleted` trên bản ghi đó. Và sau đó, bạn có thể sử dụng phương thức `withTrashed` hoặc `onlyTrashed` để lấy ra các bản ghi đã soft delete khi tìm kiếm:
 
     // Include trashed records when retrieving results...
-    $orders = App\Order::withTrashed()->search('Star Trek')->get();
+    $orders = App\Order::search('Star Trek')->withTrashed()->get();
 
     // Only include trashed records when retrieving results...
-    $orders = App\Order::onlyTrashed()->search('Star Trek')->get();
+    $orders = App\Order::search('Star Trek')->onlyTrashed()->get();
 
 > {tip} Khi một model đã bị xóa vĩnh viễn bằng cách sử dụng `forceDelete`, Scout sẽ tự động xóa model đó ra khỏi search index.
 
@@ -367,7 +367,7 @@ Nếu bạn cần tùy chỉnh hành động tìm kiếm của một engine, b�
 
 #### Writing The Engine
 
-Nếu một trong những engine tìm kiếm của Scout không phù hợp với nhu cầu của bạn, bạn có thể viết một engine mới của riêng bạn và đăng ký nó với Scout. Engine của bạn sẽ được extend từ abstract class `Laravel\Scout\Engines\Engine`. Abstract class này chứa bảy phương thức mà engine mới của bạn phải implement:
+Nếu một trong những engine tìm kiếm của Scout không phù hợp với nhu cầu của bạn, bạn có thể viết một engine mới của riêng bạn và đăng ký nó với Scout. Engine của bạn sẽ được extend từ abstract class `Laravel\Scout\Engines\Engine`. Abstract class này chứa tám phương thức mà engine mới của bạn phải implement:
 
     use Laravel\Scout\Builder;
 
