@@ -46,9 +46,28 @@ Một khi một file đã được lưu trữ và link liên kết ảo đã đ�
 <a name="the-local-driver"></a>
 ### Local Driver
 
-Khi sử dụng driver `local`, tất cả các hoạt động của các file đều liên quan đến thư mục `root` sẽ được định nghĩa trong file cấu hình của bạn. Mặc định, giá trị này sẽ được đặt là thư mục `storage/app`. Vì thế, phương thức sau đây sẽ lưu trữ một file vào trong `storage/app/file.txt`:
+Khi sử dụng driver `local`, tất cả các hoạt động của các file đều liên quan đến thư mục `root` sẽ được định nghĩa trong file cấu hình `filesystems` của bạn. Mặc định, giá trị này sẽ được đặt là thư mục `storage/app`. Vì thế, phương thức sau đây sẽ lưu trữ một file vào trong `storage/app/file.txt`:
 
     Storage::disk('local')->put('file.txt', 'Contents');
+
+#### Permissions
+
+Thư mục `public` [visibility](#file-visibility) sẽ được chuyển thành `0755` cho thư mục và `0644` cho file. Bạn có thể sửa các quyền này trong file cấu hình `filesystems` của bạn:
+
+    'local' => [
+        'driver' => 'local',
+        'root' => storage_path('app'),
+        'permissions' => [
+            'file' => [
+                'public' => 0664,
+                'private' => 0600,
+            ],
+            'dir' => [
+                'public' => 0775,
+                'private' => 0700,
+            ],
+        ],
+    ],
 
 <a name="driver-prerequisites"></a>
 ### Yêu cầu Driver
@@ -74,17 +93,17 @@ Thông tin cấu hình driver S3 nằm trong file cấu hình `config/filesystem
 Flysystem integration của Laravel hoạt động tốt với FTP; tuy nhiên, mặc định, một cấu hình mẫu không được thêm vào trong file cấu hình `filesystems.php` của framework. Nếu bạn cần cấu hình một hệ thống file FTP, bạn có thể sử dụng cấu hình mẫu ở bên dưới:
 
     'ftp' => [
-        'driver'   => 'ftp',
-        'host'     => 'ftp.example.com',
+        'driver' => 'ftp',
+        'host' => 'ftp.example.com',
         'username' => 'your-username',
         'password' => 'your-password',
 
         // Optional FTP Settings...
-        // 'port'     => 21,
-        // 'root'     => '',
-        // 'passive'  => true,
-        // 'ssl'      => true,
-        // 'timeout'  => 30,
+        // 'port' => 21,
+        // 'root' => '',
+        // 'passive' => true,
+        // 'ssl' => true,
+        // 'timeout' => 30,
     ],
 
 #### SFTP Driver Configuration
@@ -112,13 +131,13 @@ Flysystem tích hợp trong Laravel hoạt động tốt với SFTP; tuy nhiên,
 Flysystem integration của Laravel hoạt động tốt với Rackspace; tuy nhiên, mặc định, cấu hình mẫu dành cho drive này sẽ không được thêm vào trong file cấu hình `filesystems.php` của framework. Nếu bạn cần cấu hình cho file Rackspace, bạn có thể sử dụng cấu hình mẫu ở bên dưới:
 
     'rackspace' => [
-        'driver'    => 'rackspace',
-        'username'  => 'your-username',
-        'key'       => 'your-key',
+        'driver' => 'rackspace',
+        'username' => 'your-username',
+        'key' => 'your-key',
         'container' => 'your-container',
-        'endpoint'  => 'https://identity.api.rackspacecloud.com/v2.0/',
-        'region'    => 'IAD',
-        'url_type'  => 'publicURL',
+        'endpoint' => 'https://identity.api.rackspacecloud.com/v2.0/',
+        'region' => 'IAD',
+        'url_type' => 'publicURL',
     ],
 
 <a name="caching"></a>
@@ -165,7 +184,7 @@ Phương thức `exists` có thể được sử dụng để xác định xem m
 <a name="downloading-files"></a>
 ### Tải File
 
-Phương thức `download` có thể được sử dụng để tạo một response buộc trình duyệt của người dùng tải xuống một file theo đường dẫn đã cho. Phương thức `download` chấp nhận một tên file làm đối số thứ hai cho phương thức, tên file này sẽ hiển thị khi người dùng tải xuống. Cuối cùng, bạn có thể truyền một mảng HTTP header làm đối số thứ ba cho phương thức:
+Phương thức `download` có thể được sử dụng để tạo một response buộc trình duyệt của người dùng tải xuống một file theo đường dẫn đã cho. Phương thức `download` chấp nhận một tên file làm tham số thứ hai cho phương thức, tên file này sẽ hiển thị khi người dùng tải xuống. Cuối cùng, bạn có thể truyền một mảng HTTP header làm tham số thứ ba cho phương thức:
 
     return Storage::download('file.jpg');
 
@@ -188,6 +207,14 @@ Bạn có thể sử dụng phương thức `url` để lấy ra URL đã cho ch
 
     $url = Storage::temporaryUrl(
         'file.jpg', now()->addMinutes(5)
+    );
+
+Nếu bạn cần chỉ định thêm một [S3 request parameters](https://docs.aws.amazon.com/AmazonS3/latest/API/RESTObjectGET.html#RESTObjectGET-requests), bạn có thể truyền một mảng request parameter làm tham số thứ ba cho phương thức `temporaryUrl`:
+
+    $url = Storage::temporaryUrl(
+        'file.jpg',
+        now()->addMinutes(5),
+        ['ResponseContentType' => 'application/octet-stream']
     );
 
 #### Local URL Host Customization
@@ -308,6 +335,8 @@ Bạn cũng có thể sử dụng phương thức `putFileAs` trên facade `Stor
         'avatars', $request->file('avatar'), $request->user()->id
     );
 
+> {note} Các ký tự unicode không in được hoặc không hợp lệ sẽ bị tự động xóa khỏi đường dẫn đến file. Vì vậy, bạn có thể muốn làm sạch đường dẫn đến file của bạn trước khi truyền chúng đến các phương thức lưu trữ file của Laravel. Đường dẫn đến file có thể được chuẩn hóa bằng phương thức `League\Flysystem\Util::normalizePath`.
+
 #### Specifying A Disk
 
 Mặc định, phương thức này sẽ sử dụng disk mặc định. Nếu bạn muốn chỉ định một disk khác, hãy truyền tên disk làm tham số thứ hai cho phương thức `store`:
@@ -380,7 +409,7 @@ Phương thức `makeDirectory` sẽ tạo mới một thư mục, bao gồm c�
 
 #### Delete A Directory
 
-Cuối cùng, `deleteDirectory` có thể được sử dụng để xóa một thư mục và tất cả các file trong nó:
+Cuối cùng, phương thức `deleteDirectory` có thể được sử dụng để xóa một thư mục và tất cả các file trong nó:
 
     Storage::deleteDirectory($directory);
 
@@ -408,7 +437,17 @@ Tiếp theo, bạn nên tạo một [service provider](/docs/{{version}}/provide
     class DropboxServiceProvider extends ServiceProvider
     {
         /**
-         * Perform post-registration booting of services.
+         * Register bindings in the container.
+         *
+         * @return void
+         */
+        public function register()
+        {
+            //
+        }
+
+        /**
+         * Bootstrap any application services.
          *
          * @return void
          */
@@ -421,16 +460,6 @@ Tiếp theo, bạn nên tạo một [service provider](/docs/{{version}}/provide
 
                 return new Filesystem(new DropboxAdapter($client));
             });
-        }
-
-        /**
-         * Register bindings in the container.
-         *
-         * @return void
-         */
-        public function register()
-        {
-            //
         }
     }
 

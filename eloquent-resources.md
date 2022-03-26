@@ -3,6 +3,7 @@
 - [Giới thiệu](#introduction)
 - [Tạo Resources](#generating-resources)
 - [Khái niệm tổng quan](#concept-overview)
+    - [Resource Collections](#resource-collections)
 - [Viết Resources](#writing-resources)
     - [Data Wrapping](#data-wrapping)
     - [Phân trang](#pagination)
@@ -75,6 +76,7 @@ Mọi class resource đều định nghĩa một phương thức `toArray` trả
         return new UserResource(User::find(1));
     });
 
+<a name="resource-collections"></a>
 ### Resource Collections
 
 Nếu bạn đang trả về một resource collection hoặc một response đang được phân trang, bạn có thể sử dụng phương thức `collection` khi tạo instance resource trong route hoặc controller của bạn:
@@ -124,6 +126,35 @@ Sau khi định nghĩa xong resource collection của bạn, nó có thể đư�
 
     Route::get('/users', function () {
         return new UserCollection(User::all());
+    });
+
+#### Preserving Collection Keys
+
+Khi trả về một resource collection từ một route, Laravel sẽ reset lại các khóa của collection để chúng có thứ tự sắp xếp từ 0. Tuy nhiên, bạn có thể thêm thuộc tính `preserveKeys` vào class resource của bạn để cho biết liệu khóa collection có được giữ nguyên hay không:
+
+    <?php
+
+    namespace App\Http\Resources;
+
+    use Illuminate\Http\Resources\Json\JsonResource;
+
+    class User extends JsonResource
+    {
+        /**
+         * Indicates if the resource's collection keys should be preserved.
+         *
+         * @var bool
+         */
+        public $preserveKeys = true;
+    }
+
+Khi thuộc tính `secureKeys` được set thành `true`, các khóa của collection sẽ được giữ nguyên:
+
+    use App\User;
+    use App\Http\Resources\User as UserResource;
+
+    Route::get('/user', function () {
+        return UserResource::collection(User::all()->keyBy->id);
     });
 
 #### Tùy biến Resource Class cơ bản
@@ -293,16 +324,6 @@ Nếu bạn muốn vô hiệu hóa việc bao bọc resource này, bạn có th�
     class AppServiceProvider extends ServiceProvider
     {
         /**
-         * Perform post-registration booting of services.
-         *
-         * @return void
-         */
-        public function boot()
-        {
-            Resource::withoutWrapping();
-        }
-
-        /**
          * Register bindings in the container.
          *
          * @return void
@@ -310,6 +331,16 @@ Nếu bạn muốn vô hiệu hóa việc bao bọc resource này, bạn có th�
         public function register()
         {
             //
+        }
+
+        /**
+         * Bootstrap any application services.
+         *
+         * @return void
+         */
+        public function boot()
+        {
+            Resource::withoutWrapping();
         }
     }
 

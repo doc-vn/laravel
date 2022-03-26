@@ -50,6 +50,22 @@ Ví dụ, nếu bạn cần report các loại ngoại lệ khác nhau theo các
 
 > {tip} Thay vì thực hiện nhiều kiểm tra `instanceof` trong phương thức `report` của bạn, hãy thử sử dụng [reportable exceptions](/docs/{{version}}/errors#renderable-exceptions)
 
+#### Global Log Context
+
+Nếu có sẵn, Laravel sẽ tự động thêm ID của người dùng hiện tại vào mọi log message của ngoại lệ dưới dạng dữ liệu theo ngữ cảnh. Bạn có thể định nghĩa dữ liệu theo ngữ cảnh global của riêng bạn bằng cách ghi đè phương thức `context` của class `App\Exceptions\Handler` trong ứng dụng của bạn. Thông tin này sẽ được thêm vào trong mọi log message của ngoại lệ được viết bởi ứng dụng của bạn:
+
+    /**
+     * Get the default context variables for logging.
+     *
+     * @return array
+     */
+    protected function context()
+    {
+        return array_merge(parent::context(), [
+            'foo' => 'bar',
+        ]);
+    }
+
 #### Helper `report`
 
 Thỉnh thoảng bạn có thể cần report một ngoại lệ nhưng vẫn tiếp tục chạy request hiện tại. Hàm helper `report` cho phép bạn nhanh chóng report một ngoại lệ bằng cách sử dụng phương thức `report` trong class `App\Exceptions\Handler` mà không hiển thị lỗi đó trên trang:
@@ -137,6 +153,8 @@ Thay vì cách kiểm tra các loại của ngoại lệ như trong các phươn
             return response(...);
         }
     }
+
+> {tip} Bạn có thể khai báo bất kỳ phụ thuộc nào bắt buộc của phương thức `report` và chúng sẽ tự động được tích hợp vào trong phương thức bởi [service container](/docs/{{version}}/container).
 
 <a name="http-exceptions"></a>
 ## HTTP Exceptions

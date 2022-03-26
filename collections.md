@@ -78,12 +78,15 @@ Trong phần còn lại của tài liệu này, chúng ta sẽ thảo luận v�
 [contains](#method-contains)
 [containsStrict](#method-containsstrict)
 [count](#method-count)
+[countBy](#method-countBy)
 [crossJoin](#method-crossjoin)
 [dd](#method-dd)
 [diff](#method-diff)
 [diffAssoc](#method-diffassoc)
 [diffKeys](#method-diffkeys)
 [dump](#method-dump)
+[duplicates](#method-duplicates)
+[duplicatesStrict](#method-duplicatesstrict)
 [each](#method-each)
 [eachSpread](#method-eachspread)
 [every](#method-every)
@@ -104,6 +107,7 @@ Trong phần còn lại của tài liệu này, chúng ta sẽ thảo luận v�
 [intersectByKeys](#method-intersectbykeys)
 [isEmpty](#method-isempty)
 [isNotEmpty](#method-isnotempty)
+[join](#method-join)
 [keyBy](#method-keyby)
 [keys](#method-keys)
 [last](#method-last)
@@ -117,6 +121,7 @@ Trong phần còn lại của tài liệu này, chúng ta sẽ thảo luận v�
 [max](#method-max)
 [median](#method-median)
 [merge](#method-merge)
+[mergeRecursive](#method-mergerecursive)
 [min](#method-min)
 [mode](#method-mode)
 [nth](#method-nth)
@@ -133,6 +138,8 @@ Trong phần còn lại của tài liệu này, chúng ta sẽ thảo luận v�
 [random](#method-random)
 [reduce](#method-reduce)
 [reject](#method-reject)
+[replace](#method-replace)
+[replaceRecursive](#method-replacerecursive)
 [reverse](#method-reverse)
 [search](#method-search)
 [shift](#method-shift)
@@ -334,6 +341,31 @@ Phương thức `count` sẽ trả về tổng số các item trong collection:
 
     // 4
 
+<a name="method-countBy"></a>
+#### `countBy()` {#collection-method}
+
+Phương thức `countBy` sẽ đếm số lần xuất hiện của các giá trị trong một collection. Mặc định, phương thức này sẽ đếm số lần xuất hiện của tất cả các phần tử:
+
+    $collection = collect([1, 2, 2, 2, 3]);
+
+    $counted = $collection->countBy();
+
+    $counted->all();
+
+    // [1 => 1, 2 => 3, 3 => 1]
+
+Tuy nhiên, nếu bạn truyền vào một lệnh callback cho phương thức `countBy`, thì nó sẽ đếm tất cả các item theo quy luật tùy chỉnh của bạn:
+
+    $collection = collect(['alice@gmail.com', 'bob@yahoo.com', 'carlos@gmail.com']);
+
+    $counted = $collection->countBy(function ($email) {
+        return substr(strrchr($email, "@"), 1);
+    });
+
+    $counted->all();
+
+    // ['gmail.com' => 2, 'yahoo.com' => 1]
+
 <a name="method-crossjoin"></a>
 #### `crossJoin()` {#collection-method}
 
@@ -472,6 +504,34 @@ Phương thức `dump` sẽ hiển thị các item của collection:
 
 Nếu bạn muốn dừng thực thi lệnh sau khi dump collection, hãy sử dụng phương thức [`dd`](#method-dd) để thay thế.
 
+<a name="method-duplicates"></a>
+#### `duplicates()` {#collection-method}
+
+Phương thức `duplicates` sẽ lấy ra và trả về các giá trị trùng lặp từ collection:
+
+    $collection = collect(['a', 'b', 'a', 'c', 'b']);
+
+    $collection->duplicates();
+
+    // [2 => 'a', 4 => 'b']
+
+Nếu collection chứa các mảng hoặc các đối tượng, bạn có thể truyền vào khóa của thuộc tính mà bạn muốn kiểm tra:
+
+    $employees = collect([
+        ['email' => 'abigail@example.com', 'position' => 'Developer'],
+        ['email' => 'james@example.com', 'position' => 'Designer'],
+        ['email' => 'victoria@example.com', 'position' => 'Developer'],
+    ])
+
+    $employees->duplicates('position');
+
+    // [2 => 'Developer']
+
+<a name="method-duplicatesstrict"></a>
+#### `duplicatesStrict()` {#collection-method}
+
+Phương thức này có cùng chức năng với phương thức [`duplicates`](#method-duplicates); tuy nhiên, tất cả các giá trị đều được so sánh bằng cách sử dụng so sánh "nghiêm ngặt".
+
 <a name="method-each"></a>
 #### `each()` {#collection-method}
 
@@ -590,7 +650,7 @@ Bạn cũng có thể gọi phương thức `first` mà không có tham số đ�
 Phương thức `firstWhere` sẽ trả về phần tử đầu tiên có trong collection với cặp key value đã cho:
 
     $collection = collect([
-        ['name' => 'Regena', 'age' => 12],
+        ['name' => 'Regena', 'age' => null],
         ['name' => 'Linda', 'age' => 14],
         ['name' => 'Diego', 'age' => 23],
         ['name' => 'Linda', 'age' => 84],
@@ -605,6 +665,12 @@ Bạn cũng có thể gọi phương thức `firstWhere` bằng toán tử:
     $collection->firstWhere('age', '>=', 18);
 
     // ['name' => 'Diego', 'age' => 23]
+
+Giống như phương thức [where](#method-where), bạn có thể truyền một tham số cho phương thức `firstWhere`. Trong trường hợp này, phương thức `firstWhere` sẽ trả về item đầu tiên mà có giá trị của khóa đã cho là "truthy":
+
+    $collection->firstWhere('age');
+
+    // ['name' => 'Linda', 'age' => 14]
 
 <a name="method-flatmap"></a>
 #### `flatMap()` {#collection-method}
@@ -891,6 +957,7 @@ Phương thức `intersectByKeys` loại bỏ bất kỳ key nào ra khỏi coll
 #### `isEmpty()` {#collection-method}
 
 Phương thức `isEmpty` sẽ trả về` true` nếu collection trống; ngược lại, `false` được trả về:
+
     collect([])->isEmpty();
 
     // true
@@ -903,6 +970,17 @@ Phương thức `isNotEmpty` sẽ trả về `true` nếu collection không tr�
     collect([])->isNotEmpty();
 
     // false
+
+<a name="method-join"></a>
+#### `join()` {#collection-method}
+
+Phương thức `join` sẽ nối các giá trị của collection với một string:
+
+    collect(['a', 'b', 'c'])->join(', '); // 'a, b, c'
+    collect(['a', 'b', 'c'])->join(', ', ', and '); // 'a, b, and c'
+    collect(['a', 'b'])->join(', ', ' and '); // 'a and b'
+    collect(['a'])->join(', ', ' and '); // 'a'
+    collect([])->join(', ', ' and '); // ''
 
 <a name="method-keyby"></a>
 #### `keyBy()` {#collection-method}
@@ -1160,6 +1238,19 @@ Nếu các key của các item đã cho là số, thì các giá trị sẽ đư
     $merged->all();
 
     // ['Desk', 'Chair', 'Bookcase', 'Door']
+
+<a name="method-mergerecursive"></a>
+#### `mergeRecursive()` {#collection-method}
+
+Phương thức `mergeRecursive` sẽ hợp nhất một mảng hoặc một collection đã cho với một collection ban đầu theo cách đệ quy. Nếu một khóa string trong các item đã cho khớp với khóa string trong collection ban đầu, thì các giá trị cho các khóa này sẽ được hợp nhất với nhau thành một mảng và điều này được thực hiện theo cách đệ quy:
+
+    $collection = collect(['product_id' => 1, 'price' => 100]);
+
+    $merged = $collection->mergeRecursive(['product_id' => 2, 'price' => 200, 'discount' => false]);
+
+    $merged->all();
+
+    // ['product_id' => [1, 2], 'price' => [100, 200], 'discount' => false]
 
 <a name="method-min"></a>
 #### `min()` {#collection-method}
@@ -1448,6 +1539,32 @@ Phương thức `reject` sẽ lọc một collection bằng cách sử dụng h�
     // [1, 2]
 
 Đối ngược với phương thức `reject`, hãy xem phương thức [`filter`](#method-filter).
+
+<a name="method-replace"></a>
+#### `replace()` {#collection-method}
+
+Phương thức `replace` hoạt động tương tự như `merge`; tuy nhiên, ngoài việc ghi đè các item phù hợp bằng các khóa string, phương thức `replace` cũng sẽ ghi đè các item trong collection mà có các khóa numeric phù hợp:
+
+    $collection = collect(['Taylor', 'Abigail', 'James']);
+
+    $replaced = $collection->replace([1 => 'Victoria', 3 => 'Finn']);
+
+    $replaced->all();
+
+    // ['Taylor', 'Victoria', 'James', 'Finn']
+
+<a name="method-replacerecursive"></a>
+#### `replaceRecursive()` {#collection-method}
+
+Phương thức này hoạt động giống như `replace`, nhưng nó sẽ đệ quy vào trong các mảng và áp dụng quy trình replace tương tự cho các giá trị ở bên trong:
+
+    $collection = collect(['Taylor', 'Abigail', ['James', 'Victoria', 'Finn']]);
+
+    $replaced = $collection->replaceRecursive(['Charlie', 2 => [1 => 'King']]);
+
+    $replaced->all();
+
+    // ['Charlie', 'Abigail', ['James', 'King', 'Finn']]
 
 <a name="method-reverse"></a>
 #### `reverse()` {#collection-method}
@@ -1819,7 +1936,7 @@ Phương thức `toArray` sẽ chuyển đổi collection thành một PHP `arra
         ]
     */
 
-> {note} `toArray` cũng sẽ chuyển đổi tất cả các đối tượng có trong collection thành một mảng kể cả các đối tượng nằm sâu bên trong mảng. Nếu bạn muốn lấy một mảng của các đối tượng, thì bạn có thể sử dụng phương thức [`all`](#method-all).
+> {note} `toArray` cũng sẽ chuyển đổi tất cả các đối tượng `Arrayable` có trong collection thành một mảng kể cả các đối tượng nằm sâu bên trong mảng. Nếu bạn muốn lấy một mảng thô của các đối tượng, bạn có thể sử dụng phương thức [`all`](#method-all).
 
 <a name="method-tojson"></a>
 #### `toJson()` {#collection-method}
@@ -2116,6 +2233,25 @@ Phương thức `where` sẽ lọc collection theo giá trị của cặp key v�
     */
 
 Phương thức `where` sẽ sử dụng phép so sánh "lỏng lẻo" khi kiểm tra các giá trị của item, nghĩa là một chuỗi có giá trị integer sẽ bằng với một số integer có cùng giá trị. Sử dụng phương thức [`whereStrict`](#method-wherestrict) để lọc collection bằng các so sánh "nghiêm ngặt".
+
+Bạn có thể tùy chọn truyền thêm vào một toán tử so sánh làm tham số thứ hai cho phương thức.
+
+    $collection = collect([
+        ['name' => 'Jim', 'deleted_at' => '2019-01-01 00:00:00'],
+        ['name' => 'Sally', 'deleted_at' => '2019-01-02 00:00:00'],
+        ['name' => 'Sue', 'deleted_at' => null],
+    ]);
+
+    $filtered = $collection->where('deleted_at', '!=', null);
+
+    $filtered->all();
+
+    /*
+        [
+            ['name' => 'Jim', 'deleted_at' => '2019-01-01 00:00:00'],
+            ['name' => 'Sally', 'deleted_at' => '2019-01-02 00:00:00'],
+        ]
+    */
 
 <a name="method-wherestrict"></a>
 #### `whereStrict()` {#collection-method}

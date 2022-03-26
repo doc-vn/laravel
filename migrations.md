@@ -66,7 +66,7 @@ Trong cả hai phương thức này, bạn đều có thể sử dụng schema b
         public function up()
         {
             Schema::create('flights', function (Blueprint $table) {
-                $table->increments('id');
+                $table->bigIncrements('id');
                 $table->string('name');
                 $table->string('airline');
                 $table->timestamps();
@@ -144,7 +144,7 @@ Lệnh `migrate:fresh` sẽ xóa tất cả các bảng ra khỏi cơ sở dữ 
 Để tạo một bảng cơ sở dữ liệu mới, hãy sử dụng phương thức `create` trên facade `Schema`. Phương thức `create` chấp nhận hai tham số.Tham số đầu tiên là tên của bảng, trong khi tham số thứ hai là một `Closure` nhận vào một đối tượng `Blueprint` có thể được sử dụng để định nghĩa một bảng mới:
 
     Schema::create('users', function (Blueprint $table) {
-        $table->increments('id');
+        $table->bigIncrements('id');
     });
 
 Khi tạo bảng, bạn có thể sử dụng bất kỳ [column methods](#creating-columns) nào của schema builder để định nghĩa các cột của bảng.
@@ -166,7 +166,7 @@ Bạn có thể dễ dàng kiểm tra sự tồn tại của một bảng hoặc
 Nếu bạn muốn thực hiện một schema trên một kết nối cơ sở dữ liệu không phải là kết nối mặc định của bạn, hãy sử dụng phương thức `connection`:
 
     Schema::connection('foo')->create('users', function (Blueprint $table) {
-        $table->increments('id');
+        $table->bigIncrements('id');
     });
 
 Bạn có thể sử dụng các lệnh sau trên schema builder để định nghĩa các tùy chọn cho bảng:
@@ -239,14 +239,17 @@ Lệnh  |  Mô tả
 `$table->mediumInteger('votes');`  |  Tương đương với cột kiểu MEDIUMINT.
 `$table->mediumText('description');`  |  Tương đương với cột kiểu MEDIUMTEXT.
 `$table->morphs('taggable');`  |  Thêm cột `taggable_id` kiểu BIGINT luôn dương và cột `taggable_type` kiểu VARCHARs.
+`$table->uuidMorphs('taggable');`  |  Thêm cột UUID `taggable_id` kiểu CHAR(36) và cột `taggable_type` kiểu VARCHAR(255).
 `$table->multiLineString('positions');`  |  Tương đương với cột kiểu MULTILINESTRING.
 `$table->multiPoint('positions');`  |  Tương đương với cột kiểu MULTIPOINT.
 `$table->multiPolygon('positions');`  |  Tương đương với cột kiểu MULTIPOLYGON.
 `$table->nullableMorphs('taggable');`  |  Phiên bản thêm giá trị nullable vào cột `morphs()`.
+`$table->nullableUuidMorphs('taggable');`  |  Phiên bản thêm giá trị nullable vào cột `uuidMorphs()`.
 `$table->nullableTimestamps();`  |  Lối tắt của phương thức `timestamps()`.
 `$table->point('position');`  |  Tương đương với cột kiểu POINT.
 `$table->polygon('positions');`  |  Tương đương với cột kiểu POLYGON.
 `$table->rememberToken();`  |  Thêm cột `remember_token` VARCHAR(100) cho phép nullable.
+`$table->set('flavors', ['strawberry', 'vanilla']);`  |  SET giá trị có thể được lưu cho một cột.
 `$table->smallIncrements('id');`  |  Tương đương với cột (primary key) tự động tăng và là số dương kiểu SMALLINT.
 `$table->smallInteger('votes');`  |  Tương đương với cột kiểu SMALLINT.
 `$table->softDeletes();`  |  Thêm cột `deleted_at` kiểu TIMESTAMP cho phép nullable cho soft deletes.
@@ -286,7 +289,7 @@ Modifier  |  Mô tả
 `->after('column')`  |  Set một column vào "sau" một column khác (MySQL)
 `->autoIncrement()`  |  Set một cột kiểu INTEGER là tự động tăng (primary key)
 `->charset('utf8')`  |  Khai báo character set cho cột (MySQL)
-`->collation('utf8_unicode_ci')`  |  Khai báo collation cho cột (MySQL/SQL Server)
+`->collation('utf8_unicode_ci')`  |  Khai báo collation cho cột (MySQL/PostgreSQL/SQL Server)
 `->comment('my comment')`  |  Thêm comment vào một column (MySQL/PostgreSQL)
 `->default($value)`  |  Khai báo giá trị "default" cho cột
 `->first()`  |  Set một column vào vị trí "đầu tiên" trong table (MySQL)
@@ -354,6 +357,7 @@ Bạn có thể xóa nhiều cột từ một bảng bằng cách truyền một
 
 Command  |  Description
 -------  |  -----------
+`$table->dropMorphs('morphable');`  |  Xoá cột `morphable_id` và cột `morphable_type`.
 `$table->dropRememberToken();`  |  Xoá cột `remember_token`.
 `$table->dropSoftDeletes();`  |  Xoá cột `deleted_at`.
 `$table->dropSoftDeletesTz();`  |  Lối tắt của phương thức `dropSoftDeletes()`.
@@ -384,7 +388,7 @@ Laravel sẽ tự động tạo một tên index phù hợp, nhưng bạn có th
 
 #### Available Index Types
 
-Mỗi phương thức của index chấp nhận một đối số thứ hai tùy chọn để chỉ định tên của index. Nếu bỏ qua tuỳ chọn này, thì tên sẽ được lấy từ tên của (các) bảng và cột.
+Mỗi phương thức của index chấp nhận một tham số thứ hai tùy chọn để chỉ định tên của index. Nếu bỏ qua tuỳ chọn này, thì tên sẽ được lấy từ tên của (các) bảng và cột.
 
 Command  |  Description
 -------  |  -----------
@@ -415,7 +419,7 @@ Ngoài ra, bạn có thể kích hoạt tùy chọn `innodb_large_prefix` cho c�
 <a name="renaming-indexes"></a>
 ### Đổi tên Index
 
-Để đổi tên một index, bạn có thể sử dụng phương thức `renameIndex`. Phương thức này chấp nhận tên index hiện tại làm đối số đầu tiên và tên mong muốn làm đối số thứ hai:
+Để đổi tên một index, bạn có thể sử dụng phương thức `renameIndex`. Phương thức này chấp nhận tên index hiện tại làm tham số đầu tiên và tên mong muốn làm tham số thứ hai:
 
     $table->renameIndex('from', 'to')
 
@@ -443,7 +447,7 @@ Nếu bạn truyền một mảng gồm các cột vào trong một phương th�
 Laravel cũng cung cấp hỗ trợ để tạo các ràng buộc khóa ngoại, được sử dụng để đảm bảo tính toàn vẹn cho cơ sở dữ liệu. Ví dụ: hãy định nghĩa một cột `user_id` trong bảng `posts` là khoá ngoại của cột `id` trong bảng` users`:
 
     Schema::table('posts', function (Blueprint $table) {
-        $table->unsignedInteger('user_id');
+        $table->unsignedBigInteger('user_id');
 
         $table->foreign('user_id')->references('id')->on('users');
     });

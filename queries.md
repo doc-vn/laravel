@@ -20,6 +20,7 @@
     - [Increment và Decrement](#increment-and-decrement)
 - [Delete](#deletes)
 - [Pessimistic Locking](#pessimistic-locking)
+- [Debugging](#debugging)
 
 <a name="introduction"></a>
 ## Giới thiệu
@@ -27,6 +28,8 @@
 Database query builder của Laravel cung cấp một interface thuận tiện, dễ dàng để tạo và chạy các query vào cơ sở dữ liệu. Nó có thể được sử dụng để thực hiện hầu hết các hành động vào cơ sở dữ liệu trong application của bạn và có thể làm việc trên tất cả các hệ thống cơ sở dữ liệu được hỗ trợ.
 
 Query builder của Laravel sử dụng tham số PDO để bảo vệ application của bạn khỏi các cuộc tấn công SQL injection. Bạn sẽ không cần phải chuẩn hoá các chuỗi trước khi truyền vào query.
+
+> {note} PDO không hỗ trợ truyền tên cột dưới dạng biến. Do đó, bạn không nên cho phép người dùng nhập tên cột mà truy vấn của bạn tham chiếu, bao gồm cả cột "order by", vv. Nếu bạn phải cho phép người dùng chọn một số cột nhất định để truy vấn, hãy luôn validate tên cột dựa trên một danh sách trắng gồm tên các cột được phép truy vấn.
 
 <a name="retrieving-results"></a>
 ## Lấy ra kết quả
@@ -74,6 +77,10 @@ Nếu bạn chỉ cần lấy ra một hàng từ một bảng cơ sở dữ li�
 Nếu bạn không cần lấy ra toàn bộ giá trị của một hàng, bạn có thể lấy ra một giá trị của một bản ghi bằng cách sủ dụng phương thức `value`. Phương thức này sẽ trả về giá trị của cột mà bạn đã khai báo:
 
     $email = DB::table('users')->where('name', 'John')->value('email');
+
+Để lấy một row theo giá trị cột `id` của nó, hãy sử dụng phương thức `find`:
+
+    $user = DB::table('users')->find(3);
 
 #### Retrieving A List Of Column Values
 
@@ -347,14 +354,14 @@ Bạn có thể kết hợp các điều kiện với nhau cũng như thêm các
 
 #### Additional Where Clauses
 
-**whereBetween**
+**whereBetween / orWhereBetween**
 
 Phương thức `whereBetween` sẽ kiểm tra giá trị của một cột nằm giữa hai giá trị đã cho:
 
     $users = DB::table('users')
                         ->whereBetween('votes', [1, 100])->get();
 
-**whereNotBetween**
+**whereNotBetween / orWhereNotBetween**
 
 Phương thức `whereNotBetween` sẽ kiểm tra giá trị của một cột nằm ngoài hai giá trị đã cho:
 
@@ -362,7 +369,7 @@ Phương thức `whereNotBetween` sẽ kiểm tra giá trị của một cột n
                         ->whereNotBetween('votes', [1, 100])
                         ->get();
 
-**whereIn / whereNotIn**
+**whereIn / whereNotIn / orWhereIn / orWhereNotIn**
 
 Phương thức `whereIn` sẽ kiểm tra giá trị của một cột đã cho có được chứa trong mảng các giá trị đã cho hay không:
 
@@ -376,7 +383,7 @@ Phương thức `whereNotIn` sẽ kiểm tra giá trị của một cột đã c
                         ->whereNotIn('id', [1, 2, 3])
                         ->get();
 
-**whereNull / whereNotNull**
+**whereNull / whereNotNull / orWhereNull / orWhereNotNull**
 
 Phương thức `whereNull` sẽ kiểm tra giá trị của một cột đã cho là `NULL` hay không:
 
@@ -422,7 +429,7 @@ Phương thức `whereTime` có thể được sử dụng để so sánh giá t
                     ->whereTime('created_at', '=', '11:20:45')
                     ->get();
 
-**whereColumn**
+**whereColumn / orWhereColumn**
 
 Phương thức `whereColumn` có thể được sử dụng để kiểm tra hai cột có bằng nhau hay không:
 
@@ -619,6 +626,13 @@ Bạn thậm chí có thể thêm nhiều bản ghi vào bảng của cơ sở d
         ['email' => 'dayle@example.com', 'votes' => 0]
     ]);
 
+Phương thức `insertOrIgnore` sẽ bỏ qua các bản ghi trùng lặp trong khi chèn bản ghi vào cơ sở dữ liệu:
+
+    DB::table('users')->insertOrIgnore([
+        ['id' => 1, 'email' => 'taylor@example.com'],
+        ['id' => 2, 'email' => 'dayle@example.com']
+    ]);
+
 #### Auto-Incrementing IDs
 
 Nếu bảng có set id tự động tăng, hãy sử dụng phương thức `insertGetId` để thêm bản ghi đó vào và sau đó lấy ra ID:
@@ -653,7 +667,7 @@ Phương thức `updateOrInsert` trước tiên sẽ thử tìm một bản ghi 
 <a name="updating-json-columns"></a>
 ### Update JSON Column
 
-Khi cập nhật một cột JSON, bạn nên sử dụng cú pháp `->` để truy cập vào key thích hợp trong đối tượng JSON. Cách này chỉ được hỗ trợ trên MySQL 5.7+:
+Khi cập nhật một cột JSON, bạn nên sử dụng cú pháp `->` để truy cập vào key thích hợp trong đối tượng JSON. Cách này sẽ hỗ trợ trên MySQL 5.7+ và PostgreSQL 9.5+:
 
     DB::table('users')
                 ->where('id', 1)
@@ -701,3 +715,12 @@ Query builder cũng có chứa một vài chức năng để giúp bạn thực 
 Ngoài ra, bạn có thể sử dụng phương thức `lockForUpdate`. Lock "for update" sẽ ngăn các hàng bị sửa hoặc được select bằng một shared lock khác:
 
     DB::table('users')->where('votes', '>', 100)->lockForUpdate()->get();
+
+<a name="debugging"></a>
+## Debugging
+
+Bạn có thể sử dụng các phương thức `dd` hoặc `dump` trong khi xây dựng một truy vấn để dump ra các ràng buộc truy vấn và câu lệnh SQL. Phương thức `dd` sẽ hiển thị thông tin debug rồi sau đó sẽ ngừng thực hiện request. Trong khi phương thức `dump` sẽ hiển thị thông tin debug nhưng cho phép request tiếp tục được thực thi:
+
+    DB::table('users')->where('votes', '>', 100)->dd();
+
+    DB::table('users')->where('votes', '>', 100)->dump();

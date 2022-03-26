@@ -250,7 +250,7 @@ Các tham số middleware có thể được định nghĩa khi tạo route bằ
 <a name="terminable-middleware"></a>
 ## Middleware kết thúc
 
-Đôi khi, một middleware có thể cần thực hiện một số công việc sau khi response HTTP đã được tạo ra. Ví dụ: middleware "session" đi kèm với Laravel sẽ ghi dữ liệu session vào bộ nhớ sau khi response đã được tạo. Nếu bạn định nghĩa một phương thức `terminate` trong middleware của bạn, thì nó sẽ tự động được gọi sau khi response đã sẵn sàng để gửi về trình duyệt.
+Đôi khi, một middleware có thể cần thực hiện một số công việc sau khi response HTTP được gửi về broswer. Ví dụ: middleware "session" đi kèm với Laravel sẽ ghi dữ liệu session vào bộ nhớ sau khi response được gửi về broswer. Nếu bạn định nghĩa một phương thức `terminate` trong middleware và web server của bạn đang sử dụng FastCGI, thì phương thức `terminate` sẽ tự động được gọi sau khi response đã được gửi về trình duyệt.
 
     <?php
 

@@ -209,7 +209,7 @@ Nếu một số phụ thuộc của class mà bạn mong muốn không thể re
 <a name="automatic-injection"></a>
 #### Tự động tích hợp
 
-Ngoài ra, và rất quan trọng, bạn có thể khai báo sự phụ thuộc vào trong hàm khởi tạo để nó có thể được resolve bởi container, bao gồm [controllers](/docs/{{version}}/controllers), [event listeners](/docs/{{version}}/events), [queue jobs](/docs/{{version}}/queues), [middleware](/docs/{{version}}/middleware), vv... Trong thực tế, đây là cách mà hầu hết các đối tượng của bạn sẽ được resolve bằng container.
+Ngoài ra, và rất quan trọng, bạn có thể khai báo sự phụ thuộc vào trong hàm khởi tạo để nó có thể được resolve bởi container, như ở trong [controllers](/docs/{{version}}/controllers), [event listeners](/docs/{{version}}/events), [middleware](/docs/{{version}}/middleware), và nhiều lớp khác. Ngoài ra, bạn có thể khai báo phụ thuộc ở trong phương thức `handle` của [queued job](/docs/{{version}}/queues). Trong thực tế, đây là cách mà hầu hết các đối tượng của bạn sẽ được resolve bằng container.
 
 Ví dụ: bạn có thể khai báo một repository của bạn trong hàm khởi tạo của một controller. Repository đó sẽ tự động được resolve và đưa vào trong class:
 

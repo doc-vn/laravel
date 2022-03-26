@@ -42,7 +42,7 @@ Ví dụ, hãy sửa class `DatabaseSeeder` mặc định và thêm một câu s
             DB::table('users')->insert([
                 'name' => Str::random(10),
                 'email' => Str::random(10).'@gmail.com',
-                'password' => bcrypt('secret'),
+                'password' => bcrypt('password'),
             ]);
         }
     }
@@ -103,3 +103,10 @@ Bây giờ bạn có thể sử dụng lệnh Artisan `db:seed` để tạo cơ 
 Bạn cũng có thể tạo cơ sở dữ liệu cho bạn bằng lệnh `migrate:refresh`, lệnh này cũng sẽ rollback và chạy lại tất cả các migration của bạn. Nó sẽ hữu ích khi bạn building lại hoàn toàn cơ sở dữ liệu của bạn:
 
     php artisan migrate:refresh --seed
+
+<a name="forcing-seeding-production"></a>
+#### Buộc Seeder phải chạy trong môi trường production
+
+Một số thao tác seeding có thể khiến dữ liệu của bạn bị thay đổi hoặc bị mất. Để bảo vệ bạn khỏi việc chạy các lệnh seeding trên các cơ sở dữ liệu production, bạn sẽ được nhắc xác nhận trước khi seeder được chạy. Để buộc seeder chạy mà không có nhắc xác nhận, hãy sử dụng flag `--force`:
+
+    php artisan db:seed --force

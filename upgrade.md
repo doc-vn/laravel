@@ -1,522 +1,653 @@
 # Upgrade Guide
 
-- [Nâng cấp đến 5.7.0 từ 5.6](#upgrade-5.7.0)
+- [Nâng cấp đến 5.8.0 từ 5.7](#upgrade-5.8.0)
 
-<a name="upgrade-5.7.0"></a>
-## Nâng cấp đến 5.7.0 từ 5.6
+<a name="high-impact-changes"></a>
+## Những thay đổi có tác động lớn
 
-#### Estimated Upgrade Time: 10 - 15 Minutes
+<div class="content-list" markdown="1">
+
+- [Cache TTL In Seconds](#cache-ttl-in-seconds)
+- [Cache Lock Safety Improvements](#cache-lock-safety-improvements)
+- [Environment Variable Parsing](#environment-variable-parsing)
+- [Markdown File Directory Change](#markdown-file-directory-change)
+- [Nexmo / Slack Notification Channels](#nexmo-slack-notification-channels)
+- [New Default Password Length](#new-default-password-length)
+
+</div>
+
+<a name="medium-impact-changes"></a>
+## Thay đổi có tác động trung bình
+
+<div class="content-list" markdown="1">
+
+- [Container Generators & Tagged Services](#container-generators)
+- [SQLite Version Constraints](#sqlite)
+- [Prefer String And Array Classes Over Helpers](#string-and-array-helpers)
+- [Deferred Service Providers](#deferred-service-providers)
+- [PSR-16 Conformity](#psr-16-conformity)
+- [Model Names Ending With Irregular Plurals](#model-names-ending-with-irregular-plurals)
+- [Custom Pivot Models With Incrementing IDs](#custom-pivot-models-with-incrementing-ids)
+- [Pheanstalk 4.0](#pheanstalk-4)
+- [Carbon 2.0](#carbon-2.0)
+
+</div>
+
+<a name="upgrade-5.8.0"></a>
+## Nâng cấp đến 5.8.0 từ 5.7
+
+#### Estimated Upgrade Time: 1 Hour
 
 > {note} Chúng tôi sẽ cố gắng ghi lại mọi thay đổi có thể xảy ra. Vì một số thay đổi này nằm trong các phần ẩn của framework, nên chỉ một phần trong những thay đổi này có thể thực sự ảnh hưởng đến application của bạn.
 
+<a name="updating-dependencies"></a>
 ### Updating Dependencies
 
-Cập nhật library `laravel/framework` của bạn thành `5.7.*` trong file `composer.json` của bạn.
+Cập nhật library `laravel/framework` của bạn thành `5.8.*` trong file `composer.json` của bạn.
 
-Nếu bạn đang sử dụng Laravel Passport, bạn nên cập nhật library `laravel/passport` của bạn thành `^7.0` trong file `composer.json` của bạn.
+Tiếp theo, kiểm tra bất kỳ package bên thứ 3 nào mà được ứng dụng của bạn sử dụng và xác nhận rằng bạn đang sử dụng phiên bản phù hợp của package để hỗ trợ Laravel 5.8.
 
-Tiếp theo, kiểm tra bất kỳ package bên thứ 3 nào mà được ứng dụng của bạn sử dụng và xác nhận rằng bạn đang sử dụng phiên bản phù hợp của package để hỗ trợ Laravel 5.7.
+<a name="the-application-contract"></a>
+### The `Application` Contract
 
-### Application
-
-#### The `register` Method
+#### The `environment` Method
 
 **Likelihood Of Impact: Very Low**
 
-Tham số `options` trong phương thức `register` của class `Illuminate\Foundation\Application` không được sử dụng nên đã bị xóa. Nếu bạn đang ghi đè phương thức này, bạn nên cập nhật định dạng mới cho phương thức của bạn:
+Định dạng phương thức `environment` của contract `Illuminate\Contracts\Foundation\Application` [đã bị thay đổi](https://github.com/laravel/framework/pull/26296). Nếu bạn đang implement contract này trong ứng dụng của bạn, bạn nên cập nhật định dạng mới của phương thức đó:
 
     /**
-     * Register a service provider with the application.
+     * Get or check the current application environment.
      *
-     * @param  \Illuminate\Support\ServiceProvider|string  $provider
-     * @param  bool   $force
-     * @return \Illuminate\Support\ServiceProvider
+     * @param  string|array  $environments
+     * @return string|bool
      */
-    public function register($provider, $force = false);
+    public function environment(...$environments);
 
-### Artisan
+#### Added Methods
 
-#### Scheduled Job Connection & Queues
+**Likelihood Of Impact: Very Low**
 
-**Likelihood Of Impact: Low**
+Các phương thức `bootstrapPath`, `configPath`, `databasePath`, `environmentPath`, `resourcePath`, `storagePath`, `resolveProvider`, `bootstrapWith`, `configurationIsCached`, `detectEnvironment`, `environmentFile`, `environmentFilePath`, `getCachedConfigPath`, `getCachedRoutesPath`, `getLocale`, `getNamespace`, `getProviders`, `hasBeenBootstrapped`, `loadDeferredProviders`, `loadEnvironmentFrom`, `routesAreCached`, `setLocale`, `shouldSkipMiddleware` và `terminate` [đã được thêm vào contract `Illuminate\Contracts\Foundation\Application`](https://github.com/laravel/framework/pull/26477).
 
-Phương thức `$schedule->job` sẽ ưu tiên dùng các thuộc tính `queue` và `connection` trên job class nếu một connection hoặc một job không được truyền vào phương thức `job`.
+Đây là trường hợp rất khó xảy ra, nếu bạn đang implement interface này, bạn nên thêm các phương thức này vào trong quá trình implement của bạn.
 
-Nói chung, đây nên được coi là một bản sửa lỗi; tuy nhiên, nó được liệt kê là một thay đổi nghiêm trọng cần thận trọng. [Vui lòng cho chúng tôi biết nếu bạn gặp phải bất kỳ vấn đề nào xung quanh thay đổi này](https://github.com/laravel/framework/pull/25216).
-
-### Assets
-
-#### Asset Directory Flattened
-
-**Likelihood Of Impact: None**
-
-Đối với các ứng dụng Laravel 5.7 mới, thư mục assets chứa các script và các style đã được chuyển thành thư mục `resources`. **Điều này sẽ không** ảnh hưởng đến các ứng dụng hiện có và không yêu cầu bạn phải thay đổi các ứng dụng hiện có của bạn.
-
-Tuy nhiên, nếu bạn muốn thực hiện thay đổi này, bạn nên di chuyển tất cả các file từ thư mục `resources/assets/*` lên một cấp:
-
-- Từ `resources/assets/js/*` thành `resources/js/*`
-- Từ `resources/assets/sass/*` thành `resources/sass/*`
-
-Sau đó, cập nhật các tham chiếu đến các thư mục đó trong file `webpack.mix.js` của bạn:
-
-    mix.js('resources/js/app.js', 'public/js')
-       .sass('resources/sass/app.scss', 'public/css');
-
-#### `svg` Directory Added
-
-**Likelihood Of Impact: Very High**
-
-Một thư mục mới, `svg`, đã được thêm vào thư mục `public`. Nó chứa bốn file svg: `403.svg`, `404.svg`, `500.svg` và `503.svg`, được hiển thị trong các trang lỗi tương ứng với các lỗi của chúng.
-
-Bạn có thể lấy các file [từ GitHub](https://github.com/laravel/laravel/tree/5.7/public/svg).
-
+<a name="authentication"></a>
 ### Authentication
 
-#### The `Authenticate` Middleware
+#### Password Reset Notification Route Parameter
 
 **Likelihood Of Impact: Low**
 
-Phương thức `authenticate` của middleware `Illuminate\Auth\Middleware\Authenticate` đã được cập nhật để chấp nhận một `$request` làm tham số đầu tiên của nó. Nếu bạn đang ghi đè phương thức này trong middleware `Authenticate` của bạn, bạn nên cập nhật định dạng mới của nó:
+Khi người dùng yêu cầu một link để reset mật khẩu của họ, Laravel sẽ tạo một URL bằng cách sử dụng helper `route` để tạo URL cho route có tên là `password.reset`. Khi sử dụng Laravel 5.7, token được truyền tới helper `route` mà không có tên cụ thể, như sau:
 
-    /**
-     * Determine if the user is logged in to any of the given guards.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  array  $guards
-     * @return void
-     *
-     * @throws \Illuminate\Auth\AuthenticationException
-     */
-    protected function authenticate($request, array $guards)
+    route('password.reset', $token);
 
-#### The `ResetsPasswords` Trait
+Khi sử dụng Laravel 5.8, token được truyền tới helper `route` dưới dạng một tham số cụ thể:
 
-**Likelihood Of Impact: Low**
+    route('password.reset', ['token' => $token]);
 
-Phương thức protected `sendResetResponse` của trait `ResetsPasswords` bây giờ sẽ chấp nhận một tham số `Illuminate\Http\Request` làm tham số đầu tiên của nó. Nếu bạn đang ghi đè phương thức này, bạn nên cập nhật định dạng mới của nó:
+Do đó, nếu bạn đang định nghĩa route `password.reset` của riêng bạn, bạn nên đảm bảo rằng nó có chứa tham số `{token}` trong URI của nó.
 
-    /**
-     * Get the response for a successful password reset.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  string  $response
-     * @return \Illuminate\Http\RedirectResponse|\Illuminate\Http\JsonResponse
-     */
-    protected function sendResetResponse(Request $request, $response)
-
-#### The `SendsPasswordResetEmails` Trait
-
-**Likelihood Of Impact: Low**
-
-Phương thức protected `sendResetLinkResponse` của trait `SendsPasswordResetEmails` bây giờ sẽ chấp nhận một tham số `Illuminate\Http\Request` làm tham số đầu tiên của nó. Nếu bạn đang ghi đè phương thức này, bạn nên cập nhật định dạng mới của nó:
-
-    /**
-     * Get the response for a successful password reset link.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  string  $response
-     * @return \Illuminate\Http\RedirectResponse|\Illuminate\Http\JsonResponse
-     */
-    protected function sendResetLinkResponse(Request $request, $response)
-
-### Authorization
-
-#### The `Gate` Contract
-
-**Likelihood Of Impact: Very Low**
-
-Phương thức `raw` đã thay đổi từ `protected` thành `public`. Ngoài ra, nó [đã được thêm vào contract `Illuminate\Contracts\Auth\Access\Gate`](https://github.com/laravel/framework/pull/25143):
-
-    /**
-     * Get the raw result from the authorization callback.
-     *
-     * @param  string  $ability
-     * @param  array|mixed  $arguments
-     * @return mixed
-     */
-    public function raw($ability, $arguments = []);
-
-Nếu bạn đang implement interface này, bạn nên thêm phương thức này vào trong quá trình implement của bạn.
-
-#### The `Login` Event
-
-**Likelihood Of Impact: Very Low**
-
-Phương thức `__construct` của event `Illuminate\Auth\Events\Login` có một tham số `$guard` mới:
-
-    /**
-     * Create a new event instance.
-     *
-     * @param  string  $guard
-     * @param  \Illuminate\Contracts\Auth\Authenticatable  $user
-     * @param  bool  $remember
-     * @return void
-     */
-    public function __construct($guard, $user, $remember)
-
-Nếu bạn đang tự gửi event này trong ứng dụng của bạn, bạn sẽ cần truyền tham số mới này vào hàm constructor của event. Ví dụ sau đây sẽ truyền guard mặc định của framework cho event Login:
-
-    use Illuminate\Auth\Events\Login;
-
-    event(new Login(config('auth.defaults.guard'), $user, $remember))
-
-### Blade
-
-#### The `or` Operator
+<a name="new-default-password-length"></a>
+#### New Default Password Length
 
 **Likelihood Of Impact: High**
 
-Toán tử Blade "or" đã bị loại bỏ và thay vào đó là toán tử `??` "null coalesce" trong PHP, chúng có cùng mục đích và chức năng:
+Độ dài bắt buộc của mật khẩu khi chọn hoặc reset một mật khẩu đã được [thay đổi thành tám ký tự](https://github.com/laravel/framework/pull/25957). Bạn nên cập nhật bất kỳ quy tắc hoặc logic validation nào trong ứng dụng của bạn để phù hợp với độ dài mặc định tám ký tự này.
 
-    // Laravel 5.6...
-    {{ $foo or 'default' }}
+Nếu bạn cần giữ nguyên độ dài sáu ký tự trước đó hoặc một độ dài khác, bạn có thể extend class `Illuminate\Auth\Passwords\PasswordBroker` và ghi đè phương thức `validatePasswordWithDefaults` bằng logic của bạn.
 
-    // Laravel 5.7...
-    {{ $foo ?? 'default' }}
-
+<a name="cache"></a>
 ### Cache
+
+<a name="cache-ttl-in-seconds"></a>
+#### TTL in seconds
 
 **Likelihood Of Impact: Very High**
 
-Một thư mục `data` mới đã được thêm vào `storage/framework/cache`. Bạn nên tạo thư mục này trong ứng dụng của bạn:
+Để cho phép thời gian hết hạn chi tiết hơn khi lưu trữ các item và tuân thủ theo tiêu chuẩn bộ nhớ cache PSR-16, thời gian tồn tại của item trong bộ nhớ cache đã thay đổi từ phút thành giây. Các phương thức `put`, `putMany`, `add`, `remember` và `setDefaultCacheTime` của class `Illuminate\Cache\Repository` và các class extend của nó, cũng như phương thức `put` của mỗi cache store đã được cập nhật với thay đổi này. Hãy xem [PR này](https://github.com/laravel/framework/pull/27276) để biết thêm thông tin.
 
-    mkdir -p storage/framework/cache/data
+Nếu bạn đang truyền một số nguyên cho bất kỳ phương thức nào trong số này, thì bạn nên cập nhật code của bạn để đảm bảo rằng bạn đang truyền số giây mà bạn muốn item vẫn còn tồn tại trong bộ nhớ cache. Ngoài ra, bạn có thể truyền một instance `DateTime` cho biết khi nào item sẽ hết hạn:
 
-Sau đó, thêm file [.gitignore](https://github.com/laravel/laravel/blob/76369205c8715a4a8d0d73061aa042a74fd402dc/storage/framework/cache/data/.gitignore) vào trong thư mục `data` mới được tạo:
+    // Laravel 5.7 - Store item for 30 minutes...
+    Cache::put('foo', 'bar', 30);
 
-    cp storage/framework/cache/.gitignore storage/framework/cache/data/.gitignore
+    // Laravel 5.8 - Store item for 30 seconds...
+    Cache::put('foo', 'bar', 30);
 
-Và cuối cùng, hãy đảm bảo là file [storage/framework/cache/.gitignore](https://github.com/laravel/laravel/blob/76369205c8715a4a8d0d73061aa042a74fd402dc/storage/framework/cache/.gitignore) đã được cập nhật như sau:
+    // Laravel 5.7 / 5.8 - Store item for 30 seconds...
+    Cache::put('foo', 'bar', now()->addSeconds(30));
 
-    *
-    !data/
-    !.gitignore
+> {tip} Thay đổi này làm cho hệ thống bộ cache của Laravel hoàn toàn tuân thủ theo [tiêu chuẩn thư viện bộ nhớ cache PSR-16](https://www.php-fig.org/psr/psr-16/).
 
-### Carbon
-
-**Likelihood Of Impact: Very Low**
-
-Các "macros" carbon bây giờ sẽ được thư viện Carbon xử lý trực tiếp thay vì thư viện mở rộng của Laravel. Chúng tôi không mong đợi điều này sẽ phá hỏng code của bạn; tuy nhiên, [vui lòng cho chúng tôi biết về bất kỳ vấn đề nào mà bạn gặp phải liên quan đến thay đổi này](https://github.com/laravel/framework/pull/23938).
-
-### Collections
-
-#### The `split` Method
-
-**Likelihood Of Impact: Low**
-
-Phương thức `split` [đã được cập nhật để luôn trả về số lượng "nhóm" mà được yêu cầu](https://github.com/laravel/framework/pull/24088), trừ khi tổng số item trong collection gốc quá ít so với số lượng được yêu cầu. Nói chung, đây nên được coi là một bản sửa lỗi; tuy nhiên, nó được liệt kê là một thay đổi nghiêm trọng cần phải thận trọng.
-
-### Cookie
-
-#### `Factory` Contract Method Signature
-
-**Likelihood Of Impact: Very Low**
-
-Định dạng của các phương thức `make` và `forever` của interface `Illuminate\Contracts\Cookie\Factory` [đã được thay đổi](https://github.com/laravel/framework/pull/23200). Nếu bạn đang implement interface này, bạn nên cập nhật các phương thức đó trong quá trình implement của bạn.
-
-### Database
-
-#### The `softDeletesTz` Migration Method
-
-**Likelihood Of Impact: Low**
-
-Phương thức `softDeletesTz` của schema table builder bây giờ sẽ chấp nhận tên cột làm tham số đầu tiên của nó, trong khi `$precision` sẽ được chuyển đến vị trí tham số thứ hai:
-
-    /**
-     * Add a "deleted at" timestampTz for the table.
-     *
-     * @param  string  $column
-     * @param  int  $precision
-     * @return \Illuminate\Support\Fluent
-     */
-    public function softDeletesTz($column = 'deleted_at', $precision = 0)
-
-#### The `ConnectionInterface` Contract
-
-**Likelihood Of Impact: Very Low**
-
-Định dạng phương thức `select` và `selectOne` của contract `Illuminate\Database\ConnectionInterface` đã được cập nhật để phù hợp với tham số `$useReadPdo` mới:
-
-    /**
-     * Run a select statement and return a single result.
-     *
-     * @param  string  $query
-     * @param  array   $bindings
-     * @param  bool  $useReadPdo
-     * @return mixed
-     */
-    public function selectOne($query, $bindings = [], $useReadPdo = true);
-
-    /**
-     * Run a select statement against the database.
-     *
-     * @param  string  $query
-     * @param  array   $bindings
-     * @param  bool  $useReadPdo
-     * @return array
-     */
-    public function select($query, $bindings = [], $useReadPdo = true);
-
-Ngoài ra, phương thức `cursor` cũng đã được thêm vào trong contract:
-
-    /**
-     * Run a select statement against the database and returns a generator.
-     *
-     * @param  string  $query
-     * @param  array  $bindings
-     * @param  bool  $useReadPdo
-     * @return \Generator
-     */
-    public function cursor($query, $bindings = [], $useReadPdo = true);
-
-Nếu bạn đang implement interface này, bạn nên thêm phương thức đó vào trong quá trình implement của bạn.
-
-#### The `whereDate` Method
-
-**Likelihood Of Impact: Low**
-
-Phương thức `whereDate` của query builder bây giờ sẽ tự động chuyển các instance `DateTime` sang định dạng `Y-m-d`:
-
-    // previous behaviour - SELECT * FROM `table` WHERE `created_at` > '2018-08-01 13:00:00'
-    $query->whereDate('created_at', '>', Carbon::parse('2018-08-01 13:00:00'));
-
-    // current behaviour - SELECT * FROM `table` WHERE `created_at` > '2018-08-01'
-    $query->whereDate('created_at', '>', Carbon::parse('2018-08-01 13:00:00'));
-
-
-#### Migration Command Output
-
-**Likelihood Of Impact: Very Low**
-
-Các lệnh migration core đã được [cập nhật để set output instance trên class migrator](https://github.com/laravel/framework/pull/24811). Nếu bạn đang ghi đè hoặc mở rộng các lệnh migration, bạn nên xóa các tham chiếu đến `$this->migrator->getNotes()` và sử dụng `$this->migrator->setOutput($this->output)` để thay thế.
-
-#### SQL Server Driver Priority
-
-**Likelihood Of Impact: Low**
-
-Trước Laravel 5.7, mặc định, driver `PDO_DBLIB` sẽ được sử dụng làm driver SQL Server PDO. Driver này đã bị Microsoft loại bỏ. Và từ Laravel 5.7, `PDO_SQLSRV` sẽ được sử dụng làm driver mặc định nếu nó tồn tại. Ngoài ra, bạn có thể chọn sử dụng driver `PDO_ODBC`:
-
-    'sqlsrv' => [
-        // ...
-        'odbc' => true,
-        'odbc_datasource_name' => 'your-odbc-dsn',
-    ],
-
-Nếu cả hai driver trên đều không tồn tại, Laravel sẽ sử dụng driver `PDO_DBLIB`.
-
-#### SQLite Foreign Keys
+<a name="psr-16-conformity"></a>
+#### PSR-16 Conformity
 
 **Likelihood Of Impact: Medium**
 
-SQLite không hỗ trợ xoá khóa ngoại. Vì lý do đó, việc sử dụng phương thức `dropForeign` trên table bây giờ sẽ đưa ra một ngoại lệ. Nói chung, đây nên được coi là một bản sửa lỗi; tuy nhiên, nó được liệt kê là một thay đổi nghiêm trọng cần phải thận trọng.
+Ngoài [giá trị trả về được thay đổi ở đây](#the-repository-and-store-contracts), tham số TTL của phương thức `put`, `putMany` và `add` trong class `Illuminate\Cache\Repository` đã được cập nhật để phù hợp hơn với thông số kỹ thuật của PSR-16. Hành vi mới cung cấp một giá trị mặc định là `null`, do đó, khi bạn gọi phương thức mà không truyền vào TTL, thì sẽ dẫn đến việc lưu vĩnh viễn item đó vào trong bộ nhớ cache. Ngoài ra, nếu bạn lưu các item trong bộ nhớ cache mà có giá trị TTL từ 0 trở xuống, thì item đó sẽ xóa khỏi bộ nhớ đệm. Xem [PR này](https://github.com/laravel/framework/pull/27217) để biết thêm thông tin.
 
-Nếu bạn chạy migration của bạn trên nhiều loại cơ sở dữ liệu, hãy xem xét sử dụng `DB::getDriverName()` trong migration của bạn để bỏ qua các phương thức khóa ngoại không được hỗ trợ cho SQLite.
+Event `KeyWritten` [cũng đã được cập nhật](https://github.com/laravel/framework/pull/27265) với những thay đổi này.
 
-### Debug
+<a name="cache-lock-safety-improvements"></a>
+#### Lock Safety Improvements
 
-#### Dumper Classes
+**Likelihood Of Impact: High**
+
+Trong Laravel 5.7 và các phiên bản trước của Laravel, tính năng "atomic lock" được cung cấp bởi một số driver cache có thể có hành vi mà bạn không mong muốn đó là việc giải phóng sớm các khóa đang lock.
+
+Ví dụ: **Client A** có được khóa `foo` với thời hạn 10 giây. **Client A** mất 20 giây để hoàn thành công việc của nó. Khóa được hệ thống bộ nhớ cache tự động giải phóng sau 10 giây kể từ thời gian xử lý của **Client A**. **Client B** có được khóa `foo`. **Client A** sau 10 giây cũng hoàn thành công việc của nó và giải phóng tiếp khóa `foo`, và vô tình giải phóng luôn khóa mà **Client B** đang giữ. Và do đó, một **Client C** khác có thể nhận được khóa.
+
+Để giảm thiểu những trường hợp như thế này, các khóa hiện được tạo bằng một "scope token" cho phép framework đảm bảo rằng trong các trường hợp bình thường, chỉ có chủ sở hữu của khóa mới có thể giải phóng được khóa.
+
+Nếu bạn đang sử dụng phương thức `Cache::lock()->get(Closure)` để tương tác với các khóa, thì không cần thay đổi gì:
+
+    Cache::lock('foo', 10)->get(function () {
+        // Lock will be released safely automatically...
+    });
+
+Tuy nhiên, nếu bạn đang gọi `Cache::lock()->release()` theo cách thủ công, thì bạn phải cập nhật code của bạn để duy trì một instance của khóa. Sau đó, sau khi thực hiện xong tác vụ của bạn, bạn có thể gọi phương thức `release` trên **cùng một instance của khóa**. Ví dụ:
+
+    if (($lock = Cache::lock('foo', 10))->get()) {
+        // Perform task...
+
+        $lock->release();
+    }
+
+Thỉnh thoảng, bạn có thể muốn có được một khóa trong một process và giải phóng nó trong một process khác. Ví dụ: bạn có thể muốn có được khóa trong một web request và muốn mở khóa khi kết thúc một queued job được kích hoạt bởi chính request đó. Trong trường hợp này, bạn nên truyền vào một "owner token" trong scope của khóa cho queued job để job có thể khởi tạo lại khóa đó bằng cách sử dụng token được truyền vào:
+
+    // Within Controller...
+    $podcast = Podcast::find(1);
+
+    if (($lock = Cache::lock('foo', 120))->get()) {
+        ProcessPodcast::dispatch($podcast, $lock->owner());
+    }
+
+    // Within ProcessPodcast Job...
+    Cache::restoreLock('foo', $this->owner)->release();
+
+Nếu bạn muốn giải phóng khóa mà bỏ qua owner hiện tại của khoá, bạn có thể sử dụng phương thức `forceRelease`:
+
+    Cache::lock('foo')->forceRelease();
+
+<a name="the-repository-and-store-contracts"></a>
+#### The `Repository` and `Store` Contracts
 
 **Likelihood Of Impact: Very Low**
 
-Các class `Illuminate\Support\Debug\Dumper` và `Illuminate\Support\Debug\HtmlDumper` đã bị xoá để sử dụng các dump variable của Symfony: `Symfony\Component\VarDumper\VarDumper` và `Symfony\Component\VarDumper\Dumper\HtmlDumper`.
+Để tuân thủ hoàn toàn tiêu chuẩn `PSR-16`, các giá trị được trả về của phương thức `put` và `forever` của contract `Illuminate\Contracts\Cache\Repository` và các giá trị được trả về của `put`, `putMany` và phương thức `forever` của contract `Illuminate\Contracts\Cache\Store` [đã được thay đổi](https://github.com/laravel/framework/pull/26726) từ `void` thành `bool`.
 
+<a name="carbon-2.0"></a>
+### Carbon 2.0
+
+**Likelihood Of Impact: Medium**
+
+Laravel hiện hỗ trợ cả Carbon 1 và Carbon 2; do đó, nếu Composer không phát hiện thấy các vấn đề về tương thích với bất kỳ package nào trong project của bạn, nó sẽ cố gắng thử nâng cấp lên Carbon 2.0. Vui lòng xem lại [hướng dẫn nâng cấp cho Carbon 2.0](https://carbon.nesbot.com/docs/#api-carbon-2).
+
+<a name="collections"></a>
+### Collections
+
+#### The `add` Method
+
+**Likelihood Of Impact: Very Low**
+
+Phương thức `add` [đã được di chuyển](https://github.com/laravel/framework/pull/27082) từ class Eloquent collection sang class base collection. Nếu bạn đang mở rộng `Illuminate\Support\Collection` và class mở rộng của bạn có phương thức `add`, thì hãy đảm bảo là định dạng của phương thức này khớp với class cha của nó:
+
+    public function add($item);
+
+#### The `firstWhere` Method
+
+**Likelihood Of Impact: Very Low**
+
+Định dạng của phương thức `firstWhere` [đã được thay đổi](https://github.com/laravel/framework/pull/26261) để khớp với định dạng của phương thức `where`. Nếu bạn đang ghi đè phương thức này, bạn nên cập nhật lại định dạng phương thức để khớp với class cha của nó:
+
+    /**
+     * Get the first item by the given key value pair.
+     *
+     * @param  string  $key
+     * @param  mixed  $operator
+     * @param  mixed  $value
+     * @return mixed
+     */
+    public function firstWhere($key, $operator = null, $value = null);
+
+<a name="console"></a>
+### Console
+
+#### The `Kernel` Contract
+
+**Likelihood Of Impact: Very Low**
+
+Phương thức `terminate` [đã được thêm vào contract `Illuminate\Contracts\Console\Kernel`](https://github.com/laravel/framework/pull/26393). Nếu bạn đang implement interface này, bạn nên thêm các phương thức này vào trong quá trình implement của bạn.
+
+<a name="container"></a>
+### Container
+
+<a name="container-generators"></a>
+#### Generators & Tagged Services
+
+**Likelihood Of Impact: Medium**
+
+Phương thức `tagged` của container bây giờ sẽ sử dụng PHP generator để khởi tạo lazy-instantiate cho các service với một tag được cho. Điều này giúp cải thiện hiệu suất nếu bạn không sử dụng mọi service được gắn thẻ.
+
+Bởi vì sự thay đổi này, nên phương thức `tagged` bây giờ sẽ trả về một `iterable` thay vì một `array`. Nếu bạn đang khai báo giá trị trả về của phương thức này, thì bạn nên đảm bảo là khai báo của bạn được thay đổi thành `iterable`.
+
+Ngoài ra, không còn có thể truy cập trực tiếp vào một tagged service bằng giá trị array offset, chẳng hạn như `$container->tagged('foo')[0]`.
+
+#### The `resolve` Method
+
+**Likelihood Of Impact: Very Low**
+
+Phương thức `resolve` [bây giờ sẽ chấp nhận](https://github.com/laravel/framework/pull/27066) một tham số boolean mới cho biết liệu các event(resolve callback) có nên được chạy / thực thi trong quá trình khởi tạo một đối tượng hay không. Nếu bạn đang ghi đè phương thức này, bạn nên cập nhật lại định dạng phương thức để khớp với class cha của nó:
+
+#### The `addContextualBinding` Method
+
+**Likelihood Of Impact: Very Low**
+
+Phương thức `addContextualBinding` [đã được thêm vào contract `Illuminate\Contracts\Container\Container`](https://github.com/laravel/framework/pull/26551). Nếu bạn đang implement interface này, bạn nên thêm các phương thức này vào trong quá trình implement của bạn.
+
+#### The `tagged` Method
+
+**Likelihood Of Impact: Low**
+
+Định dạng của phương thức `tagged` [đã được thay đổi](https://github.com/laravel/framework/pull/26953) và bây giờ, nó trả về một `iterable` thay vì một `array`. Nếu bạn đã khai báo trong code của bạn một tham số nào đó nhận vào giá trị trả về của phương thức này là `array`, thì bạn nên sửa khai báo đó thành `iterable`.
+
+#### The `flush` Method
+
+**Likelihood Of Impact: Very Low**
+
+Phương thức `flush` [đã được thêm vào contract `Illuminate\Contracts\Container\Container`](https://github.com/laravel/framework/pull/26477). Nếu bạn đang implement interface này, bạn nên thêm các phương thức này vào trong quá trình implement của bạn.
+
+<a name="database"></a>
+### Database
+
+#### Unquoted MySQL JSON Values
+
+**Likelihood Of Impact: Low**
+
+Query builder bây giờ sẽ trả về các giá trị JSON chưa được trích dẫn khi sử dụng MySQL và MariaDB. Hành vi này phù hợp với các cơ sở dữ liệu được hỗ trợ khác:
+
+    $value = DB::table('users')->value('options->language');
+
+    dump($value);
+
+    // Laravel 5.7...
+    '"en"'
+
+    // Laravel 5.8...
+    'en'
+
+Do đó, toán tử `->>` không còn được hỗ trợ.
+
+<a name="sqlite"></a>
+#### SQLite
+
+**Likelihood Of Impact: Medium**
+
+Kể từ phiên bản Laravel 5.8, [phiên bản SQLite cũ nhất được hỗ trợ](https://github.com/laravel/framework/pull/25995) là SQLite 3.7.11. Nếu bạn đang sử dụng phiên bản SQLite cũ hơn, thì bạn nên cập nhật phiên bản mới (khuyến cáo nên sử dụng SQLite 3.8.8+).
+
+#### Migrations & `bigIncrements`
+
+**Likelihood Of Impact: None**
+
+[Kể từ phiên bản Laravel 5.8](https://github.com/laravel/framework/pull/26472), mặc định, migration sẽ sử dụng phương thức `bigIncrements` trên các cột ID. Trước đây, các cột ID được tạo bằng phương thức `increments`.
+
+Điều này sẽ không ảnh hưởng đến bất kỳ code nào đang hiện có trong project của bạn; tuy nhiên, hãy lưu ý rằng các cột khóa ngoại phải cùng loại với cột ID. Do đó, một cột được tạo bằng phương thức `increments` không thể tham chiếu đến một cột được tạo bằng phương thức `bigIncrements`.
+
+<a name="eloquent"></a>
 ### Eloquent
 
-#### The `latest` / `oldest` Methods
+<a name="model-names-ending-with-irregular-plurals"></a>
+#### Model Names Ending With Irregular Plurals
+
+**Likelihood Of Impact: Medium**
+
+Kể từ phiên bản Laravel 5.8, các tên model có nhiều từ mà kết thúc của nó bằng một từ số nhiều bất quy tắc, thì [bây giờ sẽ được số nhiều hoá một cách chính xác](https://github.com/laravel/framework/pull/26421).
+
+    // Laravel 5.7...
+    App\Feedback.php -> feedback (correctly pluralized)
+    App\UserFeedback.php -> user_feedbacks (incorrectly pluralized)
+
+    // Laravel 5.8
+    App\Feedback.php -> feedback (correctly pluralized)
+    App\UserFeedback.php -> user_feedback (correctly pluralized)
+
+Nếu bạn có một model đã được số nhiều hóa không chính xác, bạn có thể tiếp tục sử dụng tên bảng cũ bằng cách định nghĩa thuộc tính `$table` trên model của bạn:
+
+    /**
+     * The table associated with the model.
+     *
+     * @var string
+     */
+    protected $table = 'user_feedbacks';
+
+<a name="custom-pivot-models-with-incrementing-ids"></a>
+#### Custom Pivot Models With Incrementing IDs
+
+Nếu bạn đã định nghĩa một quan hệ nhiều-nhiều sử dụng model pivot tùy chỉnh và model pivot đó có khóa chính tự động tăng, bạn nên đảm bảo là class model pivot tùy chỉnh của bạn đã định nghĩa thuộc tính `incrementing` là `true `.
+
+    /**
+     * Indicates if the IDs are auto-incrementing.
+     *
+     * @var bool
+     */
+    public $incrementing = true;
+
+#### The `loadCount` Method
 
 **Likelihood Of Impact: Low**
 
-Phương thức `latest` và `oldest` của Eloquent query builder đã được cập nhật để ưu tiên các cột timestamp "created at" tùy biến có thể được chỉ định trong các model Eloquent của bạn. Nói chung, đây nên được coi là một bản sửa lỗi; tuy nhiên, nó được liệt kê là một thay đổi nghiêm trọng cần phải thận trọng.
+Phương thức `loadCount` đã được thêm vào class base `Illuminate\Database\Eloquent\Model`. Nếu ứng dụng của bạn cũng định nghĩa một phương thức `loadCount`, nó có thể conflict với định nghĩa của Eloquent.
 
-#### The `wasChanged` Method
+#### The `originalIsEquivalent` Method
 
 **Likelihood Of Impact: Very Low**
 
-Những thay đổi của model Eloquent bây giờ sẽ có sẵn trong phương thức `wasChanged` **trước khi** kích hoạt event model `updated`. Nói chung, đây nên được coi là một bản sửa lỗi; tuy nhiên, nó được liệt kê là một thay đổi nghiêm trọng cần phải thận trọng. [Vui lòng cho chúng tôi biết nếu bạn gặp bất kỳ vấn đề nào xung quanh thay đổi này](https://github.com/laravel/framework/pull/25026).
+Phương thức `originalIsEquivalent` của trait `Illuminate\Database\Eloquent\Concerns\HasAttributes` [đã được thay đổi](https://github.com/laravel/framework/pull/26391) từ `protected` thành `public`.
 
-#### PostgreSQL Special Float Values
+#### Automatic Soft-Deleted Casting Of `deleted_at` Property
 
 **Likelihood Of Impact: Low**
 
-PostgreSQL hỗ trợ các giá trị float `Infinity`, `-Infinity` và `NaN`. Trước Laravel 5.7, chúng được cast thành kiểu `0` khi Eloquent cast cho các cột có loại là `float`, `double` hoặc `real`.
+Thuộc tính `delete_at` [bây giờ sẽ được tự động truyền](https://github.com/laravel/framework/pull/26985) sang một instance `Carbon` khi model Eloquent của bạn sử dụng trait `Illuminate\Database\Eloquent\SoftDeletes`. Bạn có thể ghi đè hành vi này bằng cách tạo một accessor tùy chỉnh của bạn cho thuộc tính đó hoặc là thêm thủ công vào thuộc tính `casts`:
 
-Kể từ Laravel 5.7, các giá trị này sẽ được chuyển sang thành các hằng số PHP tương ứng `INF`, `-INF` và `NAN`.
+    protected $casts = ['deleted_at' => 'string'];
 
-### Email Verification
+#### BelongsTo `getForeignKey` & `getOwnerKey` Methods
+
+**Likelihood Of Impact: Low**
+
+Các phương thức `getForeignKey`, `getQualifiedForeignKey` và `getOwnerKey` của quan hệ` BelongsTo` đã được đổi tên thành `getForeignKeyName`, `getQualifiedForeignKeyName` và `getOwnerKeyName`, tên phương thức mới này làm cho tên phương thức nhất quán với các quan hệ khác do Laravel cung cấp .
+
+<a name="environment-variable-parsing"></a>
+### Environment Variable Parsing
+
+**Likelihood Of Impact: High**
+
+Package [phpdotenv](https://github.com/vlucas/phpdotenv) được sử dụng để phân tích cú pháp file `.env` đã phát hành một phiên bản mới, có thể ảnh hưởng đến kết quả trả về từ helper `env`. Cụ thể, ký tự `#` trong một giá trị sẽ không được trích dẫn, thì bây giờ sẽ được coi là một comment thay vì là một phần của giá trị:
+
+Hành vi trước đây:
+
+    ENV_VALUE=foo#bar
+
+    env('ENV_VALUE'); // foo#bar
+
+Hành vi mới:
+
+    ENV_VALUE=foo#bar
+    env('ENV_VALUE'); // foo
+
+Để duy trì hành vi trước đó, bạn có thể set các giá trị môi trường trong dấu nháy:
+
+    ENV_VALUE="foo#bar"
+
+    env('ENV_VALUE'); // foo#bar
+
+Để biết thêm thông tin, vui lòng tham khảo [hướng dẫn nâng cấp của phpdotenv](https://github.com/vlucas/phpdotenv/blob/master/UPGRADING.md).
+
+<a name="events"></a>
+### Events
+
+#### The `fire` Method
+
+**Likelihood Of Impact: Low**
+
+Phương thức `fire` (không được dùng trong Laravel 5.4) của class `Illuminate\Events\Dispatcher` [đã bị xóa](https://github.com/laravel/framework/pull/26392).
+Thay vào đó, bạn có thể sử dụng phương thức `dispatch`.
+
+<a name="exception-handling"></a>
+### Exception Handling
+
+#### The `ExceptionHandler` Contract
+
+**Likelihood Of Impact: Low**
+
+Phương thức `shouldReport` [đã được thêm vào contract `Illuminate\Contracts\Debug\ExceptionHandler`](https://github.com/laravel/framework/pull/26193). Nếu bạn đang implement interface này, bạn nên thêm các phương thức này vào trong quá trình implement của bạn.
+
+#### The `renderHttpException` Method
+
+**Likelihood Of Impact: Low**
+
+Định dạng của phương thức `renderHttpException` trong class `Illuminate\Foundation\Exceptions\Handler` [đã được thay đổi](https://github.com/laravel/framework/pull/25975). Nếu bạn đang ghi đè phương thức này trong exception handler của bạn, bạn nên cập nhật định dạng mới của phương thức để khớp với class cha của nó:
+
+    /**
+     * Render the given HttpException.
+     *
+     * @param  \Symfony\Component\HttpKernel\Exception\HttpExceptionInterface  $e
+     * @return \Symfony\Component\HttpFoundation\Response
+     */
+    protected function renderHttpException(HttpExceptionInterface $e);
+
+<a name="mail"></a>
+### Mail
+
+<a name="markdown-file-directory-change"></a>
+<a name="markdown-file-directory-change"></a>
+### Markdown File Directory Change
+
+**Likelihood Of Impact: High**
+
+Nếu bạn đã export các component mail Markdown của Laravel bằng lệnh `vendor:publish`, bạn nên đổi tên thư mục `/resources/views/vendor/mail/markdown` thành `/resources/views/vendor/mail/text`.
+
+Ngoài ra, phương thức `markdownComponentPaths` [đã được đổi tên](https://github.com/laravel/framework/pull/26938) thành `textComponentPaths`. Nếu bạn đang ghi đè phương thức này, bạn nên cập nhật lại định dạng phương thức để khớp với class cha của nó:
+
+#### Method Signature Changes In The `PendingMail` Class
+
+**Likelihood Of Impact: Very Low**
+
+Các phương thức `send`, `sendNow`, `queue`, `later` và `fill` của class `Illuminate\Mail\PendingMail` [đã được thay đổi](https://github.com/laravel/framework/pull/26790) để chấp nhận một instance `Illuminate\Contracts\Mail\Mailable` thay vì một `lluminate\Mail\Mailable`. Nếu bạn đang ghi đè các phương thức này, bạn nên cập nhật lại định dạng phương thức để khớp với class cha của nó:
+
+<a name="queue"></a>
+### Queue
+
+<a name="pheanstalk-4"></a>
+#### Pheanstalk 4.0
+
+**Likelihood Of Impact: Medium**
+
+Laravel 5.8 cung cấp hỗ trợ cho bản phát hành `~4.0` của thư viện Pheanstalk queue. Nếu bạn đang sử dụng thư viện Pheanstalk trong ứng dụng của bạn, vui lòng nâng cấp thư viện của bạn lên bản phát hành `~4.0` thông qua Composer.
+
+#### The `Job` Contract
+
+**Likelihood Of Impact: Very Low**
+
+Phương thức `isReleased`, `hasFailed` và `markAsFailed` [đã được thêm vào contract `Illuminate\Contracts\Queue\Job`](https://github.com/laravel/framework/pull/26908). Nếu bạn đang implement interface này, bạn nên thêm các phương thức này vào trong quá trình implement của bạn.
+
+#### The `Job::failed` & `FailingJob` Class
+
+**Likelihood Of Impact: Very Low**
+
+Khi một queued job bị thất bại trong Laravel 5.7, queue worker sẽ thực thi phương thức `FailingJob::handle`. Trong Laravel 5.8, logic có trong class `FailingJob` đã được chuyển sang phương thức` fail` trên chính class job đó. Do đó, một phương thức `fail` đã được thêm vào contract `Illuminate\Contracts\Queue\Job`.
+
+Class `Illuminate\Queue\Jobs\Job` sẽ chứa việc implementation của phương thức `fail` và bạn sẽ không cần thay đổi code của bạn. Tuy nhiên, nếu bạn đang xây dựng một queue driver tùy chỉnh sử dụng class job **không** extend class job do Laravel cung cấp, thì bạn nên implement phương thức `fail` theo cách thủ công trong class job tùy chỉnh của bạn. Bạn có thể tham khảo class job của Laravel như là một implement mẫu.
+
+Thay đổi này cho phép queue driver tùy chỉnh có nhiều quyền kiểm soát hơn đối với quá trình xóa job.
+
+#### Redis Blocking Pop
+
+**Likelihood Of Impact: Very Low**
+
+Sử dụng tính năng "blocking pop" của Redis queue driver hiện đã an toàn. Trước đây, có một khả năng nhỏ là queued job có thể bị mất nếu server hoặc worker của Redis gặp sự cố vào cùng thời điểm với lúc job được lấy ra. Để làm cho chức năng blocking pop được an toàn, thì một danh sách Redis mới với hậu tố là `:notify` được tạo cho mỗi queue của Laravel.
+
+<a name="requests"></a>
+### Requests
+
+#### The `TransformsRequest` Middleware
+
+**Likelihood Of Impact: Low**
+
+Phương thức `transform` của middleware `Illuminate\Foundation\Http\Middleware\TransformsRequest` bây giờ sẽ nhận vào được tên "đầy đủ" của một khóa input trong request khi input là một mảng:
+
+    'employee' => [
+        'name' => 'Taylor Otwell',
+    ],
+
+    /**
+     * Transform the given value.
+     *
+     * @param  string  $key
+     * @param  mixed  $value
+     * @return mixed
+     */
+    protected function transform($key, $value)
+    {
+        dump($key); // 'employee.name' (Laravel 5.8)
+        dump($key); // 'name' (Laravel 5.7)
+    }
+
+<a name="routing"></a>
+### Routing
+
+#### The `UrlGenerator` Contract
+
+**Likelihood Of Impact: Very Low**
+
+Phương thức `previous` [đã được thêm vào contract `Illuminate\Contracts\Routing\UrlGenerator`](https://github.com/laravel/framework/pull/25616). Nếu bạn đang implement interface này, bạn nên thêm các phương thức này vào trong quá trình implement của bạn.
+
+#### The `cachedSchema` Property Of `Illuminate\Routing\UrlGenerator`
+
+**Likelihood Of Impact: Very Low**
+
+Tên thuộc tính `$cachedSchema` (không được dùng trong Laravel `5.7`) của class `Illuminate\Routing\UrlGenerator` [đã được đổi thành](https://github.com/laravel/framework/pull/26728) `$cachedScheme`.
+
+<a name="sessions"></a>
+### Sessions
+
+#### The `StartSession` Middleware
+
+**Likelihood Of Impact: Very Low**
+
+Logic session persistence đã được [chuyển từ phương thức `terminate()` sang phương thức `handle()`](https://github.com/laravel/framework/pull/26410). Nếu bạn đang ghi đè một hoặc cả hai phương thức này, bạn nên cập nhật lại chúng để phản ánh những thay đổi này.
+
+<a name="support"></a>
+### Support
+
+<a name="string-and-array-helpers"></a>
+#### Prefer String And Array Classes Over Helpers
+
+**Likelihood Of Impact: Medium**
+
+Tất cả các global helper `array_*` và `str_*` [sẽ không được dùng nữa](https://github.com/laravel/framework/pull/26898). Bạn nên sử dụng trực tiếp các phương thức từ class `Illuminate\Support\Arr` và `Illuminate\Support\Str`.
+
+Tác động của thay đổi này được đánh dấu là `medium` vì những helper này đã được chuyển sang package [laravel/helpers](https://github.com/laravel/helpers), cung cấp một lớp tương thích cho tất cả các phương thức global helper trong xử lý mảng và chuỗi.
+
+Nếu bạn chọn cập nhật các view trong ứng dụng Laravel của bạn để sử dụng các phương thức dựa trên class, bạn nên xóa các view đã được biên dịch của bạn để có thể vẫn sử dụng được global helper:
+
+    php artisan view:clear
+
+<a name="deferred-service-providers"></a>
+#### Deferred Service Providers
+
+**Likelihood Of Impact: Medium**
+
+Thuộc tính boolean `defer` trong service provider đã được sử dụng để cho biết liệu provider có bị hoãn lại hay không [đã không còn được sử dụng](https://github.com/laravel/framework/pull/27067). Để đánh dấu một service provider là trì hoãn, provider đó nên implement contract `Illuminate\Contracts\Support\DeferrableProvider`.
+
+#### Read-Only `env` Helper
+
+**Likelihood Of Impact: Low**
+
+Trước đây, helper `env` có thể lấy ra được các giá trị của biến môi trường mà đã được thay đổi trong lúc runtime. Trong Laravel 5.8, helper `env` xử lý các biến môi trường sẽ là cố định. Nếu bạn muốn thay đổi một biến môi trường trong lúc runtime, hãy xem xét sử dụng giá trị config, nó có thể được lấy ra được bằng helper `config`:
+
+Hành vi trước đây:
+
+    dump(env('APP_ENV')); // local
+
+    putenv('APP_ENV=staging');
+
+    dump(env('APP_ENV')); // staging
+
+Hành vi mới:
+
+    dump(env('APP_ENV')); // local
+
+    putenv('APP_ENV=staging');
+
+    dump(env('APP_ENV')); // local
+
+<a name="testing"></a>
+### Testing
+
+#### The `setUp` & `tearDown` Methods
+
+Các phương thức `setUp` và `tearDown` bây giờ sẽ bắt buộc kiểu trả về void:
+
+    protected function setUp(): void
+    protected function tearDown(): void
+
+#### PHPUnit 8
 
 **Likelihood Of Impact: Optional**
 
-Nếu bạn chọn sử dụng [dịch vụ xác minh email](/docs/{{version}}/verification) mới của Laravel, bạn sẽ cần phải thêm scaffolding vào trong ứng dụng của bạn. Đầu tiên, hãy thêm `VerificationController` vào trong ứng dụng của bạn: [App\Http\Controllers\Auth\VerificationController](https://github.com/laravel/laravel/blob/5.7/app/Http/Controllers/Auth/VerificationController.php).
+Mặc định, Laravel 5.8 sử dụng PHPUnit 7. Tuy nhiên, bạn có thể tùy chọn nâng cấp lên phiên bản PHPUnit 8, nó yêu cầu PHP > = 7.2. Ngoài ra, vui lòng đọc qua toàn bộ danh sách các thay đổi có trong [thông báo phát hành PHPUnit 8](https://phpunit.de/announcements/phpunit-8.html).
 
-Bạn cũng sẽ cần sửa model `App\User` của bạn để implement contract `MustVerifyEmail`:
-
-    <?php
-
-    namespace App;
-
-    use Illuminate\Notifications\Notifiable;
-    use Illuminate\Contracts\Auth\MustVerifyEmail;
-    use Illuminate\Foundation\Auth\User as Authenticatable;
-
-    class User extends Authenticatable implements MustVerifyEmail
-    {
-        use Notifiable;
-
-        // ...
-    }
-
-Để sử dụng middleware `verified` dành cho những người dùng đã được xác minh mới có thể truy cập vào một route nhất định, bạn sẽ cần cập nhật thuộc tính `$routeMiddleware` trong file `app/Http/Kernel.php` của bạn để chứa thêm một middleware `verified` mới và một middleware `signed`:
-
-    // Within App\Http\Kernel Class...
-
-    protected $routeMiddleware = [
-        'auth' => \Illuminate\Auth\Middleware\Authenticate::class,
-        'auth.basic' => \Illuminate\Auth\Middleware\AuthenticateWithBasicAuth::class,
-        'bindings' => \Illuminate\Routing\Middleware\SubstituteBindings::class,
-        'can' => \Illuminate\Auth\Middleware\Authorize::class,
-        'guest' => \App\Http\Middleware\RedirectIfAuthenticated::class,
-        'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
-        'signed' => \Illuminate\Routing\Middleware\ValidateSignature::class,
-        'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
-    ];
-
-Bạn cũng sẽ cần một view để hiển thị form xác minh. View này nên được lưu tại `resources/views/auth/verify.blade.php`. Bạn có thể lấy nội dung của view này [trên GitHub](https://github.com/laravel/framework/blob/5.7/src/Illuminate/Auth/Console/stubs/make/views/auth/verify.stub).
-
-Tiếp theo, bảng user của bạn phải chứa cột `email_verified_at` để lưu ngày giờ mà địa chỉ email được xác minh:
-
-    $table->timestamp('email_verified_at')->nullable();
-
-Để gửi email khi người dùng mới đăng ký, bạn nên đăng ký các event và listener sau trong class [App\Providers\EventServiceProvider](https://github.com/laravel/laravel/blob/5.7/app/Providers/EventServiceProvider.php) của bạn:
-
-    use Illuminate\Auth\Events\Registered;
-    use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
-
-    /**
-     * The event listener mappings for the application.
-     *
-     * @var array
-     */
-    protected $listen = [
-        Registered::class => [
-            SendEmailVerificationNotification::class,
-        ],
-    ];
-
-Cuối cùng, khi gọi phương thức `Auth::routes`, bạn cần truyền thêm tùy chọn `verify` cho phương thức đó:
-
-    Auth::routes(['verify' => true]);
-
-### Filesystem
-
-#### `Filesystem` Contract Methods
-
-**Likelihood Of Impact: Low**
-
-Phương thức `readStream` và `writeStream` [đã được thêm vào contract `Illuminate\Contracts\Filesystem\Filesystem`](https://github.com/laravel/framework/pull/23755). Nếu bạn đang implement interface này, bạn nên thêm các phương thức đó vào quá trình implement của bạn.
-
-### Hashing
-
-#### `Hash::check` Method
-
-**Likelihood Of Impact: None**
-
-Phương thức `check` bây giờ sẽ có **tùy chọn** kiểm tra xem thuật toán hash có khớp với thuật toán đã được cấu hình hay không.
-
-### Mail
-
-#### Mailable Dynamic Variable Casing
-
-**Likelihood Of Impact: Low**
-
-Các biến được truyền vào trong các view của mail [bây giờ sẽ được xử lý, theo kiểu "camel case"](https://github.com/laravel/framework/pull/24232), điều này làm cho các biến trong mail sẽ phù hợp hơn với các biến trong view. Các biến trong mail không phải là một tính năng mà được Laravel ghi lại, nên do đó, khả năng nó ảnh hưởng đến ứng dụng của bạn là rất thấp.
-
-#### Template Theme
-
-**Likelihood Of Impact: Medium**
-
-Nếu bạn đang tùy biến các theme mặc định được sử dụng trong các template mail Markdown, bạn có thể sẽ phải cần export và thực hiện lại các tùy biến của bạn. Các class button color đã được đổi tên từ 'blue', 'green' và 'red' thành "primary", "success" và 'error'.
-
-### Queue
-
-#### `QUEUE_DRIVER` Environment Variable
-
-**Likelihood Of Impact: Very Low**
-
-Biến môi trường `QUEUE_DRIVER` đã được đổi tên thành `QUEUE_CONNECTION`. Điều này sẽ không ảnh hưởng đến các ứng dụng của bạn trừ khi bạn sửa file cấu hình `config/queue.php` để giống với phiên bản Laravel 5.7.
-
-#### `WorkCommand` Options
-
-**Likelihood Of Impact: Very Low**
-
-Tùy chọn `stop-when-empty` đã được thêm vào trong `WorkCommand`. Nếu bạn đang extend command này, bạn cần thêm `stop-when-empty` vào thuộc tính `$signature` trong class của bạn.
-
-### Routing
-
-#### The `Route::redirect` Method
-
-**Likelihood Of Impact: High**
-
-Phương thức `Route::redirect` bây giờ sẽ trả về một chuyển hướng với HTTP status code là `302`. Phương thức `permanentRedirect` cũng đã được thêm vào để cho phép chuyển hướng với HTTP status code là `301`.
-
-    // Return a 302 redirect...
-    Route::redirect('/foo', '/bar');
-
-    // Return a 301 redirect...
-    Route::redirect('/foo', '/bar', 301);
-
-    // Return a 301 redirect...
-    Route::permanentRedirect('/foo', '/bar');
-
-#### The `addRoute` Method
-
-**Likelihood Of Impact: Low**
-
-Phương thức `addRoute` của class `Illuminate\Routing\Router` đã được đổi từ `protected` thành `public`.
-
+<a name="validation"></a>
 ### Validation
-
-#### Nested Validation Data
-
-**Likelihood Of Impact: Medium**
-
-Trong các phiên bản trước của Laravel, phương thức `validate` sẽ không trả về đúng các dữ liệu cho các validation rule lồng nhau. Điều này đã được sửa trong Laravel 5.7:
-
-    $data = Validator::make([
-        'person' => [
-            'name' => 'Taylor',
-            'job' => 'Developer'
-        ]
-    ], ['person.name' => 'required'])->validate();
-
-    dump($data);
-
-    // Prior Behavior...
-    ['person' => ['name' => 'Taylor', 'job' => 'Developer']]
-
-    // New Behavior...
-    ['person' => ['name' => 'Taylor']]
 
 #### The `Validator` Contract
 
 **Likelihood Of Impact: Very Low**
 
-Phương thức `validate` [đã được thêm vào contract `Illuminate\Contracts\Validation\Validator`](https://github.com/laravel/framework/pull/25128):
+Phương thức `validated` [đã được thêm vào contract `Illuminate\Contracts\Validation\Validator`](https://github.com/laravel/framework/pull/26419):
 
     /**
-     * Run the validator's rules against its data.
+     * Get the attributes and values that were validated.
      *
      * @return array
      */
-    public function validate();
+    public function validated();
 
-Nếu bạn đang implement interface này, bạn nên thêm các phương thức đó vào quá trình implement của bạn.
+Phương thức `addContextualBinding` [đã được thêm vào contract `Illuminate\Contracts\Container\Container`](https://github.com/laravel/framework/pull/26551). Nếu bạn đang implement interface này, bạn nên thêm các phương thức này vào trong quá trình implement của bạn.
 
-### Testing
+#### The `ValidatesAttributes` Trait
 
-**Likelihood of Impact: Medium**
+**Likelihood Of Impact: Very Low**
 
-Laravel 5.7 giới thiệu các công cụ cải tiến kiểm tra cho các lệnh Artisan. Mặc định, output của lệnh Artisan bây giờ sẽ bị làm giả. Nếu bạn đang dựa vào phương thức `artisan` để chạy các lệnh như một phần của bài test của bạn, bạn nên sử dụng `Artisan::call` hoặc định nghĩa `public $mockConsoleOutput = false` làm một thuộc tính trong class test của bạn.
+Các phương thức `parseTable`, `getQueryColumn` và `requireParameterCount` của trait `Illuminate\Validation\Concerns\ValidatesAttributes` đã được thay đổi từ `protected` thành` public`.
 
+#### The `DatabasePresenceVerifier` Class
+
+**Likelihood Of Impact: Very Low**
+
+Phương thức `table` trong class `Illuminate\Validation\DatabasePresenceVerifier` đã được thay đổi từ `protected` thành` public`.
+
+#### The `Validator` Class
+
+**Likelihood Of Impact: Very Low**
+
+Phương thức `getPresenceVerifierFor` trong class `Illuminate\Validation\Validator` [đã được thay đổi](https://github.com/laravel/framework/pull/26717) từ `protected` thành` public`.
+
+#### Email Validation
+
+**Likelihood Of Impact: Very Low**
+
+Quy tắc validation email bây giờ sẽ kiểm tra xem email có tuân thủ theo tiêu chuẩn [RFC6530](https://tools.ietf.org/html/rfc6530) hay không, điều này làm cho logic validation nhất quán với logic được SwiftMailer sử dụng. Trong Laravel `5.7`, quy tắc `email` chỉ kiểm tra rằng email tuân thủ tiêu chuẩn [RFC822](https://tools.ietf.org/html/rfc822).
+
+Do đó, khi sử dụng Laravel 5.8, những email trước đây bị coi là không hợp lệ thì bây giờ sẽ được coi là hợp lệ (ví dụ như mail: `hej@bär.se`). Nói chung, đây nên được coi là một bản sửa lỗi; tuy nhiên, nó được liệt kê là một thay đổi nghiêm trọng cần thận trọng. [Vui lòng cho chúng tôi biết nếu bạn gặp phải bất kỳ vấn đề nào xung quanh thay đổi này](https://github.com/laravel/framework/pull/26503).
+
+<a name="view"></a>
+### View
+
+#### The `getData` Method
+
+**Likelihood Of Impact: Very Low**
+
+Phương thức `getData` [đã được thêm vào contract `Illuminate\Contracts\View\View`](https://github.com/laravel/framework/pull/26754). Nếu bạn đang implement interface này, bạn nên thêm các phương thức này vào trong quá trình implement của bạn.
+
+<a name="notifications"></a>
+### Notifications
+
+<a name="nexmo-slack-notification-channels"></a>
+#### Nexmo / Slack Notification Channels
+
+**Likelihood Of Impact: High**
+
+Các channel Nexmo và Slack Notification đã được lấy ra thành các package độc lập. Để sử dụng các channel này trong ứng dụng của bạn, hãy thêm các package sau bằng Composer:
+
+    composer require laravel/nexmo-notification-channel
+    composer require laravel/slack-notification-channel
+
+<a name="miscellaneous"></a>
 ### Miscellaneous
 
-Chúng tôi cũng khuyến cáo bạn nên xem các thay đổi trong `laravel/laravel` [GitHub repository](https://github.com/laravel/laravel). Mặc dù nhiều thay đổi trong số này là không bắt buộc, nhưng có thể bạn muốn giữ các file đó được đồng bộ với ứng dụng của bạn. Một số thay đổi sẽ được đề cập trong hướng dẫn nâng cấp này, nhưng đối với những thay đổi khác, chẳng hạn như thay đổi file cấu hình hoặc comment đều sẽ không được đề cập đến. Bạn có thể dễ dàng xem các thay đổi đó bằng [Công cụ so sánh của GitHub](https://github.com/laravel/laravel/compare/5.6...5.7) và chọn bản cập nhật nào quan trọng với bạn.
+Chúng tôi cũng khuyến cáo bạn nên xem các thay đổi trong `laravel/laravel` [GitHub repository](https://github.com/laravel/laravel). Mặc dù nhiều thay đổi trong số này là không bắt buộc, nhưng có thể bạn muốn giữ các file đó được đồng bộ với ứng dụng của bạn. Một số thay đổi sẽ được đề cập trong hướng dẫn nâng cấp này, nhưng đối với những thay đổi khác, chẳng hạn như thay đổi file cấu hình hoặc comment đều sẽ không được đề cập đến. Bạn có thể dễ dàng xem các thay đổi đó bằng [Công cụ so sánh của GitHub](https://github.com/laravel/laravel/compare/5.7...5.8) và chọn bản cập nhật nào quan trọng với bạn.

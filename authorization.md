@@ -45,6 +45,10 @@ Gates là các Closure để xác định xem người dùng có được phép 
     {
         $this->registerPolicies();
 
+        Gate::define('edit-settings', function ($user) {
+            return $user->isAdmin;
+        });
+
         Gate::define('update-post', function ($user, $post) {
             return $user->id == $post->user_id;
         });
@@ -64,30 +68,14 @@ Gates cũng có thể được định nghĩa dưới dạng là chuỗi callbac
         Gate::define('update-post', 'App\Policies\PostPolicy@update');
     }
 
-#### Resource Gates
-
-Bạn cũng có thể định nghĩa nhiều hành động trong Gate cùng một lúc bằng phương thức `resource`:
-
-    Gate::resource('posts', 'App\Policies\PostPolicy');
-
-Điều này sẽ tương đương với việc định nghĩa các Gate như sau:
-
-    Gate::define('posts.view', 'App\Policies\PostPolicy@view');
-    Gate::define('posts.create', 'App\Policies\PostPolicy@create');
-    Gate::define('posts.update', 'App\Policies\PostPolicy@update');
-    Gate::define('posts.delete', 'App\Policies\PostPolicy@delete');
-
-Mặc định, các hành động `view`, `create`, `update`, và `delete` sẽ được định nghĩa. Bạn có thể ghi đè các hành động khác bằng cách truyền một mảng làm tham số thứ ba cho phương thức `resource`. Các key của mảng đó cần định nghĩa các tên của hành động trong khi các giá trị sẽ định nghĩa các tên của phương thức. Ví dụ: đoạn code sau sẽ chỉ tạo ra hai định nghĩa Gate mới là `posts.image` và `posts.photo`:
-
-    Gate::resource('posts', 'PostPolicy', [
-        'image' => 'updateImage',
-        'photo' => 'updatePhoto',
-    ]);
-
 <a name="authorizing-actions-via-gates"></a>
 ### Authorizing Actions
 
 Để authorize cho một hành động thông qua sử dụng gate, bạn cần sử dụng các phương thức `allows` hoặc `denies`. Lưu ý rằng bạn không cần phải truyền user mà đang login cho các phương thức này. Laravel sẽ tự động truyền user đó vào gate Closure này:
+
+    if (Gate::allows('edit-settings')) {
+        // The current user can edit settings
+    }
 
     if (Gate::allows('update-post', $post)) {
         // The current user can update the post...
@@ -105,6 +93,16 @@ Còn nếu bạn muốn kiểm tra một user cụ thể nào đó có được 
 
     if (Gate::forUser($user)->denies('update-post', $post)) {
         // The user can't update the post...
+    }
+
+Bạn có thể cấp phép cho nhiều hành động cùng một lúc bằng phương thức `any` hoặc `none`:
+
+    if (Gate::any(['update-post', 'delete-post'], $post)) {
+        // The user can update or delete the post
+    }
+
+    if (Gate::none(['update-post', 'delete-post'], $post)) {
+        // The user cannot update or delete the post
     }
 
 <a name="intercepting-gate-checks"></a>
@@ -185,6 +183,20 @@ Sau khi policy đã tồn tại, bạn cần phải đăng ký nó. `AuthService
             //
         }
     }
+
+#### Tự động dăng ký policy
+
+Thay vì đăng ký policy cho model theo cách thủ công, Laravel có thể tự động đăng ký các policy miễn là các model và policy tuân theo một quy tắc đặt tên theo tiêu chuẩn Laravel. Cụ thể, các policy phải nằm trong thư mục `Policies` bên trong thư mục chứa các model. Vì vậy, ví dụ: các model có thể được lưu trong thư mục `app` trong khi các policy có thể được lưu trong thư mục `app/Policies`. Ngoài ra, tên policy phải khớp với tên của model và có hậu tố `Policy`. Vì vậy, một model `User` sẽ tương ứng với một class policy như sau: `UserPolicy`.
+
+Nếu bạn muốn tự cung cấp logic đăng ký policy theo cách của bạn, bạn có thể đăng ký một callback tùy biến bằng cách sử dụng phương thức `Gate::guessPolicyNamesUsing`. Thông thường, phương thức này sẽ được gọi từ phương thức `boot` trong `AuthServiceProvider` trong ứng dụng của bạn:
+
+    use Illuminate\Support\Facades\Gate;
+
+    Gate::guessPolicyNamesUsing(function ($modelClass) {
+        // return policy class name...
+    });
+
+> {note} Bất kỳ policy nào được ánh xạ trong `AuthServiceProvider` cũng sẽ được ưu tiên hơn các policy khác được đăng ký tự động.
 
 <a name="writing-policies"></a>
 ## Viết Policies
@@ -349,6 +361,7 @@ Ngoài các phương thức hữu ích được cung cấp cho model `User`, Lar
          * @param  Request  $request
          * @param  Post  $post
          * @return Response
+         * @throws \Illuminate\Auth\Access\AuthorizationException
          */
         public function update(Request $request, Post $post)
         {
@@ -360,13 +373,14 @@ Ngoài các phương thức hữu ích được cung cấp cho model `User`, Lar
 
 #### Actions That Don't Require Models
 
-Như đã thảo luận ở phía trên, một số hành động như `create` có thể không yêu cầu một model ở tham số thứ hai. Trong những tình huống này, bạn có thể truyền vào tên của một class cho phương thức `authorize`. Tên class sẽ được sử dụng để xác định policy nào sẽ được sử dụng khi authorize cho các hành động:
+Như đã thảo luận ở phía trên, một số hành động như `create` có thể không yêu cầu một model ở tham số thứ hai. Trong những tình huống này, bạn nên truyền vào tên của một class cho phương thức `authorize`. Tên class sẽ được sử dụng để xác định policy nào sẽ được sử dụng khi authorize cho các hành động:
 
     /**
      * Create a new blog post.
      *
      * @param  Request  $request
      * @return Response
+     * @throws \Illuminate\Auth\Access\AuthorizationException
      */
     public function create(Request $request)
     {
@@ -377,7 +391,7 @@ Như đã thảo luận ở phía trên, một số hành động như `create` 
 
 #### Authorizing Resource Controllers
 
-Nếu bạn đang sử dụng [resource controller](/docs/{{version}}/controllers##resource-controllers), bạn có thể sử dụng phương thức `authorizeResource` trong hàm constructor của controller đó. Phương thức này sẽ gán một định nghĩa middleware `can` thích hợp cho các phương thức trong resource controller đó.
+Nếu bạn đang sử dụng [resource controller](/docs/{{version}}/controllers#resource-controllers), bạn có thể sử dụng phương thức `authorizeResource` trong hàm constructor của controller đó. Phương thức này sẽ gán một định nghĩa middleware `can` thích hợp cho các phương thức trong resource controller đó.
 
 Phương thức `authorizeResource` sẽ nhận tên class của model làm tham số đầu tiên và tên của tham số route chứa ID của model làm tham số thứ hai của nó:
 
@@ -396,6 +410,17 @@ Phương thức `authorizeResource` sẽ nhận tên class của model làm tham
             $this->authorizeResource(Post::class, 'post');
         }
     }
+
+Các phương thức controller sau sẽ được ánh xạ tới các phương thức policy tương ứng với chúng:
+
+| Controller Method | Policy Method |
+| --- | --- |
+| show | view |
+| create | create |
+| store | create |
+| edit | update |
+| update | update |
+| destroy | delete |
 
 > {tip} Bạn có thể sử dụng lệnh `make:policy` với tùy chọn `--model` để tạo nhanh một class policy cho một model nhất định: `php artisan make:policy PostPolicy --model=Post`.
 
@@ -425,6 +450,14 @@ Các lệnh này là các shortcut thuận tiện để không phải viết cá
     @unless (Auth::user()->can('update', $post))
         <!-- The Current User Can't Update The Post -->
     @endunless
+
+Bạn cũng có thể kiểm tra xem người dùng có những quyền nào từ một danh sách các quyền. Để thực hiện việc này, hãy sử dụng lệnh `@canany`:
+
+    @canany(['update', 'view', 'delete'], $post)
+        // The current user can update, view, or delete the post
+    @elsecanany(['create'], \App\Post::class)
+        // The current user can create a post
+    @endcanany
 
 #### Actions That Don't Require Models
 

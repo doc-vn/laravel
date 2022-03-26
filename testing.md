@@ -55,4 +55,4 @@ Khi file test đã được tạo xong, bạn có thể định nghĩa các phư
         }
     }
 
-> {note} Nếu bạn định nghĩa một phương thức `setUp` của riêng bạn trong một test class, hãy nhớ gọi `parent::setUp()`.
+> {note} Nếu bạn định nghĩa một phương thức `setUp` / `tearDown` của riêng bạn trong một test class, hãy nhớ gọi các phương thức `parent::setUp()` / `parent::tearDown()` tương ứng ở trong class parent.

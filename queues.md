@@ -93,15 +93,13 @@ Khi sử dụng queue Redis, bạn có thể sử dụng tùy chọn cấu hình
         'block_for' => 5,
     ],
 
-> {note} Chặn pop là một tính năng thử nghiệm. Có một sô khả năng nhỏ là queue job có thể bị mất nếu server Redis hoặc worker gặp sự cố cùng lúc với lúc job đang được lấy ra.
-
 #### Other Driver Prerequisites
 
 Các library sau sẽ cần thiết cho driver queue cũng sẽ được liệt kê:
 
 <div class="content-list" markdown="1">
 - Amazon SQS: `aws/aws-sdk-php ~3.0`
-- Beanstalkd: `pda/pheanstalk ~3.0`
+- Beanstalkd: `pda/pheanstalk ~4.0`
 - Redis: `predis/predis ~1.0`
 </div>
 
@@ -270,7 +268,7 @@ Nếu bạn muốn gửi một job được chạy ngay lập tức (một cách
 <a name="job-chaining"></a>
 ### Kết hợp Job
 
-Kết hợp job cho phép bạn khai báo một danh sách các queued job sẽ được chạy theo một trình tự nhất định. Nếu một job trong danh sách bị thất bại, thì các job còn lại cũng sẽ không được chạy. Để thực hiện một danh sách queued job, bạn có thể sử dụng phương thức `withChain` trên bất kỳ dispatchable job nào của bạn:
+Kết hợp job cho phép bạn khai báo một danh sách các queued job sẽ được chạy theo một trình tự nhất định sau khi job chính được thực thi thành công. Nếu một job trong danh sách bị thất bại, thì các job còn lại cũng sẽ không được chạy. Để thực hiện một danh sách queued job, bạn có thể sử dụng phương thức `withChain` trên bất kỳ dispatchable job nào của bạn:
 
     ProcessPodcast::withChain([
         new OptimizePodcast,
@@ -352,6 +350,22 @@ Bạn có thể kết hợp các phương thức `onConnection` và `onQueue` đ
     ProcessPodcast::dispatch($podcast)
                   ->onConnection('sqs')
                   ->onQueue('processing');
+
+Ngoài ra, bạn có thể chỉ định `connection` làm một thuộc tính trong class job:
+
+    <?php
+
+    namespace App\Jobs;
+
+    class ProcessPodcast implements ShouldQueue
+    {
+        /**
+         * The queue connection that should handle the job.
+         *
+         * @var string
+         */
+        public $connection = 'sqs';
+    }
 
 <a name="max-job-attempts-and-timeout"></a>
 ### Khai báo số lần chạy Job tối đa / giá trị timeout
@@ -481,6 +495,10 @@ Laravel có chứa một queue worker sẽ xử lý các job mới khi chúng đ
 
 Hãy nhớ rằng, các queue worker là các process tồn tại lâu dài và lưu trữ trạng thái của application vào trong bộ nhớ. Do đó, chúng sẽ không nhận biết dược những thay đổi trong source code của bạn sau khi bạn đã chạy chúng. Vì vậy, trong khi quá trình deploy của bạn, hãy đảm bảo là [bạn đã khởi động lại queue worker của bạn](#queue-workers-and-deployment).
 
+Ngoài ra, bạn có thể chạy lệnh `queue:listen`. Khi sử dụng lệnh `queue:listen`, bạn không phải khởi động lại worker theo cách thủ công sau khi code của bạn được thay đổi như mọi khi; tuy nhiên, lệnh này không hiệu quả bằng `queue:work`:
+
+    php artisan queue:listen
+
 #### Specifying The Connection & Queue
 
 Bạn cũng có thể khai báo queue connection mà worker sẽ sử dụng. Tên connection được truyền vào lệnh `work` phải tương ứng với một trong các connection đã được khai báo ở trong file cấu hình `config/queue.php` của bạn:
@@ -606,6 +624,19 @@ Sau khi chạy [queue worker](#running-the-queue-worker), bạn nên khai báo s
 
     php artisan queue:work redis --tries=3
 
+Ngoài ra, bạn có thể chỉ định cho Laravel biết sẽ đợi bao nhiêu giây trước khi thử lại một job bị lỗi bằng cách sử dụng tùy chọn `--delay`. Mặc định, một job sẽ được thử lại ngay lập tức sau khi bị lỗi:
+
+    php artisan queue:work redis --tries=3 --delay=3
+
+Nếu bạn muốn cấu hình độ trễ thử lại cho từng job khi chúng bị lỗi, bạn có thể làm như vậy bằng cách định nghĩa một thuộc tính `retryAfter` trong class queued job của bạn:
+
+    /**
+     * The number of seconds to wait before retrying the job.
+     *
+     * @var int
+     */
+    public $retryAfter = 3;
+
 <a name="cleaning-up-after-failed-jobs"></a>
 ### Dọn dẹp sau khi Job failed
 
@@ -679,6 +710,16 @@ Nếu bạn muốn đăng ký một event sẽ được gọi khi một job th�
     class AppServiceProvider extends ServiceProvider
     {
         /**
+         * Register any application services.
+         *
+         * @return void
+         */
+        public function register()
+        {
+            //
+        }
+
+        /**
          * Bootstrap any application services.
          *
          * @return void
@@ -690,16 +731,6 @@ Nếu bạn muốn đăng ký một event sẽ được gọi khi một job th�
                 // $event->job
                 // $event->exception
             });
-        }
-
-        /**
-         * Register the service provider.
-         *
-         * @return void
-         */
-        public function register()
-        {
-            //
         }
     }
 
@@ -757,6 +788,16 @@ Sử dụng các phương thức `before` và `after` trong [facade](/docs/{{ver
     class AppServiceProvider extends ServiceProvider
     {
         /**
+         * Register any application services.
+         *
+         * @return void
+         */
+        public function register()
+        {
+            //
+        }
+
+        /**
          * Bootstrap any application services.
          *
          * @return void
@@ -774,16 +815,6 @@ Sử dụng các phương thức `before` và `after` trong [facade](/docs/{{ver
                 // $event->job
                 // $event->job->payload()
             });
-        }
-
-        /**
-         * Register the service provider.
-         *
-         * @return void
-         */
-        public function register()
-        {
-            //
         }
     }
 

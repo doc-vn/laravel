@@ -2,6 +2,7 @@
 
 - [Giới thiệu](#introduction)
     - [Tuỳ biến Request Header](#customizing-request-headers)
+    - [Debugging Responses](#debugging-responses)
 - [Session / Authentication](#session-and-authentication)
 - [Test JSON API](#testing-json-apis)
 - [Test File Upload](#testing-file-uploads)
@@ -69,6 +70,36 @@ Bạn có thể sử dụng phương thức `withHeaders` để tùy biến các
 
 > {tip} CSRF middleware sẽ tự động bị vô hiệu hóa khi chạy test.
 
+<a name="debugging-responses"></a>
+### Debugging Responses
+
+Sau khi tạo ra một bài test request cho ứng dụng của bạn, các phương thức `dump` và `dumpHeaders` có thể được sử dụng để kiểm tra và debug nội dung response:
+
+    <?php
+
+    namespace Tests\Feature;
+
+    use Tests\TestCase;
+    use Illuminate\Foundation\Testing\RefreshDatabase;
+    use Illuminate\Foundation\Testing\WithoutMiddleware;
+
+    class ExampleTest extends TestCase
+    {
+        /**
+         * A basic test example.
+         *
+         * @return void
+         */
+        public function testBasicTest()
+        {
+            $response = $this->get('/');
+
+            $response->dumpHeaders();
+
+            $response->dump();
+        }
+    }
+
 <a name="session-and-authentication"></a>
 ## Session / Authentication
 
@@ -110,7 +141,7 @@ Bạn cũng có thể khai báo guard nào sẽ được sử dụng để xác 
 <a name="testing-json-apis"></a>
 ## Test JSON API
 
-Laravel cũng cung cấp một số helper để kiểm tra API JSON và response của chúng. Ví dụ, các phương thức `json`, `get`, `post`, `put`, `patch`, và `delete` có thể được sử dụng để đưa vào các request với các method HTTP khác nhau. Bạn cũng có thể dễ dàng truyền dữ liệu và các header cho các phương thức này. Để bắt đầu, hãy viết một bài test để thực hiện một request `POST` đến `/user` và xác nhận rằng dữ liệu mà bạn mong muốn sẽ trả về:
+Laravel cũng cung cấp một số helper để kiểm tra API JSON và response của chúng. Ví dụ, các phương thức `json`, `get`, `post`, `put`, `patch`, `delete`, và `option` có thể được sử dụng để đưa vào các request với các method HTTP khác nhau. Bạn cũng có thể dễ dàng truyền dữ liệu và các header cho các phương thức này. Để bắt đầu, hãy viết một bài test để thực hiện một request `POST` đến `/user` và xác nhận rằng dữ liệu mà bạn mong muốn sẽ trả về:
 
     <?php
 
@@ -255,6 +286,7 @@ Laravel cung cấp nhiều phương thức assertion để tùy biến cho các 
 [assertSeeText](#assert-see-text)
 [assertSeeTextInOrder](#assert-see-text-in-order)
 [assertSessionHas](#assert-session-has)
+[assertSessionHasInput](#assert-session-has-input)
 [assertSessionHasAll](#assert-session-has-all)
 [assertSessionHasErrors](#assert-session-has-errors)
 [assertSessionHasErrorsIn](#assert-session-has-errors-in)
@@ -263,6 +295,7 @@ Laravel cung cấp nhiều phương thức assertion để tùy biến cho các 
 [assertSessionMissing](#assert-session-missing)
 [assertStatus](#assert-status)
 [assertSuccessful](#assert-successful)
+[assertUnauthorized](#assert-unauthorized)
 [assertViewHas](#assert-view-has)
 [assertViewHasAll](#assert-view-has-all)
 [assertViewIs](#assert-view-is)
@@ -392,9 +425,9 @@ Yêu cầu response có cấu trúc JSON đã cho:
 <a name="assert-json-validation-errors"></a>
 #### assertJsonValidationErrors
 
-Yêu cầu JSON response trả về lỗi validation cho các key:
+Yêu cầu JSON response trả về lỗi validation:
 
-    $response->assertJsonValidationErrors($keys);
+    $response->assertJsonValidationErrors(array $data);
 
 <a name="assert-location"></a>
 #### assertLocation
@@ -466,6 +499,13 @@ Yêu cầu session có chứa một phần dữ liệu đã cho:
 
     $response->assertSessionHas($key, $value = null);
 
+<a name="assert-session-has-input"></a>
+#### assertSessionHasInput
+
+Yêu cầu session có chứa một giá trị trong flashed input array:
+
+    $response->assertSessionHasInput($key, $value = null);
+
 <a name="assert-session-has-all"></a>
 #### assertSessionHasAll
 
@@ -518,9 +558,16 @@ Yêu cầu response trả về status code đã cho:
 <a name="assert-successful"></a>
 #### assertSuccessful
 
-Yêu cầu response trả về một status code thành công:
+Yêu cầu response trả về một status code thành công (200):
 
     $response->assertSuccessful();
+
+<a name="assert-unauthorized"></a>
+#### assertUnauthorized
+
+Yêu cầu response trả về một status code lỗi không quyền truy cập (401):
+
+    $response->assertUnauthorized();
 
 <a name="assert-view-has"></a>
 #### assertViewHas

@@ -6,7 +6,9 @@
     - [Một - Nhiều](#one-to-many)
     - [Một - Nhiều (Ngược lại)](#one-to-many-inverse)
     - [Nhiều - Nhiều](#many-to-many)
-    - [Quan hệ thông qua trung gian](#has-many-through)
+    - [Định nghĩa model bảng trung gian tùy chỉnh](#defining-custom-intermediate-table-models)
+    - [Quan hệ thông qua liên kết một](#has-one-through)
+    - [Quan hệ thông qua liên kết nhiều](#has-many-through)
 - [Quan hệ đa hình](#polymorphic-relationships)
     - [Một - Một](#one-to-one-polymorphic-relations)
     - [Một - Nhiều](#one-to-many-polymorphic-relations)
@@ -16,6 +18,7 @@
     - [Phương thức quan hệ và thuộc tính động](#relationship-methods-vs-dynamic-properties)
     - [Query quan hệ tồn tại](#querying-relationship-existence)
     - [Query quan hệ không tồn tại](#querying-relationship-absence)
+    - [Query quan hệ đa hình](#querying-polymorphic-relationships)
     - [Đếm các bản ghi theo quan hệ model](#counting-related-models)
 - [Eager Loading](#eager-loading)
     - [Rằng buộc khi eager loading](#constraining-eager-loads)
@@ -36,7 +39,8 @@ Các bảng cơ sở dữ liệu thường được quan hệ với nhau. Ví d�
 - [Một - Một](#one-to-one)
 - [Một - Nhiều](#one-to-many)
 - [Nhiều - Nhiều](#many-to-many)
-- [Quan hệ thông qua trung gian](#has-many-through)
+- [Quan hệ thông qua liên kết một](#has-one-through)
+- [Quan hệ thông qua liên kết nhiều](#has-many-through)
 - [Một - Một (đa hình)](#one-to-one-polymorphic-relations)
 - [Một - Nhiều (đa hình)](#one-to-many-polymorphic-relations)
 - [Nhiều - Nhiều (đa hình)](#many-to-many-polymorphic-relations)
@@ -329,9 +333,10 @@ Bạn cũng có thể lọc các kết quả được trả về bởi `belongsT
 
     return $this->belongsToMany('App\Role')->wherePivotIn('priority', [1, 2]);
 
-#### Defining Custom Intermediate Table Models
+<a name="defining-custom-intermediate-table-models"></a>
+### Định nghĩa model bảng trung gian tùy chỉnh
 
-Nếu bạn muốn định nghĩa một model tùy biến, để biểu diễn bảng trung gian của quan hệ của bạn, bạn có thể gọi phương thức `using` khi định nghĩa quan hệ. Để tuỳ biến một model pivot nhiều-nhiều bạn cần extend từ class `Illuminate\Database\Eloquent\Relations\Pivot`, còn nếu bạn muốn tuỳ biến model theo đa hình nhiều-nhiều, thì bạn cần extend từ class `Illuminate\Database\Eloquent\Relations\MorphPivot`. Ví dụ: chúng ta có thể định nghĩa một `Role` sử dụng model pivot `UserRole` tùy biến như sau:
+Nếu bạn muốn định nghĩa một model tùy biến, để biểu diễn bảng trung gian của quan hệ của bạn, bạn có thể gọi phương thức `using` khi định nghĩa quan hệ. Để tuỳ biến một model pivot nhiều-nhiều bạn cần extend từ class `Illuminate\Database\Eloquent\Relations\Pivot`, còn nếu bạn muốn tuỳ biến model theo đa hình nhiều-nhiều, thì bạn cần extend từ class `Illuminate\Database\Eloquent\Relations\MorphPivot`. Ví dụ: chúng ta có thể định nghĩa một `Role` sử dụng model pivot `RoleUser` tùy biến như sau:
 
     <?php
 
@@ -346,11 +351,11 @@ Nếu bạn muốn định nghĩa một model tùy biến, để biểu diễn b
          */
         public function users()
         {
-            return $this->belongsToMany('App\User')->using('App\UserRole');
+            return $this->belongsToMany('App\User')->using('App\RoleUser');
         }
     }
 
-Khi định nghĩa model `UserRole`, chúng ta sẽ extend nó từ class `Pivot`:
+Khi định nghĩa model `RoleUser`, chúng ta sẽ extend nó từ class `Pivot`:
 
     <?php
 
@@ -358,12 +363,12 @@ Khi định nghĩa model `UserRole`, chúng ta sẽ extend nó từ class `Pivot
 
     use Illuminate\Database\Eloquent\Relations\Pivot;
 
-    class UserRole extends Pivot
+    class RoleUser extends Pivot
     {
         //
     }
 
-Bạn có thể kết hợp `using` và `withPivot` để lấy ra các cột từ bảng trung gian. Ví dụ: bạn có thể lấy ra cột `created_by` và `updated_by` từ bảng trung gian `UserRole` bằng cách truyền tên cột vào phương thức `withPivot`:
+Bạn có thể kết hợp `using` và `withPivot` để lấy ra các cột từ bảng trung gian. Ví dụ: bạn có thể lấy ra cột `created_by` và `updated_by` từ bảng trung gian `RoleUser` bằng cách truyền tên cột vào phương thức `withPivot`:
 
     <?php
 
@@ -379,7 +384,7 @@ Bạn có thể kết hợp `using` và `withPivot` để lấy ra các cột t�
         public function users()
         {
             return $this->belongsToMany('App\User')
-                            ->using('App\UserRole')
+                            ->using('App\RoleUser')
                             ->withPivot([
                                 'created_by',
                                 'updated_by'
@@ -387,8 +392,78 @@ Bạn có thể kết hợp `using` và `withPivot` để lấy ra các cột t�
         }
     }
 
+> **Note** Các model pivot có thể không sử dụng trait `SoftDeletes`. Nếu bạn cần soft delete các bản ghi của model pivot, hãy xem xét chuyển đổi model pivot của bạn thành một model Eloquent thực tế.
+
+#### Custom Pivot Models And Incrementing IDs
+
+Nếu bạn đã định nghĩa một quan hệ nhiều-nhiều sử dụng model pivot tùy chỉnh và model pivot đó có khóa chính tự động tăng, bạn nên đảm bảo là class model pivot tùy chỉnh của bạn đã định nghĩa thuộc tính `incrementing` là `true `.
+
+    /**
+     * Indicates if the IDs are auto-incrementing.
+     *
+     * @var bool
+     */
+    public $incrementing = true;
+
+<a name="has-one-through"></a>
+### Quan hệ thông qua liên kết một
+
+Các quan hệ "thông-qua-liên-kết-một" là liên kết các model thông qua một quan hệ trung gian duy nhất. Ví dụ: nếu mỗi nhà cung cấp có một người dùng và mỗi người dùng lại được liên kết với một bản ghi lại lịch sử người dùng, thì model nhà cung cấp có thể truy cập vào lịch sử của người dùng _through(thông qua)_ người dùng. Hãy xem các bảng cơ sở dữ liệu sau để định nghĩa mối quan hệ này:
+
+    users
+        id - integer
+        supplier_id - integer
+
+    suppliers
+        id - integer
+
+    history
+        id - integer
+        user_id - integer
+
+Mặc dù bảng `history` không chứa cột `supplier_id`, nhưng quan hệ `hasOneThrough` có thể cung cấp quyền truy cập vào lịch sử của người dùng ở model nhà cung cấp. Vậy chúng ta đã kiểm tra xong cấu trúc bảng cho quan hệ này, bây giờ hãy định nghĩa nó trên model `Supplier`:
+
+    <?php
+
+    namespace App;
+
+    use Illuminate\Database\Eloquent\Model;
+
+    class Supplier extends Model
+    {
+        /**
+         * Get the user's history.
+         */
+        public function userHistory()
+        {
+            return $this->hasOneThrough('App\History', 'App\User');
+        }
+    }
+
+Tham số đầu tiên được truyền cho phương thức `hasOneThrough` là tên của model cuối cùng mà chúng ta muốn lấy, trong khi tham số thứ hai là tên của model trung gian.
+
+Các quy ước khóa ngoại Eloquent mặc định sẽ được sử dụng khi thực hiện các truy vấn cho các quan hệ. Nếu bạn muốn tùy chỉnh các khóa cho các quan hệ này, bạn có thể truyền chúng làm tham số thứ ba và thứ tư của phương thức `hasOneThrough`. Tham số thứ ba là tên của khóa ngoại trên model trung gian. Tham số thứ tư là tên của khóa ngoại trên model cuối cùng. Tham số thứ năm là khóa local, trong khi tham số thứ sáu là khóa local của model trung gian:
+
+    class Supplier extends Model
+    {
+        /**
+         * Get the user's history.
+         */
+        public function userHistory()
+        {
+            return $this->hasOneThrough(
+                'App\History',
+                'App\User',
+                'supplier_id', // Foreign key on users table...
+                'user_id', // Foreign key on history table...
+                'id', // Local key on suppliers table...
+                'id' // Local key on users table...
+            );
+        }
+    }
+
 <a name="has-many-through"></a>
-### Quan hệ thông qua trung gian
+### Quan hệ thông qua liên kết nhiều
 
 Quan hệ "trung gian" cung cấp một lối tắt thuận tiện để truy cập vào các quan hệ xa thông qua các quan hệ trung gian. Ví dụ, một model `Country` có thể có nhiều model `Post` thông qua một model `User` trung gian. Trong ví dụ này, bạn có thể dễ dàng thu thập tất cả các post trên một blog cho một quốc gia. Hãy xem các bảng cần thiết để định nghĩa quan hệ này:
 
@@ -487,7 +562,7 @@ Tiếp theo, hãy xem xét đến các định nghĩa model cần thiết để 
     class Image extends Model
     {
         /**
-         * Get all of the owning imageable models.
+         * Get the owning imageable model.
          */
         public function imageable()
         {
@@ -569,7 +644,7 @@ Tiếp theo, hãy xem các định nghĩa model cần thiết để xây dựng 
     class Comment extends Model
     {
         /**
-         * Get all of the owning commentable models.
+         * Get the owning commentable model.
          */
         public function commentable()
         {
@@ -723,6 +798,8 @@ Mặc định, Laravel sẽ sử dụng tên của class để lưu vào loại 
 
 Bạn có thể đăng ký `morphMap` trong hàm `boot` của `AppServiceProvider` hoặc tạo một service provider riêng nếu bạn muốn.
 
+> {note} Khi thêm một "morph map" vào ứng dụng hiện có của bạn, mọi giá trị của cột morphable `*_type` trong cơ sở dữ liệu của bạn vẫn sẽ chứa tên đầy đủ của class đó và nó sẽ cần được chuyển đổi thành tên "map" của nó.
+
 <a name="querying-relations"></a>
 ## Query theo quan hệ
 
@@ -747,13 +824,39 @@ Ví dụ, hãy tưởng tượng một hệ thống blog trong đó có model `U
         }
     }
 
-Bạn có thể truy vấn quan hệ `post` và thêm các ràng buộc bổ sung cho quan hệ này như sau:
+Bạn có thể truy vấn quan hệ `post` và thêm các ràng buộc cho quan hệ này như sau:
 
     $user = App\User::find(1);
 
     $user->posts()->where('active', 1)->get();
 
 Bạn cũng có thể sử dụng bất kỳ phương thức nào của [query builder](/docs/{{version}}/queries) trên quan hệ này, vì vậy hãy chắc chắn là bạn đã xem qua tài liệu của query builder để tìm hiểu về tất cả các phương thức có sẵn cho bạn.
+
+#### Chaining `orWhere` Clauses After Relationships
+
+Như đã trình bày trong ví dụ trên, bạn có thể thoải mái thêm các ràng buộc cho các quan hệ khi truy vấn chúng. Tuy nhiên, hãy cẩn trọng khi kết hợp các mệnh đề `orWhere` vào một quan hệ, vì các mệnh đề` orWhere` sẽ được nhóm ở cùng cấp với ràng buộc quan hệ:
+
+    $user->posts()
+            ->where('active', 1)
+            ->orWhere('votes', '>=', 100)
+            ->get();
+
+    // select * from posts
+    // where user_id = ? and active = 1 or votes >= 100
+
+Trong hầu hết các tình huống, bạn có thể sử dụng [nhóm ràng buộc](/docs/{{version}}/queries#parameter-grouping) để nhóm các điều kiện kiểm tra giữa các dấu ngoặc một cách hợp lý:
+
+    use Illuminate\Database\Eloquent\Builder;
+
+    $user->posts()
+            ->where(function (Builder $query) {
+                return $query->where('active', 1)
+                             ->orWhere('votes', '>=', 100);
+            })
+            ->get();
+
+    // select * from posts
+    // where user_id = ? and (active = 1 or votes >= 100)
 
 <a name="relationship-methods-vs-dynamic-properties"></a>
 ### Phương thức quan hệ và thuộc tính động
@@ -788,13 +891,15 @@ Các câu lệnh `has` lồng nhau cũng có thể được khởi tạo bằng 
 
 Nếu bạn cần nhiều hơn thế nữa, bạn có thể sử dụng các phương thức `whereHas` hoặc `orWhereHas` để set các điều kiện "where" trên các truy vấn `has` của bạn. Các phương thức này cho phép bạn thêm các ràng buộc tùy biến vào một ràng buộc quan hệ, chẳng hạn như kiểm tra nội dung của một comment:
 
-    // Retrieve posts with at least one comment containing words like foo%
-    $posts = App\Post::whereHas('comments', function ($query) {
+    use Illuminate\Database\Eloquent\Builder;
+
+    // Retrieve posts with at least one comment containing words like foo%...
+    $posts = App\Post::whereHas('comments', function (Builder $query) {
         $query->where('content', 'like', 'foo%');
     })->get();
 
-    // Retrieve posts with at least ten comments containing words like foo%
-    $posts = App\Post::whereHas('comments', function ($query) {
+    // Retrieve posts with at least ten comments containing words like foo%...
+    $posts = App\Post::whereHas('comments', function (Builder $query) {
         $query->where('content', 'like', 'foo%');
     }, '>=', 10)->get();
 
@@ -807,14 +912,67 @@ Khi truy cập vào các bản ghi của một model, bạn có thể muốn gi�
 
 Nếu bạn cần nhiều hơn thế nữa, bạn có thể sử dụng các phương thức `whereDoesntHave` và `orWhereDoesntHave` để set các điều kiện "where" vào các truy vấn `doesntHave` của bạn. Các phương thức này cho phép bạn thêm các ràng buộc tùy biến vào một ràng buộc quan hệ, chẳng hạn như kiểm tra nội dung của một comment:
 
-    $posts = App\Post::whereDoesntHave('comments', function ($query) {
+    use Illuminate\Database\Eloquent\Builder;
+
+    $posts = App\Post::whereDoesntHave('comments', function (Builder $query) {
         $query->where('content', 'like', 'foo%');
     })->get();
 
 Bạn có thể sử dụng ký hiệu "dấu chấm" để thực hiện truy vấn các mối quan hệ lồng nhau. Ví dụ: truy vấn sau sẽ lấy ra tất cả các bài đăng mà có nhận xét từ các tác giả không bị cấm:
 
-    $posts = App\Post::whereDoesntHave('comments.author', function ($query) {
+    use Illuminate\Database\Eloquent\Builder;
+
+    $posts = App\Post::whereDoesntHave('comments.author', function (Builder $query) {
         $query->where('banned', 1);
+    })->get();
+
+<a name="querying-polymorphic-relationships"></a>
+### Query quan hệ đa hình
+
+Để truy vấn sự tồn tại của quan hệ `MorphTo`, bạn có thể sử dụng phương thức `whereHasMorph` và phương thức tương ứng của nó:
+
+    use Illuminate\Database\Eloquent\Builder;
+
+    // Retrieve comments associated to posts or videos with a title like foo%...
+    $comments = App\Comment::whereHasMorph(
+        'commentable',
+        ['App\Post', 'App\Video'],
+        function (Builder $query) {
+            $query->where('title', 'like', 'foo%');
+        }
+    )->get();
+
+    // Retrieve comments associated to posts with a title not like foo%...
+    $comments = App\Comment::whereDoesntHaveMorph(
+        'commentable',
+        'App\Post',
+        function (Builder $query) {
+            $query->where('title', 'like', 'foo%');
+        }
+    )->get();
+
+Bạn có thể sử dụng tham số `$type` để thêm các ràng buộc khác cho model chính:
+
+    use Illuminate\Database\Eloquent\Builder;
+
+    $comments = App\Comment::whereHasMorph(
+        'commentable',
+        ['App\Post', 'App\Video'],
+        function (Builder $query, $type) {
+            $query->where('title', 'like', 'foo%');
+
+            if ($type === 'App\Post') {
+                $query->orWhere('content', 'like', 'foo%');
+            }
+        }
+    )->get();
+
+Thay vì phải truyền một mảng các model đa hình, bạn có thể cung cấp ký tự `*` làm ký tự đại diện và để Laravel truy xuất tất cả các model đa hình có thể có từ cơ sở dữ liệu. Laravel sẽ thực hiện thêm một truy vấn bổ sung để thực hiện thao tác này:
+
+    use Illuminate\Database\Eloquent\Builder;
+
+    $comments = App\Comment::whereHasMorph('commentable', '*', function (Builder $query) {
+        $query->where('title', 'like', 'foo%');
     })->get();
 
 <a name="counting-related-models"></a>
@@ -830,7 +988,9 @@ Nếu bạn muốn đếm số lượng kết quả của một quan hệ mà kh
 
 Bạn cũng có thể thêm "counts" cho nhiều quan hệ khác cũng như thêm các ràng buộc cho các câu lệnh truy vấn:
 
-    $posts = App\Post::withCount(['votes', 'comments' => function ($query) {
+    use Illuminate\Database\Eloquent\Builder;
+
+    $posts = App\Post::withCount(['votes', 'comments' => function (Builder $query) {
         $query->where('content', 'like', 'foo%');
     }])->get();
 
@@ -839,9 +999,11 @@ Bạn cũng có thể thêm "counts" cho nhiều quan hệ khác cũng như thê
 
 Bạn cũng có thể thêm tên gọi khác cho một kết quả đếm quan hệ, cho phép bạn thực hiện nhiều lần đếm trên cùng một quan hệ:
 
+    use Illuminate\Database\Eloquent\Builder;
+
     $posts = App\Post::withCount([
         'comments',
-        'comments as pending_comments_count' => function ($query) {
+        'comments as pending_comments_count' => function (Builder $query) {
             $query->where('approved', false);
         }
     ])->get();
@@ -852,7 +1014,7 @@ Bạn cũng có thể thêm tên gọi khác cho một kết quả đếm quan h
 
 Nếu bạn đang kết hợp `withCount` với câu lệnh `select`, thì hãy đảm bảo là bạn đang gọi phương thức `withCount` sau phương thức `select`:
 
-    $query = App\Post::select(['title', 'body'])->withCount('comments');
+    $posts = App\Post::select(['title', 'body'])->withCount('comments')->get();
 
     echo $posts[0]->title;
     echo $posts[0]->body;
@@ -916,13 +1078,79 @@ Thỉnh thoảng bạn có thể cần eager load nhiều quan hệ khác nhau t
 
     $books = App\Book::with('author.contacts')->get();
 
+#### Nested Eager Loading `morphTo` Relationships
+
+Nếu bạn muốn eager loading một quan hệ `morphTo`, cũng như các quan hệ lồng nhau trên các thực thể khác nhau có thể được trả về bởi quan hệ đó, bạn có thể sử dụng phương thức `with` kết hợp với phương thức `morphWith` của quan hệ `morphTo`. Để giúp minh họa cho phương thức này, chúng ta hãy xem model sau:
+
+    <?php
+
+    use Illuminate\Database\Eloquent\Model;
+
+    class ActivityFeed extends Model
+    {
+        /**
+         * Get the parent of the activity feed record.
+         */
+        public function parentable()
+        {
+            return $this->morphTo();
+        }
+    }
+
+Trong ví dụ này, giả sử các model `Event`, `Photo`, và `Post` có thể tạo model `ActivityFeed`. Ngoài ra, giả sử rằng model `Event` thuộc một model `Calendar`, model `Photo` được liên kết với model `Tag` và model `Post` thuộc model `Author`.
+
+Sử dụng các định nghĩa và quan hệ của model này, chúng ta có thể truy xuất các instance model của `ActivityFeed` và eager loading tất cả các model `parentable` và các quan hệ lồng nhau tương ứng của chúng:
+
+    use Illuminate\Database\Eloquent\Relations\MorphTo;
+
+    $activities = ActivityFeed::query()
+        ->with(['parentable' => function (MorphTo $morphTo) {
+            $morphTo->morphWith([
+                Event::class => ['calendar'],
+                Photo::class => ['tags'],
+                Post::class => ['author'],
+            ]);
+        }])->get();
+
 #### Eager Loading Specific Columns
 
 Bạn có thể không phải lúc nào cũng cần mọi cột của quan hệ mà bạn đang truy xuất. Vì lý do này, Eloquent cho phép bạn khai báo các cột của quan hệ mà bạn muốn lấy ra:
 
-    $users = App\Book::with('author:id,name')->get();
+    $books = App\Book::with('author:id,name')->get();
 
-> {note} Khi sử dụng tính năng này, bạn phải luôn khai báo cột `id` trong danh sách các cột mà bạn muốn lấy ra.
+> {note} Khi sử dụng tính năng này, bạn phải luôn thêm cột `id` và bất kỳ cột khóa ngoại nào có liên quan trong danh sách các cột mà bạn muốn truy xuất.
+
+#### Eager Loading By Default
+
+Thỉnh thoảng bạn có thể muốn luôn load một số quan hệ khi truy xuất vào một model. Để thực hiện điều này, bạn có thể định nghĩa một thuộc tính `$with` trong model:
+
+    <?php
+
+    namespace App;
+
+    use Illuminate\Database\Eloquent\Model;
+
+    class Book extends Model
+    {
+        /**
+         * The relationships that should always be loaded.
+         *
+         * @var array
+         */
+        protected $with = ['author'];
+
+        /**
+         * Get the author that wrote the book.
+         */
+        public function author()
+        {
+            return $this->belongsTo('App\Author');
+        }
+    }
+
+Nếu bạn muốn xóa một quan hệ ra khỏi thuộc tính `$with` cho một truy vấn nhất định, bạn có thể sử dụng phương thức `without`:
+
+    $books = App\Book::without('author')->get();
 
 <a name="constraining-eager-loads"></a>
 ### Rằng buộc khi eager loading
@@ -969,6 +1197,39 @@ Nếu bạn cần set thêm các ràng buộc truy vấn cho các truy vấn eag
             'author' => $book->author->name
         ];
     }
+
+#### Nested Lazy Eager Loading & `morphTo`
+
+Nếu bạn muốn eager loading một quan hệ `morphTo`, cũng như các quan hệ lồng nhau trên các thực thể khác nhau có thể được trả về bởi quan hệ đó, bạn có thể sử dụng phương thức `loadMorph`.
+
+Phương thức này chấp nhận tên của quan hệ `morphTo` làm tham số đầu tiên và một mảng các cặp model / quan hệ làm tham số thứ hai của nó. Để giúp minh họa phương thức này, chúng ta hãy xem một model sau:
+
+    <?php
+
+    use Illuminate\Database\Eloquent\Model;
+
+    class ActivityFeed extends Model
+    {
+        /**
+         * Get the parent of the activity feed record.
+         */
+        public function parentable()
+        {
+            return $this->morphTo();
+        }
+    }
+
+Trong ví dụ này, giả sử các model `Event`, `Photo`, và `Post` có thể tạo model `ActivityFeed`. Ngoài ra, giả sử rằng model `Event` thuộc một model `Calendar`, model `Photo` được liên kết với model `Tag` và model `Post` thuộc model `Author`.
+
+Sử dụng các định nghĩa và quan hệ của model này, chúng ta có thể truy xuất các instance model của `ActivityFeed` và eager loading tất cả các model `parentable` và các quan hệ lồng nhau tương ứng của chúng:
+
+    $activities = ActivityFeed::with('parentable')
+        ->get()
+        ->loadMorph('parentable', [
+            Event::class => ['calendar'],
+            Photo::class => ['tags'],
+            Post::class => ['author'],
+        ]);
 
 <a name="inserting-and-updating-related-models"></a>
 ## Thêm và cập nhật theo quan hệ model
@@ -1055,7 +1316,7 @@ Khi xóa một quan hệ `belongsTo`, bạn có thể sử dụng phương thứ
 <a name="default-models"></a>
 #### Model mặc định
 
-Quan hệ `belongsTo` cho phép bạn định nghĩa một model mặc định sẽ được trả về nếu quan hệ đó là `null`. Trường hợp này thường được gọi là [trường hợp đối tượng rỗng](https://en.wikipedia.org/wiki/Null_Object_pattern) và có thể giúp bạn loại bỏ ra các điều kiện có trong code của bạn. Trong ví dụ sau, quan hệ `user` sẽ trả về một model `App\User` trống nếu không có một `user` nào là chủ sở hữu bài đăng đó:
+Các quan hệ `belongsTo`, `hasOne`, `hasOneThrough`, và `morphOne` cho phép bạn định nghĩa một model mặc định sẽ được trả về nếu quan hệ đó là `null`. Trường hợp này thường được gọi là [trường hợp đối tượng rỗng](https://en.wikipedia.org/wiki/Null_Object_pattern) và có thể giúp bạn loại bỏ các điều kiện có trong code của bạn. Trong ví dụ sau, quan hệ `user` sẽ trả về một model `App\User` trống nếu không có một `user` nào là chủ sở hữu bài đăng đó:
 
     /**
      * Get the author of the post.
@@ -1082,7 +1343,7 @@ Quan hệ `belongsTo` cho phép bạn định nghĩa một model mặc định s
      */
     public function user()
     {
-        return $this->belongsTo('App\User')->withDefault(function ($user) {
+        return $this->belongsTo('App\User')->withDefault(function ($user, $post) {
             $user->name = 'Guest Author';
         });
     }

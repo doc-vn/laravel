@@ -1,6 +1,7 @@
 # Laravel Horizon
 
 - [Giới thiệu](#introduction)
+- [Cập nhật Horizon](#upgrading)
 - [Cài đặt](#installation)
     - [Cấu hình](#configuration)
     - [Authorization vào bảng điều khiển](#dashboard-authorization)
@@ -20,7 +21,7 @@ Tất cả các cấu hình worker của bạn được lưu trong một file c�
 <a name="installation"></a>
 ## Cài đặt
 
-> {note} Bạn nên đảm bảo rằng queue driver của bạn đã được set thành `redis` trong file cấu hình `queue` của bạn.
+> {note} Bạn nên đảm bảo rằng queue connection của bạn đã được set thành `redis` trong file cấu hình `queue` của bạn.
 
 Bạn có thể sử dụng Composer để cài đặt Horizon vào project Laravel của bạn:
 
@@ -36,10 +37,21 @@ Bạn cũng nên tạo bảng `failed_jobs` mà Laravel sẽ sử dụng để l
 
     php artisan migrate
 
+<a name="upgrading"></a>
+#### Cập nhật Horizon
+
+Khi nâng cấp lên phiên bản mới của Horizon, điều quan trọng là bạn phải xem kỹ [hướng dẫn nâng cấp](https://github.com/laravel/horizon/blob/master/UPGRADE.md).
+
+Ngoài ra, bạn nên export lại assets của Horizon:
+
+    php artisan horizon:assets
+
 <a name="configuration"></a>
 ### Cấu hình
 
 Sau khi export asset của Horizon xong, file cấu hình của nó sẽ được lưu tại `config/horizon.php`. File cấu hình này cho phép bạn cài đặt các tùy chọn cho worker của bạn và mỗi tùy chọn cài đặt này đều có chứa phần mô tả về mục đích của nó, vì vậy bạn hãy đọc kỹ file này.
+
+> {note} Bạn nên đảm bảo là phần `environments` của file cấu hình `horizon` của bạn đã khai báo các item cho từng môi trường mà bạn định chạy Horizon.
 
 #### Balance Options
 
@@ -48,6 +60,21 @@ Horizon cho phép bạn chọn từ ba chiến lược balance: `simple`, `auto`
     'balance' => 'simple',
 
 Chiến lược `auto` sẽ điều chỉnh số lượng process worker trên mỗi queue dựa trên khối lượng job hiện tại của queue. Ví dụ: nếu queue `notifications` của bạn có 1.000 job đang chờ trong khi queue `render` của bạn thì trống không làm gì, Horizon sẽ phân bổ nhiều worker hơn vào queue `notifications` của bạn cho đến khi nó trống. Khi tùy chọn `balance` là `false`, thì mặc định hành vi của Laravel sẽ được sử dụng, nó sẽ xử lý các queue theo thứ tự mà chúng được liệt kê trong cấu hình của bạn.
+
+Khi sử dụng chiến lược `auto`, vì bạn có thể định nghĩa các tùy chọn cấu hình `minProcesses` và `maxProcesses` để kiểm soát số lượng process tối thiểu và tối đa mà Horizon sẽ tăng hoặc giảm thành:
+
+    'environments' => [
+        'production' => [
+            'supervisor-1' => [
+                'connection' => 'redis',
+                'queue' => ['default'],
+                'balance' => 'auto',
+                'minProcesses' => 1,
+                'maxProcesses' => 10,
+                'tries' => 3,
+            ],
+        ],
+    ],
 
 #### Job Trimming
 
@@ -78,6 +105,8 @@ Trong file `app/Providers/HorizonServiceProvider.php` của bạn, có một ph�
             ]);
         });
     }
+
+> {note} Hãy nhớ rằng Laravel tự động đưa người dùng *đã xác thực* vào Gate. Nếu ứng dụng của bạn đang cung cấp bảo mật cho Horizon thông qua một phương thức khác, chẳng hạn như hạn chế IP, thì người dùng Horizon của bạn có thể không cần "đăng nhập". Do đó, bạn sẽ cần phải thay đổi `function ($user)` ở trên thành `function ($user = null)` để yêu cầu Laravel không yêu cầu xác thực.
 
 <a name="running-horizon"></a>
 ## Chạy Horizon
@@ -191,7 +220,7 @@ Nếu bạn muốn tự định nghĩa tag cho một trong các đối tượng 
 <a name="notifications"></a>
 ## Thông báo
 
-> **Lưu ý:** Trước khi sử dụng thông báo, bạn nên thêm package Composer `guzzlehttp/guzzle` vào trong project của bạn. Khi cấu hình Horizon để gửi thông báo như SMS, thì bạn cũng nên xem lại [các yêu cầu của driver thông báo Nexmo](https://laravel.com/docs/{{version}}/notifications#sms-notifications).
+> **Lưu ý:** Khi cấu hình Horizon để gửi thông báo như Slack hoặc SMS, thì bạn cũng nên xem lại [các yêu cầu cần thiết của driver mà bạn muốn xử dụng](/docs/{{version}}/notifications).
 
 Nếu bạn muốn nhận được thông báo khi một trong các queue của bạn có thời gian chờ quá lâu, bạn có thể sử dụng các phương thức `Horizon::routeMailNotificationsTo`, `Horizon::routeSlackNotificationsTo`, và `Horizon::routeSmsNotificationsTo`. Bạn có thể gọi các phương thức này từ `HorizonServiceProvider`:
 
