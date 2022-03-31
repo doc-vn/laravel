@@ -191,6 +191,15 @@ Mặc định bị disabled, nhưng source map có thể được kích hoạt b
     mix.js('resources/js/app.js', 'public/js')
        .sourceMaps();
 
+#### Style Of Source Mapping
+
+Webpack cung cấp nhiều [kiểu source mapping](https://webpack.js.org/configuration/devtool/#devtool). Mặc định, kiểu source mapping của Mix sẽ được set thành `eval-source-map`, cung cấp thời gian rebuild nhanh chóng. Nếu bạn muốn thay đổi kiểu mapping, bạn có thể làm như vậy bằng cách sử dụng phương thức `sourceMaps`:
+
+    let productionSourceMaps = false;
+
+    mix.js('resources/js/app.js', 'public/js')
+       .sourceMaps(productionSourceMaps, 'source-map');
+
 <a name="working-with-scripts"></a>
 ## Làm việc cùng javaScript
 

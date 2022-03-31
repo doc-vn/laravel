@@ -25,6 +25,7 @@
     - [Dùng đối tượng Rule](#using-rule-objects)
     - [Using Closures](#using-closures)
     - [Dùng Extensions](#using-extensions)
+    - [Extension ẩn](#implicit-extensions)
 
 <a name="introduction"></a>
 ## Giới thiệu
@@ -155,6 +156,20 @@ Vì vậy, trong ví dụ của chúng ta, người dùng sẽ được chuyển
     @endif
 
     <!-- Create Post Form -->
+
+#### The `@error` Directive
+
+Bạn cũng có thể sử dụng lệnh `@error` [Blade](/docs/{{version}}/blade) để kiểm tra xem trong thông báo lỗi validation có tồn tại cho một thuộc tính hay không. Trong lệnh `@error`, bạn có thể echo ra biến `$message` để hiển thị thông báo lỗi:
+
+    <!-- /resources/views/post/create.blade.php -->
+
+    <label for="title">Post Title</label>
+
+    <input id="title" type="text" class="@error('title') is-invalid @enderror">
+
+    @error('title')
+        <div class="alert alert-danger">{{ $message }}</div>
+    @enderror
 
 <a name="a-note-on-optional-fields"></a>
 ### Lưu ý về các field tùy chọn
@@ -319,9 +334,9 @@ Nếu bạn không muốn sử dụng phương thức `validate` theo request, b
 
     namespace App\Http\Controllers;
 
-    use Validator;
     use Illuminate\Http\Request;
     use App\Http\Controllers\Controller;
+    use Illuminate\Support\Facades\Validator;
 
     class PostController extends Controller
     {
@@ -546,6 +561,7 @@ Dưới đây là danh sách tất cả các quy tắc validation có sẵn và 
 [Dimensions (Image Files)](#rule-dimensions)
 [Distinct](#rule-distinct)
 [E-Mail](#rule-email)
+[Ends With](#rule-ends-with)
 [Exists (Database)](#rule-exists)
 [File](#rule-file)
 [Filled](#rule-filled)
@@ -578,6 +594,7 @@ Dưới đây là danh sách tất cả các quy tắc validation có sẵn và 
 [Required Without All](#rule-required-without-all)
 [Same](#rule-same)
 [Size](#rule-size)
+[Sometimes](#conditionally-adding-rules)
 [Starts With](#rule-starts-with)
 [String](#rule-string)
 [Timezone](#rule-timezone)
@@ -676,7 +693,7 @@ Field được validation phải bằng ngày đã cho. Tham số date sẽ đư
 <a name="rule-date-format"></a>
 #### date_format:_format_
 
-Field được validation phải khớp với _format_ đã cho. Bạn nên sử dụng **một trong hai** `date` hoặc` date_format` khi validate một field, không dùng cả hai.
+Field được validation phải khớp với _format_ đã cho. Bạn nên sử dụng **một trong hai** `date` hoặc `date_format` khi validate một field, không dùng cả hai. Quy tắc validation này hỗ trợ tất cả các định dạng mà được hỗ trợ bởi class [DateTime](https://www.php.net/manual/es/class.datetime.php) của PHP.
 
 <a name="rule-different"></a>
 #### different:_field_
@@ -727,7 +744,26 @@ Khi làm việc với mảng, field được validation phải không được c
 <a name="rule-email"></a>
 #### email
 
-Field được validation phải được định dạng dưới dạng địa chỉ email.
+Trường được validation phải ở định dạng một địa chỉ e-mail. Về cơ bản, quy tắc validation này sử dụng package [`egulias/email-validator`](https://github.com/egulias/EmailValidator) để validation. Mặc định, validation `RFCValidation` sẽ được áp dụng, nhưng bạn cũng có thể áp dụng các kiểu validation khác:
+
+    'email' => 'email:rfc,dns'
+
+Ví dụ trên sẽ áp dụng validation `RFCValidation` và `DNSCheckValidation`. Dưới đây là một danh sách đầy đủ gồm các kiểu validation mà bạn có thể áp dụng:
+
+<div class="content-list" markdown="1">
+- `rfc`: `RFCValidation`
+- `strict`: `NoRFCWarningsValidation`
+- `dns`: `DNSCheckValidation`
+- `spoof`: `SpoofCheckValidation`
+- `filter`: `FilterEmailValidation`
+</div>
+
+Mặc định validator `filter` sẽ sử dụng hàm `filter_var` của PHP, đi kèm với Laravel và là hành vi của phiên bản Laravel trước 5.8.
+
+<a name="rule-ends-with"></a>
+#### ends_with:_foo_,_bar_,...
+
+Field được validation phải kết thúc bằng một trong các giá trị đã cho.
 
 <a name="rule-exists"></a>
 #### exists:_table_,_column_
@@ -784,7 +820,7 @@ Field được validation phải lớn hơn hoặc bằng _field_ đã cho. Hai 
 <a name="rule-image"></a>
 #### image
 
-Field được validation phải là một image (jpeg, png, bmp, gif, or svg)
+Field được validation phải là một image (jpeg, png, bmp, gif, svg, hoặc webp)
 
 <a name="rule-in"></a>
 #### in:_foo_,_bar_,...
@@ -809,6 +845,8 @@ Field được validation phải tồn tại trong các giá trị của _anothe
 #### integer
 
 Field được validation phải là một integer.
+
+> {note} Quy tắc validation này không xác minh được input thuộc loại biến kiểu "số nguyên", mà chỉ xác minh được rằng input là một chuỗi hoặc là một giá trị số có chứa một số nguyên.
 
 <a name="rule-ip"></a>
 #### ip
@@ -1003,9 +1041,11 @@ Field được validation phải là một định danh múi giờ hợp lệ th
 <a name="rule-unique"></a>
 #### unique:_table_,_column_,_except_,_idColumn_
 
-Field được validation phải là duy nhất trong một bảng cơ sở dữ liệu. Nếu tùy chọn `column` không được khai báo, chính tên field đó sẽ được sử dụng làm tên cột để so sánh.
+Field được validation phải không tồn tại trong một bảng cơ sở dữ liệu.
 
 **Khai báo tên cột**
+
+Tùy chọn `column` có thể được sử dụng để chỉ định tên cột sẽ được sử dụng trong cơ sở dữ liệu. Nếu tùy chọn `column` không được chỉ định, thì tên field sẽ được sử dụng.
 
     'email' => 'unique:users,email_address'
 
@@ -1029,6 +1069,12 @@ Field được validation phải là duy nhất trong một bảng cơ sở dữ
             Rule::unique('users')->ignore($user->id),
         ],
     ]);
+
+> {note} Bạn đừng bao giờ truyền bất kỳ input nào do người dùng kiểm soát vào trong phương thức `ignore`. Thay vào đó, bạn chỉ nên truyền một ID duy nhất do hệ thống tạo ra, chẳng hạn như ID hoặc UUID tăng tự động từ một instance model Eloquent. Nếu không, ứng dụng của bạn sẽ dễ bị tấn công bởi SQL injection.
+
+Thay vì truyền giá trị khóa của model cho phương thức `ignore`, bạn có thể truyền toàn bộ instance của model đó cho phương thức. Và Laravel sẽ tự động trích xuất khóa của model đó:
+
+    Rule::unique('users')->ignore($user)
 
 Nếu bảng của bạn sử dụng tên cột khóa chính khác với `id`, bạn có thể chỉ định tên của cột khi gọi phương thức `ignore`:
 
@@ -1213,6 +1259,16 @@ Một cách khác để đăng ký một tùy biến rule validation là sử d�
     class AppServiceProvider extends ServiceProvider
     {
         /**
+         * Register any application services.
+         *
+         * @return void
+         */
+        public function register()
+        {
+            //
+        }
+
+        /**
          * Bootstrap any application services.
          *
          * @return void
@@ -1222,16 +1278,6 @@ Một cách khác để đăng ký một tùy biến rule validation là sử d�
             Validator::extend('foo', function ($attribute, $value, $parameters, $validator) {
                 return $value == 'foo';
             });
-        }
-
-        /**
-         * Register the service provider.
-         *
-         * @return void
-         */
-        public function register()
-        {
-            //
         }
     }
 
@@ -1267,7 +1313,8 @@ Khi tạo một tùy biến quy tắc validation, đôi khi bạn có thể cầ
         });
     }
 
-#### Extension ẩn
+<a name="implicit-extensions"></a>
+### Extension ẩn
 
 Mặc định, khi một thuộc tính được validate không tồn tại hoặc là một chuỗi trống, thì các quy tắc validation thông thường, và cả các extension tùy biến đều sẽ được không chạy. Ví dụ: quy tắc [`unique`](#rule-unique) sẽ không được chạy cho một chuỗi trống:
 
@@ -1284,3 +1331,7 @@ Mặc định, khi một thuộc tính được validate không tồn tại ho�
     });
 
 > {note} Một extension "ẩn" chỉ _tưởng tượng_ rằng thuộc tính đó là bắt buộc. Việc nó thực sự validate một thuộc tính bị thiếu hoặc bị trống hay không là tùy thuộc vào bạn.
+
+#### Đối tượng quy tắc ẩn
+
+Nếu bạn muốn một đối tượng quy tắc chạy khi một thuộc tính trống, bạn nên implement interface `Illuminate\Contracts\Validation\ImplicitRule`. Interface này phục vụ như là một "marker interface" cho validator; do đó, nó không chứa bất kỳ phương thức nào mà bạn cần phải implement.

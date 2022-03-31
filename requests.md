@@ -279,6 +279,8 @@ Tất cả các cookie được tạo bởi Laravel framework đều được m�
 
 Ngoài ra, bạn có thể sử dụng facade `Cookie` để truy cập các giá trị của cookie:
 
+    use Illuminate\Support\Facades\Cookie;
+
     $value = Cookie::get('name');
 
 #### Gắn Cookies vào Response

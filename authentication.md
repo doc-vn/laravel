@@ -348,7 +348,7 @@ Nếu bạn đang sử dụng PHP FastCGI, thì HTTP Basic authentication có th
 <a name="stateless-http-basic-authentication"></a>
 ### Stateless HTTP Basic Authentication
 
-Bạn cũng có thể sử dụng HTTP Basic Authentication mà không cần phải set cookie để định danh người dùng trong session, điều này đặc biệt hữu ích cho việc xác thực API. Để làm như vậy, hãy [định nghĩa một middleware](/docs/{{version}}/middleware) gọi phương thức `onceBasic`. Nếu không có exception nào được tạo ra bởi phương thức `onceBasic`, request sẽ được chuyển tiếp vào application:
+Bạn cũng có thể sử dụng HTTP Basic Authentication mà không cần phải set cookie để định danh người dùng trong session, điều này đặc biệt hữu ích cho việc xác thực API. Để làm như vậy, hãy [định nghĩa một middleware](/docs/{{version}}/middleware) gọi phương thức `onceBasic`. Nếu không có response nào được trả về bởi phương thức `onceBasic`, request sẽ được chuyển tiếp vào application:
 
     <?php
 
@@ -452,7 +452,7 @@ Như bạn có thể thấy trong ví dụ trên, hàm callback được truyề
 
 Cách đơn giản nhất để làm một hệ thống xác thực tùy biến dựa trên HTTP request là sử dụng phương thức `Auth::viaRequest`. Phương thức này sẽ cho phép bạn nhanh chóng định nghĩa quy trình xác thực của bạn bằng một Closure duy nhất.
 
-Để bắt đầu, hãy gọi phương thức `Auth::viaRequest` trong hàm `boot` của class `AuthServiceProvider`. Phương thức `viaRequest` sẽ chấp nhận một tên guard làm đối số đầu tiên của nó. Tên guard này có thể là bất kỳ chuỗi nào mà mô tả guard tùy biến của bạn. Đối số thứ hai được truyền cho phương thức sẽ là một Closure nhận vào một HTTP request và sẽ trả về một instance người dùng hoặc nếu xác thực không thành công, thì sẽ là `null`:
+Để bắt đầu, hãy gọi phương thức `Auth::viaRequest` trong hàm `boot` của class `AuthServiceProvider`. Phương thức `viaRequest` sẽ chấp nhận tên của authentication driver làm tham số đầu tiên của nó. Tên này có thể là bất kỳ chuỗi nào mà mô tả guard tùy biến của bạn. Tham số thứ hai được truyền cho phương thức sẽ là một Closure nhận vào một HTTP request và sẽ trả về một instance người dùng hoặc nếu xác thực không thành công, thì sẽ là `null`:
 
     use App\User;
     use Illuminate\Http\Request;
@@ -472,7 +472,7 @@ Cách đơn giản nhất để làm một hệ thống xác thực tùy biến 
         });
     }
 
-Sau khi guard tùy biến của bạn đã được định nghĩa, bạn có thể sử dụng guard này trong cấu hình `guard` trong file cấu hình `auth.php` của bạn:
+Sau khi authentication driver tùy biến của bạn đã được định nghĩa, bạn có thể sử dụng nó như là một driver trong cấu hình `guards` trong file cấu hình `auth.php` của bạn:
 
     'guards' => [
         'api' => [

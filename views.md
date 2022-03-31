@@ -79,6 +79,16 @@ Khi truyền thông tin theo cách này, dữ liệu phải là một mảng v�
     class AppServiceProvider extends ServiceProvider
     {
         /**
+         * Register any application services.
+         *
+         * @return void
+         */
+        public function register()
+        {
+            //
+        }
+
+        /**
          * Bootstrap any application services.
          *
          * @return void
@@ -86,16 +96,6 @@ Khi truyền thông tin theo cách này, dữ liệu phải là một mảng v�
         public function boot()
         {
             View::share('key', 'value');
-        }
-
-        /**
-         * Register the service provider.
-         *
-         * @return void
-         */
-        public function register()
-        {
-            //
         }
     }
 
@@ -116,7 +116,17 @@ Trong ví dụ này, hãy đăng ký các view composer trong một [service pro
     class ViewServiceProvider extends ServiceProvider
     {
         /**
-         * Register bindings in the container.
+         * Register any application services.
+         *
+         * @return void
+         */
+        public function register()
+        {
+            //
+        }
+
+        /**
+         * Bootstrap any application services.
          *
          * @return void
          */
@@ -131,16 +141,6 @@ Trong ví dụ này, hãy đăng ký các view composer trong một [service pro
             View::composer('dashboard', function ($view) {
                 //
             });
-        }
-
-        /**
-         * Register the service provider.
-         *
-         * @return void
-         */
-        public function register()
-        {
-            //
         }
     }
 

@@ -9,6 +9,7 @@
     - [Lệnh "Link"](#the-link-command)
     - [Bảo vệ site với TLS](#securing-sites)
 - [Chia sẻ site](#sharing-sites)
+- [Các biến môi trường cho trang web](#site-specific-environment-variables)
 - [Tuỳ chỉnh Valet Driver](#custom-valet-drivers)
     - [Local Driver](#local-drivers)
 - [Các lệnh Valet khác](#other-valet-commands)
@@ -24,7 +25,14 @@ Cụ thể là, bạn sẽ có một môi trường phát triển Laravel nhanh 
 
 Mặc định, Valet hỗ trợ những phần sau, nhưng không giới hạn:
 
-<div class="content-list" markdown="1">
+<style>
+    #valet-support > ul {
+        column-count: 3; -moz-column-count: 3; -webkit-column-count: 3;
+        line-height: 1.9;
+    }
+</style>
+
+<div id="valet-support" markdown="1">
 - [Laravel](https://laravel.com)
 - [Lumen](https://lumen.laravel.com)
 - [Bedrock](https://roots.io/bedrock/)
@@ -131,7 +139,7 @@ Sau khi Valet được cài đặt xong, bạn có thể bắt đầu tạo site
 - Và mở trang `http://blog.test` trên web browser của bạn.
 </div>
 
-**Đó là tất cả** Bây giờ, bất kỳ project Laravel nào bạn mà được tạo trong thư mục mà đã được park thì nó sẽ tự động được tạo một site tương ứng theo quy tắc là `http://folder-name.test`.
+**Đó là tất cả** Bây giờ, bất kỳ project Laravel nào bạn mà được tạo trong thư mục mà đã được park thì nó sẽ tự động được tạo một site tương ứng theo quy tắc là `http://folder-name.test`. Để xem danh sách tất cả các trang web có trong thư mục đã park của bạn, bạn có thể thực hiện lệnh `valet parked`.
 
 <a name="the-link-command"></a>
 **Lệnh `link`**
@@ -167,12 +175,23 @@ Valet đã chứa một lệnh để chia sẻ các trang web ở local của b�
 
 Để ngừng chia sẻ trang web của bạn, hãy nhấn `Control + C` để hủy quá trình.
 
+<a name="site-specific-environment-variables"></a>
+## Các biến môi trường cho trang web
+
+Một số ứng dụng sử dụng các framework khác có thể phụ thuộc vào các biến môi trường trên server nhưng lại không cung cấp cách thức để các biến đó được cấu hình trong project của bạn. Valet cho phép bạn cấu hình các biến môi trường cho trang web bằng cách thêm một file `.valet-env.php` vào trong thư mục gốc của project của bạn. Các biến này sẽ được thêm vào trong mảng global `$_SERVER`:
+
+    <?php
+
+    return [
+        'WEBSITE_NAME' => 'My Blog',
+    ];
+
 <a name="custom-valet-drivers"></a>
 ## Tuỳ chỉnh Valet Drivers
 
 Bạn có thể viết Valet "driver" của riêng bạn để tạo các application PHP chạy trên framework khác hoặc CMS khác mà không được Valet hỗ trợ. Khi bạn cài đặt Valet, một thư mục `~/.config/valet/Drivers` sẽ được tạo và chứa file `SampleValetDriver.php`. File này sẽ chứa một driver mẫu để trình bày cách viết một driver tuỳ chỉnh. Để viết một driver tuỳ chỉnh thì nó chỉ yêu cầu bạn kế thừa 3 phương thức: `serves`, `isStaticFile`, và `frontControllerPath`.
 
-Tất cả 3 phương thức này đều nhận các giá trị là `$sitePath`, `$siteName`, và `$uri` làm đối số của chúng. `$sitePath` là đường dẫn đến trang web mà đã được tạo trên máy của bạn, chẳng hạn như `/Users/Lisa/Sites/my-project`. `$siteName` là phần "host" hoặc phần "site name" của tên miền(`my-project`). `$uri` là request URI (`/foo/bar`).
+Tất cả 3 phương thức này đều nhận các giá trị là `$sitePath`, `$siteName`, và `$uri` làm tham số của chúng. `$sitePath` là đường dẫn đến trang web mà đã được tạo trên máy của bạn, chẳng hạn như `/Users/Lisa/Sites/my-project`. `$siteName` là phần "host" hoặc phần "site name" của tên miền(`my-project`). `$uri` là request URI (`/foo/bar`).
 
 Khi mà bạn đã tuỳ chỉnh xong Valet driver, hãy lưu nó vào trong thư mục `~/.config/valet/Drivers` bằng cách sử dụng quy ước đặt tên như sau `FrameworkValetDriver.php`. Ví dụ: nếu bạn đang viết valet driver cho WordPress, thì nên đặt tên file của bạn phải là `WordPressValetDriver.php`.
 
@@ -277,8 +296,10 @@ Nếu bạn muốn định nghĩa một Valet driver tùy chỉnh cho một appl
 Lệnh  | Mô tả
 ------------- | -------------
 `valet forget` | Chạy lệnh này từ một thư mục đã được park để xóa thư mục đó ra khỏi danh sách thư mục đã được park.
+`valet log` | Xem danh sách các file log được ghi bởi các service của Valet.
 `valet paths` | Xem tất cả các đường dẫn đã được park.
 `valet restart` | Khởi động lại daemon Valet.
 `valet start` | Khởi động daemon Valet.
 `valet stop` | Dừng daemon Valet.
-`valet uninstall` | Gỡ hoàn toàn cài đặt daemon Valet.
+`valet trust` | Thêm quyền sudoer cho Brew và Valet để chạy các lệnh Valet mà không cần xác nhận password.
+`valet uninstall` | Gỡ cài đặt daemon Valet.

@@ -57,7 +57,7 @@ Thông thường, bạn nên đặt các loại route này ra ngoài group middl
 <a name="csrf-x-csrf-token"></a>
 ## X-CSRF-TOKEN
 
-Ngoài việc kiểm tra mã token CSRF dưới dạng là một tham số của một POST, middleware `ConfirmCsrfToken` cũng sẽ kiểm tra request header `X-CSRF-TOKEN`. Ví dụ, bạn có thể lưu trữ mã token vào trong thẻ `meta` HTML:
+Ngoài việc kiểm tra mã token CSRF dưới dạng là một tham số của một POST, middleware `ConfirmCsrfToken` cũng sẽ kiểm tra request header `X-CSRF-TOKEN`. Ví dụ, bạn có thể lưu trữ mã token vào trong một thẻ `meta` HTML:
 
     <meta name="csrf-token" content="{{ csrf_token() }}">
 

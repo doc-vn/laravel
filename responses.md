@@ -65,6 +65,20 @@ Hoặc, bạn có thể sử dụng phương thức `withHeaders` để chỉ đ
                     'X-Header-Two' => 'Header Value',
                 ]);
 
+##### Cache Control Middleware
+
+Laravel có chứa một middleware `cache.headers`, middleware này có thể được sử dụng để thiết lập nhanh một header `Cache-Control` cho một nhóm các route. Nếu `etag` được chỉ định trong danh sách lệnh, một hash MD5 của nội dung response sẽ được tự động set làm ETag identifier:
+
+    Route::middleware('cache.headers:public;max_age=2628000;etag')->group(function() {
+        Route::get('privacy', function () {
+            // ...
+        });
+
+        Route::get('terms', function () {
+            // ...
+        });
+    });
+
 <a name="attaching-cookies-to-responses"></a>
 #### Gắn Cookies vào Responses
 

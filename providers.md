@@ -68,6 +68,7 @@ Nếu service provider của bạn đăng ký nhiều liên kết, thì bạn c�
 
     use App\Contracts\ServerProvider;
     use App\Contracts\DowntimeNotifier;
+    use App\Services\ServerToolsProvider;
     use Illuminate\Support\ServiceProvider;
     use App\Services\PingdomDowntimeNotifier;
     use App\Services\DigitalOceanServerProvider;
@@ -90,6 +91,7 @@ Nếu service provider của bạn đăng ký nhiều liên kết, thì bạn c�
          */
         public $singletons = [
             DowntimeNotifier::class => PingdomDowntimeNotifier::class,
+            ServerToolsProvider::class => ServerToolsProvider::class,
         ];
     }
 
@@ -152,7 +154,7 @@ Nếu provider của bạn **chỉ** đăng ký các liên kết trong [service 
 
 Laravel sẽ biên dịch và lưu trữ một danh sách tất cả các service mà được cung cấp dưới các service provider trì hoãn, cùng với tên của class service provider đó. Sau đó, chỉ khi bạn resolve một trong những service này thì Laravel mới tải service provider đó lên.
 
-Để trì hoãn việc load của một provider, hãy đặt thuộc tính `defer` thành` true` và định nghĩa một phương thức `provides`. Phương thức `provides` sẽ trả về các liên kết service container được đăng ký bởi provider:
+Để trì hoãn việc load của một provider, hãy implement interface `\Illuminate\Contracts\Support\DeferrableProvider` và định nghĩa một phương thức `provides`. Phương thức `provides` sẽ trả về các liên kết service container được đăng ký bởi provider:
 
     <?php
 
@@ -160,18 +162,12 @@ Laravel sẽ biên dịch và lưu trữ một danh sách tất cả các servic
 
     use Riak\Connection;
     use Illuminate\Support\ServiceProvider;
+    use Illuminate\Contracts\Support\DeferrableProvider;
 
-    class RiakServiceProvider extends ServiceProvider
+    class RiakServiceProvider extends ServiceProvider implements DeferrableProvider
     {
         /**
-         * Cho biết nếu load của provider bị hoãn lại sau.
-         *
-         * @var bool
-         */
-        protected $defer = true;
-
-        /**
-         * Register the service provider.
+         * Register any application services.
          *
          * @return void
          */

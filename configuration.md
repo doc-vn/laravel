@@ -10,7 +10,6 @@
 - [Caching các biến config](#configuration-caching)
 - [Chế độ bảo trì](#maintenance-mode)
 
-<a name="introduction"></a>
 ## Giới thiệu
 
 Tất cả các file config cho Laravel framework được lưu trữ trong thư mục `config`. Các biến config đều đã được tài liệu hoá bằng comment, nên hãy xem qua và làm quen với chúng.

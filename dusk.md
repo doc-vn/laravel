@@ -2,6 +2,7 @@
 
 - [Giới thiệu](#introduction)
 - [Cài đặt](#installation)
+    - [Quản lý cài đặt ChromeDriver](#managing-chromedriver-installations)
     - [Dùng Browser khác](#using-other-browsers)
 - [Bắt đầu](#getting-started)
     - [Tạo Test](#generating-tests)
@@ -38,6 +39,7 @@
     - [Codeship](#running-tests-on-codeship)
     - [Heroku CI](#running-tests-on-heroku-ci)
     - [Travis CI](#running-tests-on-travis-ci)
+    - [GitHub Actions](#running-tests-on-github-actions)
 
 <a name="introduction"></a>
 ## Giới thiệu
@@ -66,6 +68,20 @@ Một thư mục `Browser` sẽ được tạo trong thư mục `tests` và sẽ
 Khi bạn chạy lệnh `dusk`, nếu bạn gặp lỗi ở chỗ cuối cùng, thì bạn có thể tiết kiệm thời gian bằng cách chạy lại chỗ lỗi cuối cùng đó trước bằng lệnh `dusk:fails`:
 
     php artisan dusk:fails
+
+<a name="managing-chromedriver-installations"></a>
+### Quản lý cài đặt ChromeDriver
+
+Nếu bạn muốn cài đặt một phiên bản ChromeDriver khác, khác với phiên bản đi kèm trong Laravel Dusk, bạn có thể sử dụng lệnh `dusk:chrome-driver`:
+
+    # Install the latest version of ChromeDriver for your OS...
+    php artisan dusk:chrome-driver
+
+    # Install a given version of ChromeDriver for your OS...
+    php artisan dusk:chrome-driver 74
+
+    # Install a given version of ChromeDriver for all supported OSs...
+    php artisan dusk:chrome-driver --all
 
 > {note} Dusk sẽ yêu cầu file `chromedriver` của nó phải có quyền chạy. Nếu như bạn đang gặp lỗi khi chạy Dusk, thì bạn nên đảm bảo là file đó đã có quyền chạy bằng lệnh sau: `chmod -R 0755 vendor/laravel/dusk/bin/`.
 
@@ -194,7 +210,7 @@ Khi chạy test, Dusk sẽ back-up file `.env` gốc của bạn và đổi tên
             $this->browse(function ($browser) use ($user) {
                 $browser->visit('/login')
                         ->type('email', $user->email)
-                        ->type('password', 'secret')
+                        ->type('password', 'password')
                         ->press('Login')
                         ->assertPathIs('/home');
             });
@@ -695,6 +711,8 @@ Dusk cung cấp nhiều yêu cầu kiểm tra mà bạn có thể đưa ra đố
 [assertDialogOpened](#assert-dialog-opened)
 [assertEnabled](#assert-enabled)
 [assertDisabled](#assert-disabled)
+[assertButtonEnabled](#assert-button-enabled)
+[assertButtonDisabled](#assert-button-disabled)
 [assertFocused](#assert-focused)
 [assertNotFocused](#assert-not-focused)
 [assertVue](#assert-vue)
@@ -1042,6 +1060,20 @@ Yêu cầu field đã cho đang được enabled:
 Yêu cầu field đã cho đang bị disable:
 
     $browser->assertDisabled($field);
+
+<a name="assert-button-enabled"></a>
+#### assertButtonEnabled
+
+Yêu cầu button đã cho đang được enabled:
+
+    $browser->assertButtonEnabled($button);
+
+<a name="assert-button-disabled"></a>
+#### assertButtonDisabled
+
+Yêu cầu button đã cho đang bị disable:
+
+    $browser->assertButtonDisabled($button);
 
 <a name="assert-focused"></a>
 #### assertFocused
@@ -1424,6 +1456,34 @@ Nếu bạn đang sử dụng CircleCI để chạy các bài test, bạn có th
 
     script:
       - php artisan dusk
+
+<a name="running-tests-on-github-actions"></a>
+### GitHub Actions
+
+Nếu bạn đang sử dụng [Github Actions](https://github.com/features/actions) để chạy các bài test Laravel Dusk, bạn có thể sử dụng file cấu hình này để bắt đầu. Giống như TravisCI, chúng ta sẽ sử dụng lệnh `php artisan serve` để khởi chạy một web server được tích hợp sẵn trong PHP:
+
+    name: CI
+    on: [push]
+    jobs:
+
+      dusk-php:
+        runs-on: ubuntu-latest
+        steps:
+          - uses: actions/checkout@v1
+          - name: Prepare The Environment
+            run: cp .env.example .env
+          - name: Install Composer Dependencies
+            run: composer install --no-progress --no-suggest --prefer-dist --optimize-autoloader
+          - name: Generate Application Key
+            run: php artisan key:generate
+          - name: Upgrade Chrome Driver
+            run: php artisan dusk:chrome-driver
+          - name: Start Chrome Driver
+            run: ./vendor/laravel/dusk/bin/chromedriver-linux > /dev/null 2>&1 &
+          - name: Run Laravel Server
+            run: php artisan serve > /dev/null 2>&1 &
+          - name: Run Dusk Tests
+            run: php artisan dusk
 
 Trong file `.env.testing` của bạn, hãy điều chỉnh giá trị của `APP_URL`:
 

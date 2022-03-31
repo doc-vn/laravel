@@ -11,6 +11,7 @@
     - [Xác nhận Task chạy](#confirming-task-execution)
 - [Thông báo](#notifications)
     - [Slack](#slack)
+    - [Discord](#discord)
 
 <a name="introduction"></a>
 ## Giới thiệu
@@ -145,7 +146,7 @@ Mặc định, các task sẽ được chạy tuần tự trên mỗi server. N�
 
 Để chạy một task hoặc một story đã được định nghĩa trong file `Envoy.blade.php`, bạn hãy chạy lệnh `run` của Envoy, và truyền tên của task hoặc tên của story mà bạn muốn thực hiện. Envoy sẽ chạy task và hiển thị output từ server khi task được chạy:
 
-    envoy run task
+    envoy run deploy
 
 <a name="confirming-task-execution"></a>
 ### Xác nhận Task chạy
@@ -176,3 +177,12 @@ Bạn có thể cung cấp thêm một trong số lựa chọn sau đây để l
 - Để gửi thông báo tới một channel: `#channel`
 - Để gửi thông báo cho một người dùng: `@user`
 </div>
+
+<a name="discord"></a>
+### Discord
+
+Envoy cũng hỗ trợ gửi thông báo đến [Discord](https://discord.com) sau mỗi task được chạy. Lệnh `@discord` chấp nhận một URL hook Discord và một thông báo. Bạn có thể lấy ra URL webhook của bạn bằng cách tạo "Webhook" trong Server Setting và chọn channel mà webhook sẽ đăng lên. Bạn nên truyền toàn bộ URL Webhook vào lệnh `@discord`:
+
+    @finished
+        @discord('discord-webhook-url')
+    @endfinished

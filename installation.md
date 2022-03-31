@@ -21,14 +21,14 @@ Tuy nhiên, nếu bạn không muốn dùng Homestead, thì bạn hãy chắc ch
 
 <div class="content-list" markdown="1">
 - PHP >= 7.1.3
-- OpenSSL PHP Extension
-- PDO PHP Extension
-- Mbstring PHP Extension
-- Tokenizer PHP Extension
-- XML PHP Extension
+- BCMath PHP Extension
 - Ctype PHP Extension
 - JSON PHP Extension
-- BCMath PHP Extension
+- Mbstring PHP Extension
+- OpenSSL PHP Extension
+- PDO PHP Extension
+- Tokenizer PHP Extension
+- XML PHP Extension
 </div>
 
 <a name="installing-laravel"></a>
@@ -45,8 +45,8 @@ Laravel dùng [Composer](https://getcomposer.org) để quản lý các library.
 Hãy chắc chắn rằng laravel installer đã được cài đặt vào trong thư mục global của composer, để bạn có thể chạy lệnh `laravel` này tại bất kỳ thư mục nào mà bạn muốn tạo project. Thư mục global của composer này sẽ tồn tại ở các vị trí khác nhau tuỳ theo hệ điều hành của bạn, nhưng dưới đây là một số vị trí cơ bản theo hệ điều hành:
 
 <div class="content-list" markdown="1">
-- macOS: `$HOME/.composer/vendor/bin`
-- GNU / Linux Distributions: `$HOME/.config/composer/vendor/bin`
+- macOS and GNU / Linux Distributions: `$HOME/.composer/vendor/bin`
+- Windows: `%USERPROFILE%\AppData\Roaming\Composer\vendor\bin`
 </div>
 
 Sau khi đã cài đặt xong, lệnh `laravel new` sẽ tạo một project mới tại đúng vị trí thự mục mà bạn đang chạy lệnh này, Ví dụ, khi chạy lệnh `laravel new blog` sẽ tạo a một thư mục mới với tên là `blog` mà trong đó đã cài đặt tất cả cái thứ mà laravel cần để chạy:
@@ -57,7 +57,7 @@ Sau khi đã cài đặt xong, lệnh `laravel new` sẽ tạo một project m�
 
 Hoặc, bạn cũng có thể cài đặt laravel bằng cách chạy lệnh `create-project` trong terminal của bạn:
 
-    composer create-project --prefer-dist laravel/laravel blog "5.7.*"
+    composer create-project --prefer-dist laravel/laravel blog "5.8.*"
 
 #### Local Development Server
 

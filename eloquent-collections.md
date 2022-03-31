@@ -35,113 +35,103 @@ Tuy nhiên, collection mạnh mẽ hơn nhiều so với mảng và có thêm nh
 
 ### The Base Collection
 
-Tất cả các collection Eloquent đều được extend từ đối tượng [Laravel collection](/docs/{{version}}/collections); do đó, chúng kế thừa tất cả các phương thức mạnh mẽ được cung cấp bởi class collection:
+Tất cả các Eloquent collection sẽ được extend từ một đối tượng [Laravel collection](/docs/{{version}}/collections#available-methods); do đó, chúng kế thừa tất cả các phương thức mạnh mẽ được cung cấp bởi class laravel collection cơ sở.
 
-<style>
-    #collection-method-list > p {
-        column-count: 3; -moz-column-count: 3; -webkit-column-count: 3;
-        column-gap: 2em; -moz-column-gap: 2em; -webkit-column-gap: 2em;
-    }
+Ngoài ra, class `Illuminate\Database\Eloquent\Collection` cũng sẽ cung cấp một tập hợp các phương thức để hỗ trợ việc quản lý các model collection của bạn. Hầu hết các phương thức này đều trả về các instance `Illuminate\Database\Eloquent\Collection`; tuy nhiên, có một số phương thức sẽ trả về một instance `Illuminate\Support\Collection` cơ sở.
 
-    #collection-method-list a {
-        display: block;
-    }
-</style>
+#### `contains($key, $operator = null, $value = null)`
 
-<div id="collection-method-list" markdown="1">
+Phương thức `contains` có thể được sử dụng để xác định xem một instance model có trong một collection hay không. Phương thức này chấp nhận một khóa chính hoặc một instance model:
 
-[all](/docs/{{version}}/collections#method-all)
-[average](/docs/{{version}}/collections#method-average)
-[avg](/docs/{{version}}/collections#method-avg)
-[chunk](/docs/{{version}}/collections#method-chunk)
-[collapse](/docs/{{version}}/collections#method-collapse)
-[combine](/docs/{{version}}/collections#method-combine)
-[concat](/docs/{{version}}/collections#method-concat)
-[contains](/docs/{{version}}/collections#method-contains)
-[containsStrict](/docs/{{version}}/collections#method-containsstrict)
-[count](/docs/{{version}}/collections#method-count)
-[crossJoin](/docs/{{version}}/collections#method-crossjoin)
-[dd](/docs/{{version}}/collections#method-dd)
-[diff](/docs/{{version}}/collections#method-diff)
-[diffKeys](/docs/{{version}}/collections#method-diffkeys)
-[dump](/docs/{{version}}/collections#method-dump)
-[each](/docs/{{version}}/collections#method-each)
-[eachSpread](/docs/{{version}}/collections#method-eachspread)
-[every](/docs/{{version}}/collections#method-every)
-[except](/docs/{{version}}/collections#method-except)
-[filter](/docs/{{version}}/collections#method-filter)
-[first](/docs/{{version}}/collections#method-first)
-[flatMap](/docs/{{version}}/collections#method-flatmap)
-[flatten](/docs/{{version}}/collections#method-flatten)
-[flip](/docs/{{version}}/collections#method-flip)
-[forget](/docs/{{version}}/collections#method-forget)
-[forPage](/docs/{{version}}/collections#method-forpage)
-[get](/docs/{{version}}/collections#method-get)
-[groupBy](/docs/{{version}}/collections#method-groupby)
-[has](/docs/{{version}}/collections#method-has)
-[implode](/docs/{{version}}/collections#method-implode)
-[intersect](/docs/{{version}}/collections#method-intersect)
-[isEmpty](/docs/{{version}}/collections#method-isempty)
-[isNotEmpty](/docs/{{version}}/collections#method-isnotempty)
-[keyBy](/docs/{{version}}/collections#method-keyby)
-[keys](/docs/{{version}}/collections#method-keys)
-[last](/docs/{{version}}/collections#method-last)
-[map](/docs/{{version}}/collections#method-map)
-[mapInto](/docs/{{version}}/collections#method-mapinto)
-[mapSpread](/docs/{{version}}/collections#method-mapspread)
-[mapToGroups](/docs/{{version}}/collections#method-maptogroups)
-[mapWithKeys](/docs/{{version}}/collections#method-mapwithkeys)
-[max](/docs/{{version}}/collections#method-max)
-[median](/docs/{{version}}/collections#method-median)
-[merge](/docs/{{version}}/collections#method-merge)
-[min](/docs/{{version}}/collections#method-min)
-[mode](/docs/{{version}}/collections#method-mode)
-[nth](/docs/{{version}}/collections#method-nth)
-[only](/docs/{{version}}/collections#method-only)
-[pad](/docs/{{version}}/collections#method-pad)
-[partition](/docs/{{version}}/collections#method-partition)
-[pipe](/docs/{{version}}/collections#method-pipe)
-[pluck](/docs/{{version}}/collections#method-pluck)
-[pop](/docs/{{version}}/collections#method-pop)
-[prepend](/docs/{{version}}/collections#method-prepend)
-[pull](/docs/{{version}}/collections#method-pull)
-[push](/docs/{{version}}/collections#method-push)
-[put](/docs/{{version}}/collections#method-put)
-[random](/docs/{{version}}/collections#method-random)
-[reduce](/docs/{{version}}/collections#method-reduce)
-[reject](/docs/{{version}}/collections#method-reject)
-[reverse](/docs/{{version}}/collections#method-reverse)
-[search](/docs/{{version}}/collections#method-search)
-[shift](/docs/{{version}}/collections#method-shift)
-[shuffle](/docs/{{version}}/collections#method-shuffle)
-[slice](/docs/{{version}}/collections#method-slice)
-[some](/docs/{{version}}/collections#method-some)
-[sort](/docs/{{version}}/collections#method-sort)
-[sortBy](/docs/{{version}}/collections#method-sortby)
-[sortByDesc](/docs/{{version}}/collections#method-sortbydesc)
-[splice](/docs/{{version}}/collections#method-splice)
-[split](/docs/{{version}}/collections#method-split)
-[sum](/docs/{{version}}/collections#method-sum)
-[take](/docs/{{version}}/collections#method-take)
-[tap](/docs/{{version}}/collections#method-tap)
-[toArray](/docs/{{version}}/collections#method-toarray)
-[toJson](/docs/{{version}}/collections#method-tojson)
-[transform](/docs/{{version}}/collections#method-transform)
-[union](/docs/{{version}}/collections#method-union)
-[unique](/docs/{{version}}/collections#method-unique)
-[uniqueStrict](/docs/{{version}}/collections#method-uniquestrict)
-[unless](/docs/{{version}}/collections#method-unless)
-[values](/docs/{{version}}/collections#method-values)
-[when](/docs/{{version}}/collections#method-when)
-[where](/docs/{{version}}/collections#method-where)
-[whereStrict](/docs/{{version}}/collections#method-wherestrict)
-[whereIn](/docs/{{version}}/collections#method-wherein)
-[whereInStrict](/docs/{{version}}/collections#method-whereinstrict)
-[whereNotIn](/docs/{{version}}/collections#method-wherenotin)
-[whereNotInStrict](/docs/{{version}}/collections#method-wherenotinstrict)
-[zip](/docs/{{version}}/collections#method-zip)
+    $users->contains(1);
 
-</div>
+    $users->contains(User::find(1));
+
+#### `diff($items)`
+
+Phương thức `diff` sẽ trả về tất cả các model không có trong một collection đã cho:
+
+    use App\User;
+
+    $users = $users->diff(User::whereIn('id', [1, 2, 3])->get());
+
+#### `except($keys)`
+
+Phương thức `except` sẽ trả về tất cả các model không chứa một mảng khóa chính đã cho:
+
+    $users = $users->except([1, 2, 3]);
+
+#### `find($key)` {#collection-method .first-collection-method}
+
+Phương thức `find` sẽ tìm một model bầng một khóa chính cho trước. Nếu `$key` là một instance model, phương thức `find` sẽ cố gắng trả về một model khớp với khóa chính của model đã cho. Nếu `$key` là một mảng gồm các khóa chính, thì phương thức `find` sẽ trả về tất cả các model mà khớp với `$key` bằng cách sử dụng phương thức `whereIn()`:
+
+    $users = User::all();
+
+    $user = $users->find(1);
+
+#### `fresh($with = [])`
+
+Phương thức `fresh` sẽ lấy ra lại một instance mới của mỗi model trong collection từ cơ sở dữ liệu. Ngoài ra, bất kỳ mối quan hệ được chỉ định nào cũng sẽ được eager loading lại:
+
+    $users = $users->fresh();
+
+    $users = $users->fresh('comments');
+
+#### `intersect($items)`
+
+Phương thức `intersect` sẽ trả về tất cả các model cũng có trong collection đã cho:
+
+    use App\User;
+
+    $users = $users->intersect(User::whereIn('id', [1, 2, 3])->get());
+
+#### `load($relations)`
+
+Phương thức `load` sẽ eager loading tất cả các quan hệ đã cho, cho tất cả các model có trong collection:
+
+    $users->load('comments', 'posts');
+
+    $users->load('comments.author');
+
+#### `loadMissing($relations)`
+
+Phương thức `loadMissing`sẽ eager loading tất cả các quan hệ đã cho, cho tất cả các model có trong collection nếu các quan hệ đó chưa được load:
+
+    $users->loadMissing('comments', 'posts');
+
+    $users->loadMissing('comments.author');
+
+#### `modelKeys()`
+
+Phương thức `modelKeys` sẽ trả về các khóa chính của tất cả các model có trong collection:
+
+    $users->modelKeys();
+
+    // [1, 2, 3, 4, 5]
+
+#### `makeVisible($attributes)`
+
+Phương thức `makeVisible` sẽ làm cho các thuộc tính bị "hidden" sẽ hiển thị trên mỗi model có trong collection:
+
+    $users = $users->makeVisible(['address', 'phone_number']);
+
+#### `makeHidden($attributes)`
+
+Phương thức `makeHidden` sẽ làm cho các thuộc tính được "visible" sẽ bị ẩn trên mỗi model có trong collection:
+
+    $users = $users->makeHidden(['address', 'phone_number']);
+
+#### `only($keys)`
+
+Phương thức `only` sẽ trả về tất cả các model có khóa chính đã cho:
+
+    $users = $users->only([1, 2, 3]);
+
+#### `unique($key = null, $strict = false)`
+
+Phương thức `unique` sẽ trả về tất cả các unique model có trong collection. Tất cả các model có cùng khóa chính với các model khác có trong collection đều sẽ bị xóa.
+
+    $users = $users->unique();
 
 <a name="custom-collections"></a>
 ## Tuỳ biến Collection

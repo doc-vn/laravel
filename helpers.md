@@ -74,19 +74,18 @@ Laravel chứa một loạt các hàm PHP global "helper". Nhiều trong số c�
 <div class="collection-method-list" markdown="1">
 
 [\__](#method-__)
-[Str::camel](#method-camel-case)
 [class_basename](#method-class-basename)
 [e](#method-e)
-[Str::endsWith](#method-ends-with)
-[Str::kebab](#method-kebab-case)
 [preg_replace_array](#method-preg-replace-array)
-[Str::snake](#method-snake-case)
-[Str::startsWith](#method-starts-with)
 [Str::after](#method-str-after)
 [Str::before](#method-str-before)
+[Str::camel](#method-camel-case)
 [Str::contains](#method-str-contains)
+[Str::containsAll](#method-str-contains-all)
+[Str::endsWith](#method-ends-with)
 [Str::finish](#method-str-finish)
 [Str::is](#method-str-is)
+[Str::kebab](#method-kebab-case)
 [Str::limit](#method-str-limit)
 [Str::orderedUuid](#method-str-ordered-uuid)
 [Str::plural](#method-str-plural)
@@ -96,12 +95,15 @@ Laravel chứa một loạt các hàm PHP global "helper". Nhiều trong số c�
 [Str::replaceLast](#method-str-replace-last)
 [Str::singular](#method-str-singular)
 [Str::slug](#method-str-slug)
+[Str::snake](#method-snake-case)
 [Str::start](#method-str-start)
+[Str::startsWith](#method-starts-with)
 [Str::studly](#method-studly-case)
 [Str::title](#method-title-case)
+[Str::uuid](#method-str-uuid)
+[Str::words](#method-str-words)
 [trans](#method-trans)
 [trans_choice](#method-trans-choice)
-[Str::uuid](#method-str-uuid)
 
 </div>
 
@@ -111,8 +113,8 @@ Laravel chứa một loạt các hàm PHP global "helper". Nhiều trong số c�
 
 [action](#method-action)
 [asset](#method-asset)
-[secure_asset](#method-secure-asset)
 [route](#method-route)
+[secure_asset](#method-secure-asset)
 [secure_url](#method-secure-url)
 [url](#method-url)
 
@@ -164,9 +166,9 @@ Laravel chứa một loạt các hàm PHP global "helper". Nhiều trong số c�
 [retry](#method-retry)
 [session](#method-session)
 [tap](#method-tap)
-[today](#method-today)
 [throw_if](#method-throw-if)
 [throw_unless](#method-throw-unless)
+[today](#method-today)
 [trait_uses_recursive](#method-trait-uses-recursive)
 [transform](#method-transform)
 [validator](#method-validator)
@@ -195,13 +197,18 @@ Laravel chứa một loạt các hàm PHP global "helper". Nhiều trong số c�
 <a name="method-array-add"></a>
 #### `Arr::add()` {#collection-method .first-collection-method}
 
-Hàm `Arr::add` sẽ thêm một cặp key / giá trị đã cho vào một mảng nếu key đã cho không tồn tại trong mảng:
+Hàm `Arr::add` sẽ thêm một cặp key / giá trị vào một mảng nếu key đó không tồn tại trong mảng hoặc giá trị trong mảng của key đó bằng `null`:
 
     use Illuminate\Support\Arr;
 
     $array = Arr::add(['name' => 'Desk'], 'price', 100);
 
     // ['name' => 'Desk', 'price' => 100]
+
+    $array = Arr::add(['name' => 'Desk', 'price' => null], 'price', 100);
+
+    // ['name' => 'Desk', 'price' => 100]
+
 
 <a name="method-array-collapse"></a>
 #### `Arr::collapse()` {#collection-method}
@@ -512,7 +519,7 @@ Bạn cũng có thể sắp xếp mảng theo kết quả của Closure đã cho
 <a name="method-array-sort-recursive"></a>
 #### `Arr::sortRecursive()` {#collection-method}
 
-Hàm `Arr::sortRecursive` sẽ sắp xếp đệ quy một mảng bằng cách sử dụng hàm `sort` cho mảng không có key, còn nếu mảng có key thì sẽ dùng hàm `ksort`:
+Hàm `Arr::sortRecursive` sẽ sắp xếp đệ quy một mảng bằng cách sử dụng hàm `sort` cho mảng không có key, còn nếu mảng đó có key thì sẽ dùng hàm `ksort`:
 
     use Illuminate\Support\Arr;
 
@@ -781,17 +788,6 @@ Hàm `__` sẽ dịch chuỗi cần được dịch hoặc key cần được d�
 
 Nếu chuỗi hoặc key cần được dịch không tồn tại, hàm `__` sẽ trả về giá trị được đưa vào. Vì vậy, nếu sử dụng ví dụ mẫu trên, hàm `__` sẽ trả về `messages.welcome` nếu key cần được dịch đó không tồn tại.
 
-<a name="method-camel-case"></a>
-#### `Str::camel()` {#collection-method}
-
-Hàm `Str::camel` chuyển đổi chuỗi đã cho thành `camelCase`:
-
-    use Illuminate\Support\Str;
-
-    $converted = Str::camel('foo_bar');
-
-    // fooBar
-
 <a name="method-class-basename"></a>
 #### `class_basename()` {#collection-method}
 
@@ -810,28 +806,6 @@ Hàm `e` chạy hàm` htmlspecialchars` của PHP với tùy chọn `double_enco
 
     // &lt;html&gt;foo&lt;/html&gt;
 
-<a name="method-ends-with"></a>
-#### `Str::endsWith()` {#collection-method}
-
-Hàm `Str::endsWith` sẽ kiểm tra chuỗi đã cho có kết thúc bằng giá trị đã cho hay không:
-
-    use Illuminate\Support\Str;
-
-    $result = Str::endsWith('This is my name', 'name');
-
-    // true
-
-<a name="method-kebab-case"></a>
-#### `Str::kebab()` {#collection-method}
-
-Hàm `Str::kebab` chuyển đổi chuỗi đã cho thành` kebab-case`:
-
-    use Illuminate\Support\Str;
-
-    $converted = Str::kebab('fooBar');
-
-    // foo-bar
-
 <a name="method-preg-replace-array"></a>
 #### `preg_replace_array()` {#collection-method}
 
@@ -842,28 +816,6 @@ Hàm `preg_replace_array` sẽ thay thế một pattern vào trong một chuỗi
     $replaced = preg_replace_array('/:[a-z_]+/', ['8:30', '9:00'], $string);
 
     // The event will take place between 8:30 and 9:00
-
-<a name="method-snake-case"></a>
-#### `Str::snake()` {#collection-method}
-
-Hàm `Str::snake` sẽ chuyển đổi chuỗi đã cho thành` Str::snake`:
-
-    use Illuminate\Support\Str;
-
-    $converted = Str::snake('fooBar');
-
-    // foo_bar
-
-<a name="method-starts-with"></a>
-#### `Str::startsWith()` {#collection-method}
-
-Hàm `started_with` sẽ kiểm tra chuỗi đã cho có bắt đầu bằng giá trị đã cho hay không:
-
-    use Illuminate\Support\Str;
-
-    $result = Str::startsWith('This is my name', 'This');
-
-    // true
 
 <a name="method-str-after"></a>
 #### `Str::after()` {#collection-method}
@@ -887,6 +839,17 @@ Hàm `Str::before` sẽ trả về mọi thứ đứng trước giá trị đã 
 
     // 'This is '
 
+<a name="method-camel-case"></a>
+#### `Str::camel()` {#collection-method}
+
+Hàm `Str::camel` chuyển đổi chuỗi đã cho thành `camelCase`:
+
+    use Illuminate\Support\Str;
+
+    $converted = Str::camel('foo_bar');
+
+    // fooBar
+
 <a name="method-str-contains"></a>
 #### `Str::contains()` {#collection-method}
 
@@ -903,6 +866,28 @@ Bạn cũng có thể truyền vào một mảng các giá trị để xác đ�
     use Illuminate\Support\Str;
 
     $contains = Str::contains('This is my name', ['my', 'foo']);
+
+    // true
+
+<a name="method-str-contains-all"></a>
+#### `Str::containsAll()` {#collection-method}
+
+Phương thức `Str::containsAll` sẽ xác định xem string đã cho có chứa tất cả các giá trị có trong mảng hay không:
+
+    use Illuminate\Support\Str;
+
+    $containsAll = Str::containsAll('This is my name', ['my', 'name']);
+
+    // true
+
+<a name="method-ends-with"></a>
+#### `Str::endsWith()` {#collection-method}
+
+Hàm `Str::endsWith` sẽ kiểm tra chuỗi đã cho có kết thúc bằng giá trị đã cho hay không:
+
+    use Illuminate\Support\Str;
+
+    $result = Str::endsWith('This is my name', 'name');
 
     // true
 
@@ -935,6 +920,17 @@ Hàm `Str::is` sẽ xác định xem một chuỗi đã cho có khớp với pat
     $matches = Str::is('baz*', 'foobar');
 
     // false
+
+<a name="method-kebab-case"></a>
+#### `Str::kebab()` {#collection-method}
+
+Hàm `Str::kebab` chuyển đổi chuỗi đã cho thành `kebab-case`:
+
+    use Illuminate\Support\Str;
+
+    $converted = Str::kebab('fooBar');
+
+    // foo-bar
 
 <a name="method-str-limit"></a>
 #### `Str::limit()` {#collection-method}
@@ -1061,6 +1057,17 @@ Hàm `Str::slug` sẽ tạo ra một URL "slug" từ chuỗi đã cho:
 
     // laravel-5-framework
 
+<a name="method-snake-case"></a>
+#### `Str::snake()` {#collection-method}
+
+Hàm `Str::snake` sẽ chuyển đổi chuỗi đã cho thành `Str::snake`:
+
+    use Illuminate\Support\Str;
+
+    $converted = Str::snake('fooBar');
+
+    // foo_bar
+
 <a name="method-str-start"></a>
 #### `Str::start()` {#collection-method}
 
@@ -1075,6 +1082,17 @@ Hàm `Str::start` sẽ thêm một instance của giá trị đã cho vào một
     $adjusted = Str::start('/this/string', '/');
 
     // /this/string
+
+<a name="method-starts-with"></a>
+#### `Str::startsWith()` {#collection-method}
+
+Hàm `started_with` sẽ kiểm tra chuỗi đã cho có bắt đầu bằng giá trị đã cho hay không:
+
+    use Illuminate\Support\Str;
+
+    $result = Str::startsWith('This is my name', 'This');
+
+    // true
 
 <a name="method-studly-case"></a>
 #### `Str::studly()` {#collection-method}
@@ -1098,6 +1116,26 @@ Hàm `Str::title` chuyển đổi chuỗi đã cho thành` Title Case`:
 
     // A Nice Title Uses The Correct Case
 
+<a name="method-str-uuid"></a>
+#### `Str::uuid()` {#collection-method}
+
+Phương thức `Str::uuid` sẽ tạo ra một UUID (phiên bản 4):
+
+    use Illuminate\Support\Str;
+
+    return (string) Str::uuid();
+
+<a name="method-str-words"></a>
+#### `Str::words()` {#collection-method}
+
+Phương thức `Str::words` sẽ giới hạn số lượng từ có trong một chuỗi:
+
+    use Illuminate\Support\Str;
+
+    return Str::words('Perfectly balanced, as all things should be.', 3, ' >>>');
+
+    // Perfectly balanced, as >>>
+
 <a name="method-trans"></a>
 #### `trans()` {#collection-method}
 
@@ -1115,15 +1153,6 @@ Hàm `trans_choice` sẽ dịch các key cần dịch đã cho với một biế
     echo trans_choice('messages.notifications', $unreadCount);
 
 Nếu key cần dịch mà không tồn tại, hàm `trans_choice` sẽ trả về key đó. Vì vậy, nếu sử dụng ví dụ trên, hàm `trans_choice` sẽ trả về `messages.notifications` nếu key cần dịch không tồn tại.
-
-<a name="method-str-uuid"></a>
-#### `Str::uuid()` {#collection-method}
-
-Phương thức `Str::uuid` sẽ tạo ra một UUID (phiên bản 4):
-
-    use Illuminate\Support\Str;
-
-    return (string) Str::uuid();
 
 <a name="urls"></a>
 ## URLs
@@ -1154,13 +1183,6 @@ Bạn có thể cấu hình URL host cho asset bằng cách set biến `ASSET_UR
 
     $url = asset('img/photo.jpg'); // http://example.com/assets/img/photo.jpg
 
-<a name="method-secure-asset"></a>
-#### `secure_asset()` {#collection-method}
-
-Hàm `secure_asset` sẽ tạo URL cho một asset bằng HTTPS:
-
-    $url = secure_asset('img/photo.jpg');
-
 <a name="method-route"></a>
 #### `route()` {#collection-method}
 
@@ -1175,6 +1197,13 @@ Nếu route có chấp nhận tham số, bạn có thể truyền chúng làm th
 Mặc định, hàm `route` sẽ tạo ra một URL tuyệt đối. Nếu bạn muốn tạo một URL tương đối, bạn có thể truyền `false` làm tham số thứ ba:
 
     $url = route('routeName', ['id' => 1], false);
+
+<a name="method-secure-asset"></a>
+#### `secure_asset()` {#collection-method}
+
+Hàm `secure_asset` sẽ tạo URL cho một asset bằng HTTPS:
+
+    $url = secure_asset('img/photo.jpg');
 
 <a name="method-secure-url"></a>
 #### `secure_url()` {#collection-method}
@@ -1272,13 +1301,6 @@ Hàm `bcrypt` sẽ [hashes](/docs/{{version}}/hashing) giá trị đã cho bằn
 
     $password = bcrypt('my-secret-password');
 
-<a name="method-broadcast"></a>
-#### `broadcast()` {#collection-method}
-
-Hàm `broadcast` sẽ [broadcasts](/docs/{{version}}/broadcasting) một [event](/docs/{{version}}/events) cho listener của nó:
-
-    broadcast(new UserRegistered($user));
-
 <a name="method-blank"></a>
 #### `blank()` {#collection-method}
 
@@ -1299,6 +1321,13 @@ Hàm `blank` sẽ trả về giá trị đã cho là "blank" hay không:
 
 Để tìm trái ngược của `blank`, hãy xem phương thức [`filled`](#method-filled).
 
+<a name="method-broadcast"></a>
+#### `broadcast()` {#collection-method}
+
+Hàm `broadcast` sẽ [broadcasts](/docs/{{version}}/broadcasting) một [event](/docs/{{version}}/events) cho listener của nó:
+
+    broadcast(new UserRegistered($user));
+
 <a name="method-cache"></a>
 #### `cache()` {#collection-method}
 
@@ -1308,9 +1337,9 @@ Hàm `cache` có thể được sử dụng để lấy các giá trị từ [ca
 
     $value = cache('key', 'default');
 
-Bạn có thể thêm các item vào cache bằng cách truyền một mảng các cặp key / giá trị cho hàm. Bạn cũng nên truyền thêm số phút hoặc thời gian mà giá trị được lưu trong bộ nhớ cache sẽ được coi là hợp lệ:
+Bạn có thể thêm các item vào cache bằng cách truyền một mảng các cặp key / giá trị cho hàm. Bạn cũng nên truyền thêm số giây hoặc thời gian mà giá trị được lưu trong bộ nhớ cache sẽ được coi là hợp lệ:
 
-    cache(['key' => 'value'], 5);
+    cache(['key' => 'value'], 300);
 
     cache(['key' => 'value'], now()->addSeconds(10));
 
@@ -1626,7 +1655,7 @@ Session store sẽ được trả về nếu không có giá trị nào được
 <a name="method-tap"></a>
 #### `tap()` {#collection-method}
 
-Hàm `tap` sẽ nhận vào hai tham số: một là `$value` và một Closure. `$value` sẽ được truyền đến phần Closure và sau đó được trả về bởi hàm `tap`. Giá trị trả về của Closure là không liên quan:
+Hàm `tap` sẽ nhận vào hai tham số: một là `$value` và một Closure. `$value` sẽ được truyền đến phần Closure và sau đó được trả về bởi hàm `tap`. Giá trị trả về của Closure sẽ không liên quan:
 
     $user = tap(User::first(), function ($user) {
         $user->name = 'taylor';
@@ -1634,19 +1663,18 @@ Hàm `tap` sẽ nhận vào hai tham số: một là `$value` và một Closure.
         $user->save();
     });
 
-Nếu không có Closure nào được truyền đến hàm `tap`, bạn có thể gọi bất kỳ phương thức nào trên `$value` đã cho. Giá trị trả về của phương thức bạn gọi sẽ luôn là `$value`, bất kể phương thức đó thực sự trả về định nghĩa gì đi chăng nữa. Ví dụ, phương thức `update` Eloquent thường trả về một số nguyên. Tuy nhiên, chúng ta có thể buộc phương thức trả về chính model bằng cách gọi phương thức `update` thông qua hàm `tap`:
+Nếu không có Closure nào được truyền đến hàm `tap`, bạn có thể gọi bất kỳ phương thức nào trên `$value` đã cho. Giá trị trả về của phương thức bạn gọi sẽ luôn là `$value`, bất kể phương thức đó thực sự trả về định nghĩa gì đi chăng nữa. Ví dụ, phương thức `update` Eloquent thường trả về một số nguyên. Tuy nhiên, chúng ta có thể buộc phương thức này trả về chính model đó bằng cách gọi phương thức `update` thông qua hàm `tap`:
 
     $user = tap($user)->update([
         'name' => $name,
         'email' => $email,
     ]);
 
-<a name="method-today"></a>
-#### `today()` {#collection-method}
+Để thêm một phương thức `tap` vào một class, bạn có thể thêm trait `Illuminate\Support\Traits\Tappable` vào class. Phương thức `tap` của trait này sẽ chấp nhận một Closure làm tham số duy nhất của nó. Chính instance đối tượng sẽ được truyền đến Closure và sau đó được trả về bởi phương thức `tap`:
 
-Hàm `today` sẽ tạo ra một instance `Illuminate\Support\Carbon` mới cho ngày hiện tại:
-
-    $today = today();
+    return $user->tap(function ($user) {
+        //
+    });
 
 <a name="method-throw-if"></a>
 #### `throw_if()` {#collection-method}
@@ -1673,6 +1701,13 @@ Hàm `throw_unless` sẽ đưa ra exception đã cho nếu một biểu thức b
         AuthorizationException::class,
         'You are not allowed to access this page'
     );
+
+<a name="method-today"></a>
+#### `today()` {#collection-method}
+
+Hàm `today` sẽ tạo ra một instance `Illuminate\Support\Carbon` mới cho ngày hiện tại:
+
+    $today = today();
 
 <a name="method-trait-uses-recursive"></a>
 #### `trait_uses_recursive()` {#collection-method}

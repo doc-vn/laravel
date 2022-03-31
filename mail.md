@@ -25,12 +25,12 @@
 <a name="introduction"></a>
 ## Giới thiệu
 
-Laravel cung cấp một API đơn giản, gọn gàng trên thư viện [SwiftMailer](https://swiftmailer.symfony.com/) với các driver như SMTP, Mailgun, SparkPost, Amazon SES và `sendmail`, cho phép bạn nhanh chóng bắt đầu gửi mail thông qua dịch vụ trên đám mây hoặc local mà bạn chọn.
+Laravel cung cấp một API đơn giản, gọn gàng trên thư viện [SwiftMailer](https://swiftmailer.symfony.com/) với các driver như SMTP, Mailgun, Postmark, SparkPost, Amazon SES và `sendmail`, cho phép bạn nhanh chóng bắt đầu gửi mail thông qua dịch vụ trên đám mây hoặc local mà bạn chọn.
 
 <a name="driver-prerequisites"></a>
 ### Yêu cầu driver
 
-Các driver dựa trên API như Mailgun và SparkPost thường đơn giản hơn và nhanh hơn là các máy chủ SMTP. Nếu có thể, bạn nên sử dụng một trong những driver này. Tất cả các driver API đều yêu cầu thư viện Guzzle HTTP, thư viện này có thể được cài đặt thông qua trình quản lý package Composer:
+Các driver dựa trên API như Mailgun, SparkPost, và Postmark thường đơn giản hơn và nhanh hơn là các máy chủ SMTP. Nếu có thể, bạn nên sử dụng một trong những driver này. Tất cả các driver API đều yêu cầu thư viện Guzzle HTTP, thư viện này có thể được cài đặt thông qua trình quản lý package Composer:
 
     composer require guzzlehttp/guzzle
 
@@ -49,6 +49,18 @@ Nếu bạn không sử dụng [Mailgun khu vực](https://documentation.mailgun
         'domain' => 'your-mailgun-domain',
         'secret' => 'your-mailgun-key',
         'endpoint' => 'api.eu.mailgun.net',
+    ],
+
+#### Postmark Driver
+
+Để sử dụng driver Postmark, hãy cài đặt SwiftMailer transport của Postmark qua Composer:
+
+    composer require wildbit/swiftmailer-postmark
+
+Tiếp theo, cài đặt Guzzle và set tùy chọn `driver` trong file cấu hình `config/mail.php` của bạn thành `postmark`. Cuối cùng, hãy đảm bảo rằng file cấu hình `config/services.php` của bạn đã chứa các tùy chọn sau:
+
+    'postmark' => [
+        'token' => 'your-postmark-token',
     ],
 
 #### SparkPost Driver
@@ -383,7 +395,7 @@ Nhúng hình ảnh vào trong email của bạn thường rất cồng kềnh; t
         <img src="{{ $message->embed($pathToImage) }}">
     </body>
 
-> {note} biến `$message` không thể sử dụng trong các nội dung markdown.
+> {note} Biến `$message` sẽ không sẵn trong phiên bản văn bản thuần vì phiên bản văn bản thuần không sử dụng file đính kèm nội dung.
 
 #### Embedding Raw Data Attachments
 
@@ -494,13 +506,15 @@ Bạn có thể export ra tất cả các component mail Markdown sang thư mụ
 
     php artisan vendor:publish --tag=laravel-mail
 
-Lệnh này sẽ export các component mail Markdown sang thư mục `resources/views/vendor/mail`. Thư mục `mail` sẽ chứa một thư mục `html` và một thư mục `markdown`, mỗi thư mục chứa các hiển thị tương ứng của mỗi component. Các component có trong thư mục `html` có thể được sử dụng để tạo văn bản HTML cho email và các bản sao của chúng trong thư mục `markdown` có thể được sử dụng để tạo văn bản thuần túy. Bạn có thể tự do tùy biến các component này theo cách bạn muốn.
+Lệnh này sẽ export các component mail Markdown sang thư mục `resources/views/vendor/mail`. Thư mục `mail` sẽ chứa một thư mục `html` và một thư mục `text`, mỗi thư mục chứa các hiển thị tương ứng của mỗi component. Bạn có thể tự do tùy biến các component này theo cách bạn muốn.
 
 #### Customizing The CSS
 
 Sau khi export các component, thư mục `resources/views/vendor/mail/html/themes` sẽ chứa một file `default.css`. Bạn có thể tùy biến CSS trong file này và các tuỳ biến này của bạn sẽ tự động được nhúng vào trong các hiển thị HTML cho mail Markdown của bạn.
 
-> {tip} Nếu bạn muốn xây dựng một theme hoàn toàn mới cho các component Markdown, hãy viết một file CSS mới trong thư mục `html/themes` và thay đổi tùy chọn `theme` trong file cấu hình `mail` của bạn.
+Nếu bạn muốn xây dựng một theme mới cho các component Markdown của Laravel, bạn có thể tạo một file CSS mới trong thư mục `html/themes`. Sau khi tạo tên và lưu file CSS của bạn, hãy cập nhật tùy chọn `theme` trong file cấu hình `mail` để khớp với tên theme mới của bạn.
+
+Để tùy chỉnh theme cho một mail riêng lẻ, bạn có thể set thuộc tính `$theme` trong class mailable thành tên theme mà bạn muốn sử dụng khi gửi mailable đó.
 
 <a name="sending-mail"></a>
 ## Gửi Mail

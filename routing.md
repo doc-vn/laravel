@@ -58,7 +58,7 @@ Thỉnh thoảng, bạn có thể cần phải đăng ký một route với nhi�
         //
     });
 
-    Route::any('foo', function () {
+    Route::any('/', function () {
         //
     });
 
@@ -89,7 +89,7 @@ Bạn có thể sử dụng phương thức `Route::permanentRedirect` để tr�
 <a name="view-routes"></a>
 ### View Routes
 
-Nếu route của bạn chỉ cần trả về một view, thì bạn có thể sử dụng phương thức `Route::view`. Giống như phương thức `redirect`, phương thức này cung cấp một lối tắt đơn giản để bạn không phải định nghĩa một route hoặc một controller đầy đủ. Phương thức `view` chấp nhận URI làm đối số đầu tiên và tên view sẽ làm đối số thứ hai. Ngoài ra, bạn có thể cung cấp một mảng data để chuyển đến view dưới dạng là tùy chọn đối số thứ ba:
+Nếu route của bạn chỉ cần trả về một view, thì bạn có thể sử dụng phương thức `Route::view`. Giống như phương thức `redirect`, phương thức này cung cấp một lối tắt đơn giản để bạn không phải định nghĩa một route hoặc một controller đầy đủ. Phương thức `view` chấp nhận URI làm tham số đầu tiên và tên view sẽ làm tham số thứ hai. Ngoài ra, bạn có thể cung cấp một mảng data để chuyển đến view dưới dạng là tùy chọn tham số thứ ba:
 
     Route::view('/welcome', 'welcome');
 
@@ -113,7 +113,7 @@ Bạn có thể định nghĩa nhiều route parameter bắt buộc trong route 
         //
     });
 
-Các tham số route luôn nằm trong các dấu ngoặc `{}` và phải chứa các ký tự chữ cái và không được chứa ký tự `-`. Thay vì sử dụng ký tự `-`, hãy sử dụng dấu gạch dưới (`_`). Các tham số route sẽ được inject vào các route callback hoặc controller dựa thoe thứ tự của chúng - tên của các đối số callback hoặc controller không quan trọng.
+Các tham số route luôn nằm trong các dấu ngoặc `{}` và phải chứa các ký tự chữ cái và không được chứa ký tự `-`. Thay vì sử dụng ký tự `-`, hãy sử dụng dấu gạch dưới (`_`). Các tham số route sẽ được inject vào các route callback hoặc controller dựa thoe thứ tự của chúng - tên của các tham số callback hoặc controller không quan trọng.
 
 <a name="parameters-optional-parameters"></a>
 ### Tham số tuỳ chọn
@@ -202,7 +202,7 @@ Khi bạn đã gán tên cho một route, bạn có thể sử dụng tên của
     // Generating Redirects...
     return redirect()->route('profile');
 
-Nếu tên route của bạn có định nghĩa tham số, bạn có thể chuyển các tham số đó làm đối số thứ hai trong hàm `route`. Các tham số đó sẽ tự động được chèn vào URL và ở vị trí chính xác của chúng:
+Nếu tên route của bạn có định nghĩa tham số, bạn có thể chuyển các tham số đó làm tham số thứ hai trong hàm `route`. Các tham số đó sẽ tự động được chèn vào URL và ở vị trí chính xác của chúng:
 
     Route::get('user/{id}/profile', function ($id) {
         //
@@ -273,6 +273,8 @@ Nhóm route cũng có thể được sử dụng để xử lý các route dành
             //
         });
     });
+
+> {note} Để đảm bảo có thể truy cập được vào các route tên miền phụ của bạn, bạn nên đăng ký các route tên miền phụ của bạn trước khi đăng ký các route tên miền gốc. Điều này sẽ ngăn các route miền gốc ghi đè vào các route tên miền phụ có cùng đường dẫn URI.
 
 <a name="route-group-prefixes"></a>
 ### Tiền tố cho Route
