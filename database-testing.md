@@ -10,6 +10,7 @@
     - [Tạo Model](#creating-models)
     - [Lưu trữ Model](#persisting-models)
     - [Quan hệ](#relationships)
+- [Dùng Seeds](#using-seeds)
 - [Assertion có sẵn](#available-assertions)
 
 <a name="introduction"></a>
@@ -173,6 +174,8 @@ Nếu bạn muốn ghi đè một số giá trị mặc định của model củ
         'name' => 'Abigail',
     ]);
 
+> {tip} [Các bảo vệ mass assignment](/docs/{{version}}/eloquent#mass-assignment) sẽ tự động bị tắt khi tạo model bằng factory.
+
 <a name="persisting-models"></a>
 ### Lưu trữ Model
 
@@ -206,6 +209,12 @@ Trong ví dụ này, chúng ta sẽ gắn thêm một quan hệ cho một số m
                     $user->posts()->save(factory(App\Post::class)->make());
                 });
 
+Bạn có thể sử dụng phương thức `createMany` để tạo nhiều các model quan hệ khác:
+
+    $user->posts()->createMany(
+        factory(App\Post::class, 3)->make()->toArray()
+    );
+
 #### Relations & Attribute Closures
 
 Bạn cũng có thể gắn thêm các quan hệ cho các model bằng các thuộc tính Closure trong định nghĩa factory của bạn. Ví dụ: nếu bạn muốn tạo một instance `User` mới khi đang tạo một `Post`, bạn có thể làm như sau:
@@ -234,6 +243,41 @@ Các Closure này cũng nhận vào một mảng các thuộc tính của factor
             }
         ];
     });
+
+<a name="using-seeds"></a>
+## Dùng Seeds
+
+Nếu bạn muốn sử dụng [database seeders](/docs/{{version}}/seeding) để tạo cơ sở dữ liệu trong quá trình kiểm tra của bạn, bạn có thể sử dụng phương thức `seed`. Mặc định, phương thức `seed` sẽ trả về `DatabaseSeeder`, phương thức này sẽ chạy tất cả các seeder khác của bạn. Ngoài ra, bạn cũng có thể truyền vào một tên của class seeder cụ thể cho phương thức `seed`:
+
+    <?php
+
+    namespace Tests\Feature;
+
+    use Tests\TestCase;
+    use OrderStatusesTableSeeder;
+    use Illuminate\Foundation\Testing\RefreshDatabase;
+    use Illuminate\Foundation\Testing\WithoutMiddleware;
+
+    class ExampleTest extends TestCase
+    {
+        use RefreshDatabase;
+
+        /**
+         * Test creating a new order.
+         *
+         * @return void
+         */
+        public function testCreatingANewOrder()
+        {
+            // Run the DatabaseSeeder...
+            $this->seed();
+
+            // Run a single seeder...
+            $this->seed(OrderStatusesTableSeeder::class);
+
+            // ...
+        }
+    }
 
 <a name="available-assertions"></a>
 ## Assertion có sẵn

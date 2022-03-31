@@ -1,6 +1,7 @@
 # Mocking
 
 - [Giới thiệu](#introduction)
+- [Giả Object](#mocking-objects)
 - [Bus Fake](#bus-fake)
 - [Event Fake](#event-fake)
     - [Scoped Event Fakes](#scoped-event-fakes)
@@ -16,6 +17,34 @@
 Khi test các application của Laravel, bạn có thể muốn "làm giả" các khía cạnh nhất định của application để chúng không thực sự được thực thi trong khi test. Ví dụ: khi test một controller gửi một event, bạn có thể muốn làm giả một event listener để chúng không thực sự được thực thi trong quá trình test. Điều này cho phép bạn chỉ kiểm tra HTTP response của controller mà không phải lo lắng về việc thực thi của event listener, vì các event listener có thể được kiểm tra trong một test case của riêng nó.
 
 Mặc định, Laravel cung cấp helper để làm giả các event, job và facade. Những helper này chủ yếu cung cấp một layer dựa trên Mockery để bạn không phải tự thực hiện các việc gọi phương thức Mockery phức tạp. Tuy nhiên, bạn cũng có thể sử dụng [Mockery](http://docs.mockery.io/en/latest/) hoặc PHPUnit để làm giả hoặc spy của riêng bạn.
+
+<a name="mocking-objects"></a>
+## Giả Object
+
+Khi giả một đối tượng sẽ được tích hợp vào ứng dụng của bạn thông qua service container của Laravel, bạn sẽ cần phải liên kết instance giả của bạn vào container dưới dạng liên kết `instance`. Điều này sẽ hướng dẫn container sử dụng instance đối tượng được làm giả của bạn thay vì khởi tạo chính đối tượng đó:
+
+    use Mockery;
+    use App\Service;
+
+    $this->instance(Service::class, Mockery::mock(Service::class, function ($mock) {
+        $mock->shouldReceive('process')->once();
+    }));
+
+Để làm cho việc này thuận tiện hơn, bạn có thể sử dụng phương thức `mock`, được cung cấp bởi class base test case của Laravel:
+
+    use App\Service;
+
+    $this->mock(Service::class, function ($mock) {
+        $mock->shouldReceive('process')->once();
+    });
+
+Tương tự, nếu bạn muốn theo dõi một đối tượng, class base test case của Laravel cũng cung cấp phương thức `spy` là một phương thức bao bọc cho phương thức `Mockery::spy`:
+
+    use App\Service;
+
+    $this->spy(Service::class, function ($mock) {
+        $mock->shouldHaveReceived('process');
+    });
 
 <a name="bus-fake"></a>
 ## Bus Fake
@@ -313,19 +342,22 @@ Phương thức `fake` của facade `Storage` cho phép bạn dễ dàng tạo m
 
     class ExampleTest extends TestCase
     {
-        public function testAvatarUpload()
+        public function testAlbumUpload()
         {
-            Storage::fake('avatars');
+            Storage::fake('photos');
 
-            $response = $this->json('POST', '/avatar', [
-                'avatar' => UploadedFile::fake()->image('avatar.jpg')
+            $response = $this->json('POST', '/photos', [
+                UploadedFile::fake()->image('photo1.jpg'),
+                UploadedFile::fake()->image('photo2.jpg')
             ]);
 
-            // Assert the file was stored...
-            Storage::disk('avatars')->assertExists('avatar.jpg');
+            // Assert one or more files were stored...
+            Storage::disk('photos')->assertExists('photo1.jpg');
+            Storage::disk('photos')->assertExists(['photo1.jpg', 'photo2.jpg']);
 
-            // Assert a file does not exist...
-            Storage::disk('avatars')->assertMissing('missing.jpg');
+            // Assert one or more files were not stored...
+            Storage::disk('photos')->assertMissing('missing.jpg');
+            Storage::disk('photos')->assertMissing(['missing.jpg', 'non-existing.jpg']);
         }
     }
 

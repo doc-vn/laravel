@@ -4,6 +4,7 @@
 - [Đăng ký Event và Listener](#registering-events-and-listeners)
     - [Tạo Event và Listener](#generating-events-and-listeners)
     - [Đăng ký Event thủ công](#manually-registering-events)
+    - [Event Discovery](#event-discovery)
 - [Khai báo Event](#defining-events)
 - [Khai báo Listener](#defining-listeners)
 - [Queued Event Listener](#queued-event-listeners)
@@ -70,6 +71,61 @@ Bạn thậm chí có thể đăng ký listener bằng cách sử dụng ký t�
     Event::listen('event.*', function ($eventName, array $data) {
         //
     });
+
+<a name="event-discovery"></a>
+### Event Discovery
+
+> {note} Event Discovery có sẵn cho Laravel 5.8.9 trở lên.
+
+Thay vì phải đăng ký các event và listener theo cách thủ công trong mảng `$listen` của `EventServiceProvider`, bạn có thể bật tính năng event discovery. Khi tính năng event discovery được bật, Laravel sẽ tự động tìm kiếm và đăng ký các event, listener của bạn bằng cách quét thư mục `Listeners` của ứng dụng của bạn. Ngoài ra, mọi event được liệt kê trong `EventServiceProvider` vẫn sẽ được đăng ký.
+
+Laravel sẽ tìm các event listener bằng cách quét các class listener dùng class động. Khi Laravel tìm thấy bất kỳ phương thức class listener nào bắt đầu bằng `handle`, Laravel sẽ đăng ký các phương thức đó làm event listener cho các event được khai báo trong signature của phương thức:
+
+    use App\Events\PodcastProcessed;
+
+    class SendPodcastProcessedNotification
+    {
+        /**
+         * Handle the given event.
+         *
+         * @param  \App\Events\PodcastProcessed
+         * @return void
+         */
+        public function handle(PodcastProcessed $event)
+        {
+            //
+        }
+    }
+
+Mặc định tính năng event discovery sẽ bị tắt, nhưng bạn có thể bật tính năng này bằng cách ghi đè phương thức `shouldDiscoverEvents` của file `EventServiceProvider` trong ứng dụng của bạn:
+
+    /**
+     * Determine if events and listeners should be automatically discovered.
+     *
+     * @return bool
+     */
+    public function shouldDiscoverEvents()
+    {
+        return true;
+    }
+
+Mặc định, tất cả các class listener trong thư mục listener của ứng dụng của bạn sẽ được quét. Nếu bạn muốn định nghĩa thêm các thư mục để quét, bạn có thể ghi đè phương thức `discoverEventsWithin` trong file `EventServiceProvider` của bạn:
+
+    /**
+     * Get the listener directories that should be used to discover events.
+     *
+     * @return array
+     */
+    protected function discoverEventsWithin()
+    {
+        return [
+            $this->app->path('Listeners'),
+        ];
+    }
+
+Trong bản production, bạn có thể không muốn framework quét tất cả các listener của bạn trong mọi request. Do đó, trong quá trình deploy, bạn nên chạy lệnh Artisan `event:cache` để lưu cache một file gồm danh sách tất cả các event và listener có trong ứng dụng của bạn. Danh sách này sẽ được framework sử dụng để tăng tốc trong quá trình đăng ký event. Lệnh `event:clear` có thể được sử dụng để hủy bỏ file cache này.
+
+> {tip} Lệnh `event:list` có thể được sử dụng để hiển thị danh sách tất cả các event và listener đã được đăng ký bởi ứng dụng của bạn.
 
 <a name="defining-events"></a>
 ## Khai báo Event
@@ -200,6 +256,42 @@ Nếu bạn muốn tùy chỉnh kết nối của queue, tên queue hoặc delay
         public $delay = 60;
     }
 
+#### Conditionally Queueing Listeners
+
+Thỉnh thoảng, bạn có thể cần phải xác định xem một listener có nên được queue hay không dựa vào một số dữ liệu chỉ có trong lúc runtime. Để thực hiện điều này, phương thức `shouldQueue` có thể được thêm vào trong listener để xác định xem đó này có nên được queue và chạy đồng bộ ở dưới background hay không:
+
+    <?php
+
+    namespace App\Listeners;
+
+    use App\Events\OrderPlaced;
+    use Illuminate\Contracts\Queue\ShouldQueue;
+
+    class RewardGiftCard implements ShouldQueue
+    {
+        /**
+         * Reward a gift card to the customer.
+         *
+         * @param  \App\Events\OrderPlaced  $event
+         * @return void
+         */
+        public function handle(OrderPlaced $event)
+        {
+            //
+        }
+
+        /**
+         * Determine whether the listener should be queued.
+         *
+         * @param  \App\Events\OrderPlaced  $event
+         * @return bool
+         */
+        public function shouldQueue(OrderPlaced $event)
+        {
+            return $event->order->subtotal >= 5000;
+        }
+    }
+
 <a name="manually-accessing-the-queue"></a>
 ### Truy cập Queue thủ công
 
@@ -322,12 +414,12 @@ Event subscriber là các class có thể đăng ký nhiều event từ trong ch
         /**
          * Handle user login events.
          */
-        public function onUserLogin($event) {}
+        public function handleUserLogin($event) {}
 
         /**
          * Handle user logout events.
          */
-        public function onUserLogout($event) {}
+        public function handleUserLogout($event) {}
 
         /**
          * Register the listeners for the subscriber.
@@ -338,12 +430,12 @@ Event subscriber là các class có thể đăng ký nhiều event từ trong ch
         {
             $events->listen(
                 'Illuminate\Auth\Events\Login',
-                'App\Listeners\UserEventSubscriber@onUserLogin'
+                'App\Listeners\UserEventSubscriber@handleUserLogin'
             );
 
             $events->listen(
                 'Illuminate\Auth\Events\Logout',
-                'App\Listeners\UserEventSubscriber@onUserLogout'
+                'App\Listeners\UserEventSubscriber@handleUserLogout'
             );
         }
     }

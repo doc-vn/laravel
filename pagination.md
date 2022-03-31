@@ -196,12 +196,13 @@ Method  |  Description
 `$results->firstItem()`  |  Lấy số lượng kết quả của item đầu tiên trong kết quả.
 `$results->getOptions()`  |  Lấy các tùy chọn paginator.
 `$results->getUrlRange($start, $end)`  |  Tạo một loạt các URL phân trang.
-`$results->hasMorePages()`  |  Kiểm tra xem có đủ mục để chia thành nhiều trang hay không.
+`$results->hasMorePages()`  |  Kiểm tra xem có đủ item để chia thành nhiều trang hay không.
+`$results->items()`  |  Lấy các item cho trang hiện tại.
 `$results->lastItem()`  |  Lấy số lượng kết quả của item cuối cùng trong kết quả.
 `$results->lastPage()`  |  Lấy page number của trang cuối cùng có sẵn. (Không khả dụng khi sử dụng `simplePaginate`).
 `$results->nextPageUrl()`  |  Lấy URL cho trang tiếp theo.
 `$results->onFirstPage()`  |  Kiểm tra xem paginator có đang ở trang đầu tiên hay không.
 `$results->perPage()`  |  Số lượng item được hiển thị trên mỗi trang.
 `$results->previousPageUrl()`  |  Lấy URL cho trang trước đó.
-`$results->total()`  |  Kiểm tra tổng số mục phù hợp trong data store. (Không khả dụng khi sử dụng `simplePaginate`).
+`$results->total()`  |  Kiểm tra tổng số item phù hợp trong data store. (Không khả dụng khi sử dụng `simplePaginate`).
 `$results->url($page)`  |  Lấy URL cho một trang nhất định.

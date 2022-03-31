@@ -5,7 +5,7 @@
     - [Đọc và viết thông qua Connection](#read-and-write-connections)
     - [Dùng Multiple Database Connection](#using-multiple-database-connections)
 - [Chạy Raw SQL Query](#running-queries)
-    - [Listen cho Query Event](#listening-for-query-events)
+- [Listen cho Query Event](#listening-for-query-events)
 - [Database Transaction](#database-transactions)
 
 <a name="introduction"></a>
@@ -41,6 +41,20 @@ Sau khi đã tạo cơ sở dữ liệu SQLite mới bằng cách sử dụng c�
         'foreign_key_constraints' => true,
     ],
 
+#### Configuration Using URLs
+
+Thông thường, các kết nối cơ sở dữ liệu được cấu hình bằng nhiều giá trị cấu hình như `host`, `database`, `username`, `password`, vv. Mỗi giá trị cấu hình này đều có một biến môi trường tương ứng. Điều này có nghĩa là khi cấu hình thông tin kết nối cơ sở dữ liệu của bạn trên production server, bạn sẽ cần quản lý một số lượng nhiều biến môi trường.
+
+Một số nhà cung cấp cơ sở dữ liệu như Heroku cung cấp một "URL" cơ sở dữ liệu để chứa tất cả thông tin kết nối cho một cơ sở dữ liệu trong một string duy nhất. URL cơ sở dữ liệu mẫu có thể trông giống như sau:
+
+    mysql://root:password@127.0.0.1/forge?charset=UTF-8
+
+Các URL này thường tuân theo quy ước như sau:
+
+    driver://username:password@host:port/database?options
+
+Để thuận tiện, Laravel cũng hỗ trợ các URL này như là một giải pháp thay thế cho việc cấu hình cơ sở dữ liệu của bạn với nhiều tùy chọn cấu hình. Nếu có tùy chọn cấu hình `url` (hoặc biến môi trường `DATABASE_URL`), nó sẽ được sử dụng để kết nối cơ sở dữ liệu và thông tin xác thực.
+
 <a name="read-and-write-connections"></a>
 ### Đọc và viết thông qua Connection
 
@@ -50,10 +64,15 @@ Thỉnh thoảng, bạn cũng có thể muốn sử dụng một kết nối ri�
 
     'mysql' => [
         'read' => [
-            'host' => ['192.168.1.1'],
+            'host' => [
+                '192.168.1.1',
+                '196.168.1.2',
+            ],
         ],
         'write' => [
-            'host' => ['196.168.1.2'],
+            'host' => [
+                '196.168.1.3',
+            ],
         ],
         'sticky'    => true,
         'driver'    => 'mysql',
@@ -67,7 +86,7 @@ Thỉnh thoảng, bạn cũng có thể muốn sử dụng một kết nối ri�
 
 Lưu ý rằng có ba key đã được thêm vào trong mảng cấu hình là: `read`, `write` và `stick`. Các key `read` và `write` có thể có một mảng các giá trị chứa key duy nhất là: `host`. Còn lại các tùy chọn cơ sở dữ liệu khác cho các kết nối `read` và `write` sẽ được lấy từ trong mảng `mysql`.
 
- Nếu bạn muốn ghi đè các giá trị trong mảng mysql, thì bạn chỉ cần set các item đó vào trong mảng `read` và `write`. Vì vậy, trong trường hợp này, `192.168.1.1` sẽ được sử dụng để làm máy chủ cho kết nối "read", trong khi `192.168.1.2` sẽ được sử dụng cho kết nối "write". Các thông tin cho cơ sở dữ liệu, tiền tố, bộ ký tự và tất cả các tùy chọn kcòn lại trong mảng `mysql` sẽ được chia sẻ cho cả hai kết nối này.
+ Nếu bạn muốn ghi đè các giá trị trong mảng mysql, thì bạn chỉ cần set các item đó vào trong mảng `read` và `write`. Vì vậy, trong trường hợp này, `192.168.1.1` sẽ được sử dụng để làm máy chủ cho kết nối "read", trong khi `192.168.1.3` sẽ được sử dụng cho kết nối "write". Các thông tin cho cơ sở dữ liệu, tiền tố, bộ ký tự và tất cả các tùy chọn kcòn lại trong mảng `mysql` sẽ được chia sẻ cho cả hai kết nối này.
 
 #### The `sticky` Option
 
@@ -154,7 +173,7 @@ Có một số lệnh cơ sở dữ liệu không trả về bất kỳ giá tr�
     DB::statement('drop table users');
 
 <a name="listening-for-query-events"></a>
-### Listen cho Query Event
+## Listen cho Query Event
 
 Nếu bạn muốn nhận về từng câu lệnh truy vấn SQL được thực hiện bởi application, bạn có thể sử dụng phương thức `listen`. Phương thức này rất hữu ích để ghi log các câu lệnh truy vấn hoặc để debug. Bạn có thể đăng ký listener query của bạn trong [service provider](/docs/{{version}}/providers):
 
@@ -168,6 +187,16 @@ Nếu bạn muốn nhận về từng câu lệnh truy vấn SQL được thực
     class AppServiceProvider extends ServiceProvider
     {
         /**
+         * Register any application services.
+         *
+         * @return void
+         */
+        public function register()
+        {
+            //
+        }
+
+        /**
          * Bootstrap any application services.
          *
          * @return void
@@ -179,16 +208,6 @@ Nếu bạn muốn nhận về từng câu lệnh truy vấn SQL được thực
                 // $query->bindings
                 // $query->time
             });
-        }
-
-        /**
-         * Register the service provider.
-         *
-         * @return void
-         */
-        public function register()
-        {
-            //
         }
     }
 

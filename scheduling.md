@@ -76,9 +76,9 @@ Ngoài việc tạo schedule bằng Closures, bạn cũng có thể sử dụng 
 
 Ngoài việc tạo schedule cho Closure, bạn cũng có thể tạo schedule cho [Lệnh Artisan](/docs/{{version}}/artisan) và các lệnh của hệ điều hành. Ví dụ, bạn có thể sử dụng phương thức `command` để tạo schedule cho lệnh Artisan bằng cách sử dụng tên hoặc class của command đó:
 
-    $schedule->command('emails:send --force')->daily();
+    $schedule->command('emails:send Taylor --force')->daily();
 
-    $schedule->command(EmailsCommand::class, ['--force'])->daily();
+    $schedule->command(EmailsCommand::class, ['Taylor', '--force'])->daily();
 
 <a name="scheduling-queued-jobs"></a>
 ### Schedule Queued Job
@@ -201,6 +201,18 @@ Sử dụng phương thức `timezone`, bạn có thể chỉ định thời gia
              ->timezone('America/New_York')
              ->at('02:00')
 
+Nếu bạn đang muốn chỉ định một múi giờ cho tất cả các task schedule của bạn, bạn có thể muốn định nghĩa phương thức `scheduleTimezone` trong file `app/Console/Kernel.php` của bạn. Phương thức này sẽ trả về múi giờ mặc định sẽ được chỉ định cho tất cả các task schedule:
+
+    /**
+     * Get the timezone that should be used by default for scheduled events.
+     *
+     * @return \DateTimeZone|string|null
+     */
+    protected function scheduleTimezone()
+    {
+        return 'America/Chicago';
+    }
+
 > {note} Hãy nhớ rằng một số timezone sử dụng quy ước giờ mùa hè. Khi các thay đổi về quy ước giờ mùa hè xảy ra, schedule task của bạn có thể chạy hai lần hoặc thậm chí là hoàn toàn không chạy. Vì lý do này, chúng tôi khuyên bạn nên tránh tạo schedule timezone khi có thể.
 
 <a name="preventing-task-overlaps"></a>
@@ -239,6 +251,8 @@ Mặc định, nhiều lệnh được schedule vào cùng một thời gian s�
              ->daily()
              ->runInBackground();
 
+> {note} Phương thức `runInBackground` chỉ có thể được sử dụng khi task được tạo thông qua phương thức `command` và `exec`.
+
 <a name="maintenance-mode"></a>
 ### Chế độ bảo trì
 
@@ -268,7 +282,13 @@ Sử dụng phương thức `emailOutputTo`, bạn có thể gửi email output 
              ->sendOutputTo($filePath)
              ->emailOutputTo('foo@example.com');
 
-> {note} Các phương thức `emailOutputTo`, `sendOutputTo` và `appendOutputTo` sẽ chỉ được dùng với phương thức `command` và phương thức `exec`.
+Nếu bạn muốn chỉ gửi e-mail nếu lệnh chạy không thành công, hãy sử dụng phương thức `emailOutputOnFailure`:
+
+    $schedule->command('foo')
+             ->daily()
+             ->emailOutputOnFailure('foo@example.com');
+
+> {note} Các phương thức `emailOutputTo`, `emailOutputOnFailure`, `sendOutputTo` và `appendOutputTo` sẽ chỉ được dùng với phương thức `command` và phương thức `exec`.
 
 <a name="task-hooks"></a>
 ## Task Hook
@@ -282,6 +302,17 @@ Sử dụng các phương thức `before` và `after`, bạn có thể khai báo
              })
              ->after(function () {
                  // Task is complete...
+             });
+
+Phương thức `onSuccess` và `onFailure` cho phép bạn chỉ định một đoạn code cụ thể sẽ được thực thi nếu scheduled task chạy thành công hoặc bị thất bại:
+
+    $schedule->command('emails:send')
+             ->daily()
+             ->onSuccess(function () {
+                 // The task succeeded...
+             })
+             ->onFailure(function () {
+                 // The task failed...
              });
 
 #### Pinging URLs
@@ -299,6 +330,13 @@ Các phương thức `pingBeforeIf` và `thenPingIf` chỉ có thể được s�
              ->daily()
              ->pingBeforeIf($condition, $url)
              ->thenPingIf($condition, $url);
+
+Phương thức `pingOnSuccess` và `pingOnFailure` có thể được sử dụng để ping đến một URL nhất định nếu task chạy thành công hoặc bị thất bại:
+
+    $schedule->command('emails:send')
+             ->daily()
+             ->pingOnSuccess($successUrl)
+             ->pingOnFailure($failureUrl);
 
 Tất cả các phương thức ping sẽ đều cần thư viện Guzzle HTTP. Bạn có thể thêm thư viện Guzzle này vào project của bạn bằng trình quản lý package Composer:
 

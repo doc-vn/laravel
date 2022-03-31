@@ -59,7 +59,7 @@ Trước khi broadcasting bất kỳ event nào, đầu tiên bạn sẽ cần p
 
 Nếu bạn đang broadcasting các event của bạn thông qua [Pusher Channels](https://pusher.com/channels), bạn nên cài đặt SDK PHP của Pusher Channels bằng trình quản lý package Composer:
 
-    composer require pusher/pusher-php-server "~3.0"
+    composer require pusher/pusher-php-server "~4.0"
 
 Tiếp theo, bạn nên cấu hình thông tin đăng nhập Channel của bạn trong file cấu hình `config/broadcasting.php`. Một ví dụ mẫu về cấu hình Channel đã có sẵn trong file này, cho phép bạn nhanh chóng chỉ định key, secret và application ID của Channel. Cấu hình `pusher` của file `config/broadcasting.php` cũng cho phép bạn chỉ định thêm các `options` được hỗ trợ bởi Channel, chẳng hạn như cluster:
 
@@ -158,7 +158,7 @@ Interface `ShouldBroadcast` yêu cầu event của chúng ta cần định nghĩ
     /**
      * Get the channels the event should broadcast on.
      *
-     * @return array
+     * @return \Illuminate\Broadcasting\PrivateChannel
      */
     public function broadcastOn()
     {
@@ -197,6 +197,7 @@ Interface `ShouldBroadcast` yêu cầu bạn implement một phương thức: `b
 
     namespace App\Events;
 
+    use App\User;
     use Illuminate\Broadcasting\Channel;
     use Illuminate\Queue\SerializesModels;
     use Illuminate\Broadcasting\PrivateChannel;
@@ -364,6 +365,14 @@ Giống như các route HTTP, các route channel cũng có thể tận dụng c�
     Broadcast::channel('order.{order}', function ($user, Order $order) {
         return $user->id === $order->user_id;
     });
+
+#### Authorization Callback Authentication
+
+Các channel broadcast private và presence sẽ xác thực người dùng hiện tại thông qua authentication guard mặc định của ứng dụng. Nếu người dùng không được xác thực, channel authorization cũng sẽ tự động bị từ chối và lệnh authorization callback cũng sẽ không bao giờ được thực thi. Tuy nhiên, bạn có thể chỉ định nhiều guard tùy chỉnh khác sẽ xác thực request đến nếu cần:
+
+    Broadcast::channel('channel', function() {
+        // ...
+    }, ['guards' => ['web', 'admin']]);
 
 <a name="defining-channel-classes"></a>
 ### Định nghĩa Channel Class

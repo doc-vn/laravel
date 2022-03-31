@@ -105,7 +105,7 @@ Sử dụng facade `Cache`, bạn có thể truy cập các cache store khác nh
 
     $value = Cache::store('file')->get('foo');
 
-    Cache::store('redis')->put('bar', 'baz', 10);
+    Cache::store('redis')->put('bar', 'baz', 600); // 10 Minutes
 
 <a name="retrieving-items-from-the-cache"></a>
 ### Lấy item trong cache
@@ -143,7 +143,7 @@ Các phương thức `increment` và `decrement` có thể được sử dụng 
 
 Thỉnh thoảng bạn cũng có thể muốn lấy ra một item từ cache và cũng muốn lưu lại một giá trị mặc định vào cache nếu item đó không tồn tại. Ví dụ: bạn có thể muốn lấy ra tất cả các người dùng từ cache, nếu trong cache chưa tồn tại dữ liệu đó, thì bạn có thể lấy chúng ra từ cơ sở dữ liệu và thêm chúng vào cache. Bạn có thể làm điều này bằng cách sử dụng phương thức `Cache::remember`:
 
-    $value = Cache::remember('users', $minutes, function () {
+    $value = Cache::remember('users', $seconds, function () {
         return DB::table('users')->get();
     });
 
@@ -164,21 +164,23 @@ Nếu bạn cần lấy một item từ cache và sau đó xóa item đó đi, b
 <a name="storing-items-in-the-cache"></a>
 ### Lưu item trong cache
 
-Bạn có thể sử dụng phương thức `put` trên facade `Cache` để lưu trữ một item vào trong cache. Khi bạn lưu một item vào trong cache, thì bạn cũng cần khai báo số phút mà item đó sẽ được lưu vào trong cache:
+Bạn có thể sử dụng phương thức `put` trên facade `Cache` để lưu trữ một item vào trong cache:
 
-    Cache::put('key', 'value', $minutes);
+    Cache::put('key', 'value', $seconds);
 
-Thay vì truyền vào số phút dưới dạng integer, bạn cũng có thể truyền vào một instance `DateTime` dùng để biểu thị thời gian hết hạn của item được lưu trong bộ nhớ cache:
+Nếu thời gian lưu trữ không được truyền cho phương thức `put`, thì item sẽ được lưu trữ vô thời hạn:
 
-    $expiresAt = now()->addMinutes(10);
+    Cache::put('key', 'value');
 
-    Cache::put('key', 'value', $expiresAt);
+Thay vì truyền vào số giây dưới dạng integer, bạn cũng có thể truyền vào một instance `DateTime` dùng để biểu thị thời gian hết hạn của item được lưu trong bộ nhớ cache:
+
+    Cache::put('key', 'value', now()->addMinutes(10));
 
 #### Store If Not Present
 
 Phương thức `add` sẽ chỉ thêm item vào cache nếu giá trị chưa tồn tại trong cache store. Phương thức này sẽ trả về `true` nếu item đó thực sự được thêm vào cache. Nếu không, phương thức sẽ trả về `false`:
 
-    Cache::add('key', 'value', $minutes);
+    Cache::add('key', 'value', $seconds);
 
 #### Storing Items Forever
 
@@ -195,6 +197,12 @@ Bạn có thể xóa các item khỏi cache bằng phương thức `forget`:
 
     Cache::forget('key');
 
+Bạn cũng có thể xóa các item bằng cách cung cấp TTL bằng 0 hoặc âm:
+
+    Cache::put('key', 'value', 0);
+
+    Cache::put('key', 'value', -5);
+
 Bạn có thể xóa toàn bộ cache bằng phương thức `flush`:
 
     Cache::flush();
@@ -204,14 +212,18 @@ Bạn có thể xóa toàn bộ cache bằng phương thức `flush`:
 <a name="atomic-locks"></a>
 ### Atomic Lock
 
-> {note} Để sử dụng tính năng này, ứng dụng của bạn phải sử dụng cache driver `memcached` hoặc `redis` làm cache driver mặc định. Ngoài ra, tất cả các server phải được giao tiếp với cùng một server cache trung tâm.
+> {note} Để sử dụng tính năng này, ứng dụng của bạn phải sử dụng cache driver `memcached`, `dynamodb`, hoặc `redis` làm cache driver mặc định. Ngoài ra, tất cả các server phải được giao tiếp với cùng một server cache trung tâm.
 
 Atomic lock cho phép thao tác với các khóa phân tán mà không cần lo lắng về việc nhiều thread cùng truy cập cùng lúc. Ví dụ: [Laravel Forge](https://forge.laravel.com) sử dụng Atomic lock để đảm bảo rằng chỉ có một tác vụ đang được thực thi trên một máy chủ tại một thời điểm. Bạn có thể tạo và quản lý các khóa bằng phương thức `Cache::lock`:
 
-    if (Cache::lock('foo', 10)->get()) {
+    use Illuminate\Support\Facades\Cache;
+
+    $lock = Cache::lock('foo', 10);
+
+    if ($lock->get()) {
         // Lock acquired for 10 seconds...
 
-        Cache::lock('foo')->release();
+        $lock->release();
     }
 
 Phương thức `get` cũng chấp nhận một Closure. Sau khi thực thi Closure xong, Laravel sẽ tự động giải phóng khóa:
@@ -224,17 +236,41 @@ Nếu khóa chưa sẵn sàng tại thời điểm bạn yêu cầu, bạn có t
 
     use Illuminate\Contracts\Cache\LockTimeoutException;
 
+    $lock = Cache::lock('foo', 10);
+
     try {
-        Cache::lock('foo', 10)->block(5);
+        $lock->block(5);
 
         // Lock acquired after waiting maximum of 5 seconds...
     } catch (LockTimeoutException $e) {
         // Unable to acquire lock...
+    } finally {
+        optional($lock)->release();
     }
 
     Cache::lock('foo', 10)->block(5, function () {
         // Lock acquired after waiting maximum of 5 seconds...
     });
+
+#### Managing Locks Across Processes
+
+Thỉnh thoảng, bạn có thể muốn có được một khóa trong một process và giải phóng nó trong một process khác. Ví dụ: bạn có thể muốn có được khóa trong một web request và muốn mở khóa khi kết thúc một queued job được kích hoạt bởi chính request đó. Trong trường hợp này, bạn nên truyền vào một "owner token" trong scope của khóa cho queued job để job có thể khởi tạo lại khóa đó bằng cách sử dụng token được truyền vào:
+
+    // Within Controller...
+    $podcast = Podcast::find($id);
+
+    $lock = Cache::lock('foo', 120);
+
+    if ($result = $lock->get()) {
+        ProcessPodcast::dispatch($podcast, $lock->owner());
+    }
+
+    // Within ProcessPodcast Job...
+    Cache::restoreLock('foo', $this->owner)->release();
+
+Nếu bạn muốn giải phóng khóa mà bỏ qua owner hiện tại của khoá, bạn có thể sử dụng phương thức `forceRelease`:
+
+    Cache::lock('foo')->forceRelease();
 
 <a name="the-cache-helper"></a>
 ### Cache helper
@@ -245,13 +281,13 @@ Ngoài việc sử dụng facade `Cache` hoặc [cache contract](/docs/{{version
 
 Nếu bạn gọi tới hàm helper đó với một mảng gồm các cặp key / value và thời gian hết hạn của chúng, thì nó sẽ lưu các giá trị đó vào trong cache với khoảng thời gian đã được cho:
 
-    cache(['key' => 'value'], $minutes);
+    cache(['key' => 'value'], $seconds);
 
-    cache(['key' => 'value'], now()->addSeconds(10));
+    cache(['key' => 'value'], now()->addMinutes(10));
 
 Khi phương thức `cache` được gọi mà không truyền vào bất kỳ tham số nào, thì nó sẽ trả về một instance của `Illuminate\Contracts\Cache\Factory` implementation, cho phép bạn gọi các phương thức khác trong bộ nhớ đệm:
 
-    cache()->remember('users', $minutes, function () {
+    cache()->remember('users', $seconds, function () {
         return DB::table('users')->get();
     });
 
@@ -267,9 +303,9 @@ Khi phương thức `cache` được gọi mà không truyền vào bất kỳ t
 
 Cache tag cho phép bạn gắn tag vào các item liên quan tới nhau vào trong cache và sau đó xóa tất cả các giá trị được lưu trong bộ nhớ cache mà đã được gán với một tag nhất định. Bạn có thể truy cập vào cache được gắn tag bằng cách truyền vào một mảng các tag theo thứ tự. Ví dụ: hãy truy cập vào cache được gắn tag và `put` một giá trị vào trong cache đó:
 
-    Cache::tags(['people', 'artists'])->put('John', $john, $minutes);
+    Cache::tags(['people', 'artists'])->put('John', $john, $seconds);
 
-    Cache::tags(['people', 'authors'])->put('Anne', $anne, $minutes);
+    Cache::tags(['people', 'authors'])->put('Anne', $anne, $seconds);
 
 <a name="accessing-tagged-cache-items"></a>
 ### Truy cập item từ cache tag
@@ -308,9 +344,9 @@ Ngược lại, câu lệnh này sẽ chỉ xóa các bộ nhớ cache được 
     class MongoStore implements Store
     {
         public function get($key) {}
-        public function many(array $keys);
-        public function put($key, $value, $minutes) {}
-        public function putMany(array $values, $minutes);
+        public function many(array $keys) {}
+        public function put($key, $value, $seconds) {}
+        public function putMany(array $values, $seconds) {}
         public function increment($key, $value = 1) {}
         public function decrement($key, $value = 1) {}
         public function forever($key, $value) {}
@@ -343,7 +379,17 @@ Chúng ta chỉ cần implement từng phương thức này bằng một kết n
     class CacheServiceProvider extends ServiceProvider
     {
         /**
-         * Perform post-registration booting of services.
+         * Register bindings in the container.
+         *
+         * @return void
+         */
+        public function register()
+        {
+            //
+        }
+
+        /**
+         * Bootstrap any application services.
          *
          * @return void
          */
@@ -352,16 +398,6 @@ Chúng ta chỉ cần implement từng phương thức này bằng một kết n
             Cache::extend('mongo', function ($app) {
                 return Cache::repository(new MongoStore);
             });
-        }
-
-        /**
-         * Register bindings in the container.
-         *
-         * @return void
-         */
-        public function register()
-        {
-            //
         }
     }
 

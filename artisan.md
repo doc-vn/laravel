@@ -379,6 +379,8 @@ Phương thức `table` sẽ giúp bạn dễ dàng định dạng chính xác n
 
     $bar = $this->output->createProgressBar(count($users));
 
+    $bar->start();
+
     foreach ($users as $user) {
         $this->performTask($user);
 
@@ -425,6 +427,10 @@ Thỉnh thoảng bạn có thể muốn chạy một command Artisan bên ngoài
 
         //
     });
+
+Ngoài ra, bạn có thể truyền toàn bộ lệnh Artisan sang phương thức `call` dưới dạng một chuỗi:
+
+    Artisan::call('email:send 1 --queue=default');
 
 Sử dụng phương thức `queue` trên facade `Artisan`, bạn thậm chí có thể dùng queue cho các command Artisan để chúng được xử lý trong background, bởi [queue workers](/docs/{{version}}/queues) của bạn. Trước khi sử dụng phương thức này, hãy đảm bảo rằng bạn đã cấu hình queue và đang chạy queue listener:
 

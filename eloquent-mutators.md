@@ -158,9 +158,9 @@ Mặc định, timestamp sẽ được định dạng là `'Y-m-d H:i:s'`. Nếu
 <a name="attribute-casting"></a>
 ## Attribute Casting
 
-Thuộc tính `$casts` trên model của bạn cung cấp một phương thức thuận tiện để chuyển đổi các thuộc tính thành các kiểu dữ liệu phổ biến. Thuộc tính `$casts` phải là một mảng trong đó khóa là tên của thuộc tính mà bạn muốn được chuyển và giá trị là loại bạn muốn chuyển đổi đến. Các kiểu cast được hỗ trợ là: `integer`, `real`, `float`, `double`, `decimal:<digits>`, `string`, `boolean`, `object`, `array`, `collection`, `date`, `datetime`, và `timestamp`. Khi chuyển sang loại `decimal`, bạn nên định nghĩa số ký tự, ví dụ như: `decimal:2`.
+Thuộc tính `$casts` trên model của bạn cung cấp một phương thức thuận tiện để chuyển đổi các thuộc tính thành các kiểu dữ liệu phổ biến. Thuộc tính `$casts` phải là một mảng trong đó khóa là tên của thuộc tính mà bạn muốn được chuyển và giá trị là loại bạn muốn chuyển đổi đến. Các kiểu cast được hỗ trợ là: `integer`, `real`, `float`, `double`, `decimal:<digits>`, `string`, `boolean`, `object`, `array`, `collection`, `date`, `datetime`, và `timestamp`. Khi chuyển sang loại `decimal`, bạn phải định nghĩa số ký tự, ví dụ như: (`decimal:2`).
 
-Ví dụ: hãy chuyển thuộc tính `is_admin`, được lưu trong cơ sở dữ liệu của chúng ta dưới dạng một số integer (`0` và `1`) thành giá trị boolean:
+Để ví dụ cho việc cast kiểu, hãy chuyển thuộc tính `is_admin`, được lưu trong cơ sở dữ liệu của chúng ta dưới dạng một số integer (`0` và `1`) thành giá trị boolean:
 
     <?php
 

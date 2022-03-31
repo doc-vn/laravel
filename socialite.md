@@ -27,9 +27,7 @@ Khi nâng cấp lên phiên bản mới của Socialite, điều quan trọng l�
 
 Để bắt đầu với Socialite, hãy sử dụng Composer để thêm package của nó vào library project của bạn:
 
-    composer require laravel/socialite:4.4.1
-
-> {note} Phiên bản mới nhất của Socialite không hỗ trợ Laravel 5.7. Phiên bản cuối cùng hỗ trợ Laravel 5.7 là Socialite 4.4.1.
+    composer require laravel/socialite
 
 <a name="configuration"></a>
 ## Cấu hình

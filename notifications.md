@@ -10,9 +10,11 @@
     - [On-Demand Notifications](#on-demand-notifications)
 - [Mail Notifications](#mail-notifications)
     - [Formatting Mail Messages](#formatting-mail-messages)
+    - [Tuỳ biến người gửi](#customizing-the-sender)
     - [Tuỳ biến người nhận](#customizing-the-recipient)
     - [Tuỳ biến chủ đề](#customizing-the-subject)
     - [Tuỳ biến template](#customizing-the-templates)
+    - [Xem trước Mail Notification](#previewing-mail-notifications)
 - [Markdown Mail Notification](#markdown-mail-notifications)
     - [Tạo Message](#generating-the-message)
     - [Viết Message](#writing-the-message)
@@ -94,7 +96,7 @@ Ngoài ra, bạn có thể gửi notification thông qua [facade](/docs/{{versio
 <a name="specifying-delivery-channels"></a>
 ### Chỉ định Channel sẽ được gửi
 
-Mỗi class notification có một phương thức `via` định nghĩa channel nào của notification sẽ được gửi. Mặc định, các notification có thể được gửi trên các channel `mail`, `database`, `broadcast`, `nexmo`, và `slack`.
+Mỗi class notification có một phương thức `via` định nghĩa channel nào của notification sẽ được gửi. Các notification có thể được gửi trên các channel `mail`, `database`, `broadcast`, `nexmo`, và `slack`.
 
 > {tip} Nếu bạn muốn sử dụng các channel khác như Telegram hoặc Pusher, hãy xem drive do cộng đồng phát triển [Laravel Notification Channels website](http://laravel-notification-channels.com).
 
@@ -181,7 +183,7 @@ Nếu một notification hỗ trợ gửi dưới dạng email, bạn nên đị
 
 Trong ví dụ này, chúng ta đã đăng ký một lời chào, một dòng text, một call to action và sau đó là một dòng text khác. Các phương thức này được cung cấp bởi đối tượng `MailMessage` giúp cho việc định dạng các email giao dịch nhỏ trở nên dễ dàng và đơn giản hơn. Sau đó, mail channel sẽ dịch các thành phần của message này thành một template email HTML đẹp có phản hồi nhanh với một bản sao text đơn giản. Đây là một ví dụ mẫu về email được tạo bởi channel `mail`:
 
-<img src="https://laravel.com/assets/img/notification-example.png" width="551" height="596">
+<img src="https://laravel.com/img/docs/notification-example.png" width="551" height="596">
 
 > {tip} Khi gửi mail notification, hãy đảm bảo là bạn đã set giá trị `name` trong file cấu hình `config/app.php` của bạn. Giá trị này sẽ được sử dụng trong phần header và footer của message mail notification của bạn.
 
@@ -233,6 +235,24 @@ Một số notification thông báo cho người dùng về các lỗi, chẳng 
         return (new MailMessage)
                     ->error()
                     ->subject('Notification Subject')
+                    ->line('...');
+    }
+
+<a name="customizing-the-sender"></a>
+### Tuỳ biến người gửi
+
+Mặc định, địa chỉ người gửi hoặc từ địa chỉ email được định nghĩa trong file cấu hình `config/mail.php`. Tuy nhiên, bạn có thể chỉ định một địa chỉ from cho một notification cụ thể bằng cách sử dụng phương thức `from`:
+
+    /**
+     * Get the mail representation of the notification.
+     *
+     * @param  mixed  $notifiable
+     * @return \Illuminate\Notifications\Messages\MailMessage
+     */
+    public function toMail($notifiable)
+    {
+        return (new MailMessage)
+                    ->from('test@example.com', 'Example')
                     ->line('...');
     }
 
@@ -288,6 +308,18 @@ Mặc định, chủ đề của email là tên class của notification đượ
 Bạn có thể sửa HTML và template được sử dụng bởi mail notification bằng cách export resources của package notification. Sau khi chạy lệnh này, các template mail notification sẽ được lưu ở trong thư mục `resources/views/vendor/notifications`:
 
     php artisan vendor:publish --tag=laravel-notifications
+
+<a name="previewing-mail-notifications"></a>
+### Xem trước Mail Notification
+
+Khi thiết kế một template mail notification, sẽ tiện lợi hơn nếu xem trước được một mail notification được tạo ra trong trình duyệt của bạn giống như một template Blade điển hình. Vì lý do này, Laravel cho phép bạn trả về bất kỳ mail notification nào được tạo ra bởi mail notification trực tiếp từ một route Closure hoặc một controller. Khi một `MailMessage` được trả về, nó sẽ được tạo và hiển thị trong trình duyệt, cho phép bạn xem trước các thiết kế mà không cần gửi nó đến một địa chỉ email thực tế:
+
+    Route::get('mail', function () {
+        $invoice = App\Invoice::find(1);
+
+        return (new App\Notifications\InvoicePaid($invoice))
+                    ->toMail($invoice->user);
+    });
 
 <a name="markdown-mail-notifications"></a>
 ## Markdown Mail Notification
@@ -370,13 +402,29 @@ Bạn có thể export tất cả các component Markdown mail sang một thư m
 
     php artisan vendor:publish --tag=laravel-mail
 
-Lệnh này sẽ export các component Markdown mail sang thư mục `resources/views/vendor/mail`. Thư mục `mail` sẽ chứa một thư mục là `html` và một thư mục là `markdown`, mỗi thư mục chứa các hiển thị tương ứng cho mỗi component có sẵn. Các component trong thư mục `html` được sử dụng để tạo phiên bản HTML cho email và các bản sao của chúng còn trong thư mục `markdown` được sử dụng để tạo các phiên bản text thuần túy. Bạn có thể tự do tùy chỉnh các component này theo cách mà bạn muốn.
+Lệnh này sẽ export các component Markdown mail sang thư mục `resources/views/vendor/mail`. Thư mục `mail` sẽ chứa một thư mục là `html` và một thư mục là `text`, mỗi thư mục chứa các hiển thị tương ứng cho mỗi component có sẵn. Các component trong thư mục `html` được sử dụng để tạo phiên bản HTML cho email và các bản sao của chúng còn trong thư mục `text` được sử dụng để tạo các phiên bản text thuần túy. Bạn có thể tự do tùy chỉnh các component này theo cách mà bạn muốn.
 
 #### Customizing The CSS
 
 Sau khi export các component, thư mục `resources/views/vendor/mail/html/themes` sẽ chứa một file `default.css`. Bạn có thể tùy chỉnh CSS trong file này và các tuỳ chỉnh của bạn sẽ tự động được nhúng vào trong các hiển thị HTML của Markdown notification của bạn.
 
-> {tip} Nếu bạn muốn xây dựng một theme hoàn toàn mới cho các component Markdown, hãy viết một file CSS mới trong thư mục `html/themes` và thay đổi tùy chọn `theme` trong file cấu hình `mail` của bạn.
+Nếu bạn muốn xây dựng một theme mới cho các component Markdown của Laravel, bạn có thể tạo một file CSS mới trong thư mục `html/themes`. Sau khi tạo tên và lưu file CSS của bạn, hãy cập nhật tùy chọn `theme` trong file cấu hình `mail` để khớp với tên theme mới của bạn.
+
+Để tùy chỉnh theme cho một notification riêng lẻ, bạn có thể gọi phương thức `theme` trong khi xây dựng mail message notification. Phương thức `theme` chấp nhận tên của theme sẽ được sử dụng khi gửi notification:
+
+    /**
+     * Get the mail representation of the notification.
+     *
+     * @param  mixed  $notifiable
+     * @return \Illuminate\Notifications\Messages\MailMessage
+     */
+    public function toMail($notifiable)
+    {
+        return (new MailMessage)
+                    ->theme('invoice')
+                    ->subject('Invoice Paid')
+                    ->markdown('mail.invoice.paid', ['url' => $url]);
+    }
 
 <a name="database-notifications"></a>
 ## Database Notifications
@@ -472,7 +520,7 @@ Trước khi broadcasting notification, bạn nên cấu hình và làm quen v�
 <a name="formatting-broadcast-notifications"></a>
 ### Formatting Broadcast Notifications
 
-Channel `broadcast` của broadcasts notification sẽ dùng các service [event broadcasting](/docs/{{version}}/broadcasting) của Laravel, cho phép JavaScript client của bạn nhận được các notification theo thời gian thực. Nếu một notification hỗ trợ broadcasting, bạn nên định nghĩa phương thức `toBroadcast` trên class notification. Phương thức này sẽ nhận vào một thực thể `$notifiable` và sẽ trả về một instance `BroadcastMessage`. Dữ liệu được trả về sẽ được mã hóa dưới dạng JSON và broadcast đến JavaScript client của bạn. Chúng ta hãy xem một ví dụ về phương thức `toBroadcast`:
+Channel `broadcast` của broadcasts notification sẽ dùng các service [event broadcasting](/docs/{{version}}/broadcasting) của Laravel, cho phép JavaScript client của bạn nhận được các notification theo thời gian thực. Nếu một notification hỗ trợ broadcasting, bạn có thể định nghĩa phương thức `toBroadcast` trên class notification. Phương thức này sẽ nhận vào một thực thể `$notifiable` và sẽ trả về một instance `BroadcastMessage`. Nếu phương thức `toBroadcast` không tồn tại, phương thức `toArray` sẽ được sử dụng để thu thập dữ liệu cần được broadcast. Dữ liệu được trả về sẽ được mã hóa dưới dạng JSON và broadcast đến JavaScript client của bạn. Chúng ta hãy xem một ví dụ về phương thức `toBroadcast`:
 
     use Illuminate\Notifications\Messages\BroadcastMessage;
 
@@ -543,7 +591,11 @@ Nếu bạn muốn tùy chỉnh channel nhận thực thể notifiable của bro
 <a name="sms-prerequisites"></a>
 ### Yêu cầu
 
-Gửi notification SMS trong Laravel được mặc định cung cấp bởi [Nexmo](https://www.nexmo.com/). Trước khi bạn có thể gửi notification qua Nexmo, bạn cần cài đặt package `nexmo/client` qua Composer và thêm một vài tùy chọn cấu hình vào file cấu hình `config/services.php` của bạn. Bạn có thể copy cấu hình mẫu ở bên dưới để bắt đầu:
+Gửi notification SMS trong Laravel được mặc định cung cấp bởi [Nexmo](https://www.nexmo.com/). Trước khi bạn có thể gửi notification qua Nexmo, bạn cần phải cài đặt package `laravel/nexmo-notification-channel` thông qua Composer.
+
+    composer require laravel/nexmo-notification-channel
+
+Tiếp theo, bạn sẽ cần thêm một vài tùy chọn cấu hình vào file cấu hình `config/services.php` của bạn. Bạn có thể copy cấu hình mẫu ở bên dưới để bắt đầu:
 
     'nexmo' => [
         'key' => env('NEXMO_KEY'),
@@ -639,9 +691,9 @@ Khi gửi notification qua channel `nexmo`, notification system sẽ tự độn
 <a name="slack-prerequisites"></a>
 ### Yêu cầu
 
-Trước khi bạn có thể gửi notification qua Slack, bạn phải cài đặt thư viện HTTP Guzzle qua Composer:
+Trước khi bạn có thể gửi notification qua Slack, bạn phải cài đặt notification channel thông qua Composer:
 
-    composer require guzzlehttp/guzzle
+    composer require laravel/slack-notification-channel
 
 Bạn cũng sẽ cần cấu hình ["Incoming Webhook"](https://api.slack.com/incoming-webhooks) cho group Slack của bạn. Việc cấu hình này sẽ cung cấp cho bạn một URL mà bạn có thể sử dụng khi [routing Slack notifications](#routing-slack-notifications).
 
@@ -664,7 +716,7 @@ Nếu một notification hỗ trợ gửi dưới dạng message của Slack, b�
 
 Trong ví dụ này, chúng ta chỉ gửi một dòng text tới Slack, điều này sẽ tạo ra một notification giống như sau:
 
-<img src="https://laravel.com/assets/img/basic-slack-notification.png">
+<img src="https://laravel.com/img/docs/basic-slack-notification.png">
 
 #### Customizing The Sender & Recipient
 
@@ -726,7 +778,7 @@ Bạn cũng có thể "đính kèm" thêm thông tin vào tin nhắn Slack. Đí
 
 Ví dụ trên sẽ tạo ra một notification Slack trông giống như sau:
 
-<img src="https://laravel.com/assets/img/basic-slack-attachment.png">
+<img src="https://laravel.com/img/docs/basic-slack-attachment.png">
 
 Đính kèm này cũng cho phép bạn khai báo một mảng dữ liệu sẽ được hiển thị cho người dùng. Dữ liệu này sẽ được hiển thị theo định dạng bảng để dễ đọc hơn:
 
@@ -756,7 +808,7 @@ Ví dụ trên sẽ tạo ra một notification Slack trông giống như sau:
 
 Ví dụ trên sẽ tạo ra một notification Slack trông giống như sau:
 
-<img src="https://laravel.com/assets/img/slack-fields-attachment.png">
+<img src="https://laravel.com/img/docs/slack-fields-attachment.png">
 
 #### Markdown Attachment Content
 

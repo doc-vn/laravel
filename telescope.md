@@ -9,6 +9,7 @@
 - [Filtering](#filtering)
     - [Entries](#filtering-entries)
     - [Batches](#filtering-batches)
+- [Tagging](#tagging)
 - [Available Watchers](#available-watchers)
     - [Cache Watcher](#cache-watcher)
     - [Command Watcher](#command-watcher)
@@ -32,17 +33,15 @@
 Laravel Telescope là một trình gỡ lỗi cho Laravel framework. Telescope sẽ cung cấp các thông tin chi tiết về các request đi đến ứng dụng của bạn, ngoại lệ, log, truy vấn cơ sở dữ liệu, queued job, mail, thông báo, cache, task schedule, dump các biến và hơn thế nữa. Telescope sẽ là người bạn đồng hành tuyệt vời cùng với môi trường phát triển của bạn.
 
 <p align="center">
-<img src="https://laravel.com/assets/img/examples/Screen_Shot_2018-10-09_at_1.47.23_PM.png" width="600" height="347">
+<img src="https://laravel.com/assets/img/examples/Screen_Shot_2018-10-09_at_1.47.23_PM.png" width="600">
 </p>
 
 <a name="installation"></a>
 ## Cài đặt
 
-> {note} Telescope yêu cầu Laravel 5.7.7+.
-
 Bạn có thể sử dụng Composer để cài đặt Telescope vào project Laravel của bạn:
 
-    composer require "laravel/telescope":"~1.0"
+    composer require laravel/telescope "2.1.7"
 
 Sau khi cài đặt Telescope, hãy export nội dung của nó bằng lệnh Artisan `telescope:install`. Sau khi cài đặt Telescope xong, bạn cũng nên chạy lệnh `migrate`:
 
@@ -58,13 +57,11 @@ Khi cập nhật Telescope xong, bạn nên export lại nội dung của Telesc
 
 ### Cài đặt trong một môi trường cụ thể
 
-Nếu bạn chỉ định sử dụng Telescope để hỗ trợ quá trình phát triển local của bạn. Bạn có thể thêm cài đặt Telescope bằng flag `--dev`:
+Nếu bạn chỉ định sử dụng Telescope để hỗ trợ quá trình phát triển local của bạn, bạn có thể thêm cài đặt Telescope bằng flag `--dev`:
 
-    composer require laravel/telescope --dev
+    composer require laravel/telescope "2.1.7" --dev
 
 Sau khi chạy `telescope:install`, bạn nên xóa đăng ký service provider `TelescopeServiceProvider` ra khỏi file cấu hình `app` của bạn. Thay vào đó, hãy đăng ký service provider đó trong phương thức `register` của `AppServiceProvider`:
-
-    use App\Providers\TelescopeServiceProvider;
 
     /**
      * Register any application services.
@@ -182,6 +179,31 @@ Trong khi lệnh callback `filter` dùng để lọc dữ liệu cho các mục 
                 });
         });
     }
+
+<a name="tagging"></a>
+## Tagging
+
+Telescope cho phép bạn tìm kiếm các entry theo "tag". Thông thường, các tag là các tên class của model Eloquent hoặc ID người dùng đã được xác thực mà Telescope tự động thêm vào các entry. Đôi khi, bạn có thể muốn đính kèm thêm các tag tùy chỉnh của bạn vào các entry. Để thực hiện điều này, bạn có thể sử dụng phương thức `Telescope::tag`. Phương thức `tag` chấp nhận một lệnh callback sẽ trả về một mảng tag. Các tag được callback trả về sẽ được merge với bất kỳ tag nào khác được Telescope tự động gắn vào entry. Bạn nên gọi phương thức `tag` trong `TelescopeServiceProvider` của bạn:
+
+    use Laravel\Telescope\Telescope;
+
+    /**
+     * Register any application services.
+     *
+     * @return void
+     */
+    public function register()
+    {
+        $this->hideSensitiveRequestDetails();
+
+        Telescope::tag(function (IncomingEntry $entry) {
+            if ($entry->type === 'request') {
+                return ['status:'.$entry->content['response_status']];
+            }
+
+            return [];
+        });
+     }
 
 <a name="available-watchers"></a>
 ## Available Watchers

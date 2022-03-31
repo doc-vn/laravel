@@ -42,6 +42,7 @@ Name | Description
 `single` | Một file hoặc một channel ghi log dựa trên đường dẫn (`StreamHandler`)
 `daily` | Một driver Monolog dựa trên `RotatingFileHandler` xoay vòng theo ngày
 `slack` | Một driver Monolog dựa trên `SlackWebhookHandler`
+`papertrail` | Một driver Monolog dựa trên `SyslogUdpHandler`
 `syslog` | Một driver Monolog dựa trên `SyslogHandler`
 `errorlog` | Một driver Monolog dựa trên `ErrorLogHandler`
 `monolog` | Một driver Monolog factory có thể sử dụng bất kỳ Monolog handler nào được hỗ trợ
@@ -58,6 +59,10 @@ Name | Description | Default
 `bubble` | Cho biết messages đang được xử lý có được gửi sang channel khác sau khi xử lý xong hay không | `true`
 `permission` | Quyền của file log | `0644`
 `locking` | Cố gắng khóa file log trước khi ghi vào nó | `false`
+
+#### Configuring The Papertrail Channel
+
+Channel `papertrail` sẽ yêu cầu các tùy chọn cấu hình `url` và `port`. Bạn có thể lấy các giá trị này từ [Papertrail](https://help.papertrailapp.com/kb/configuration/configuring-centralized-logging-from-php-apps/#send-events-from-php-app).
 
 #### Configuring The Slack Channel
 
@@ -206,12 +211,12 @@ Sau khi bạn đã cấu hình tùy chọn `tap` trong file cấu hình channel 
 
 Monolog có nhiều [xử lý có sẵn](https://github.com/Seldaek/monolog/tree/master/src/Monolog/Handler). Trong một số trường hợp, loại log mà bạn tạo muốn tạo là một driver Monolog với một instance xử lý đặc biệt. Thì các channel này có thể tạo bằng cách dùng driver `monolog`.
 
-Khi sử dụng driver `monolog`, tùy chọn cấu hình `handler` sẽ chỉ định xử lý nào sẽ được khởi tạo. Còn các tham số khác thì đều có thể được chỉ định thông qua cách sử dụng tùy chọn cấu hình `handler_with`:
+Khi sử dụng driver `monolog`, tùy chọn cấu hình `handler` sẽ chỉ định xử lý nào sẽ được khởi tạo. Còn các tham số khác thì đều có thể được chỉ định thông qua cách sử dụng tùy chọn cấu hình `with`:
 
     'logentries' => [
         'driver'  => 'monolog',
         'handler' => Monolog\Handler\SyslogUdpHandler::class,
-        'handler_with' => [
+        'with' => [
             'host' => 'my.logentries.internal.datahubhost.company.com',
             'port' => '10000',
         ],

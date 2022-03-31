@@ -17,6 +17,7 @@
 - [Forms](#forms)
     - [CSRF Field](#csrf-field)
     - [Method Field](#method-field)
+    - [Validation Errors](#validation-errors)
 - [Thêm Sub-Views](#including-sub-views)
     - [Tạo Views cho Collections](#rendering-views-for-collections)
 - [Stacks](#stacks)
@@ -83,6 +84,10 @@ Trong ví dụ này, section `sidebar` đang sử dụng lệnh `@@parent` để
 
 > {tip} Trái ngược với ví dụ trước đó, section `sidebar` này kết thúc bằng `@endsection` thay vì `@show`. Lệnh `@endsection` sẽ định nghĩa kết thúc một section trong khi `@show` cũng sẽ định nghĩa kết thúc một section nhưng nó cũng định nghĩa thêm một lệnh `@yield` để cho layout con để có thể định nghĩa thêm nội dung vào layout chính.
 
+Lệnh `@yield` cũng chấp nhận một giá trị mặc định làm tham số thứ hai của nó. Giá trị này sẽ được hiển thị nếu section đang được tạo là undefined:
+
+    @yield('content', View::make('view.name'))
+
 Blade view có thể được trả về từ route khi dùng với global helper `view`:
 
     Route::get('blade', function () {
@@ -103,6 +108,12 @@ Các component và slot cung cấp nhiều lợi ích tương tự như các sec
 Biến `{{ $slot }}` sẽ chứa nội dung mà chúng ta muốn đưa vào component. Bây giờ, để sử dụng component này, chúng ta có thể sử dụng lệnh `@component` Blade:
 
     @component('alert')
+        <strong>Whoops!</strong> Something went wrong!
+    @endcomponent
+
+Để hướng dẫn Laravel load view đầu tiên tồn tại từ một mảng view cho một component, bạn có thể sử dụng lệnh `componentFirst`:
+
+    @componentFirst(['custom.alert', 'alert'])
         <strong>Whoops!</strong> Something went wrong!
     @endcomponent
 
@@ -189,11 +200,21 @@ Thỉnh thoảng bạn có thể muốn truyền một mảng vào view của b�
         var app = <?php echo json_encode($array); ?>;
     </script>
 
-Tuy nhiên, thay vì gọi thủ công `json_encode`, bạn có thể sử dụng lệnh Blade `@json`:
+Tuy nhiên, thay vì gọi thủ công `json_encode`, bạn có thể sử dụng lệnh Blade `@json`. Lệnh `@json` chấp nhận các tham số giống như hàm `json_encode` của PHP:
 
     <script>
         var app = @json($array);
+
+        var app = @json($array, JSON_PRETTY_PRINT);
     </script>
+
+> {note} Bạn chỉ nên sử dụng lệnh `@json` để hiển thị các biến hiện có dưới dạng JSON. Template cho Blade được dựa trên các biểu thức chính quy và việc cố gắng truyền vào một biểu thức phức tạp cho lệnh có thể gây ra lỗi mà bạn không mong muốn.
+
+Lệnh `@json` cũng có thể hữu ích để truyền biến vào các Vue component hoặc các thuộc tính `data-*`:
+
+    <example-component :some-prop='@json($array)'></example-component>
+
+> {note} Sử dụng `@json` trong các thuộc tính của phần tử sẽ yêu cầu nó phải được nằm trong một dấu ngoặc kép.
 
 #### Mã hóa thực thể HTML
 
@@ -412,6 +433,8 @@ Property  | Description
 `$loop->count`  |  Tổng số item trong mảng đang được lặp lại.
 `$loop->first`  |  Đây có phải là lần lặp đầu tiên của vòng lặp hay không.
 `$loop->last`  |  Đây có phải là lần lặp cuối cùng của vòng lặp hay không.
+`$loop->even`  |  Đây có phải là lần lặp chẵn của vòng lặp hay không.
+`$loop->odd`  |  Đây có phải là lần lặp lẻ của vòng lặp hay không.
 `$loop->depth`  |  Mức lồng của vòng lặp hiện tại.
 `$loop->parent`  |  Khi ở trong một vòng lặp lồng nhau, biến này là biến của vòng lặp ngoài.
 
@@ -457,6 +480,21 @@ Vì các HTML form không thể tạo các request `PUT`, `PATCH` hoặc `DELETE
 
         ...
     </form>
+
+<a name="validation-errors"></a>
+### Validation Errors
+
+Lệnh `@error` có thể được sử dụng để nhanh chóng kiểm tra xem trong [thông báo lỗi validation](/docs/{{version}}/validation#quick-displaying-the-validation-errors) có tồn tại lỗi cho một thuộc tính hay không. Trong lệnh `@error` bạn có thể lặp lại biến `$message` để hiển thị thông báo lỗi:
+
+    <!-- /resources/views/post/create.blade.php -->
+
+    <label for="title">Post Title</label>
+
+    <input id="title" type="text" class="@error('title') is-invalid @enderror">
+
+    @error('title')
+        <div class="alert alert-danger">{{ $message }}</div>
+    @enderror
 
 <a name="including-sub-views"></a>
 ## Thêm Sub-Views
@@ -577,7 +615,17 @@ Ví dụ sau đây sẽ tạo ra một lệnh `@datetime($var)` để format l�
     class AppServiceProvider extends ServiceProvider
     {
         /**
-         * Perform post-registration booting of services.
+         * Register bindings in the container.
+         *
+         * @return void
+         */
+        public function register()
+        {
+            //
+        }
+
+        /**
+         * Bootstrap any application services.
          *
          * @return void
          */
@@ -586,16 +634,6 @@ Ví dụ sau đây sẽ tạo ra một lệnh `@datetime($var)` để format l�
             Blade::directive('datetime', function ($expression) {
                 return "<?php echo ($expression)->format('m/d/Y H:i'); ?>";
             });
-        }
-
-        /**
-         * Register bindings in the container.
-         *
-         * @return void
-         */
-        public function register()
-        {
-            //
         }
     }
 
@@ -613,7 +651,7 @@ Lập trình một lệnh tùy biến đôi khi lại là phức tạp hơn là 
     use Illuminate\Support\Facades\Blade;
 
     /**
-     * Perform post-registration booting of services.
+     * Bootstrap any application services.
      *
      * @return void
      */

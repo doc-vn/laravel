@@ -1,4 +1,4 @@
-# API Authentication (Passport)
+# Laravel Passport
 
 - [Giới thiệu](#introduction)
 - [Cài đặt](#installation)
@@ -16,6 +16,7 @@
     - [Request token](#requesting-password-grant-tokens)
     - [Request all scope](#requesting-all-scopes)
     - [Tuỳ biến field username](#customizing-the-username-field)
+    - [Tuỳ biến Password Validation](#customizing-the-password-validation)
 - [Token với grant ẩn](#implicit-grant-tokens)
 - [Token chứng chỉ client grant](#client-credentials-grant-tokens)
 - [Access token cá nhân](#personal-access-tokens)
@@ -183,13 +184,23 @@ Nếu cần, bạn có thể định nghĩa đường dẫn nơi mà các khóa 
         Passport::loadKeysFrom('/secret-keys/oauth');
     }
 
+Ngoài ra, bạn có thể export file cấu hình của Passport bằng cách sử dụng `php artisan vendor:publish --tag=passport-config`, sau đó sẽ cung cấp tùy chọn để load các khóa mã hóa từ các biến môi trường của bạn:
+
+    PASSPORT_PRIVATE_KEY="-----BEGIN RSA PRIVATE KEY-----
+    <private key here>
+    -----END RSA PRIVATE KEY-----"
+
+    PASSPORT_PUBLIC_KEY="-----BEGIN PUBLIC KEY-----
+    <public key here>
+    -----END PUBLIC KEY-----"
+
 <a name="configuration"></a>
 ## Cấu hình
 
 <a name="token-lifetimes"></a>
 ### Thời gian sống token
 
-Mặc định, Passport phát hành các access token tồn tại lâu dài có thời hạn một năm. Nếu bạn muốn cấu hình vòng đời token dài hoặc ngắn hơn, bạn có thể sử dụng các phương thức `tokensExpireIn` và `refreshTokensExpireIn`. Các phương thức này phải được gọi từ phương thức `boot` của `AuthServiceProvider`:
+Mặc định, Passport phát hành các access token tồn tại lâu dài có thời hạn một năm. Nếu bạn muốn cấu hình vòng đời token dài hoặc ngắn hơn, bạn có thể sử dụng các phương thức `tokensExpireIn`, `refreshTokensExpireIn`, và `personalAccessTokensExpireIn`. Các phương thức này phải được gọi từ phương thức `boot` của `AuthServiceProvider`:
 
     /**
      * Register any authentication / authorization services.
@@ -205,6 +216,8 @@ Mặc định, Passport phát hành các access token tồn tại lâu dài có 
         Passport::tokensExpireIn(now()->addDays(15));
 
         Passport::refreshTokensExpireIn(now()->addDays(30));
+
+        Passport::personalAccessTokensExpireIn(now()->addMonths(6));
     }
 
 <a name="overriding-default-models"></a>
@@ -213,8 +226,8 @@ Mặc định, Passport phát hành các access token tồn tại lâu dài có 
 Bạn có thể thoải mái mở rộng các model được sử dụng trong nội bộ bằng Passport. Sau đó, bạn có thể hướng dẫn Passport sử dụng các model tùy biến này thông qua class `Passport`:
 
     use App\Models\Passport\Client;
+    use App\Models\Passport\Token;
     use App\Models\Passport\AuthCode;
-    use App\Models\Passport\TokenModel;
     use App\Models\Passport\PersonalAccessClient;
 
     /**
@@ -228,8 +241,8 @@ Bạn có thể thoải mái mở rộng các model được sử dụng trong n
 
         Passport::routes();
 
+        Passport::useTokenModel(Token::class);
         Passport::useClientModel(Client::class);
-        Passport::useTokenModel(TokenModel::class);
         Passport::useAuthCodeModel(AuthCode::class);
         Passport::usePersonalAccessClientModel(PersonalAccessClient::class);
     }
@@ -329,12 +342,15 @@ Route này được sử dụng để xóa client:
 
 Khi một client đã được tạo, các developer có thể sử dụng client ID và secret được trả về để yêu cầu authorization code và access token từ application của bạn. Đầu tiên, application của bên thứ ba sẽ tạo một yêu cầu chuyển hướng đến route `/oauth/authorize` của application của bạn như sau:
 
-    Route::get('/redirect', function () {
+    Route::get('/redirect', function (Request $request) {
+        $request->session()->put('state', $state = Str::random(40));
+
         $query = http_build_query([
             'client_id' => 'client-id',
             'redirect_uri' => 'http://example.com/callback',
             'response_type' => 'code',
             'scope' => '',
+            'state' => $state,
         ]);
 
         return redirect('http://your-app.com/oauth/authorize?'.$query);
@@ -350,11 +366,39 @@ Nếu bạn muốn tùy chỉnh màn hình phê duyệt authorization, bạn có
 
     php artisan vendor:publish --tag=passport-views
 
+Thỉnh thoảng bạn có thể muốn bỏ qua các lời nhắc cấp quyền, chẳng hạn như khi cấp quyền cho client bên thứ nhất. Bạn có thể thực hiện điều này bằng cách định nghĩa phương thức `skipsAuthorization` trong model client. Nếu `skipsAuthorization` trả về `true` thì ứng dụng client sẽ được chấp thuận và người dùng sẽ được chuyển hướng trở lại về `redirect_uri` ngay lập tức:
+
+    <?php
+
+    namespace App\Models\Passport;
+
+    use Laravel\Passport\Client as BaseClient;
+
+    class Client extends BaseClient
+    {
+        /**
+         * Determine if the client should skip the authorization prompt.
+         *
+         * @return bool
+         */
+        public function skipsAuthorization()
+        {
+            return $this->firstParty();
+        }
+    }
+
 #### Converting Authorization Codes To Access Tokens
 
-Nếu người dùng chấp nhận authorization request, họ sẽ được chuyển hướng trở lại application của bên thứ ba. Sau đó, bên thứ ba sẽ đưa ra một request `POST` cho application của bạn để yêu cầu access token. Yêu cầu phải chứa authorization code được cấp bởi application của bạn khi người dùng chấp nhận authorization request. Trong ví dụ này, chúng ta sẽ sử dụng thư viện Guzzle HTTP để thực hiện request `POST`:
+Nếu người dùng chấp nhận authorization request, họ sẽ được chuyển hướng trở lại application của bên thứ ba. Sau đó, đầu tiên, bên thứ ba sẽ kiểm tra tham số `state` với giá trị đã được lưu trữ trước khi chuyển hướng. Nếu tham số state trùng khớp với giá trị đã được lưu, nó sẽ đưa ra một request `POST` cho application của bạn để yêu cầu access token. Yêu cầu phải chứa authorization code được cấp bởi application của bạn khi người dùng chấp nhận authorization request. Trong ví dụ này, chúng ta sẽ sử dụng thư viện Guzzle HTTP để thực hiện request `POST`:
 
     Route::get('/callback', function (Request $request) {
+        $state = $request->session()->pull('state');
+
+        throw_unless(
+            strlen($state) > 0 && $state === $request->state,
+            InvalidArgumentException::class
+        );
+
         $http = new GuzzleHttp\Client;
 
         $response = $http->post('http://your-app.com/oauth/token', [
@@ -474,6 +518,36 @@ Khi xác thực bằng password grant, Passport sẽ sử dụng thuộc tính `
         }
     }
 
+<a name="customizing-the-password-validation"></a>
+### Tuỳ biến Password Validation
+
+Khi xác thực bằng password grant, Passport sẽ sử dụng thuộc tính `password` trong model của bạn để xác thực mật khẩu đã cho. Nếu model của bạn không có thuộc tính `password` hoặc bạn muốn tùy chỉnh logic xác thực password, bạn có thể định nghĩa phương thức `validateForPassportPasswordGrant` trong model của bạn:
+
+    <?php
+
+    namespace App;
+
+    use Laravel\Passport\HasApiTokens;
+    use Illuminate\Support\Facades\Hash;
+    use Illuminate\Notifications\Notifiable;
+    use Illuminate\Foundation\Auth\User as Authenticatable;
+
+    class User extends Authenticatable
+    {
+        use HasApiTokens, Notifiable;
+
+        /**
+        * Validate the password of the user for the Passport password grant.
+        *
+        * @param  string $password
+        * @return bool
+        */
+        public function validateForPassportPasswordGrant($password)
+        {
+            return Hash::check($password, $this->password);
+        }
+    }
+
 <a name="implicit-grant-tokens"></a>
 ## Token với grant ẩn
 
@@ -495,12 +569,15 @@ Grant ẩn tương tự như authorization code grant; tuy nhiên, token đượ
 
 Khi grant này đã được bật, nhà phát triển có thể sử dụng client ID của chính họ để yêu cầu access token từ application của bạn. Ứng dụng của nhà phát triển sẽ tạo một yêu cầu chuyển hướng đến route `/oauth/authorize` của application của bạn như sau:
 
-    Route::get('/redirect', function () {
+   Route::get('/redirect', function (Request $request) {
+        $request->session()->put('state', $state = Str::random(40));
+
         $query = http_build_query([
             'client_id' => 'client-id',
             'redirect_uri' => 'http://example.com/callback',
             'response_type' => 'token',
             'scope' => '',
+            'state' => $state,
         ]);
 
         return redirect('http://your-app.com/oauth/authorize?'.$query);
@@ -558,8 +635,6 @@ Sau đó gắn middleware này vào một route:
 ## Personal Access Tokens
 
 Đôi khi, người dùng của bạn có thể muốn phát hành access token cho chính họ mà không cần thông qua luồng chuyển hướng authorization code thông thường. Việc cho phép người dùng phát hành token cho chính họ thông qua giao diện người dùng của application của bạn có thể hữu ích khi cho phép người dùng thử nghiệm API của bạn hoặc có thể dùng như một cách tiếp cận đơn giản hơn khi phát hành access token nói chung.
-
-> {note} Access token cá nhân luôn tồn tại lâu dài. Vòng đời của chúng sẽ không bị thay đổi khi sử dụng các phương thức `tokensExpireIn` hoặc `refreshTokensExpireIn`.
 
 <a name="creating-a-personal-access-client"></a>
 ### Tạo một Personal Access Client

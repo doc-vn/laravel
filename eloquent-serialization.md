@@ -25,6 +25,12 @@ Khi xây dựng một API JSON, bạn thường sẽ cần phải chuyển đổ
 
     return $user->toArray();
 
+Để chỉ chuyển đổi các thuộc tính của một model thành một mảng, hãy sử dụng phương thức `attributesToArray`:
+
+    $user = App\User::first();
+
+    return $user->attributesToArray();
+
 Bạn cũng có thể chuyển đổi toàn bộ [collection](/docs/{{version}}/eloquent-collections) của các model thành một mảng:
 
     $users = App\User::all();
@@ -53,6 +59,10 @@ Vì các model và các collection sẽ được chuyển đổi thành dạng J
     Route::get('users', function () {
         return App\User::all();
     });
+
+#### Relationships
+
+Khi một model Eloquent được chuyển đổi thành JSON, các quan hệ mà đã được load của model đó cũng sẽ bị tự động chuyển đổi và đưa vào làm một thuộc tính trên đối tượng JSON. Ngoài ra, mặc dù các phương thức quan hệ của Eloquent được định nghĩa bằng quy tắc "camel case", nhưng khi chuyển đổi thuộc tính JSON của quan hệ sẽ bị chuyển thành "snake case".
 
 <a name="hiding-attributes-from-json"></a>
 ## Ẩn thuộc tính từ JSON
@@ -183,7 +193,17 @@ Laravel extend thư viện [Carbon](https://github.com/briannesbitt/Carbon) date
     class AppServiceProvider extends ServiceProvider
     {
         /**
-         * Perform post-registration booting of services.
+         * Register bindings in the container.
+         *
+         * @return void
+         */
+        public function register()
+        {
+            //
+        }
+
+        /**
+         * Bootstrap any application services.
          *
          * @return void
          */
@@ -192,15 +212,5 @@ Laravel extend thư viện [Carbon](https://github.com/briannesbitt/Carbon) date
             Carbon::serializeUsing(function ($carbon) {
                 return $carbon->format('U');
             });
-        }
-
-        /**
-         * Register bindings in the container.
-         *
-         * @return void
-         */
-        public function register()
-        {
-            //
         }
     }

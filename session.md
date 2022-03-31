@@ -247,7 +247,17 @@ Khi driver của bạn đã được thực hiện xong, bạn đã sẵn sàng 
     class SessionServiceProvider extends ServiceProvider
     {
         /**
-         * Perform post-registration booting of services.
+         * Register bindings in the container.
+         *
+         * @return void
+         */
+        public function register()
+        {
+            //
+        }
+
+        /**
+         * Bootstrap any application services.
          *
          * @return void
          */
@@ -257,16 +267,6 @@ Khi driver của bạn đã được thực hiện xong, bạn đã sẵn sàng 
                 // Return implementation of SessionHandlerInterface...
                 return new MongoSessionHandler;
             });
-        }
-
-        /**
-         * Register bindings in the container.
-         *
-         * @return void
-         */
-        public function register()
-        {
-            //
         }
     }
 

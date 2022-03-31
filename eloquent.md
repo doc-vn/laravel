@@ -84,9 +84,51 @@ Lưu ý rằng chúng ta đã không khai báo gì cho Eloquent biết rằng n�
 
 #### Primary Keys
 
-Eloquent cũng sẽ giả định rằng mỗi bảng có một cột khóa chính có tên là `id`. Bạn có thể định nghĩa một thuộc tính protected `$primaryKey` để ghi đè lại quy ước này.
+Eloquent cũng sẽ giả định rằng mỗi bảng có một cột khóa chính có tên là `id`. Bạn có thể định nghĩa một thuộc tính protected `$primaryKey` để ghi đè lại quy ước này:
 
-Ngoài ra, Eloquent cũng giả định rằng khóa chính là một giá trị integer tăng dần đều, có nghĩa là mặc định khóa chính sẽ được tự động chuyển thành một `int`. Nếu bạn muốn sử dụng khóa chính không tăng dần đều hoặc không phải dạng integer, thì khoá chính của bạn phải định nghĩa trong thuộc tính public `$incrementing` trên model của bạn là `false`. Nếu khóa chính của bạn không phải là dạng integer, bạn nên định nghĩa thuộc tính protected `$keyType` trên model của bạn là `string`.
+    <?php
+
+    namespace App;
+
+    use Illuminate\Database\Eloquent\Model;
+
+    class Flight extends Model
+    {
+        /**
+         * The primary key associated with the table.
+         *
+         * @var string
+         */
+        protected $primaryKey = 'flight_id';
+    }
+
+Ngoài ra, Eloquent cũng giả định rằng khóa chính là một giá trị integer tăng dần đều, có nghĩa là mặc định khóa chính sẽ được tự động chuyển thành một `int`. Nếu bạn muốn sử dụng khóa chính không tăng dần đều hoặc không phải dạng integer, thì khoá chính của bạn phải định nghĩa trong thuộc tính public `$incrementing` trên model của bạn là `false`:
+
+    <?php
+
+    class Flight extends Model
+    {
+        /**
+         * Indicates if the IDs are auto-incrementing.
+         *
+         * @var bool
+         */
+        public $incrementing = false;
+    }
+
+Nếu khóa chính của bạn không phải là dạng integer, bạn nên định nghĩa thuộc tính protected `$keyType` trên model của bạn là `string`.
+
+    <?php
+
+    class Flight extends Model
+    {
+        /**
+         * The "type" of the auto-incrementing ID.
+         *
+         * @var string
+         */
+        protected $keyType = 'string';
+    }
 
 #### Timestamps
 
@@ -354,7 +396,7 @@ Cập nhật cũng có thể được thực hiện đối với một số lư�
 
 Phương thức `update` yêu cầu một mảng gồm các cặp: tên cột và giá trị cần được cập nhật.
 
-> {note} Khi chạy một mass update thông qua Eloquent, thì các event của model như `saved` và `updated` sẽ không được kích hoạt. Điều này là do các model đã không được lấy ra khi chạy một mass update.
+> {note} Khi chạy một mass update thông qua Eloquent, thì các event của model như `saving`, `saved`, `updating`, và `updated` sẽ không được kích hoạt. Điều này là do các model đã không được lấy ra khi chạy một mass update.
 
 <a name="mass-assignment"></a>
 ### Mass Assignment
@@ -430,17 +472,19 @@ Phương thức `firstOrNew` cũng giống như phương thức `firstOrCreate` 
     // Retrieve flight by name, or create it if it doesn't exist...
     $flight = App\Flight::firstOrCreate(['name' => 'Flight 10']);
 
-    // Retrieve flight by name, or create it with the name and delayed attributes...
+    // Retrieve flight by name, or create it with the name, delayed, and arrival_time attributes...
     $flight = App\Flight::firstOrCreate(
-        ['name' => 'Flight 10'], ['delayed' => 1]
+        ['name' => 'Flight 10'],
+        ['delayed' => 1, 'arrival_time' => '11:30']
     );
 
     // Retrieve by name, or instantiate...
     $flight = App\Flight::firstOrNew(['name' => 'Flight 10']);
 
-    // Retrieve by name, or instantiate with the name and delayed attributes...
+    // Retrieve by name, or instantiate with the name, delayed, and arrival_time attributes...
     $flight = App\Flight::firstOrNew(
-        ['name' => 'Flight 10'], ['delayed' => 1]
+        ['name' => 'Flight 10'],
+        ['delayed' => 1, 'arrival_time' => '11:30']
     );
 
 #### `updateOrCreate`
@@ -451,7 +495,7 @@ Bạn cũng có thể gặp các tình huống mà bạn muốn cập nhật m�
     // If no matching model exists, create one.
     $flight = App\Flight::updateOrCreate(
         ['departure' => 'Oakland', 'destination' => 'San Diego'],
-        ['price' => 99]
+        ['price' => 99, 'discounted' => 1]
     );
 
 <a name="deleting-models"></a>
@@ -486,7 +530,7 @@ Bạn cũng có thể chạy một câu lệnh xóa trên một tập các model
 <a name="soft-deleting"></a>
 ### Soft Delete
 
-Ngoài việc xóa các bản ghi ra khỏi cơ sở dữ liệu của bạn, Eloquent cũng có thể sử dụng "soft delete" cho các model. Khi các model bị soft delete, thì chúng sẽ không thực sự bị xóa ra khỏi cơ sở dữ liệu của bạn. Thay vào đó, một thuộc tính `deleted_at` sẽ được set vào model và được thêm vào trong cơ sở dữ liệu. Nếu một model có giá trị `deleted_at` khác null, model đó đã bị soft delete. Để bật soft delete cho một model, hãy sử dụng trait `Illuminate\Database\Eloquent\SoftDeletes` trên model và thêm cột `deleted_at` vào thuộc tính `$dates` của bạn:
+Ngoài việc xóa các bản ghi ra khỏi cơ sở dữ liệu của bạn, Eloquent cũng có thể sử dụng "soft delete" cho các model. Khi các model bị soft delete, thì chúng sẽ không thực sự bị xóa ra khỏi cơ sở dữ liệu của bạn. Thay vào đó, một thuộc tính `deleted_at` sẽ được set vào model và được thêm vào trong cơ sở dữ liệu. Nếu một model có giá trị `deleted_at` khác null, model đó đã bị soft delete. Để bật soft delete cho một model, hãy sử dụng trait `Illuminate\Database\Eloquent\SoftDeletes` trên model:
 
     <?php
 
@@ -498,14 +542,9 @@ Ngoài việc xóa các bản ghi ra khỏi cơ sở dữ liệu của bạn, El
     class Flight extends Model
     {
         use SoftDeletes;
-
-        /**
-         * The attributes that should be mutated to dates.
-         *
-         * @var array
-         */
-        protected $dates = ['deleted_at'];
     }
+
+> {tip} Trait `SoftDeletes` sẽ tự động cast thuộc tính `deleted_at` thành một instance `DateTime` / `Carbon` cho bạn.
 
 Bạn cũng cần thêm cột `deleted_at` vào bảng cơ sở dữ liệu của bạn. [Schema builder](/docs/{{version}}/migrations) của Laravel có chứa một phương thức helper để tạo cột này:
 
@@ -685,6 +724,27 @@ Nếu bạn muốn xóa một vài hoặc thậm chí là tất cả các global
         FirstScope::class, SecondScope::class
     ])->get();
 
+Bạn cũng có thể xóa một a global scope ra khỏi các quan hệ:
+
+    <?php
+
+    namespace App;
+
+    use Illuminate\Database\Eloquent\Model;
+
+    class Post extends Model
+    {
+        /**
+         * Get the creator of the post.
+         *
+         * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+         */
+        public function creator()
+        {
+            return $this->belongsTo(User::class)->withoutGlobalScopes();
+        }
+    }
+
 <a name="local-scopes"></a>
 ### Local Scope
 
@@ -703,7 +763,7 @@ Scope sẽ luôn phải trả về một instance query builder:
         /**
          * Scope a query to only include popular users.
          *
-         * @param \Illuminate\Database\Eloquent\Builder $query
+         * @param  \Illuminate\Database\Eloquent\Builder  $query
          * @return \Illuminate\Database\Eloquent\Builder
          */
         public function scopePopular($query)
@@ -714,7 +774,7 @@ Scope sẽ luôn phải trả về một instance query builder:
         /**
          * Scope a query to only include active users.
          *
-         * @param \Illuminate\Database\Eloquent\Builder $query
+         * @param  \Illuminate\Database\Eloquent\Builder  $query
          * @return \Illuminate\Database\Eloquent\Builder
          */
         public function scopeActive($query)
@@ -728,6 +788,16 @@ Scope sẽ luôn phải trả về một instance query builder:
 Khi một scope đã được định nghĩa xong, bạn có thể gọi phương thức scope khi truy vấn model. Tuy nhiên, bạn không cần phải ghi tiền tố `scope` khi gọi phương thức. Bạn thậm chí có thể kết hợp nó với các scope khác, ví dụ:
 
     $users = App\User::popular()->active()->orderBy('created_at')->get();
+
+Việc kết hợp nhiều scope cho model Eloquent thông qua truy vấn `or` có thể yêu cầu sử dụng lệnh callback Closure:
+
+    $users = App\User::popular()->orWhere(function (Builder $query) {
+        $query->active();
+    })->get();
+
+Tuy nhiên, vì điều này có thể phức tạp, Laravel cung cấp một phương thức "higher order" là `orWhere` cho phép bạn kết hợp các scope này với nhau một cách thuận tiện mà không cần sử dụng Closures:
+
+    $users = App\User::popular()->orWhere->active()->get();
 
 #### Dynamic Scopes
 
@@ -744,8 +814,8 @@ Thỉnh thoảng bạn cũng có thể muốn định nghĩa một scope nhận 
         /**
          * Scope a query to only include users of a given type.
          *
-         * @param  \Illuminate\Database\Eloquent\Builder $query
-         * @param  mixed $type
+         * @param  \Illuminate\Database\Eloquent\Builder  $query
+         * @param  mixed  $type
          * @return \Illuminate\Database\Eloquent\Builder
          */
         public function scopeOfType($query, $type)
@@ -870,6 +940,16 @@ Lệnh này sẽ lưu file observer mới vào trong thư mục `App/Observers` 
     class AppServiceProvider extends ServiceProvider
     {
         /**
+         * Register any application services.
+         *
+         * @return void
+         */
+        public function register()
+        {
+            //
+        }
+
+        /**
          * Bootstrap any application services.
          *
          * @return void
@@ -877,15 +957,5 @@ Lệnh này sẽ lưu file observer mới vào trong thư mục `App/Observers` 
         public function boot()
         {
             User::observe(UserObserver::class);
-        }
-
-        /**
-         * Register the service provider.
-         *
-         * @return void
-         */
-        public function register()
-        {
-            //
         }
     }
