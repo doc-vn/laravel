@@ -24,9 +24,9 @@ Hãy xem một ví dụ đơn giản:
 
     namespace App\Http\Controllers;
 
-    use App\User;
-    use App\Repositories\UserRepository;
     use App\Http\Controllers\Controller;
+    use App\Repositories\UserRepository;
+    use App\User;
 
     class UserController extends Controller
     {
@@ -81,9 +81,8 @@ Hầu như tất cả các liên kết của service container sẽ được đ�
 Trong một service provider, bạn luôn có quyền truy cập vào container thông qua thuộc tính `$this->app`. Chúng ta có thể đăng ký một liên kết bằng cách sử dụng phương thức `bind`, bạn truyền vào tên một class hoặc tên của một interface mà bạn muốn đăng ký cùng với một `Closure` sẽ trả về một instance của class mà bạn mong muốn:
 
     $this->app->bind('HelpSpot\API', function ($app) {
-        return new HelpSpot\API($app->make('HttpClient'));
+        return new \HelpSpot\API($app->make('HttpClient'));
     });
-
 
 Lưu ý rằng chúng ta nhận container vào như là một tham số resolver. Sau đó chúng ta có thể sử dụng chính container đó để resolve các phụ thuộc con của đối tượng mà chúng ta đang xây dựng. Như ví dụ ở trên thì tham số của container chính là `$app`, chúng ta nhận tham số đó vào và resolve thêm một phụ thuộc con là `HttpClient` để tạo ra một instance HelpSpot\API mới và trả về với tên là `HelpSpot\API`.
 
@@ -92,14 +91,14 @@ Lưu ý rằng chúng ta nhận container vào như là một tham số resolver
 Phương thức `singleton` sẽ liên kết một class hoặc một interface vào trong container và chỉ resolve nó một lần duy nhất. Khi một liên kết singleton đã được resolve, thì lần tiếp theo khi gọi vào container thì đối tượng đó sẽ được trả về:
 
     $this->app->singleton('HelpSpot\API', function ($app) {
-        return new HelpSpot\API($app->make('HttpClient'));
+        return new \HelpSpot\API($app->make('HttpClient'));
     });
 
 #### Liên kết instances
 
 Bạn cũng có thể liên kết một object instance đã tồn tại vào container bằng cách sử dụng phương thức `instance`. Và instance đó sẽ luôn được trả về cho các lần gọi tiếp theo vào container:
 
-    $api = new HelpSpot\API(new HttpClient);
+    $api = new \HelpSpot\API(new HttpClient);
 
     $this->app->instance('HelpSpot\API', $api);
 
@@ -141,10 +140,11 @@ Câu lệnh trên sẽ nói với container rằng nó cần tích hợp `RedisE
 
 Thỉnh thoảng bạn cũng có thể có hai class sử dụng chung một interface, nhưng bạn lại muốn tích hợp các implementation khác nhau đó vào các class khác nhau. Ví dụ, có hai controller bị phụ thuộc vào các implementation khác nhau của class `Illuminate\Contracts\Filesystem\Filesystem` [contract](/docs/{{version}}/contracts). Laravel cung cấp một interface đơn giản, và dễ dàng để thực hiện hành vi này:
 
-    use Illuminate\Support\Facades\Storage;
     use App\Http\Controllers\PhotoController;
+    use App\Http\Controllers\UploadController;
     use App\Http\Controllers\VideoController;
     use Illuminate\Contracts\Filesystem\Filesystem;
+    use Illuminate\Support\Facades\Storage;
 
     $this->app->when(PhotoController::class)
               ->needs(Filesystem::class)
@@ -182,9 +182,9 @@ Khi các service đã được gắn thẻ, bạn có thể dễ dàng resolve t
 <a name="extending-bindings"></a>
 ### Liên kết mở rộng
 
-Phương thức `extend` cho phép sửa đổi các service đã được resolve. Ví dụ: khi một service đã được resolve, bạn có thể chạy thêm code để bổ sung hoặc cấu hình service đó. Phương thức `extend` chấp nhận một closure, sẽ trả về service đã được sửa đổi:
+Phương thức `extend` cho phép sửa đổi các service đã được resolve. Ví dụ: khi một service đã được resolve, bạn có thể chạy thêm code để bổ sung hoặc cấu hình service đó. Phương thức `extend` chấp nhận một closure, sẽ trả về một service đã được sửa đổi. Closure này sẽ nhận vào một service đang được resolve và một instance container:
 
-    $this->app->extend(Service::class, function ($service) {
+    $this->app->extend(Service::class, function ($service, $app) {
         return new DecoratedService($service);
     });
 
@@ -258,7 +258,7 @@ Service container sẽ kích hoạt một event mỗi khi nó resolve một đ�
         // Called when container resolves object of any type...
     });
 
-    $this->app->resolving(HelpSpot\API::class, function ($api, $app) {
+    $this->app->resolving(\HelpSpot\API::class, function ($api, $app) {
         // Called when container resolves objects of type "HelpSpot\API"...
     });
 

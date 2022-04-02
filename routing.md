@@ -11,7 +11,7 @@
 - [Nhóm Route](#route-groups)
     - [Middleware](#route-group-middleware)
     - [Namespaces](#route-group-namespaces)
-    - [Sub-Domain Routing](#route-group-sub-domain-routing)
+    - [Subdomain Routing](#route-group-subdomain-routing)
     - [Tiền tố cho Route](#route-group-prefixes)
     - [Tiền tố cho tên Route](#route-group-name-prefixes)
 - [Liên kết Route Model](#route-model-binding)
@@ -210,6 +210,18 @@ Nếu tên route của bạn có định nghĩa tham số, bạn có thể chuy�
 
     $url = route('profile', ['id' => 1]);
 
+Nếu bạn truyền thêm các tham số vào mảng, thì các cặp khóa và giá trị của các tham số đó sẽ được tự động thêm vào chuỗi truy vấn của URL đã tạo:
+
+    Route::get('user/{id}/profile', function ($id) {
+        //
+    })->name('profile');
+
+    $url = route('profile', ['id' => 1, 'photos' => 'yes']);
+
+    // /user/1/profile?photos=yes
+
+> {tip} Thỉnh thoảng, bạn có thể muốn chỉ định các giá trị mặc định cho các tham số URL trên toàn bộ request, chẳng hạn như ngôn ngữ hiện tại. Để thực hiện điều này, bạn có thể sử dụng phương thức [`URL::defaults` method](/docs/{{version}}/urls#default-values).
+
 #### Kiểm tra Route hiện tại
 
 Nếu bạn muốn xác định xem request hiện tại có đúng với một route đã được đặt tên hay không, bạn có thể sử dụng phương thức `named` trên một instance route. Ví dụ: bạn có thể kiểm tra tên route hiện tại từ một middleware route:
@@ -263,7 +275,7 @@ Một trường hợp sử dụng phổ biến khác cho các nhóm route là g�
 
 Nhớ rằng, mặc định, `RouteServiceProvider` đã khai báo tất cả các file route của bạn vào trong một nhóm namespace từ trước, cho phép bạn đăng ký các controller vào các route mà không cần chỉ định namespace của nó là `App\Http\Controllers`. Vì vậy, bạn chỉ cần định nghĩa phần namespace xuất hiện sau phần namespace `App\Http\Controllers`.
 
-<a name="route-group-sub-domain-routing"></a>
+<a name="route-group-subdomain-routing"></a>
 ### Routing cho tên miền phụ
 
 Nhóm route cũng có thể được sử dụng để xử lý các route dành riêng cho tên miền phụ. Tên miền phụ có thể được định nghĩa thông qua tham số route giống như URI route, cho phép bạn lấy một phần tên miền phụ để sử dụng trong route hoặc trong controller của bạn. Tên miền phụ có thể được chỉ định bằng cách gọi phương thức `domain` ở trước định nghĩa nhóm route:
@@ -364,7 +376,7 @@ Nếu bạn muốn sử dụng tuỳ chỉnh logic phụ thuộc của bạn, b�
         parent::boot();
 
         Route::bind('user', function ($value) {
-            return App\User::where('name', $value)->first() ?? abort(404);
+            return App\User::where('name', $value)->firstOrFail();
         });
     }
 
@@ -378,7 +390,7 @@ Ngoài ra, bạn có thể ghi đè phương thức `resolveRouteBinding` trên 
      */
     public function resolveRouteBinding($value)
     {
-        return $this->where('name', $value)->first() ?? abort(404);
+        return $this->where('name', $value)->firstOrFail();
     }
 
 <a name="fallback-routes"></a>
@@ -410,6 +422,40 @@ Bạn có thể linh hoạt chỉ định số lượng request tối đa dựa 
     Route::middleware('auth:api', 'throttle:rate_limit,1')->group(function () {
         Route::get('/user', function () {
             //
+        });
+    });
+
+#### Distinct Guest & Authenticated User Rate Limits
+
+Bạn có thể chỉ định các giới hạn request cho guest và người dùng đã xác thực. Ví dụ: bạn có thể chỉ định tối đa `10` request mỗi phút cho guest và `60` request cho người dùng đã xác thực:
+
+    Route::middleware('throttle:10|60,1')->group(function () {
+        //
+    });
+
+Bạn cũng có thể kết hợp chức năng này với các giới hạn request động. Ví dụ: nếu model `User` của bạn có chứa thuộc tính `rate_limit`, bạn có thể truyền tên của thuộc tính này cho middleware `throttle` để nó được sử dụng và tính toán số lượng request tối đa mà người dùng đã xác thực có thể thực hiện:
+
+    Route::middleware('auth:api', 'throttle:10|rate_limit,1')->group(function () {
+        Route::get('/user', function () {
+            //
+        });
+    });
+
+#### Rate Limit Segments
+
+Thông thường, bạn có thể sẽ chỉ định một giới hạn request cho toàn bộ API của bạn. Tuy nhiên, ứng dụng của bạn có thể yêu cầu các giới hạn request khác nhau cho các phân khúc khác nhau của API. Nếu đúng như vậy, bạn sẽ cần phải truyền tên của mỗi phân khúc làm tham số thứ ba của middleware `throttle`:
+
+    Route::middleware('auth:api')->group(function () {
+        Route::middleware('throttle:60,1,default')->group(function () {
+            Route::get('/servers', function () {
+                //
+            });
+        });
+
+        Route::middleware('throttle:60,1,deletes')->group(function () {
+            Route::delete('/servers/{id}', function () {
+                //
+            });
         });
     });
 

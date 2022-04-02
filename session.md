@@ -21,16 +21,18 @@ Vì các HTTP driven sẽ không lưu trạng thái của người dùng qua m�
 <a name="configuration"></a>
 ### Cấu hình
 
-File cấu hình cho session sẽ được lưu trữ tại `config/session.php`. Bạn hãy xem qua các tùy chọn có sẵn cho bạn trong file này. Mặc định, Laravel sẽ cấu hình sử dụng session driver `file`, nó sẽ hoạt động tốt cho nhiều application. Khi mà application của bạn ở trạng thái production, thì bạn có thể cân nhắc sử dụng driver `memcached` hoặc `redis` để có được hiệu suất session nhanh hơn.
+File cấu hình cho session sẽ được lưu trữ tại `config/session.php`. Bạn hãy xem qua các tùy chọn có sẵn cho bạn trong file này. Mặc định, Laravel sẽ cấu hình sử dụng session driver `file`, nó sẽ hoạt động tốt cho nhiều application.
 
 Tham số `driver` sẽ khai báo nơi mà dữ liệu của session sẽ được lưu trữ cho mỗi request. Mặc định, Laravel đã có sẵn một số driver:
 
 <div class="content-list" markdown="1">
+
 - `file` - sessions được lưu ở file `storage/framework/sessions`.
 - `cookie` - sessions được lưu trữ trong cookie và đã được mã hóa.
 - `database` - sessions được lưu trữ trong cơ sở dữ liệu.
 - `memcached` / `redis` - sessions được lưu trữ ở trong những cache base này.
 - `array` - sessions được lưu trữ trong một mảng PHP và sẽ không được duy trì.
+
 </div>
 
 > {tip} Array driver sẽ được sử dụng trong các [testing](/docs/{{version}}/testing) để ngăn việc dữ liệu được lưu trữ trong session.
@@ -59,7 +61,9 @@ Bạn có thể dùng lệnh Artisan `session:table` để tạo file migration 
 
 #### Redis
 
-Trước khi sử dụng session Redis cùng với Laravel, bạn sẽ cần phải cài đặt một package `predis/predis` (~ 1.0) thông qua Composer. Bạn có thể cấu hình các kết nối Redis của bạn trong file cấu hình `database`. Trong file cấu hình `session` sẽ có tùy chọn `connection` để có thể được sử dụng để định nghĩa kết nối Redis nào mà có thể được sử dụng bởi session.
+Trước khi sử dụng session Redis cùng với Laravel, bạn sẽ cần phải cài đặt extension của PHP thông qua PECL hoặc cài đặt package `predis/predis` (~1.0) thông qua Composer. Để biết thêm thông tin về cách cấu hình Redis, hãy tham khảo [trang tài liệu Laravel](/docs/{{version}}/redis#configuration).
+
+> {tip} Trong file cấu hình `session` sẽ có tùy chọn `connection` để có thể được sử dụng để định nghĩa kết nối Redis nào mà có thể được sử dụng bởi session.
 
 <a name="using-the-session"></a>
 ## Dùng Session
@@ -73,8 +77,8 @@ Có hai cách chính để truy cập vào dữ liệu session trong Laravel: gl
 
     namespace App\Http\Controllers;
 
-    use Illuminate\Http\Request;
     use App\Http\Controllers\Controller;
+    use Illuminate\Http\Request;
 
     class UserController extends Controller
     {
@@ -164,7 +168,7 @@ Phương thức `pull` sẽ lấy ra và xóa đi một item ra khỏi session c
 <a name="flash-data"></a>
 ### Flash dữ liệu
 
-Thỉnh thoảng bạn chỉ muốn lưu trữ các item trong session cho đến request kế tiếp. Bạn có thể làm như vậy bằng cách sử dụng phương thức `flash`. Dữ liệu được lưu trữ trong session sử dụng phương thức này sẽ chỉ được lưu đến request HTTP kế tiếp và sau đó nó sẽ bị xóa. Dữ liệu flash chủ yếu hữu ích khi dùng cho các thông báo trạng thái ngắn:
+Thỉnh thoảng bạn chỉ muốn lưu trữ các item trong session cho đến request kế tiếp. Bạn có thể làm như vậy bằng cách sử dụng phương thức `flash`. Dữ liệu được lưu trữ trong session sử dụng phương thức này sẽ được lưu trữ ngay lập tức và trong request tiếp theo. Sau request tiếp theo, dữ liệu đã flash sẽ bị xóa. Dữ liệu flash chủ yếu hữu ích khi dùng cho các thông báo trạng thái ngắn:
 
     $request->session()->flash('status', 'Task was successful!');
 
@@ -223,12 +227,14 @@ Driver session tùy chỉnh của bạn sẽ cần phải implement từ `Sessio
 Vì mục đích của những phương thức này là không dễ hiểu, chúng ta hãy nhanh chóng xem những gì mà mỗi phương thức làm:
 
 <div class="content-list" markdown="1">
+
 - Phương thức `open` thường được sử dụng trong các hệ thống lưu trữ session dựa trên file. Vì Laravel đã định nghĩa driver session `file`, nên bạn sẽ không cần phải lưu bất cứ thứ gì vào trong phương thức này. Bạn có thể để nó trống. Đó là một thực tế của interface design kém (mà chúng ta sẽ thảo luận sau) nhưng PHP yêu cầu chúng ta implement phương thức này.
 - Phương thức `close`, giống như phương thức` open`, thường có thể bị bỏ qua. Đối với hầu hết các driver, nó là không cần thiết.
 - Phương thức `read` sẽ trả về string của dữ liệu session được liên kết với `$sessionId` đã cho. Bạn sẽ không cần thực hiện bất kỳ việc chuyển đổi hoặc encoding nào khác khi truy xuất hoặc lưu trữ dữ liệu session vào trong driver của bạn, vì Laravel sẽ thực hiện việc chuyển đổi cho bạn.
 - Phương thức `write` sẽ viết chuỗi `$data` đã cho liên kết với một `$sessionId` vào trong một số hệ thống lưu trữ, chẳng hạn như MongoDB, Dynamo, vv. Một lần nữa, bạn không nên thực hiện bất kỳ chuyển đổi nào - Laravel sẽ xử lý điều đó cho bạn.
 - Phương thức `destroy` sẽ xóa dữ liệu được liên kết với `$sessionId` ra khỏi bộ lưu trữ.
 - Phương thức `gc` sẽ hủy tất cả dữ liệu session cũ hơn so với `$lifetime` đã cho, đó là UNIX timestamp. Đối với các hệ thống tự hết hạn như Memcached và Redis, phương thức này có thể bị bỏ trống.
+
 </div>
 
 <a name="registering-the-driver"></a>
@@ -247,7 +253,7 @@ Khi driver của bạn đã được thực hiện xong, bạn đã sẵn sàng 
     class SessionServiceProvider extends ServiceProvider
     {
         /**
-         * Register bindings in the container.
+         * Register any application services.
          *
          * @return void
          */

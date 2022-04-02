@@ -39,8 +39,7 @@ Khi file test đã được tạo xong, bạn có thể định nghĩa các phư
 
     namespace Tests\Unit;
 
-    use Tests\TestCase;
-    use Illuminate\Foundation\Testing\RefreshDatabase;
+    use PHPUnit\Framework\TestCase;
 
     class ExampleTest extends TestCase
     {

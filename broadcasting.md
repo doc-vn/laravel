@@ -79,11 +79,19 @@ Khi sử dụng Channel và [Laravel Echo](#installing-laravel-echo), bạn nên
         key: 'your-pusher-channels-key'
     });
 
+Cuối cùng, bạn sẽ cần thay đổi driver broadcast của bạn thành `pusher` trong file `.env` của bạn:
+
+    BROADCAST_DRIVER=pusher
+
 #### Redis
 
-Nếu bạn đang sử dụng broadcaster Redis, bạn nên cài đặt thư viện Predis:
+Nếu bạn đang sử dụng broadcaster Redis, bạn nên cài đặt extension phpredis của PHP thông qua PECL hoặc cài đặt thư viện Predis thông qua Composer:
 
     composer require predis/predis
+
+Tiếp theo, bạn nên cập nhật driver broadcast của bạn thành `redis` trong file `.env` của bạn:
+
+    BROADCAST_DRIVER=redis
 
 Broadcaster Redis sẽ broadcast các tin nhắn bằng tính năng pub và sub của Redis; tuy nhiên, bạn sẽ cần phải kết nối nó với một máy chủ WebSocket để có thể nhận được tin nhắn từ Redis và broadcast chúng lên các channel WebSocket của bạn.
 
@@ -136,12 +144,12 @@ Khi người dùng đang xem một trong các đơn hàng của họ, chúng ta 
 
     namespace App\Events;
 
-    use Illuminate\Broadcasting\Channel;
-    use Illuminate\Queue\SerializesModels;
-    use Illuminate\Broadcasting\PrivateChannel;
-    use Illuminate\Broadcasting\PresenceChannel;
+     use Illuminate\Broadcasting\Channel;
     use Illuminate\Broadcasting\InteractsWithSockets;
+    use Illuminate\Broadcasting\PresenceChannel;
+    use Illuminate\Broadcasting\PrivateChannel;
     use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
+    use Illuminate\Queue\SerializesModels;
 
     class ShippingStatusUpdated implements ShouldBroadcast
     {
@@ -199,11 +207,11 @@ Interface `ShouldBroadcast` yêu cầu bạn implement một phương thức: `b
 
     use App\User;
     use Illuminate\Broadcasting\Channel;
-    use Illuminate\Queue\SerializesModels;
-    use Illuminate\Broadcasting\PrivateChannel;
-    use Illuminate\Broadcasting\PresenceChannel;
     use Illuminate\Broadcasting\InteractsWithSockets;
+    use Illuminate\Broadcasting\PresenceChannel;
+    use Illuminate\Broadcasting\PrivateChannel;
     use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
+    use Illuminate\Queue\SerializesModels;
 
     class ServerCreated implements ShouldBroadcast
     {
@@ -370,7 +378,7 @@ Giống như các route HTTP, các route channel cũng có thể tận dụng c�
 
 Các channel broadcast private và presence sẽ xác thực người dùng hiện tại thông qua authentication guard mặc định của ứng dụng. Nếu người dùng không được xác thực, channel authorization cũng sẽ tự động bị từ chối và lệnh authorization callback cũng sẽ không bao giờ được thực thi. Tuy nhiên, bạn có thể chỉ định nhiều guard tùy chỉnh khác sẽ xác thực request đến nếu cần:
 
-    Broadcast::channel('channel', function() {
+    Broadcast::channel('channel', function () {
         // ...
     }, ['guards' => ['web', 'admin']]);
 
@@ -393,8 +401,8 @@ Cuối cùng, bạn có thể viết các logic cấp quyền cho channel của 
 
     namespace App\Broadcasting;
 
-    use App\User;
     use App\Order;
+    use App\User;
 
     class OrderChannel
     {

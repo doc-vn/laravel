@@ -36,6 +36,7 @@
 Các bảng cơ sở dữ liệu thường được quan hệ với nhau. Ví dụ: một bài post trên một blog có thể có nhiều comment hoặc một order có thể có quan hệ với người dùng đã đặt nó. Eloquent giúp quản lý và làm việc với những quan hệ này một cách dễ dàng hơn và hỗ trợ một số loại quan hệ khác nhau như sau:
 
 <div class="content-list" markdown="1">
+
 - [Một - Một](#one-to-one)
 - [Một - Nhiều](#one-to-many)
 - [Nhiều - Nhiều](#many-to-many)
@@ -44,6 +45,7 @@ Các bảng cơ sở dữ liệu thường được quan hệ với nhau. Ví d�
 - [Một - Một (đa hình)](#one-to-one-polymorphic-relations)
 - [Một - Nhiều (đa hình)](#one-to-many-polymorphic-relations)
 - [Nhiều - Nhiều (đa hình)](#many-to-many-polymorphic-relations)
+
 </div>
 
 <a name="defining-relationships"></a>
@@ -54,6 +56,8 @@ Các quan hệ của Eloquent là các phương thức được định nghĩa n
     $user->posts()->where('active', 1)->get();
 
 Nhưng, trước khi đi sâu vào việc sử dụng các quan hệ, hãy tìm hiểu cách định nghĩa cho từng loại quan hệ.
+
+> {note} Tên quan hệ không được trùng với tên thuộc tính vì điều đó có thể dẫn đến việc model của bạn không thể biết được nên resolve cái nào.
 
 <a name="one-to-one"></a>
 ### Một - Một
@@ -223,7 +227,25 @@ Nếu model cha của bạn không sử dụng `id` làm khóa chính của nó 
 <a name="many-to-many"></a>
 ### Nhiều - Nhiều
 
-Quan hệ nhiều-nhiều có thể sẽ phức tạp hơn một chút so với các quan hệ `hasOne` và `hasMany`. Một ví dụ về quan hệ kiểu như vậy là một user có thể có nhiều role, trong đó các role cũng có thể được chia cho nhiều user khác nhau. Ví dụ: nhiều user có thể có role là "Admin". Để định nghĩa quan hệ này, cần có ba bảng cơ sở dữ liệu: `users`, `roles`, và `role_user`. Tên bảng `role_user` sẽ được lấy theo thứ tự chữ cái của tên các model và có chứa các cột `user_id` và` Role_id`.
+Quan hệ nhiều-nhiều có thể sẽ phức tạp hơn một chút so với các quan hệ `hasOne` và `hasMany`. Một ví dụ về quan hệ kiểu như vậy là một user có thể có nhiều role, trong đó các role cũng có thể được chia cho nhiều user khác nhau. Ví dụ: nhiều user có thể có role là "Admin".
+
+#### Table Structure
+
+Để định nghĩa quan hệ này, cần có ba bảng cơ sở dữ liệu: `users`, `roles`, và `role_user`. Tên bảng `role_user` sẽ được lấy theo thứ tự chữ cái của tên các model và có chứa các cột `user_id` và `role_id`:
+
+    users
+        id - integer
+        name - string
+
+    roles
+        id - integer
+        name - string
+
+    role_user
+        user_id - integer
+        role_id - integer
+
+#### Model Structure
 
 Quan hệ nhiều-nhiều được định nghĩa bằng cách viết một phương thức sẽ trả về phương thức `belongsToMany`. Ví dụ: hãy định nghĩa phương thức `roles` trên model `User` của chúng ta:
 
@@ -327,11 +349,13 @@ Khi điều này được thực hiện xong, bạn có thể truy cập vào d�
 
 #### Filtering Relationships Via Intermediate Table Columns
 
-Bạn cũng có thể lọc các kết quả được trả về bởi `belongsToMany` bằng cách sử dụng các phương thức `wherePivot` và `wherePivotIn` khi định nghĩa quan hệ:
+Bạn cũng có thể lọc các kết quả được trả về bởi `belongsToMany` bằng cách sử dụng các phương thức `wherePivot`, `wherePivotIn`, và `wherePivotNotIn` khi định nghĩa quan hệ:
 
     return $this->belongsToMany('App\Role')->wherePivot('approved', 1);
 
     return $this->belongsToMany('App\Role')->wherePivotIn('priority', [1, 2]);
+
+    return $this->belongsToMany('App\Role')->wherePivotNotIn('priority', [1, 2]);
 
 <a name="defining-custom-intermediate-table-models"></a>
 ### Định nghĩa model bảng trung gian tùy chỉnh
@@ -387,7 +411,7 @@ Bạn có thể kết hợp `using` và `withPivot` để lấy ra các cột t�
                             ->using('App\RoleUser')
                             ->withPivot([
                                 'created_by',
-                                'updated_by'
+                                'updated_by',
                             ]);
         }
     }
@@ -408,7 +432,8 @@ Nếu bạn đã định nghĩa một quan hệ nhiều-nhiều sử dụng mode
 <a name="has-one-through"></a>
 ### Quan hệ thông qua liên kết một
 
-Các quan hệ "thông-qua-liên-kết-một" là liên kết các model thông qua một quan hệ trung gian duy nhất. Ví dụ: nếu mỗi nhà cung cấp có một người dùng và mỗi người dùng lại được liên kết với một bản ghi lại lịch sử người dùng, thì model nhà cung cấp có thể truy cập vào lịch sử của người dùng _through(thông qua)_ người dùng. Hãy xem các bảng cơ sở dữ liệu sau để định nghĩa mối quan hệ này:
+Các quan hệ "thông-qua-liên-kết-một" là liên kết các model thông qua một quan hệ trung gian duy nhất.
+Ví dụ: nếu mỗi nhà cung cấp có một người dùng và mỗi người dùng lại được liên kết với một bản ghi lại lịch sử người dùng, thì model nhà cung cấp có thể truy cập vào lịch sử của người dùng _through(thông qua)_ người dùng. Hãy xem các bảng cơ sở dữ liệu sau để định nghĩa mối quan hệ này:
 
     users
         id - integer
@@ -923,7 +948,7 @@ Bạn có thể sử dụng ký hiệu "dấu chấm" để thực hiện truy v
     use Illuminate\Database\Eloquent\Builder;
 
     $posts = App\Post::whereDoesntHave('comments.author', function (Builder $query) {
-        $query->where('banned', 1);
+        $query->where('banned', 0);
     })->get();
 
 <a name="querying-polymorphic-relationships"></a>
@@ -1005,7 +1030,7 @@ Bạn cũng có thể thêm tên gọi khác cho một kết quả đếm quan h
         'comments',
         'comments as pending_comments_count' => function (Builder $query) {
             $query->where('approved', false);
-        }
+        },
     ])->get();
 
     echo $posts[0]->comments_count;
@@ -1019,6 +1044,18 @@ Nếu bạn đang kết hợp `withCount` với câu lệnh `select`, thì hãy 
     echo $posts[0]->title;
     echo $posts[0]->body;
     echo $posts[0]->comments_count;
+
+Ngoài ra, bằng cách sử dụng phương thức `loadCount`, bạn có thể đếm số lượng bản ghi trong các quan hệ sau khi model cha đã được lấy ra:
+
+    $book = App\Book::first();
+
+    $book->loadCount('genres');
+
+Nếu bạn cần set thêm các ràng buộc truy vấn cho các truy vấn eager loading, bạn có thể truyền một mảng gồm các khóa là các tên của các quan hệ mà bạn muốn load. Các giá trị của mảng phải là các instance `Closure` nhận vào một instance query builder:
+
+    $book->loadCount(['reviews' => function ($query) {
+        $query->where('rating', 5);
+    }])
 
 <a name="eager-loading"></a>
 ## Eager Loading
@@ -1182,7 +1219,7 @@ Thỉnh thoảng bạn có thể cần eager load một quan hệ sau khi một 
 
 Nếu bạn cần set thêm các ràng buộc truy vấn cho các truy vấn eager loading, bạn có thể truyền vào một mảng có khóa là các quan hệ mà bạn muốn load. Các giá trị mảng phải là các instances `Closure` nhận vào một instances query:
 
-    $books->load(['author' => function ($query) {
+    $author->load(['books' => function ($query) {
         $query->orderBy('published_date', 'asc');
     }]);
 
@@ -1194,7 +1231,7 @@ Nếu bạn cần set thêm các ràng buộc truy vấn cho các truy vấn eag
 
         return [
             'name' => $book->name,
-            'author' => $book->author->name
+            'author' => $book->author->name,
         ];
     }
 
@@ -1379,7 +1416,7 @@ Tất nhiên, thỉnh thoảng bạn cũng có thể cần phải xóa một rol
 
     $user->roles()->attach([
         1 => ['expires' => $expires],
-        2 => ['expires' => $expires]
+        2 => ['expires' => $expires],
     ]);
 
 #### Syncing Associations

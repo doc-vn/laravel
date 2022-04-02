@@ -64,7 +64,7 @@ Bạn cũng có thể set tùy chọn `host` thành một đường dẫn socket
 
 #### Redis
 
-Trước khi sử dụng cache Redis với Laravel, bạn sẽ cần cài đặt package `predis/predis` (~ 1.0) thông qua Composer hoặc cài đặt extension PhpRedis của PHP thông qua PECL.
+Trước khi sử dụng cache Redis với Laravel, bạn sẽ cần cài đặt extension PhpRedis của PHP thông qua PECL hoặc cài đặt package `predis/predis` (~1.0) thông qua Composer.
 
 Để biết thêm thông tin về cách cấu hình Redis, hãy tham khảo [tài liệu của Laravel](/docs/{{version}}/redis#configuration).
 
@@ -379,7 +379,7 @@ Chúng ta chỉ cần implement từng phương thức này bằng một kết n
     class CacheServiceProvider extends ServiceProvider
     {
         /**
-         * Register bindings in the container.
+         * Register any application services.
          *
          * @return void
          */

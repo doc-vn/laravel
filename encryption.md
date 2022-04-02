@@ -25,9 +25,9 @@ Bạn có thể mã hóa một giá trị bằng cách sử dụng helper `encry
 
     namespace App\Http\Controllers;
 
+    use App\Http\Controllers\Controller;
     use App\User;
     use Illuminate\Http\Request;
-    use App\Http\Controllers\Controller;
 
     class UserController extends Controller
     {
@@ -43,7 +43,7 @@ Bạn có thể mã hóa một giá trị bằng cách sử dụng helper `encry
             $user = User::findOrFail($id);
 
             $user->fill([
-                'secret' => encrypt($request->secret)
+                'secret' => encrypt($request->secret),
             ])->save();
         }
     }

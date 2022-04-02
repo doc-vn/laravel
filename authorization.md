@@ -4,12 +4,14 @@
 - [Gates](#gates)
     - [Viết Gates](#writing-gates)
     - [Authorizing Actions](#authorizing-actions-via-gates)
+    - [Gate Responses](#gate-responses)
     - [Chặn Gate Check](#intercepting-gate-checks)
 - [Tạo Policies](#creating-policies)
     - [Tạo Policies](#generating-policies)
     - [Đăng ký Policies](#registering-policies)
 - [Viết Policies](#writing-policies)
     - [Các phương thức trong Policy](#policy-methods)
+    - [Policy Responses](#policy-responses)
     - [Các phương thức không dùng Models](#methods-without-models)
     - [Guest Users](#guest-users)
     - [Policy Filters](#policy-filters)
@@ -18,6 +20,7 @@
     - [Thông qua Middleware](#via-middleware)
     - [Thông qua Controller Helpers](#via-controller-helpers)
     - [Thông qua Blade Templates](#via-blade-templates)
+    - [Cung cấp thêm thông tin](#supplying-additional-context)
 
 <a name="introduction"></a>
 ## Giới thiệu
@@ -50,7 +53,7 @@ Gates là các Closure để xác định xem người dùng có được phép 
         });
 
         Gate::define('update-post', function ($user, $post) {
-            return $user->id == $post->user_id;
+            return $user->id === $post->user_id;
         });
     }
 
@@ -105,8 +108,58 @@ Bạn có thể cấp phép cho nhiều hành động cùng một lúc bằng ph
         // The user cannot update or delete the post
     }
 
+#### Authorizing Or Throwing Exceptions
+
+Nếu bạn muốn thử authorize cho một action và tự động đưa ra một `Illuminate\Auth\Access\AuthorizationException` nếu người dùng đó không được phép thực hiện action đã cho, bạn có thể sử dụng phương thức `Gate::authorize`. Instance của `AuthorizationException` sẽ được tự động chuyển đổi thành response HTTP 403`:
+
+    Gate::authorize('update-post', $post);
+
+    // The action is authorized...
+
+#### Supplying Additional Context
+
+Các phương thức của gate để authorize các quyền (`allows`, `denies`, `check`, `any`, `none`, `authorize`, `can`, `cannot`) và các [lệnh Blade](#via-blade-templates) về authorization (`@can`, `@cannot`, `@canany`) có thể nhận vào một mảng làm tham số thứ hai. Các phần tử trong mảng này được truyền vào dưới dạng tham số cho gate và có thể được sử dụng để thêm thông tin khi đưa ra quyết định authorization:
+
+    Gate::define('create-post', function ($user, $category, $extraFlag) {
+        return $category->group > 3 && $extraFlag === true;
+    });
+
+    if (Gate::check('create-post', [$category, $extraFlag])) {
+        // The user can create the post...
+    }
+
+<a name="gate-responses"></a>
+### Gate Responses
+
+Hiện tại, chúng ta mới chỉ kiểm tra các gate trả về giá trị boolean đơn giản. Tuy nhiên, đôi khi bạn có thể muốn trả về một response chi tiết hơn, chứa cả một thông báo lỗi. Để làm như vậy, bạn có thể trả về `Illuminate\Auth\Access\Response` từ gate của bạn:
+
+    use Illuminate\Auth\Access\Response;
+    use Illuminate\Support\Facades\Gate;
+
+    Gate::define('edit-settings', function ($user) {
+        return $user->isAdmin
+                    ? Response::allow()
+                    : Response::deny('You must be a super administrator.');
+    });
+
+Khi trả về một response authorization từ gate của bạn, phương thức `Gate::allows` sẽ vẫn trả về một giá trị boolean đơn giản; tuy nhiên, bạn có thể sử dụng phương thức `Gate::inspect` để nhận được response authorization đầy đủ do gate trả về:
+
+    $response = Gate::inspect('edit-settings', $post);
+
+    if ($response->allowed()) {
+        // The action is authorized...
+    } else {
+        echo $response->message();
+    }
+
+Tất nhiên, khi sử dụng phương thức `Gate::authorize` để đưa ra một `AuthorizationException` nếu action không được authorize, thông báo lỗi mà được cung cấp bởi response authorize sẽ được truyền tới response HTTP:
+
+    Gate::authorize('edit-settings', $post);
+
+    // The action is authorized...
+
 <a name="intercepting-gate-checks"></a>
-#### Chặn Gate Check
+### Chặn Gate Check
 
 Thỉnh thoảng, bạn có thể muốn cho phép tất cả các hành động cho một người dùng cụ thể. Bạn có thể sử dụng phương thức `before` để định nghĩa một callback sẽ được chạy trước khi tất cả các authorization khác được check:
 
@@ -155,10 +208,10 @@ Sau khi policy đã tồn tại, bạn cần phải đăng ký nó. `AuthService
 
     namespace App\Providers;
 
-    use App\Post;
     use App\Policies\PostPolicy;
-    use Illuminate\Support\Facades\Gate;
+    use App\Post;
     use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
+    use Illuminate\Support\Facades\Gate;
 
     class AuthServiceProvider extends ServiceProvider
     {
@@ -212,8 +265,8 @@ Phương thức `update` sẽ nhận vào một `User` và một `Post` làm tha
 
     namespace App\Policies;
 
-    use App\User;
     use App\Post;
+    use App\User;
 
     class PostPolicy
     {
@@ -232,7 +285,44 @@ Phương thức `update` sẽ nhận vào một `User` và một `Post` làm tha
 
 Bạn có thể tiếp tục định nghĩa thêm các phương thức mà bạn cần authorize cho các hành động khác. Ví dụ: bạn có thể định nghĩa thêm authorize các phương thức `view` hoặc `delete` dành cho một `Post`, ngoài ra bạn cũng có thể tạo thêm bất kỳ các phương thức policy với bất kỳ cái tên nào mà bạn mong muốn.
 
-> {tip} Nếu bạn đã sử dụng option `--model` khi tạo policy thông qua Artisan console, thì nó sẽ chứa sẵn các phương thức cho các hành động `view`, `create`, `update`, `delete`, `restore`, và `forceDelete`.
+> {tip} Nếu bạn đã sử dụng option `--model` khi tạo policy thông qua Artisan console, thì nó sẽ chứa sẵn các phương thức cho các hành động `viewAny`, `view`, `create`, `update`, `delete`, `restore`, và `forceDelete`.
+
+<a name="policy-responses"></a>
+### Policy Responses
+
+Hiện tại, chúng ta mới chỉ kiểm tra các phương thức policy trả về giá trị boolean đơn giản. Tuy nhiên, đôi khi bạn có thể muốn trả về một response chi tiết hơn, chứa cả một thông báo lỗi. Để làm như vậy, bạn có thể trả về `Illuminate\Auth\Access\Response` từ phương thức policy của bạn:
+
+    use Illuminate\Auth\Access\Response;
+
+    /**
+     * Determine if the given post can be updated by the user.
+     *
+     * @param  \App\User  $user
+     * @param  \App\Post  $post
+     * @return \Illuminate\Auth\Access\Response
+     */
+    public function update(User $user, Post $post)
+    {
+        return $user->id === $post->user_id
+                    ? Response::allow()
+                    : Response::deny('You do not own this post.');
+    }
+
+Khi trả về một response authorization từ policy của bạn, phương thức `Gate::allows` sẽ vẫn trả về một giá trị boolean đơn giản; tuy nhiên, bạn có thể sử dụng phương thức `Gate::inspect` để nhận được response authorization đầy đủ do gate trả về:
+
+    $response = Gate::inspect('update', $post);
+
+    if ($response->allowed()) {
+        // The action is authorized...
+    } else {
+        echo $response->message();
+    }
+
+Tất nhiên, khi sử dụng phương thức `Gate::authorize` để đưa ra một `AuthorizationException` nếu action không được authorize, thông báo lỗi mà được cung cấp bởi response authorize sẽ được truyền tới response HTTP:
+
+    Gate::authorize('update', $post);
+
+    // The action is authorized...
 
 <a name="methods-without-models"></a>
 ### Các phương thức không dùng Models
@@ -261,8 +351,8 @@ Mặc định, tất cả các gate và policy sẽ tự động trả về `fal
 
     namespace App\Policies;
 
-    use App\User;
     use App\Post;
+    use App\User;
 
     class PostPolicy
     {
@@ -275,7 +365,7 @@ Mặc định, tất cả các gate và policy sẽ tự động trả về `fal
          */
         public function update(?User $user, Post $post)
         {
-            return $user->id === $post->user_id;
+            return optional($user)->id === $post->user_id;
         }
     }
 
@@ -349,9 +439,9 @@ Ngoài các phương thức hữu ích được cung cấp cho model `User`, Lar
 
     namespace App\Http\Controllers;
 
+    use App\Http\Controllers\Controller;
     use App\Post;
     use Illuminate\Http\Request;
-    use App\Http\Controllers\Controller;
 
     class PostController extends Controller
     {
@@ -399,9 +489,9 @@ Phương thức `authorizeResource` sẽ nhận tên class của model làm tham
 
     namespace App\Http\Controllers;
 
+    use App\Http\Controllers\Controller;
     use App\Post;
     use Illuminate\Http\Request;
-    use App\Http\Controllers\Controller;
 
     class PostController extends Controller
     {
@@ -415,6 +505,7 @@ Các phương thức controller sau sẽ được ánh xạ tới các phương 
 
 | Controller Method | Policy Method |
 | --- | --- |
+| index | viewAny |
 | show | view |
 | create | create |
 | store | create |
@@ -436,9 +527,9 @@ Khi viết template Blade, bạn có thể hiển thị một phần của trang
     @endcan
 
     @cannot('update', $post)
-        <!-- The Current User Can't Update The Post -->
+        <!-- The Current User Cannot Update The Post -->
     @elsecannot('create', App\Post::class)
-        <!-- The Current User Can't Create New Post -->
+        <!-- The Current User Cannot Create A New Post -->
     @endcannot
 
 Các lệnh này là các shortcut thuận tiện để không phải viết các câu lệnh như `@if` và `@unless`. Các câu lệnh `@can` và `@cannot` ở trên có thể lần lượt được dịch sang các câu lệnh if như sau:
@@ -448,7 +539,7 @@ Các lệnh này là các shortcut thuận tiện để không phải viết cá
     @endif
 
     @unless (Auth::user()->can('update', $post))
-        <!-- The Current User Can't Update The Post -->
+        <!-- The Current User Cannot Update The Post -->
     @endunless
 
 Bạn cũng có thể kiểm tra xem người dùng có những quyền nào từ một danh sách các quyền. Để thực hiện việc này, hãy sử dụng lệnh `@canany`:
@@ -470,3 +561,39 @@ Giống như hầu hết các phương thức authorization khác, bạn có th�
     @cannot('create', App\Post::class)
         <!-- The Current User Can't Create Posts -->
     @endcannot
+
+<a name="supplying-additional-context"></a>
+### Cung cấp thêm thông tin
+
+Khi authorize các action bằng policy, bạn có thể truyền một mảng làm tham số thứ hai cho hàm và các helper authorize khác nhau. Phần tử đầu tiên trong mảng sẽ được sử dụng để xác định policy nào sẽ được gọi, trong khi phần tử còn lại của mảng được truyền dưới dạng tham số cho phương thức policy và có thể được sử dụng để thêm thông tin khi đưa ra quyết định authorize. Ví dụ: hãy xem xét định nghĩa phương thức `PostPolicy` sau đây có chứa tham số thêm `$category` bổ sung:
+
+    /**
+     * Determine if the given post can be updated by the user.
+     *
+     * @param  \App\User  $user
+     * @param  \App\Post  $post
+     * @param  int  $category
+     * @return bool
+     */
+    public function update(User $user, Post $post, int $category)
+    {
+        return $user->id === $post->user_id &&
+               $category > 3;
+    }
+
+Khi thử xác định xem người dùng hiện tại có thể cập nhật một bài đăng nhất định hay không, chúng ta có thể gọi phương thức policy này như sau:
+
+    /**
+     * Update the given blog post.
+     *
+     * @param  Request  $request
+     * @param  Post  $post
+     * @return Response
+     * @throws \Illuminate\Auth\Access\AuthorizationException
+     */
+    public function update(Request $request, Post $post)
+    {
+        $this->authorize('update', [$post, $request->input('category')]);
+
+        // The current user can update the blog post...
+    }

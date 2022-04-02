@@ -41,7 +41,7 @@ Laravel Telescope là một trình gỡ lỗi cho Laravel framework. Telescope s
 
 Bạn có thể sử dụng Composer để cài đặt Telescope vào project Laravel của bạn:
 
-    composer require laravel/telescope "2.1.7"
+    composer require laravel/telescope:^3.0
 
 Sau khi cài đặt Telescope, hãy export nội dung của nó bằng lệnh Artisan `telescope:install`. Sau khi cài đặt Telescope xong, bạn cũng nên chạy lệnh `migrate`:
 
@@ -59,7 +59,7 @@ Khi cập nhật Telescope xong, bạn nên export lại nội dung của Telesc
 
 Nếu bạn chỉ định sử dụng Telescope để hỗ trợ quá trình phát triển local của bạn, bạn có thể thêm cài đặt Telescope bằng flag `--dev`:
 
-    composer require laravel/telescope "2.1.7" --dev
+    composer require laravel/telescope --dev
 
 Sau khi chạy `telescope:install`, bạn nên xóa đăng ký service provider `TelescopeServiceProvider` ra khỏi file cấu hình `app` của bạn. Thay vào đó, hãy đăng ký service provider đó trong phương thức `register` của `AppServiceProvider`:
 
@@ -320,8 +320,6 @@ Query watcher sẽ ghi lại các raw SQL, binding và thời gian thực thi ch
 
 <a name="redis-watcher"></a>
 ### Redis Watcher
-
-> {note} Các event Redis phải được enable để các Redis watcher có thể hoạt động. Bạn có thể enable các event Redis bằng cách gọi `Redis::enableEvents()` trong phương thức `boot` của file `app/Providers/AppServiceProvider.php` của bạn.
 
 Redis watcher sẽ ghi lại tất cả các lệnh Redis được thực thi bởi ứng dụng của bạn. Nếu bạn đang sử dụng Redis để lưu vào cache, thì các cache command cũng sẽ được Redis Watcher ghi lại.
 

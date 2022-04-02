@@ -30,6 +30,8 @@ Tất cả các file ngôn ngữ đều trả về một mảng của các chu�
         'welcome' => 'Welcome to our application'
     ];
 
+> {note} Đối với các ngôn ngữ khác nhau theo lãnh thổ, bạn nên set tên cho các thư mục ngôn ngữ đó theo chuẩn ISO 15897. Ví dụ: "en_GB" nên được sử dụng cho tiếng Anh-Anh thay vì "en-gb".
+
 <a name="configuring-the-locale"></a>
 ### Cấu hình ngôn ngữ
 

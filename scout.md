@@ -47,8 +47,8 @@ Cuối cùng, thêm trait `Laravel\Scout\Searchable` vào model mà bạn muốn
 
     namespace App;
 
-    use Laravel\Scout\Searchable;
     use Illuminate\Database\Eloquent\Model;
+    use Laravel\Scout\Searchable;
 
     class Post extends Model
     {
@@ -85,8 +85,8 @@ Mỗi một model Eloquent được đồng bộ với một "index" tìm kiếm
 
     namespace App;
 
-    use Laravel\Scout\Searchable;
     use Illuminate\Database\Eloquent\Model;
+    use Laravel\Scout\Searchable;
 
     class Post extends Model
     {
@@ -112,8 +112,8 @@ Mặc định, toàn bộ form `toArray` của một model sẽ được lưu th
 
     namespace App;
 
-    use Laravel\Scout\Searchable;
     use Illuminate\Database\Eloquent\Model;
+    use Laravel\Scout\Searchable;
 
     class Post extends Model
     {
@@ -137,14 +137,14 @@ Mặc định, toàn bộ form `toArray` của một model sẽ được lưu th
 <a name="configuring-the-model-id"></a>
 ### Configuring The Model ID
 
-Mặc định, Scout sẽ sử dụng khóa chính của model làm ID được lưu trữ trong search index. Nếu bạn cần tùy chỉnh hành vi này, bạn có thể ghi đè phương thức `getScoutKey` trên model đó:
+Mặc định, Scout sẽ sử dụng khóa chính của model làm ID được lưu trữ trong search index. Nếu bạn cần tùy chỉnh hành vi này, bạn có thể ghi đè phương thức `getScoutKey` và phương thức `getScoutKeyName` trên model đó:
 
     <?php
 
     namespace App;
 
-    use Laravel\Scout\Searchable;
     use Illuminate\Database\Eloquent\Model;
+    use Laravel\Scout\Searchable;
 
     class User extends Model
     {
@@ -158,6 +158,16 @@ Mặc định, Scout sẽ sử dụng khóa chính của model làm ID được 
         public function getScoutKey()
         {
             return $this->email;
+        }
+
+        /**
+         * Get the key name used to index the model.
+         *
+         * @return mixed
+         */
+        public function getScoutKeyName()
+        {
+            return 'email';
         }
     }
 
@@ -376,7 +386,7 @@ Nếu một trong những engine tìm kiếm của Scout không phù hợp với
     abstract public function search(Builder $builder);
     abstract public function paginate(Builder $builder, $perPage, $page);
     abstract public function mapIds($results);
-    abstract public function map($results, $model);
+    abstract public function map(Builder $builder, $results, $model);
     abstract public function getTotalCount($results);
     abstract public function flush($model);
 
@@ -413,9 +423,9 @@ Nếu bạn muốn định nghĩa một phương thức builder tùy chỉnh, b�
 
     namespace App\Providers;
 
-    use Laravel\Scout\Builder;
-    use Illuminate\Support\ServiceProvider;
     use Illuminate\Support\Facades\Response;
+    use Illuminate\Support\ServiceProvider;
+    use Laravel\Scout\Builder;
 
     class ScoutMacroServiceProvider extends ServiceProvider
     {

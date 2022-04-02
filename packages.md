@@ -7,6 +7,7 @@
 - [Resources](#resources)
     - [Cấu hình](#configuration)
     - [Migration](#migrations)
+    - [Factories](#factories)
     - [Route](#routes)
     - [Translation](#translations)
     - [View](#views)
@@ -106,7 +107,7 @@ Bây giờ, khi người dùng chạy lệnh `vendor:publish` của Laravel, th�
 Bạn cũng có thể merge file cấu hình package của bạn với một bản copy được export từ application. Điều này sẽ cho phép người dùng của bạn chỉ định nghĩa các tùy chọn mà họ thực sự muốn ghi đè. Để merge các file cấu hình, sử dụng phương thức `mergeConfigFrom` trong phương thức `register` của service provider của bạn:
 
     /**
-     * Register bindings in the container.
+     * Register any application services.
      *
      * @return void
      */
@@ -150,6 +151,25 @@ Nếu package của bạn chứa [database migrations](/docs/{{version}}/migrati
     }
 
 Khi file migration package của bạn đã được đăng ký, chúng sẽ được tự động chạy khi lệnh `php artisan migrate` được chạy. Bạn không cần export chúng vào thư mục `database/migrations` chính của application.
+
+<a name="factories"></a>
+### Factories
+
+Nếu package của bạn chứa [database factory](/docs/{{version}}/database-testing#writing-factories), bạn có thể sử dụng phương thức `loadFactoriesFrom` để thông báo cho Laravel biết cách load chúng. Phương thức `loadFactoriesFrom` chấp nhận đường dẫn đến factory package của bạn làm tham số duy nhất của nó:
+
+    /**
+     * Bootstrap any application services.
+     *
+     * @return void
+     */
+    public function boot()
+    {
+        $this->loadFactoriesFrom(__DIR__.'/path/to/factories');
+    }
+
+Khi các factory của package của bạn đã được đăng ký xong, bạn có thể sử dụng chúng trong ứng dụng của bạn:
+
+    factory(Package\Namespace\Model::class)->create();
 
 <a name="translations"></a>
 ### Translation

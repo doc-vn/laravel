@@ -9,10 +9,13 @@
     - [Lệnh "Link"](#the-link-command)
     - [Bảo vệ site với TLS](#securing-sites)
 - [Chia sẻ site](#sharing-sites)
+- [Chạy một site mặc định](#serving-a-default-site)
 - [Các biến môi trường cho trang web](#site-specific-environment-variables)
 - [Tuỳ chỉnh Valet Driver](#custom-valet-drivers)
     - [Local Driver](#local-drivers)
+- [Cấu hình PHP](#php-configuration)
 - [Các lệnh Valet khác](#other-valet-commands)
+- [Thư mục và file valet](#valet-directories-and-files)
 
 <a name="introduction"></a>
 ## Giới thiệu
@@ -33,13 +36,14 @@ Mặc định, Valet hỗ trợ những phần sau, nhưng không giới hạn:
 </style>
 
 <div id="valet-support" markdown="1">
+
 - [Laravel](https://laravel.com)
 - [Lumen](https://lumen.laravel.com)
 - [Bedrock](https://roots.io/bedrock/)
 - [CakePHP 3](https://cakephp.org)
 - [Concrete5](https://www.concrete5.org/)
 - [Contao](https://contao.org/en/)
-- [Craft](https://craftcms.com)
+- [Craft CMS](https://craftcms.com)
 - [Drupal](https://www.drupal.org/)
 - [Jigsaw](https://jigsaw.tighten.co)
 - [Joomla](https://www.joomla.org/)
@@ -54,6 +58,7 @@ Mặc định, Valet hỗ trợ những phần sau, nhưng không giới hạn:
 - [Symfony](https://symfony.com)
 - [WordPress](https://wordpress.org)
 - [Zend](https://framework.zend.com)
+
 </div>
 
 Tuy nhiên, bạn có thể mở rộng Valet với [custom drivers](#custom-valet-drivers).
@@ -73,11 +78,13 @@ Cả Valet và Homestead đều là những lựa chọn tuyệt vời để c�
 **Valet yêu cầu macOS và [Homebrew](https://brew.sh/). Trước khi cài đặt, bạn nên đảm bảo rằng không có chương trình nào như Apache hoặc Nginx đang chạy ở cổng 80 trên máy local của bạn.**
 
 <div class="content-list" markdown="1">
+
 - Cài đặt hoặc cập nhật [Homebrew](http://brew.sh/) mới nhất bằng cách dùng lệnh `brew update`.
-- Cài đặt PHP 7.3 bằng cách dùng lệnh `brew install php` thông qua Homebrew.
+- Cài đặt PHP 7.4 bằng cách dùng lệnh `brew install php` thông qua Homebrew.
 - Cài đặt [Composer](https://getcomposer.org).
 - Cài đặt Valet bằng Composer thông qua lệnh `composer global require laravel/valet`. Và chắc chắn là thư mục `~/.composer/vendor/bin` này đã có trong "PATH" của máy bạn.
 - Chạy lệnh `valet install`. Lệnh này sẽ cấu hình và cài đặt Valet cùng DnsMasq, ngoài ra cũng sẽ đăng ký Valet's daemon chạy mỗi khi máy bạn khởi động.
+
 </div>
 
 Khi Valet đã được cài đặt xong, hãy thử ping đến bất kỳ tên miền nào có đuôi là `* .test` trên terminal của bạn bằng cách sử dụng một lệnh như sau `ping foobar.test`. Nếu Valet được cài đặt chính xác, bạn sẽ thấy tên miền này phản hồi trên `127.0.0.1`.
@@ -102,28 +109,16 @@ Valet cho phép bạn chuyển đổi các phiên bản PHP khác nhau bằng l�
 
     valet use php
 
+> {note} Valet chỉ cung cấp một phiên bản PHP tại một thời điểm, kể cả khi bạn đã cài đặt nhiều phiên bản PHP.
+
+#### Resetting Your Installation
+
+Nếu bạn gặp khó khăn trong việc cài đặt Valet của bạn chạy đúng cách, hãy chạy lệnh `composer global update`, theo sau là `valet install` để reset lại cài đặt của bạn và nó có thể giải quyết nhiều vấn đề. Trong một số trường hợp hiếm hoi, có thể cần phải "hard reset" Valet bằng cách chạy `valet uninstall --force` và sau đó là `valet install`.
+
 <a name="upgrading"></a>
 ### Cập nhật
 
 Bạn có thể cập nhật cài đặt Valet của bạn bằng lệnh `composer global update` trong terminal của bạn. Sau khi cập nhật, bạn nên chạy lệnh `valet install` để Valet có thể nâng cấp bổ sung thêm các file cấu hình nếu cần.
-
-#### Nâng cấp Valet 2.0
-
-Với bản Valet 2.0, nó sẽ chuyển đổi web server từ Caddy sang Nginx. Nên vì thế, trước khi nâng cấp lên phiên bản này, bạn nên chạy các lệnh sau để dừng và gỡ cài đặt Caddy hiện có:
-
-    valet stop
-    valet uninstall
-
-Tiếp theo, bạn nên nâng cấp lên phiên bản Valet mới nhất. Tùy thuộc vào cách bạn cài đặt Valet, việc này thường được thực hiện thông qua Git hoặc Composer. Nếu bạn đã cài đặt Valet thông qua Composer, bạn nên sử dụng lệnh sau để cập nhật lên phiên bản mới nhất:
-
-    composer global require laravel/valet
-
-Còn nếu bạn sử dụng Git để tải source code của Valet về, thì bạn nên chạy lệnh `install`:
-
-    valet install
-    valet restart
-
-Sau khi nâng cấp, có thể bạn cần phải chạy lại lệnh re-park hoặc re-link cho site của bạn.
 
 <a name="serving-sites"></a>
 ## Tạo Site
@@ -131,24 +126,28 @@ Sau khi nâng cấp, có thể bạn cần phải chạy lại lệnh re-park ho
 Sau khi Valet được cài đặt xong, bạn có thể bắt đầu tạo site của bạn. Valet cung cấp hai lệnh để giúp bạn tạo các trang web: `park` và `link`.
 
 <a name="the-park-command"></a>
-**Lệnh `park`**
+#### The `park` Command
 
 <div class="content-list" markdown="1">
+
 - Tạo một thư mục mới trên máy Mac của bạn, ví dụ như `mkdir ~/Sites`. Tiếp theo, chạy lệnh `cd ~/Sites` và `valet park`. Lệnh `valet park` sẽ đăng ký thư mục hiện tại thành một đường dẫn, mà Valet sẽ tìm kiếm cho site.
 - Tiếp theo, tạo môt project Laravel mới vào thư mục mà bạn vừa tạo bằng lệnh `laravel new blog`.
 - Và mở trang `http://blog.test` trên web browser của bạn.
+
 </div>
 
-**Đó là tất cả** Bây giờ, bất kỳ project Laravel nào bạn mà được tạo trong thư mục mà đã được park thì nó sẽ tự động được tạo một site tương ứng theo quy tắc là `http://folder-name.test`. Để xem danh sách tất cả các trang web có trong thư mục đã park của bạn, bạn có thể thực hiện lệnh `valet parked`.
+**Đó là tất cả** Bây giờ, bất kỳ project Laravel nào bạn mà được tạo trong thư mục mà đã được park thì nó sẽ tự động được tạo một site tương ứng theo quy tắc là `http://folder-name.test`.
 
 <a name="the-link-command"></a>
-**Lệnh `link`**
+#### The `link` Command
 
 Lệnh `link` cũng được dùng để tạo site cho bạn. Lệnh này hữu ích nếu bạn muốn tạo một site trong một thư mục chứ không phải là toàn bộ thư mục.
 
 <div class="content-list" markdown="1">
+
 - Để dùng lệnh này, bạn cần trỏ vào project mà bạn đang muốn tạo site, và chạy lệnh `valet link app-name` trong terminal. Valet sẽ tạo một link ảo trong thư mục `~/.config/valet/Sites`, và nó sẽ trỏ đến thư mục mà bạn đang chạy lệnh ở trên.
 - Sau khi bạn đã chạy lệnh `link`, bạn có thể truy cập vào site của bạn trên web browser với link là `http://app-name.test`.
+
 </div>
 
 Để xem danh sách tất cả các thư mục đã được tạo link, hãy chạy lệnh `valet links`. Bạn có thể sử dụng lệnh `valet unlink app-name` để hủy link đó.
@@ -156,7 +155,7 @@ Lệnh `link` cũng được dùng để tạo site cho bạn. Lệnh này hữu
 > {tip} Bạn có thể sử dụng `valet link` để tạo nhiều sub domain trong cùng một project. Để thêm một sub domain hoặc một tên miền khác vào project của bạn, hãy chạy `valet link domainomain.app-name` từ thư mục project.
 
 <a name="securing-sites"></a>
-**Bảo vệ site với TLS**
+#### Securing Sites With TLS
 
 Mặc định, Valet sẽ tạo site trên HTTP. Tuy nhiên, nếu bạn muốn tạo một trang web được mã hoá TLS bằng HTTP/2, hãy sử dụng lệnh `secure`. Ví dụ: nếu trang web của bạn đang được Valet tạo trên tên miền là `laravel.test`, thì bạn nên chạy lệnh sau để bảo vệ trang web này:
 
@@ -169,11 +168,25 @@ Mặc định, Valet sẽ tạo site trên HTTP. Tuy nhiên, nếu bạn muốn 
 <a name="sharing-sites"></a>
 ## Chia sẻ site
 
-Valet đã chứa một lệnh để chia sẻ các trang web ở local của bạn với thế giới. Không cần phải cài đặt thêm các phần mềm sau khi Valet được cài đặt.
+Valet đã chứa một lệnh để chia sẻ các trang web ở local của bạn với thế giới, cung cấp một cách dễ dàng để kiểm tra trang web của bạn trên các thiết bị di động hoặc chia sẻ nó với các thành viên trong team của bạn hoặc khách hàng. Không cần phải cài đặt thêm các phần mềm sau khi Valet được cài đặt.
 
-Để chia sẻ một trang web, hãy trỏ đến thư mục chứa trang web đó trong terminal của bạn và chạy lệnh `valet share`. Một URL sẽ được chèn vào clipboard của bạn và sẵn sàng paste bất kỳ đâu, ví dụ như vào trong trình duyệt của bạn. Và chỉ có thế.
+### Sharing Sites Via Ngrok
+
+Để chia sẻ một trang web, hãy trỏ đến thư mục chứa trang web đó trong terminal của bạn và chạy lệnh `valet share`. Một URL sẽ được chèn vào clipboard của bạn và sẵn sàng paste bất kỳ đâu, ví dụ như vào trong trình duyệt của bạn hoặc chia sẻ với team của bạn.
 
 Để ngừng chia sẻ trang web của bạn, hãy nhấn `Control + C` để hủy quá trình.
+
+> {tip} Bạn có thể truyền thêm các tham số cho lệnh chia sẻ, chẳng hạn như `valet share --region=eu`. Để biết thêm thông tin, hãy tham khảo [tài liệu ngrok](https://ngrok.com/docs).
+
+### Sharing Sites On Your Local Network
+
+Mặc định, Valet sẽ hạn chế lưu lượng đến địa chỉ IP `127.0.0.1`. Bằng cách này, máy local của bạn sẽ không bị ảnh hưởng bởi các rủi ro bảo mật từ Internet.
+
+Nếu bạn muốn cho phép các thiết bị khác trong mạng nội bộ của mình truy cập được vào các trang web Valet trên máy của bạn thông qua địa chỉ IP của máy (ví dụ: `192.168.1.10/app-name.test`), bạn sẽ cần phải chỉnh sửa file cấu hình Nginx cho trang web của bạn để loại bỏ các hạn chế đối với các lệnh `listen` bằng cách xóa tiền tố `127.0.0.1:` trên lệnh cho các cổng 80 và 443.
+
+Nếu bạn chưa chạy `valet secure` trong project, bạn có thể mở quyền truy cập mạng cho tất cả các trang web không phải HTTPS bằng cách chỉnh sửa file `/usr/local/etc/nginx/valet/valet.conf`. Tuy nhiên, nếu bạn đang chạy trang web của project thông qua HTTPS (bạn đã chạy lệnh `valet secure` cho trang web) thì bạn nên chỉnh sửa file `~/.config/valet/Nginx/app-name.test`.
+
+Khi bạn đã cập nhật cấu hình Nginx của bạn, hãy chạy lệnh `valet restart` để áp dụng các thay đổi cấu hình.
 
 <a name="site-specific-environment-variables"></a>
 ## Các biến môi trường cho trang web
@@ -182,9 +195,26 @@ Một số ứng dụng sử dụng các framework khác có thể phụ thuộc
 
     <?php
 
+    // Set $_SERVER['key'] to "value" for the foo.test site...
     return [
-        'WEBSITE_NAME' => 'My Blog',
+        'foo' => [
+            'key' => 'value',
+        ],
     ];
+
+    // Set $_SERVER['key'] to "value" for all sites...
+    return [
+        '*' => [
+            'key' => 'value',
+        ],
+    ];
+
+<a name="serving-a-default-site"></a>
+## Chạy một site mặc định
+
+Thỉnh thoảng, bạn có thể muốn cấu hình Valet để chạy một trang web "mặc định" thay vì `404` khi truy cập vào tên miền `test` không đúng. Để thực hiện điều này, bạn có thể thêm tùy chọn `default` vào file cấu hình `~/.config/valet/config.json` của bạn để chứa đường dẫn đến trang web sẽ hoạt động như là một trang web mặc định của bạn:
+
+    "default": "/Users/Sally/Sites/foo",
 
 <a name="custom-valet-drivers"></a>
 ## Tuỳ chỉnh Valet Drivers
@@ -290,6 +320,19 @@ Nếu bạn muốn định nghĩa một Valet driver tùy chỉnh cho một appl
         }
     }
 
+<a name="php-configuration"></a>
+## Cấu hình PHP
+
+Bạn có thể thêm các file cấu hình `.ini` của PHP vào trong thư mục `/usr/local/etc/php/7.X/conf.d/` để tùy chỉnh cài đặt PHP của bạn. Khi bạn đã thêm hoặc cập nhật các cài đặt này, bạn nên chạy `valet restart php`.
+
+### PHP Memory Limits
+
+Mặc định, Valet chỉ định giới hạn bộ nhớ của cài đặt PHP và kích thước file upload tối đa trong file cấu hình `/usr/local/etc/php/7.X/conf.d/php-memory-limits.ini`. Điều này cũng ảnh hưởng đến cả process CLI và cả process FPM PHP.
+
+### PHP-FPM Pool Processes
+
+Cấu hình PHP-FPM của Valet được chứa trong file cấu hình `/usr/local/etc/php/7.X/php-fpm.d/valet-fpm.conf`. Trong file này, bạn có thể tăng số lượng FPM server và các process con được ứng dụng PHP của bạn sử dụng.
+
 <a name="other-valet-commands"></a>
 ## Các lệnh Valet khác
 
@@ -302,4 +345,27 @@ Lệnh  | Mô tả
 `valet start` | Khởi động daemon Valet.
 `valet stop` | Dừng daemon Valet.
 `valet trust` | Thêm quyền sudoer cho Brew và Valet để chạy các lệnh Valet mà không cần xác nhận password.
-`valet uninstall` | Gỡ cài đặt daemon Valet.
+`valet uninstall` | Gỡ cài đặt Valet: Hiển thị hướng dẫn gỡ cài đặt; hoặc truyền tham số `--force` để bắt xóa tất cả các Valet.
+
+<a name="valet-directories-and-files"></a>
+## Thư mục và file valet
+
+Các thông tin về thư mục và các file sau đây có thể hữu ích cho bạn, trong khi bạn khắc phục sự cố với môi trường Valet của bạn:
+
+File / Path | Description
+--------- | -----------
+`~/.config/valet/` | Chứa tất cả cấu hình của Valet. Bạn có thể muốn tạo ra một bản sao lưu của thư mục này.
+`~/.config/valet/dnsmasq.d/` | Chứa cấu hình của DNSMasq.
+`~/.config/valet/Drivers/` | Chứa trình các driver Valet tùy chỉnh.
+`~/.config/valet/Extensions/` | Chứa các tùy chỉnh extension hoặc command cho Valet.
+`~/.config/valet/Nginx/` | Chứa tất cả các cấu hình trang web Nginx do Valet tạo ra. Các file này được tạo lại khi chạy các lệnh `install`, `secure` và `tld`.
+`~/.config/valet/Sites/` | Chứa tất cả các link ảo trỏ đến các project của bạn.
+`~/.config/valet/config.json` | File cấu hình chính của Valet
+`~/.config/valet/valet.sock` | Socket PHP-FPM được sử dụng bởi cấu hình Nginx của Valet. Điều này sẽ chỉ tồn tại nếu PHP đang chạy đúng.
+`~/.config/valet/Log/fpm-php.www.log` | User log cho các lỗi của PHP.
+`~/.config/valet/Log/nginx-error.log` | User log cho các lỗi của Nginx.
+`/usr/local/var/log/php-fpm.log` | System log cho các lỗi của PHP-FPM.
+`/usr/local/var/log/nginx` | Chứa Nginx access và error log.
+`/usr/local/etc/php/X.X/conf.d` | Chứa các file `*.ini` dành cho các cài đặt cấu hình PHP khác nhau.
+`/usr/local/etc/php/X.X/php-fpm.d/valet-fpm.conf` | File cấu hình PHP-FPM pool.
+`~/.composer/vendor/laravel/valet/cli/stubs/secure.valet.conf` | Cấu hình Nginx mặc định được sử dụng để tạo chứng chỉ trang web.

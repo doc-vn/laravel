@@ -69,8 +69,8 @@ Trước khi đi sâu vào tất cả các tùy chọn có sẵn cho bạn khi b
 
 Mọi class resource đều định nghĩa một phương thức `toArray` trả về mảng các thuộc tính sẽ được chuyển đổi thành JSON trước khi gửi về response. Lưu ý rằng chúng ta có thể truy cập vào các thuộc tính của model trực tiếp từ biến `$this`. Điều này là do class resource sẽ tự động chuyển hướng các thuộc tính và phương thức truy cập vào model để dễ dàng hơn khi truy cập. Khi resource đã được định nghĩa xong, nó có thể được trả về từ một route hoặc một controller:
 
-    use App\User;
     use App\Http\Resources\User as UserResource;
+    use App\User;
 
     Route::get('/user', function () {
         return new UserResource(User::find(1));
@@ -81,8 +81,8 @@ Mọi class resource đều định nghĩa một phương thức `toArray` trả
 
 Nếu bạn đang trả về một resource collection hoặc một response đang được phân trang, bạn có thể sử dụng phương thức `collection` khi tạo instance resource trong route hoặc controller của bạn:
 
-    use App\User;
     use App\Http\Resources\User as UserResource;
+    use App\User;
 
     Route::get('/user', function () {
         return UserResource::collection(User::all());
@@ -121,8 +121,8 @@ Khi class resource collection đã được tạo, bạn có thể dễ dàng đ
 
 Sau khi định nghĩa xong resource collection của bạn, nó có thể được trả về từ một route hoặc một controller:
 
-    use App\User;
     use App\Http\Resources\UserCollection;
+    use App\User;
 
     Route::get('/users', function () {
         return new UserCollection(User::all());
@@ -150,8 +150,8 @@ Khi trả về một resource collection từ một route, Laravel sẽ reset l�
 
 Khi thuộc tính `secureKeys` được set thành `true`, các khóa của collection sẽ được giữ nguyên:
 
-    use App\User;
     use App\Http\Resources\User as UserResource;
+    use App\User;
 
     Route::get('/user', function () {
         return UserResource::collection(User::all()->keyBy->id);
@@ -214,8 +214,8 @@ Về bản chất, resource rất đơn giản. Nó chỉ cần chuyển đổi 
 
 Khi một resource đã được định nghĩa xong, nó có thể được trả về trực tiếp từ một route hoặc một controller:
 
-    use App\User;
     use App\Http\Resources\User as UserResource;
+    use App\User;
 
     Route::get('/user', function () {
         return new UserResource(User::find(1));
@@ -249,8 +249,8 @@ Nếu bạn muốn thêm các quan hệ vào trong một response của bạn, b
 
 Trong khi các resource sẽ chuyển một model thành một mảng, thì các resource collection sẽ chuyển một collection của model thành một mảng. Không nhất thiết phải định nghĩa một class resource collection cho từng loại model của bạn vì tất cả các resource đều được cung cấp một phương thức `collection` để tạo các resource collection "ad-hoc" một cách nhanh chóng:
 
-    use App\User;
     use App\Http\Resources\User as UserResource;
+    use App\User;
 
     Route::get('/user', function () {
         return UserResource::collection(User::all());
@@ -285,8 +285,8 @@ Tuy nhiên, nếu bạn cần tùy chỉnh dữ liệu meta được trả về 
 
 Giống như resource, resource collection có thể được trả về trực tiếp từ các route hoặc controller:
 
-    use App\User;
     use App\Http\Resources\UserCollection;
+    use App\User;
 
     Route::get('/users', function () {
         return new UserCollection(User::all());
@@ -318,13 +318,13 @@ Nếu bạn muốn vô hiệu hóa việc bao bọc resource này, bạn có th�
 
     namespace App\Providers;
 
-    use Illuminate\Support\ServiceProvider;
     use Illuminate\Http\Resources\Json\Resource;
+    use Illuminate\Support\ServiceProvider;
 
     class AppServiceProvider extends ServiceProvider
     {
         /**
-         * Register bindings in the container.
+         * Register any application services.
          *
          * @return void
          */
@@ -411,8 +411,8 @@ Khi trả về một collection được phân trang trong một response resour
 
 Bạn luôn có thể truyền một instance phân trang cho phương thức `collection` của một resource hoặc một resource collection tùy biến:
 
-    use App\User;
     use App\Http\Resources\UserCollection;
+    use App\User;
 
     Route::get('/users', function () {
         return new UserCollection(User::paginate());
@@ -653,17 +653,17 @@ Bạn cũng có thể thêm dữ liệu khi khởi tạo một instance resource
 
 Như bạn đã đọc, resources có thể được trả về trực tiếp từ một route hoặc một controller:
 
-    use App\User;
     use App\Http\Resources\User as UserResource;
+    use App\User;
 
     Route::get('/user', function () {
         return new UserResource(User::find(1));
     });
 
-Tuy nhiên, thỉnh thoảng bạn có thể cần tùy biến HTTP response trước khi nó được gửi về client. Có hai cách để thực hiện điều này. Đầu tiên, bạn có thể gắn thêm phương thức `response` vào trong resource. Phương thức này sẽ trả về một instance `Illuminate\Http\Response`, cho phép bạn toàn quyền kiểm soát các header của response:
+Tuy nhiên, thỉnh thoảng bạn có thể cần tùy biến HTTP response trước khi nó được gửi về client. Có hai cách để thực hiện điều này. Đầu tiên, bạn có thể gắn thêm phương thức `response` vào trong resource. Phương thức này sẽ trả về một instance `Illuminate\Http\JsonResponse`, cho phép bạn toàn quyền kiểm soát các header của response:
 
-    use App\User;
     use App\Http\Resources\User as UserResource;
+    use App\User;
 
     Route::get('/user', function () {
         return (new UserResource(User::find(1)))

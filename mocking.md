@@ -23,8 +23,8 @@ Mặc định, Laravel cung cấp helper để làm giả các event, job và fa
 
 Khi giả một đối tượng sẽ được tích hợp vào ứng dụng của bạn thông qua service container của Laravel, bạn sẽ cần phải liên kết instance giả của bạn vào container dưới dạng liên kết `instance`. Điều này sẽ hướng dẫn container sử dụng instance đối tượng được làm giả của bạn thay vì khởi tạo chính đối tượng đó:
 
-    use Mockery;
     use App\Service;
+    use Mockery;
 
     $this->instance(Service::class, Mockery::mock(Service::class, function ($mock) {
         $mock->shouldReceive('process')->once();
@@ -35,6 +35,14 @@ Khi giả một đối tượng sẽ được tích hợp vào ứng dụng củ
     use App\Service;
 
     $this->mock(Service::class, function ($mock) {
+        $mock->shouldReceive('process')->once();
+    });
+
+Bạn có thể sử dụng phương thức `partialMock` khi bạn chỉ cần làm giả một vài phương thức của một đối tượng. Các phương thức không bị làm giả sẽ được thực thi bình thường khi được gọi:
+
+    use App\Service;
+
+    $this->partialMock(Service::class, function ($mock) {
         $mock->shouldReceive('process')->once();
     });
 
@@ -55,11 +63,11 @@ Thay cho việc làm giả, bạn có thể sử dụng phương thức `fake` c
 
     namespace Tests\Feature;
 
-    use Tests\TestCase;
     use App\Jobs\ShipOrder;
-    use Illuminate\Support\Facades\Bus;
     use Illuminate\Foundation\Testing\RefreshDatabase;
     use Illuminate\Foundation\Testing\WithoutMiddleware;
+    use Illuminate\Support\Facades\Bus;
+    use Tests\TestCase;
 
     class ExampleTest extends TestCase
     {
@@ -87,12 +95,12 @@ Thay cho việc làm giả, bạn có thể sử dụng phương thức `fake` c
 
     namespace Tests\Feature;
 
-    use Tests\TestCase;
-    use App\Events\OrderShipped;
     use App\Events\OrderFailedToShip;
-    use Illuminate\Support\Facades\Event;
+    use App\Events\OrderShipped;
     use Illuminate\Foundation\Testing\RefreshDatabase;
     use Illuminate\Foundation\Testing\WithoutMiddleware;
+    use Illuminate\Support\Facades\Event;
+    use Tests\TestCase;
 
     class ExampleTest extends TestCase
     {
@@ -149,12 +157,12 @@ Nếu bạn chỉ muốn làm giả một event listener trong một phần bài
 
     namespace Tests\Feature;
 
-    use App\Order;
-    use Tests\TestCase;
     use App\Events\OrderCreated;
-    use Illuminate\Support\Facades\Event;
+    use App\Order;
     use Illuminate\Foundation\Testing\RefreshDatabase;
+    use Illuminate\Support\Facades\Event;
     use Illuminate\Foundation\Testing\WithoutMiddleware;
+    use Tests\TestCase;
 
     class ExampleTest extends TestCase
     {
@@ -185,11 +193,11 @@ Bạn có thể sử dụng phương thức `fake` của facade `Mail` để ng�
 
     namespace Tests\Feature;
 
-    use Tests\TestCase;
     use App\Mail\OrderShipped;
-    use Illuminate\Support\Facades\Mail;
     use Illuminate\Foundation\Testing\RefreshDatabase;
     use Illuminate\Foundation\Testing\WithoutMiddleware;
+    use Illuminate\Support\Facades\Mail;
+    use Tests\TestCase;
 
     class ExampleTest extends TestCase
     {
@@ -235,12 +243,12 @@ Bạn có thể sử dụng phương thức `fake` của facade `Notification` �
 
     namespace Tests\Feature;
 
-    use Tests\TestCase;
     use App\Notifications\OrderShipped;
-    use Illuminate\Support\Facades\Notification;
-    use Illuminate\Notifications\AnonymousNotifiable;
     use Illuminate\Foundation\Testing\RefreshDatabase;
     use Illuminate\Foundation\Testing\WithoutMiddleware;
+    use Illuminate\Notifications\AnonymousNotifiable;
+    use Illuminate\Support\Facades\Notification;
+    use Tests\TestCase;
 
     class ExampleTest extends TestCase
     {
@@ -275,6 +283,15 @@ Bạn có thể sử dụng phương thức `fake` của facade `Notification` �
             Notification::assertSentTo(
                 new AnonymousNotifiable, OrderShipped::class
             );
+
+            // Assert Notification::route() method sent notification to the correct user...
+            Notification::assertSentTo(
+                new AnonymousNotifiable,
+                OrderShipped::class,
+                function ($notification, $channels, $notifiable) use ($user) {
+                    return $notifiable->routes['mail'] === $user->email;
+                }
+            );
         }
     }
 
@@ -287,11 +304,13 @@ Thay cho việc làm giả, bạn có thể sử dụng phương thức `fake` c
 
     namespace Tests\Feature;
 
-    use Tests\TestCase;
+    use App\Jobs\AnotherJob;
+    use App\Jobs\FinalJob;
     use App\Jobs\ShipOrder;
-    use Illuminate\Support\Facades\Queue;
     use Illuminate\Foundation\Testing\RefreshDatabase;
     use Illuminate\Foundation\Testing\WithoutMiddleware;
+    use Illuminate\Support\Facades\Queue;
+    use Tests\TestCase;
 
     class ExampleTest extends TestCase
     {
@@ -317,11 +336,20 @@ Thay cho việc làm giả, bạn có thể sử dụng phương thức `fake` c
             // Assert a job was not pushed...
             Queue::assertNotPushed(AnotherJob::class);
 
-            // Assert a job was pushed with a specific chain...
+            // Assert a job was pushed with a given chain of jobs, matching by class...
             Queue::assertPushedWithChain(ShipOrder::class, [
                 AnotherJob::class,
                 FinalJob::class
             ]);
+
+            // Assert a job was pushed with a given chain of jobs, matching by both class and properties...
+            Queue::assertPushedWithChain(ShipOrder::class, [
+                new AnotherJob('foo'),
+                new FinalJob('bar'),
+            ]);
+
+            // Assert a job was pushed without a chain of jobs...
+            Queue::assertPushedWithoutChain(ShipOrder::class);
         }
     }
 
@@ -334,11 +362,11 @@ Phương thức `fake` của facade `Storage` cho phép bạn dễ dàng tạo m
 
     namespace Tests\Feature;
 
-    use Tests\TestCase;
-    use Illuminate\Http\UploadedFile;
-    use Illuminate\Support\Facades\Storage;
     use Illuminate\Foundation\Testing\RefreshDatabase;
     use Illuminate\Foundation\Testing\WithoutMiddleware;
+    use Illuminate\Http\UploadedFile;
+    use Illuminate\Support\Facades\Storage;
+    use Tests\TestCase;
 
     class ExampleTest extends TestCase
     {
@@ -395,10 +423,10 @@ Chúng ta có thể làm giả việc gọi đến facade `Cache` bằng cách s
 
     namespace Tests\Feature;
 
-    use Tests\TestCase;
-    use Illuminate\Support\Facades\Cache;
     use Illuminate\Foundation\Testing\RefreshDatabase;
     use Illuminate\Foundation\Testing\WithoutMiddleware;
+    use Illuminate\Support\Facades\Cache;
+    use Tests\TestCase;
 
     class UserControllerTest extends TestCase
     {

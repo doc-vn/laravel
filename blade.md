@@ -18,7 +18,7 @@
     - [CSRF Field](#csrf-field)
     - [Method Field](#method-field)
     - [Validation Errors](#validation-errors)
-- [Thêm Sub-Views](#including-sub-views)
+- [Thêm Subviews](#including-subviews)
     - [Tạo Views cho Collections](#rendering-views-for-collections)
 - [Stacks](#stacks)
 - [Service Injection](#service-injection)
@@ -113,9 +113,9 @@ Biến `{{ $slot }}` sẽ chứa nội dung mà chúng ta muốn đưa vào comp
 
 Để hướng dẫn Laravel load view đầu tiên tồn tại từ một mảng view cho một component, bạn có thể sử dụng lệnh `componentFirst`:
 
-    @componentFirst(['custom.alert', 'alert'])
+    @componentfirst(['custom.alert', 'alert'])
         <strong>Whoops!</strong> Something went wrong!
-    @endcomponent
+    @endcomponentfirst
 
 Thỉnh thoảng chúng ra sẽ cần định nghĩa nhiều slot cho một component. Hãy chỉnh sửa component cảnh báo của chúng ta để cho phép injection một "title". Các slot đã được đặt tên có thể được hiển thị bằng cách "echoing" biến khớp với tên của chúng:
 
@@ -496,8 +496,20 @@ Lệnh `@error` có thể được sử dụng để nhanh chóng kiểm tra xem
         <div class="alert alert-danger">{{ $message }}</div>
     @enderror
 
-<a name="including-sub-views"></a>
-## Thêm Sub-Views
+Bạn có thể truyền [tên của một error bag cụ thể](/docs/{{version}}/validation#named-error-bags) làm tham số thứ hai cho lệnh `@error` để lấy ra thông báo lỗi validation trên các trang chứa nhiều form:
+
+    <!-- /resources/views/auth.blade.php -->
+
+    <label for="email">Email address</label>
+
+    <input id="email" type="email" class="@error('email', 'login') is-invalid @enderror">
+
+    @error('email', 'login')
+        <div class="alert alert-danger">{{ $message }}</div>
+    @enderror
+
+<a name="including-subviews"></a>
+## Thêm Subviews
 
 Lệnh `@include` của Blade cho phép bạn thêm một view Blade khác vào trong view hiện tại. Tất cả các biến đã có trong view hiện tại cũng sẽ có trong view được thêm:
 
@@ -517,9 +529,13 @@ Nếu bạn thử `@include` một view không tồn tại, thì Laravel sẽ đ
 
     @includeIf('view.name', ['some' => 'data'])
 
-Nếu bạn muốn `@include` một view tùy thuộc vào một điều kiện boolean nhất định, bạn có thể sử dụng lệnh `@includeWhen`:
+Nếu bạn muốn `@include` một view nếu một biểu thức boolean trả về giá trị `true`, bạn có thể sử dụng lệnh `@includeWhen`:
 
     @includeWhen($boolean, 'view.name', ['some' => 'data'])
+
+Nếu bạn muốn `@include` một view nếu một biểu thức boolean trả về giá trị `false`, bạn có thể sử dụng lệnh `@includeUnless`:
+
+    @includeUnless($boolean, 'view.name', ['some' => 'data'])
 
 Để thêm view đầu tiên tồn tại từ một list view nhất định, bạn có thể sử dụng lệnh `includeFirst`:
 
@@ -615,7 +631,7 @@ Ví dụ sau đây sẽ tạo ra một lệnh `@datetime($var)` để format l�
     class AppServiceProvider extends ServiceProvider
     {
         /**
-         * Register bindings in the container.
+         * Register any application services.
          *
          * @return void
          */
@@ -670,4 +686,8 @@ Khi điều kiện tùy biến đã được định nghĩa xong, chúng ta có 
         // The application is in the testing environment...
     @else
         // The application is not in the local or testing environment...
+    @endenv
+
+    @unlessenv('production')
+        // The application is not in the production environment...
     @endenv

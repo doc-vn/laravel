@@ -121,7 +121,7 @@ Phương thức `method` sẽ trả về mothed HTTP của request. Bạn có th
 [Tiêu chuẩn PSR-7](https://www.php-fig.org/psr/psr-7/) định nghĩa interface cho các message HTTP, bao gồm cả các request và response. Nếu bạn muốn có một instance của PSR-7 request thay vì Laravel request, trước tiên bạn sẽ cần cài đặt một vài thư viện. Laravel sẽ sử dụng component *Symfony HTTP Message Bridge* để chuyển đổi các request và response của Laravel thành các implementation tương thích PSR-7:
 
     composer require symfony/psr-http-message-bridge
-    composer require zendframework/zend-diactoros
+    composer require nyholm/psr7
 
 Khi bạn đã cài đặt xong các thư viện trên, bạn có thể lấy được PSR-7 request bằng cách khai báo kiểu request interface trên vào route Closure hoặc controller method:
 
@@ -197,6 +197,12 @@ Khi gửi các JSON request cho application của bạn, bạn có thể truy c�
 
     $name = $request->input('user.name');
 
+#### Lấy giá trị input là boolean
+
+Khi xử lý các phần tử HTML như checkbox, ứng dụng của bạn có thể nhận vào các giá trị "truthy" là các chuỗi chứ không phải dạng boolean. Ví dụ: "true" hoặc "on". Để thuận tiện, bạn có thể sử dụng phương thức `boolean` để lấy ra các giá trị này dưới dạng boolean. Phương thức `boolean` sẽ trả về `true` cho 1, "1", true, "true", "on" và "yes". Tất cả các giá trị khác sẽ trả về `false`:
+
+    $archived = $request->boolean('archived');
+
 #### Lấy A Portion Of The Input Data
 
 Nếu bạn cần truy xuất một tập con của dữ liệu input, bạn có thể sử dụng các phương thức `only` hoặc `except`. Cả hai phương thức này đều chấp nhận một `array` hoặc một danh sách động các tham số:
@@ -225,9 +231,21 @@ Khi được cung cấp một mảng, phương thức `has` sẽ xác định xe
         //
     }
 
+Phương thức `hasAny` trả về `true` nếu có bất kỳ giá trị nào tồn tại:
+
+    if ($request->hasAny(['name', 'email'])) {
+        //
+    }
+
 Nếu bạn muốn xác định xem một giá trị có tồn tại trong request và không trống hay không, bạn có thể sử dụng phương thức `filled`:
 
     if ($request->filled('name')) {
+        //
+    }
+
+Để xác định xem một khóa nào đó có bị thiếu trong request hay không, bạn có thể sử dụng phương thức `missing`:
+
+    if ($request->missing('name')) {
         //
     }
 
@@ -379,15 +397,15 @@ Khi application của bạn đang chạy sau một hệ thống load balancer, m
 
     namespace App\Http\Middleware;
 
-    use Illuminate\Http\Request;
     use Fideloper\Proxy\TrustProxies as Middleware;
+    use Illuminate\Http\Request;
 
     class TrustProxies extends Middleware
     {
         /**
          * The trusted proxies for this application.
          *
-         * @var array
+         * @var string|array
          */
         protected $proxies = [
             '192.168.1.1',
@@ -411,6 +429,6 @@ Nếu bạn đang sử dụng Amazon AWS hoặc các "cloud" khác cung cấp lo
     /**
      * The trusted proxies for this application.
      *
-     * @var array
+     * @var string|array
      */
     protected $proxies = '*';

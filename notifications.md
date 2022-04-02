@@ -31,6 +31,7 @@
 - [SMS Notifications](#sms-notifications)
     - [Yêu cầu](#sms-prerequisites)
     - [Formatting SMS Notifications](#formatting-sms-notifications)
+    - [Formatting Shortcode Notifications](#formatting-shortcode-notifications)
     - [Tuỳ biến "From" Number](#customizing-the-from-number)
     - [Routing SMS Notifications](#routing-sms-notifications)
 - [Slack Notifications](#slack-notifications)
@@ -70,8 +71,8 @@ Notification có thể được gửi theo hai cách: cách một là sử dụn
 
     namespace App;
 
-    use Illuminate\Notifications\Notifiable;
     use Illuminate\Foundation\Auth\User as Authenticatable;
+    use Illuminate\Notifications\Notifiable;
 
     class User extends Authenticatable
     {
@@ -125,8 +126,8 @@ Gửi notification có thể mất nhiều thời gian, đặc biệt nếu chan
     namespace App\Notifications;
 
     use Illuminate\Bus\Queueable;
-    use Illuminate\Notifications\Notification;
     use Illuminate\Contracts\Queue\ShouldQueue;
+    use Illuminate\Notifications\Notification;
 
     class InvoicePaid extends Notification implements ShouldQueue
     {
@@ -152,6 +153,7 @@ Thỉnh thoảng bạn có thể cần gửi notification cho người mà chưa
 
     Notification::route('mail', 'taylor@example.com')
                 ->route('nexmo', '5555555555')
+                ->route('slack', 'https://hooks.slack.com/services/...')
                 ->notify(new InvoicePaid($invoice));
 
 <a name="mail-notifications"></a>
@@ -265,8 +267,8 @@ Khi gửi notifications qua channel `mail`, hệ thống notification sẽ tự 
 
     namespace App;
 
-    use Illuminate\Notifications\Notifiable;
     use Illuminate\Foundation\Auth\User as Authenticatable;
+    use Illuminate\Notifications\Notifiable;
 
     class User extends Authenticatable
     {
@@ -276,11 +278,15 @@ Khi gửi notifications qua channel `mail`, hệ thống notification sẽ tự 
          * Route notifications for the mail channel.
          *
          * @param  \Illuminate\Notifications\Notification  $notification
-         * @return string
+         * @return array|string
          */
         public function routeNotificationForMail($notification)
         {
+            // Return email address only...
             return $this->email_address;
+
+            // Return name and email address...
+            return [$this->email_address => $this->name];
         }
     }
 
@@ -566,9 +572,9 @@ Nếu bạn muốn tùy chỉnh channel nhận thực thể notifiable của bro
 
     namespace App;
 
-    use Illuminate\Notifications\Notifiable;
     use Illuminate\Broadcasting\PrivateChannel;
     use Illuminate\Foundation\Auth\User as Authenticatable;
+    use Illuminate\Notifications\Notifiable;
 
     class User extends Authenticatable
     {
@@ -595,11 +601,11 @@ Gửi notification SMS trong Laravel được mặc định cung cấp bởi [Ne
 
     composer require laravel/nexmo-notification-channel
 
-Tiếp theo, bạn sẽ cần thêm một vài tùy chọn cấu hình vào file cấu hình `config/services.php` của bạn. Bạn có thể copy cấu hình mẫu ở bên dưới để bắt đầu:
+Thao tác này cũng sẽ cài đặt package [`nexmo/laravel`](https://github.com/Nexmo/nexmo-laravel). Package này cũng chứa một [file cấu hình của riêng nó](https://github.com/Nexmo/nexmo-laravel/blob/master/config/nexmo.php). Bạn có thể sử dụng các biến môi trường `NEXMO_KEY` và` NEXMO_SECRET` để set khóa bí mật và công khai Nexmo của bạn.
+
+Tiếp theo, bạn sẽ cần thêm một tùy chọn cấu hình vào file cấu hình `config/services.php` của bạn. Bạn có thể copy cấu hình mẫu ở bên dưới để bắt đầu:
 
     'nexmo' => [
-        'key' => env('NEXMO_KEY'),
-        'secret' => env('NEXMO_SECRET'),
         'sms_from' => '15556666666',
     ],
 
@@ -621,6 +627,29 @@ Nếu một notification hỗ trợ gửi dưới dạng SMS, bạn nên định
         return (new NexmoMessage)
                     ->content('Your SMS message content');
     }
+
+<a name="formatting-shortcode-notifications"></a>
+### Formatting Shortcode Notifications
+
+Laravel cũng hỗ trợ gửi các mã thông báo ngắn, là các template tin nhắn được định nghĩa trước trong tài khoản Nexmo của bạn. Bạn có thể chỉ định loại thông báo (`alert`, `2fa` hoặc `marketing`), cũng như các giá trị tùy chỉnh sẽ được điền vào template:
+
+    /**
+     * Get the Nexmo / Shortcode representation of the notification.
+     *
+     * @param  mixed  $notifiable
+     * @return array
+     */
+    public function toShortcode($notifiable)
+    {
+        return [
+            'type' => 'alert',
+            'custom' => [
+                'code' => 'ABC123',
+            ];
+        ];
+    }
+
+> {tip} Giống như [routing thông báo SMS](#routing-sms-notifications), bạn nên implement phương thức `routeNotificationForShortcode` trên model thông báo của bạn.
 
 #### Unicode Content
 
@@ -660,14 +689,14 @@ Nếu bạn muốn gửi một số notification từ một số điện thoại
 <a name="routing-sms-notifications"></a>
 ### Routing SMS Notifications
 
-Khi gửi notification qua channel `nexmo`, notification system sẽ tự động tìm thuộc tính `phone_number` trên thực thể notifiable. Nếu bạn muốn tùy chỉnh số điện thoại mà được notification gửi tới, hãy định nghĩa thêm phương thức `routeNotificationForNexmo` trên thực thể:
+Để route thông báo Nexmo đến một số điện thoại thích hợp, hãy định nghĩa phương thức `routeNotificationForNexmo` trên model notifiable của bạn:
 
     <?php
 
     namespace App;
 
-    use Illuminate\Notifications\Notifiable;
     use Illuminate\Foundation\Auth\User as Authenticatable;
+    use Illuminate\Notifications\Notifiable;
 
     class User extends Authenticatable
     {
@@ -681,7 +710,7 @@ Khi gửi notification qua channel `nexmo`, notification system sẽ tự độn
          */
         public function routeNotificationForNexmo($notification)
         {
-            return $this->phone;
+            return $this->phone_number;
         }
     }
 
@@ -748,7 +777,7 @@ Bạn cũng có thể sử dụng hình ảnh làm logo thay vì biểu tượng
     {
         return (new SlackMessage)
                     ->from('Laravel')
-                    ->image('https://laravel.com/favicon.png')
+                    ->image('https://laravel.com/img/favicon/favicon.ico')
                     ->content('This will display the Laravel logo next to the message');
     }
 
@@ -843,8 +872,8 @@ Nếu một số trường đính kèm của bạn chứa Markdown, bạn có th
 
     namespace App;
 
-    use Illuminate\Notifications\Notifiable;
     use Illuminate\Foundation\Auth\User as Authenticatable;
+    use Illuminate\Notifications\Notifiable;
 
     class User extends Authenticatable
     {
@@ -966,11 +995,11 @@ Khi class notification channel của bạn đã được định nghĩa, bạn c
 
     namespace App\Notifications;
 
-    use Illuminate\Bus\Queueable;
-    use App\Channels\VoiceChannel;
     use App\Channels\Messages\VoiceMessage;
-    use Illuminate\Notifications\Notification;
+    use App\Channels\VoiceChannel;
+    use Illuminate\Bus\Queueable;
     use Illuminate\Contracts\Queue\ShouldQueue;
+    use Illuminate\Notifications\Notification;
 
     class InvoicePaid extends Notification
     {

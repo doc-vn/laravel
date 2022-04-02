@@ -1,6 +1,7 @@
 # Contribution Guide
 
 - [Báo Bug](#bug-reports)
+- [Hỗ trợ question](#support-questions)
 - [Các kênh phát triển chính](#core-development-discussion)
 - [Branch nào?](#which-branch)
 - [Biên dịch Asset](#compiled-assets)
@@ -8,6 +9,7 @@
 - [Coding Style](#coding-style)
     - [PHPDoc](#phpdoc)
     - [StyleCI](#styleci)
+- [Quy tắc ứng xử](#code-of-conduct)
 
 <a name="bug-reports"></a>
 ## Báo Bug
@@ -21,6 +23,7 @@ Hãy nhớ rằng, báo bug được tạo ra với hy vọng rằng những ng�
 Mã nguồn của Laravel được quản lý trên GitHub và có các repository cho từng dự án của Laravel:
 
 <div class="content-list" markdown="1">
+
 - [Laravel Application](https://github.com/laravel/laravel)
 - [Laravel Art](https://github.com/laravel/art)
 - [Laravel Documentation](https://github.com/laravel/docs)
@@ -35,6 +38,23 @@ Mã nguồn của Laravel được quản lý trên GitHub và có các reposito
 - [Laravel Socialite](https://github.com/laravel/socialite)
 - [Laravel Telescope](https://github.com/laravel/telescope)
 - [Laravel Website](https://github.com/laravel/laravel.com-next)
+
+</div>
+
+<a name="support-questions"></a>
+## Hỗ trợ question
+
+GitHub issue tracker của Laravel không nhằm mục đích cung cấp các trợ giúp hoặc hỗ trợ cho Laravel. Thay vào đó, hãy sử dụng một trong các kênh sau:
+
+<div class="content-list" markdown="1">
+
+- [Laracasts Forums](https://laracasts.com/discuss)
+- [Laravel.io Forums](https://laravel.io/forum)
+- [StackOverflow](https://stackoverflow.com/questions/tagged/laravel)
+- [Discord](https://discordapp.com/invite/KxwQuKb)
+- [Larachat](https://larachat.co)
+- [IRC](https://webchat.freenode.net/?nick=artisan&channels=%23laravel&prompt=1)
+
 </div>
 
 <a name="core-development-discussion"></a>
@@ -94,3 +114,17 @@ Dưới đây là một ví dụ mẫu về Laravel documentation hợp lệ. L�
 ### StyleCI
 
 Đừng lo lắng nếu code style của bạn không hoàn hảo! [StyleCI](https://styleci.io/) sẽ tự động merge các bản sửa style cho bạn vào repository của Laravel sau khi các pull request được merge. Điều này cho phép chúng ta tập trung vào nội dung đóng góp thay vì phải tập trung vào code style.
+
+<a name="code-of-conduct"></a>
+## Quy tắc ứng xử
+
+Quy tắc ứng xử của Laravel có nguồn gốc từ quy tắc ứng xử của Ruby. Mọi vi phạm quy tắc ứng xử có thể được báo cáo cho Taylor Otwell (taylor@laravel.com):
+
+<div class="content-list" markdown="1">
+
+- Những người tham gia sẽ khoan dung với những quan điểm đối lập.
+- Người tham gia phải đảm bảo rằng ngôn ngữ và hành động của họ không có tính công kích và nhận xét mang tính miệt thị cá nhân.
+- Khi giải thích lời nói và hành động của người khác, người tham gia phải luôn có ý tốt.
+- Hành vi được coi là quấy rối sẽ không được dung thứ.
+
+</div>

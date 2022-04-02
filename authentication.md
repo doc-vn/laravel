@@ -8,6 +8,7 @@
     - [Authenticating](#included-authenticating)
     - [Lấy user đã được authenticate](#retrieving-the-authenticated-user)
     - [Bảo vệ route](#protecting-routes)
+    - [Password Confirmation](#password-confirmation)
     - [Login Throttling](#login-throttling)
 - [Authenticate user thủ công](#authenticating-users)
     - [Nhớ tài khoản user](#remembering-users)
@@ -27,7 +28,7 @@
 <a name="introduction"></a>
 ## Giới thiệu
 
-> {tip} **Bạn có muốn bắt đầu nhanh không?** Bạn chỉ cần chạy `php artisan make:auth` và `php artisan migrate` trong terminal của một application Laravel mới. Sau đó, chuyển hướng url trên trình duyệt của bạn đến `http://your-app.test/register` hoặc bất kỳ URL nào được gán đến cho application của bạn. Hai lệnh này sẽ đảm nhiệm việc tạo ra toàn bộ hệ thống authentication của bạn!
+> {tip} **Bạn có muốn bắt đầu nhanh không?** Cài đặt package `laravel/ui` (1.0) thông qua Composer và chạy `php artisan ui vue --auth` trong ứng dụng Laravel của bạn. Sau khi migration cơ sở dữ liệu của bạn xong, hãy chuyển hướng url trên trình duyệt của bạn đến `http://your-app.test/register` hoặc bất kỳ URL nào được gán đến cho application của bạn. Lệnh này sẽ đảm nhiệm việc tạo ra toàn bộ hệ thống authentication của bạn!
 
 Laravel làm cho việc thực hiện authentication trở nên rất đơn giản. Trong thực tế, hầu hết mọi thứ đã được cài đặt sẵn cho bạn. File cấu hình authentication sẽ được đặt tại `config/auth.php`, nó sẽ chứa một số tùy chọn cùng theo document để điều chỉnh các hành vi của các service authentication.
 
@@ -54,20 +55,28 @@ Laravels có sẵn một số controller cho authentication được xây dựng
 <a name="included-routing"></a>
 ### Routing
 
-Laravel cung cấp một cách nhanh chóng để hỗ trợ tất cả các route và view mà bạn cần để authentication bằng một câu lệnh đơn giản:
+Package `laravel/ui` của Laravel cung cấp một cách nhanh chóng để hỗ trợ tất cả các route và view mà bạn cần để authentication bằng một vài câu lệnh đơn giản sau:
 
-    php artisan make:auth
+    composer require laravel/ui "^1.0" --dev
+
+    php artisan ui vue --auth
 
 Lệnh này nên được sử dụng trên các application mới và sẽ cài đặt một số màn hình như màn hình đăng ký hoặc màn hình đăng nhập, ngoài ra lệnh này cũng cài đặt thêm một số route cho việc authentication. Một `HomeController` cũng sẽ được tạo để xử lý các request đăng nhập để vào màn hình chính của application của bạn.
 
 > {tip} Nếu ứng dụng của bạn không cần chức năng đăng ký, bạn có thể vô hiệu hóa nó bằng cách xóa class `RegisterController` và sửa khai báo route của bạn là: `Auth::routes(['register' => false]);`.
 
+#### Creating Applications Including Authentication
+
+Nếu bạn đang bắt đầu một ứng dụng mới và muốn thêm authentication scaffolding, bạn có thể sử dụng lệnh `--auth` khi tạo ứng dụng của mình. Lệnh này sẽ tạo một ứng dụng mới và tất cả authentication scaffolding đã được biên dịch và cài đặt:
+
+    laravel new blog --auth
+
 <a name="included-views"></a>
 ### Views
 
-Như đã đề cập trong phần trước, lệnh `php artisan make:auth` sẽ tạo ra tất cả các view mà bạn cần để authentication và lưu chúng trong thư mục `resources/views/auth`.
+Như đã đề cập trong phần trước, lệnh `php artisan ui vue --auth` của package `laravel/ui` sẽ tạo ra tất cả các view mà bạn cần để authentication và lưu chúng trong thư mục `resources/views/auth`.
 
-Lệnh `make:auth` cũng sẽ tạo ra một thư mục `resources/views/layouts` chứa layout cơ bản cho application của bạn. Tất cả các view này sử dụng framework CSS Bootstrap, nhưng bạn có thể tùy chỉnh chúng theo cách bạn muốn.
+Lệnh `ui` cũng sẽ tạo ra một thư mục `resources/views/layouts` chứa layout cơ bản cho application của bạn. Tất cả các view này sử dụng framework CSS Bootstrap, nhưng bạn có thể tùy chỉnh chúng theo cách bạn muốn.
 
 <a name="included-authenticating"></a>
 ### Authenticating
@@ -76,20 +85,25 @@ Hiện tại bạn đã có các route và các view đã được setup sẵn t
 
 #### Tuỳ chỉnh path
 
-Khi người dùng được authenticate thành công, họ sẽ được chuyển hướng đến URI `/home`. Bạn có thể tùy chỉnh vị trí được chuyển hướng đến sau khi authenticate thành công bằng cách định nghĩa thêm một thuộc tính `redirectTo` vào trong `LoginController`, `RegisterController`, `ResetPasswordController`, và `VerificationController`:
+Khi người dùng được authenticate thành công, họ sẽ được chuyển hướng đến URI `/home`. Bạn có thể tùy chỉnh vị trí được chuyển hướng bằng cách sử dụng hằng số `HOME` được định nghĩa trong `RouteServiceProvider` của bạn:
 
-    protected $redirectTo = '/';
+    public const HOME = '/home';
 
-Tiếp theo, bạn cần sửa phương thức `handle` trong middleware `RedirectIfAuthenticated` dùng URI mới của bạn khi chuyển hướng người dùng.
+Nếu bạn cần tùy chỉnh mạnh mẽ hơn như response được trả về khi người dùng xác thực thành công, Laravel cung cấp một phương thức trống `authenticated(Request $request, $user)` có thể được ghi đè nếu bạn muốn:
 
-Nếu redirect path cần thêm một số logic để tuỳ chỉnh, thì bạn có thể định nghĩa phương thức `redirectTo` thay vì thuộc tính `redirectTo`:
-
-    protected function redirectTo()
+    /**
+     * The user has been authenticated.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  mixed  $user
+     * @return mixed
+     */
+    protected function authenticated(Request $request, $user)
     {
-        return '/path';
+        return response([
+            //
+        ]);
     }
-
-> {tip} Phương thức `redirectTo` sẽ được ưu tiên hơn là thuộc tính `redirectTo`.
 
 #### Tuỳ chỉnh username
 
@@ -205,6 +219,19 @@ Khi gắn middleware `auth` vào một route, bạn cũng có thể chỉ địn
     {
         $this->middleware('auth:api');
     }
+
+<a name="password-confirmation"></a>
+### Password Confirmation
+
+Thỉnh thoảng, bạn có thể yêu cầu người dùng nhập lại mật khẩu của họ trước khi truy cập vào route cụ thể trong ứng dụng của bạn. Ví dụ: bạn có thể yêu cầu điều này trước khi người dùng sửa bất kỳ cài đặt thanh toán nào trong ứng dụng của bạn.
+
+Để thực hiện điều này, Laravel cung cấp một middleware `password.confirm`. Việc gắn middleware `password.confirm` vào một route sẽ chuyển hướng người dùng đến một màn hình nơi mà họ cần nhập lại mật khẩu của họ trước khi có thể tiếp tục:
+
+    Route::get('/settings/security', function () {
+        // Users must confirm their password before continuing...
+    })->middleware(['auth', 'password.confirm']);
+
+Sau khi người dùng nhập lại thành công mật khẩu của họ, người dùng sẽ được chuyển hướng đến route mà họ đã cố gắng truy cập vào ban đầu. Mặc định, sau khi nhập lại mật khẩu thành công, người dùng sẽ không cần phải nhập lại mật khẩu trong ba giờ đồng hồ. Bạn có thể tự do tùy chỉnh khoảng thời gian trước khi người dùng phải nhập lại mật khẩu của họ bằng cách sử dụng tùy chọn cấu hình `auth.password_timeout`.
 
 <a name="login-throttling"></a>
 ### Login Throttling
@@ -390,7 +417,9 @@ Tiếp theo, [đăng ký route middleware](/docs/{{version}}/middleware#register
 <a name="invalidating-sessions-on-other-devices"></a>
 ### Vô hiệu hoá session trên các thiết bị khác
 
-Laravel cũng cung cấp các cơ chế để vô hiệu hoá session và "đăng xuất" người dùng ra khỏi các thiết bị khác của họ mà không vô hiệu hoá session hiện tại của họ. Trước khi bắt đầu, bạn nên đảm bảo là middleware `Illuminate\Session\Middleware\AuthenticateSession` đã được tháo comment trong group middleware `web` trong class `app/Http/Kernel.php` của bạn:
+Laravel cũng cung cấp các cơ chế để vô hiệu hoá session và "đăng xuất" người dùng ra khỏi các thiết bị khác của họ mà không vô hiệu hoá session hiện tại của họ. Tính năng này thường được sử dụng khi người dùng đang thay đổi hoặc cập nhật lại mật khẩu của họ và bạn muốn làm mất hiệu lực các session trên các thiết bị khác trong khi vẫn giữ xác thực trên thiết bị hiện tại.
+
+Trước khi bắt đầu, bạn nên đảm bảo là middleware `Illuminate\Session\Middleware\AuthenticateSession` đã được bỏ comment trong group middleware `web` trong class `app/Http/Kernel.php` của bạn:
 
     'web' => [
         // ...
@@ -404,7 +433,9 @@ Sau đó, bạn có thể sử dụng phương thức `logoutOtherDevices` trên
 
     Auth::logoutOtherDevices($password);
 
-> {note} Khi phương thức `logoutOtherDevices` được gọi, thì các session khác của người dùng sẽ bị vô hiệu hoàn toàn, có nghĩa là họ sẽ bị "đăng xuất" ra khỏi tất cả các guard mà họ đã được đăng nhập trước đó.
+Khi phương thức `logoutOtherDevices` được gọi, thì các session khác của người dùng sẽ bị vô hiệu hoàn toàn, có nghĩa là họ sẽ bị "đăng xuất" ra khỏi tất cả các guard mà họ đã được đăng nhập trước đó.
+
+> {note} Khi sử dụng middleware `AuthenticateSession` kết hợp với một tên route tùy chỉnh cho route `login`, bạn phải ghi đè phương thức `unauthenticated` trên exception handler của ứng dụng để chuyển hướng chính xác người dùng đến trang đăng nhập của bạn.
 
 <a name="adding-custom-guards"></a>
 ## Thêm tuỳ biến guard
@@ -416,8 +447,8 @@ Bạn có thể định nghĩa các guard authentication của riêng bạn bằ
     namespace App\Providers;
 
     use App\Services\Auth\JwtGuard;
-    use Illuminate\Support\Facades\Auth;
     use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
+    use Illuminate\Support\Facades\Auth;
 
     class AuthServiceProvider extends ServiceProvider
     {
@@ -489,9 +520,9 @@ Nếu bạn không sử dụng cơ sở dữ liệu quan hệ để lưu trữ t
 
     namespace App\Providers;
 
-    use Illuminate\Support\Facades\Auth;
     use App\Extensions\RiakUserProvider;
     use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
+    use Illuminate\Support\Facades\Auth;
 
     class AuthServiceProvider extends ServiceProvider
     {
@@ -540,14 +571,13 @@ Chúng ta hãy xem contract `Illuminate\Contracts\Auth\UserProvider`:
 
     namespace Illuminate\Contracts\Auth;
 
-    interface UserProvider {
-
+    interface UserProvider
+    {
         public function retrieveById($identifier);
         public function retrieveByToken($identifier, $token);
         public function updateRememberToken(Authenticatable $user, $token);
         public function retrieveByCredentials(array $credentials);
         public function validateCredentials(Authenticatable $user, array $credentials);
-
     }
 
 Hàm `retrieveById` sẽ nhận một khóa đại diện cho người dùng, chẳng hạn như ID tự động tăng trong cơ sở dữ liệu MySQL. Implementation `Authenticatable` sẽ dựa vào ID để lấy ra và trả về thông qua phương thức của nó.
@@ -569,15 +599,14 @@ Sau khi chúng ta đã khám phá các phương thức trên `UserProvider`, bâ
 
     namespace Illuminate\Contracts\Auth;
 
-    interface Authenticatable {
-
+    interface Authenticatable
+    {
         public function getAuthIdentifierName();
         public function getAuthIdentifier();
         public function getAuthPassword();
         public function getRememberToken();
         public function setRememberToken($value);
         public function getRememberTokenName();
-
     }
 
 Interface này rất đơn giản. Phương thức `getAuthIdentifierName` sẽ trả về tên của field "primary key" và phương thức `getAuthIdentifier` sẽ trả về giá trị của field đó. Trong MySQL thì field đó sẽ là field khóa chính tự động tăng. `getAuthPassword` sẽ trả về mật khẩu mà đã được hash của người dùng. Interface này cho phép hệ thống authentication hoạt động với bất kỳ class User nào, bất kể nó là ORM hay layer lưu trữ trừu tượng nào mà bạn đang sử dụng. Mặc định, Laravel đã chứa một class `User` trong thư mục `app` và đã implement sẵn interface này, vì vậy bạn có thể tham khảo class này để biết thêm về các implementation này.

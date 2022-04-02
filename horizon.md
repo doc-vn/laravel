@@ -1,10 +1,10 @@
 # Laravel Horizon
 
 - [Giới thiệu](#introduction)
-- [Cập nhật Horizon](#upgrading)
 - [Cài đặt](#installation)
     - [Cấu hình](#configuration)
     - [Authorization vào bảng điều khiển](#dashboard-authorization)
+- [Cập nhật Horizon](#upgrading)
 - [Chạy Horizon](#running-horizon)
     - [Deploy Horizon](#deploying-horizon)
 - [Tags](#tags)
@@ -25,26 +25,11 @@ Tất cả các cấu hình worker của bạn được lưu trong một file c�
 
 Bạn có thể sử dụng Composer để cài đặt Horizon vào project Laravel của bạn:
 
-    composer require laravel/horizon
+    composer require laravel/horizon ~3.0
 
 Sau khi cài đặt Horizon, hãy export asset của nó bằng lệnh Artisan `horizon:install`:
 
     php artisan horizon:install
-
-Bạn cũng nên tạo bảng `failed_jobs` mà Laravel sẽ sử dụng để lưu các [queue job bị thất bại](/docs/{{version}}/queues#dealing-with-failed-jobs):
-
-    php artisan queue:failed-table
-
-    php artisan migrate
-
-<a name="upgrading"></a>
-#### Cập nhật Horizon
-
-Khi nâng cấp lên phiên bản mới của Horizon, điều quan trọng là bạn phải xem kỹ [hướng dẫn nâng cấp](https://github.com/laravel/horizon/blob/master/UPGRADE.md).
-
-Ngoài ra, bạn nên export lại assets của Horizon:
-
-    php artisan horizon:assets
 
 <a name="configuration"></a>
 ### Cấu hình
@@ -61,7 +46,7 @@ Horizon cho phép bạn chọn từ ba chiến lược balance: `simple`, `auto`
 
 Chiến lược `auto` sẽ điều chỉnh số lượng process worker trên mỗi queue dựa trên khối lượng job hiện tại của queue. Ví dụ: nếu queue `notifications` của bạn có 1.000 job đang chờ trong khi queue `render` của bạn thì trống không làm gì, Horizon sẽ phân bổ nhiều worker hơn vào queue `notifications` của bạn cho đến khi nó trống. Khi tùy chọn `balance` là `false`, thì mặc định hành vi của Laravel sẽ được sử dụng, nó sẽ xử lý các queue theo thứ tự mà chúng được liệt kê trong cấu hình của bạn.
 
-Khi sử dụng chiến lược `auto`, vì bạn có thể định nghĩa các tùy chọn cấu hình `minProcesses` và `maxProcesses` để kiểm soát số lượng process tối thiểu và tối đa mà Horizon sẽ tăng hoặc giảm thành:
+Khi sử dụng chiến lược `auto`, vì bạn có thể định nghĩa các tùy chọn cấu hình `minProcesses` và `maxProcesses` để kiểm soát số lượng process tối thiểu và tối đa mà Horizon sẽ tăng hoặc giảm thành. Giá trị `minProcesses` sẽ chỉ định số lượng process tối thiểu có trong mỗi queue, trong khi giá trị `maxProcesses` sẽ chỉ định số lượng process tối đa có trong tất cả các queue:
 
     'environments' => [
         'production' => [
@@ -108,6 +93,15 @@ Trong file `app/Providers/HorizonServiceProvider.php` của bạn, có một ph�
 
 > {note} Hãy nhớ rằng Laravel tự động đưa người dùng *đã xác thực* vào Gate. Nếu ứng dụng của bạn đang cung cấp bảo mật cho Horizon thông qua một phương thức khác, chẳng hạn như hạn chế IP, thì người dùng Horizon của bạn có thể không cần "đăng nhập". Do đó, bạn sẽ cần phải thay đổi `function ($user)` ở trên thành `function ($user = null)` để yêu cầu Laravel không yêu cầu xác thực.
 
+<a name="upgrading"></a>
+#### Cập nhật Horizon
+
+Khi nâng cấp lên phiên bản mới của Horizon, điều quan trọng là bạn phải xem kỹ [hướng dẫn nâng cấp](https://github.com/laravel/horizon/blob/master/UPGRADE.md).
+
+Ngoài ra, bạn nên export lại assets của Horizon:
+
+    php artisan horizon:assets
+
 <a name="running-horizon"></a>
 ## Chạy Horizon
 
@@ -121,6 +115,10 @@ Bạn có thể dừng process của Horizon và bảo nó tiếp tục xử lý
 
     php artisan horizon:continue
 
+Bạn có thể kiểm tra trạng thái hiện tại của process Horizon bằng cách sử dụng lệnh Artisan `horizon:status`:
+
+    php artisan horizon:status
+
 Bạn có thể huỷ một process Horizon master trên máy của bạn bằng lệnh Artisan `horizon:terminate`. Tất cả các job mà Horizon đang xử lý sẽ được hoàn tất rồi sau đó Horizon sẽ được huỷ:
 
     php artisan horizon:terminate
@@ -130,9 +128,17 @@ Bạn có thể huỷ một process Horizon master trên máy của bạn bằng
 
 Nếu bạn đang deploy Horizon đến một server thật, bạn nên cài đặt một process giám sát để theo dõi lệnh `php artisan horizon` và khởi động lại nếu nó bị thoát bất ngờ. Khi deploy code mới đến server của bạn, bạn sẽ cần phải bảo process Horizon master dừng lại để nó có thể được khởi động lại bởi process giám sát của bạn và nhận được các thay đổi của code của bạn.
 
+#### Installing Supervisor
+
+Supervisor là một process giám sát cho hệ điều hành Linux và sẽ tự động khởi động lại các process `horizon` nếu process đó bị thất bại. Để cài đặt Supervisor trên Ubuntu, bạn có thể sử dụng lệnh sau:
+
+    sudo apt-get install supervisor
+
+> {tip} Nếu bạn không muốn tự cấu hình Supervisor, hãy xem xét việc sử dụng [Laravel Forge](https://forge.laravel.com), nó sẽ tự động cài đặt và cấu hình Supervisor cho các dự án Laravel của bạn.
+
 #### Supervisor Configuration
 
-Nếu bạn đang sử dụng process giám sát Supervisor để quản lý process `horizon` của bạn, thì file cấu hình sau nên được sử dụng:
+Các file cấu hình Supervisor thường được lưu trong thư mục `/etc/supervisor/conf.d`. Trong thư mục này, bạn có thể tạo bất kỳ file cấu hình nào để hướng dẫn supervisor cách giám sát các process của bạn. Ví dụ: hãy tạo một file `horizon.conf` để khởi động và theo dõi process `horizon`:
 
     [program:horizon]
     process_name=%(program_name)s
@@ -142,8 +148,21 @@ Nếu bạn đang sử dụng process giám sát Supervisor để quản lý pro
     user=forge
     redirect_stderr=true
     stdout_logfile=/home/forge/app.com/horizon.log
+    stopwaitsecs=3600
 
-> {tip} Nếu bạn cảm thấy khó khăn khi quản lý server của bạn, bạn hãy cân nhắc sử dụng [Laravel Forge](https://forge.laravel.com). Forge sẽ cung cấp các server PHP 7+ với mọi thứ bạn cần để chạy các application Laravel hiện đại, mạnh mẽ với Horizon.
+> {note} Bạn nên chắc chắn rằng giá trị của `stopwaitsecs` sẽ luôn lớn hơn số giây lâu nhất mà job của bạn đang chạy. Nếu không, Supervisor có thể kết thúc job đó trước khi nó được xử lý xong.
+
+#### Starting Supervisor
+
+Khi file cấu hình đã được tạo xong, bạn có thể cập nhật cấu hình của Supervisor và bắt đầu các process bằng các lệnh sau:
+
+    sudo supervisorctl reread
+
+    sudo supervisorctl update
+
+    sudo supervisorctl start horizon
+
+Để biết thêm thông tin về Supervisor, hãy tham khảo [tài liệu về Supervisor](http://supervisord.org/index.html).
 
 <a name="tags"></a>
 ## Tags
@@ -156,10 +175,10 @@ Horizon cho phép bạn gán các “tags” cho các job, bao gồm cả mailab
 
     use App\Video;
     use Illuminate\Bus\Queueable;
-    use Illuminate\Queue\SerializesModels;
-    use Illuminate\Queue\InteractsWithQueue;
     use Illuminate\Contracts\Queue\ShouldQueue;
     use Illuminate\Foundation\Bus\Dispatchable;
+    use Illuminate\Queue\InteractsWithQueue;
+    use Illuminate\Queue\SerializesModels;
 
     class RenderVideo implements ShouldQueue
     {

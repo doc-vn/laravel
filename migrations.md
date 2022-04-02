@@ -22,7 +22,7 @@
 <a name="introduction"></a>
 ## Giới thiệu
 
-Migration giống như là một version control cho cơ sở dữ liệu, cho phép team của bạn dễ dàng sửa và chia sẻ các database schema của application. Migration thường được kết hợp với schema builder của Laravel để xây dựng database schema cho application của bạn. Nếu bạn đã từng phải nói với các thành viên trong team của bạn là tự thêm một cột vào database schema ở local của họ, thì bạn đã từng phải gặp phải vấn đề về migration cơ sở dữ liệu.
+Migration giống như là một version control cho cơ sở dữ liệu, cho phép team của bạn sửa và chia sẻ các database schema của application. Migration thường được kết hợp với schema builder của Laravel để xây dựng database schema cho application của bạn. Nếu bạn đã từng phải nói với các thành viên trong team của bạn là tự thêm một cột vào database schema ở local của họ, thì bạn đã từng phải gặp phải vấn đề về migration cơ sở dữ liệu.
 
 Laravel [facade](/docs/{{version}}/facades) `Schema` cung cấp một cách để tạo và thao tác với các bảng trên tất cả các hệ thống cơ sở dữ liệu được hỗ trợ bởi Laravel mà không cần quan tâm về loại database.
 
@@ -48,13 +48,13 @@ Nếu bạn muốn khai báo một đường dẫn output tùy biến cho file m
 
 Một class migration sẽ chứa hai phương thức: `up` và `down`. Phương thức `up` sẽ được sử dụng để thêm một bảng, một cột hoặc một index mới vào cơ sở dữ liệu của bạn, trong khi phương thức `down` sẽ quay ngược lại các hành động mà được thực hiện bởi phương thức `up`.
 
-Trong cả hai phương thức này, bạn đều có thể sử dụng schema builder của Laravel để tạo và sửa các bảng một cách rõ ràng. Để tìm hiểu về tất cả các phương thức có sẵn trong `Schema` builder, [hãy xem tài liệu về nó](#creating-tables). Ví dụ, migration mẫu này sẽ tạo ra một bảng `flights`:
+Trong cả hai phương thức này, bạn đều có thể sử dụng schema builder của Laravel để tạo và sửa các bảng một cách rõ ràng. Để tìm hiểu về tất cả các phương thức có sẵn trong `Schema` builder, [hãy xem tài liệu về nó](#creating-tables). Ví dụ, migration ở dưới sẽ tạo ra một bảng `flights`:
 
     <?php
 
-    use Illuminate\Support\Facades\Schema;
-    use Illuminate\Database\Schema\Blueprint;
     use Illuminate\Database\Migrations\Migration;
+    use Illuminate\Database\Schema\Blueprint;
+    use Illuminate\Support\Facades\Schema;
 
     class CreateFlightsTable extends Migration
     {
@@ -114,7 +114,7 @@ Lệnh `migrate:reset` sẽ rollback lại tất cả các migration của appli
 
     php artisan migrate:reset
 
-#### Rollback & Migrate In Single Command
+#### Roll Back & Migrate Using A Single Command
 
 Lệnh `migrate:refresh` sẽ rollback lại tất cả các migration của bạn và sau đó thực hiện lại lệnh `migrate`. Lệnh này sẽ tạo lại toàn bộ cơ sở dữ liệu của bạn:
 
@@ -141,7 +141,7 @@ Lệnh `migrate:fresh` sẽ xóa tất cả các bảng ra khỏi cơ sở dữ 
 <a name="creating-tables"></a>
 ### Tạo Tables
 
-Để tạo một bảng cơ sở dữ liệu mới, hãy sử dụng phương thức `create` trên facade `Schema`. Phương thức `create` chấp nhận hai tham số.Tham số đầu tiên là tên của bảng, trong khi tham số thứ hai là một `Closure` nhận vào một đối tượng `Blueprint` có thể được sử dụng để định nghĩa một bảng mới:
+Để tạo một bảng cơ sở dữ liệu mới, hãy sử dụng phương thức `create` trên facade `Schema`. Phương thức `create` chấp nhận hai tham số: tham số đầu tiên là tên của bảng, trong khi tham số thứ hai là một `Closure` nhận vào một đối tượng `Blueprint` có thể được sử dụng để định nghĩa một bảng mới:
 
     Schema::create('users', function (Blueprint $table) {
         $table->bigIncrements('id');
@@ -151,7 +151,7 @@ Khi tạo bảng, bạn có thể sử dụng bất kỳ [column methods](#creat
 
 #### Checking For Table / Column Existence
 
-Bạn có thể dễ dàng kiểm tra sự tồn tại của một bảng hoặc một cột bằng các phương thức `hasTable` và `hasColumn`:
+Bạn có thể kiểm tra sự tồn tại của một bảng hoặc một cột bằng các phương thức `hasTable` và `hasColumn`:
 
     if (Schema::hasTable('users')) {
         //
@@ -217,14 +217,14 @@ Lệnh  |  Mô tả
 `$table->bigInteger('votes');`  |  Tương đương với cột kiểu BIGINT.
 `$table->binary('data');`  |  Tương đương với cột kiểu BLOB.
 `$table->boolean('confirmed');`  |  Tương đương với cột kiểu BOOLEAN.
-`$table->char('name', 100);`  |  Tương đương với cột kiểu CHAR.
+`$table->char('name', 100);`  |  Tương đương với cột kiểu CHAR cùng một độ dài.
 `$table->date('created_at');`  |  Tương đương với cột kiểu DATE.
-`$table->dateTime('created_at');`  |  Tương đương với cột kiểu DATETIME.
-`$table->dateTimeTz('created_at');`  |  Tương đương với cột kiểu DATETIME (cùng timezone).
-`$table->decimal('amount', 8, 2);`  |  Tương đương với cột kiểu DECIMAL với tổng số ký tự và độ dài sau dấu phẩy.
-`$table->double('amount', 8, 2);`  |  Tương đương với cột kiểu DDOUBLE với tổng số ký tự và độ dài sau dấu phẩy.
+`$table->dateTime('created_at', 0);`  |  Tương đương với cột kiểu DATETIME cùng với tổng số ký tự.
+`$table->dateTimeTz('created_at', 0);`  |  Tương đương với cột kiểu DATETIME (cùng timezone) cùng với tổng số ký tự.
+`$table->decimal('amount', 8, 2);`  |  Tương đương với cột kiểu DECIMAL cùng với tổng số ký tự và độ dài sau dấu phẩy.
+`$table->double('amount', 8, 2);`  |  Tương đương với cột kiểu DDOUBLE cùng với tổng số ký tự và độ dài sau dấu phẩy.
 `$table->enum('level', ['easy', 'hard']);`  |  Tương đương với cột kiểu ENUM.
-`$table->float('amount', 8, 2);`  |  Tương đương với cột kiểu FLOAT với tổng số ký tự và độ dài sau dấu phẩy.
+`$table->float('amount', 8, 2);`  |  Tương đương với cột kiểu FLOAT cùng với tổng số ký tự và độ dài sau dấu phẩy.
 `$table->geometry('positions');`  |  Tương đương với cột kiểu GEOMETRY.
 `$table->geometryCollection('positions');`  |  Tương đương với cột kiểu GEOMETRYCOLLECTION.
 `$table->increments('id');`  |  Tương đương với cột (primary key) tự động tăng và là số dương kiểu INTEGER.
@@ -245,27 +245,27 @@ Lệnh  |  Mô tả
 `$table->multiPolygon('positions');`  |  Tương đương với cột kiểu MULTIPOLYGON.
 `$table->nullableMorphs('taggable');`  |  Phiên bản thêm giá trị nullable vào cột `morphs()`.
 `$table->nullableUuidMorphs('taggable');`  |  Phiên bản thêm giá trị nullable vào cột `uuidMorphs()`.
-`$table->nullableTimestamps();`  |  Lối tắt của phương thức `timestamps()`.
+`$table->nullableTimestamps(0);`  |  Lối tắt của phương thức `timestamps()`.
 `$table->point('position');`  |  Tương đương với cột kiểu POINT.
 `$table->polygon('positions');`  |  Tương đương với cột kiểu POLYGON.
-`$table->rememberToken();`  |  Thêm cột `remember_token` VARCHAR(100) cho phép nullable.
+`$table->rememberToken();`  |  Thêm cột nullable `remember_token` VARCHAR(100).
 `$table->set('flavors', ['strawberry', 'vanilla']);`  |  SET giá trị có thể được lưu cho một cột.
 `$table->smallIncrements('id');`  |  Tương đương với cột (primary key) tự động tăng và là số dương kiểu SMALLINT.
 `$table->smallInteger('votes');`  |  Tương đương với cột kiểu SMALLINT.
-`$table->softDeletes();`  |  Thêm cột `deleted_at` kiểu TIMESTAMP cho phép nullable cho soft deletes.
-`$table->softDeletesTz();`  |  Thêm cột `deleted_at` kiểu TIMESTAMP (cùng timezone) cho phép nullable cho soft deletes.
+`$table->softDeletes(0);`  |  Thêm cột nullable `deleted_at` kiểu TIMESTAMP cùng với tổng số ký tự cho soft deletes.
+`$table->softDeletesTz(0);`  |  Thêm cột nullable `deleted_at` kiểu TIMESTAMP (cùng timezone) cùng với tổng số ký tự cho soft deletes.
 `$table->string('name', 100);`  |  Tương đương với cột kiểu VARCHAR cùng một tuỳ chọn độ dài.
 `$table->text('description');`  |  Tương đương với cột kiểu TEXT.
-`$table->time('sunrise');`  |  Tương đương với cột kiểu TIME.
-`$table->timeTz('sunrise');`  |  Tương đương với cột kiểu TIME (cùng timezone).
-`$table->timestamp('added_on');`  |  Tương đương với cột kiểu TIMESTAMP.
-`$table->timestampTz('added_on');`  |  Tương đương với cột kiểu TIMESTAMP (cùng timezone).
-`$table->timestamps();`  |  Thêm cột nullable `created_at` và `updated_at` kiểu TIMESTAMP.
-`$table->timestampsTz();`  |  Thêm cột nullable `created_at` và `updated_at` kiểu TIMESTAMP (cùng timezone).
+`$table->time('sunrise', 0);`   |  Tương đương với cột kiểu TIME cùng với tổng số ký tự.
+`$table->timeTz('sunrise', 0);`   |  Tương đương với cột kiểu TIME (cùng timezone) cùng với tổng số ký tự.
+`$table->timestamp('added_on', 0);`  |  Tương đương với cột kiểu TIMESTAMP cùng với tổng số ký tự.
+`$table->timestampTz('added_on', 0);`  |  Tương đương với cột kiểu TIMESTAMP (cùng timezone) cùng với tổng số ký tự.
+`$table->timestamps(0);`  |  Thêm cột nullable `created_at` và `updated_at` kiểu TIMESTAMP cùng với tổng số ký tự.
+`$table->timestampsTz(0);`  |  Thêm cột nullable `created_at` và `updated_at` kiểu TIMESTAMP (cùng timezone) cùng với tổng số ký tự.
 `$table->tinyIncrements('id');`  |  Tương đương với cột (primary key) tự động tăng và là số dương kiểu TINYINT.
 `$table->tinyInteger('votes');`  |  Tương đương với cột kiểu TINYINT.
 `$table->unsignedBigInteger('votes');`  |  Tương đương với cột kiểu BIGINT luôn dương.
-`$table->unsignedDecimal('amount', 8, 2);`  |  Tương đương với cột kiểu DECIMAL luôn dương với tổng số ký tự và độ dài sau dấu phẩy.
+`$table->unsignedDecimal('amount', 8, 2);`  |  Tương đương với cột kiểu DECIMAL luôn dương cùng với tổng số ký tự và độ dài sau dấu phẩy.
 `$table->unsignedInteger('votes');`  |  Tương đương với cột kiểu INTEGER luôn dương.
 `$table->unsignedMediumInteger('votes');`  |  Tương đương với cột kiểu MEDIUMINT luôn dương.
 `$table->unsignedSmallInteger('votes');`  |  Tương đương với cột kiểu SMALLINT luôn dương.
@@ -282,7 +282,7 @@ Ngoài các loại cột được liệt kê ở trên, có một số "modifier
         $table->string('email')->nullable();
     });
 
-Dưới đây là danh sách tất cả các column modifier có sẵn. Danh sách này không bao gồm [index modifiers](#creating-indexes):
+Danh sách dưới đây sẽ chứa tất cả các column modifier có sẵn. Danh sách này không bao gồm [index modifiers](#creating-indexes):
 
 Modifier  |  Mô tả
 --------  |  -----------
@@ -301,18 +301,48 @@ Modifier  |  Mô tả
 `->generatedAs($expression)`  |  Tạo một cột identity với tùy chọn tăng dần được chỉ định (PostgreSQL)
 `->always()`  |  Định nghĩa mức độ ưu tiên của các giá trị tăng dần so với giá trị đầu vào cho một cột identity (PostgreSQL)
 
+#### Default Expressions
+
+Modifier `default` sẽ chấp nhận một giá trị hoặc một instance `\Illuminate\Database\Query\Expression`. Việc sử dụng một instance `Expression` sẽ ngăn việc giá trị phải ở trong dấu ngoặc kép và cho phép bạn sử dụng các chức năng cụ thể của cơ sở dữ liệu. Một tình huống mà điều này đặc biệt hữu ích đó là khi bạn cần gán một giá trị mặc định cho các cột JSON:
+
+    <?php
+
+    use Illuminate\Support\Facades\Schema;
+    use Illuminate\Database\Schema\Blueprint;
+    use Illuminate\Database\Query\Expression;
+    use Illuminate\Database\Migrations\Migration;
+
+    class CreateFlightsTable extends Migration
+    {
+        /**
+         * Run the migrations.
+         *
+         * @return void
+         */
+        public function up()
+        {
+            Schema::create('flights', function (Blueprint $table) {
+                $table->bigIncrements('id');
+                $table->json('movies')->default(new Expression('(JSON_ARRAY())'));
+                $table->timestamps();
+            });
+        }
+    }
+
+> {note} Hỗ trợ các default expression cũng tùy thuộc vào driver cơ sở dữ liệu, phiên bản cơ sở dữ liệu và loại field của bạn. Vui lòng tham khảo tài liệu thích hợp để biết khả năng tương thích của chúng. Cũng lưu ý rằng việc sử dụng các chức năng cụ thể của cơ sở dữ liệu có thể kết hợp chặt chẽ bạn với một driver cụ thể.
+
 <a name="modifying-columns"></a>
 ### Sửa Column
 
 #### Prerequisites
 
-Trước khi sửa một cột, bạn hãy chắc chắn là bạn đã thêm library `doctrine/dbal` vào trong file `composer.json` của bạn. Thư viện Doctrine DBAL được sử dụng để xác định trạng thái hiện tại của cột và tạo ra các truy vấn SQL cần thiết để thực hiện các khai báo điều chỉnh cho các cột đó:
+Trước khi sửa một cột, bạn hãy chắc chắn là bạn đã thêm library `doctrine/dbal` vào trong file `composer.json` của bạn. Thư viện Doctrine DBAL được sử dụng để xác định trạng thái hiện tại của cột và tạo ra các truy vấn SQL cần thiết để thực hiện các yêu cầu điều chỉnh:
 
     composer require doctrine/dbal
 
 #### Updating Column Attributes
 
-Phương thức `change` cho phép bạn sửa một số loại cột hiện có thành một loại mới hoặc sửa các thuộc tính của cột. Ví dụ: bạn có thể muốn tăng kích thước của cột string. Để xem phương thức `change` hoạt động như thế nào, hãy thử tăng kích thước của cột `name` từ 25 lên 50:
+Phương thức `change` cho phép bạn sửa một số loại và thuộc tính của cột hiện có. Ví dụ: bạn có thể muốn tăng kích thước của cột `string`. Để xem phương thức `change` hoạt động như thế nào, hãy thử tăng kích thước của cột `name` từ 25 lên 50:
 
     Schema::table('users', function (Blueprint $table) {
         $table->string('name', 50)->change();
@@ -328,7 +358,7 @@ Chúng ta cũng có thể sửa một cột thành nullable:
 
 #### Renaming Columns
 
-Để đổi tên một cột, bạn có thể sử dụng phương thức `renameColumn` trong Schema builder. Trước khi đổi tên một cột, hãy nhớ thêm library `doctrine/dbal` vào trong file `composer.json` của bạn:
+Để đổi tên một cột, bạn có thể sử dụng phương thức `renameColumn` trong schema builder. Trước khi đổi tên một cột, hãy nhớ thêm library `doctrine/dbal` vào trong file `composer.json` của bạn:
 
     Schema::table('users', function (Blueprint $table) {
         $table->renameColumn('from', 'to');
@@ -339,7 +369,7 @@ Chúng ta cũng có thể sửa một cột thành nullable:
 <a name="dropping-columns"></a>
 ### Xoá Column
 
-Để xóa một cột, hãy sử dụng phương thức `dropColumn` trong Schema builder. Trước khi xóa một cột ra khỏi cơ sở dữ liệu SQLite, bạn sẽ cần thêm library `doctrine/dbal` vào trong file `composer.json` của bạn và chạy lệnh `composer update` trong terminal để cài đặt thư viện:
+Để xóa một cột, hãy sử dụng phương thức `dropColumn` trong schema builder. Trước khi xóa một cột ra khỏi cơ sở dữ liệu SQLite, bạn sẽ cần thêm library `doctrine/dbal` vào trong file `composer.json` của bạn và chạy lệnh `composer update` trong terminal để cài đặt thư viện:
 
     Schema::table('users', function (Blueprint $table) {
         $table->dropColumn('votes');
@@ -370,7 +400,7 @@ Command  |  Description
 <a name="creating-indexes"></a>
 ### Tạo Index
 
-Schema builder có hỗ trợ một số loại cindex. Trước tiên, hãy xem một ví dụ khai báo giá trị của một cột phải là unique. Để tạo một index, chúng ta có thể kết hợp thêm phương thức `unique` vào trong định nghĩa của cột:
+Schema builder của Laravel có hỗ trợ một số loại index. Ví dụ sau sẽ tạo một cột `email` mới và yêu cầu rằng cột đó phải là unique. Để tạo một index, chúng ta có thể kết hợp thêm phương thức `unique` vào trong định nghĩa của cột:
 
     $table->string('email')->unique();
 
@@ -382,13 +412,13 @@ Bạn thậm chí có thể truyền một mảng gồm các cột cho một ph�
 
     $table->index(['account_id', 'created_at']);
 
-Laravel sẽ tự động tạo một tên index phù hợp, nhưng bạn có thể truyền thêm tham số thứ hai cho phương thức để khai báo tên đó:
+Laravel sẽ tự động tạo tên index dựa trên tên bảng, tên cột và kiểu index, nhưng bạn có thể truyền thêm tham số thứ hai cho phương thức để khai báo tên index của bạn:
 
     $table->unique('email', 'unique_email');
 
 #### Available Index Types
 
-Mỗi phương thức của index chấp nhận một tham số thứ hai tùy chọn để chỉ định tên của index. Nếu bỏ qua tuỳ chọn này, thì tên sẽ được lấy từ tên của (các) bảng và cột.
+Mỗi phương thức của index chấp nhận một tham số thứ hai tùy chọn để chỉ định tên của index. Nếu bỏ qua tuỳ chọn này, thì tên sẽ được lấy từ tên của (các) bảng và các cột để sử dụng cho index, cũng như loại index.
 
 Command  |  Description
 -------  |  -----------
@@ -419,14 +449,14 @@ Ngoài ra, bạn có thể kích hoạt tùy chọn `innodb_large_prefix` cho c�
 <a name="renaming-indexes"></a>
 ### Đổi tên Index
 
-Để đổi tên một index, bạn có thể sử dụng phương thức `renameIndex`. Phương thức này chấp nhận tên index hiện tại làm tham số đầu tiên và tên mong muốn làm tham số thứ hai:
+Để đổi tên một index, bạn có thể sử dụng phương thức `renameIndex`. Phương thức này chấp nhận tên index hiện tại làm tham số đầu tiên và một tên mới làm tham số thứ hai:
 
     $table->renameIndex('from', 'to')
 
 <a name="dropping-indexes"></a>
 ### Xoá Index
 
-Để xóa một index, bạn có thể khai báo một tên index. Mặc định, Laravel sẽ tự động gán một tên phù hợp cho các index. Chỉ cần nối tên bảng và tên cột index và loại index. Dưới đây là một số ví dụ:
+Để xóa một index, bạn có thể khai báo một tên index. Mặc định, Laravel sẽ tự động gán một tên index dựa trên tên bảng và tên cột của index và loại index. Dưới đây là một số ví dụ:
 
 Command  |  Description
 -------  |  -----------
@@ -458,11 +488,11 @@ Bạn cũng có thể khai báo hành động mong muốn cho các thuộc tính
           ->references('id')->on('users')
           ->onDelete('cascade');
 
-Để xoá khóa ngoại, bạn có thể sử dụng phương thức `dropForeign`. Các ràng buộc khóa ngoại sẽ được sử dụng theo quy ước đặt tên giống với các index. Vì vậy, chúng ta sẽ nối tên bảng và tên cột trong ràng buộc, sau đó thêm hậu tố "\_foreign":
+Để xoá khóa ngoại, bạn có thể sử dụng phương thức `dropForeign` và truyền ràng buộc khóa ngoại sẽ bị xóa dưới dạng tham số. Các ràng buộc khóa ngoại sẽ được sử dụng theo quy ước đặt tên giống với các index dựa trên tên bảng và tên cột trong ràng buộc, theo sau là hậu tố "\_foreign":
 
     $table->dropForeign('posts_user_id_foreign');
 
-Hoặc, bạn có thể truyền một mảng các giá trị sẽ tự động sử dụng quy ước tên ràng buộc khi xoá:
+Ngoài ra, bạn có thể truyền một mảng chứa tên các cột chứa khóa ngoại vào phương thức `dropForeign`. Mảng sẽ được tự động chuyển đổi bằng cách sử dụng quy ước tên ràng buộc được sử dụng bởi schema builder của Laravel:
 
     $table->dropForeign(['user_id']);
 

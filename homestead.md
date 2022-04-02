@@ -57,8 +57,10 @@ Homestead có thể chạy trên nhiều hệ điều hành Windows, Mac, hoặc
 </style>
 
 <div id="software-list" markdown="1">
+
 - Ubuntu 18.04
 - Git
+- PHP 7.4
 - PHP 7.3
 - PHP 7.2
 - PHP 7.1
@@ -80,6 +82,7 @@ Homestead có thể chạy trên nhiều hệ điều hành Windows, Mac, hoặc
 - Xdebug
 - XHProf / Tideways / XHGui
 - wp-cli
+
 </div>
 
 <a name="optional-software"></a>
@@ -94,6 +97,7 @@ Homestead có thể chạy trên nhiều hệ điều hành Windows, Mac, hoặc
 </style>
 
 <div id="software-list" markdown="1">
+
 - Apache
 - Blackfire
 - Cassandra
@@ -118,6 +122,7 @@ Homestead có thể chạy trên nhiều hệ điều hành Windows, Mac, hoặc
 - RabbitMQ
 - Solr
 - Webdriver & Laravel Dusk Utilities
+
 </div>
 
 <a name="installation-and-setup"></a>
@@ -490,7 +495,7 @@ Minio là một server lưu trữ đối tượng mã nguồn mở có API tươ
 
     minio: true
 
-Mặc định, Minio có sẵn trên cổng 9600. Bạn có thể truy cập vào bảng điều khiển của Minio bằng cách truy cập vào `http://homestead:9600/`. Khóa truy cập mặc định là `homestead`, trong khi khóa bí mật mặc định là `secretkey`. Khi truy cập vào Minio, bạn nên sử dụng region `us-east-1`.
+Mặc định, Minio có sẵn trên cổng 9600. Bạn có thể truy cập vào bảng điều khiển của Minio bằng cách truy cập vào `http://localhost:9600/`. Khóa truy cập mặc định là `homestead`, trong khi khóa bí mật mặc định là `secretkey`. Khi truy cập vào Minio, bạn nên sử dụng region `us-east-1`.
 
 Để sử dụng Minio, bạn sẽ cần điều chỉnh cấu hình S3 disk trong file cấu hình `config/filesystems.php` của bạn. Bạn sẽ cần thêm tùy chọn `use_path_style_endpoint` vào cấu hình disk, cũng như thay đổi `url` thành `endpoint`:
 
@@ -509,7 +514,7 @@ Cuối cùng, hãy đảm bảo file `.env` của bạn đã có các tùy chọ
     AWS_ACCESS_KEY_ID=homestead
     AWS_SECRET_ACCESS_KEY=secretkey
     AWS_DEFAULT_REGION=us-east-1
-    AWS_URL=http://homestead:9600
+    AWS_URL=http://localhost:9600
 
 Để cung cấp các bucket, hãy thêm tuỳ chọn `buckets` vào trong file cấu hình Homestead của bạn:
 
@@ -527,6 +532,7 @@ Các giá trị `policy` được hỗ trợ là: `none`, `download`, `upload`, 
 Mặc định, các cổng dưới đây sẽ được thiết lập để chuyển tiếp tới môi trường Homestead của bạn:
 
 <div class="content-list" markdown="1">
+
 - **SSH:** 2222 &rarr; Chuyển tới 22
 - **ngrok UI:** 4040 &rarr; Chuyển tới 4040
 - **HTTP:** 8000 &rarr; Chuyển tới 80
@@ -536,6 +542,7 @@ Mặc định, các cổng dưới đây sẽ được thiết lập để chuy�
 - **MongoDB:** 27017 &rarr; Chuyển tới 27017
 - **Mailhog:** 8025 &rarr; Chuyển tới 8025
 - **Minio:** 9600 &rarr; Chuyển tới 9600
+
 </div>
 
 #### Thêm Port
@@ -567,7 +574,7 @@ Sau khi chạy lệnh, bạn sẽ thấy một màn hình Ngrok xuất hiện ch
 <a name="multiple-php-versions"></a>
 ### Chạy nhiều phiên bản PHP
 
-Homestead 6 đã giới thiệu chức năng hỗ trợ cho nhiều phiên bản PHP trên cùng một máy ảo. Bạn có thể chỉ định phiên bản PHP nào sẽ sử dụng cho một trang web nhất định trong file `Homestead.yaml` của bạn. Các phiên bản PHP có sẵn là: "5.6", "7.0", "7.1", "7.2" và "7.3" (mặc định):
+Homestead 6 đã giới thiệu chức năng hỗ trợ cho nhiều phiên bản PHP trên cùng một máy ảo. Bạn có thể chỉ định phiên bản PHP nào sẽ sử dụng cho một trang web nhất định trong file `Homestead.yaml` của bạn. Các phiên bản PHP có sẵn là: "5.6", "7.0", "7.1", "7.2", "7.3", và "7.4" (mặc định):
 
     sites:
         - map: homestead.test
@@ -581,6 +588,7 @@ Thêm vào đó, bạn có thể sử dụng bất kỳ phiên bản PHP nào đ
     php7.1 artisan list
     php7.2 artisan list
     php7.3 artisan list
+    php7.4 artisan list
 
 Bạn cũng có thể cập nhật phiên bản CLI mặc định bằng cách chạy các lệnh sau từ bên trong máy ảo Homestead của bạn:
 
@@ -589,6 +597,7 @@ Bạn cũng có thể cập nhật phiên bản CLI mặc định bằng cách c
     php71
     php72
     php73
+    php74
 
 <a name="web-servers"></a>
 ### Server Web
@@ -623,9 +632,9 @@ Mặc định, Xdebug đã được chạy và sẵn sàng cho viêc kết nối
 
 #### Autostarting Xdebug
 
-Khi debug các bài test chức năng thực hiện request đến web server, việc tự động debug sẽ dễ dàng hơn việc sửa các bài test để truyền qua một header hoặc một cookie tuỳ biến để kích hoạt debug. Để yêu cầu Xdebug tự khởi động, hãy sửa `/etc/php/7.#/fpm/conf.d/20-xdebug.ini` bên trong Vagrant box của bạn và thêm cấu hình sau:
+Khi debug các bài test chức năng thực hiện request đến web server, việc tự động debug sẽ dễ dàng hơn việc sửa các bài test để truyền qua một header hoặc một cookie tuỳ biến để kích hoạt debug. Để yêu cầu Xdebug tự khởi động, hãy sửa `/etc/php/7.x/fpm/conf.d/20-xdebug.ini` bên trong Vagrant box của bạn và thêm cấu hình sau:
 
-    ; If Homestead.yml contains a different subnet for the IP address, this address may be different...
+    ; If Homestead.yaml contains a different subnet for the IP address, this address may be different...
     xdebug.remote_host = 192.168.10.1
     xdebug.remote_autostart = 1
 
@@ -725,7 +734,7 @@ Tiếp theo, bạn cần cập nhật mã nguồn Homestead. Nếu bạn clone t
 
 Các lệnh pull code này sẽ lấy source code Homestead mới nhất từ GitHub repository, nó sẽ tìm các tag mới nhất và sau đó kiểm tra phiên bản release mà được gắn với tag mới nhất. Bạn có thể tìm thấy phiên bản release mới nhất trên [trang release GitHub](https://github.com/laravel/homestead/releases).
 
-Nếu bạn cài đặt Homestead thông qua file `composer.json` trong project của bạn, bạn nên sửa version Homestead thành `"laravel/homestead": "^9"` trong file đó, rồi sau đó bạn chỉ cần cập nhật thư viện thông qua composer:
+Nếu bạn cài đặt Homestead thông qua file `composer.json` trong project của bạn, bạn nên sửa version Homestead thành `"laravel/homestead": "^10"` trong file đó, rồi sau đó bạn chỉ cần cập nhật thư viện thông qua composer:
 
     composer update
 
