@@ -25,12 +25,12 @@
 <a name="introduction"></a>
 ## Giới thiệu
 
-Laravel cung cấp một API đơn giản, gọn gàng trên thư viện [SwiftMailer](https://swiftmailer.symfony.com/) với các driver như SMTP, Mailgun, Postmark, SparkPost, Amazon SES và `sendmail`, cho phép bạn nhanh chóng bắt đầu gửi mail thông qua dịch vụ trên đám mây hoặc local mà bạn chọn.
+Laravel cung cấp một API đơn giản, gọn gàng trên thư viện [SwiftMailer](https://swiftmailer.symfony.com/) với các driver như SMTP, Mailgun, Postmark, Amazon SES và `sendmail`, cho phép bạn nhanh chóng bắt đầu gửi mail thông qua dịch vụ trên đám mây hoặc local mà bạn chọn.
 
 <a name="driver-prerequisites"></a>
 ### Yêu cầu driver
 
-Các driver dựa trên API như Mailgun, SparkPost, và Postmark thường đơn giản hơn và nhanh hơn là các máy chủ SMTP. Nếu có thể, bạn nên sử dụng một trong những driver này. Tất cả các driver API đều yêu cầu thư viện Guzzle HTTP, thư viện này có thể được cài đặt thông qua trình quản lý package Composer:
+Các driver dựa trên API như Mailgun, và Postmark thường đơn giản hơn và nhanh hơn là các máy chủ SMTP. Nếu có thể, bạn nên sử dụng một trong những driver này. Tất cả các driver API đều yêu cầu thư viện Guzzle HTTP, thư viện này có thể được cài đặt thông qua trình quản lý package Composer:
 
     composer require guzzlehttp/guzzle
 
@@ -61,23 +61,6 @@ Tiếp theo, cài đặt Guzzle và set tùy chọn `driver` trong file cấu h�
 
     'postmark' => [
         'token' => 'your-postmark-token',
-    ],
-
-#### SparkPost Driver
-
-Để sử dụng driver SparkPost, trước tiên hãy cài đặt Guzzle, sau đó set tùy chọn `driver` trong file cấu hình `config/mail.php` của bạn thành `sparkpost`. Tiếp theo, hãy kiểm tra file cấu hình `config/services.php` của bạn đã có chứa các tùy chọn sau chưa:
-
-    'sparkpost' => [
-        'secret' => 'your-sparkpost-key',
-    ],
-
-Nếu cần, bạn cũng có thể cấu hình [API endpoint](https://developers.sparkpost.com/api/#header-endpoints) nào sẽ được sử dụng:
-
-    'sparkpost' => [
-        'secret' => 'your-sparkpost-key',
-        'options' => [
-            'endpoint' => 'https://api.eu.sparkpost.com/api/v1/transmissions',
-        ],
     ],
 
 #### SES Driver
@@ -525,11 +508,11 @@ Nếu bạn muốn xây dựng một theme mới cho các component Markdown c�
 
     namespace App\Http\Controllers;
 
-    use App\Order;
+    use App\Http\Controllers\Controller;
     use App\Mail\OrderShipped;
+    use App\Order;
     use Illuminate\Http\Request;
     use Illuminate\Support\Facades\Mail;
-    use App\Http\Controllers\Controller;
 
     class OrderController extends Controller
     {

@@ -21,7 +21,7 @@
 <a name="introduction"></a>
 ## Giới thiệu
 
-Laravel cung cấp một abstraction filesystem mạnh mẽ nhờ package PHP [Flysystem](https://github.com/thephpleague/flysystem) tuyệt vời của Frank de Jonge. Laravel Flysystem integration cung cấp các driver đơn giản để sử dụng và làm việc với các local filesystems, Amazon S3 và Rackspace Cloud Storage. Thậm chí, nó cũng rất đơn giản để chuyển đổi giữa các tùy chọn lưu trữ này vì API vẫn giống nhau cho mỗi hệ thống.
+Laravel cung cấp một abstraction filesystem mạnh mẽ nhờ package PHP [Flysystem](https://github.com/thephpleague/flysystem) tuyệt vời của Frank de Jonge. Laravel Flysystem integration cung cấp các driver đơn giản để sử dụng và làm việc với các local filesystems và Amazon S3. Thậm chí, nó cũng rất đơn giản để chuyển đổi giữa các tùy chọn lưu trữ này vì API vẫn giống nhau cho mỗi hệ thống.
 
 <a name="configuration"></a>
 ## Cấu hình
@@ -74,11 +74,10 @@ Thư mục `public` [visibility](#file-visibility) sẽ được chuyển thành
 
 #### Composer Packages
 
-Trước khi sử dụng driver SFTP, S3, hoặc Rackspace, bạn sẽ cần cài đặt các package thích hợp thông qua Composer:
+Trước khi sử dụng driver SFTP hoặc S3, bạn sẽ cần cài đặt các package thích hợp thông qua Composer:
 
 - SFTP: `league/flysystem-sftp ~1.0`
 - Amazon S3: `league/flysystem-aws-s3-v3 ~1.0`
-- Rackspace: `league/flysystem-rackspace ~1.0`
 
 Để tăng hiệu suất, bạn cần phải dùng một cached adapter. Bạn có thể thêm một package cho việc này:
 
@@ -126,20 +125,6 @@ Flysystem tích hợp trong Laravel hoạt động tốt với SFTP; tuy nhiên,
         // 'timeout' => 30,
     ],
 
-#### Rackspace Driver Configuration
-
-Flysystem integration của Laravel hoạt động tốt với Rackspace; tuy nhiên, mặc định, cấu hình mẫu dành cho drive này sẽ không được thêm vào trong file cấu hình `filesystems.php` của framework. Nếu bạn cần cấu hình cho file Rackspace, bạn có thể sử dụng cấu hình mẫu ở bên dưới:
-
-    'rackspace' => [
-        'driver' => 'rackspace',
-        'username' => 'your-username',
-        'key' => 'your-key',
-        'container' => 'your-container',
-        'endpoint' => 'https://identity.api.rackspacecloud.com/v2.0/',
-        'region' => 'IAD',
-        'url_type' => 'publicURL',
-    ],
-
 <a name="caching"></a>
 ### Caching
 
@@ -181,6 +166,10 @@ Phương thức `exists` có thể được sử dụng để xác định xem m
 
     $exists = Storage::disk('s3')->exists('file.jpg');
 
+Phương thức `missing` có thể được sử dụng để xác định xem file có bị thiếu trong disk hay không:
+
+    $missing = Storage::disk('s3')->missing('file.jpg');
+
 <a name="downloading-files"></a>
 ### Tải File
 
@@ -193,7 +182,7 @@ Phương thức `download` có thể được sử dụng để tạo một resp
 <a name="file-urls"></a>
 ### File URL
 
-Bạn có thể sử dụng phương thức `url` để lấy ra URL đã cho cho một file. Nếu bạn đang sử dụng driver `local`, điều này sẽ chỉ cần thêm `/storage` vào đường dẫn đã cho và trả về một URL tương đối cho file. Nếu bạn đang sử dụng driver `s3` hoặc `rackspace`, remote URL sẽ được trả về:
+Bạn có thể sử dụng phương thức `url` để lấy ra URL đã cho cho một file. Nếu bạn đang sử dụng driver `local`, điều này sẽ chỉ cần thêm `/storage` vào đường dẫn đã cho và trả về một URL tương đối cho file. Nếu bạn đang sử dụng driver `s3`, remote URL sẽ được trả về:
 
     use Illuminate\Support\Facades\Storage;
 
@@ -203,7 +192,7 @@ Bạn có thể sử dụng phương thức `url` để lấy ra URL đã cho ch
 
 #### Temporary URLs
 
-Đối với các file đã được lưu trữ bằng driver `s3` hoặc `rackspace`, bạn có thể tạo một URL tạm thời cho một file bằng cách sử dụng phương thức `temporaryUrl`. Phương thức này chấp nhận một đường dẫn và một instance `DateTime` để định nghĩa khi URL sẽ hết hạn:
+Đối với các file đã được lưu trữ bằng driver `s3`, bạn có thể tạo một URL tạm thời cho một file bằng cách sử dụng phương thức `temporaryUrl`. Phương thức này chấp nhận một đường dẫn và một instance `DateTime` để định nghĩa khi URL sẽ hết hạn:
 
     $url = Storage::temporaryUrl(
         'file.jpg', now()->addMinutes(5)
@@ -244,7 +233,7 @@ Phương thức `lastModified` trả về một UNIX timestamp về lần cuối
 <a name="storing-files"></a>
 ## Lưu File
 
-Phương thức `put` có thể được sử dụng để lưu trữ một nội dung raw của file lên disk. Bạn cũng có thể truyền một PHP `resource` đến phương thức `put`, phương thức này sẽ sử dụng support stream của Flysystem. Sử dụng stream rất được khuyến khích khi xử lý các file lớn:
+Phương thức `put` có thể được sử dụng để lưu trữ một nội dung raw của file lên disk. Bạn cũng có thể truyền một PHP `resource` đến phương thức `put`, phương thức này sẽ sử dụng support stream của Flysystem. Hãy nhớ rằng, tất cả các đường dẫn đến file phải được khai báo liên kết đến vị trí "root" mà đã được cấu hình cho disk:
 
     use Illuminate\Support\Facades\Storage;
 
@@ -296,8 +285,8 @@ Trong các application web, một trong những trường hợp hay sử dụng 
 
     namespace App\Http\Controllers;
 
-    use Illuminate\Http\Request;
     use App\Http\Controllers\Controller;
+    use Illuminate\Http\Request;
 
     class UserAvatarController extends Controller
     {
@@ -345,6 +334,16 @@ Mặc định, phương thức này sẽ sử dụng disk mặc định. Nếu b
         'avatars/'.$request->user()->id, 's3'
     );
 
+#### Other File Information
+
+Nếu bạn muốn lấy tên gốc của file đã được tải lên, bạn có thể làm như vậy bằng cách sử dụng phương thức `getClientOriginalName`:
+
+    $name = $request->file('avatar')->getClientOriginalName();
+
+Phương thức `extension` có thể được sử dụng để lấy phần mở rộng của file đã được tải lên:
+
+    $extension = $request->file('avatar')->extension();
+
 <a name="file-visibility"></a>
 ### File Visibility
 
@@ -360,7 +359,7 @@ Nếu file đã được lưu trữ, visibility của nó có thể được l�
 
     $visibility = Storage::getVisibility('file.jpg');
 
-    Storage::setVisibility('file.jpg', 'public')
+    Storage::setVisibility('file.jpg', 'public');
 
 <a name="deleting-files"></a>
 ## Xoá File
@@ -428,16 +427,16 @@ Tiếp theo, bạn nên tạo một [service provider](/docs/{{version}}/provide
 
     namespace App\Providers;
 
-    use Storage;
-    use League\Flysystem\Filesystem;
     use Illuminate\Support\ServiceProvider;
+    use League\Flysystem\Filesystem;
     use Spatie\Dropbox\Client as DropboxClient;
     use Spatie\FlysystemDropbox\DropboxAdapter;
+    use Storage;
 
     class DropboxServiceProvider extends ServiceProvider
     {
         /**
-         * Register bindings in the container.
+         * Register any application services.
          *
          * @return void
          */

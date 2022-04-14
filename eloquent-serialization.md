@@ -135,7 +135,7 @@ Tương tự, nếu bạn muốn một số thuộc tính được hiển thị 
          */
         public function getIsAdminAttribute()
         {
-            return $this->attributes['admin'] == 'yes';
+            return $this->attributes['admin'] === 'yes';
         }
     }
 
@@ -178,39 +178,3 @@ Bạn có thể tùy chỉnh định dạng chuyển đổi của từng thuộc
         'birthday' => 'date:Y-m-d',
         'joined_at' => 'datetime:Y-m-d H:00',
     ];
-
-#### Global Customization Via Carbon
-
-Laravel extend thư viện [Carbon](https://github.com/briannesbitt/Carbon) date để cung cấp các tùy biến cho chuyển đổi định dạng JSON. Để tùy biến cách chuyển đổi của tất cả các Carbon date trong application của bạn, hãy sử dụng phương thức `Carbon::serializeUsing`. Phương thức `serializeUsing` chấp nhận một Closure trả về một chuỗi hiển thị cho một date để chuyển nó sang JSON:
-
-    <?php
-
-    namespace App\Providers;
-
-    use Illuminate\Support\Carbon;
-    use Illuminate\Support\ServiceProvider;
-
-    class AppServiceProvider extends ServiceProvider
-    {
-        /**
-         * Register bindings in the container.
-         *
-         * @return void
-         */
-        public function register()
-        {
-            //
-        }
-
-        /**
-         * Bootstrap any application services.
-         *
-         * @return void
-         */
-        public function boot()
-        {
-            Carbon::serializeUsing(function ($carbon) {
-                return $carbon->format('U');
-            });
-        }
-    }

@@ -184,6 +184,10 @@ Các group middleware có thể được gán cho một route hoặc một contr
         //
     });
 
+    Route::middleware(['web', 'subscribed'])->group(function () {
+        //
+    });
+
 > {tip} Mặc định, group middleware `web` sẽ được tự động gán cho file `routes/web.php` bởi `RouteServiceProvider`.
 
 <a name="sorting-middleware"></a>
@@ -250,7 +254,7 @@ Các tham số middleware có thể được định nghĩa khi tạo route bằ
 <a name="terminable-middleware"></a>
 ## Middleware kết thúc
 
-Đôi khi, một middleware có thể cần thực hiện một số công việc sau khi response HTTP được gửi về broswer. Ví dụ: middleware "session" đi kèm với Laravel sẽ ghi dữ liệu session vào bộ nhớ sau khi response được gửi về broswer. Nếu bạn định nghĩa một phương thức `terminate` trong middleware và web server của bạn đang sử dụng FastCGI, thì phương thức `terminate` sẽ tự động được gọi sau khi response đã được gửi về trình duyệt.
+Đôi khi, một middleware có thể cần thực hiện một số công việc sau khi response HTTP được gửi về broswer. Nếu bạn định nghĩa một phương thức `terminate` trong middleware và web server của bạn đang sử dụng FastCGI, thì phương thức `terminate` sẽ tự động được gọi sau khi response đã được gửi về trình duyệt:
 
     <?php
 
@@ -273,4 +277,16 @@ Các tham số middleware có thể được định nghĩa khi tạo route bằ
 
 Phương thức `terminate` sẽ nhận vào cả request và response. Khi bạn đã định nghĩa một middleware terminate, bạn nên thêm nó vào danh sách route hoặc global middleware trong file `app/Http/Kernel.php`.
 
-Khi gọi phương thức `terminate` trong middleware của bạn, Laravel sẽ resolve một instance mới của middleware từ [service container](/docs/{{version}}/container). Nếu bạn muốn sử dụng lại cùng một instance middleware khi các phương thức `handle` và `terminate` được gọi, hãy đăng ký middleware với container bằng phương thức `singleton` của container.
+Khi gọi phương thức `terminate` trong middleware của bạn, Laravel sẽ resolve một instance mới của middleware từ [service container](/docs/{{version}}/container). Nếu bạn muốn sử dụng lại cùng một instance middleware khi các phương thức `handle` và `terminate` được gọi, hãy đăng ký middleware với container bằng phương thức `singleton` của container. Thông thường, điều này nên được thực hiện trong phương thức `register` của `AppServiceProvider.php` của bạn:
+
+    use App\Http\Middleware\TerminableMiddleware;
+
+    /**
+     * Register any application services.
+     *
+     * @return void
+     */
+    public function register()
+    {
+        $this->app->singleton(TerminableMiddleware::class);
+    }

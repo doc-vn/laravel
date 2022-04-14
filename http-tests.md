@@ -2,6 +2,7 @@
 
 - [Giới thiệu](#introduction)
     - [Tuỳ biến Request Header](#customizing-request-headers)
+    - [Cookies](#cookies)
     - [Debugging Responses](#debugging-responses)
 - [Session / Authentication](#session-and-authentication)
 - [Test JSON API](#testing-json-apis)
@@ -13,15 +14,15 @@
 <a name="introduction"></a>
 ## Giới thiệu
 
-Laravel cung cấp một API rất dễ hiểu để thực hiện các HTTP request đến application của bạn và kiểm tra kết quả. Ví dụ, hãy xem một bài test mẫu được định nghĩa ở dưới đây:
+Laravel cung cấp một API rất dễ hiểu để thực hiện các HTTP request đến application của bạn và kiểm tra kết quả. Ví dụ, hãy xem một bài test chức năng mẫu được định nghĩa ở dưới đây:
 
     <?php
 
     namespace Tests\Feature;
 
-    use Tests\TestCase;
     use Illuminate\Foundation\Testing\RefreshDatabase;
     use Illuminate\Foundation\Testing\WithoutMiddleware;
+    use Tests\TestCase;
 
     class ExampleTest extends TestCase
     {
@@ -70,18 +71,38 @@ Bạn có thể sử dụng phương thức `withHeaders` để tùy biến các
 
 > {tip} CSRF middleware sẽ tự động bị vô hiệu hóa khi chạy test.
 
+<a name="cookies"></a>
+### Cookies
+
+Bạn có thể sử dụng phương thức `withCookie` hoặc `withCookies` để set giá trị của cookie trước khi tạo ra một request. Phương thức `withCookie` chấp nhận tên của cookie và một giá trị làm tham số thứ hai của nó, trong khi phương thức` withCookies` chấp nhận một mảng các cặp tên và giá trị:
+
+    <?php
+
+    class ExampleTest extends TestCase
+    {
+        public function testCookies()
+        {
+            $response = $this->withCookie('color', 'blue')->get('/');
+
+            $response = $this->withCookies([
+                'color' => 'blue',
+                'name' => 'Taylor',
+            ])->get('/');
+        }
+    }
+
 <a name="debugging-responses"></a>
 ### Debugging Responses
 
-Sau khi tạo ra một bài test request cho ứng dụng của bạn, các phương thức `dump` và `dumpHeaders` có thể được sử dụng để kiểm tra và debug nội dung response:
+Sau khi tạo ra một bài test request cho ứng dụng của bạn, các phương thức `dump`, `dumpHeaders`, và `dumpSession` có thể được sử dụng để kiểm tra và debug nội dung response:
 
     <?php
 
     namespace Tests\Feature;
 
-    use Tests\TestCase;
     use Illuminate\Foundation\Testing\RefreshDatabase;
     use Illuminate\Foundation\Testing\WithoutMiddleware;
+    use Tests\TestCase;
 
     class ExampleTest extends TestCase
     {
@@ -95,6 +116,8 @@ Sau khi tạo ra một bài test request cho ứng dụng của bạn, các phư
             $response = $this->get('/');
 
             $response->dumpHeaders();
+
+            $response->dumpSession();
 
             $response->dump();
         }
@@ -141,7 +164,7 @@ Bạn cũng có thể khai báo guard nào sẽ được sử dụng để xác 
 <a name="testing-json-apis"></a>
 ## Test JSON API
 
-Laravel cũng cung cấp một số helper để kiểm tra API JSON và response của chúng. Ví dụ, các phương thức `json`, `get`, `post`, `put`, `patch`, `delete`, và `option` có thể được sử dụng để đưa vào các request với các method HTTP khác nhau. Bạn cũng có thể dễ dàng truyền dữ liệu và các header cho các phương thức này. Để bắt đầu, hãy viết một bài test để thực hiện một request `POST` đến `/user` và xác nhận rằng dữ liệu mà bạn mong muốn sẽ trả về:
+Laravel cũng cung cấp một số helper để kiểm tra API JSON và response của chúng. Ví dụ, các phương thức `json`, `getJson`, `postJson`, `putJson`, `patchJson`, `deleteJson`, và `optionJson` có thể được sử dụng để đưa vào các JSON request với các method HTTP khác nhau. Bạn cũng có thể dễ dàng truyền dữ liệu và các header cho các phương thức này. Để bắt đầu, hãy viết một bài test để thực hiện một request `POST` đến `/user` và xác nhận rằng dữ liệu mà bạn mong muốn sẽ trả về:
 
     <?php
 
@@ -154,7 +177,7 @@ Laravel cũng cung cấp một số helper để kiểm tra API JSON và respons
          */
         public function testBasicExample()
         {
-            $response = $this->json('POST', '/user', ['name' => 'Sally']);
+            $response = $this->postJson('/user', ['name' => 'Sally']);
 
             $response
                 ->assertStatus(201)
@@ -192,6 +215,30 @@ Nếu bạn muốn kiểm tra một mảng đã cho là giống **chính xác** 
         }
     }
 
+<a name="verifying-json-paths"></a>
+### Verifying JSON Paths
+
+Nếu bạn muốn kiểm tra rằng response JSON phải chứa một số dữ liệu nhất định tại một đường dẫn cụ thể, bạn nên sử dụng phương thức `assertJsonPath`:
+
+    <?php
+
+    class ExampleTest extends TestCase
+    {
+        /**
+         * A basic functional test example.
+         *
+         * @return void
+         */
+        public function testBasicExample()
+        {
+            $response = $this->json('POST', '/user', ['name' => 'Sally']);
+
+            $response
+                ->assertStatus(201)
+                ->assertJsonPath('team.owner.name', 'foo')
+        }
+    }
+
 <a name="testing-file-uploads"></a>
 ## Test File Upload
 
@@ -201,11 +248,11 @@ Class `Illuminate\Http\UploadedFile` cung cấp một phương thức `fake` có
 
     namespace Tests\Feature;
 
-    use Tests\TestCase;
-    use Illuminate\Http\UploadedFile;
-    use Illuminate\Support\Facades\Storage;
     use Illuminate\Foundation\Testing\RefreshDatabase;
     use Illuminate\Foundation\Testing\WithoutMiddleware;
+    use Illuminate\Http\UploadedFile;
+    use Illuminate\Support\Facades\Storage;
+    use Tests\TestCase;
 
     class ExampleTest extends TestCase
     {
@@ -237,13 +284,17 @@ Ngoài việc tạo hình ảnh, bạn có thể tạo ra các file thuộc bấ
 
     UploadedFile::fake()->create('document.pdf', $sizeInKilobytes);
 
+Nếu cần, bạn có thể truyền thêm tham số `$mimeType` vào phương thức để khai báo kiểu MIME sẽ được trả về theo file:
+
+    UploadedFile::fake()->create('document.pdf', $sizeInKilobytes, 'application/pdf');
+
 <a name="available-assertions"></a>
 ## Available Assertions
 
 <a name="response-assertions"></a>
 ### Response Assertions
 
-Laravel cung cấp nhiều phương thức assertion để tùy biến cho các bài test [PHPUnit](https://phpunit.de/) của bạn. Các assertion này có thể được truy cập trên các response được trả về từ các phương thức test `json`, `get`, `post`, `put`, và `delete`:
+Laravel cung cấp nhiều phương thức assertion để tùy biến cho các bài test chức năng [PHPUnit](https://phpunit.de/) của bạn. Các assertion này có thể được truy cập trên các response được trả về từ các phương thức test `json`, `get`, `post`, `put`, và `delete`:
 
 <style>
     .collection-method-list > p {
@@ -262,6 +313,7 @@ Laravel cung cấp nhiều phương thức assertion để tùy biến cho các 
 [assertCookieExpired](#assert-cookie-expired)
 [assertCookieNotExpired](#assert-cookie-not-expired)
 [assertCookieMissing](#assert-cookie-missing)
+[assertCreated](#assert-created)
 [assertDontSee](#assert-dont-see)
 [assertDontSeeText](#assert-dont-see-text)
 [assertExactJson](#assert-exact-json)
@@ -274,9 +326,11 @@ Laravel cung cấp nhiều phương thức assertion để tùy biến cho các 
 [assertJsonMissing](#assert-json-missing)
 [assertJsonMissingExact](#assert-json-missing-exact)
 [assertJsonMissingValidationErrors](#assert-json-missing-validation-errors)
+[assertJsonPath](#assert-json-path)
 [assertJsonStructure](#assert-json-structure)
 [assertJsonValidationErrors](#assert-json-validation-errors)
 [assertLocation](#assert-location)
+[assertNoContent](#assert-no-content)
 [assertNotFound](#assert-not-found)
 [assertOk](#assert-ok)
 [assertPlainCookie](#assert-plain-cookie)
@@ -331,6 +385,13 @@ Yêu cầu response không chứa cookie đã cho:
 
     $response->assertCookieMissing($cookieName);
 
+<a name="assert-created"></a>
+#### assertCreated
+
+Yêu cầu response phải có status code là 201:
+
+    $response->assertCreated();
+
 <a name="assert-dont-see"></a>
 #### assertDontSee
 
@@ -378,7 +439,7 @@ Yêu cầu header đã cho không có trong response:
 
 Yêu cầu response phải chứa dữ liệu JSON đã cho:
 
-    $response->assertJson(array $data);
+    $response->assertJson(array $data, $strict = false);
 
 <a name="assert-json-count"></a>
 #### assertJsonCount
@@ -415,6 +476,13 @@ Yêu cầu response không chứa các lỗi JSON validation cho các khóa đã
 
     $response->assertJsonMissingValidationErrors($keys);
 
+<a name="assert-json-path"></a>
+#### assertJsonPath
+
+Yêu cầu response phải chứa một số dữ liệu đã cho tại một đường dẫn cụ thể:
+
+    $response->assertJsonPath($path, array $data, $strict = false);
+
 <a name="assert-json-structure"></a>
 #### assertJsonStructure
 
@@ -435,6 +503,13 @@ Yêu cầu JSON response trả về lỗi validation:
 Yêu cầu response có giá trị URI trong header `Location`:
 
     $response->assertLocation($uri);
+
+<a name="assert-no-content"></a>
+#### assertNoContent
+
+Yêu cầu response có status code đã cho và không có content.
+
+    $response->assertNoContent($status = 204);
 
 <a name="assert-not-found"></a>
 #### assertNotFound
@@ -516,14 +591,14 @@ Yêu cầu session có chứa một mảng các giá trị nhất định:
 <a name="assert-session-has-errors"></a>
 #### assertSessionHasErrors
 
-Yêu cầu session có chứa lỗi của các field đã cho:
+Yêu cầu session có chứa lỗi của các field `$keys`. Nếu `$keys` là một mảng associative, thì sẽ yêu cầu là session sẽ chứa một message error cụ thể (giá trị) cho mỗi field (khóa):
 
     $response->assertSessionHasErrors(array $keys, $format = null, $errorBag = 'default');
 
 <a name="assert-session-has-errors-in"></a>
 #### assertSessionHasErrorsIn
 
-Yêu cầu session có chứa lỗi đã cho:
+Yêu cầu session có chứa lỗi của các field `$keys`, trong một error bag cụ thể. Nếu `$keys` là một mảng associative, thì sẽ yêu cầu là session sẽ chứa một message error cụ thể (giá trị) cho mỗi field (khóa), trong error bag cụ thể:
 
     $response->assertSessionHasErrorsIn($errorBag, $keys = [], $format = null);
 
@@ -558,7 +633,7 @@ Yêu cầu response trả về status code đã cho:
 <a name="assert-successful"></a>
 #### assertSuccessful
 
-Yêu cầu response trả về một status code thành công (200):
+Yêu cầu response trả về một status code thành công (>= 200 và < 300):
 
     $response->assertSuccessful();
 
@@ -600,7 +675,7 @@ Yêu cầu response view thiếu một phần dữ liệu bị ràng buộc:
 <a name="authentication-assertions"></a>
 ### Authentication Assertions
 
-Laravel cũng sẽ cung cấp nhiều cách authentication liên quan đến assertion cho các bài test [PHPUnit](https://phpunit.de/) của bạn:
+Laravel cũng sẽ cung cấp nhiều cách authentication liên quan đến assertion cho các bài test chức năng [PHPUnit](https://phpunit.de/) của bạn:
 
 Method  | Description
 ------------- | -------------

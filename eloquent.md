@@ -7,6 +7,7 @@
 - [Lấy ra Model](#retrieving-models)
     - [Collection](#collections)
     - [Phân kết quả](#chunking-results)
+    - [Advanced Subqueries](#advanced-subqueries)
 - [Lấy ra một Model / một thống kê](#retrieving-single-models)
     - [Lấy ra một thống kê](#retrieving-aggregates)
 - [Thêm và cập nhật Model](#inserting-and-updating-models)
@@ -17,6 +18,7 @@
 - [Xoá Model](#deleting-models)
     - [Soft Delete](#soft-deleting)
     - [Query Model Soft Deleted](#querying-soft-deleted-models)
+- [Replicating Models](#replicating-models)
 - [Query Scope](#query-scopes)
     - [Global Scope](#global-scopes)
     - [Local Scope](#local-scopes)
@@ -299,10 +301,49 @@ Phương thức `cursor` cho phép bạn lặp qua các bản ghi trong cơ sở
         //
     }
 
+Phương thức `cursor` sẽ trả về một instance `Illuminate\Support\LazyCollection`. [Lazy collections](/docs/{{version}}/collections#lazy-collections) cho phép bạn sử dụng nhiều phương thức có sẵn trên các collection Laravel cở bản trong khi chỉ load một model duy nhất vào bộ nhớ tại một thời điểm:
+
+    $users = App\User::cursor()->filter(function ($user) {
+        return $user->id > 500;
+    });
+
+    foreach ($users as $user) {
+        echo $user->id;
+    }
+
+<a name="advanced-subqueries"></a>
+### Advanced Subqueries
+
+#### Subquery Selects
+
+Eloquent cũng cung cấp hỗ trợ các truy vấn con nâng cao, cho phép bạn lấy thông tin từ các bảng liên quan trong một truy vấn duy nhất. Ví dụ, hãy tưởng tượng rằng chúng ta có một bảng các chuyến bay `destinations` và một bảng `flights` đến các destination. Bảng `flights` chứa một cột `arrived_at` cho biết thời điểm chuyến bay đến destination.
+
+Sử dụng chức năng truy vấn phụ có trong phương thức `select` và `addSelect`, chúng ta có thể lấy ra tất cả các `destinations` và tên của chuyến bay đã đến điểm đến đó gần đây nhất chỉ bằng một câu lệnh truy vấn duy nhất:
+
+    use App\Destination;
+    use App\Flight;
+
+    return Destination::addSelect(['last_flight' => Flight::select('name')
+        ->whereColumn('destination_id', 'destinations.id')
+        ->orderBy('arrived_at', 'desc')
+        ->limit(1)
+    ])->get();
+
+#### Subquery Ordering
+
+Ngoài ra, hàm `orderBy` của query builder cũng hỗ trợ các truy vấn con. Chúng ta có thể sử dụng chức năng này để sắp xếp tất cả các điểm đến dựa trên thời điểm chuyến bay cuối cùng đến điểm đến đó. Một lần nữa, điều này có thể được thực hiện chỉ trong một truy vấn duy nhất đối với cơ sở dữ liệu:
+
+    return Destination::orderByDesc(
+        Flight::select('arrived_at')
+            ->whereColumn('destination_id', 'destinations.id')
+            ->orderBy('arrived_at', 'desc')
+            ->limit(1)
+    )->get();
+
 <a name="retrieving-single-models"></a>
 ## Lấy ra một Model / một thống kê
 
-Ngoài việc truy xuất tất cả các bản ghi có trong một bảng, bạn cũng có thể truy xuất một bản ghi bằng cách sử dụng phương thức `find` hoặc `first`. Thay vì trả về một tập hợp các model, thì các phương thức này sẽ trả về một instance model duy nhất:
+Ngoài việc truy xuất tất cả các bản ghi có trong một bảng, bạn cũng có thể truy xuất một bản ghi bằng cách sử dụng phương thức `find`, `first`, hoặc `firstWhere`. Thay vì trả về một tập hợp các model, thì các phương thức này sẽ trả về một instance model duy nhất:
 
     // Retrieve a model by its primary key...
     $flight = App\Flight::find(1);
@@ -310,9 +351,25 @@ Ngoài việc truy xuất tất cả các bản ghi có trong một bảng, bạ
     // Retrieve the first model matching the query constraints...
     $flight = App\Flight::where('active', 1)->first();
 
+    // Shorthand for retrieving the first model matching the query constraints...
+    $flight = App\Flight::firstWhere('active', 1);
+
 Bạn cũng có thể gọi phương thức `find` với một mảng các khóa chính, sẽ trả về một tập hợp các bản ghi khớp với mảng khoá chính đó:
 
     $flights = App\Flight::find([1, 2, 3]);
+
+Thỉnh thoảng bạn có thể muốn lấy ra kết quả đầu tiên của một truy vấn hoặc thực hiện một số hành động khác nếu không tìm thấy kết quả nào. Phương thức `firstOr` sẽ trả về kết quả đầu tiên được tìm thấy hoặc nếu không tìm thấy kết quả nào, sẽ thực hiện callback đã cho. Kết quả của callback sẽ được coi là kết quả của phương thức `firstOr`:
+
+    $model = App\Flight::where('legs', '>', 100)->firstOr(function () {
+            // ...
+    });
+
+Phương thức `firstOr` cũng chấp nhận một mảng tên cột để lấy ra:
+
+    $model = App\Flight::where('legs', '>', 100)
+                ->firstOr(['id', 'legs'], function () {
+                    // ...
+                });
 
 #### Not Found Exceptions
 
@@ -349,9 +406,9 @@ Bạn cũng có thể sử dụng các phương thức `count`, `sum`, `max`, v�
 
     namespace App\Http\Controllers;
 
+    use App\Http\Controllers\Controller;
     use App\Flight;
     use Illuminate\Http\Request;
-    use App\Http\Controllers\Controller;
 
     class FlightController extends Controller
     {
@@ -397,6 +454,48 @@ Cập nhật cũng có thể được thực hiện đối với một số lư�
 Phương thức `update` yêu cầu một mảng gồm các cặp: tên cột và giá trị cần được cập nhật.
 
 > {note} Khi chạy một mass update thông qua Eloquent, thì các event của model như `saving`, `saved`, `updating`, và `updated` sẽ không được kích hoạt. Điều này là do các model đã không được lấy ra khi chạy một mass update.
+
+#### Examining Attribute Changes
+
+Eloquent cung cấp các phương thức `isDirty`, `isClean` và `wasChanged` để kiểm tra xem trạng thái của model của bạn và xác định các thuộc tính của model đã bị thay đổi như thế nào so với khi chúng được load ra lần đầu tiên.
+
+Phương thức `isDirty` sẽ xác định xem có bất kỳ thuộc tính nào bị thay đổi kể từ khi model được load hay không. Bạn có thể truyền vào một tên thuộc tính cụ thể để xác định xem thuộc tính đó có bị thay đổi hay không. Phương thức `isClean` sẽ ngược lại với phương thức `isDirty` và cũng chấp nhận một tùy chọn tham số thuộc tính:
+
+    $user = User::create([
+        'first_name' => 'Taylor',
+        'last_name' => 'Otwell',
+        'title' => 'Developer',
+    ]);
+
+    $user->title = 'Painter';
+
+    $user->isDirty(); // true
+    $user->isDirty('title'); // true
+    $user->isDirty('first_name'); // false
+
+    $user->isClean(); // false
+    $user->isClean('title'); // false
+    $user->isClean('first_name'); // true
+
+    $user->save();
+
+    $user->isDirty(); // false
+    $user->isClean(); // true
+
+Phương thức `wasChanged` sẽ xác định xem đã có bất kỳ thuộc tính nào bị thay đổi khi model được lưu vào lần cuối trong request hiện tại hay không. Bạn cũng có thể truyền tên một thuộc tính để xem liệu thuộc tính đó có bị thay đổi hay không:
+
+    $user = User::create([
+        'first_name' => 'Taylor',
+        'last_name' => 'Otwell',
+        'title' => 'Developer',
+    ]);
+
+    $user->title = 'Painter';
+    $user->save();
+
+    $user->wasChanged(); // true
+    $user->wasChanged('title'); // true
+    $user->wasChanged('first_name'); // false
 
 <a name="mass-assignment"></a>
 ### Mass Assignment
@@ -609,6 +708,25 @@ Thỉnh thoảng bạn cũng có thể cần phải loại bỏ vĩnh viễn m�
     // Force deleting all related models...
     $flight->history()->forceDelete();
 
+<a name="replicating-models"></a>
+## Replicating Models
+
+Bạn có thể tạo một bản sao chưa lưu của một instance model bằng cách sử dụng phương thức `replicate`. Điều này đặc biệt hữu ích khi bạn có các instance model dùng chung nhiều thuộc tính giống nhau:
+
+    $shipping = App\Address::create([
+        'type' => 'shipping',
+        'line_1' => '123 Example Street',
+        'city' => 'Victorville',
+        'state' => 'CA',
+        'postcode' => '90001',
+    ]);
+
+    $billing = $shipping->replicate()->fill([
+        'type' => 'billing'
+    ]);
+
+    $billing->save();
+
 <a name="query-scopes"></a>
 ## Query Scope
 
@@ -625,9 +743,9 @@ Viết một global scope rất đơn giản. Định nghĩa một class impleme
 
     namespace App\Scopes;
 
-    use Illuminate\Database\Eloquent\Scope;
-    use Illuminate\Database\Eloquent\Model;
     use Illuminate\Database\Eloquent\Builder;
+    use Illuminate\Database\Eloquent\Model;
+    use Illuminate\Database\Eloquent\Scope;
 
     class AgeScope implements Scope
     {
@@ -684,8 +802,8 @@ Eloquent cũng cho phép bạn định nghĩa global scope bằng cách sử d�
 
     namespace App;
 
-    use Illuminate\Database\Eloquent\Model;
     use Illuminate\Database\Eloquent\Builder;
+    use Illuminate\Database\Eloquent\Model;
 
     class User extends Model
     {
@@ -723,27 +841,6 @@ Nếu bạn muốn xóa một vài hoặc thậm chí là tất cả các global
     User::withoutGlobalScopes([
         FirstScope::class, SecondScope::class
     ])->get();
-
-Bạn cũng có thể xóa một a global scope ra khỏi các quan hệ:
-
-    <?php
-
-    namespace App;
-
-    use Illuminate\Database\Eloquent\Model;
-
-    class Post extends Model
-    {
-        /**
-         * Get the creator of the post.
-         *
-         * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
-         */
-        public function creator()
-        {
-            return $this->belongsTo(User::class)->withoutGlobalScopes();
-        }
-    }
 
 <a name="local-scopes"></a>
 ### Local Scope
@@ -844,7 +941,7 @@ Các eloquent model sẽ kích hoạt một số event, cho phép bạn hook đ�
 
 Event `retrieved` sẽ được kích hoạt khi một model được lấy ra khỏi cơ sở dữ liệu. Khi một model mới được lưu vào lần đầu tiên, các event `creating` và `created` sẽ kích hoạt. Nếu một model đã có trong cơ sở dữ liệu và phương thức `save` được gọi, thì các event `updating` và `updated` sẽ kích hoạt. Tuy nhiên, trong cả hai trường hợp trên, thì các event `saving` / `saved` cũng sẽ kích hoạt.
 
-> {note} Khi bạn cập nhật một loạt dữ liệu thông qua Eloquent, thì các event của model như `saved` và `updated` sẽ không được kích hoạt cho các model đó. Điều này là do các model không thực sự được lấy ra khi bạn chạy các cập nhật đó.
+> {note} Khi bạn cập nhật một loạt dữ liệu thông qua Eloquent, thì các event của model như `saved`, `updated`, `deleting`, và `deleted` sẽ không được kích hoạt cho các model đó. Điều này là do các model không thực sự được lấy ra khi bạn chạy các cập nhật hoặc xoá bỏ.
 
 Để bắt đầu, hãy định nghĩa một thuộc tính `$dispatchesEvents` trên model Eloquent của bạn để nối các thời điểm khác nhau trong vòng đời của model Eloquent đó vào các [event classes](/docs/{{version}}/events) của bạn:
 
@@ -852,9 +949,8 @@ Event `retrieved` sẽ được kích hoạt khi một model được lấy ra k
 
     namespace App;
 
-    use App\Events\UserSaved;
     use App\Events\UserDeleted;
-    use Illuminate\Notifications\Notifiable;
+    use App\Events\UserSaved;
     use Illuminate\Foundation\Auth\User as Authenticatable;
 
     class User extends Authenticatable
@@ -925,6 +1021,17 @@ Lệnh này sẽ lưu file observer mới vào trong thư mục `App/Observers` 
         {
             //
         }
+
+        /**
+         * Handle the User "forceDeleted" event.
+         *
+         * @param  \App\User  $user
+         * @return void
+         */
+        public function forceDeleted(User $user)
+        {
+            //
+        }
     }
 
 Để đăng ký một observer, hãy sử dụng phương thức `observe` trên model mà bạn muốn observe. Bạn có thể đăng ký observer trong phương thức `boot` của một trong những service provider của bạn. Trong ví dụ này, chúng ta sẽ đăng ký observer trong `AppServiceProvider`:
@@ -933,8 +1040,8 @@ Lệnh này sẽ lưu file observer mới vào trong thư mục `App/Observers` 
 
     namespace App\Providers;
 
-    use App\User;
     use App\Observers\UserObserver;
+    use App\User;
     use Illuminate\Support\ServiceProvider;
 
     class AppServiceProvider extends ServiceProvider

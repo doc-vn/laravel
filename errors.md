@@ -27,14 +27,14 @@ Nếu môi trường phát triển ở local, thì bạn nên lưu biến môi t
 <a name="report-method"></a>
 ### Phương thức report
 
-Tất cả các ngoại lệ sẽ được xử lý bởi class `App\Exceptions\Handler`. Class này chứa hai phương thức: `report` và `render`. Chúng ta sẽ tìm hiểu từng phương thức này một cách chi tiết. Phương thức `report` được sử dụng để ghi lại log hoặc gửi ngoại lệ đến một dịch vụ bên ngoài như là [Bugsnag](https://bugsnag.com) hoặc [Sentry](https://github.com/getsentry/sentry-laravel). Mặc định, phương thức `report` sẽ truyền ngoại lệ cho một class cơ sở, nơi mà ngoại lệ sẽ được log lại. Tuy nhiên, bạn có thể thoải mái log ngoại lệ theo cách bạn muốn.
+Tất cả các ngoại lệ sẽ được xử lý bởi class `App\Exceptions\Handler`. Class này chứa hai phương thức: `report` và `render`. Chúng ta sẽ tìm hiểu từng phương thức này một cách chi tiết. Phương thức `report` được sử dụng để ghi lại log hoặc gửi ngoại lệ đến một dịch vụ bên ngoài như là [Flare](https://flareapp.io), [Bugsnag](https://bugsnag.com) hoặc [Sentry](https://github.com/getsentry/sentry-laravel). Mặc định, phương thức `report` sẽ truyền ngoại lệ cho một class cơ sở, nơi mà ngoại lệ sẽ được log lại. Tuy nhiên, bạn có thể thoải mái log ngoại lệ theo cách bạn muốn.
 
 Ví dụ, nếu bạn cần report các loại ngoại lệ khác nhau theo các cách khác nhau, bạn có thể sử dụng toán tử so sánh `instanceof` của PHP:
 
     /**
      * Report or log an exception.
      *
-     * This is a great spot to send exceptions to Sentry, Bugsnag, etc.
+     * This is a great spot to send exceptions to Flare, Sentry, Bugsnag, etc.
      *
      * @param  \Exception  $exception
      * @return void
@@ -145,7 +145,7 @@ Thay vì cách kiểm tra các loại của ngoại lệ như trong các phươn
         /**
          * Render the exception into an HTTP response.
          *
-         * @param  \Illuminate\Http\Request
+         * @param  \Illuminate\Http\Request  $request
          * @return \Illuminate\Http\Response
          */
         public function render($request)

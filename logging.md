@@ -66,8 +66,7 @@ Channel `papertrail` sẽ yêu cầu các tùy chọn cấu hình `url` và `por
 
 #### Configuring The Slack Channel
 
-Channel `slack` yêu cầu một cấu hình `url`. URL này phải khớp với một URL đã cho của một [webhook](https://slack.com/apps/A0F7XDUAZ-incoming-webhooks) mà bạn đã cấu hình trong nhóm Slack của bạn.
-
+Channel `slack` yêu cầu một cấu hình `url`. URL này phải khớp với một URL đã cho của một [webhook](https://slack.com/apps/A0F7XDUAZ-incoming-webhooks) mà bạn đã cấu hình trong nhóm Slack của bạn. Mặc định, Slack sẽ chỉ nhận các log ở cấp độ `critical` trở lên; tuy nhiên, bạn có thể điều chỉnh điều này trong file cấu hình `logging` của bạn.
 
 <a name="building-log-stacks"></a>
 ### Tạo Log Stack
@@ -128,9 +127,9 @@ Vì vậy, bạn có thể gọi bất kỳ phương thức nào trong các phư
 
     namespace App\Http\Controllers;
 
+    use App\Http\Controllers\Controller;
     use App\User;
     use Illuminate\Support\Facades\Log;
-    use App\Http\Controllers\Controller;
 
     class UserController extends Controller
     {

@@ -4,6 +4,7 @@
 - [Tạo Factory](#generating-factories)
 - [Reset database sau mỗi lần test](#resetting-the-database-after-each-test)
 - [Viết Factory](#writing-factories)
+    - [Extending Factories](#extending-factories)
     - [Factory States](#factory-states)
     - [Factory Callbacks](#factory-callbacks)
 - [Dùng Factory](#using-factories)
@@ -23,13 +24,13 @@ Laravel cung cấp nhiều công cụ hữu ích để giúp bạn dễ dàng te
         // Make call to application...
 
         $this->assertDatabaseHas('users', [
-            'email' => 'sally@example.com'
+            'email' => 'sally@example.com',
         ]);
     }
 
 Bạn cũng có thể sử dụng helper `assertDatabaseMissing` để yêu cầu dữ liệu phải không được có trong cơ sở dữ liệu.
 
-Phương thức `assertDatabaseHas` và những phương thức helper khác giống như nó là để cho thuận tiện hơn. Bạn có thể tự do sử dụng bất kỳ phương thức kiểm tra nào của PHPUnit để bổ sung cho các bài test của bạn.
+Phương thức `assertDatabaseHas` và những phương thức helper khác giống như nó là để cho thuận tiện hơn. Bạn có thể tự do sử dụng bất kỳ phương thức kiểm tra nào của PHPUnit để bổ sung cho các bài test chức năng của bạn.
 
 <a name="generating-factories"></a>
 ## Tạo Factory
@@ -53,9 +54,9 @@ Việc reset lại cơ sở dữ liệu của bạn sau mỗi lần kiểm tra t
 
     namespace Tests\Feature;
 
-    use Tests\TestCase;
     use Illuminate\Foundation\Testing\RefreshDatabase;
     use Illuminate\Foundation\Testing\WithoutMiddleware;
+    use Tests\TestCase;
 
     class ExampleTest extends TestCase
     {
@@ -79,15 +80,15 @@ Việc reset lại cơ sở dữ liệu của bạn sau mỗi lần kiểm tra t
 
 Trước khi test, bạn có thể cần thêm một vài bản ghi vào trong cơ sở dữ liệu của bạn trước khi thực hiện test. Thay vì khai báo thủ công các giá trị cho từng cột khi bạn tạo dữ liệu test này, Laravel cho phép bạn định nghĩa một loạt các thuộc tính mặc định cho từng [Eloquent models](/docs/{{version}}/eloquent) bằng cách sử dụng các model factory. Để bắt đầu, hãy xem file `database/factories/UserFactory.php` trong ứng dụng của bạn. Mặc định, file này chứa sẵn một định nghĩa của factory:
 
-    use Illuminate\Support\Str;
     use Faker\Generator as Faker;
+    use Illuminate\Support\Str;
 
     $factory->define(App\User::class, function (Faker $faker) {
         return [
             'name' => $faker->name,
             'email' => $faker->unique()->safeEmail,
             'email_verified_at' => now(),
-            'password' => '$2y$10$TKh8H1.PfQx37YgCzwiKb.KjNyWgaHb9cbcoQgdIVFlYg7B77UdFm', // secret
+            'password' => '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', // password
             'remember_token' => Str::random(10),
         ];
     });
@@ -97,6 +98,17 @@ Closure đóng vai trò là định nghĩa của factory, bạn có thể trả 
 Bạn cũng có thể tạo thêm các file factory cho từng model để tổ chức tốt hơn. Ví dụ: bạn có thể tạo các file `UserFactory.php` và `CommentFactory.php` trong thư mục `database/factories` của bạn. Tất cả các file trong thư mục `factories` sẽ tự động được load bởi Laravel.
 
 > {tip} Bạn có thể cài đặt ngôn ngữ của Faker bằng cách thêm tùy chọn `faker_locale` vào file cấu hình `config/app.php` của bạn.
+
+<a name="extending-factories"></a>
+### Extending Factories
+
+Nếu bạn đã extend một model, bạn cũng có thể muốn extend factory của nó để sử dụng các thuộc tính factory của model con trong quá trình testing và seeding. Để thực hiện điều này, bạn có thể gọi phương thức `raw` trong factory builder để lấy ra một mảng thuộc tính raw từ một factory cụ thể nào đó:
+
+    $factory->define(App\Admin::class, function (Faker\Generator $faker) {
+        return factory(App\User::class)->raw([
+            // ...
+        ]);
+    });
 
 <a name="factory-states"></a>
 ### Factory States
@@ -144,7 +156,7 @@ Bạn cũng có thể định nghĩa callback cho [factory states](#factory-stat
 <a name="creating-models"></a>
 ### Tạo Model
 
-Khi bạn đã định nghĩa các factory của bạn, bạn có thể sử dụng hàm global `factory` trong các bài test hoặc trong các file seed của bạn để tạo ra các instance model. Bây giờ, chúng ta hãy xem qua một vài ví dụ về việc tạo model. Đầu tiên, chúng ta sẽ sử dụng phương thức `make` để tạo các model nhưng không lưu chúng vào cơ sở dữ liệu:
+Khi bạn đã định nghĩa các factory của bạn, bạn có thể sử dụng hàm global `factory` trong các bài test chức năng hoặc trong các file seed của bạn để tạo ra các instance model. Bây giờ, chúng ta hãy xem qua một vài ví dụ về việc tạo model. Đầu tiên, chúng ta sẽ sử dụng phương thức `make` để tạo các model nhưng không lưu chúng vào cơ sở dữ liệu:
 
     public function testDatabase()
     {
@@ -217,46 +229,42 @@ Bạn có thể sử dụng phương thức `createMany` để tạo nhiều cá
 
 #### Relations & Attribute Closures
 
-Bạn cũng có thể gắn thêm các quan hệ cho các model bằng các thuộc tính Closure trong định nghĩa factory của bạn. Ví dụ: nếu bạn muốn tạo một instance `User` mới khi đang tạo một `Post`, bạn có thể làm như sau:
+Bạn cũng có thể gắn thêm các quan hệ cho các model trong định nghĩa factory của bạn. Ví dụ: nếu bạn muốn tạo một instance `User` mới khi đang tạo một `Post`, bạn có thể làm như sau:
 
     $factory->define(App\Post::class, function ($faker) {
         return [
             'title' => $faker->title,
             'content' => $faker->paragraph,
-            'user_id' => function () {
-                return factory(App\User::class)->create()->id;
-            }
+            'user_id' => factory(App\User::class),
         ];
     });
 
-Các Closure này cũng nhận vào một mảng các thuộc tính của factory mà đã được định nghĩa cho chúng:
+Nếu quan hệ phụ thuộc vào factory mà đã định nghĩa nó, bạn có thể cung cấp một lệnh callback chấp nhận mảng thuộc tính đã được cài đặt:
 
     $factory->define(App\Post::class, function ($faker) {
         return [
             'title' => $faker->title,
             'content' => $faker->paragraph,
-            'user_id' => function () {
-                return factory(App\User::class)->create()->id;
-            },
+            'user_id' => factory(App\User::class),
             'user_type' => function (array $post) {
                 return App\User::find($post['user_id'])->type;
-            }
+            },
         ];
     });
 
 <a name="using-seeds"></a>
 ## Dùng Seeds
 
-Nếu bạn muốn sử dụng [database seeders](/docs/{{version}}/seeding) để tạo cơ sở dữ liệu trong quá trình kiểm tra của bạn, bạn có thể sử dụng phương thức `seed`. Mặc định, phương thức `seed` sẽ trả về `DatabaseSeeder`, phương thức này sẽ chạy tất cả các seeder khác của bạn. Ngoài ra, bạn cũng có thể truyền vào một tên của class seeder cụ thể cho phương thức `seed`:
+Nếu bạn muốn sử dụng [database seeders](/docs/{{version}}/seeding) để tạo cơ sở dữ liệu trong quá trình test chức năng của bạn, bạn có thể sử dụng phương thức `seed`. Mặc định, phương thức `seed` sẽ trả về `DatabaseSeeder`, phương thức này sẽ chạy tất cả các seeder khác của bạn. Ngoài ra, bạn cũng có thể truyền vào một tên của class seeder cụ thể cho phương thức `seed`:
 
     <?php
 
     namespace Tests\Feature;
 
-    use Tests\TestCase;
-    use OrderStatusesTableSeeder;
     use Illuminate\Foundation\Testing\RefreshDatabase;
     use Illuminate\Foundation\Testing\WithoutMiddleware;
+    use OrderStatusesTableSeeder;
+    use Tests\TestCase;
 
     class ExampleTest extends TestCase
     {
@@ -282,10 +290,24 @@ Nếu bạn muốn sử dụng [database seeders](/docs/{{version}}/seeding) đ�
 <a name="available-assertions"></a>
 ## Assertion có sẵn
 
-Laravel cung cấp sẵn một số phương thức kiểm tra cơ sở dữ liệu cho các bài test [PHPUnit] (https://phastait.de/) của bạn:
+Laravel cung cấp sẵn một số phương thức kiểm tra cơ sở dữ liệu cho các bài test chức năng [PHPUnit](https://phastait.de/) của bạn:
 
 Method  | Description
 ------------- | -------------
 `$this->assertDatabaseHas($table, array $data);`  |  Yêu cầu một bảng trong cơ sở dữ liệu phải chứa dữ liệu đã cho.
 `$this->assertDatabaseMissing($table, array $data);`  |  Yêu cầu một bảng trong cơ sở dữ liệu không được chứa dữ liệu đã cho.
+`$this->assertDeleted($table, array $data);`  |  Yêu cầu bản ghi đã cho đã bị delete.
 `$this->assertSoftDeleted($table, array $data);`  |  Yêu cầu bản ghi đã cho đã bị soft delete.
+
+Để thuận tiện, bạn có thể truyền một model cho helper `assertDeleted` và `assertSoftDeleted` để yêu cầu bản ghi đã bị delete hoặc soft delete ra khỏi cơ sở dữ liệu dựa trên khóa chính của model.
+
+Ví dụ: nếu bạn đang sử dụng một model factory trong quá trình test của bạn, bạn có thể truyền model này cho một trong những helper này để kiểm tra ứng dụng của bạn đã xóa bản ghi đó ra khỏi cơ sở dữ liệu:
+
+    public function testDatabase()
+    {
+        $user = factory(App\User::class)->create();
+
+        // Make call to application...
+
+        $this->assertDeleted($user);
+    }

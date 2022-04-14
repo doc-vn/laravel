@@ -10,7 +10,7 @@
 <a name="introduction"></a>
 ## Giới thiệu
 
-> {tip} **Nếu bạn muốn bắt đầu nhanh?** Bạn chỉ cần chạy `php artisan make:auth` trong terminal của một application Laravel mới và điều hướng trình duyệt của bạn đến địa chỉ `http://your-app.test/register` hoặc bất kỳ URL nào khác được gán cho application của bạn. Lệnh này sẽ đảm nhiệm việc hỗ trợ toàn bộ hệ thống xác thực của bạn, bao gồm cả việc reset mật khẩu!
+> {tip} **Nếu bạn muốn bắt đầu nhanh?** Hãy cài đặt package Composer `laravel/ui` và chạy `php artisan ui vue --auth` trong một ứng dụng Laravel mới. Sau khi migrating cơ sở dữ liệu của bạn, điều hướng trình duyệt của bạn đến địa chỉ `http://your-app.test/register` hoặc bất kỳ URL nào khác được gán cho application của bạn. Lệnh này sẽ đảm nhiệm việc hỗ trợ toàn bộ hệ thống xác thực của bạn, bao gồm cả việc reset mật khẩu!
 
 Hầu hết các ứng dụng web đều cung cấp một cách để người dùng có thể reset mật khẩu mà họ đã quên. Thay vì buộc bạn phải thực hiện lại điều này trên mỗi ứng dụng, Laravel cung cấp các phương thức thuận tiện để gửi lời nhắc mật khẩu và thực hiện reset mật khẩu.
 
@@ -30,14 +30,22 @@ Tiếp theo, một bảng phải được tạo để lưu trữ các mã token 
 <a name="resetting-routing"></a>
 ## Routing
 
-Laravel đã có sẵn các class `Auth\ForgotPasswordController` và `Auth\ResetPasswordController` để chứa các logic cần thiết cho việc gửi e-mail reset mật khẩu. Tất cả các route cần thiết để thực hiện việc reset mật khẩu có thể được tạo bằng lệnh Artisan `make:auth`:
+Laravel đã có sẵn các class `Auth\ForgotPasswordController` và `Auth\ResetPasswordController` để chứa các logic cần thiết cho việc gửi e-mail reset mật khẩu. Tất cả các route cần thiết để thực hiện việc reset mật khẩu có thể được tạo bằng lệnh Artisan của package Composer `laravel/ui`:
 
-    php artisan make:auth
+    composer require laravel/ui --dev
+
+    php artisan ui vue --auth
 
 <a name="resetting-views"></a>
 ## Views
 
-Một lần nữa, Laravel sẽ tạo ra tất cả các view cần thiết để reset mật khẩu khi bạn chạy lệnh `make:auth`. Các view này được lưu trong `resources/views/auth/passwords`. Bạn có thể tùy biến chúng nếu cần thiết cho application của bạn.
+Để tạo tất cả view cần thiết cho việc reset lại mật khẩu, bạn có thể sử dụng package Composer `laravel/ui`:
+
+    composer require laravel/ui --dev
+
+    php artisan ui vue --auth
+
+Các view này được lưu trong `resources/views/auth/passwords`. Bạn có thể tùy biến chúng nếu cần thiết cho application của bạn.
 
 <a name="after-resetting-passwords"></a>
 ## Sau khi reset password

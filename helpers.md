@@ -28,6 +28,7 @@ Laravel chứa một loạt các hàm PHP global "helper". Nhiều trong số c�
 
 [Arr::add](#method-array-add)
 [Arr::collapse](#method-array-collapse)
+[Arr::crossJoin](#method-array-crossjoin)
 [Arr::divide](#method-array-divide)
 [Arr::dot](#method-array-dot)
 [Arr::except](#method-array-except)
@@ -36,13 +37,16 @@ Laravel chứa một loạt các hàm PHP global "helper". Nhiều trong số c�
 [Arr::forget](#method-array-forget)
 [Arr::get](#method-array-get)
 [Arr::has](#method-array-has)
+[Arr::isAssoc](#method-array-isassoc)
 [Arr::last](#method-array-last)
 [Arr::only](#method-array-only)
 [Arr::pluck](#method-array-pluck)
 [Arr::prepend](#method-array-prepend)
 [Arr::pull](#method-array-pull)
 [Arr::random](#method-array-random)
+[Arr::query](#method-array-query)
 [Arr::set](#method-array-set)
+[Arr::shuffle](#method-array-shuffle)
 [Arr::sort](#method-array-sort)
 [Arr::sortRecursive](#method-array-sort-recursive)
 [Arr::where](#method-array-where)
@@ -78,13 +82,16 @@ Laravel chứa một loạt các hàm PHP global "helper". Nhiều trong số c�
 [e](#method-e)
 [preg_replace_array](#method-preg-replace-array)
 [Str::after](#method-str-after)
+[Str::afterLast](#method-str-after-last)
 [Str::before](#method-str-before)
+[Str::beforeLast](#method-str-before-last)
 [Str::camel](#method-camel-case)
 [Str::contains](#method-str-contains)
 [Str::containsAll](#method-str-contains-all)
 [Str::endsWith](#method-ends-with)
 [Str::finish](#method-str-finish)
 [Str::is](#method-str-is)
+[Str::isUuid](#method-str-is-uuid)
 [Str::kebab](#method-kebab-case)
 [Str::limit](#method-str-limit)
 [Str::orderedUuid](#method-str-ordered-uuid)
@@ -100,6 +107,8 @@ Laravel chứa một loạt các hàm PHP global "helper". Nhiều trong số c�
 [Str::startsWith](#method-starts-with)
 [Str::studly](#method-studly-case)
 [Str::title](#method-title-case)
+[Str::ucfirst](#method-str-ucfirst)
+[Str::upper](#method-str-upper)
 [Str::uuid](#method-str-uuid)
 [Str::words](#method-str-words)
 [trans](#method-trans)
@@ -220,6 +229,39 @@ Hàm `Arr::collapse` sẽ thu gọn một mảng gồm nhiều mảng con thành
     $array = Arr::collapse([[1, 2, 3], [4, 5, 6], [7, 8, 9]]);
 
     // [1, 2, 3, 4, 5, 6, 7, 8, 9]
+
+<a name="method-array-crossjoin"></a>
+#### `Arr::crossJoin()` {#collection-method}
+
+Phương thức `Arr::crossJoin` sẽ join chéo các giá trị của mảng đã cho, và trả về một tích chéo với tất cả các hoán vị có thể có:
+
+    use Illuminate\Support\Arr;
+
+    $matrix = Arr::crossJoin([1, 2], ['a', 'b']);
+
+    /*
+        [
+            [1, 'a'],
+            [1, 'b'],
+            [2, 'a'],
+            [2, 'b'],
+        ]
+    */
+
+    $matrix = Arr::crossJoin([1, 2], ['a', 'b'], ['I', 'II']);
+
+    /*
+        [
+            [1, 'a', 'I'],
+            [1, 'a', 'II'],
+            [1, 'b', 'I'],
+            [1, 'b', 'II'],
+            [2, 'a', 'I'],
+            [2, 'a', 'II'],
+            [2, 'b', 'I'],
+            [2, 'b', 'II'],
+        ]
+    */
 
 <a name="method-array-divide"></a>
 #### `Arr::divide()` {#collection-method}
@@ -342,6 +384,21 @@ Hàm `Arr::has` sẽ kiểm tra xem một item hoặc các item đã cho có t�
     // true
 
     $contains = Arr::has($array, ['product.price', 'product.discount']);
+
+    // false
+
+<a name="method-array-isassoc"></a>
+#### `Arr::isAssoc()` {#collection-method}
+
+Hàm `Arr::isAssoc` sẽ trả về `true` nếu mảng đã cho là một mảng associative. Một mảng được coi là "associative" nếu nó không có khóa bắt đầu từ 0:
+
+    use Illuminate\Support\Arr;
+
+    $isAssoc = Arr::isAssoc(['product' => ['name' => 'Desk', 'price' => 100]]);
+
+    // true
+
+    $isAssoc = Arr::isAssoc([1, 2, 3]);
 
     // false
 
@@ -468,6 +525,19 @@ Bạn cũng có thể chỉ định số lượng item sẽ được trả về 
 
     // [2, 5] - (retrieved randomly)
 
+<a name="method-array-query"></a>
+#### `Arr::query()` {#collection-method}
+
+Hàm `Arr::query` sẽ chuyển mảng thành một chuỗi truy vấn:
+
+    use Illuminate\Support\Arr;
+
+    $array = ['name' => 'Taylor', 'order' => ['column' => 'created_at', 'direction' => 'desc']];
+
+    Arr::query($array);
+
+    // name=Taylor&order[column]=created_at&order[direction]=desc
+
 <a name="method-array-set"></a>
 #### `Arr::set()` {#collection-method}
 
@@ -480,6 +550,17 @@ Hàm `Arr::set` sẽ set một giá trị trong một mảng bị lồng nhau b�
     Arr::set($array, 'products.desk.price', 200);
 
     // ['products' => ['desk' => ['price' => 200]]]
+
+<a name="method-array-shuffle"></a>
+#### `Arr::shuffle()` {#collection-method}
+
+Hàm `Arr::shuffle` sẽ trộn ngẫu nhiên các item có trong mảng:
+
+    use Illuminate\Support\Arr;
+
+    $array = Arr::shuffle([1, 2, 3, 4, 5]);
+
+    // [3, 2, 5, 1, 4] - (generated randomly)
 
 <a name="method-array-sort"></a>
 #### `Arr::sort()` {#collection-method}
@@ -820,13 +901,24 @@ Hàm `preg_replace_array` sẽ thay thế một pattern vào trong một chuỗi
 <a name="method-str-after"></a>
 #### `Str::after()` {#collection-method}
 
-Hàm `Str::after` trả về mọi thứ đứng sau giá trị đã cho có trong một chuỗi:
+Hàm `Str::after` sẽ trả về mọi thứ đứng sau giá trị đã cho có trong một chuỗi. Toàn bộ chuỗi sẽ được trả về nếu giá trị đó không tồn tại trong chuỗi:
 
     use Illuminate\Support\Str;
 
     $slice = Str::after('This is my name', 'This is');
 
     // ' my name'
+
+<a name="method-str-after-last"></a>
+#### `Str::afterLast()` {#collection-method}
+
+Hàm `Str::afterLast` sẽ trả về mọi thứ đứng đằng sau, sau lần xuất hiện cuối cùng của giá trị đã cho trong một chuỗi. Toàn bộ chuỗi sẽ được trả về nếu giá trị đó không tồn tại trong chuỗi:
+
+    use Illuminate\Support\Str;
+
+    $slice = Str::afterLast('App\Http\Controllers\Controller', '\\');
+
+    // 'Controller'
 
 <a name="method-str-before"></a>
 #### `Str::before()` {#collection-method}
@@ -838,6 +930,17 @@ Hàm `Str::before` sẽ trả về mọi thứ đứng trước giá trị đã 
     $slice = Str::before('This is my name', 'my name');
 
     // 'This is '
+
+<a name="method-str-before-last"></a>
+#### `Str::beforeLast()` {#collection-method}
+
+Hàm `Str::beforeLast` sẽ trả về mọi thứ đứng đằng trước, trước lần xuất hiện cuối cùng của giá trị đã cho trong một chuỗi:
+
+    use Illuminate\Support\Str;
+
+    $slice = Str::beforeLast('This is my name', 'is');
+
+    // 'This '
 
 <a name="method-camel-case"></a>
 #### `Str::camel()` {#collection-method}
@@ -891,6 +994,19 @@ Hàm `Str::endsWith` sẽ kiểm tra chuỗi đã cho có kết thúc bằng gi�
 
     // true
 
+
+Bạn cũng có thể truyền một mảng các giá trị để kiểm tra xem chuỗi đã cho có kết thúc bằng các giá trị có trong số các giá trị đã cho hay không:
+
+    use Illuminate\Support\Str;
+
+    $result = Str::endsWith('This is my name', ['name', 'foo']);
+
+    // true
+
+    $result = Str::endsWith('This is my name', ['this', 'foo']);
+
+    // false
+
 <a name="method-str-finish"></a>
 #### `Str::finish()` {#collection-method}
 
@@ -918,6 +1034,43 @@ Hàm `Str::is` sẽ xác định xem một chuỗi đã cho có khớp với pat
     // true
 
     $matches = Str::is('baz*', 'foobar');
+
+    // false
+
+<a name="method-str-ucfirst"></a>
+#### `Str::ucfirst()` {#collection-method}
+
+Hàm `Str::ucfirst` sẽ trả về chuỗi đã cho với ký tự đầu tiên được viết hoa:
+
+    use Illuminate\Support\Str;
+
+    $string = Str::ucfirst('foo bar');
+
+    // Foo bar
+
+<a name="method-str-upper"></a>
+#### `Str::upper()` {#collection-method}
+
+Hàm `Str::upper` sẽ chuyển đổi chuỗi đã cho thành chữ viết hoa:
+
+    use Illuminate\Support\Str;
+
+    $string = Str::upper('laravel');
+
+    // LARAVEL
+
+<a name="method-str-is-uuid"></a>
+#### `Str::isUuid()` {#collection-method}
+
+Hàm `Str::isUuid` sẽ kiểm tra xem chuỗi đã cho có phải là một UUID hợp lệ hay không:
+
+    use Illuminate\Support\Str;
+
+    $isUuid = Str::isUuid('a0a2a2d2-0b87-4a18-83f2-2529882be2de');
+
+    // true
+
+    $isUuid = Str::isUuid('laravel');
 
     // false
 
@@ -963,7 +1116,7 @@ Phương thức `Str::orderedUuid` sẽ tạo một UUID "timestamp first" có t
 <a name="method-str-plural"></a>
 #### `Str::plural()` {#collection-method}
 
-Hàm `Str::plural` sẽ chuyển đổi một chuỗi thành dạng số nhiều của nó. Chức năng này hiện tại chỉ hỗ trợ ngôn ngữ tiếng Anh:
+Hàm `Str::plural` sẽ chuyển đổi một chuỗi đơn thành dạng số nhiều của nó. Chức năng này hiện tại chỉ hỗ trợ ngôn ngữ tiếng Anh:
 
     use Illuminate\Support\Str;
 
@@ -1433,8 +1586,6 @@ Hàm `dump` sẽ dump các biến đã cho:
     dump($value1, $value2, $value3, ...);
 
 Nếu bạn muốn dừng thực thi lệnh sau khi dump các biến, hãy sử dụng hàm [`dd`](#method-dd) để thay thế.
-
-> {tip} Bạn có thể sử dụng lệnh `dump-server` của Artisan để chặn tất cả các lệnh `dump` và hiển thị chúng trong console thay vì trình duyệt của bạn.
 
 <a name="method-encrypt"></a>
 #### `encrypt()` {#collection-method}

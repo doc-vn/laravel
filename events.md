@@ -75,8 +75,6 @@ Bạn thậm chí có thể đăng ký listener bằng cách sử dụng ký t�
 <a name="event-discovery"></a>
 ### Event Discovery
 
-> {note} Event Discovery có sẵn cho Laravel 5.8.9 trở lên.
-
 Thay vì phải đăng ký các event và listener theo cách thủ công trong mảng `$listen` của `EventServiceProvider`, bạn có thể bật tính năng event discovery. Khi tính năng event discovery được bật, Laravel sẽ tự động tìm kiếm và đăng ký các event, listener của bạn bằng cách quét thư mục `Listeners` của ứng dụng của bạn. Ngoài ra, mọi event được liệt kê trong `EventServiceProvider` vẫn sẽ được đăng ký.
 
 Laravel sẽ tìm các event listener bằng cách quét các class listener dùng class động. Khi Laravel tìm thấy bất kỳ phương thức class listener nào bắt đầu bằng `handle`, Laravel sẽ đăng ký các phương thức đó làm event listener cho các event được khai báo trong signature của phương thức:
@@ -302,8 +300,8 @@ Nếu bạn cần tự truy cập các phương thức `delete` và `release` c�
     namespace App\Listeners;
 
     use App\Events\OrderShipped;
-    use Illuminate\Queue\InteractsWithQueue;
     use Illuminate\Contracts\Queue\ShouldQueue;
+    use Illuminate\Queue\InteractsWithQueue;
 
     class SendShipmentNotification implements ShouldQueue
     {
@@ -333,8 +331,8 @@ Thỉnh thoảng queue của event listener của bạn có thể bị thất b�
     namespace App\Listeners;
 
     use App\Events\OrderShipped;
-    use Illuminate\Queue\InteractsWithQueue;
     use Illuminate\Contracts\Queue\ShouldQueue;
+    use Illuminate\Queue\InteractsWithQueue;
 
     class SendShipmentNotification implements ShouldQueue
     {
@@ -373,9 +371,9 @@ Thỉnh thoảng queue của event listener của bạn có thể bị thất b�
 
     namespace App\Http\Controllers;
 
-    use App\Order;
     use App\Events\OrderShipped;
     use App\Http\Controllers\Controller;
+    use App\Order;
 
     class OrderController extends Controller
     {

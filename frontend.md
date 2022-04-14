@@ -5,11 +5,28 @@
 - [Viết JavaScript](#writing-javascript)
     - [Viết Vue component](#writing-vue-components)
     - [Dùng React](#using-react)
+- [Adding Presets](#adding-presets)
 
 <a name="introduction"></a>
 ## Giới thiệu
 
-Mặc dù Laravel không ra lệnh cho bạn phải sử dụng JavaScript hoặc CSS pre-processors nào, nhưng nó cung cấp các điểm khởi đầu cơ bản bằng cách sử dụng [Bootstrap](https://getbootstrap.com/) và [Vue](https://vuejs.org) sẽ hữu ích cho nhiều application. Mặc định, Laravel sử dụng [NPM](https://www.npmjs.org) để cài đặt cả hai package frontend này.
+Mặc dù Laravel không ra lệnh cho bạn phải sử dụng JavaScript hoặc CSS pre-processors nào, nhưng nó cung cấp các điểm khởi đầu cơ bản bằng cách sử dụng [Bootstrap](https://getbootstrap.com/), [React](https://reactjs.org/) và / hoặc [Vue](https://vuejs.org/) sẽ hữu ích cho nhiều application. Mặc định, Laravel sử dụng [NPM](https://www.npmjs.org) để cài đặt cả hai package frontend này.
+
+Bootstrap và Vue scaffolding được cung cấp bởi Laravel nằm trong package Composer `laravel/ui`, bạn có thể được cài đặt nó qua Composer:
+
+    composer require laravel/ui:^1.0 --dev
+
+Khi package `laravel/ui` đã được cài đặt, bạn có thể cài đặt frontend scaffolding bằng lệnh Artisan `ui`:
+
+    // Generate basic scaffolding...
+    php artisan ui bootstrap
+    php artisan ui vue
+    php artisan ui react
+
+    // Generate login / registration scaffolding...
+    php artisan ui bootstrap --auth
+    php artisan ui vue --auth
+    php artisan ui react --auth
 
 #### CSS
 
@@ -19,16 +36,10 @@ Mặc dù Laravel không ra lệnh cho bạn phải sử dụng JavaScript hoặ
 
 Laravel không yêu cầu bạn sử dụng một framework hoặc một thư viện JavaScript cụ thể nào để xây dựng các application của bạn. Trên thực tế, bạn không cần phải sử dụng JavaScript. Tuy nhiên, Laravel có chứa một số trợ giúp cơ bản để làm nó dễ dàng hơn khi bắt đầu viết JavaScript bằng thư viện [Vue](https://vuejs.org). Vue cung cấp một API dễ hiểu để xây dựng các application JavaScript mạnh mẽ bằng cách sử dụng các component. Cũng như CSS, chúng ta có thể sử dụng Laravel Mix để dễ dàng biên dịch các component JavaScript thành một file JavaScript để chạy cho trình duyệt.
 
-#### Removing The Frontend Scaffolding
-
-Nếu bạn muốn loại bỏ các frontend ra khỏi application của bạn, bạn có thể sử dụng lệnh Artisan `preset`. Lệnh này kết hợp với tùy chọn `none`, sẽ xóa Bootstrap và Vue ra khỏi application của bạn, chỉ để lại một file SASS trống và một vài thư viện JavaScript phổ biến:
-
-    php artisan preset none
-
 <a name="writing-css"></a>
 ## Viết CSS
 
-File `package.json` của Laravel có chứa sẵn một số package `bootstrap` để giúp bạn bắt đầu tạo một trang cho application của bạn bằng Bootstrap. Tuy nhiên, bạn có thêm hoặc xóa các package này ra khỏi file `package.json` cho application của bạn. Bạn không bắt buộc phải sử dụng framework Bootstrap để xây dựng application Laravel của bạn - nó được cung cấp như là một điểm khởi đầu tốt cho những người chọn sử dụng nó.
+Sau khi cài đặt package Composer `laravel/ui` và [tạo frontend scaffolding](#introduction), file `package.json` của Laravel có chứa sẵn một số package `bootstrap` để giúp bạn bắt đầu tạo một trang cho application bằng Bootstrap. Tuy nhiên, bạn có thêm hoặc xóa các package này ra khỏi file `package.json` cho application của bạn. Bạn không bắt buộc phải sử dụng framework Bootstrap để xây dựng application Laravel của bạn - nó được cung cấp như là một điểm khởi đầu tốt cho những người chọn sử dụng nó.
 
 Trước khi biên dịch CSS của bạn, hãy cài đặt các library fontent vào project của bạn bằng cách sử dụng [Node package manager (NPM)](https://www.npmjs.org):
 
@@ -38,7 +49,7 @@ Sau khi các library đã được cài đặt xong bằng cách sử dụng `np
 
     npm run dev
 
-`webpack.mix.js` mặc định đi kèm cùng với Laravel sẽ biên dịch file SASS `resources/sass/app.scss`. File `app.scss` này sẽ import một file các biến SASS và load Bootstrap, cung cấp một điểm khởi đầu tốt cho hầu hết các application. Hãy thoải mái tùy chỉnh file `app.scss` này theo cách mà bạn muốn hoặc thậm chí sử dụng một pre-processor hoàn toàn khác bằng cách [cấu hình Laravel Mix](/docs/{{version}}/mix).
+File `webpack.mix.js` đi kèm cùng với frontend scaffolding của Laravel sẽ biên dịch file SASS `resources/sass/app.scss`. File `app.scss` này sẽ import một file các biến SASS và load Bootstrap, cung cấp một điểm khởi đầu tốt cho hầu hết các application. Hãy thoải mái tùy chỉnh file `app.scss` này theo cách mà bạn muốn hoặc thậm chí sử dụng một pre-processor hoàn toàn khác bằng cách [cấu hình Laravel Mix](/docs/{{version}}/mix).
 
 <a name="writing-javascript"></a>
 ## Viết JavaScript
@@ -47,7 +58,7 @@ Tất cả các library JavaScript được yêu cầu bởi application của b
 
     npm install
 
-> {tip} Mặc định, file `package.json` của Laravel sẽ chứa các package như `vue` và `axios` để giúp bạn bắt đầu xây dựng application JavaScript của bạn. Bạn có thêm hoặc xóa các package này ra khỏi file `package.json` cho application của bạn.
+> {tip} Mặc định, file `package.json` của Laravel sẽ chứa các package như `lodash` và `axios` để giúp bạn bắt đầu xây dựng application JavaScript của bạn. Bạn có thêm hoặc xóa các package này ra khỏi file `package.json` cho application của bạn.
 
 Khi các package đã được cài đặt xong, bạn có thể sử dụng lệnh `npm run dev` để [biên dịch your assets](/docs/{{version}}/mix). Webpack là một gói mô-đun cho các application JavaScript. Khi bạn chạy lệnh `npm run dev`, Webpack sẽ thực thi các lệnh đã được ghi trong file `webpack.mix.js` của bạn:
 
@@ -60,14 +71,14 @@ Mặc định, file `webpack.mix.js` của Laravel sẽ biên dịch file SASS c
 <a name="writing-vue-components"></a>
 ### Viết Vue component
 
-Theo mặc định, các application Laravel mới có chứa một ví dụ mẫu Vue component `ExampleComponent.vue` nằm trong thư mục `resources/js/components`. File `ExampleComponent.vue` là một ví dụ về [single file Vue component](https://vuejs.org/guide/single-file-components) định nghĩa template JavaScript và HTML của nó trong cùng một file. Các single file component cung cấp một cách tiếp cận rất thuận tiện để xây dựng các application JavaScript. Example component đã được đăng ký sẵn trong file `app.js` của bạn:
+Khi sử dụng package `laravel/ui` để tạo frontend scaffolding của bạn, một file Vue component `ExampleComponent.vue` sẽ được lưu sẵn trong thư mục `resources/js/components`. File `ExampleComponent.vue` là một ví dụ về [single file Vue component](https://vuejs.org/guide/single-file-components) định nghĩa template JavaScript và HTML của nó trong cùng một file. Các single file component cung cấp một cách tiếp cận rất thuận tiện để xây dựng các application JavaScript. Example component đã được đăng ký sẵn trong file `app.js` của bạn:
 
     Vue.component(
         'example-component',
         require('./components/ExampleComponent.vue').default
     );
 
-Để sử dụng component này trong application của bạn, bạn có thể set nó vào một trong các template HTML của bạn. Ví dụ, sau khi chạy lệnh Artisan `make:auth` để tạo màn hình authentication và màn hình đăng ký cho application của bạn, bạn có thể set component vào template Blade `home.blade.php`:
+Để sử dụng component này trong application của bạn, bạn có thể set nó vào một trong các template HTML của bạn. Ví dụ, sau khi chạy lệnh Artisan `php artisan ui vue --auth` để tạo màn hình authentication và màn hình đăng ký cho application của bạn, bạn có thể set component vào template Blade `home.blade.php`:
 
     @extends('layouts.app')
 
@@ -82,8 +93,26 @@ Nếu bạn muốn tìm hiểu thêm về cách viết các Vue component, bạn
 <a name="using-react"></a>
 ### Dùng React
 
-Nếu bạn thích sử dụng React để xây dựng application JavaScript của bạn, thì Laravel làm nó dễ dàng để chuyển đổi giữa Vue và React. Trên bất kỳ application Laravel mới nào, bạn có thể sử dụng lệnh `preset` với tùy chọn `react`:
+Nếu bạn thích sử dụng React để xây dựng application JavaScript của bạn, thì Laravel làm nó dễ dàng để chuyển đổi giữa Vue và React:
 
-    php artisan preset react
+    composer require laravel/ui:^1.0 --dev
 
-Lệnh này sẽ loại bỏ Vue và thay thế nó bằng React, bao gồm cả example component.
+    php artisan ui react
+
+    // Generate login / registration scaffolding...
+    php artisan ui react --auth
+
+<a name="adding-presets"></a>
+## Adding Presets
+
+Các preset là các "macroable", nó cho phép bạn thêm các phương thức vào class `UiCommand` trong khi chạy. Ví dụ: đoạn code sau sẽ thêm phương thức `nextjs` vào class `UiCommand`. Thông thường, bạn nên khai báo các macro preset trong một [service provider](/docs/{{version}}/providers):
+
+    use Laravel\Ui\UiCommand;
+
+    UiCommand::macro('nextjs', function (UiCommand $command) {
+        // Scaffold your frontend...
+    });
+
+Sau đó, bạn có thể gọi các preset mới này thông qua lệnh `ui`:
+
+    php artisan ui nextjs

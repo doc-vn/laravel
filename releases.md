@@ -2,226 +2,220 @@
 
 - [Cấu trúc phiên bản](#versioning-scheme)
 - [Chính sách hỗ trợ](#support-policy)
-- [Laravel 5.8](#laravel-5.8)
+- [Laravel 6](#laravel-6)
 
 <a name="versioning-scheme"></a>
 ## Cấu trúc phiên bản
 
-Cấu trúc của phiên bản của Laravel được duy trì theo quy ước như sau: `paradigm.major.minor`. Các phiên bản được phát hành chính thức của framework được phát hành sáu tháng một lần (tháng 2 và tháng 8), trong khi các bản phát hành nhỏ hơn có thể được phát hành thường xuyên hơn, có thể là mỗi tuần. Các bản phát hành nhỏ sẽ **không bao giờ** chứa các thay đổi mà có thể dẫn đến hệ thống của bạn bị lỗi.
+Laravel và các package khác của nó tuân theo [Phiên bản Semantic](https://semver.org). Các phiên bản được phát hành chính thức của framework được phát hành sáu tháng một lần (tháng 2 và tháng 8), trong khi các bản phát hành nhỏ hơn và các bản sửa lỗi có thể được phát hành thường xuyên hơn, có thể là mỗi tuần. Các bản phát hành nhỏ và các bản sửa lỗi sẽ **không bao giờ** chứa các thay đổi mà có thể dẫn đến hệ thống của bạn bị lỗi.
 
-Khi sủ dụng framework Laravel hoặc các component của nó từ application của bạn hoặc từ package, bạn phải luôn luôn sử dụng một ràng buộc phiên bản, chẳng hạn như là `5.8.*`, Vì các bản phát hành chính thức của Laravel có thể chứa các thay đổi mà có thể làm hệ thống của bạn bị lỗi. Tuy nhiên, chúng tôi sẽ cố gắng đảm bảo rằng: bạn có thể cập nhật lên bản phát hành chính thức trong một ngày hoặc ít hơn.
-
-Các bản phát hành thay đổi Paradigm được phân tách qua nhiều năm và đại diện cho những thay đổi căn bản trong kiến trúc và quy ước của framework. Hiện tại, chưa có bản phát hành nào mà cần phải thay đổi Paradigm được phát triển trong hiện tại.
+Khi sủ dụng framework Laravel hoặc các component của nó từ application của bạn hoặc từ package, bạn phải luôn luôn sử dụng một ràng buộc phiên bản, chẳng hạn như là `^6.0`, Vì các bản phát hành chính thức của Laravel có thể chứa các thay đổi mà có thể làm hệ thống của bạn bị lỗi. Tuy nhiên, chúng tôi sẽ cố gắng đảm bảo rằng: bạn có thể cập nhật lên bản phát hành chính thức trong một ngày hoặc ít hơn.
 
 <a name="support-policy"></a>
 ## Chính sách hỗ trợ
 
-Đối với các bản phát hành hỗ trợ dài hạn, chẳng hạn như Laravel 5.5, các bản sửa lỗi được cung cấp trong 2 năm và các bản sửa lỗi bảo mật được cung cấp trong 3 năm. Những bản phát hành này cung cấp các hỗ trợ và bảo trì dài nhất. Đối với các bản phát hành bình thường, các bản sửa lỗi được cung cấp trong 6 tháng và các bản sửa lỗi bảo mật được cung cấp trong 1 năm. Đối với tất cả các thư viện, bao gồm cả Lumen, chỉ bản phát hành mới nhất mới nhận được các bản sửa lỗi.
+Đối với các bản phát hành hỗ trợ dài hạn, chẳng hạn như Laravel 6, các bản sửa lỗi được cung cấp trong 2 năm và các bản sửa lỗi bảo mật được cung cấp trong 3 năm. Những bản phát hành này cung cấp các hỗ trợ và bảo trì dài nhất. Đối với các bản phát hành bình thường, các bản sửa lỗi được cung cấp trong 6 tháng và các bản sửa lỗi bảo mật được cung cấp trong 1 năm. Đối với tất cả các thư viện, bao gồm cả Lumen, chỉ bản phát hành mới nhất mới nhận được các bản sửa lỗi. Ngoài ra, hãy xem các phiên bản cơ sở dữ liệu [được hỗ trợ bởi Laravel](/docs/{{version}}/database#introduction).
 
 | Version | Release | Bug Fixes Until | Security Fixes Until |
 | --- | --- | --- | --- |
-| 5.0 | ngày 4 tháng 2 năm 2015 | ngày 4 tháng 8 năm 2015 | ngày 4 tháng 2 năm 2016 |
-| 5.1 (LTS) | ngày 9 tháng 6 năm 2015 | ngày 9 tháng 6 năm 2017 | ngày 9 tháng 6 năm 2018 |
-| 5.2 | ngày 21 tháng 12 năm 2015 | ngày 6 tháng 12 năm 2016 | ngày 21 tháng 12 năm 2016 |
-| 5.3 | ngày 23 tháng 8 năm 2016 | ngày 23 tháng 2 năm 2016 | ngày 23 tháng 8 năm 2017 |
-| 5.4 | ngày 24 tháng 1 năm 2017 | ngày 24 tháng 7 năm 2017| ngày 24 tháng 1 năm 2018 |
 | 5.5 (LTS) | ngày 30 tháng 8 năm 2017 | ngày 30 tháng 8 năm 2019 | ngày 30 tháng 8 năm 2020 |
 | 5.6 | ngày 7 tháng 2 năm 2018 | ngày 7 tháng 8 năm 2018 | ngày 7 tháng 2 năm 2019 |
 | 5.7 | ngày 4 tháng 9 năm 2018 | ngày 4 tháng 3 năm 2019 | ngày 4 tháng 9 năm 2019 |
 | 5.8 | ngày 26 tháng 2 năm 2019 | ngày 26 tháng 8 năm 2019 | ngày 26 tháng 2 năm 2020 |
+| 6 (LTS) | ngày 3 tháng 9 năm 2019 | ngày 3 tháng 9 năm 2021 | ngày 3 tháng 9 năm 2022 |
 
-<a name="laravel-5.8"></a>
-## Laravel 5.8
+<a name="laravel-6"></a>
+## Laravel 6
 
-Laravel 5.8 tiếp tục những cải tiến được thực hiện trong Laravel 5.7 bằng cách giới thiệu quan hệ thông qua liên kết một, cải tiến validation email, đăng ký tự động dựa trên quy ước của các authorization policy, DynamoDB cache và session driver cải tiến cấu hình timezone cho schedule, hỗ trợ chỉ định nhiều authentication guard để broadcast channel, tuân thủ cache driver PSR-16, cải tiến lệnh `artisan serve`, hỗ trợ PHPUnit 8.0, hỗ trợ Carbon 2.0, hỗ trợ Pheanstalk 4.0 và một hàng loạt các bản sửa lỗi và cải tiến sử dụng khác.
+Laravel 6 (LTS) sẽ tiếp tục những cải tiến được thực hiện trong Laravel 5.8 bằng cách giới thiệu phiên bản semantic, khả năng tương thích với [Laravel Vapor](https://vapor.laravel.com), cải thiện response authorization, job middleware, lazy collection, cải tiến về subquery, tách các frontend scaffolding thành một package Composer `laravel/ui`, và một loạt các bản sửa lỗi và cải tiến khả năng sử dụng khác.
 
-### Eloquent `HasOneThrough` Relationship
+### Semantic Versioning
 
-Eloquent bây giờ sẽ cung cấp hỗ trợ cho kiểu quan hệ `hasOneThrough`. Ví dụ, hãy tưởng tượng một model nhà cung cấp `hasOne` của model tài khoản và model tài khoản có một model AccountHistory. Bạn có thể sử dụng mối quan hệ `hasOneThrough` để truy cập vào lịch sử tài khoản của nhà cung cấp thông qua model tài khoản:
+Package Laravel framework (`laravel/framework`) bây giờ sẽ tuân theo tiêu chuẩn [phiên bản semantic](https://semver.org/). Điều này làm cho framework nhất quán với các package khác của Laravel đã tuân thủ theo tiêu chuẩn phiên bản này. Chu kỳ phát hành phiên bản của Laravel sẽ không bị thay đổi.
+
+### Laravel Vapor Compatibility
+
+_Laravel Vapor được xây dựng bởi [Taylor Otwell](https://github.com/taylorotwell)_.
+
+Laravel 6 cung cấp khả năng tương thích với [Laravel Vapor](https://vapor.laravel.com), một nền tảng triển khai tự động mở rộng cho Laravel mà không cần quản lý server . Vapor tổng hợp sự phức tạp của việc quản lý các ứng dụng Laravel trên AWS Lambda, cũng như giao tiếp các ứng dụng đó với hàng đợi SQS, cơ sở dữ liệu, Redis cluster, network, CloudFront CDN, vv...
+
+### Improved Exceptions Via Ignition
+
+Laravel 6 sẽ đi kèm với [Ignition](https://github.com/facade/ignition), một trang hiển thi chi tiết về exception mã nguồn mở được tạo bởi Freek Van der Herten và Marcel Pociot. Ignition cung cấp nhiều lợi ích hơn so với các bản phát hành trước, chẳng hạn như cải tiến file lỗi Blade và xử lý số dòng, các giải pháp có thể chạy được cho các sự cố thường gặp, chỉnh sửa code, chia sẻ exception và một UX được cải tiến.
+
+### Improved Authorization Responses
+
+_Improved Authorization Responses đã được thực hiện bởi [Gary Green](https://github.com/garygreen)_.
+
+Trong các bản phát hành trước của Laravel, rất khó để lấy ra và hiển thị các thông báo authorization tùy chỉnh cho end user. Điều này khiến end user khó lý giải chính xác lý do tại sao một request lại bị từ chối. Trong Laravel 6, việc này giờ đây dễ dàng hơn nhiều bằng cách sử dụng các thông báo response authorization và phương thức `Gate::inspect` mới. Ví dụ: cho phương thức policy sau:
 
     /**
-     * Get the account history for the supplier.
+     * Determine if the user can view the given flight.
+     *
+     * @param  \App\User  $user
+     * @param  \App\Flight  $flight
+     * @return mixed
      */
-    public function accountHistory()
+    public function view(User $user, Flight $flight)
     {
-        return $this->hasOneThrough(AccountHistory::class, Account::class);
+        return $this->deny('Explanation of denial.');
     }
 
-### Auto-Discovery Of Model Policies
+Có thể dễ dàng lấy ra response và thông báo của policy authorization bằng cách sử dụng phương thức `Gate::inspect`:
 
-Khi sử dụng Laravel 5.7, mỗi [authorization policy](/docs/{{version}}/authorization#creating-policies) sẽ tương ứng với mỗi model cần được đăng ký trong `AuthServiceProvider` trong ứng dụng của bạn:
+    $response = Gate::inspect('view', $flight);
 
-    /**
-     * The policy mappings for the application.
-     *
-     * @var array
-     */
-    protected $policies = [
-        'App\User' => 'App\Policies\UserPolicy',
-    ];
-
-Laravel 5.8 giới thiệu tính năng auto-discovery các policy model miễn là model và policy tuân theo các quy ước đặt tên Laravel. Cụ thể, các policy phải nằm trong thư mục `Policies` bên dưới thư mục chứa model. Ví dụ: các model có thể được đặt trong thư mục `app` trong khi các policy có thể được đặt trong thư mục `app/Policies`. Ngoài ra, tên policy cũng phải khớp với tên của model và có hậu tố là `Policy`. Vì vậy, một model `User` sẽ tương ứng với một class `UserPolicy`.
-
-Nếu bạn muốn cung cấp logic policy discovery của riêng bạn, bạn có thể đăng ký một lệnh callback tùy biến bằng cách sử dụng phương thức `Gate::guessPolicyNamesUsing`. Thông thường, phương thức này sẽ được gọi từ `AuthServiceProvider` trong ứng dụng của bạn:
-
-    use Illuminate\Support\Facades\Gate;
-
-    Gate::guessPolicyNamesUsing(function ($modelClass) {
-        // return policy class name...
-    });
-
-> {note} Bất kỳ policy nào được ánh xạ trong `AuthServiceProvider` cũng sẽ được ưu tiên hơn các policy khác được đăng ký tự động.
-
-### PSR-16 Cache Compliance
-
-Để cho phép thời gian hết hạn chi tiết hơn khi lưu trữ các item và tuân thủ theo tiêu chuẩn bộ nhớ cache PSR-16, thời gian tồn tại của item trong bộ nhớ cache đã thay đổi từ phút thành giây. Các phương thức `put`, `putMany`, `add`, `remember` và `setDefaultCacheTime` của class `Illuminate\Cache\Repository` và các class extend của nó, cũng như phương thức `put` của mỗi cache store đã được cập nhật với thay đổi này. Hãy xem [PR này](https://github.com/laravel/framework/pull/27276) để biết thêm thông tin.
-
-Nếu bạn đang truyền một số nguyên cho bất kỳ phương thức nào trong số này, thì bạn nên cập nhật code của bạn để đảm bảo rằng bạn đang truyền số giây mà bạn muốn item vẫn còn tồn tại trong bộ nhớ cache. Ngoài ra, bạn có thể truyền một instance `DateTime` cho biết khi nào item sẽ hết hạn:
-
-    // Laravel 5.7 - Store item for 30 minutes...
-    Cache::put('foo', 'bar', 30);
-
-    // Laravel 5.8 - Store item for 30 seconds...
-    Cache::put('foo', 'bar', 30);
-
-    // Laravel 5.7 / 5.8 - Store item for 30 seconds...
-    Cache::put('foo', 'bar', now()->addSeconds(30));
-
-### Multiple Broadcast Authentication Guards
-
-Trong các bản phát hành trước của Laravel, các channel broadcast private và presence sẽ xác thực người dùng hiện tại thông qua authentication guard mặc định của ứng dụng. Bắt đầu từ Laravel 5.8, bạn có thể chỉ định nhiều guard tùy chỉnh khác sẽ xác thực request đến nếu cần:
-
-    Broadcast::channel('channel', function() {
-        // ...
-    }, ['guards' => ['web', 'admin']])
-
-### Token Guard Token Hashing
-
-`token` guard của Laravel sẽ cung cấp một cách xác thực API cơ bản, hiện hỗ trợ lưu trữ token API dưới dạng hàm hash SHA-256. Điều này cung cấp khả năng bảo mật được cải thiện hơn so với việc lưu trữ token văn bản thuần. Để tìm hiểu thêm về token được hash, vui lòng xem toàn bộ [tài liệu xác thực API](/docs/{{version}}/api-authentication).
-
-> **Note:** Mặc dù Laravel cung cấp một guard xác thực dựa trên token đơn giản, nhưng chúng tôi thực sự khuyên bạn rằng nên cân nhắc sử dụng [Laravel Passport](/docs/{{version}}/passport) cho các ứng dụng production, mạnh mẽ cung cấp xác thực API .
-
-### Improved Email Validation
-
-Laravel 5.8 giới thiệu các cải tiến đối với logic validation email cơ bản của validator bằng cách sử dụng package `egulias/email-validator` được sử dụng bởi SwiftMailer. Logic validation email trước đây của Laravel đôi khi coi các email hợp lệ, chẳng hạn như `example@bär.se`, là không hợp lệ.
-
-### Default Scheduler Timezone
-
-Laravel cho phép bạn tùy chỉnh timezone của một scheduled task bằng phương thức `timezone`:
-
-    $schedule->command('inspire')
-             ->hourly()
-             ->timezone('America/Chicago');
-
-Tuy nhiên, điều này có thể trở nên rườm rà và lặp đi lặp lại nếu bạn chỉ định cùng một timezone cho tất cả các scheduled task của bạn. Vì lý do đó, bây giờ bạn có thể định nghĩa một phương thức `scheduleTimezone` trong file `app/Console/Kernel.php` của bạn. Phương thức này sẽ trả về một timezone mặc định sẽ được chỉ định cho tất cả các scheduled task:
-
-    /**
-     * Get the timezone that should be used by default for scheduled events.
-     *
-     * @return \DateTimeZone|string|null
-     */
-    protected function scheduleTimezone()
-    {
-        return 'America/Chicago';
+    if ($response->allowed()) {
+        // User is authorized to view the flight...
     }
 
-### Intermediate Table / Pivot Model Events
+    if ($response->denied()) {
+        echo $response->message();
+    }
 
-Trong các phiên bản trước của Laravel, [event của model eloquent](/docs/{{version}}/eloquent#events) sẽ không được gửi đi khi attaching, detaching, hoặc đồng bộ bảng trung gian (model "pivot") của quan hệ nhiều-nhiều. Khi sử dụng [model bảng trung gian](/docs/{{version}}/eloquent-relationships#defining-custom-intermediate-table-models) trong Laravel 5.8, các event model sẽ được gửi đi.
+Ngoài ra, các thông báo tùy chỉnh này sẽ được tự động trả về giao diện người dùng của bạn khi sử dụng các phương thức helper như `$this->authorize` hoặc `Gate::authorize` từ các route hoặc controller của bạn.
 
-### Artisan Call Improvements
+### Job Middleware
 
-Laravel cho phép bạn gọi Artisan thông qua phương thức `Artisan::call`. Trong các bản phát hành trước của Laravel, các tùy chọn của lệnh này được truyền qua một mảng làm tham số thứ hai cho phương thức:
+_Job middleware were implemented by [Taylor Otwell](https://github.com/taylorotwell)_.
 
-    use Illuminate\Support\Facades\Artisan;
+Job middleware cho phép bạn custom logic toàn bộ việc chạy các queued job, giảm việc viết code trong các job đó. Ví dụ: trong các bản phát hành trước của Laravel, bạn có thể đã bao bọc logic của phương thức `handle` của một job trong một lệnh callback có giới hạn tốc độ:
 
-    Artisan::call('migrate:install', ['database' => 'foo']);
+    /**
+     * Execute the job.
+     *
+     * @return void
+     */
+    public function handle()
+    {
+        Redis::throttle('key')->block(0)->allow(1)->every(5)->then(function () {
+            info('Lock obtained...');
 
-Tuy nhiên, Laravel 5.8 cho phép bạn truyền toàn bộ lệnh, bao gồm cả các tùy chọn, làm tham số string đầu tiên của phương thức:
+            // Handle job...
+        }, function () {
+            // Could not obtain lock...
 
-    Artisan::call('migrate:install --database=foo');
+            return $this->release(5);
+        });
+    }
 
-### Mock / Spy Testing Helper Methods
-
-Để làm giả các đối tượng trở nên thuận tiện hơn, các phương thức `mock` và `spy` mới đã được thêm vào class base test case của Laravel. Các phương thức này tự động liên kết class được làm giả vào container. Ví dụ:
-
-    // Laravel 5.7
-    $this->instance(Service::class, Mockery::mock(Service::class, function ($mock) {
-        $mock->shouldReceive('process')->once();
-    }));
-
-    // Laravel 5.8
-    $this->mock(Service::class, function ($mock) {
-        $mock->shouldReceive('process')->once();
-    });
-
-### Eloquent Resource Key Preservation
-
-Khi trả về một [eloquent resource collection](/docs/{{version}}/eloquent-resources) từ một route, Laravel sẽ set lại các khóa của collection để chúng có số thứ tự bắt đầu từ 0:
-
-    use App\User;
-    use App\Http\Resources\User as UserResource;
-
-    Route::get('/user', function () {
-        return UserResource::collection(User::all());
-    });
-
-Khi sử dụng Laravel 5.8, bây giờ bạn có thể thêm thuộc tính `preserveKeys` vào class resource của bạn để cho biết liệu khóa của collection có được giữ nguyên hay không. Mặc định và để duy trì tính nhất quán với các bản phát hành Laravel trước đó, các khóa sẽ được set lại theo mặc định:
+Trong Laravel 6, logic này có thể được mở rộng thành một job middleware, cho phép bạn giữ cho phương thức `handle` job của bạn không có bất kỳ trách nhiệm nào về giới hạn tốc độ:
 
     <?php
 
-    namespace App\Http\Resources;
+    namespace App\Jobs\Middleware;
 
-    use Illuminate\Http\Resources\Json\JsonResource;
+    use Illuminate\Support\Facades\Redis;
 
-    class User extends JsonResource
+    class RateLimited
     {
         /**
-         * Indicates if the resource's collection keys should be preserved.
+         * Process the queued job.
          *
-         * @var bool
+         * @param  mixed  $job
+         * @param  callable  $next
+         * @return mixed
          */
-        public $preserveKeys = true;
+        public function handle($job, $next)
+        {
+            Redis::throttle('key')
+                    ->block(0)->allow(1)->every(5)
+                    ->then(function () use ($job, $next) {
+                        // Lock obtained...
+
+                        $next($job);
+                    }, function () use ($job) {
+                        // Could not obtain lock...
+
+                        $job->release(5);
+                    });
+        }
     }
 
-Khi thuộc tính `preserveKeys` được set thành `true`, các khóa của collection sẽ được giữ nguyên:
+Sau khi tạo xong job middleware, chúng ta có thể được gắn chúng vào một job bằng cách trả lại chúng từ phương thức `middleware` của job:
 
-    use App\User;
-    use App\Http\Resources\User as UserResource;
+    use App\Jobs\Middleware\RateLimited;
 
-    Route::get('/user', function () {
-        return UserResource::collection(User::all()->keyBy->id);
+    /**
+     * Get the middleware the job should pass through.
+     *
+     * @return array
+     */
+    public function middleware()
+    {
+        return [new RateLimited];
+    }
+
+### Lazy Collections
+
+_Lazy collection được thực hiện bởi [Joseph Silber](https://github.com/JosephSilber)_.
+
+Nhiều nhà phát triển đã thích thú với [các phương thức collection](https://laravel.com/docs/collections) mạnh mẽ của Laravel. Để bổ sung cho class `Collection` vốn đã mạnh mẽ, class `LazyCollection` sử dụng [generators](https://www.php.net/manual/en/language.generators.overview.php) của PHP để cho phép bạn làm việc với bộ dữ liệu rất lớn trong khi vẫn giữ mức sử dụng bộ nhớ thấp.
+
+Ví dụ: hãy tưởng tượng ứng dụng của bạn cần xử lý file log nhiều gigabyte trong khi tận dụng các phương thức của Laravel để phân tích cú pháp log. Thay vì đọc toàn bộ file vào bộ nhớ cùng một lúc, lazy collection có thể được sử dụng để chỉ giữ một phần nhỏ của file vào trong bộ nhớ tại một thời điểm nhất định:
+
+    use App\LogEntry;
+    use Illuminate\Support\LazyCollection;
+
+    LazyCollection::make(function () {
+        $handle = fopen('log.txt', 'r');
+
+        while (($line = fgets($handle)) !== false) {
+            yield $line;
+        }
+    })
+    ->chunk(4)
+    ->map(function ($lines) {
+        return LogEntry::fromLines($lines);
+    })
+    ->each(function (LogEntry $logEntry) {
+        // Process the log entry...
     });
 
-### Higher Order `orWhere` Eloquent Method
+Hoặc, hãy tưởng tượng bạn cần lặp 10.000 model Eloquent. Khi sử dụng collection truyền thống của Laravel, tất cả 10.000 model Eloquent sẽ được load vào trong bộ nhớ cùng một lúc:
 
-Trong các bản phát hành trước của Laravel, việc kết hợp nhiều scope cho model Eloquent thông qua truy vấn `or` có thể yêu cầu sử dụng lệnh callback Closure::
+    $users = App\User::all()->filter(function ($user) {
+        return $user->id > 500;
+    });
 
-    // scopePopular and scopeActive methods defined on the User model...
-    $users = App\User::popular()->orWhere(function (Builder $query) {
-        $query->active();
-    })->get();
+Tuy nhiên, trong laravel 6, phương thức `cursor` của query builder sẽ trả về một instance `LazyCollection`. Điều này cho phép bạn vẫn chạy một truy vấn duy nhất đối với cơ sở dữ liệu nhưng cũng chỉ giữ một model Eloquent được load vào trong bộ nhớ tại một thời điểm. Trong ví dụ này, lệnh callback `filter` không được thực thi cho đến khi chúng ta thực sự lặp từng user, cho phép giảm đáng kể mức sử dụng bộ nhớ:
 
-Laravel 5.8 giới thiệu một phương thức "higher order" là `orWhere` cho phép bạn kết hợp các scope này với nhau một cách thuận tiện mà không cần sử dụng Closures:
+    $users = App\User::cursor()->filter(function ($user) {
+        return $user->id > 500;
+    });
 
-    $users = App\User::popular()->orWhere->active()->get();
+    foreach ($users as $user) {
+        echo $user->id;
+    }
 
-### Artisan Serve Improvements
+### Eloquent Subquery Enhancements
 
-Trong các bản phát hành trước của Laravel, lệnh `serve` của Artisan sẽ chạy ứng dụng của bạn trên cổng `8000`. Nếu có một process lệnh `serve` khác đã được chạy trên cổng này, thì lệnh chạy ứng dụng thứ hai qua `serve` sẽ không thành công. Bắt đầu từ Laravel 5.8, `serve` sẽ quét và tìm ra các cổng khả dụng cho đến cổng `8009`, cho phép bạn chạy nhiều ứng dụng cùng một lúc.
+_Các cải tiến Eloquent subquery đã được thực hiện bởi [Jonathan Reinink](https://github.com/reinink)_.
 
-### Blade File Mapping
+Laravel 6 giới thiệu một số nâng cấp và cải tiến mới để hỗ trợ subquery cơ sở dữ liệu. Ví dụ, hãy tưởng tượng rằng chúng ta có một bảng các chuyến bay `destinations` và một bảng `flights` đến các destination. Bảng `flights` chứa một cột `arrived_at` cho biết thời điểm chuyến bay đến dest
+Sử dụng chức năng select của subquery mới trong Laravel 6, chúng ta có thể lấy ra tất cả các `destinations` và tên của chuyến bay đã đến điểm đến đó gần đây nhất chỉ bằng một câu lệnh truy vấn duy nhất:
 
-Khi biên dịch các template Blade, Laravel bây giờ sẽ thêm một comment vào đầu file đã được biên dịch, comment đó sẽ chứa đường dẫn đến template Blade ban đầu.
+    return Destination::addSelect(['last_flight' => Flight::select('name')
+        ->whereColumn('destination_id', 'destinations.id')
+        ->orderBy('arrived_at', 'desc')
+        ->limit(1)
+    ])->get();
 
-### DynamoDB Cache / Session Drivers
+Ngoài ra, hàm `orderBy` của query builder cũng hỗ trợ các subquery. Chúng ta có thể sử dụng chức năng này để sắp xếp tất cả các điểm đến dựa trên thời điểm chuyến bay cuối cùng đến điểm đến đó. Một lần nữa, điều này có thể được thực hiện chỉ trong một truy vấn duy nhất đối với cơ sở dữ liệu:
 
-Laravel 5.8 giới thiệu cache [DynamoDB](https://aws.amazon.com/dynamodb/) và session driver [DynamoDB](https://aws.amazon.com/dynamodb/). DynamoDB là một cơ sở dữ liệu NoSQL không có máy chủ do Amazon Web Services cung cấp. Bạn có thể tìm thấy cấu hình mặc định cho cache driver `dynamodb` trong [file cấu hình cache](https://github.com/laravel/laravel/blob/master/config/cache.php) của Laravel 5.8.
+    return Destination::orderByDesc(
+        Flight::select('arrived_at')
+            ->whereColumn('destination_id', 'destinations.id')
+            ->orderBy('arrived_at', 'desc')
+            ->limit(1)
+    )->get();
 
-### Carbon 2.0 Support
+### Laravel UI
 
-Laravel 5.8 cung cấp hỗ trợ cho bản phát hành `~2.0` của thư viện Carbon.
+Scaffolding frontend thường được cung cấp với các bản phát hành trước của Laravel đã được mở rộng thành một package Composer `laravel/ui`. Điều này cho phép các UI scaffolding được phát triển và tạo ra các phiên bản riêng biệt với framework chính. Do sự thay đổi này, mặc định, không có code của Bootstrap hoặc Vue nào xuất hiện trong scaffolding framework và lệnh `make:auth` cũng đã được mở rộng từ framework.
 
-### Pheanstalk 4.0 Support
+Để khôi phục lại scaffolding của Vue hoặc Bootstrap có trước đó trong các bản phát hành trước của Laravel, bạn có thể cài đặt package `laravel/ui` và sử dụng lệnh Artisan `ui` để cài đặt scaffolding frontend:
 
-Laravel 5.8 cung cấp hỗ trợ cho bản phát hành `~4.0` của thư viện Pheanstalk queue. Nếu bạn đang sử dụng thư viện Pheanstalk trong ứng dụng của bạn, vui lòng nâng cấp thư viện của bạn lên bản phát hành `~ 4.0` thông qua Composer.
+    composer require laravel/ui "^1.0" --dev
+
+    php artisan ui vue --auth

@@ -21,9 +21,9 @@ Nhiều web application yêu cầu người dùng xác minh địa chỉ email c
 
     namespace App;
 
-    use Illuminate\Notifications\Notifiable;
     use Illuminate\Contracts\Auth\MustVerifyEmail;
     use Illuminate\Foundation\Auth\User as Authenticatable;
+    use Illuminate\Notifications\Notifiable;
 
     class User extends Authenticatable implements MustVerifyEmail
     {
@@ -60,7 +60,13 @@ Laravel có chứa một class `Auth\VerificationController` dành cho những l
 <a name="verification-views"></a>
 ## View
 
-Laravel sẽ tự tạo ra tất cả các trang xác nhận email khi bạn chạy lệnh `make:auth`. Các trang này được lưu trong `resources/views/auth/verify.blade.php`. Bạn có thể thoải mái tùy biến các trang này nếu cần cho ứng dụng của bạn.
+Để tạo ra tất cả các view cần thiết cho việc xác minh email, bạn có thể sử dụng package Composer `laravel/ui`:
+
+    composer require laravel/ui  "^1.2" --dev
+
+    php artisan ui vue --auth
+
+Các view xác minh email này sẽ được lưu trong `resources/views/auth/verify.blade.php`. Bạn có thể thoải mái tùy biến các trang này nếu cần cho ứng dụng của bạn.
 
 <a name="after-verifying-emails"></a>
 ## Sau khi xác minh email

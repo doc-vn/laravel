@@ -51,7 +51,7 @@ Laravel Dusk cung cấp một cách kiểm thử API và tự động hóa trìn
 
 Để bắt đầu, bạn cần thêm library `laravel/dusk` cho Composer trong project của bạn:
 
-    composer require --dev laravel/dusk:"^5.0"
+    composer require --dev laravel/dusk
 
 > {note} Nếu bạn đang đăng ký thủ công service provider của Dusk, thì bạn **đừng bao giờ** đăng ký nó trong môi trường production của bạn, vì làm như vậy sẽ có thể dẫn đến bất kỳ người dùng nào cũng có thể được authenticate vào application của bạn.
 
@@ -188,9 +188,9 @@ Khi chạy test, Dusk sẽ back-up file `.env` gốc của bạn và đổi tên
     namespace Tests\Browser;
 
     use App\User;
-    use Tests\DuskTestCase;
-    use Laravel\Dusk\Chrome;
     use Illuminate\Foundation\Testing\DatabaseMigrations;
+    use Laravel\Dusk\Chrome;
+    use Tests\DuskTestCase;
 
     class ExampleTest extends DuskTestCase
     {
@@ -218,8 +218,6 @@ Khi chạy test, Dusk sẽ back-up file `.env` gốc của bạn và đổi tên
     }
 
 Như bạn có thể thấy trong ví dụ trên, phương thức `browse` chấp nhận một callback. Một instance browser sẽ tự động được truyền vào callback đó và nó là đối tượng chính để tương tác và đưa ra các yêu cầu đối với application của bạn.
-
-> {tip} Bài test này có thể được sử dụng để kiểm tra màn hình đăng nhập được tạo bởi lệnh Artisan `make:auth`.
 
 #### Creating Multiple Browsers
 
@@ -250,6 +248,14 @@ Phương thức `maximize` có thể được sử dụng để set browser wind
 
     $browser->maximize();
 
+Phương thức `fitContent` sẽ thay đổi kích thước của browser window để phù hợp với kích thước của nội dung:
+
+    $browser->fitContent();
+
+Khi kiểm tra không thành công, Dusk sẽ tự động thay đổi kích thước trình duyệt để phù hợp với nội dung trước khi chụp ảnh màn hình. Bạn có thể tắt tính năng này bằng cách gọi phương thức `disableFitOnFailure` trong bài test của bạn:
+
+    $browser->disableFitOnFailure();
+
 <a name="browser-macros"></a>
 ### Browser Macros
 
@@ -259,8 +265,8 @@ Nếu bạn muốn định nghĩa một phương thức trình duyệt tùy bi�
 
     namespace App\Providers;
 
-    use Laravel\Dusk\Browser;
     use Illuminate\Support\ServiceProvider;
+    use Laravel\Dusk\Browser;
 
     class DuskServiceProvider extends ServiceProvider
     {
@@ -309,9 +315,9 @@ Khi bài test của bạn yêu cầu migration, như ví dụ bài test authenti
     namespace Tests\Browser;
 
     use App\User;
-    use Tests\DuskTestCase;
-    use Laravel\Dusk\Chrome;
     use Illuminate\Foundation\Testing\DatabaseMigrations;
+    use Laravel\Dusk\Chrome;
+    use Tests\DuskTestCase;
 
     class ExampleTest extends DuskTestCase
     {
@@ -550,6 +556,14 @@ Phương thức `waitForText` có thể được sử dụng để đợi cho đ
     // Wait a maximum of one second for the text...
     $browser->waitForText('Hello World', 1);
 
+Bạn có thể sử dụng phương thức `waitUntilMissingText` để đợi cho đến khi văn bản đang được hiển thị bị xóa khỏi trang:
+
+    // Wait a maximum of five seconds for the text to be removed...
+    $browser->waitUntilMissingText('Hello World');
+
+    // Wait a maximum of one second for the text to be removed...
+    $browser->waitUntilMissingText('Hello World', 1);
+
 #### Waiting For Links
 
 Phương thức `waitForLink` có thể được sử dụng để đợi cho đến khi một link đã cho được hiển thị trên trang:
@@ -663,6 +677,7 @@ Dusk cung cấp nhiều yêu cầu kiểm tra mà bạn có thể đưa ra đố
 </style>
 
 <div class="collection-method-list" markdown="1">
+
 [assertTitle](#assert-title)
 [assertTitleContains](#assert-title-contains)
 [assertUrlIs](#assert-url-is)
@@ -719,6 +734,7 @@ Dusk cung cấp nhiều yêu cầu kiểm tra mà bạn có thể đưa ra đố
 [assertVueIsNot](#assert-vue-is-not)
 [assertVueContains](#assert-vue-contains)
 [assertVueDoesNotContain](#assert-vue-does-not-contain)
+
 </div>
 
 <a name="assert-title"></a>
@@ -1263,7 +1279,7 @@ Các component cũng tương tự như các đối tượng page của Dusk, nh�
 <a name="generating-components"></a>
 ### Tạo Component
 
-Để tạo một component, bạn hãy sử dụng lệnh Artisan `dusk:component`. Các component mới sẽ được lưu vào trong thư mục `test/Browser/Components`:
+Để tạo một component, bạn hãy sử dụng lệnh Artisan `dusk:component`. Các component mới sẽ được lưu vào trong thư mục `tests/Browser/Components`:
 
     php artisan dusk:component DatePicker
 
@@ -1308,6 +1324,7 @@ Như câu lệnh ở trên, một "date picker" có thể là một ví dụ m�
         {
             return [
                 '@date-field' => 'input.datepicker-input',
+                '@year-list' => 'div > div.datepicker-years',
                 '@month-list' => 'div > div.datepicker-months',
                 '@day-list' => 'div > div.datepicker-days',
             ];
@@ -1317,13 +1334,17 @@ Như câu lệnh ở trên, một "date picker" có thể là một ví dụ m�
          * Select the given date.
          *
          * @param  \Laravel\Dusk\Browser  $browser
+         * @param  int  $year
          * @param  int  $month
          * @param  int  $day
          * @return void
          */
-        public function selectDate($browser, $month, $day)
+        public function selectDate($browser, $year, $month, $day)
         {
             $browser->click('@date-field')
+                    ->within('@year-list', function ($browser) use ($year) {
+                        $browser->click($year);
+                    })
                     ->within('@month-list', function ($browser) use ($month) {
                         $browser->click($month);
                     })
@@ -1342,10 +1363,10 @@ Khi component đã được định nghĩa xong, chúng ta có thể dễ dàng 
 
     namespace Tests\Browser;
 
-    use Tests\DuskTestCase;
+    use Illuminate\Foundation\Testing\DatabaseMigrations;
     use Laravel\Dusk\Browser;
     use Tests\Browser\Components\DatePicker;
-    use Illuminate\Foundation\Testing\DatabaseMigrations;
+    use Tests\DuskTestCase;
 
     class ExampleTest extends DuskTestCase
     {
@@ -1359,7 +1380,7 @@ Khi component đã được định nghĩa xong, chúng ta có thể dễ dàng 
             $this->browse(function (Browser $browser) {
                 $browser->visit('/')
                         ->within(new DatePicker, function ($browser) {
-                            $browser->selectDate(1, 2018);
+                            $browser->selectDate(2019, 1, 30);
                         })
                         ->assertSee('January');
             });
@@ -1368,6 +1389,8 @@ Khi component đã được định nghĩa xong, chúng ta có thể dễ dàng 
 
 <a name="continuous-integration"></a>
 ## Test tích hợp
+
+> {note} Trước khi thêm file cấu hình test tích hợp, hãy đảm bảo rằng file `.env.testing` của bạn đã chứa biến `APP_URL` có giá trị là `http://127.0.0.1:8000`.
 
 <a name="running-tests-on-circle-ci"></a>
 ### CircleCI
@@ -1381,6 +1404,8 @@ Nếu bạn đang sử dụng CircleCI để chạy các bài test, bạn có th
                 - run: sudo apt-get install -y libsqlite3-dev
                 - run: cp .env.testing .env
                 - run: composer install -n --ignore-platform-reqs
+                - run: php artisan key:generate
+                - run: php artisan dusk:chrome-driver
                 - run: npm install
                 - run: npm run production
                 - run: vendor/bin/phpunit
@@ -1399,6 +1424,10 @@ Nếu bạn đang sử dụng CircleCI để chạy các bài test, bạn có th
                     name: Run Laravel Dusk Tests
                     command: php artisan dusk
 
+                - store_artifacts:
+                    path: tests/Browser/screenshots
+
+
 <a name="running-tests-on-codeship"></a>
 ### Codeship
 
@@ -1409,6 +1438,7 @@ Nếu bạn đang sử dụng CircleCI để chạy các bài test, bạn có th
     mkdir -p ./bootstrap/cache
     composer install --no-interaction --prefer-dist
     php artisan key:generate
+    php artisan dusk:chrome-driver
     nohup bash -c "php artisan serve 2>&1 &" && sleep 5
     php artisan dusk
 
@@ -1449,6 +1479,7 @@ Nếu bạn đang sử dụng CircleCI để chạy các bài test, bạn có th
       - cp .env.testing .env
       - travis_retry composer install --no-interaction --prefer-dist --no-suggest
       - php artisan key:generate
+      - php artisan dusk:chrome-driver
 
     before_script:
       - google-chrome-stable --headless --disable-gpu --remote-debugging-port=9222 http://localhost &
@@ -1472,6 +1503,8 @@ Nếu bạn đang sử dụng [Github Actions](https://github.com/features/actio
           - uses: actions/checkout@v1
           - name: Prepare The Environment
             run: cp .env.example .env
+          - name: Create Database
+            run: mysql --user="root" --password="root" -e "CREATE DATABASE my-database character set UTF8mb4 collate utf8mb4_bin;"
           - name: Install Composer Dependencies
             run: composer install --no-progress --no-suggest --prefer-dist --optimize-autoloader
           - name: Generate Application Key
@@ -1479,12 +1512,8 @@ Nếu bạn đang sử dụng [Github Actions](https://github.com/features/actio
           - name: Upgrade Chrome Driver
             run: php artisan dusk:chrome-driver
           - name: Start Chrome Driver
-            run: ./vendor/laravel/dusk/bin/chromedriver-linux > /dev/null 2>&1 &
+            run: ./vendor/laravel/dusk/bin/chromedriver-linux &
           - name: Run Laravel Server
-            run: php artisan serve > /dev/null 2>&1 &
+            run: php artisan serve &
           - name: Run Dusk Tests
             run: php artisan dusk
-
-Trong file `.env.testing` của bạn, hãy điều chỉnh giá trị của `APP_URL`:
-
-    APP_URL=http://127.0.0.1:8000

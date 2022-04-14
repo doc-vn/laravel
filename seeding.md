@@ -26,9 +26,10 @@ Ví dụ, hãy sửa class `DatabaseSeeder` mặc định và thêm một câu s
 
     <?php
 
-    use Illuminate\Support\Str;
     use Illuminate\Database\Seeder;
     use Illuminate\Support\Facades\DB;
+    use Illuminate\Support\Facades\Hash;
+    use Illuminate\Support\Str;
 
     class DatabaseSeeder extends Seeder
     {
@@ -42,7 +43,7 @@ Ví dụ, hãy sửa class `DatabaseSeeder` mặc định và thêm một câu s
             DB::table('users')->insert([
                 'name' => Str::random(10),
                 'email' => Str::random(10).'@gmail.com',
-                'password' => bcrypt('password'),
+                'password' => Hash::make('password'),
             ]);
         }
     }
@@ -100,9 +101,9 @@ Bây giờ bạn có thể sử dụng lệnh Artisan `db:seed` để tạo cơ 
 
     php artisan db:seed --class=UsersTableSeeder
 
-Bạn cũng có thể tạo cơ sở dữ liệu cho bạn bằng lệnh `migrate:refresh`, lệnh này cũng sẽ rollback và chạy lại tất cả các migration của bạn. Nó sẽ hữu ích khi bạn building lại hoàn toàn cơ sở dữ liệu của bạn:
+Bạn cũng có thể tạo cơ sở dữ liệu cho bạn bằng lệnh `migrate:fresh`, lệnh này sẽ xoá tất cả các bảng và chạy lại tất cả các migration của bạn. Nó sẽ hữu ích khi bạn building lại hoàn toàn cơ sở dữ liệu của bạn:
 
-    php artisan migrate:refresh --seed
+    php artisan migrate:fresh --seed
 
 <a name="forcing-seeding-production"></a>
 #### Buộc Seeder phải chạy trong môi trường production

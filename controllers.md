@@ -8,6 +8,7 @@
 - [Controller Middleware](#controller-middleware)
 - [Resource Controller](#resource-controllers)
     - [Partial Resource Routes](#restful-partial-resource-routes)
+    - [Nested Resources](#restful-nested-resources)
     - [Naming Resource Routes](#restful-naming-resource-routes)
     - [Naming Resource Route Parameters](#restful-naming-resource-route-parameters)
     - [Localizing Resource URIs](#restful-localizing-resource-uris)
@@ -32,8 +33,8 @@ Dưới đây là một ví dụ về một class controller cơ bản. Lưu ý 
 
     namespace App\Http\Controllers;
 
-    use App\User;
     use App\Http\Controllers\Controller;
+    use App\User;
 
     class UserController extends Controller
     {
@@ -75,8 +76,8 @@ Nếu bạn muốn định nghĩa một controller chỉ xử lý cho một hàn
 
     namespace App\Http\Controllers;
 
-    use App\User;
     use App\Http\Controllers\Controller;
+    use App\User;
 
     class ShowProfile extends Controller
     {
@@ -213,6 +214,35 @@ Bạn có thể đăng ký nhiều resource controller cho API cùng một lúc 
 Để tạo nhanh một API resource controller mà không chứa các phương thức `create` hoặc `edit`, hãy sử dụng switch `--api` khi chạy lệnh `make:controller`:
 
     php artisan make:controller API/PhotoController --api
+
+<a name="restful-nested-resources"></a>
+### Nested Resources
+
+Thỉnh thoảng bạn có thể cần định nghĩa các route đến một resource lồng nhau. Ví dụ: một resource photo có thể có nhiều nhận xét được đính kèm vào ảnh. Để lồng các resource controller, hãy sử dụng ký tự "chấm" trong khai báo route của bạn:
+
+    Route::resource('photos.comments', 'PhotoCommentController');
+
+Route này sẽ đăng ký một resource có thể truy cập được bằng các URI như sau:
+
+    /photos/{photo}/comments/{comment}
+
+#### Shallow Nesting
+
+Thông thường, không nhất thiết phải có cả ID cha và ID con trong một URI vì ID con có thể có chứa ID của cha. Khi sử dụng ID, chẳng hạn như một khóa chính tự động tăng dần để xác định model của bạn trong các phân đoạn URI, bạn có thể chọn sử dụng "shallow nesting":
+
+    Route::resource('photos.comments', 'CommentController')->shallow();
+
+Định nghĩa route ở trên sẽ định nghĩa ra các route như sau:
+
+Verb      | URI                               | Action       | Route Name
+----------|-----------------------------------|--------------|---------------------
+GET       | `/photos/{photo}/comments`        | index        | photos.comments.index
+GET       | `/photos/{photo}/comments/create` | create       | photos.comments.create
+POST      | `/photos/{photo}/comments`        | store        | photos.comments.store
+GET       | `/comments/{comment}`             | show         | comments.show
+GET       | `/comments/{comment}/edit`        | edit         | comments.edit
+PUT/PATCH | `/comments/{comment}`             | update       | comments.update
+DELETE    | `/comments/{comment}`             | destroy      | comments.destroy
 
 <a name="restful-naming-resource-routes"></a>
 ### Naming Resource Routes

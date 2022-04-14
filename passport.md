@@ -1,6 +1,7 @@
 # Laravel Passport
 
 - [Giới thiệu](#introduction)
+- [Cập nhật Passport](#upgrading)
 - [Cài đặt](#installation)
     - [Frontend Quickstart](#frontend-quickstart)
     - [Deploy Passport](#deploying-passport)
@@ -11,6 +12,10 @@
     - [Quản lý client](#managing-clients)
     - [Request token](#requesting-tokens)
     - [Refresh token](#refreshing-tokens)
+    - [Lọc token](#purging-tokens)
+- [Authorization Code Grant với PKCE](#code-grant-pkce)
+    - [Tạo client](#creating-a-auth-pkce-grant-client)
+    - [Request token](#requesting-auth-pkce-grant-tokens)
 - [Token password grant](#password-grant-tokens)
     - [Tạo một password grant client](#creating-a-password-grant-client)
     - [Request token](#requesting-password-grant-tokens)
@@ -41,6 +46,11 @@ Laravel đã giúp bạn dễ dàng thực hiện authentication thông qua các
 
 > {note} Tài liệu này giả định rằng bạn đã biết OAuth2. Nếu bạn chưa biết về OAuth2, hãy xem xét việc tự học với các [thuật ngữ](https://oauth2.thephpleague.com/terminology/) và tính năng chung của OAuth2 trước khi tiếp tục.
 
+<a name="upgrading"></a>
+## Cập nhật Passport
+
+Khi nâng cấp lên phiên bản mới của Passport, điều quan trọng là bạn phải xem kỹ [hướng dẫn nâng cấp](https://github.com/laravel/passport/blob/master/UPGRADE.md).
+
 <a name="installation"></a>
 ## Cài đặt
 
@@ -62,9 +72,9 @@ Sau khi chạy lệnh này, hãy thêm trait `Laravel\Passport\HasApiTokens` và
 
     namespace App;
 
-    use Laravel\Passport\HasApiTokens;
-    use Illuminate\Notifications\Notifiable;
     use Illuminate\Foundation\Auth\User as Authenticatable;
+    use Illuminate\Notifications\Notifiable;
+    use Laravel\Passport\HasApiTokens;
 
     class User extends Authenticatable
     {
@@ -77,9 +87,9 @@ Tiếp theo, bạn nên gọi phương thức `Passport::routes` vào trong phư
 
     namespace App\Providers;
 
-    use Laravel\Passport\Passport;
-    use Illuminate\Support\Facades\Gate;
     use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
+    use Illuminate\Support\Facades\Gate;
+    use Laravel\Passport\Passport;
 
     class AuthServiceProvider extends ServiceProvider
     {
@@ -223,12 +233,21 @@ Mặc định, Passport phát hành các access token tồn tại lâu dài có 
 <a name="overriding-default-models"></a>
 ### Ghi đè các model mặc định
 
-Bạn có thể thoải mái mở rộng các model được sử dụng trong nội bộ bằng Passport. Sau đó, bạn có thể hướng dẫn Passport sử dụng các model tùy biến này thông qua class `Passport`:
+Bạn có thể thoải mái mở rộng các model được sử dụng trong nội bộ bằng Passport:
 
-    use App\Models\Passport\Client;
-    use App\Models\Passport\Token;
+    use Laravel\Passport\Client as PassportClient;
+
+    class Client extends PassportClient
+    {
+        // ...
+    }
+
+Sau đó, bạn có thể hướng dẫn Passport sử dụng các model tùy biến này thông qua class `Passport`:
+
     use App\Models\Passport\AuthCode;
+    use App\Models\Passport\Client;
     use App\Models\Passport\PersonalAccessClient;
+    use App\Models\Passport\Token;
 
     /**
      * Register any authentication / authorization services.
@@ -275,7 +294,7 @@ Nếu bạn muốn lập một danh sách whitelist gồm nhiều URL chuyển h
 
 Vì người dùng của bạn sẽ không thể sử dụng lệnh `client`, nên Passport cũng cung cấp một JSON API mà bạn có thể sử dụng để tạo client. Điều này giúp bạn tránh những rắc rối khi phải tự viết controller để tạo, cập nhật và xóa client.
 
-Tuy nhiên, bạn sẽ cần kết nối JSON API của Passport với frontend của bạn để cung cấp một bảng điều khiển cho người dùng biết và quản lý các client của họ. Dưới đây, chúng ta sẽ xem xét tất cả các API endpoint để quản lý client. Để thuận tiện, chúng ta sẽ sử dụng [Axios](https://github.com/mzabriskie/axios) để thực hiện các HTTP request đến các endpoint.
+Tuy nhiên, bạn sẽ cần kết nối JSON API của Passport với frontend của bạn để cung cấp một bảng điều khiển cho người dùng biết và quản lý các client của họ. Dưới đây, chúng ta sẽ xem xét tất cả các API endpoint để quản lý client. Để thuận tiện, chúng ta sẽ sử dụng [Axios](https://github.com/axios/axios) để thực hiện các HTTP request đến các endpoint.
 
 JSON API được bảo vệ bởi middleware `web` và `auth`; do đó, nó chỉ có thể được gọi từ ứng dụng của bạn. Nó không thể được gọi từ một nguồn ở bên ngoài nào khác.
 
@@ -366,7 +385,7 @@ Nếu bạn muốn tùy chỉnh màn hình phê duyệt authorization, bạn có
 
     php artisan vendor:publish --tag=passport-views
 
-Thỉnh thoảng bạn có thể muốn bỏ qua các lời nhắc cấp quyền, chẳng hạn như khi cấp quyền cho client bên thứ nhất. Bạn có thể thực hiện điều này bằng cách định nghĩa phương thức `skipsAuthorization` trong model client. Nếu `skipsAuthorization` trả về `true` thì ứng dụng client sẽ được chấp thuận và người dùng sẽ được chuyển hướng trở lại về `redirect_uri` ngay lập tức:
+Thỉnh thoảng bạn có thể muốn bỏ qua các lời nhắc cấp quyền, chẳng hạn như khi cấp quyền cho client bên thứ nhất. Bạn có thể thực hiện điều này bằng cách [extending the `Client` model](#overriding-default-models) và định nghĩa phương thức `skipsAuthorization`. Nếu `skipsAuthorization` trả về `true` thì ứng dụng client sẽ được chấp thuận và người dùng sẽ được chuyển hướng trở lại về `redirect_uri` ngay lập tức:
 
     <?php
 
@@ -439,6 +458,115 @@ Nếu application của bạn phát hành access token ngắn hạn, người d�
 
 Route `/oauth/token` này sẽ trả về một JSON response có chứa các thuộc tính `access_token`, `refresh_token` và `expires_in`. Thuộc tính `expires_in` sẽ chứa số giây cho đến khi access token hết hạn.
 
+<a name="purging-tokens"></a>
+### Lọc token
+
+Khi token bị thu hồi hoặc bị hết hạn, bạn có thể muốn xóa chúng ra khỏi cơ sở dữ liệu. Passport có kèm theo một lệnh có thể thực hiện việc này cho bạn:
+
+    # Purge revoked and expired tokens and auth codes...
+    php artisan passport:purge
+
+    # Only purge revoked tokens and auth codes...
+    php artisan passport:purge --revoked
+
+    # Only purge expired tokens and auth codes...
+    php artisan passport:purge --expired
+
+Bạn cũng có thể cấu hình một [scheduled job](/docs/{{version}}/scheduling) trong class `Kernel` trong thư mục console để tự động lọc token của bạn theo một schedule:
+
+    /**
+     * Define the application's command schedule.
+     *
+     * @param  \Illuminate\Console\Scheduling\Schedule  $schedule
+     * @return void
+     */
+    protected function schedule(Schedule $schedule)
+    {
+        $schedule->command('passport:purge')->hourly();
+    }
+
+<a name="code-grant-pkce"></a>
+## Authorization Code Grant với PKCE
+
+Việc Authorization Code grant với "Proof Key for Code Exchange" (PKCE) là một cách an toàn để xác thực các trang web hoặc các ứng dụng truy cập vào API của bạn. Grant này sẽ được sử dụng khi bạn không thể đảm bảo rằng client secret sẽ được lưu trữ một cách an toàn hoặc cũng có thể là để giảm thiểu nguy cơ bị kẻ tấn công chặn authorization code. Sự kết hợp giữa một "code verifier" và một "code challenge" sẽ thay thế client secret khi trao đổi authorization code để lấy một access token.
+
+<a name="creating-a-auth-pkce-grant-client"></a>
+### Tạo client
+
+Trước khi ứng dụng của bạn có thể phát hành token thông qua authorization code grant với PKCE, bạn sẽ cần tạo một ứng dụng client hỗ trợ PKCE. Bạn có thể thực hiện việc này bằng lệnh `passport:client` với tùy chọn `--public`:
+
+    php artisan passport:client --public
+
+<a name="requesting-auth-pkce-grant-tokens"></a>
+### Request token
+
+#### Code Verifier & Code Challenge
+
+Vì authorization grant này không cung cấp một client secret, nên các nhà phát triển sẽ cần phải tạo ra một code verifier và một code challenge để yêu cầu token.
+
+Code verifier phải là một chuỗi ngẫu nhiên từ 43 đến 128 ký tự chứa các chữ cái, số và `"-"`, `"."`, `"_"`, `"~"`, như được định nghĩa trong [tài liệu RFC 7636 đặc điểm kỹ thuật](https://tools.ietf.org/html/rfc7636).
+
+Code challenge phải là một chuỗi được mã hóa Base64 với URL và các ký tự an toàn cho tên file. Các ký tự ở cuối dấu `'='` phải được loại bỏ và không được có dấu ngắt dòng, khoảng trắng hoặc các ký tự bổ sung khác.
+
+    $encoded = base64_encode(hash('sha256', $code_verifier, true));
+
+    $codeChallenge = strtr(rtrim($encoded, '='), '+/', '-_');
+
+#### Redirecting For Authorization
+
+Sau khi một ứng dụng client đã được tạo xong, bạn có thể sử dụng ID của ứng dụng client đó và code verifier và code challenge đã tạo để yêu cầu một authorization code và một access token từ ứng dụng của bạn. Đầu tiên, ứng dụng đang sử dụng phải thực hiện một request chuyển hướng đến route `/oauth/authorize` của ứng dụng của bạn:
+
+    Route::get('/redirect', function (Request $request) {
+        $request->session()->put('state', $state = Str::random(40));
+
+        $request->session()->put('code_verifier', $code_verifier = Str::random(128));
+
+        $codeChallenge = strtr(rtrim(
+            base64_encode(hash('sha256', $code_verifier, true))
+        , '='), '+/', '-_');
+
+        $query = http_build_query([
+            'client_id' => 'client-id',
+            'redirect_uri' => 'http://example.com/callback',
+            'response_type' => 'code',
+            'scope' => '',
+            'state' => $state,
+            'code_challenge' => $codeChallenge,
+            'code_challenge_method' => 'S256',
+        ]);
+
+        return redirect('http://your-app.com/oauth/authorize?'.$query);
+    });
+
+#### Converting Authorization Codes To Access Tokens
+
+Nếu người dùng chấp thuận yêu cầu authorization, họ sẽ được chuyển hướng trở lại ứng dụng mà họ đang sử dụng. Người dùng api của bạn nên xác thực thông số `state` so với giá trị đã được lưu trữ trước khi được chuyển hướng, như trong Authorization Code Grant tiêu chuẩn.
+
+Nếu thông số state khớp, Người dùng api của bạn nên đưa ra một request `POST` cho ứng dụng của bạn để yêu cầu một access token. Yêu cầu này phải chứa authorization code do ứng dụng của bạn cấp khi người dùng chấp thuận yêu cầu authorization cùng với code verifier đã được tạo ra ban đầu:
+
+    Route::get('/callback', function (Request $request) {
+        $state = $request->session()->pull('state');
+
+        $codeVerifier = $request->session()->pull('code_verifier');
+
+        throw_unless(
+            strlen($state) > 0 && $state === $request->state,
+            InvalidArgumentException::class
+        );
+
+        $response = (new GuzzleHttp\Client)->post('http://your-app.com/oauth/token', [
+            'form_params' => [
+                'grant_type' => 'authorization_code',
+                'client_id' => 'client-id',
+                'redirect_uri' => 'http://example.com/callback',
+                'code_verifier' => $codeVerifier,
+                'code' => $request->code,
+            ],
+        ]);
+
+        return json_decode((string) $response->getBody(), true);
+    });
+
 <a name="password-grant-tokens"></a>
 ## Token password grant
 
@@ -498,9 +626,9 @@ Khi xác thực bằng password grant, Passport sẽ sử dụng thuộc tính `
 
     namespace App;
 
-    use Laravel\Passport\HasApiTokens;
-    use Illuminate\Notifications\Notifiable;
     use Illuminate\Foundation\Auth\User as Authenticatable;
+    use Illuminate\Notifications\Notifiable;
+    use Laravel\Passport\HasApiTokens;
 
     class User extends Authenticatable
     {
@@ -527,21 +655,21 @@ Khi xác thực bằng password grant, Passport sẽ sử dụng thuộc tính `
 
     namespace App;
 
-    use Laravel\Passport\HasApiTokens;
-    use Illuminate\Support\Facades\Hash;
-    use Illuminate\Notifications\Notifiable;
     use Illuminate\Foundation\Auth\User as Authenticatable;
+    use Illuminate\Notifications\Notifiable;
+    use Illuminate\Support\Facades\Hash;
+    use Laravel\Passport\HasApiTokens;
 
     class User extends Authenticatable
     {
         use HasApiTokens, Notifiable;
 
         /**
-        * Validate the password of the user for the Passport password grant.
-        *
-        * @param  string $password
-        * @return bool
-        */
+         * Validate the password of the user for the Passport password grant.
+         *
+         * @param  string $password
+         * @return bool
+         */
         public function validateForPassportPasswordGrant($password)
         {
             return Hash::check($password, $this->password);
@@ -812,7 +940,7 @@ Middleware `scopes` có thể được chỉ định cho một route để xác 
 
     Route::get('/orders', function () {
         // Access token has both "check-status" and "place-orders" scopes...
-    })->middleware('scopes:check-status,place-orders');
+    })->middleware(['auth:api', 'scopes:check-status,place-orders']);
 
 #### Check For Any Scopes
 
@@ -820,7 +948,7 @@ Middleware `scope` có thể được chỉ định cho một route để xác m
 
     Route::get('/orders', function () {
         // Access token has either "check-status" or "place-orders" scope...
-    })->middleware('scope:check-status,place-orders');
+    })->middleware(['auth:api', 'scope:check-status,place-orders']);
 
 #### Kiểm tra scope On A Token Instance
 
@@ -864,7 +992,7 @@ Thông thường, nếu bạn muốn sử dụng API từ application JavaScript
         \Laravel\Passport\Http\Middleware\CreateFreshApiToken::class,
     ],
 
-> {note} Bạn nên đảm bảo rằng middleware `EncryptCookies` sẽ được khai báo trước middleware `CreateFreshApiToken` trong stack middleware của bạn.
+> {note} Bạn nên đảm bảo rằng middleware `CreateFreshApiToken` sẽ được khai báo cuối cùng trong stack middleware của bạn.
 
 Passport middleware này sẽ gán một cookie `laravel_token` vào các response gửi về cho bạn. Cookie này chứa JWT đã được mã hóa mà Passport sẽ sử dụng để xác thực các API request từ application JavaScript của bạn. Bây giờ, bạn có thể thực hiện các request đối với API của application mà không cần phải truyền một access token:
 
@@ -893,15 +1021,9 @@ Nếu cần, bạn có thể tùy biến tên cookie `laravel_token` bằng phư
 
 #### CSRF Protection
 
-Khi sử dụng phương thức xác thực này, mặc định Laravel JavaScript scaffolding sẽ hướng dẫn Axios luôn gửi các header `X-CSRF-TOKEN` và `X-Requested-With`. Tuy nhiên, bạn nên chắc chắn là đã thêm CSRF token của bạn vào một [HTML meta tag](/docs/{{version}}/csrf#csrf-x-csrf-token):
+Khi sử dụng phương thức xác thực này, bạn sẽ cần đảm bảo một header CSRF token hợp lệ đã được chứa trong các request của bạn. Mặc định, Laravel JavaScript scaffolding đã chứa một instance Axios, instance này sẽ tự động sử dụng giá trị cookie `XSRF-TOKEN` được mã hóa để gửi header `X-XSRF-TOKEN` trên các request có cùng origin.
 
-    // In your application layout...
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-
-    // Laravel's JavaScript scaffolding...
-    window.axios.defaults.headers.common = {
-        'X-Requested-With': 'XMLHttpRequest',
-    };
+> {tip} Nếu bạn chọn gửi header `X-CSRF-TOKEN` thay vì `X-XSRF-TOKEN`, bạn sẽ cần sử dụng một token chưa được mã hóa do `csrf_token()` cung cấp.
 
 <a name="events"></a>
 ## Event
@@ -941,4 +1063,21 @@ Phương thức `actingAs` của Passport có thể được sử dụng để c
         $response = $this->post('/api/create-server');
 
         $response->assertStatus(201);
+    }
+
+Phương thức `actingAsClient` của Passport có thể được sử dụng để chỉ định những client hiện đang được xác thực cũng như scope của nó. Tham số đầu tiên được cung cấp cho phương thức `actingAsClient` là instance client và tham số thứ hai là một mảng scope sẽ được cấp cho token của client đó:
+
+    use Laravel\Passport\Client;
+    use Laravel\Passport\Passport;
+
+    public function testGetOrders()
+    {
+        Passport::actingAsClient(
+            factory(Client::class)->create(),
+            ['check-status']
+        );
+
+        $response = $this->get('/api/orders');
+
+        $response->assertStatus(200);
     }

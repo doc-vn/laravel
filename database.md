@@ -14,10 +14,12 @@
 Laravel làm cho việc tương tác với cơ sở dữ liệu trở nên cực kỳ đơn giản trên nhiều loại cơ sở dữ liệu bằng cách sử dụng raw SQL, [fluent query builder](/docs/{{version}}/queries) và [Eloquent ORM](/docs/{{version}}/eloquent). Hiện tại, Laravel hỗ trợ bốn loại cơ sở dữ liệu:
 
 <div class="content-list" markdown="1">
-- MySQL
-- PostgreSQL
-- SQLite
-- SQL Server
+
+- MySQL 5.6+ ([Version Policy](https://en.wikipedia.org/wiki/MySQL#Release_history))
+- PostgreSQL 9.4+ ([Version Policy](https://www.postgresql.org/support/versioning/))
+- SQLite 3.8.8+
+- SQL Server 2017+ ([Version Policy](https://support.microsoft.com/en-us/lifecycle/search))
+
 </div>
 
 <a name="configuration"></a>
@@ -34,12 +36,9 @@ Sau khi đã tạo cơ sở dữ liệu SQLite mới bằng cách sử dụng c�
     DB_CONNECTION=sqlite
     DB_DATABASE=/absolute/path/to/database.sqlite
 
-Để enable các ràng buộc khóa ngoại cho các kết nối SQLite, bạn nên thêm tùy chọn `foreign_key_constraints` vào file cấu hình `config/database.php` của bạn:
+Để enable các ràng buộc khóa ngoại cho các kết nối SQLite, bạn nên set biến môi trường `DB_FOREIGN_KEYS` thành `true`:
 
-    'sqlite' => [
-        // ...
-        'foreign_key_constraints' => true,
-    ],
+    DB_FOREIGN_KEYS=true
 
 #### Configuration Using URLs
 
@@ -116,8 +115,8 @@ Khi bạn đã cấu hình các kết nối cơ sở dữ liệu của bạn, b�
 
     namespace App\Http\Controllers;
 
-    use Illuminate\Support\Facades\DB;
     use App\Http\Controllers\Controller;
+    use Illuminate\Support\Facades\DB;
 
     class UserController extends Controller
     {

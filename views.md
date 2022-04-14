@@ -32,6 +32,8 @@ View cũng có thể được nằm trong một thư mục con của thư mục 
 
     return view('admin.profile', $data);
 
+> {note} Tên thư mục view sẽ không được chứa ký tự `.`.
+
 #### Xác định nếu một View tồn tại
 
 Nếu bạn cần kiểm tra một view có tồn tại hay không, bạn có thể sử dụng facade `View`. Phương thức `exists` sẽ trả về `true` nếu view đó tồn tại:
@@ -152,8 +154,8 @@ Sau khi chúng ta đã đăng ký xong composer, phương thức `ProfileCompose
 
     namespace App\Http\View\Composers;
 
-    use Illuminate\View\View;
     use App\Repositories\UserRepository;
+    use Illuminate\View\View;
 
     class ProfileComposer
     {

@@ -12,6 +12,7 @@
     - [Authorizing Form Requests](#authorizing-form-requests)
     - [Tuỳ biến Error Messages](#customizing-the-error-messages)
     - [Tuỳ biến thuộc tính Validation](#customizing-the-validation-attributes)
+    - [Chuẩn bị dữ liệu cho Validation](#prepare-input-for-validation)
 - [Tạo Validator thủ công](#manually-creating-validators)
     - [Tự dộng chuyển hướng](#automatic-redirection)
     - [Tên của Error Bags](#named-error-bags)
@@ -57,8 +58,8 @@ Tiếp theo, chúng ta hãy xem một controller đơn giản xử lý cho các 
 
     namespace App\Http\Controllers;
 
-    use Illuminate\Http\Request;
     use App\Http\Controllers\Controller;
+    use Illuminate\Http\Request;
 
     class PostController extends Controller
     {
@@ -108,6 +109,20 @@ Bây giờ chúng ta đã sẵn sàng để viết vào phương thức `store` 
     }
 
 Như bạn có thể thấy, chúng ta đã truyền các quy tắc validation mà chúng ta mong muốn vào phương thức `validate`. Một lần nữa, nếu validation thất bại, một response thích hợp sẽ được tự động trả về. Còn nếu validation thành công, controller của chúng ta sẽ tiếp tục được thực thi bình thường.
+
+Ngoài ra, các quy tắc validation có thể được chỉ định dưới dạng các mảng quy tắc thay vì một chuỗi phân cách bằng dấu `|`:
+
+    $validatedData = $request->validate([
+        'title' => ['required', 'unique:posts', 'max:255'],
+        'body' => ['required'],
+    ]);
+
+Nếu bạn muốn chỉ định [error bag](#named-error-bags) mà thông báo lỗi sẽ được đặt vào, bạn có thể sử dụng phương thức `validateWithBag`:
+
+    $request->validateWithBag('blog', [
+        'title' => ['required', 'unique:posts', 'max:255'],
+        'body' => ['required'],
+    ]);
 
 #### Dừng luôn nếu Validation đầu tiên thất bại
 
@@ -325,6 +340,25 @@ Nếu bạn muốn phần `:attribute` của message validation được thay th
         ];
     }
 
+<a name="prepare-input-for-validation"></a>
+### Chuẩn bị dữ liệu cho Validation
+
+Nếu bạn cần làm sạch dữ liệu trong request trước khi áp dụng các quy tắc validation của bạn, bạn có thể sử dụng phương thức `prepareForValidation`:
+
+    use Illuminate\Support\Str;
+
+    /**
+     * Prepare the data for validation.
+     *
+     * @return void
+     */
+    protected function prepareForValidation()
+    {
+        $this->merge([
+            'slug' => Str::slug($this->slug),
+        ]);
+    }
+
 <a name="manually-creating-validators"></a>
 ## Tạo Validator thủ công
 
@@ -334,8 +368,8 @@ Nếu bạn không muốn sử dụng phương thức `validate` theo request, b
 
     namespace App\Http\Controllers;
 
-    use Illuminate\Http\Request;
     use App\Http\Controllers\Controller;
+    use Illuminate\Http\Request;
     use Illuminate\Support\Facades\Validator;
 
     class PostController extends Controller
@@ -562,6 +596,8 @@ Dưới đây là danh sách tất cả các quy tắc validation có sẵn và 
 [Distinct](#rule-distinct)
 [E-Mail](#rule-email)
 [Ends With](#rule-ends-with)
+[Exclude If](#rule-exclude-if)
+[Exclude Unless](#rule-exclude-unless)
 [Exists (Database)](#rule-exists)
 [File](#rule-file)
 [Filled](#rule-filled)
@@ -583,6 +619,7 @@ Dưới đây là danh sách tất cả các quy tắc validation có sẵn và 
 [Not Regex](#rule-not-regex)
 [Nullable](#rule-nullable)
 [Numeric](#rule-numeric)
+[Password](#rule-password)
 [Present](#rule-present)
 [Regular Expression](#rule-regex)
 [Required](#rule-required)
@@ -612,7 +649,7 @@ Field được validation phải là _yes_, _on_, _1_ hoặc _true_. Điều nà
 <a name="rule-active-url"></a>
 #### active_url
 
-Field được validation phải có bản ghi A hoặc AAAA hợp lệ theo hàm PHP `dns_get_record`.
+Field được validation phải có bản ghi A hoặc AAAA hợp lệ theo hàm PHP `dns_get_record`. Hostname của URL đã cung cấp sẽ được lấy bằng cách sử dụng hàm PHP `parse_url` trước khi được truyền đến `dns_get_record`.
 
 <a name="rule-after"></a>
 #### after:_date_
@@ -693,7 +730,7 @@ Field được validation phải bằng ngày đã cho. Tham số date sẽ đư
 <a name="rule-date-format"></a>
 #### date_format:_format_
 
-Field được validation phải khớp với _format_ đã cho. Bạn nên sử dụng **một trong hai** `date` hoặc `date_format` khi validate một field, không dùng cả hai. Quy tắc validation này hỗ trợ tất cả các định dạng mà được hỗ trợ bởi class [DateTime](https://www.php.net/manual/es/class.datetime.php) của PHP.
+Field được validation phải khớp với _format_ đã cho. Bạn nên sử dụng **một trong hai** `date` hoặc `date_format` khi validate một field, không dùng cả hai. Quy tắc validation này hỗ trợ tất cả các định dạng mà được hỗ trợ bởi class [DateTime](https://www.php.net/manual/en/class.datetime.php) của PHP.
 
 <a name="rule-different"></a>
 #### different:_field_
@@ -708,7 +745,7 @@ Field được validation phải là _numeric_ và phải có độ dài chính 
 <a name="rule-digits-between"></a>
 #### digits_between:_min_,_max_
 
-Field được validation phải có độ dài ở giữa _min_ và _max_ đã cho.
+Field được validation phải là _numeric_ và phải có độ dài ở giữa _min_ và _max_ đã cho.
 
 <a name="rule-dimensions"></a>
 #### dimensions
@@ -751,19 +788,31 @@ Trường được validation phải ở định dạng một địa chỉ e-mai
 Ví dụ trên sẽ áp dụng validation `RFCValidation` và `DNSCheckValidation`. Dưới đây là một danh sách đầy đủ gồm các kiểu validation mà bạn có thể áp dụng:
 
 <div class="content-list" markdown="1">
+
 - `rfc`: `RFCValidation`
 - `strict`: `NoRFCWarningsValidation`
 - `dns`: `DNSCheckValidation`
 - `spoof`: `SpoofCheckValidation`
 - `filter`: `FilterEmailValidation`
+
 </div>
 
-Mặc định validator `filter` sẽ sử dụng hàm `filter_var` của PHP, đi kèm với Laravel và là hành vi của phiên bản Laravel trước 5.8.
+Mặc định validator `filter` sẽ sử dụng hàm `filter_var` của PHP, đi kèm với Laravel và là hành vi của phiên bản Laravel trước phiên bản 5.8. Validator `dns` và `spoof` sẽ yêu cầu extension `intl` của PHP.
 
 <a name="rule-ends-with"></a>
 #### ends_with:_foo_,_bar_,...
 
 Field được validation phải kết thúc bằng một trong các giá trị đã cho.
+
+<a name="rule-exclude-if"></a>
+#### exclude_if:_anotherfield_,_value_
+
+Field được validation sẽ bị loại trừ khỏi dữ liệu request được trả về từ phương thức `validate` và `validated` nếu _một field khác_ có giá trị bằng giá trị _value_.
+
+<a name="rule-exclude-unless"></a>
+#### exclude_unless:_anotherfield_,_value_
+
+Field được validation sẽ bị loại trừ khỏi dữ liệu request được trả về từ phương thức `validate` và `validated` trừ khi _một field khác_ có giá trị bằng giá trị _value_.
 
 <a name="rule-exists"></a>
 #### exists:_table_,_column_
@@ -783,6 +832,10 @@ Nếu tùy chọn `column` không được chỉ định, thì tên field đó s
 Đôi khi, bạn có thể cần chỉ định một kết nối cơ sở dữ liệu cụ thể sẽ được sử dụng cho truy vấn `exists`. Bạn có thể thực hiện điều này bằng cách thêm tên kết nối vào tên bảng thông qua cú pháp "chấm":
 
     'email' => 'exists:connection.staff,email'
+
+Thay vì chỉ định trực tiếp tên bảng, bạn có thể chỉ định tên model Eloquent sẽ được sử dụng để xác định tên bảng:
+
+    'user_id' => 'exists:App\User,id'
 
 Nếu bạn muốn tùy chỉnh truy vấn được thực thi theo quy tắc validation, bạn có thể sử dụng class `Rule` để dễ dàng định nghĩa các quy tắc. Trong ví dụ này, chúng ta cũng sẽ định nghĩa các quy tắc validation là một mảng thay vì sử dụng ký tự `|` để phân định chúng:
 
@@ -810,12 +863,12 @@ Field được validation phải không được trống khi nó có tồn tại
 <a name="rule-gt"></a>
 #### gt:_field_
 
-Field được validation phải lớn hơn _field_ đã cho. Hai field phải cùng loại. Các loại chuỗi, số, mảng và file sẽ được đánh giá bằng cách sử dụng các quy ước giống như quy ước của `size`.
+Field được validation phải lớn hơn _field_ đã cho. Hai field phải cùng loại. Các loại chuỗi, số, mảng và file sẽ được đánh giá bằng cách sử dụng các quy ước giống như quy ước của [`size`](#rule-size).
 
 <a name="rule-gte"></a>
 #### gte:_field_
 
-Field được validation phải lớn hơn hoặc bằng _field_ đã cho. Hai field phải cùng loại. Các loại chuỗi, số, mảng và file sẽ được đánh giá bằng cách sử dụng các quy ước giống như quy ước của `size`.
+Field được validation phải lớn hơn hoặc bằng _field_ đã cho. Hai field phải cùng loại. Các loại chuỗi, số, mảng và file sẽ được đánh giá bằng cách sử dụng các quy ước giống như quy ước của [`size`](#rule-size).
 
 <a name="rule-image"></a>
 #### image
@@ -869,12 +922,12 @@ Field được validation phải là một chuỗi JSON.
 <a name="rule-lt"></a>
 #### lt:_field_
 
-Field được validation phải nhỏ hơn _field_ đã cho. Hai field phải cùng loại. Các loại chuỗi, số, mảng và file sẽ được đánh giá bằng cách sử dụng các quy ước giống như quy ước của `size`.
+Field được validation phải nhỏ hơn _field_ đã cho. Hai field phải cùng loại. Các loại chuỗi, số, mảng và file sẽ được đánh giá bằng cách sử dụng các quy ước giống như quy ước của [`size`](#rule-size).
 
 <a name="rule-lte"></a>
 #### lte:_field_
 
-Field được validation phải nhỏ hơn hoặc bằng _field_ đã cho. Hai field phải cùng loại. Các loại chuỗi, số, mảng và file sẽ được đánh giá bằng cách sử dụng các quy ước giống như quy ước của `size`.
+Field được validation phải nhỏ hơn hoặc bằng _field_ đã cho. Hai field phải cùng loại. Các loại chuỗi, số, mảng và file sẽ được đánh giá bằng cách sử dụng các quy ước giống như quy ước của [`size`](#rule-size).
 
 <a name="rule-max"></a>
 #### max:_value_
@@ -940,6 +993,13 @@ Field được validation có thể là `null`. Điều này đặc biệt hữu
 #### numeric
 
 Field được validation phải là numeric.
+
+<a name="rule-password"></a>
+#### password
+
+Field được validation phải khớp với mật khẩu của người dùng đã xác thực. Bạn có thể chỉ định một guard authentication bằng cách sử dụng tham số đầu tiên của quy tắc:
+
+    'password' => 'password:api'
 
 <a name="rule-present"></a>
 #### present
@@ -1021,7 +1081,19 @@ _field_ đã cho phải match với field được validation.
 <a name="rule-size"></a>
 #### size:_value_
 
-Field được validation phải có kích thước khớp với _value_ đã cho. Đối với dữ liệu chuỗi, _value_ tương ứng với số lượng ký tự. Đối với dữ liệu số, _value_ tương ứng với một giá trị số nguyên đã cho. Đối với một mảng, _size_ tương ứng với `count` của mảng. Đối với file, _size_ tương ứng với kích thước file tính bằng kilobyte.
+Field được validation phải có kích thước khớp với _value_ đã cho. Đối với dữ liệu chuỗi, _value_ tương ứng với số lượng ký tự. Đối với dữ liệu số, _value_ tương ứng với một giá trị số nguyên đã cho (thuộc tính cũng phải có quy tắc `numeric` hoặc `integer`). Đối với một mảng, _size_ tương ứng với `count` của mảng. Đối với file, _size_ tương ứng với kích thước file tính bằng kilobyte. Hãy xem một số ví dụ:
+
+    // Validate that a string is exactly 12 characters long...
+    'title' => 'size:12';
+
+    // Validate that a provided integer equals 10...
+    'seats' => 'integer|size:10';
+
+    // Validate that an array has exactly 5 elements...
+    'tags' => 'array|size:5';
+
+    // Validate that an uploaded file is exactly 512 kilobytes...
+    'image' => 'file|size:512';
 
 <a name="rule-starts-with"></a>
 #### starts_with:_foo_,_bar_,...
@@ -1043,7 +1115,11 @@ Field được validation phải là một định danh múi giờ hợp lệ th
 
 Field được validation phải không tồn tại trong một bảng cơ sở dữ liệu.
 
-**Khai báo tên cột**
+**Khai báo tên table và tên cột**
+
+Thay vì chỉ định trực tiếp tên bảng, bạn có thể chỉ định tên model Eloquent sẽ được sử dụng để xác định tên bảng:
+
+    'email' => 'unique:App\User,email_address'
 
 Tùy chọn `column` có thể được sử dụng để chỉ định tên cột sẽ được sử dụng trong cơ sở dữ liệu. Nếu tùy chọn `column` không được chỉ định, thì tên field sẽ được sử dụng.
 

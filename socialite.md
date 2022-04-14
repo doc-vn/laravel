@@ -51,6 +51,7 @@ Tiếp theo, bạn đã sẵn sàng để authenticate người dùng! Bạn s�
 
     namespace App\Http\Controllers\Auth;
 
+    use App\Http\Controllers\Controller;
     use Socialite;
 
     class LoginController extends Controller
@@ -117,6 +118,8 @@ Bạn có thể ghi đè tất cả các scope hiện tại bằng phương th�
 Phương thức `stateless` có thể được sử dụng để vô hiệu hóa trạng thái xác minh của session. Điều này có thể hữu ích khi thêm các social authentication vào API:
 
     return Socialite::driver('google')->stateless()->user();
+
+> {note} Xác thực stateless không có sẵn trong driver Twitter, driver này sử dụng OAuth 1.0 để xác thực.
 
 <a name="retrieving-user-details"></a>
 ## Lấy ra thông tin User

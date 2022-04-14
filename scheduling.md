@@ -38,9 +38,9 @@ Bạn có thể định nghĩa tất cả các task đã được schedule của
 
     namespace App\Console;
 
-    use Illuminate\Support\Facades\DB;
     use Illuminate\Console\Scheduling\Schedule;
     use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
+    use Illuminate\Support\Facades\DB;
 
     class Kernel extends ConsoleKernel
     {
@@ -115,12 +115,12 @@ Method  | Description
 `->daily();`  |  Chạy task hàng ngày
 `->dailyAt('13:00');`  |  Chạy task hàng ngày vào lúc 13:00
 `->twiceDaily(1, 13);`  | Chạy task hàng ngày vào lúc 1:00 và 13:00
-`->weekly();`  |  Chạy task hàng tuần
+`->weekly();`  |  Chạy task hàng tuần vào chủ nhật lúc 00:00
 `->weeklyOn(1, '8:00');`  |  Chạy task hàng tuần vào thứ hai lúc 8:00
-`->monthly();`  | Chạy task hàng tháng
+`->monthly();`  | Chạy task vào ngày đầu tiên của tháng lúc 00:00
 `->monthlyOn(4, '15:00');`  |  Chạy task hàng ngày vào ngày thứ 4 của tháng và vào lúc 15:00
-`->quarterly();` |  Chạy task hàng quý
-`->yearly();`  | Chạy task hàng năm
+`->quarterly();` |  Chạy task vào ngày đầu tiên của quý lúc 00:00
+`->yearly();`  | Chạy task vào ngày đầu tiên của năm lúc 00:00
 `->timezone('America/New_York');` | Set timezone
 
 Các phương thức này có thể được kết hợp thêm các ràng buộc để tạo ra các schedule có thể được điều chỉnh tốt hơn, ví dụ như chỉ chạy vào một số ngày nhất định trong tuần. Để schedule một lệnh chạy vào thứ hai hàng tuần thì bạn có thể làm như sau:

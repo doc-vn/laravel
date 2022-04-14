@@ -6,6 +6,7 @@
 - [Tạo Job](#creating-jobs)
     - [Tạo class Job](#generating-job-classes)
     - [Cấu trúc class](#class-structure)
+    - [Job Middleware](#job-middleware)
 - [Dispatching Job](#dispatching-jobs)
     - [Delayed Dispatching](#delayed-dispatching)
     - [Đồng bộ Dispatching](#synchronous-dispatching)
@@ -34,7 +35,7 @@
 
 Queue của Laravel cung cấp một API hợp nhất trên nhiều loại queue backend khác nhau, chẳng hạn như Beanstalk, Amazon SQS, Redis hoặc thậm chí là một database. Queue cho phép bạn trì hoãn việc xử lý một tác vụ tốn nhiều thời gian, chẳng hạn như việc gửi email sau một thời gian nhất định. Trì hoãn các tác vụ tiêu tốn thời gian này sẽ tăng tốc các request web đến application của bạn.
 
-File cấu hình queue được lưu trữ trong `config/queue.php`. Trong file này, bạn sẽ tìm thấy các cấu hình connection cho từng loại driver queue có trong framework, bao gồm database, [Beanstalkd](https://kr.github.io/beanstalkd/), [Amazon SQS](https://aws.amazon.com/sqs/), [Redis](https://redis.io), và một driver chạy đồng bộ job (để sử dụng dưới local). Driver queue `null` cũng đã được khai báo để loại bỏ các job đã được queue.
+File cấu hình queue được lưu trữ trong `config/queue.php`. Trong file này, bạn sẽ tìm thấy các cấu hình connection cho từng loại driver queue có trong framework, bao gồm database, [Beanstalkd](https://beanstalkd.github.io/), [Amazon SQS](https://aws.amazon.com/sqs/), [Redis](https://redis.io), và một driver chạy đồng bộ job (để sử dụng dưới local). Driver queue `null` cũng đã được khai báo để loại bỏ các job đã được queue.
 
 <a name="connections-vs-queues"></a>
 ### Connection và Queue
@@ -93,14 +94,18 @@ Khi sử dụng queue Redis, bạn có thể sử dụng tùy chọn cấu hình
         'block_for' => 5,
     ],
 
+> {note} Việc set `block_for` thành `0` sẽ khiến các queue worker chặn vô thời hạn cho đến khi có job. Điều này cũng sẽ chặn các tín hiệu như `SIGTERM` được xử lý cho đến khi job tiếp theo được xử lý.
+
 #### Other Driver Prerequisites
 
 Các library sau sẽ cần thiết cho driver queue cũng sẽ được liệt kê:
 
 <div class="content-list" markdown="1">
+
 - Amazon SQS: `aws/aws-sdk-php ~3.0`
 - Beanstalkd: `pda/pheanstalk ~4.0`
-- Redis: `predis/predis ~1.0`
+- Redis: `predis/predis ~1.0` or phpredis PHP extension
+
 </div>
 
 <a name="creating-jobs"></a>
@@ -124,13 +129,13 @@ Các class của job rất đơn giản, thông thường chỉ chứa một ph�
 
     namespace App\Jobs;
 
-    use App\Podcast;
     use App\AudioProcessor;
+    use App\Podcast;
     use Illuminate\Bus\Queueable;
-    use Illuminate\Queue\SerializesModels;
-    use Illuminate\Queue\InteractsWithQueue;
     use Illuminate\Contracts\Queue\ShouldQueue;
     use Illuminate\Foundation\Bus\Dispatchable;
+    use Illuminate\Queue\InteractsWithQueue;
+    use Illuminate\Queue\SerializesModels;
 
     class ProcessPodcast implements ShouldQueue
     {
@@ -161,7 +166,7 @@ Các class của job rất đơn giản, thông thường chỉ chứa một ph�
         }
     }
 
-Trong ví dụ trên, hãy lưu ý rằng chúng ta có thể truyền một [Eloquent model](/docs/{{version}}/eloquent) trực tiếp vào hàm khởi tạo của queued job. Do trait `SerializesModels` này đang được job sử dụng, nên các model Eloquent sẽ được serialize và unserialize ngược lại khi job được xử lý. Nếu queued job của bạn chấp nhận một model Eloquent trong hàm khởi tạo, thì chỉ có mã định danh cho model sẽ được serialize trên queue. Và khi job đó được xử lý, thì hệ thống queue sẽ tự động lấy ra lại full instance của model đó từ cơ sở dữ liệu. Tất cả đều là hoàn toàn an toàn đối với application của bạn và ngăn chặn các vấn đề có thể phát sinh từ việc serialize full instance của model Eloquent.
+Trong ví dụ trên, hãy lưu ý rằng chúng ta có thể truyền một [Eloquent model](/docs/{{version}}/eloquent) trực tiếp vào hàm khởi tạo của queued job. Do trait `SerializesModels` này đang được job sử dụng, nên các model Eloquent và các quan hệ của nó cũng sẽ được serialize và unserialize ngược lại khi job được xử lý. Nếu queued job của bạn chấp nhận một model Eloquent trong hàm khởi tạo, thì chỉ có mã định danh cho model sẽ được serialize trên queue. Và khi job đó được xử lý, thì hệ thống queue sẽ tự động lấy ra lại full instance của model đó và các quan hệ của nó cũng từ cơ sở dữ liệu. Tất cả đều là hoàn toàn an toàn đối với application của bạn và ngăn chặn các vấn đề có thể phát sinh từ việc serialize full instance của model Eloquent.
 
 Phương thức `handle` được gọi khi job được xử lý bởi queue. Lưu ý rằng chúng ta có thể khai báo các phụ thuộc vào phương thức `handle` của job. Laravel [service container](/docs/{{version}}/container) sẽ tự động inject các phụ thuộc này.
 
@@ -175,6 +180,95 @@ Nếu bạn muốn toàn quyền kiểm soát cách container đưa các phụ t
 
 > {note} Dữ liệu nhị phân, chẳng hạn như một nội dung ảnh thô, phải được truyền qua hàm `base64_encode` trước khi được truyền đến một queued job. Nếu không làm điều này, thì job đó có thể serialize thành chuỗi JSON không đúng khi được đặt lên queue.
 
+#### Handling Relationships
+
+Bởi vì các quan hệ cũng được serialize, nên job có thể trở nên khá lớn. Để ngăn việc các quan hệ bị serialize, bạn có thể gọi phương thức `withoutRelations` trên model khi set giá trị thuộc tính. Phương thức này sẽ trả về một instance của model không có quan hệ được load:
+
+    /**
+     * Create a new job instance.
+     *
+     * @param  \App\Podcast  $podcast
+     * @return void
+     */
+    public function __construct(Podcast $podcast)
+    {
+        $this->podcast = $podcast->withoutRelations();
+    }
+
+<a name="job-middleware"></a>
+### Job Middleware
+
+Job middleware cho phép bạn custom logic toàn bộ việc chạy các queued job, giảm việc viết code trong các job đó. Ví dụ: phương thức `handle` sau đây có sử dụng các tính năng giới hạn tốc độ của Redis trong Laravel để chỉ cho phép cứ năm giây xử lý một job:
+
+    /**
+     * Execute the job.
+     *
+     * @return void
+     */
+    public function handle()
+    {
+        Redis::throttle('key')->block(0)->allow(1)->every(5)->then(function () {
+            info('Lock obtained...');
+
+            // Handle job...
+        }, function () {
+            // Could not obtain lock...
+
+            return $this->release(5);
+        });
+    }
+
+Mặc dù code này đúng, nhưng cấu trúc của phương thức `handle` đã trở nên quá phức tạp vì nó không đồng nhất với logic giới hạn tốc độ của Redis. Ngoài ra, logic giới hạn tốc độ này cũng phải được copy cho bất kỳ job nào khác mà chúng ta muốn set giới hạn tốc độ.
+
+Thay vì giới hạn tốc độ trong phương thức handle, chúng ta có thể định nghĩa một job middleware xử lý giới hạn tốc độ. Laravel không có một vị trí mặc định cho các job middleware này, vì vậy bạn có thể đặt job middleware ở bất kỳ đâu trong ứng dụng của bạn. Trong ví dụ này, chúng ta sẽ đặt middleware trong thư mục `app/Jobs/Middleware`:
+
+    <?php
+
+    namespace App\Jobs\Middleware;
+
+    use Illuminate\Support\Facades\Redis;
+
+    class RateLimited
+    {
+        /**
+         * Process the queued job.
+         *
+         * @param  mixed  $job
+         * @param  callable  $next
+         * @return mixed
+         */
+        public function handle($job, $next)
+        {
+            Redis::throttle('key')
+                    ->block(0)->allow(1)->every(5)
+                    ->then(function () use ($job, $next) {
+                        // Lock obtained...
+
+                        $next($job);
+                    }, function () use ($job) {
+                        // Could not obtain lock...
+
+                        $job->release(5);
+                    });
+        }
+    }
+
+Như bạn có thể thấy, chẳng hạn như [route middleware](/docs/{{version}}/middleware), job middleware sẽ nhận vào một job đang được xử lý và lệnh callback sẽ được gọi để tiếp tục xử lý job đó.
+
+Sau khi tạo xong job middleware, chúng ta có thể được gắn chúng vào một job bằng cách trả lại chúng từ phương thức `middleware` của job. Phương thức này không tồn tại trên các job được tạo bởi lệnh Artisan `make:job`, vì vậy bạn sẽ cần phải thêm nó vào định nghĩa job class của riêng bạn:
+
+    use App\Jobs\Middleware\RateLimited;
+
+    /**
+     * Get the middleware the job should pass through.
+     *
+     * @return array
+     */
+    public function middleware()
+    {
+        return [new RateLimited];
+    }
+
 <a name="dispatching-jobs"></a>
 ## Dispatching Job
 
@@ -184,9 +278,9 @@ Khi bạn đã viết xong các class job của bạn, bạn có thể dispatch 
 
     namespace App\Http\Controllers;
 
+    use App\Http\Controllers\Controller;
     use App\Jobs\ProcessPodcast;
     use Illuminate\Http\Request;
-    use App\Http\Controllers\Controller;
 
     class PodcastController extends Controller
     {
@@ -213,9 +307,9 @@ Nếu bạn muốn delay việc thực hiện một queued job, bạn có thể 
 
     namespace App\Http\Controllers;
 
+    use App\Http\Controllers\Controller;
     use App\Jobs\ProcessPodcast;
     use Illuminate\Http\Request;
-    use App\Http\Controllers\Controller;
 
     class PodcastController extends Controller
     {
@@ -245,9 +339,9 @@ Nếu bạn muốn gửi một job được chạy ngay lập tức (một cách
 
     namespace App\Http\Controllers;
 
-    use Illuminate\Http\Request;
-    use App\Jobs\ProcessPodcast;
     use App\Http\Controllers\Controller;
+    use App\Jobs\ProcessPodcast;
+    use Illuminate\Http\Request;
 
     class PodcastController extends Controller
     {
@@ -297,9 +391,9 @@ Bằng cách tạo các job đến các queue khác nhau, bạn có thể "phân
 
     namespace App\Http\Controllers;
 
+    use App\Http\Controllers\Controller;
     use App\Jobs\ProcessPodcast;
     use Illuminate\Http\Request;
-    use App\Http\Controllers\Controller;
 
     class PodcastController extends Controller
     {
@@ -325,9 +419,9 @@ Nếu bạn đang làm việc với nhiều queue connection, bạn có thể kh
 
     namespace App\Http\Controllers;
 
+    use App\Http\Controllers\Controller;
     use App\Jobs\ProcessPodcast;
     use Illuminate\Http\Request;
-    use App\Http\Controllers\Controller;
 
     class PodcastController extends Controller
     {
@@ -493,9 +587,9 @@ Laravel có chứa một queue worker sẽ xử lý các job mới khi chúng đ
 
 > {tip} Để giữ cho process `queue:work` luôn hoạt động trong background, bạn nên sử dụng một trình giám sát process, chẳng hạn như [Supervisor](#supervisor-configuration) để đảm bảo rằng queue worker không bị dừng giữa chừng.
 
-Hãy nhớ rằng, các queue worker là các process tồn tại lâu dài và lưu trữ trạng thái của application vào trong bộ nhớ. Do đó, chúng sẽ không nhận biết dược những thay đổi trong source code của bạn sau khi bạn đã chạy chúng. Vì vậy, trong khi quá trình deploy của bạn, hãy đảm bảo là [bạn đã khởi động lại queue worker của bạn](#queue-workers-and-deployment).
+Hãy nhớ rằng, các queue worker là các process tồn tại lâu dài và lưu trữ trạng thái của application vào trong bộ nhớ. Do đó, chúng sẽ không nhận biết dược những thay đổi trong source code của bạn sau khi bạn đã chạy chúng. Vì vậy, trong khi quá trình deploy của bạn, hãy đảm bảo là [bạn đã khởi động lại queue worker của bạn](#queue-workers-and-deployment). Ngoài ra, hãy nhớ rằng bất kỳ trạng thái tĩnh nào được tạo hoặc được sửa bởi ứng dụng của bạn cũng sẽ không được tự động reset giữa các job.
 
-Ngoài ra, bạn có thể chạy lệnh `queue:listen`. Khi sử dụng lệnh `queue:listen`, bạn không phải khởi động lại worker theo cách thủ công sau khi code của bạn được thay đổi như mọi khi; tuy nhiên, lệnh này không hiệu quả bằng `queue:work`:
+Ngoài ra, bạn có thể chạy lệnh `queue:listen`. Khi sử dụng lệnh `queue:listen`, bạn không phải khởi động lại worker theo cách thủ công khi bạn muốn reload lại code đã cập nhật hoặc reset lại trạng thái ứng dụng; tuy nhiên, lệnh này không hiệu quả bằng `queue:work`:
 
     php artisan queue:listen
 
@@ -505,7 +599,7 @@ Bạn cũng có thể khai báo queue connection mà worker sẽ sử dụng. T�
 
     php artisan queue:work redis
 
-Bạn cũng có thể tùy chỉnh queue worker của bạn nhiều hơn nữa bằng cách chỉ xử lý các queue cụ thể cho một connection nhất định. Ví dụ: nếu tất cả các email của bạn được xử lý trong queue `emails` trên một connection là `redis`, thì bạn có thể gọi lệnh sau để chạy một worker chỉ xử lý cho riêng queue đó:
+Bạn cũng có thể tùy chỉnh queue worker của bạn nhiều hơn nữa bằng cách chỉ xử lý các queue cụ thể cho một connection nhất định. Ví dụ: nếu tất cả các email của bạn được xử lý trong queue `emails` trên một connection là `redis`, thì bạn có thể gọi lệnh sau để chạy một worker xử lý cho riêng queue đó:
 
     php artisan queue:work redis --queue=emails
 
@@ -558,7 +652,7 @@ Trong file cấu hình `config/queue.php` của bạn, mỗi queue connection s�
 
 #### Worker Timeouts
 
-Lệnh Artisan `queue:work` có một tùy chọn là `--timeout`. Tùy chọn `--timeout` này sẽ khai báo process queue master của Laravel sẽ đợi bao lâu trước khi killing một queue worker đang xử lý bởi một job. Thỉnh thoảng, một queue process có thể bị "đơ" vì nhiều lý do, chẳng hạn như sử dụng một HTTP có thể call ra bên ngoài, nhưng lại không có respond trở lại. Tùy chọn `--timeout` sẽ loại bỏ các process bị đơ vượt quá giới hạn thời gian đã được khai báo:
+Lệnh Artisan `queue:work` có một tùy chọn là `--timeout`. Tùy chọn `--timeout` này sẽ khai báo process queue master của Laravel sẽ đợi bao lâu trước khi killing một queue worker đang xử lý bởi một job. Thỉnh thoảng, một queue process có thể bị "đơ" vì nhiều lý do. Tùy chọn `--timeout` sẽ loại bỏ các process bị đơ vượt quá giới hạn thời gian đã được khai báo:
 
     php artisan queue:work --timeout=60
 
@@ -596,8 +690,11 @@ Các file cấu hình của Supervisor thường được lưu trong thư mục 
     numprocs=8
     redirect_stderr=true
     stdout_logfile=/home/forge/app.com/worker.log
+    stopwaitsecs=3600
 
 Trong ví dụ trên, lệnh `numprocs` sẽ hướng dẫn Supervisor chạy 8 process `queue:work` và giám sát tất cả chúng, tự động khởi động lại nếu chúng thất bại. Bạn nên thay đổi phần `queue:work sqs` của lệnh `command` để phản ánh queue connection mà bạn mong muốn.
+
+> {note} Bạn nên chắc chắn rằng giá trị của `stopwaitsecs` sẽ luôn lớn hơn số giây lâu nhất mà job của bạn đang chạy. Nếu không, Supervisor có thể kết thúc job đó trước khi nó được xử lý xong.
 
 #### Starting Supervisor
 
@@ -620,7 +717,7 @@ Thỉnh thoảng, queued job của bạn sẽ gặp thất bại. Đừng lo l�
 
     php artisan migrate
 
-Sau khi chạy [queue worker](#running-the-queue-worker), bạn nên khai báo số lần chạy tối đa mà một job được chạy bằng cách sử dụng switch `--tries` trên lệnh `queue:work`. Nếu bạn không khai báo giá trị tùy chọn `--tries`, thì các job sẽ được chạy lại vô thời hạn:
+Sau khi chạy [queue worker](#running-the-queue-worker), bạn có thể khai báo số lần chạy tối đa mà một job được chạy bằng cách sử dụng switch `--tries` trên lệnh `queue:work`. Nếu bạn không khai báo giá trị tùy chọn `--tries`, thì các job sẽ chỉ được chạy một lần duy nhất:
 
     php artisan queue:work redis --tries=3
 
@@ -646,13 +743,13 @@ Bạn có thể định nghĩa một phương thức `failed` trực tiếp vào
 
     namespace App\Jobs;
 
-    use Exception;
-    use App\Podcast;
     use App\AudioProcessor;
+    use App\Podcast;
+    use Exception;
     use Illuminate\Bus\Queueable;
-    use Illuminate\Queue\SerializesModels;
-    use Illuminate\Queue\InteractsWithQueue;
     use Illuminate\Contracts\Queue\ShouldQueue;
+    use Illuminate\Queue\InteractsWithQueue;
+    use Illuminate\Queue\SerializesModels;
 
     class ProcessPodcast implements ShouldQueue
     {
@@ -694,6 +791,8 @@ Bạn có thể định nghĩa một phương thức `failed` trực tiếp vào
         }
     }
 
+> {note} Phương thức `fail` sẽ không được gọi nếu job đã được thực hiện bằng phương thức `dispatchNow`.
+
 <a name="failed-job-events"></a>
 ### Event Job failed
 
@@ -704,8 +803,8 @@ Nếu bạn muốn đăng ký một event sẽ được gọi khi một job th�
     namespace App\Providers;
 
     use Illuminate\Support\Facades\Queue;
-    use Illuminate\Queue\Events\JobFailed;
     use Illuminate\Support\ServiceProvider;
+    use Illuminate\Queue\Events\JobFailed;
 
     class AppServiceProvider extends ServiceProvider
     {

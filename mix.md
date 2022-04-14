@@ -28,7 +28,7 @@
 [Laravel Mix](https://github.com/JeffreyWay/laravel-mix) cung cấp một API dễ hiểu để định nghĩa các bước xây dựng Webpack cho application Laravel của bạn bằng cách sử dụng một số CSS phổ biến và JavaScript pre-processors. Thông qua cách kết hợp nhiều phương thức đơn giản, bạn có thể dễ dàng định nghĩa asset pipeline của bạn. Ví dụ:
 
     mix.js('resources/js/app.js', 'public/js')
-       .sass('resources/sass/app.scss', 'public/css');
+        .sass('resources/sass/app.scss', 'public/css');
 
 Nếu bạn đã từng bối rối và choáng ngợp khi bắt đầu với Webpack và biên dịch asset, bạn sẽ thích Laravel Mix. Tuy nhiên, bạn không bắt buộc phải sử dụng nó trong khi phát triển application của bạn; Bạn có thể thoải mái sử dụng bất kỳ công cụ asset pipeline nào bạn muốn, hoặc thậm chí không dùng gì cả.
 
@@ -86,7 +86,7 @@ Phương thức `less` có thể được sử dụng để biên dịch các fi
 Có thể gọi nhiều lần phương thức `less` để biên dịch nhiều file:
 
     mix.less('resources/less/app.less', 'public/css')
-       .less('resources/less/admin.less', 'public/css');
+        .less('resources/less/admin.less', 'public/css');
 
 Nếu bạn muốn tùy chỉnh tên file CSS mà đã được biên dịch, bạn có thể truyền một đường dẫn gồm file đầy đủ làm tham số thứ hai cho phương thức `less`:
 
@@ -108,7 +108,7 @@ Phương thức `sass` cho phép bạn biên dịch các file [Sass](https://sas
 Một lần nữa, giống như phương thức `less`, bạn có thể biên dịch nhiều file Sass thành nhiều file CSS tương ứng và thậm chí tùy chỉnh cả thư mục đầu ra của file CSS:
 
     mix.sass('resources/sass/app.sass', 'public/css')
-       .sass('resources/sass/admin.sass', 'public/css/admin');
+        .sass('resources/sass/admin.sass', 'public/css/admin');
 
 [Tùy chọn Node-Sass plug-in](https://github.com/sass/node-sass#options) có thể được cung cấp làm tham số thứ ba:
 
@@ -137,11 +137,11 @@ Bạn cũng có thể cài đặt thêm các Stylus plug-in, chẳng hạn như 
 [PostCSS](https://postcss.org/) là một công cụ mạnh mẽ để chuyển đổi CSS của bạn và đã có sẵn trong Laravel Mix. Mặc định, Mix sử dụng plug-in phổ biến [Autoprefixer](https://github.com/postcss/autoprefixer) để tự động áp dụng tất cả các tiền tố CSS3 vendor cần thiết. Tuy nhiên, bạn có thể thoải mái thêm bất kỳ các plug-in nào mà phù hợp với ứng dụng của bạn. Đầu tiên, cài đặt plug-in mà bạn mong muốn thông qua NPM và sau đó tham chiếu nó trong file `webpack.mix.js` của bạn:
 
     mix.sass('resources/sass/app.scss', 'public/css')
-       .options({
+        .options({
             postCss: [
                 require('postcss-css-variables')()
             ]
-       });
+        });
 
 <a name="plain-css"></a>
 ### Code CSS
@@ -173,9 +173,9 @@ Mặc định, Laravel Mix và Webpack sẽ tìm file `example.png`, và sao ch�
 Tính năng này rất hữu ích, nhưng có thể cấu trúc thư mục hiện tại của bạn đã bị thay đổi theo cách mà bạn muốn. Nếu trong trường hợp đó, bạn có thể vô hiệu hóa việc viết lại `url()` như sau:
 
     mix.sass('resources/app/app.scss', 'public/css')
-       .options({
-          processCssUrls: false
-       });
+        .options({
+            processCssUrls: false
+        });
 
 Với đoạn code này vào trong file `webpack.mix.js` của bạn, Mix sẽ không còn match với bất kỳ `url()` hoặc sao chép assets nào vào thư mục public của bạn. Nói cách khác, CSS được biên dịch ra sẽ trông giống như cách mà bạn đã khai báo ban đầu:
 
@@ -189,7 +189,7 @@ Với đoạn code này vào trong file `webpack.mix.js` của bạn, Mix sẽ k
 Mặc định bị disabled, nhưng source map có thể được kích hoạt bằng cách gọi phương thức `mix.sourceMaps()` trong file `webpack.mix.js` của bạn. Mặc dù nó có thể làm tăng thêm thời gian biên dịch và hiệu năng, nhưng điều này sẽ cung cấp thêm thông tin gỡ lỗi cho các tool develop trên trình duyệt của bạn khi sử dụng các assets đã được biên dịch.
 
     mix.js('resources/js/app.js', 'public/js')
-       .sourceMaps();
+        .sourceMaps();
 
 #### Style Of Source Mapping
 
@@ -198,7 +198,7 @@ Webpack cung cấp nhiều [kiểu source mapping](https://webpack.js.org/config
     let productionSourceMaps = false;
 
     mix.js('resources/js/app.js', 'public/js')
-       .sourceMaps(productionSourceMaps, 'source-map');
+        .sourceMaps(productionSourceMaps, 'source-map');
 
 <a name="working-with-scripts"></a>
 ## Làm việc cùng javaScript
@@ -210,10 +210,12 @@ Mix cung cấp một số tính năng để giúp bạn làm việc với các f
 Với chỉ một dòng code duy nhất, giờ đây bạn có thể làm:
 
 <div class="content-list" markdown="1">
+
 - Cú pháp ES2015.
 - Modules
 - Biên dịch các file `.vue`.
 - Thu nhỏ file cho môi trương production.
+
 </div>
 
 <a name="vendor-extraction"></a>
@@ -224,14 +226,16 @@ Một nhược điểm trong việc kết hợp các JavaScript dành riêng cho
 Nếu bạn thường xuyên cập nhật JavaScript trong application của bạn, thì bạn nên xem xét đưa tất cả các vendor library vào một file của riêng. Theo cách này, một thay đổi đối với code application của bạn sẽ không ảnh hưởng đến cache của file `vendor.js` rất lớn của bạn. Phương thức `extract` của Mix làm cho điều này trở nên dễ dàng:
 
     mix.js('resources/js/app.js', 'public/js')
-       .extract(['vue'])
+        .extract(['vue'])
 
 Phương thức `extract` chấp nhận một mảng của tất cả các thư viện hoặc modules mà bạn muốn thành một file `vendor.js riêng. Sử dụng đoạn code trên làm ví dụ, Mix sẽ tạo ra các file như sau:
 
 <div class="content-list" markdown="1">
+
 - `public/js/manifest.js`: *The Webpack manifest runtime*
 - `public/js/vendor.js`: *Các vendor library của bạn*
-- `public/js/app.js`: * code application của bạn*
+- `public/js/app.js`: *code application của bạn*
+
 </div>
 
 Để tránh lỗi JavaScript, hãy đảm bảo load các file này theo đúng thứ tự như ở dưới đây:
@@ -303,7 +307,7 @@ Nhiều developer muốn thêm một hậu tố timestamp hoặc unique token v�
 Phương thức `version` sẽ tự động thêm một chuỗi hash duy nhất vào sau tên file của tất cả các file đã biên dịch, cho phép một cơ chế tạo bộ nhớ cache một cách thuận tiện hơn:
 
     mix.js('resources/js/app.js', 'public/js')
-       .version();
+        .version();
 
 Sau khi tạo file đã được version, bạn sẽ không biết chính xác tên file. Vì vậy, bạn nên sử dụng hàm global helper `mix` của Laravel trong [views](/docs/{{version}}/views) của bạn để load ra các URL version asset đã được hash. The `mix` function will automatically determine the current name of the hashed file:
 
@@ -316,6 +320,16 @@ Vì các file version thường không cần thiết trong quá trình phát tri
     if (mix.inProduction()) {
         mix.version();
     }
+
+#### Custom Mix Base URLs
+
+Nếu các asset của bạn đã được Mix biên dịch và được deploy cho một CDN tách biệt với ứng dụng của bạn, bạn sẽ cần thay đổi URL được tạo bởi hàm `mix`. Bạn có thể làm như vậy bằng cách thêm tùy chọn cấu hình `mix_url` vào file cấu hình `config/app.php` của bạn:
+
+    'mix_url' => env('MIX_ASSET_URL', null)
+
+Sau khi cấu hình Mix URL, Hàm `mix` sẽ tạo tiền tố cho URL đã cấu hình khi tạo URL cho asset:
+
+    https://cdn.example.com/js/app.js?id=1964becbdd96414518cd
 
 <a name="browsersync-reloading"></a>
 ## Browsersync Reloading

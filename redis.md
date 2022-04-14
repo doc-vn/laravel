@@ -13,11 +13,13 @@
 
 [Redis](https://redis.io) là một dự án mã nguồn mở, dùng để lưu trữ các giá trị key-value. Nó thường được coi như là một server cấu trúc dữ liệu vì các key của nó có thể lưu [strings](https://redis.io/topics/data-types#strings), [hashes](https://redis.io/topics/data-types#hashes), [lists](https://redis.io/topics/data-types#lists), [sets](https://redis.io/topics/data-types#sets), và [sorted sets](https://redis.io/topics/data-types#sorted-sets).
 
-Trước khi sử dụng Redis cho Laravel, bạn sẽ cần cài đặt package `predis/predis` thông qua Composer:
+Trước khi sử dụng Redis cho Laravel, chúng tôi khuyến khích bạn cài đặt và sử dụng extension [PhpRedis](https://github.com/phpredis/phpredis) của PHP thông qua PECL. Extension này phức tạp hơn để cài đặt nhưng có thể mang lại hiệu suất tốt hơn cho các ứng dụng mà sử dụng nhiều Redis.
+
+Ngoài ra, bạn có thể cài đặt package `predis/predis` thông qua Composer:
 
     composer require predis/predis
 
-Ngoài ra, bạn có thể cài đặt PHP extension [PhpRedis](https://github.com/phpredis/phpredis) thông qua PECL. Phần extension này sẽ phức tạp hơn để cài đặt nhưng nó có thể mang lại hiệu suất tốt hơn cho các application sử dụng Redis.
+> {note} Predis đã bị từ bỏ bởi tác giả gốc của package và có thể bị xóa khỏi Laravel trong một bản phát hành trong tương lai.
 
 <a name="configuration"></a>
 ### Cấu hình
@@ -26,7 +28,7 @@ Cấu hình Redis cho application của bạn nằm trong file cấu hình `conf
 
     'redis' => [
 
-        'client' => 'predis',
+        'client' => env('REDIS_CLIENT', 'phpredis'),
 
         'default' => [
             'host' => env('REDIS_HOST', '127.0.0.1'),
@@ -52,7 +54,7 @@ Nếu application của bạn đang sử dụng một cụm server Redis, bạn 
 
     'redis' => [
 
-        'client' => 'predis',
+        'client' => env('REDIS_CLIENT', 'phpredis'),
 
         'clusters' => [
             'default' => [
@@ -71,10 +73,10 @@ Mặc định, các cụm này sẽ thực hiện client-side sharding trên cá
 
     'redis' => [
 
-        'client' => 'predis',
+        'client' => env('REDIS_CLIENT', 'phpredis'),
 
         'options' => [
-            'cluster' => 'redis',
+            'cluster' => env('REDIS_CLUSTER', 'redis'),
         ],
 
         'clusters' => [
@@ -85,6 +87,15 @@ Mặc định, các cụm này sẽ thực hiện client-side sharding trên cá
 
 <a name="predis"></a>
 ### Predis
+
+Để sử dụng extension Predis, bạn nên thay đổi biến môi trường `REDIS_CLIENT` từ `phpredis` thành `predis`:
+
+    'redis' => [
+
+        'client' => env('REDIS_CLIENT', 'predis'),
+
+        // Rest of Redis configuration...
+    ],
 
 Ngoài các tùy chọn cấu hình server mặc định như là `host`, `port`, `database`, và `password`, Predis còn hỗ trợ thêm các [tham số kết nối](https://github.com/nrk/predis/wiki/Connection-Parameters) có thể định nghĩa cho mỗi server Redis của bạn. Để sử dụng thêm các tùy chọn cấu hình này, hãy thêm chúng vào cấu hình server Redis của bạn trong file cấu hình `config/database.php`:
 
@@ -99,14 +110,18 @@ Ngoài các tùy chọn cấu hình server mặc định như là `host`, `port`
 <a name="phpredis"></a>
 ### PhpRedis
 
-Để sử dụng extension PhpRedis, bạn nên thay đổi tùy chọn `client` trong file cấu hình Redis của bạn thành `phpredis`. Tùy chọn này có thể được tìm thấy trong file cấu hình `config/database.php` của bạn:
+Extension PhpRedis được cấu hình mặc định tại biến môi trường `REDIS_CLIENT` trong file `config/database.php` của bạn:
 
     'redis' => [
 
-        'client' => 'phpredis',
+        'client' => env('REDIS_CLIENT', 'phpredis'),
 
         // Rest of Redis configuration...
     ],
+
+Nếu bạn muốn sử dụng extension PhpRedis cùng với tên viết tắt Facade `Redis`, thì bạn nên đổi tên nó thành một thứ khác, chẳng hạn như `RedisManager`, để tránh trùng lặp với class Redis. Bạn có thể làm điều đó trong phần tên viết tắt của file cấu hình `app.php` của bạn.
+
+    'RedisManager' => Illuminate\Support\Facades\Redis::class,
 
 Ngoài các tùy chọn cấu hình server mặc định là `host`, `port`, `database`, và `password`, PhpRedis cũng hỗ trợ thêm các tham số kết nối bổ sung như sau: `persistent`, `prefix`, `read_timeout` và `timeout`. Bạn có thể thêm bất kỳ tùy chọn nào vào cấu hình server Redis của bạn trong file cấu hình `config/database.php`:
 
@@ -117,6 +132,10 @@ Ngoài các tùy chọn cấu hình server mặc định là `host`, `port`, `da
         'database' => 0,
         'read_timeout' => 60,
     ],
+
+#### The Redis Facade
+
+Để tránh trùng lặp đặt tên class với chính extension Redis PHP, bạn sẽ cần phải xóa hoặc đổi tên tên viết tắt của facade `Illuminate\Support\Facades\Redis` của mảng `aliases` trong file cấu hình `app` của bạn. Nói chung, bạn nên xóa toàn bộ tên viết tắt này và chỉ tham chiếu đến facade bằng tên class đầy đủ của nó trong khi sử dụng extension Redis PHP.
 
 <a name="interacting-with-redis"></a>
 ## Tương tác với Redis
@@ -169,7 +188,7 @@ Bạn có thể lấy một instance Redis bằng cách gọi phương thức `R
 <a name="pipelining-commands"></a>
 ### Lệnh Pipeline
 
-Pipeline nên được sử dụng khi bạn cần gửi nhiều lệnh đến server trong một thao tác. Phương thức `pipeline` chấp nhận một tham số là: một `Closure` nhận vào một instance Redis. Bạn có thể đưa vào tất cả các lệnh của bạn cho instance Redis này và tất cả chúng sẽ được thực thi trong cùng một thao tác duy nhất:
+Pipeline nên được sử dụng khi bạn cần gửi nhiều lệnh đến server. Phương thức `pipeline` chấp nhận một tham số là: một `Closure` nhận vào một instance Redis. Bạn có thể đưa vào tất cả các lệnh của bạn cho instance Redis này và tất cả chúng sẽ được truyền trực tiếp đến server, do đó cung cấp hiệu suất tốt hơn:
 
     Redis::pipeline(function ($pipe) {
         for ($i = 0; $i < 1000; $i++) {

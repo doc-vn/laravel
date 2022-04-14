@@ -33,13 +33,25 @@ Mỗi lệnh cũng chứa một lệnh "help" để hiển thị và mô tả c�
 <a name="tinker"></a>
 ### Tinker (REPL)
 
-Tất cả các application của Laravel đều chứa Tinker, một REPL cung cấp bởi package [PsySH](https://github.com/bobthecow/psysh). Tinker cho phép bạn tương tác trực tiếp với toàn bộ application Laravel của bạn trên command line, bao gồm ORM Eloquent, job, event, vv... Để vào được môi trường Tinker, hãy chạy lệnh Artisan `tinker`:
+Laravel Tinker là một REPL mạnh mẽ cho Laravel framework, cung cấp bởi package [PsySH](https://github.com/bobthecow/psysh).
+
+#### Installation
+
+Mặc định tất cả các ứng dụng Laravel đều chứa Tinker. Tuy nhiên, bạn có thể cài đặt nó theo cách thủ công nếu cần bằng Composer:
+
+    composer require laravel/tinker
+
+#### Usage
+
+Tinker cho phép bạn tương tác trực tiếp với toàn bộ application Laravel của bạn trên command line, bao gồm ORM Eloquent, job, event, vv... Để vào được môi trường Tinker, hãy chạy lệnh Artisan `tinker`:
 
     php artisan tinker
 
 Bạn có thể export file cấu hình của Tinker bằng lệnh `vendor:publish`:
 
     php artisan vendor:publish --provider="Laravel\Tinker\TinkerServiceProvider"
+
+> {note} Hàm helper `dispatch` và phương thức `dispatch` trên class `Dispatchable` phụ thuộc vào việc thu gom rác để set job vào queue. Do đó, khi sử dụng tinker, bạn nên sử dụng `Bus::dispatch` hoặc `Queue::push` để điều phối job.
 
 #### Command Whitelist
 
@@ -82,8 +94,8 @@ Chúng ta hãy xem một ví dụ về command. Lưu ý rằng chúng ta có th�
 
     namespace App\Console\Commands;
 
-    use App\User;
     use App\DripEmailer;
+    use App\User;
     use Illuminate\Console\Command;
 
     class SendEmails extends Command
@@ -151,8 +163,8 @@ Closure sẽ được liên kết với một instance command cơ bản, nên b
 
 Ngoài việc nhận vào các tham số và các option của command, Closure command cũng có thể khai báo thêm các phụ thuộc mà bạn muốn resolve từ [service container](/docs/{{version}}/container):
 
-    use App\User;
     use App\DripEmailer;
+    use App\User;
 
     Artisan::command('email:send {user}', function (DripEmailer $drip, $user) {
         $drip->send(User::find($user));
@@ -332,11 +344,27 @@ Phương thức `anticipate` có thể được sử dụng để cung cấp m�
 
     $name = $this->anticipate('What is your name?', ['Taylor', 'Dayle']);
 
+Ngoài ra, bạn có thể truyền một Closure làm tham số thứ hai cho phương thức `anticipate`. Closure sẽ được gọi mỗi khi người dùng nhập một ký tự vào. Closure phải chấp nhận một tham số string có chứa các ký tự nhập vào của người dùng và trả về một loạt các tùy chọn để tự động hoàn thành:
+
+    $name = $this->anticipate('What is your name?', function ($input) {
+        // Return auto-completion options...
+    });
+
 #### Multiple Choice Questions
 
 Nếu bạn cần cung cấp cho người dùng một danh sách các lựa chọn để người dùng chọn, thì bạn có thể sử dụng phương thức `choice`. Bạn có thể set giá trị mặc định cho phương thức này thông qua index của mảng, và nó sẽ được trả về nếu người dùng không chọn bất kỳ tuỳ chọn nào của bạn:
 
     $name = $this->choice('What is your name?', ['Taylor', 'Dayle'], $defaultIndex);
+
+Ngoài ra, phương thức `choice` chấp nhận tham số thứ tư và tùy chọn thứ năm để xác định số lần thử tối đa và có cho phép chọn nhiều hay không:
+
+    $name = $this->choice(
+        'What is your name?',
+        ['Taylor', 'Dayle'],
+        $defaultIndex,
+        $maxAttempts = null,
+        $allowMultipleSelections = false
+    );
 
 <a name="writing-output"></a>
 ### Viết Output

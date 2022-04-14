@@ -71,6 +71,10 @@ Nếu bạn cần thêm các file PHP khác trước khi task của bạn đư�
         # ...
     @endtask
 
+Bạn cũng có thể import các file Envoy khác để story và task của các file đó được thêm vào Envoy của bạn. Sau khi các file đã được import, bạn có thể thực thi các task trong các file đó như thể chúng được định nghĩa cho bạn. Bạn nên sử dụng lệnh `@import` ở đầu file `Envoy.blade.php`:
+
+    @import('package/Envoy.blade.php')
+
 <a name="variables"></a>
 ### Biến
 
@@ -174,8 +178,10 @@ Envoy cũng hỗ trợ gửi thông báo tới [Slack](https://slack.com) sau kh
 Bạn có thể cung cấp thêm một trong số lựa chọn sau đây để làm tham số cho channel:
 
 <div class="content-list" markdown="1">
+
 - Để gửi thông báo tới một channel: `#channel`
 - Để gửi thông báo cho một người dùng: `@user`
+
 </div>
 
 <a name="discord"></a>

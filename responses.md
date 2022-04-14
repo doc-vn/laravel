@@ -69,7 +69,7 @@ Hoặc, bạn có thể sử dụng phương thức `withHeaders` để chỉ đ
 
 Laravel có chứa một middleware `cache.headers`, middleware này có thể được sử dụng để thiết lập nhanh một header `Cache-Control` cho một nhóm các route. Nếu `etag` được chỉ định trong danh sách lệnh, một hash MD5 của nội dung response sẽ được tự động set làm ETag identifier:
 
-    Route::middleware('cache.headers:public;max_age=2628000;etag')->group(function() {
+    Route::middleware('cache.headers:public;max_age=2628000;etag')->group(function () {
         Route::get('privacy', function () {
             // ...
         });
@@ -274,8 +274,8 @@ Nếu bạn muốn định nghĩa một response tùy biến mà bạn có thể
 
     namespace App\Providers;
 
-    use Illuminate\Support\ServiceProvider;
     use Illuminate\Support\Facades\Response;
+    use Illuminate\Support\ServiceProvider;
 
     class ResponseMacroServiceProvider extends ServiceProvider
     {

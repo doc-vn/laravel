@@ -32,7 +32,7 @@ Bạn có thể kiểm tra lệnh này bằng cách sử dụng bài test dướ
      *
      * @return void
      */
-    public function test_console_command()
+    public function testConsoleCommand()
     {
         $this->artisan('question')
              ->expectsQuestion('What is your name?', 'Taylor Otwell')

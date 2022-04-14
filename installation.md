@@ -5,12 +5,11 @@
     - [Cài đặt Laravel](#installing-laravel)
     - [Cấu hình](#configuration)
 - [Cấu hình Web Server](#web-server-configuration)
+    - [Cấu hình thư mục](#directory-configuration)
     - [Tạo URLs](#pretty-urls)
 
 <a name="installation"></a>
 ## Cài đặt
-
-> {video} Laracasts cung cấp một [dịch vụ miễn phí giới thiệu Laravel](http://laravelfromscratch.com) cho người mới bắt đầu. Nó là một nơi tốt để bạn có thể bắt đầu.
 
 <a name="server-requirements"></a>
 ### Yêu cầu server
@@ -20,15 +19,18 @@ Laravel framework có nhiều yêu cầu về server. Tất cả những yêu c�
 Tuy nhiên, nếu bạn không muốn dùng Homestead, thì bạn hãy chắc chắn là server của bạn đã cài đặt những package dưới đây:
 
 <div class="content-list" markdown="1">
-- PHP >= 7.1.3
+
+- PHP >= 7.2.5
 - BCMath PHP Extension
 - Ctype PHP Extension
+- Fileinfo PHP Extension
 - JSON PHP Extension
 - Mbstring PHP Extension
 - OpenSSL PHP Extension
 - PDO PHP Extension
 - Tokenizer PHP Extension
 - XML PHP Extension
+
 </div>
 
 <a name="installing-laravel"></a>
@@ -42,12 +44,17 @@ Laravel dùng [Composer](https://getcomposer.org) để quản lý các library.
 
     composer global require laravel/installer
 
-Hãy chắc chắn rằng laravel installer đã được cài đặt vào trong thư mục global của composer, để bạn có thể chạy lệnh `laravel` này tại bất kỳ thư mục nào mà bạn muốn tạo project. Thư mục global của composer này sẽ tồn tại ở các vị trí khác nhau tuỳ theo hệ điều hành của bạn, nhưng dưới đây là một số vị trí cơ bản theo hệ điều hành:
+Hãy chắc chắn rằng laravel installer đã được cài đặt vào trong thư mục global của Composer, để bạn có thể chạy lệnh `laravel` này tại bất kỳ thư mục nào mà bạn muốn tạo project. Thư mục global của composer này sẽ tồn tại ở các vị trí khác nhau tuỳ theo hệ điều hành của bạn, nhưng dưới đây là một số vị trí cơ bản theo hệ điều hành:
 
 <div class="content-list" markdown="1">
-- macOS and GNU / Linux Distributions: `$HOME/.composer/vendor/bin`
+
+- macOS: `$HOME/.composer/vendor/bin`
 - Windows: `%USERPROFILE%\AppData\Roaming\Composer\vendor\bin`
+- GNU / Linux Distributions: `$HOME/.config/composer/vendor/bin` or `$HOME/.composer/vendor/bin`
+
 </div>
+
+Bạn cũng có thể tìm thấy đường dẫn cài đặt của global Composer bằng cách chạy `composer global about` và xem từ dòng đầu tiên.
 
 Sau khi đã cài đặt xong, lệnh `laravel new` sẽ tạo một project mới tại đúng vị trí thự mục mà bạn đang chạy lệnh này, Ví dụ, khi chạy lệnh `laravel new blog` sẽ tạo a một thư mục mới với tên là `blog` mà trong đó đã cài đặt tất cả cái thứ mà laravel cần để chạy:
 
@@ -57,7 +64,7 @@ Sau khi đã cài đặt xong, lệnh `laravel new` sẽ tạo một project m�
 
 Hoặc, bạn cũng có thể cài đặt laravel bằng cách chạy lệnh `create-project` trong terminal của bạn:
 
-    composer create-project --prefer-dist laravel/laravel blog "5.8.*"
+    composer create-project --prefer-dist laravel/laravel blog "6.*"
 
 #### Local Development Server
 
@@ -86,7 +93,7 @@ Sau khi cài đặt Laravel, bạn có thể cần cài đặt thêm một số 
 
 Tiếp theo, bạn cũng cần làm một việc sau khi đã cài đặt xong Laravel, đó là cài đặt một chuỗi random để làm application key. Nếu bạn cài đặt Laravel bằng Composer hoặc Laravel installer, thì application key có thể được tạo ra bằng cách chạy lệnh `php artisan key:generate`.
 
-Bình thường, application key sẽ có chiều dài là 32 ký tự. Và được lưu ở trong file cài đặt môi trường `.env`, nếu bạn chưa đổi tên file `.env.example` sang `.env`, thì bạn nên làm nó ngày bây giờ. **Nếu như application key của bạn không được cài đặt, thì session của người dùng và các mã hoá data sẽ không an toàn**
+Bình thường, application key sẽ có chiều dài là 32 ký tự. Và được lưu ở trong file cài đặt môi trường `.env`, nếu bạn chưa copy file `.env.example` sang một file mới có tên là `.env`, thì bạn nên làm nó ngay bây giờ. **Nếu như application key của bạn không được cài đặt, thì session của người dùng và các mã hoá data sẽ không an toàn**
 
 #### Cấu hình thêm
 
@@ -95,13 +102,20 @@ Laravel gần như không yêu cần bạn cấu hình thêm. Bạn có thể th
 Bạn cũng có thể muốn cấu hình thêm nhiều phần khác của laravel, như là:
 
 <div class="content-list" markdown="1">
+
 - [Cache](/docs/{{version}}/cache#configuration)
 - [Database](/docs/{{version}}/database#configuration)
 - [Session](/docs/{{version}}/session#configuration)
+
 </div>
 
 <a name="web-server-configuration"></a>
 ## Cấu hình Web Server
+
+<a name="directory-configuration"></a>
+### Cấu hình thư mục
+
+Laravel phải luôn được chạy từ thư mục gốc của "thư mục web" được cấu hình cho web server của bạn. Bạn không nên cố gắng chạy ứng dụng Laravel ngoài thư mục con của "thư mục web". Cố gắng làm như vậy sẽ có thể làm lộ các file nhạy cảm có trong ứng dụng của bạn.
 
 <a name="pretty-urls"></a>
 ### Tạo URLs

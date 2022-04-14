@@ -2,7 +2,7 @@
 
 - [Giới thiệu](#introduction)
 - [Cấu hình](#configuration)
-    - [Database Migrations](#database-preparation)
+    - [Database Preparation](#database-preparation)
 - [Tạo token](#generating-tokens)
     - [Hashing token](#hashing-tokens)
 - [Bảo vệ route](#protecting-routes)
@@ -37,10 +37,10 @@ Khi migration đã được tạo, hãy chạy lệnh Artisan `migrate`.
 <a name="generating-tokens"></a>
 ## Tạo token
 
-Sau khi cột `api_token` đã được thêm vào bảng `users` của bạn, bạn đã sẵn sàng gắn token API random cho mỗi người dùng đăng ký vào ứng dụng của bạn. Bạn nên chỉ định các token này khi model `User` được tạo trong quá trình đăng ký. Khi sử dụng [authentication scaffolding](/docs/{{version}}/authentication#authentication-quickstart) được cung cấp bởi lệnh Artisan `make:auth`, điều này có thể được thực hiện trong phương thức `create` của `RegisterController`:
+Sau khi cột `api_token` đã được thêm vào bảng `users` của bạn, bạn đã sẵn sàng gắn token API random cho mỗi người dùng đăng ký vào ứng dụng của bạn. Bạn nên chỉ định các token này khi model `User` được tạo trong quá trình đăng ký. Khi bạn sử dụng [authentication scaffolding](/docs/{{version}}/authentication#authentication-quickstart) được cung cấp bởi package `laravel/ui` thông qua Composer, bạn có thể thực hiện được điều này trong phương thức `create` của `RegisterController`:
 
-    use Illuminate\Support\Str;
     use Illuminate\Support\Facades\Hash;
+    use Illuminate\Support\Str;
 
     /**
      * Create a new user instance after a valid registration.
@@ -50,11 +50,11 @@ Sau khi cột `api_token` đã được thêm vào bảng `users` của bạn, b
      */
     protected function create(array $data)
     {
-        return User::create([
+        return User::forceCreate([
             'name' => $data['name'],
             'email' => $data['email'],
             'password' => Hash::make($data['password']),
-            'api_token' => Str::random(60),
+            'api_token' => Str::random(80),
         ]);
     }
 
@@ -79,8 +79,8 @@ Ví dụ: một phương thức controller khởi tạo và làm mới token cho
 
     namespace App\Http\Controllers;
 
-    use Illuminate\Support\Str;
     use Illuminate\Http\Request;
+    use Illuminate\Support\Str;
 
     class ApiTokenController extends Controller
     {
@@ -92,7 +92,7 @@ Ví dụ: một phương thức controller khởi tạo và làm mới token cho
          */
         public function update(Request $request)
         {
-            $token = Str::random(60);
+            $token = Str::random(80);
 
             $request->user()->forceFill([
                 'api_token' => hash('sha256', $token),
@@ -111,7 +111,7 @@ Laravel có chứa một [authentication guard](/docs/{{version}}/authentication
 
     use Illuminate\Http\Request;
 
-    Route::middleware('auth:api')->get('/user', function(Request $request) {
+    Route::middleware('auth:api')->get('/user', function (Request $request) {
         return $request->user();
     });
 

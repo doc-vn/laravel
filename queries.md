@@ -12,7 +12,7 @@
     - [Group tham số](#parameter-grouping)
     - [Lệnh where exist](#where-exists-clauses)
     - [Lệnh where cho JSON](#json-where-clauses)
-- [Ordering, Grouping, Limit, và Offset](#ordering-grouping-limit-and-offset)
+- [Ordering, Grouping, Limit và Offset](#ordering-grouping-limit-and-offset)
 - [Điều kiện cho lệnh](#conditional-clauses)
 - [Insert](#inserts)
 - [Update](#updates)
@@ -42,8 +42,8 @@ Bạn có thể sử dụng phương thức `table` trên facade `DB` để tạ
 
     namespace App\Http\Controllers;
 
-    use Illuminate\Support\Facades\DB;
     use App\Http\Controllers\Controller;
+    use Illuminate\Support\Facades\DB;
 
     class UserController extends Controller
     {
@@ -194,7 +194,7 @@ Thay vì sử dụng `DB::raw`, bạn cũng có thể sử dụng các phương 
 
 #### `selectRaw`
 
-Phương thức `selectRaw` có thể được sử dụng thay cho câu lệnh `select(DB::raw(...))`. Phương thức này chấp nhận một mảng các tùy chọn tham số được truyền vào làm tham số thứ hai của nó:
+Phương thức `selectRaw` có thể được sử dụng thay cho câu lệnh `addSelect(DB::raw(...))`. Phương thức này chấp nhận một mảng các tùy chọn tham số được truyền vào làm tham số thứ hai của nó:
 
     $orders = DB::table('orders')
                     ->selectRaw('price * ? as price_with_tax', [1.0825])
@@ -224,6 +224,15 @@ Phương thức `orderByRaw` có thể được sử dụng để set một chu�
 
     $orders = DB::table('orders')
                     ->orderByRaw('updated_at - created_at DESC')
+                    ->get();
+
+### `groupByRaw`
+
+Phương thức `groupByRaw` có thể được sử dụng để set một string raw làm giá trị của mệnh đề `group by`:
+
+    $orders = DB::table('orders')
+                    ->select('city', 'state')
+                    ->groupByRaw('city, state')
                     ->get();
 
 <a name="joins"></a>
@@ -256,7 +265,7 @@ Nếu bạn muốn thực hiện "left join" hoặc "right join" thay vì "inner
 Để thực hiện "cross join", hãy sử dụng phương thức `crossJoin` với tên bảng mà bạn muốn cross join. Các cross join sẽ tạo ra một bảng mới có hàng là các hàng của bảng đầu tiên và bảng thứ hai nhân chéo vào nhau:
 
     $users = DB::table('sizes')
-                ->crossJoin('colours')
+                ->crossJoin('colors')
                 ->get();
 
 #### Advanced Join Clauses
@@ -278,7 +287,7 @@ Nếu bạn muốn sử dụng lệnh "where" trong các lệnh join của bạn
             })
             ->get();
 
-#### Sub-Query Joins
+#### Subquery Joins
 
 Bạn có thể sử dụng các phương thức `joinSub`, `leftJoinSub` và `rightJoinSub` để nối một truy vấn với một truy vấn phụ. Mỗi phương thức này nhận vào ba tham số: một là truy vấn phụ, hai là bí danh của nó và ba là một Closure dùng để xác định các cột liên quan:
 
@@ -352,6 +361,18 @@ Bạn có thể kết hợp các điều kiện với nhau cũng như thêm các
                         ->orWhere('name', 'John')
                         ->get();
 
+Nếu bạn cần nhóm một điều kiện "hoặc" trong một dấu ngoặc đơn, bạn có thể truyền một Closure làm tham số đầu tiên của phương thức `orWhere`:
+
+    $users = DB::table('users')
+                ->where('votes', '>', 100)
+                ->orWhere(function($query) {
+                    $query->where('name', 'Abigail')
+                          ->where('votes', '>', 50);
+                })
+                ->get();
+
+    // SQL: select * from users where votes > 100 or (name = 'Abigail' and votes > 50)
+
 #### Additional Where Clauses
 
 **whereBetween / orWhereBetween**
@@ -359,7 +380,8 @@ Bạn có thể kết hợp các điều kiện với nhau cũng như thêm các
 Phương thức `whereBetween` sẽ kiểm tra giá trị của một cột nằm giữa hai giá trị đã cho:
 
     $users = DB::table('users')
-                        ->whereBetween('votes', [1, 100])->get();
+                ->whereBetween('votes', [1, 100])
+                ->get();
 
 **whereNotBetween / orWhereNotBetween**
 
@@ -448,7 +470,7 @@ Phương thức `whereColumn` cũng có thể được truyền vào một mản
     $users = DB::table('users')
                     ->whereColumn([
                         ['first_name', '=', 'last_name'],
-                        ['updated_at', '>', 'created_at']
+                        ['updated_at', '>', 'created_at'],
                     ])->get();
 
 <a name="parameter-grouping"></a>
@@ -456,13 +478,13 @@ Phương thức `whereColumn` cũng có thể được truyền vào một mản
 
 Thỉnh thoảng bạn có thể cần tạo ra lệnh where nâng cao như lệnh "where exists" hoặc các nhóm tham số lồng nhau. Query builder của Laravel cũng có thể xử lý được chúng. Để bắt đầu, chúng ta hãy xem một ví dụ về các nhóm điều kiện trong ngoặc đơn:
 
-    DB::table('users')
-                ->where('name', '=', 'John')
-                ->where(function ($query) {
-                    $query->where('votes', '>', 100)
-                          ->orWhere('title', '=', 'Admin');
-                })
-                ->get();
+    $users = DB::table('users')
+               ->where('name', '=', 'John')
+               ->where(function ($query) {
+                   $query->where('votes', '>', 100)
+                         ->orWhere('title', '=', 'Admin');
+               })
+               ->get();
 
 Như bạn có thể thấy, việc truyền một `Closure` vào phương thức `where` sẽ làm cho query builder bắt đầu tạo ra một nhóm điều kiện. `Closure` sẽ nhận vào một instance query builder mà bạn có thể sử dụng nó để set các điều kiện cần có vào trong nhóm dấu ngoặc đơn. Ví dụ trên sẽ tạo ra SQL như sau:
 
@@ -475,13 +497,13 @@ Như bạn có thể thấy, việc truyền một `Closure` vào phương thứ
 
 Phương thức `whereExists` cho phép bạn viết các lệnh SQL `where exists`. Phương thức `whereExists` chấp nhận một tham số `Closure`, sẽ nhận vào một instance query builder cho phép bạn định nghĩa thêm query mà sẽ được set vào bên trong lệnh "exists":
 
-    DB::table('users')
-                ->whereExists(function ($query) {
-                    $query->select(DB::raw(1))
-                          ->from('orders')
-                          ->whereRaw('orders.user_id = users.id');
-                })
-                ->get();
+    $users = DB::table('users')
+               ->whereExists(function ($query) {
+                   $query->select(DB::raw(1))
+                         ->from('orders')
+                         ->whereRaw('orders.user_id = users.id');
+               })
+               ->get();
 
 Truy vấn trên sẽ tạo ra lệnh SQL như sau:
 
@@ -526,7 +548,7 @@ Bạn có thể sử dụng `whereJsonLength` để truy vấn mảng JSON theo 
                     ->get();
 
 <a name="ordering-grouping-limit-and-offset"></a>
-## Ordering, Grouping, Limit, và Offset
+## Ordering, Grouping, Limit và Offset
 
 #### orderBy
 
@@ -648,9 +670,9 @@ Nếu bảng có set id tự động tăng, hãy sử dụng phương thức `in
 
 Ngoài việc thêm các bản ghi vào cơ sở dữ liệu, query builder cũng có thể cập nhật các bản ghi hiện có bằng phương thức `update`. Phương thức `update`, giống như phương thức `insert`, chấp nhận một mảng các cặp cột và giá trị để cập nhật. Bạn có thể thêm điều kiện vào lệnh `update` bằng cách sử dụng lệnh `where`:
 
-    DB::table('users')
-                ->where('id', 1)
-                ->update(['votes' => 1]);
+    $affected = DB::table('users')
+                  ->where('id', 1)
+                  ->update(['votes' => 1]);
 
 #### Cập nhật hoặc thêm
 
@@ -669,9 +691,9 @@ Phương thức `updateOrInsert` trước tiên sẽ thử tìm một bản ghi 
 
 Khi cập nhật một cột JSON, bạn nên sử dụng cú pháp `->` để truy cập vào key thích hợp trong đối tượng JSON. Cách này sẽ hỗ trợ trên MySQL 5.7+ và PostgreSQL 9.5+:
 
-    DB::table('users')
-                ->where('id', 1)
-                ->update(['options->enabled' => true]);
+    $affected = DB::table('users')
+                  ->where('id', 1)
+                  ->update(['options->enabled' => true]);
 
 <a name="increment-and-decrement"></a>
 ### Increment và Decrement

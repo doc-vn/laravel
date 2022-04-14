@@ -5,6 +5,11 @@
     - [Extend collection](#extending-collections)
 - [Các phương thức có sẵn](#available-methods)
 - [Higher Order Messages](#higher-order-messages)
+- [Lazy Collections](#lazy-collections)
+    - [Giới thiệu](#lazy-collection-introduction)
+    - [Tạo Lazy Collections](#creating-lazy-collections)
+    - [The Enumerable Contract](#the-enumerable-contract)
+    - [Các phương thức của Lazy Collection](#lazy-collection-methods)
 
 <a name="introduction"></a>
 ## Giới thiệu
@@ -34,6 +39,7 @@ Như đã đề cập ở trên, helper `collect` sẽ trả về một instance
 
 Các collection là các "macroable", nên nó cho phép bạn bổ sung các phương thức vào các class `Collection` trong thời gian chạy. Ví dụ, đoạn code sau sẽ thêm một phương thức `toUpper` vào class `Collection`:
 
+    use Illuminate\Support\Collection;
     use Illuminate\Support\Str;
 
     Collection::macro('toUpper', function () {
@@ -73,6 +79,7 @@ Trong phần còn lại của tài liệu này, chúng ta sẽ thảo luận v�
 [avg](#method-avg)
 [chunk](#method-chunk)
 [collapse](#method-collapse)
+[collect](#method-collect)
 [combine](#method-combine)
 [concat](#method-concat)
 [contains](#method-contains)
@@ -144,6 +151,7 @@ Trong phần còn lại của tài liệu này, chúng ta sẽ thảo luận v�
 [search](#method-search)
 [shift](#method-shift)
 [shuffle](#method-shuffle)
+[skip](#method-skip)
 [slice](#method-slice)
 [some](#method-some)
 [sort](#method-sort)
@@ -180,6 +188,8 @@ Trong phần còn lại của tài liệu này, chúng ta sẽ thảo luận v�
 [whereNotBetween](#method-wherenotbetween)
 [whereNotIn](#method-wherenotin)
 [whereNotInStrict](#method-wherenotinstrict)
+[whereNotNull](#method-wherenotnull)
+[whereNull](#method-wherenull)
 [wrap](#method-wrap)
 [zip](#method-zip)
 
@@ -274,6 +284,39 @@ Phương thức `combine` sẽ lấy các value của collection để làm key 
 
     // ['name' => 'George', 'age' => 29]
 
+<a name="method-collect"></a>
+#### `collect()` {#collection-method}
+
+Phương thức `collect` sẽ trả về một instance `Collection` mới với các item hiện có có trong collection:
+
+    $collectionA = collect([1, 2, 3]);
+
+    $collectionB = $collectionA->collect();
+
+    $collectionB->all();
+
+    // [1, 2, 3]
+
+Phương thức `collect` chủ yếu hữu ích để chuyển đổi các [lazy collections](#lazy-collections) thành các instance `Collection` cơ bản:
+
+    $lazyCollection = LazyCollection::make(function () {
+        yield 1;
+        yield 2;
+        yield 3;
+    });
+
+    $collection = $lazyCollection->collect();
+
+    get_class($collection);
+
+    // 'Illuminate\Support\Collection'
+
+    $collection->all();
+
+    // [1, 2, 3]
+
+> {tip} Phương thức `collect` đặc biệt hữu ích khi bạn có một instance của `Enumerable` và cần một instance collection non-lazy. Vì `collect()` là một phần của contract `Enumerable` nên bạn có thể sử dụng nó một cách an toàn để lấy ra một instance `Collection`.
+
 <a name="method-concat"></a>
 #### `concat()` {#collection-method}
 
@@ -329,6 +372,8 @@ Phương thức `contains` sử dụng các phép so sánh "lỏng lẻo" khi ki
 #### `containsStrict()` {#collection-method}
 
 Phương thức này có cùng dạng với phương thức [`contains`](#method-contains); tuy nhiên, tất cả các giá trị được so sánh đều sử dụng phép so sánh "nghiêm ngặt".
+
+> {tip} Hành vi của phương thức này được thay đổi khi sử dụng [Eloquent Collections](/docs/{{version}}/eloquent-collections#method-contains).
 
 <a name="method-count"></a>
 #### `count()` {#collection-method}
@@ -438,6 +483,8 @@ Phương thức `diff` so sánh collection với một collection khác hoặc m
 
     // [1, 3, 5]
 
+> {tip} Hành vi của phương thức này được thay đổi khi sử dụng [Eloquent Collections](/docs/{{version}}/eloquent-collections#method-diff).
+
 <a name="method-diffassoc"></a>
 #### `diffAssoc()` {#collection-method}
 
@@ -453,7 +500,7 @@ Phương thức `diffAssoc` so sánh collection với một collection khác ho�
         'color' => 'yellow',
         'type' => 'fruit',
         'remain' => 3,
-        'used' => 6
+        'used' => 6,
     ]);
 
     $diff->all();
@@ -581,7 +628,7 @@ Nếu một collection là trống, thì phương thức `every` sẽ trả về
 
     $collection = collect([]);
 
-    $collection->every(function($value, $key) {
+    $collection->every(function ($value, $key) {
         return $value > 2;
     });
 
@@ -601,6 +648,8 @@ Phương thức `except` trả về tất cả các item trong collection ngoạ
     // ['product_id' => 1]
 
 Đối ngược với phương thức `except`, hãy xem phương thức [only](#method-only).
+
+> {tip} Hành vi của phương thức này được thay đổi khi sử dụng [Eloquent Collections](/docs/{{version}}/eloquent-collections#method-except).
 
 <a name="method-filter"></a>
 #### `filter()` {#collection-method}
@@ -935,6 +984,8 @@ Phương thức `intersect` sẽ loại bỏ bất kỳ value nào ra khỏi col
     $intersect->all();
 
     // [0 => 'Desk', 2 => 'Chair']
+
+> {tip} Hành vi của phương thức này được thay đổi khi sử dụng [Eloquent Collections](/docs/{{version}}/eloquent-collections#method-intersect).
 
 <a name="method-intersectbykeys"></a>
 #### `intersectByKeys()` {#collection-method}
@@ -1310,6 +1361,8 @@ Phương thức `only` trả về các item có trong collection với một key
 
 Đối ngược với phương thức `only`, hãy xem phương thức [except](#method-except).
 
+> {tip} Hành vi của phương thức này được thay đổi khi sử dụng [Eloquent Collections](/docs/{{version}}/eloquent-collections#method-only).
+
 <a name="method-pad"></a>
 #### `pad()` {#collection-method}
 
@@ -1640,6 +1693,19 @@ Phương thức `shuffle` sẽ xáo trộn ngẫu nhiên các item trong collect
 
     // [3, 2, 5, 1, 4] - (generated randomly)
 
+<a name="method-skip"></a>
+#### `skip()` {#collection-method}
+
+Phương thức `skip` sẽ trả về một collection mới, không có một số item đầu tiên:
+
+    $collection = collect([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+
+    $collection = $collection->skip(4);
+
+    $collection->all();
+
+    // [5, 6, 7, 8, 9, 10]
+
 <a name="method-slice"></a>
 #### `slice()` {#collection-method}
 
@@ -1915,9 +1981,9 @@ Phương pháp này có thể hữu ích khi được kết hợp với các fac
 
     /*
         [
-            ['id' => 1, 'name' => 'Category #1'],
-            ['id' => 2, 'name' => 'Category #2'],
-            ['id' => 3, 'name' => 'Category #3'],
+            ['id' => 1, 'name' => 'Category No. 1'],
+            ['id' => 2, 'name' => 'Category No. 2'],
+            ['id' => 3, 'name' => 'Category No. 3'],
         ]
     */
 
@@ -2031,6 +2097,8 @@ Bạn cũng có thể truyền vào một callback của bạn để xác địn
     */
 
 Phương thức `unique` sử dụng các phép so sánh "lỏng lẻo" khi kiểm tra các giá trị item, nghĩa là một chuỗi có giá trị integer sẽ được coi là bằng với một số integer có cùng giá trị. Sử dụng phương thức [`uniqueStrict`](#method-uniquestrict) để lọc bằng các so sánh "nghiêm ngặt".
+
+> {tip} Hành vi của phương thức này được thay đổi khi sử dụng [Eloquent Collections](/docs/{{version}}/eloquent-collections#method-unique).
 
 <a name="method-uniquestrict"></a>
 #### `uniqueStrict()` {#collection-method}
@@ -2156,9 +2224,9 @@ Phương thức `whenEmpty` sẽ thực hiện lệnh callback đã cho khi coll
 
     $collection = collect(['michael', 'tom']);
 
-    $collection->whenEmpty(function($collection) {
+    $collection->whenEmpty(function ($collection) {
         return $collection->push('adam');
-    }, function($collection) {
+    }, function ($collection) {
         return $collection->push('taylor');
     });
 
@@ -2197,9 +2265,9 @@ Phương thức `whenNotEmpty` sẽ thực hiện lệnh callback đã cho khi c
 
     $collection = collect();
 
-    $collection->whenNotEmpty(function($collection) {
+    $collection->whenNotEmpty(function ($collection) {
         return $collection->push('adam');
-    }, function($collection) {
+    }, function ($collection) {
         return $collection->push('taylor');
     });
 
@@ -2301,8 +2369,8 @@ Phương thức `whereIn` sẽ lọc collection theo cặp key và value, trong 
 
     /*
         [
-            ['product' => 'Bookcase', 'price' => 150],
             ['product' => 'Desk', 'price' => 200],
+            ['product' => 'Bookcase', 'price' => 150],
         ]
     */
 
@@ -2318,13 +2386,20 @@ Phương thức này có cùng chức năng với phương thức [`whereIn`](#m
 
 Phương thức `whereInstanceOf` sẽ lọc collection theo một loại class nhất định:
 
+    use App\User;
+    use App\Post;
+
     $collection = collect([
         new User,
         new User,
         new Post,
     ]);
 
-    return $collection->whereInstanceOf(User::class);
+    $filtered = $collection->whereInstanceOf(User::class);
+
+    $filtered->all();
+
+    // [App\User, App\User]
 
 <a name="method-wherenotbetween"></a>
 #### `whereNotBetween()` {#collection-method}
@@ -2380,6 +2455,50 @@ Phương thức `whereNotIn` sử dụng phép so sánh "lỏng lẻo" khi kiể
 
 Phương thức này có cùng chức năng với phương thức [`whereNotIn`](#method-wherenotin); tuy nhiên, tất cả các giá trị đều được so sánh bằng cách sử dụng so sánh "nghiêm ngặt".
 
+<a name="method-wherenotnull"></a>
+#### `whereNotNull()` {#collection-method}
+
+Phương thức `whereNotNull` sẽ lọc ra các item với một khóa đã cho không phải là null:
+
+    $collection = collect([
+        ['name' => 'Desk'],
+        ['name' => null],
+        ['name' => 'Bookcase'],
+    ]);
+
+    $filtered = $collection->whereNotNull('name');
+
+    $filtered->all();
+
+    /*
+        [
+            ['name' => 'Desk'],
+            ['name' => 'Bookcase'],
+        ]
+    */
+
+<a name="method-wherenull"></a>
+#### `whereNull()` {#collection-method}
+
+Phương thức `whereNull` sẽ lọc ra các item với một khóa đã cho phải là null:
+
+    $collection = collect([
+        ['name' => 'Desk'],
+        ['name' => null],
+        ['name' => 'Bookcase'],
+    ]);
+
+    $filtered = $collection->whereNull('name');
+
+    $filtered->all();
+
+    /*
+        [
+            ['name' => null],
+        ]
+    */
+
+
 <a name="method-wrap"></a>
 #### `wrap()` {#collection-method}
 
@@ -2432,3 +2551,219 @@ Tương tự, chúng ta có thể sử dụng higher order message `sum` để t
     $users = User::where('group', 'Development')->get();
 
     return $users->sum->votes;
+
+<a name="lazy-collections"></a>
+## Lazy Collections
+
+<a name="lazy-collection-introduction"></a>
+### Giới thiệu
+
+> {note} Trước khi tìm hiểu thêm về lazy collection của Laravel, hãy dành chút thời gian để làm quen với [PHP generators](https://www.php.net/manual/en/language.generators.overview.php).
+
+Để bổ sung cho class `Collection` vốn đã mạnh mẽ, class `LazyCollection` sử dụng [generators](https://www.php.net/manual/en/language.generators.overview.php) của PHP để cho phép bạn làm việc với bộ dữ liệu rất lớn trong khi vẫn giữ mức sử dụng bộ nhớ thấp.
+
+Ví dụ: hãy tưởng tượng ứng dụng của bạn cần xử lý file log nhiều gigabyte trong khi tận dụng các phương thức của Laravel để phân tích cú pháp log. Thay vì đọc toàn bộ file vào bộ nhớ cùng một lúc, lazy collection có thể được sử dụng để chỉ giữ một phần nhỏ của file vào trong bộ nhớ tại một thời điểm nhất định:
+
+    use App\LogEntry;
+    use Illuminate\Support\LazyCollection;
+
+    LazyCollection::make(function () {
+        $handle = fopen('log.txt', 'r');
+
+        while (($line = fgets($handle)) !== false) {
+            yield $line;
+        }
+    })->chunk(4)->map(function ($lines) {
+        return LogEntry::fromLines($lines);
+    })->each(function (LogEntry $logEntry) {
+        // Process the log entry...
+    });
+
+Hoặc, hãy tưởng tượng bạn cần lặp 10.000 model Eloquent. Khi sử dụng collection truyền thống của Laravel, tất cả 10.000 model Eloquent sẽ được load vào trong bộ nhớ cùng một lúc:
+
+    $users = App\User::all()->filter(function ($user) {
+        return $user->id > 500;
+    });
+
+Tuy nhiên, phương thức `cursor` của query builder sẽ trả về một instance `LazyCollection`. Điều này cho phép bạn vẫn chạy một truy vấn duy nhất đối với cơ sở dữ liệu nhưng cũng chỉ giữ một model Eloquent được load vào trong bộ nhớ tại một thời điểm. Trong ví dụ này, lệnh callback `filter` không được thực thi cho đến khi chúng ta thực sự lặp từng user, cho phép giảm đáng kể mức sử dụng bộ nhớ:
+
+    $users = App\User::cursor()->filter(function ($user) {
+        return $user->id > 500;
+    });
+
+    foreach ($users as $user) {
+        echo $user->id;
+    }
+
+<a name="creating-lazy-collections"></a>
+### Tạo Lazy Collections
+
+Để tạo một instance lazy collection, bạn nên truyền một hàm của generator PHP vào phương thức `make` của collection:
+
+    use Illuminate\Support\LazyCollection;
+
+    LazyCollection::make(function () {
+        $handle = fopen('log.txt', 'r');
+
+        while (($line = fgets($handle)) !== false) {
+            yield $line;
+        }
+    });
+
+<a name="the-enumerable-contract"></a>
+### The Enumerable Contract
+
+Hầu như tất cả các phương thức có sẵn trên class `Collection` cũng có sẵn trên class `LazyCollection`. Cả hai class này đều implement contract `Illuminate\Support\Enumerable` định nghĩa các phương thức sau:
+
+<div id="collection-method-list" markdown="1">
+
+[all](#method-all)
+[average](#method-average)
+[avg](#method-avg)
+[chunk](#method-chunk)
+[collapse](#method-collapse)
+[collect](#method-collect)
+[combine](#method-combine)
+[concat](#method-concat)
+[contains](#method-contains)
+[containsStrict](#method-containsstrict)
+[count](#method-count)
+[countBy](#method-countBy)
+[crossJoin](#method-crossjoin)
+[dd](#method-dd)
+[diff](#method-diff)
+[diffAssoc](#method-diffassoc)
+[diffKeys](#method-diffkeys)
+[dump](#method-dump)
+[duplicates](#method-duplicates)
+[duplicatesStrict](#method-duplicatesstrict)
+[each](#method-each)
+[eachSpread](#method-eachspread)
+[every](#method-every)
+[except](#method-except)
+[filter](#method-filter)
+[first](#method-first)
+[firstWhere](#method-first-where)
+[flatMap](#method-flatmap)
+[flatten](#method-flatten)
+[flip](#method-flip)
+[forPage](#method-forpage)
+[get](#method-get)
+[groupBy](#method-groupby)
+[has](#method-has)
+[implode](#method-implode)
+[intersect](#method-intersect)
+[intersectByKeys](#method-intersectbykeys)
+[isEmpty](#method-isempty)
+[isNotEmpty](#method-isnotempty)
+[join](#method-join)
+[keyBy](#method-keyby)
+[keys](#method-keys)
+[last](#method-last)
+[macro](#method-macro)
+[make](#method-make)
+[map](#method-map)
+[mapInto](#method-mapinto)
+[mapSpread](#method-mapspread)
+[mapToGroups](#method-maptogroups)
+[mapWithKeys](#method-mapwithkeys)
+[max](#method-max)
+[median](#method-median)
+[merge](#method-merge)
+[mergeRecursive](#method-mergerecursive)
+[min](#method-min)
+[mode](#method-mode)
+[nth](#method-nth)
+[only](#method-only)
+[pad](#method-pad)
+[partition](#method-partition)
+[pipe](#method-pipe)
+[pluck](#method-pluck)
+[random](#method-random)
+[reduce](#method-reduce)
+[reject](#method-reject)
+[replace](#method-replace)
+[replaceRecursive](#method-replacerecursive)
+[reverse](#method-reverse)
+[search](#method-search)
+[shuffle](#method-shuffle)
+[skip](#method-skip)
+[slice](#method-slice)
+[some](#method-some)
+[sort](#method-sort)
+[sortBy](#method-sortby)
+[sortByDesc](#method-sortbydesc)
+[sortKeys](#method-sortkeys)
+[sortKeysDesc](#method-sortkeysdesc)
+[split](#method-split)
+[sum](#method-sum)
+[take](#method-take)
+[tap](#method-tap)
+[times](#method-times)
+[toArray](#method-toarray)
+[toJson](#method-tojson)
+[union](#method-union)
+[unique](#method-unique)
+[uniqueStrict](#method-uniquestrict)
+[unless](#method-unless)
+[unlessEmpty](#method-unlessempty)
+[unlessNotEmpty](#method-unlessnotempty)
+[unwrap](#method-unwrap)
+[values](#method-values)
+[when](#method-when)
+[whenEmpty](#method-whenempty)
+[whenNotEmpty](#method-whennotempty)
+[where](#method-where)
+[whereStrict](#method-wherestrict)
+[whereBetween](#method-wherebetween)
+[whereIn](#method-wherein)
+[whereInStrict](#method-whereinstrict)
+[whereInstanceOf](#method-whereinstanceof)
+[whereNotBetween](#method-wherenotbetween)
+[whereNotIn](#method-wherenotin)
+[whereNotInStrict](#method-wherenotinstrict)
+[wrap](#method-wrap)
+[zip](#method-zip)
+
+</div>
+
+> {note} Các phương thức làm thay đổi collection (chẳng hạn như `shift`,` pop`, `prepend`, vv.) _không_ có sẵn trên class `LazyCollection`.
+
+<a name="lazy-collection-methods"></a>
+### Các phương thức của Lazy Collection
+
+Ngoài các phương thức được định nghĩa trong contract `Enumerable`, class `LazyCollection` cũng chứa thêm các phương thức sau:
+
+<a name="method-tapEach"></a>
+#### `tapEach()` {#collection-method}
+
+Trong khi phương thức `each` gọi lệnh callback đã cho cho từng item có trong collection ngay lập tức, thì phương thức` tapEach` chỉ gọi lệnh callback đã cho cho một item được lấy ra khỏi danh sách:
+
+    $lazyCollection = LazyCollection::times(INF)->tapEach(function ($value) {
+        dump($value);
+    });
+
+    // Nothing has been dumped so far...
+
+    $array = $lazyCollection->take(3)->all();
+
+    // 1
+    // 2
+    // 3
+
+<a name="method-remember"></a>
+#### `remember()` {#collection-method}
+
+Phương thức `remember` sẽ trả về một lazy collection mới sẽ remember bất kỳ giá trị nào đã được lấy ra và sẽ không lấy ra lại các giá trị đó khi collection được gọi lại một lần nữa:
+
+    $users = User::cursor()->remember();
+
+    // No query has been executed yet...
+
+    $users->take(5)->all();
+
+    // The query has been executed and the first 5 users have been hydrated from the database...
+
+    $users->take(20)->all();
+
+    // First 5 users come from the collection's cache... The rest are hydrated from the database...
