@@ -28,7 +28,7 @@
 <a name="introduction"></a>
 ## Giới thiệu
 
-> {tip} **Bạn có muốn bắt đầu nhanh không?** Cài đặt package `laravel/ui` (1.0) thông qua Composer và chạy `php artisan ui vue --auth` trong ứng dụng Laravel của bạn. Sau khi migration cơ sở dữ liệu của bạn xong, hãy chuyển hướng url trên trình duyệt của bạn đến `http://your-app.test/register` hoặc bất kỳ URL nào được gán đến cho application của bạn. Lệnh này sẽ đảm nhiệm việc tạo ra toàn bộ hệ thống authentication của bạn!
+> {tip} **Bạn có muốn bắt đầu nhanh không?** Cài đặt package `laravel/ui` thông qua Composer và chạy `php artisan ui vue --auth` trong ứng dụng Laravel của bạn. Sau khi migration cơ sở dữ liệu của bạn xong, hãy chuyển hướng url trên trình duyệt của bạn đến `http://your-app.test/register` hoặc bất kỳ URL nào được gán đến cho application của bạn. Lệnh này sẽ đảm nhiệm việc tạo ra toàn bộ hệ thống authentication của bạn!
 
 Laravel làm cho việc thực hiện authentication trở nên rất đơn giản. Trong thực tế, hầu hết mọi thứ đã được cài đặt sẵn cho bạn. File cấu hình authentication sẽ được đặt tại `config/auth.php`, nó sẽ chứa một số tùy chọn cùng theo document để điều chỉnh các hành vi của các service authentication.
 
@@ -50,18 +50,18 @@ Ngoài ra, bạn nên định nghĩa thêm vào bảng `users` (hoặc tương �
 <a name="authentication-quickstart"></a>
 ## Authentication Quickstart
 
-Laravels có sẵn một số controller cho authentication được xây dựng từ trước, được lưu trong namespace `App\Http\Controllers\Auth`. `RegisterController` sẽ xử lý đăng ký người dùng mới, `LoginController` sẽ xử lý authentication, `ForgotPasswordController` sẽ xử lý các liên kết email để đăng ký lại mật khẩu và `ResetPasswordController` sẽ chứa logic để reset lại mật khẩu. Mỗi controller này đều sử dụng một trait để thêm các phương thức cần thiết cho chúng. Đối với nhiều application, bạn sẽ không cần phải sửa các controller này.
-
 <a name="included-routing"></a>
 ### Routing
 
 Package `laravel/ui` của Laravel cung cấp một cách nhanh chóng để hỗ trợ tất cả các route và view mà bạn cần để authentication bằng một vài câu lệnh đơn giản sau:
 
-    composer require laravel/ui "^1.0" --dev
+    composer require laravel/ui:^2.4
 
     php artisan ui vue --auth
 
 Lệnh này nên được sử dụng trên các application mới và sẽ cài đặt một số màn hình như màn hình đăng ký hoặc màn hình đăng nhập, ngoài ra lệnh này cũng cài đặt thêm một số route cho việc authentication. Một `HomeController` cũng sẽ được tạo để xử lý các request đăng nhập để vào màn hình chính của application của bạn.
+
+Package `laravel/ui` cũng tạo ra sẵn một số controller cho authentication được xây dựng từ trước, được lưu trong namespace `App\Http\Controllers\Auth`. `RegisterController` sẽ xử lý đăng ký người dùng mới, `LoginController` sẽ xử lý authentication, `ForgotPasswordController` sẽ xử lý các liên kết email để đăng ký lại mật khẩu và `ResetPasswordController` sẽ chứa logic để reset lại mật khẩu. Mỗi controller này đều sử dụng một trait để thêm các phương thức cần thiết cho chúng. Đối với nhiều application, bạn sẽ không cần phải sửa các controller này.
 
 > {tip} Nếu ứng dụng của bạn không cần chức năng đăng ký, bạn có thể vô hiệu hóa nó bằng cách xóa class `RegisterController` và sửa khai báo route của bạn là: `Auth::routes(['register' => false]);`.
 
@@ -89,7 +89,7 @@ Khi người dùng được authenticate thành công, họ sẽ được chuy�
 
     public const HOME = '/home';
 
-Nếu bạn cần tùy chỉnh mạnh mẽ hơn như response được trả về khi người dùng xác thực thành công, Laravel cung cấp một phương thức trống `authenticated(Request $request, $user)` có thể được ghi đè nếu bạn muốn:
+Nếu bạn cần tùy chỉnh mạnh mẽ hơn như response được trả về khi người dùng xác thực thành công, Laravel cung cấp một phương thức trống `authenticated(Request $request, $user)` trong trait `AuthenticatesUsers`. Trait này được sử dụng bởi class `LoginController` được cài đặt vào ứng dụng của bạn khi sử dụng package `laravel/ui`. Do đó, bạn có thể định nghĩa phương thức `authenticated` của riêng bạn trong class `LoginController`:
 
     /**
      * The user has been authenticated.

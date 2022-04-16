@@ -9,6 +9,7 @@
     - [Flash dữ liệu](#flash-data)
     - [Xoá dữ liệu](#deleting-data)
     - [Tạo Session ID](#regenerating-the-session-id)
+- [Chặn session](#session-blocking)
 - [Thêm tuỳ chỉnh Session Drivers](#adding-custom-session-drivers)
     - [Implementing Driver](#implementing-the-driver)
     - [Đăng ký Driver](#registering-the-driver)
@@ -46,7 +47,7 @@ Khi sử dụng session driver `database`, bạn sẽ cần tạo một bảng �
 
     Schema::create('sessions', function ($table) {
         $table->string('id')->unique();
-        $table->unsignedInteger('user_id')->nullable();
+        $table->foreignId('user_id')->nullable();
         $table->string('ip_address', 45)->nullable();
         $table->text('user_agent')->nullable();
         $table->text('payload');
@@ -194,11 +195,38 @@ Phương thức `forget` sẽ xóa một phần dữ liệu ra khỏi session. N
 <a name="regenerating-the-session-id"></a>
 ### Tạo Session ID
 
-Việc tạo lại session ID thường được thực hiện để ngăn kẻ xấu khai thác lỗ hỏng bảo mật [session fixation](https://en.wikipedia.org/wiki/Session_fixation) trên application của bạn.
+Việc tạo lại session ID thường được thực hiện để ngăn kẻ xấu khai thác lỗ hỏng bảo mật [session fixation](https://owasp.org/www-community/attacks/Session_fixation) trên application của bạn.
 
  Nếu bạn đang sử dụng `LoginController`, thì Laravel sẽ tự động tạo lại session ID trong khi xác thực; tuy nhiên, nếu bạn cần tự tạo lại session ID, bạn có thể sử dụng phương thức `regenerate`.
 
     $request->session()->regenerate();
+
+<a name="session-blocking"></a>
+## Chặn session
+
+> {note} Để sử dụng tính năng chặn session, ứng dụng của bạn phải sử dụng một driver cache mà hỗ trợ [atomic locks](/docs/{{version}}/cache#atomic-locks). Hiện tại, những driver cache đó là các driver `memcached`, `dynamicodb`, `redis` và `database`. Ngoài ra, bạn không thể sử dụng driver session `cookie`.
+
+Mặc định, Laravel cho phép các request sử dụng cùng một session để chạy đồng thời. Vì vậy, ví dụ: nếu bạn sử dụng thư viện JavaScript HTTP để thực hiện hai request HTTP tới ứng dụng của bạn cùng một lúc, thì cả hai sẽ thực thi đồng thời. Đối với nhiều ứng dụng, đây không phải là vấn đề; tuy nhiên, mất dữ liệu session cũng có thể xảy ra trong một phần hiếm các ứng dụng khi thực hiện request đồng thời đến hai điểm khác nhau trong cùng một ứng dụng, mà cả hai điểm đó đều có cùng chức năng ghi dữ liệu vào session.
+
+Để giảm thiểu điều này, Laravel cung cấp chức năng cho phép bạn giới hạn các request đồng thời cho một session nhất định. Để bắt đầu, bạn có thể chỉ cần kết hợp thêm phương thức `block` vào định nghĩa route của bạn. Trong ví dụ này, một request đến điểm `/profile` sẽ nhận được một session lock. Trong khi lock này mà đang được giữ, thì bất kỳ request nào khác đến điểm `/profile` hoặc điểm `/order` mà có cùng ID session thì sẽ đợi request đến trước đó kết thúc rồi mới đến request tiếp theo tiếp tục được thực thi:
+
+    Route::post('/profile', function () {
+        //
+    })->block($lockSeconds = 10, $waitSeconds = 10)
+
+    Route::post('/order', function () {
+        //
+    })->block($lockSeconds = 10, $waitSeconds = 10)
+
+Phương thức `block` chấp nhận hai tham số tùy chọn. Tham số đầu tiên được phương thức `block` chấp nhận là số giây tối đa mà session lock sẽ được giữ trước khi nó được giải phóng. Tất nhiên, nếu request kết thúc trước thời điểm này, thì lock này sẽ được giải phóng sớm hơn.
+
+Tham số thứ hai được phương thức `block` chấp nhận là số giây mà một request sẽ phải đợi trong khi cố gắng lấy một session lock. Một `Illuminate\Contracts\Cache\LockTimeoutException` sẽ được đưa ra nếu request không thể lấy được session lock trong một số giây nhất định.
+
+Nếu cả hai tham số này đều không được truyền vào, thì lock sẽ được giữ trong thời gian tối đa là 10 giây và các request khác sẽ đợi tối đa 10 giây trong khi cố gắng lấy lock:
+
+    Route::post('/profile', function () {
+        //
+    })->block()
 
 <a name="adding-custom-session-drivers"></a>
 ## Thêm tuỳ chỉnh Session Drivers

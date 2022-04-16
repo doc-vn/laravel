@@ -27,7 +27,7 @@ Tất cả các file ngôn ngữ đều trả về một mảng của các chu�
     <?php
 
     return [
-        'welcome' => 'Welcome to our application'
+        'welcome' => 'Welcome to our application',
     ];
 
 > {note} Đối với các ngôn ngữ khác nhau theo lãnh thổ, bạn nên set tên cho các thư mục ngôn ngữ đó theo chuẩn ISO 15897. Ví dụ: "en_GB" nên được sử dụng cho tiếng Anh-Anh thay vì "en-gb".
@@ -38,6 +38,10 @@ Tất cả các file ngôn ngữ đều trả về một mảng của các chu�
 Ngôn ngữ mặc định cho application của bạn được lưu trữ trong file cấu hình `config/app.php`. Bạn có thể sửa đổi giá trị này cho phù hợp với nhu cầu application của bạn. Bạn cũng có thể thay đổi ngôn ngữ hoạt động trong lúc chạy bằng cách sử dụng phương thức `setLocale` trên facade `App`:
 
     Route::get('welcome/{locale}', function ($locale) {
+        if (! in_array($locale, ['en', 'es', 'fr'])) {
+            abort(400);
+        }
+
         App::setLocale($locale);
 
         //
@@ -79,7 +83,7 @@ Tất cả các file ngôn ngữ đều trả về một mảng của các chu�
     // resources/lang/en/messages.php
 
     return [
-        'welcome' => 'Welcome to our application'
+        'welcome' => 'Welcome to our application',
     ];
 
 <a name="using-translation-strings-as-keys"></a>

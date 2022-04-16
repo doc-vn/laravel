@@ -91,7 +91,7 @@ Nếu service provider của bạn đăng ký nhiều liên kết, thì bạn c�
          */
         public $singletons = [
             DowntimeNotifier::class => PingdomDowntimeNotifier::class,
-            ServerToolsProvider::class => ServerToolsProvider::class,
+            ServerProvider::class => ServerToolsProvider::class,
         ];
     }
 

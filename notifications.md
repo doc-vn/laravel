@@ -13,6 +13,7 @@
     - [Tuỳ biến người gửi](#customizing-the-sender)
     - [Tuỳ biến người nhận](#customizing-the-recipient)
     - [Tuỳ biến chủ đề](#customizing-the-subject)
+    - [Tuỳ biến Mailer](#customizing-the-mailer)
     - [Tuỳ biến template](#customizing-the-templates)
     - [Xem trước Mail Notification](#previewing-mail-notifications)
 - [Markdown Mail Notification](#markdown-mail-notifications)
@@ -46,7 +47,7 @@
 <a name="introduction"></a>
 ## Giới thiệu
 
-Ngoài việc hỗ trợ [gửi email](/docs/{{version}}/mail), Laravel cũng hỗ trợ để gửi các notification qua nhiều channel khác nhau, như mail, SMS (qua [Nexmo](https://www.nexmo.com/)) và [Slack](https://slack.com). Notification cũng có thể được lưu trữ vào trong cơ sở dữ liệu của bạn để có thể được hiển thị trong giao diện của người dùng.
+Ngoài việc hỗ trợ [gửi email](/docs/{{version}}/mail), Laravel cũng hỗ trợ để gửi các notification qua nhiều channel khác nhau, như mail, SMS (qua [Vonage](https://www.vonage.com/communications-apis/), trước đây được gọi là Nexmo) và [Slack](https://slack.com). Notification cũng có thể được lưu trữ vào trong cơ sở dữ liệu của bạn để có thể được hiển thị trong giao diện của người dùng.
 
 Thông thường, notification phải ngắn gọn, nội dung của message phải thông báo cho người dùng biết về điều gì đó đã xảy ra trong application của bạn. Ví dụ: nếu bạn đang viết một application thanh toán, bạn có thể gửi một notification "Thanh toán hóa đơn" cho người dùng của bạn thông qua các channel email và SMS.
 
@@ -146,10 +147,27 @@ Nếu bạn muốn delay việc gửi notification, bạn có thể kết hợp 
 
     $user->notify((new InvoicePaid($invoice))->delay($when));
 
+#### Customizing Notification Channel Queues
+
+Nếu bạn muốn chỉ định một queue cụ thể được sử dụng cho mỗi loại notification channel hỗ trợ, bạn có thể định nghĩa một phương thức `viaQueues` trong notification của bạn. Phương thức này sẽ trả về một mảng gồm các cặp tên channel và tên queue:
+
+    /**
+     * Determine which queues should be used for each notification channel.
+     *
+     * @return array
+     */
+    public function viaQueues()
+    {
+        return [
+            'mail' => 'mail-queue',
+            'slack' => 'slack-queue',
+        ];
+    }
+
 <a name="on-demand-notifications"></a>
 ### On-Demand Notifications
 
-Thỉnh thoảng bạn có thể cần gửi notification cho người mà chưa được lưu trong cơ sở dữ liệu dưới dạng một "user". Sử dụng phương thức `Notification::route`, bạn có thể chỉ định thông tin ad-hoc notification routing trước khi gửi notification:
+Thỉnh thoảng bạn có thể cần gửi notification cho người mà chưa được lưu trong cơ sở dữ liệu dưới dạng một "user". Sử dụng facade `Notification::route`, bạn có thể chỉ định thông tin ad-hoc notification routing trước khi gửi notification:
 
     Notification::route('mail', 'taylor@example.com')
                 ->route('nexmo', '5555555555')
@@ -206,7 +224,23 @@ Thay vì định nghĩa "dòng" text trong class notification, bạn có thể s
         );
     }
 
-Ngoài ra, bạn có thể trả về một [đối tượng mailable](/docs/{{version}}/mail) từ phương thức `toMail`:
+Bạn có thể chỉ định một plain-text view cho mail message bằng cách truyền tên view làm phần tử thứ hai cho mảng được cung cấp cho phương thức `view` của `MailMessage`:
+
+    /**
+     * Get the mail representation of the notification.
+     *
+     * @param  mixed  $notifiable
+     * @return \Illuminate\Notifications\Messages\MailMessage
+     */
+    public function toMail($notifiable)
+    {
+        return (new MailMessage)->view(
+            ['emails.name.html', 'emails.name.plain'],
+            ['invoice' => $this->invoice]
+        );
+    }
+
+Ngoài ra, bạn có thể trả về full [đối tượng mailable](/docs/{{version}}/mail) từ phương thức `toMail`:
 
     use App\Mail\InvoicePaid as Mailable;
 
@@ -218,7 +252,7 @@ Ngoài ra, bạn có thể trả về một [đối tượng mailable](/docs/{{v
      */
     public function toMail($notifiable)
     {
-        return (new Mailable($this->invoice))->to($this->user->email);
+        return (new Mailable($this->invoice))->to($notifiable->email);
     }
 
 <a name="error-messages"></a>
@@ -305,6 +339,24 @@ Mặc định, chủ đề của email là tên class của notification đượ
     {
         return (new MailMessage)
                     ->subject('Notification Subject')
+                    ->line('...');
+    }
+
+<a name="customizing-the-mailer"></a>
+### Tuỳ biến Mailer
+
+Mặc định, email notification sẽ được gửi bằng driver mặc định được định nghĩa trong file cấu hình `config/mail.php`. Tuy nhiên, bạn có thể chỉ định một mailer khác trong lúc runtime bằng cách gọi phương thức `mailer` khi tạo message của bạn:
+
+    /**
+     * Get the mail representation of the notification.
+     *
+     * @param  mixed  $notifiable
+     * @return \Illuminate\Notifications\Messages\MailMessage
+     */
+    public function toMail($notifiable)
+    {
+        return (new MailMessage)
+                    ->mailer('postmark')
                     ->line('...');
     }
 
@@ -552,7 +604,21 @@ Tất cả các broadcast notification sẽ được queue lại để broadcast
                     ->onConnection('sqs')
                     ->onQueue('broadcasts');
 
-> {tip} Ngoài dữ liệu bạn khai báo, broadcast notification cũng sẽ chứa một trường `type` sẽ được để chứa tên class của notification.
+#### Customizing The Notification Type
+
+Ngoài dữ liệu bạn chỉ định, tất cả các broadcast notification cũng có thêm một trường `type` để chứa tên class của notification. Nếu bạn muốn tùy chỉnh `type` của notification mà được cung cấp cho JavaScript client của bạn, bạn có thể định nghĩa phương thức` broadcastType` trên class notification đó:
+
+    use Illuminate\Notifications\Messages\BroadcastMessage;
+
+    /**
+     * Get the type of the notification being broadcast.
+     *
+     * @return string
+     */
+    public function broadcastType()
+    {
+        return 'broadcast.message';
+    }
 
 <a name="listening-for-notifications"></a>
 ### Listening cho Notifications
@@ -724,7 +790,7 @@ Trước khi bạn có thể gửi notification qua Slack, bạn phải cài đ�
 
     composer require laravel/slack-notification-channel
 
-Bạn cũng sẽ cần cấu hình ["Incoming Webhook"](https://api.slack.com/incoming-webhooks) cho group Slack của bạn. Việc cấu hình này sẽ cung cấp cho bạn một URL mà bạn có thể sử dụng khi [routing Slack notifications](#routing-slack-notifications).
+Bạn cũng sẽ cần cấu hình ["Incoming Webhook"](https://slack.com/apps/A0F7XDUAZ-incoming-webhooks) cho group Slack của bạn. Việc cấu hình này sẽ cung cấp cho bạn một URL mà bạn có thể sử dụng khi [routing Slack notifications](#routing-slack-notifications).
 
 <a name="formatting-slack-notifications"></a>
 ### Formatting Slack Notifications

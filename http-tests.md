@@ -189,6 +189,10 @@ Laravel cũng cung cấp một số helper để kiểm tra API JSON và respons
 
 > {tip} Phương thức `assertJson` sẽ chuyển response thành một mảng và sử dụng `PHPUnit::assertArraySubset` để kiểm tra mảng đó có tồn tại trong response JSON mà được application trả về hay không. Vì vậy, nếu có các thuộc tính khác trong response JSON, bài test này vẫn sẽ được pass miễn là có đoạn đã cho.
 
+Ngoài ra, dữ liệu JSON response có thể truy cập được dưới dạng các biến của mảng trong response:
+
+    $this->assertTrue($response['created']);
+
 <a name="verifying-exact-match"></a>
 ### Verifying An Exact JSON Match
 
@@ -395,16 +399,16 @@ Yêu cầu response phải có status code là 201:
 <a name="assert-dont-see"></a>
 #### assertDontSee
 
-Yêu cầu chuỗi đã cho không có trong response:
+Yêu cầu chuỗi đã cho không có trong response. Yêu cầu này sẽ tự động thoát trừ khi bạn truyền một tham số thứ hai là `false`:
 
-    $response->assertDontSee($value);
+   $response->assertDontSee($value, $escaped = true);
 
 <a name="assert-dont-see-text"></a>
 #### assertDontSeeText
 
-Yêu cầu chuỗi đã cho không có trong text response:
+Yêu cầu chuỗi đã cho không có trong text response. Yêu cầu này sẽ tự động thoát trừ khi bạn truyền một tham số thứ hai là `false`:
 
-    $response->assertDontSeeText($value);
+   $response->assertDontSeeText($value, $escaped = true);
 
 <a name="assert-exact-json"></a>
 #### assertExactJson
@@ -416,7 +420,7 @@ Yêu cầu response phải chứa kết quả khớp chính xác với dữ li�
 <a name="assert-forbidden"></a>
 #### assertForbidden
 
-Yêu cầu response phải chứa một forbidden status code:
+Yêu cầu response phải chứa một forbidden status code (403):
 
     $response->assertForbidden();
 
@@ -542,30 +546,30 @@ Yêu cầu response là một redirect đến một URI đã cho:
 <a name="assert-see"></a>
 #### assertSee
 
-Yêu cầu chuỗi đã cho có trong response:
+Yêu cầu chuỗi đã cho có trong response. Yêu cầu này sẽ tự động thoát trừ khi bạn truyền một tham số thứ hai là `false`:
 
-    $response->assertSee($value);
+    $response->assertSee($value, $escaped = true);
 
 <a name="assert-see-in-order"></a>
 #### assertSeeInOrder
 
-Yêu cầu các chuỗi đã cho được chứa trong response theo thứ tự:
+Yêu cầu các chuỗi đã cho được chứa trong response theo thứ tự. Yêu cầu này sẽ tự động thoát trừ khi bạn truyền một tham số thứ hai là `false`:
 
-    $response->assertSeeInOrder(array $values);
+    $response->assertSeeInOrder(array $values, $escaped = true);
 
 <a name="assert-see-text"></a>
 #### assertSeeText
 
-Yêu cầu chuỗi đã cho có trong text response:
+Yêu cầu chuỗi đã cho có trong text response. Yêu cầu này sẽ tự động thoát trừ khi bạn truyền một tham số thứ hai là `false`:
 
-    $response->assertSeeText($value);
+    $response->assertSeeText($value, $escaped = true);
 
 <a name="assert-see-text-in-order"></a>
 #### assertSeeTextInOrder
 
-Yêu cầu các chuỗi đã cho được chứa theo thứ tự trong response text:
+Yêu cầu các chuỗi đã cho được chứa theo thứ tự trong response text. Yêu cầu này sẽ tự động thoát trừ khi bạn truyền một tham số thứ hai là `false`:
 
-    $response->assertSeeTextInOrder(array $values);
+    $response->assertSeeTextInOrder(array $values, $escaped = true);
 
 <a name="assert-session-has"></a>
 #### assertSessionHas
@@ -650,6 +654,10 @@ Yêu cầu response trả về một status code lỗi không quyền truy cập
 Yêu cầu response view có chứa một phần dữ liệu:
 
     $response->assertViewHas($key, $value = null);
+
+Ngoài ra, view data có thể truy cập được dưới dạng các biến của mảng trong response:
+
+    $this->assertEquals('Taylor', $response['name']);
 
 <a name="assert-view-has-all"></a>
 #### assertViewHasAll

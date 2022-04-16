@@ -2,14 +2,14 @@
 
 - [Cấu trúc phiên bản](#versioning-scheme)
 - [Chính sách hỗ trợ](#support-policy)
-- [Laravel 6](#laravel-6)
+- [Laravel 7](#laravel-7)
 
 <a name="versioning-scheme"></a>
 ## Cấu trúc phiên bản
 
-Laravel và các package khác của nó tuân theo [Phiên bản Semantic](https://semver.org). Các phiên bản được phát hành chính thức của framework được phát hành sáu tháng một lần (tháng 2 và tháng 8), trong khi các bản phát hành nhỏ hơn và các bản sửa lỗi có thể được phát hành thường xuyên hơn, có thể là mỗi tuần. Các bản phát hành nhỏ và các bản sửa lỗi sẽ **không bao giờ** chứa các thay đổi mà có thể dẫn đến hệ thống của bạn bị lỗi.
+Laravel và các package khác của nó tuân theo [Phiên bản Semantic](https://semver.org). Các phiên bản được phát hành chính thức của framework được phát hành sáu tháng một lần (khoảng tháng 2 và khoảng tháng 8), trong khi các bản phát hành nhỏ hơn và các bản sửa lỗi có thể được phát hành thường xuyên hơn, có thể là mỗi tuần. Các bản phát hành nhỏ và các bản sửa lỗi sẽ **không bao giờ** chứa các thay đổi mà có thể dẫn đến hệ thống của bạn bị lỗi.
 
-Khi sủ dụng framework Laravel hoặc các component của nó từ application của bạn hoặc từ package, bạn phải luôn luôn sử dụng một ràng buộc phiên bản, chẳng hạn như là `^6.0`, Vì các bản phát hành chính thức của Laravel có thể chứa các thay đổi mà có thể làm hệ thống của bạn bị lỗi. Tuy nhiên, chúng tôi sẽ cố gắng đảm bảo rằng: bạn có thể cập nhật lên bản phát hành chính thức trong một ngày hoặc ít hơn.
+Khi sủ dụng framework Laravel hoặc các component của nó từ application của bạn hoặc từ package, bạn phải luôn luôn sử dụng một ràng buộc phiên bản, chẳng hạn như là `^7.0`, Vì các bản phát hành chính thức của Laravel có thể chứa các thay đổi mà có thể làm hệ thống của bạn bị lỗi. Tuy nhiên, chúng tôi sẽ cố gắng đảm bảo rằng: bạn có thể cập nhật lên bản phát hành chính thức trong một ngày hoặc ít hơn.
 
 <a name="support-policy"></a>
 ## Chính sách hỗ trợ
@@ -18,204 +18,383 @@ Khi sủ dụng framework Laravel hoặc các component của nó từ applicati
 
 | Version | Release | Bug Fixes Until | Security Fixes Until |
 | --- | --- | --- | --- |
-| 5.5 (LTS) | ngày 30 tháng 8 năm 2017 | ngày 30 tháng 8 năm 2019 | ngày 30 tháng 8 năm 2020 |
-| 5.6 | ngày 7 tháng 2 năm 2018 | ngày 7 tháng 8 năm 2018 | ngày 7 tháng 2 năm 2019 |
-| 5.7 | ngày 4 tháng 9 năm 2018 | ngày 4 tháng 3 năm 2019 | ngày 4 tháng 9 năm 2019 |
-| 5.8 | ngày 26 tháng 2 năm 2019 | ngày 26 tháng 8 năm 2019 | ngày 26 tháng 2 năm 2020 |
 | 6 (LTS) | ngày 3 tháng 9 năm 2019 | ngày 3 tháng 9 năm 2021 | ngày 3 tháng 9 năm 2022 |
+| 7 | March 3rd, 2020 | September 10th, 2020 | March 3rd, 2021 |
+| 8 | September 8th, 2020 | March 8th, 2021 | September 8th, 2021 |
 
-<a name="laravel-6"></a>
-## Laravel 6
+<a name="laravel-7"></a>
+## Laravel 7
 
-Laravel 6 (LTS) sẽ tiếp tục những cải tiến được thực hiện trong Laravel 5.8 bằng cách giới thiệu phiên bản semantic, khả năng tương thích với [Laravel Vapor](https://vapor.laravel.com), cải thiện response authorization, job middleware, lazy collection, cải tiến về subquery, tách các frontend scaffolding thành một package Composer `laravel/ui`, và một loạt các bản sửa lỗi và cải tiến khả năng sử dụng khác.
+Laravel 7 tiếp tục những cải tiến được thực hiện trong Laravel 6.x bằng cách giới thiệu thêm Laravel Sanctum, cải tiến tốc độ routing, tùy chỉnh Eloquent cast, Blade component tag, xử lý chuỗi, HTTP client sẽ tập trung vào nhà phát triển, hỗ trợ CORS của bên thứ nhất, cải thiện scoping cho các route model binding, tùy chỉnh stub, cải tiến database queue, multiple mail driver, truy vấn cast thời gian, lệnh `artisan test` mới, và một loạt các bản sửa lỗi và cải tiến khả năng sử dụng khác.
 
-### Semantic Versioning
+### Laravel Sanctum
 
-Package Laravel framework (`laravel/framework`) bây giờ sẽ tuân theo tiêu chuẩn [phiên bản semantic](https://semver.org/). Điều này làm cho framework nhất quán với các package khác của Laravel đã tuân thủ theo tiêu chuẩn phiên bản này. Chu kỳ phát hành phiên bản của Laravel sẽ không bị thay đổi.
+_Laravel Sanctum được xây dựng bởi [Taylor Otwell](https://github.com/taylorotwell)_.
 
-### Laravel Vapor Compatibility
+Laravel Sanctum cung cấp một hệ thống xác thực nhẹ cho các SPAs (các ứng dụng single page), ứng dụng di động và các API đơn giản dựa trên token. Sanctum cho phép mỗi người dùng ứng dụng của bạn tạo ra nhiều API token cho tài khoản của họ. Các token này có thể được cấp các quyền / phạm vi cụ thể cho các hành động mà token được phép thực hiện.
 
-_Laravel Vapor được xây dựng bởi [Taylor Otwell](https://github.com/taylorotwell)_.
+Để biết thêm thông tin về Laravel Sanctum, hãy tham khảo [tài liệu về Sanctum](/docs/{{version}}/sanctum).
 
-Laravel 6 cung cấp khả năng tương thích với [Laravel Vapor](https://vapor.laravel.com), một nền tảng triển khai tự động mở rộng cho Laravel mà không cần quản lý server . Vapor tổng hợp sự phức tạp của việc quản lý các ứng dụng Laravel trên AWS Lambda, cũng như giao tiếp các ứng dụng đó với hàng đợi SQS, cơ sở dữ liệu, Redis cluster, network, CloudFront CDN, vv...
+### Custom Eloquent Casts
 
-### Improved Exceptions Via Ignition
+_Tuỳ chỉnh Eloquent cast được đóng góp bởi [Taylor Otwell](https://github.com/taylorotwell)_.
 
-Laravel 6 sẽ đi kèm với [Ignition](https://github.com/facade/ignition), một trang hiển thi chi tiết về exception mã nguồn mở được tạo bởi Freek Van der Herten và Marcel Pociot. Ignition cung cấp nhiều lợi ích hơn so với các bản phát hành trước, chẳng hạn như cải tiến file lỗi Blade và xử lý số dòng, các giải pháp có thể chạy được cho các sự cố thường gặp, chỉnh sửa code, chia sẻ exception và một UX được cải tiến.
+Laravel có nhiều kiểu cast có sẵn và hữu ích; tuy nhiên, đôi khi bạn có thể cần phải định nghĩa thêm kiểu cast của riêng bạn. Giờ đây, bạn có thể thực hiện điều này bằng cách định nghĩa thêm một class implement interface `CastsAttributes`.
 
-### Improved Authorization Responses
-
-_Improved Authorization Responses đã được thực hiện bởi [Gary Green](https://github.com/garygreen)_.
-
-Trong các bản phát hành trước của Laravel, rất khó để lấy ra và hiển thị các thông báo authorization tùy chỉnh cho end user. Điều này khiến end user khó lý giải chính xác lý do tại sao một request lại bị từ chối. Trong Laravel 6, việc này giờ đây dễ dàng hơn nhiều bằng cách sử dụng các thông báo response authorization và phương thức `Gate::inspect` mới. Ví dụ: cho phương thức policy sau:
-
-    /**
-     * Determine if the user can view the given flight.
-     *
-     * @param  \App\User  $user
-     * @param  \App\Flight  $flight
-     * @return mixed
-     */
-    public function view(User $user, Flight $flight)
-    {
-        return $this->deny('Explanation of denial.');
-    }
-
-Có thể dễ dàng lấy ra response và thông báo của policy authorization bằng cách sử dụng phương thức `Gate::inspect`:
-
-    $response = Gate::inspect('view', $flight);
-
-    if ($response->allowed()) {
-        // User is authorized to view the flight...
-    }
-
-    if ($response->denied()) {
-        echo $response->message();
-    }
-
-Ngoài ra, các thông báo tùy chỉnh này sẽ được tự động trả về giao diện người dùng của bạn khi sử dụng các phương thức helper như `$this->authorize` hoặc `Gate::authorize` từ các route hoặc controller của bạn.
-
-### Job Middleware
-
-_Job middleware were implemented by [Taylor Otwell](https://github.com/taylorotwell)_.
-
-Job middleware cho phép bạn custom logic toàn bộ việc chạy các queued job, giảm việc viết code trong các job đó. Ví dụ: trong các bản phát hành trước của Laravel, bạn có thể đã bao bọc logic của phương thức `handle` của một job trong một lệnh callback có giới hạn tốc độ:
-
-    /**
-     * Execute the job.
-     *
-     * @return void
-     */
-    public function handle()
-    {
-        Redis::throttle('key')->block(0)->allow(1)->every(5)->then(function () {
-            info('Lock obtained...');
-
-            // Handle job...
-        }, function () {
-            // Could not obtain lock...
-
-            return $this->release(5);
-        });
-    }
-
-Trong Laravel 6, logic này có thể được mở rộng thành một job middleware, cho phép bạn giữ cho phương thức `handle` job của bạn không có bất kỳ trách nhiệm nào về giới hạn tốc độ:
+Các class implement interface này phải định nghĩa hai phương thức `get` và `set`. Phương thức `get` chịu trách nhiệm chuyển đổi một giá trị từ cơ sở dữ liệu thành một giá trị theo kiểu cast, trong khi phương thức `set` sẽ biến đổi một giá trị theo kiểu cast thành một giá trị có thể được lưu trữ được vào trong cơ sở dữ liệu. Ví dụ: chúng ta sẽ implement lại kiểu cast `json` có sẵn trong laravel dưới dạng một kiểu cast tùy chỉnh:
 
     <?php
 
-    namespace App\Jobs\Middleware;
+    namespace App\Casts;
 
-    use Illuminate\Support\Facades\Redis;
+    use Illuminate\Contracts\Database\Eloquent\CastsAttributes;
 
-    class RateLimited
+    class Json implements CastsAttributes
     {
         /**
-         * Process the queued job.
+         * Cast the given value.
          *
-         * @param  mixed  $job
-         * @param  callable  $next
-         * @return mixed
+         * @param  \Illuminate\Database\Eloquent\Model  $model
+         * @param  string  $key
+         * @param  mixed  $value
+         * @param  array  $attributes
+         * @return array
          */
-        public function handle($job, $next)
+        public function get($model, $key, $value, $attributes)
         {
-            Redis::throttle('key')
-                    ->block(0)->allow(1)->every(5)
-                    ->then(function () use ($job, $next) {
-                        // Lock obtained...
+            return json_decode($value, true);
+        }
 
-                        $next($job);
-                    }, function () use ($job) {
-                        // Could not obtain lock...
-
-                        $job->release(5);
-                    });
+        /**
+         * Prepare the given value for storage.
+         *
+         * @param  \Illuminate\Database\Eloquent\Model  $model
+         * @param  string  $key
+         * @param  array  $value
+         * @param  array  $attributes
+         * @return string
+         */
+        public function set($model, $key, $value, $attributes)
+        {
+            return json_encode($value);
         }
     }
 
-Sau khi tạo xong job middleware, chúng ta có thể được gắn chúng vào một job bằng cách trả lại chúng từ phương thức `middleware` của job:
+Khi bạn đã định nghĩa xpng một kiểu cast tùy chỉnh, bạn có thể gắn nó vào một thuộc tính của model bằng cách sử dụng tên class của nó:
 
-    use App\Jobs\Middleware\RateLimited;
+    <?php
 
-    /**
-     * Get the middleware the job should pass through.
-     *
-     * @return array
-     */
-    public function middleware()
+    namespace App;
+
+    use App\Casts\Json;
+    use Illuminate\Database\Eloquent\Model;
+
+    class User extends Model
     {
-        return [new RateLimited];
+        /**
+         * The attributes that should be cast to native types.
+         *
+         * @var array
+         */
+        protected $casts = [
+            'options' => Json::class,
+        ];
     }
 
-### Lazy Collections
+Để tìm hiểu thêm về cách viết các Eloquent cast tùy chỉnh, bao gồm cả các cast tùy chỉnh cho các giá trị đối tượng, vui lòng tham khảo [tài liệu về Eloquent](/docs/{{version}}/eloquent-mutators#custom-casts).
 
-_Lazy collection được thực hiện bởi [Joseph Silber](https://github.com/JosephSilber)_.
+### Blade Component Tags & Improvements
 
-Nhiều nhà phát triển đã thích thú với [các phương thức collection](https://laravel.com/docs/collections) mạnh mẽ của Laravel. Để bổ sung cho class `Collection` vốn đã mạnh mẽ, class `LazyCollection` sử dụng [generators](https://www.php.net/manual/en/language.generators.overview.php) của PHP để cho phép bạn làm việc với bộ dữ liệu rất lớn trong khi vẫn giữ mức sử dụng bộ nhớ thấp.
+_Blade component tag được đóng góp bởi [Spatie](https://spatie.be/), [Marcel Pociot](https://twitter.com/marcelpociot), [Caleb Porzio](https://twitter.com/calebporzio), [Dries Vints](https://twitter.com/driesvints), và [Taylor Otwell](https://github.com/taylorotwell)_.
 
-Ví dụ: hãy tưởng tượng ứng dụng của bạn cần xử lý file log nhiều gigabyte trong khi tận dụng các phương thức của Laravel để phân tích cú pháp log. Thay vì đọc toàn bộ file vào bộ nhớ cùng một lúc, lazy collection có thể được sử dụng để chỉ giữ một phần nhỏ của file vào trong bộ nhớ tại một thời điểm nhất định:
+> {tip} Các blade component đã được làm lại để cho phép việc hiển thị dựa trên tag, quản lý thuộc tính, các component class, các component inline view và hơn thế nữa. Vì việc làm lại các blade component rất rộng, nên vui lòng tham khảo [tài liệu đầy đủ về component blade](/docs/{{version}}/blade#components) để tìm hiểu về các tính năng này.
 
-    use App\LogEntry;
-    use Illuminate\Support\LazyCollection;
+Tóm lại, một component bây giờ có thể có một class được liên kết với một loạt dữ liệu chỉ định mà nó chấp nhận. Tất cả các thuộc tính và phương thức công khai được định nghĩa trên class component sẽ tự động được cung cấp cho view component. Bất kỳ thuộc tính HTML thêm mới nào được chỉ định trong component đều có thể được quản lý bằng biến `$attributes` có sẵn trong component, là một instance chứa nhiều thuộc tính.
 
-    LazyCollection::make(function () {
-        $handle = fopen('log.txt', 'r');
+Trong ví dụ này, chúng ta sẽ giả định rằng component `App\View\Components\Alert` đã được định nghĩa như sau:
 
-        while (($line = fgets($handle)) !== false) {
-            yield $line;
+    <?php
+
+    namespace App\View\Components;
+
+    use Illuminate\View\Component;
+
+    class Alert extends Component
+    {
+        /**
+         * The alert type.
+         *
+         * @var string
+         */
+        public $type;
+
+        /**
+         * Create the component instance.
+         *
+         * @param  string  $type
+         * @return void
+         */
+        public function __construct($type)
+        {
+            $this->type = $type;
         }
-    })
-    ->chunk(4)
-    ->map(function ($lines) {
-        return LogEntry::fromLines($lines);
-    })
-    ->each(function (LogEntry $logEntry) {
-        // Process the log entry...
-    });
 
-Hoặc, hãy tưởng tượng bạn cần lặp 10.000 model Eloquent. Khi sử dụng collection truyền thống của Laravel, tất cả 10.000 model Eloquent sẽ được load vào trong bộ nhớ cùng một lúc:
+        /**
+         * Get the class for the given alert type.
+         *
+         * @return string
+         */
+        public function classForType()
+        {
+            return $this->type == 'danger' ? 'alert-danger' : 'alert-warning';
+        }
 
-    $users = App\User::all()->filter(function ($user) {
-        return $user->id > 500;
-    });
-
-Tuy nhiên, trong laravel 6, phương thức `cursor` của query builder sẽ trả về một instance `LazyCollection`. Điều này cho phép bạn vẫn chạy một truy vấn duy nhất đối với cơ sở dữ liệu nhưng cũng chỉ giữ một model Eloquent được load vào trong bộ nhớ tại một thời điểm. Trong ví dụ này, lệnh callback `filter` không được thực thi cho đến khi chúng ta thực sự lặp từng user, cho phép giảm đáng kể mức sử dụng bộ nhớ:
-
-    $users = App\User::cursor()->filter(function ($user) {
-        return $user->id > 500;
-    });
-
-    foreach ($users as $user) {
-        echo $user->id;
+        /**
+         * Get the view / contents that represent the component.
+         *
+         * @return \Illuminate\View\View|string
+         */
+        public function render()
+        {
+            return view('components.alert');
+        }
     }
 
-### Eloquent Subquery Enhancements
+Và, giả sử template blade của component đã được định nghĩa như sau:
 
-_Các cải tiến Eloquent subquery đã được thực hiện bởi [Jonathan Reinink](https://github.com/reinink)_.
+    <!-- /resources/views/components/alert.blade.php -->
 
-Laravel 6 giới thiệu một số nâng cấp và cải tiến mới để hỗ trợ subquery cơ sở dữ liệu. Ví dụ, hãy tưởng tượng rằng chúng ta có một bảng các chuyến bay `destinations` và một bảng `flights` đến các destination. Bảng `flights` chứa một cột `arrived_at` cho biết thời điểm chuyến bay đến dest
-Sử dụng chức năng select của subquery mới trong Laravel 6, chúng ta có thể lấy ra tất cả các `destinations` và tên của chuyến bay đã đến điểm đến đó gần đây nhất chỉ bằng một câu lệnh truy vấn duy nhất:
+    <div class="alert {{ $classForType }}" {{ $attributes }}>
+        {{ $heading }}
 
-    return Destination::addSelect(['last_flight' => Flight::select('name')
-        ->whereColumn('destination_id', 'destinations.id')
-        ->orderBy('arrived_at', 'desc')
-        ->limit(1)
+        {{ $slot }}
+    </div>
+
+Component có thể được tạo trong view blade khác bằng cách sử dụng tag của component:
+
+    <x-alert type="error" class="mb-4">
+        <x-slot name="heading">
+            Alert content...
+        </x-slot>
+
+        Default slot content...
+    </x-alert>
+
+Như đã đề cập, đây chỉ là một ví dụ rất nhỏ về chức năng của component blade trong Laravel 7 và không thể hiện các component ẩn, component inline view và nhiều tính năng khác. Vui lòng tham khảo thêm [tài liệu đầy đủ về component blade](/docs/{{version}}/blade#components) để tìm hiểu thêm về các tính năng này.
+
+> {note} Cú pháp `@component` trước đó của component blade sẽ chưa và sẽ không bị xóa.
+
+### HTTP Client
+
+_HTTP client là một wrapper của thư viện Guzzle và được đóng góp bởi [Adam Wathan](https://twitter.com/adamwathan), [Jason McCreary](https://twitter.com/gonedark), và [Taylor Otwell](https://github.com/taylorotwell)_.
+
+Laravel cung cấp một API nhỏ, rõ ràng dựa trên thư viện [Guzzle HTTP client](http://docs.guzzlephp.org/en/stable/), cho phép bạn nhanh chóng thực hiện các HTTP request giao tiếp với các ứng dụng web khác. API này tập trung vào các trường hợp sử dụng phổ biến và giúp tăng trải nghiệm tuyệt vời dành cho nhà phát triển. Ví dụ: client có thể dễ dàng tạo ra một `POST` request và thêm dữ liệu JSON:
+
+    use Illuminate\Support\Facades\Http;
+
+    $response = Http::withHeaders([
+        'X-First' => 'foo',
+        'X-Second' => 'bar'
+    ])->post('http://test.com/users', [
+        'name' => 'Taylor',
+    ]);
+
+    return $response['id'];
+
+Ngoài ra, HTTP client cũng cung cấp các chức năng testing tuyệt vời, tiện dụng:
+
+    Http::fake([
+        // Stub a JSON response for GitHub endpoints...
+        'github.com/*' => Http::response(['foo' => 'bar'], 200, ['Headers']),
+
+        // Stub a string response for Google endpoints...
+        'google.com/*' => Http::response('Hello World', 200, ['Headers']),
+
+        // Stub a series of responses for Facebook endpoints...
+        'facebook.com/*' => Http::sequence()
+                                ->push('Hello World', 200)
+                                ->push(['foo' => 'bar'], 200)
+                                ->pushStatus(404),
+    ]);
+
+Để tìm hiểu thêm về tất cả các tính năng của HTTP client, vui lòng tham khảo thêm [tài liệu về HTTP client](/docs/{{version}}/http-client).
+
+### Fluent String Operations
+
+_Xử lý chuỗi được đóng góp bởi [Taylor Otwell](https://github.com/taylorotwell)_.
+
+Có thể bạn đã quen thuộc với class `Illuminate\Support\Str` hiện có của Laravel, class này cung cấp nhiều chức năng xử lý chuỗi hữu ích. Laravel 7 bây giờ cung cấp một thư viện xử lý chuỗi hoàn thiện hơn, hướng đối tượng hơn được xây dựng dựa trên các hàm này. Bạn có thể tạo ra một đối tượng `Illuminate\Support\Stringable` bằng cách sử dụng phương thức `Str::of`. Sau đó, nhiều phương thức có thể được kết hợp vào trong đối tượng để xử lý chuỗi:
+
+    return (string) Str::of('  Laravel Framework 6.x ')
+                        ->trim()
+                        ->replace('6.x', '7.x')
+                        ->slug();
+
+Để biết thêm thông tin về các phương thức có sẵn để xử lý chuỗi, vui lòng tham khảo [tài liệu đầy đủ](/docs/{{version}}/helpers#fluent-strings) của nó.
+
+### Route Model Binding Improvements
+
+_Route model binding đã được cải tiến và được đóng góp bởi [Taylor Otwell](https://github.com/taylorotwell)_.
+
+#### Key Customization
+
+Thỉnh thoảng bạn có thể muốn resolve các model Eloquent ra bằng cách sử dụng một cột khác, khác với cột `id`. Để làm như thế, Laravel 7 cho phép bạn chỉ định cột trong định nghĩa tham số route:
+
+    Route::get('api/posts/{post:slug}', function (App\Post $post) {
+        return $post;
+    });
+
+#### Automatic Scoping
+
+Thỉnh thoảng, khi liên kết ngầm nhiều model Eloquent trong một định nghĩa route, bạn có thể muốn scope model Eloquent thứ hai sao cho nó phải là con của model Eloquent thứ nhất. Ví dụ: hãy xem tình huống sau lấy ra một bài đăng trong blog bằng slug cho một user cụ thể:
+
+    use App\Post;
+    use App\User;
+
+    Route::get('api/users/{user}/posts/{post:slug}', function (User $user, Post $post) {
+        return $post;
+    });
+
+Khi sử dụng liên kết ngầm có key tùy biến làm một tham số route lồng nhau, Laravel 7 sẽ tự động scope truy vấn để lấy ra các model lồng nhau thông qua cha của nó bằng cách sử dụng các quy ước để đặt tên quan hệ trên cha. Trong trường hợp này, sẽ giả định rằng model `User` có một quan hệ có tên là `posts` (số nhiều của tên tham số route) có thể được sử dụng để lấy ra model `Post`.
+
+Để biết thêm thông tin về route model binding, vui lòng tham khảo [tài liệu định route](/docs/{{version}}/routing#route-model-binding).
+
+### Multiple Mail Drivers
+
+_Multiple mail driver đã được hỗ trợ và được đóng góp bởi [Taylor Otwell](https://github.com/taylorotwell)_.
+
+Laravel 7 allows the confi
+Laravel 7 cho phép cấu hình nhiều "mailers" trong một ứng dụng. Mỗi mailers được cấu hình trong file cấu hình `mail` có thể có thêm các tùy chọn riêng nó hoặc thậm chí là một "transport" của riêng nó, cho phép ứng dụng của bạn sử dụng các dịch vụ email khác nhau để gửi một số email nhất định. Ví dụ: ứng dụng của bạn có thể sử dụng Postmark để gửi mail giao dịch trong khi sử dụng Amazon SES để gửi các mail hàng loạt.
+
+Mặc định, Laravel sẽ sử dụng mailer được cấu hình làm mailer `default` trong file cấu hình` mail` của bạn. Tuy nhiên, bạn có thể sử dụng phương thức `mailer` để gửi một message với một cấu hình mailer cụ thể:
+
+    Mail::mailer('postmark')
+            ->to($request->user())
+            ->send(new OrderShipped($order));
+
+### Route Caching Speed Improvements
+
+_Route caching đã được cải thiện về tốc độ và được đóng góp bởi cộng đồng [Symfony](https://symfony.com) và [Dries Vints](https://twitter.com/driesvints)_.
+
+Laravel 7 có chứa một phương thức mới để tìm các route đã được biên dịch, được lưu trong bộ nhớ cache bằng cách sử dụng lệnh Artisan `route:cache`. Trên các ứng dụng lớn (ví dụ: ứng dụng có 800 route trở lên), những cải thiện này có thể dẫn đến cải thiện về tốc độ nhanh hơn **2 lần** trong các request trên mỗi giây với một ví dụ "Hello World" đơn giản. Và không cần thay đổi ứng dụng của bạn.
+
+### CORS Support
+
+_Hỗ trợ CORS được đóng góp bởi [Barry vd. Heuvel](https://twitter.com/barryvdh)_.
+
+Laravel 7 có hỗ trợ cấu hình phản hồi request Cross-Origin Resource Sharing (CORS) `OPTIONS` bằng cách tích hợp package Laravel CORS được viết bởi Barry vd. Heuvel. Một cấu hình `cors` mới đã được thêm vào trong [framework laravel mặc định](https://github.com/laravel/laravel/blob/develop/config/cors.php).
+
+Để biết thêm thông tin về hỗ trợ CORS trong Laravel 7.x, vui lòng tham khảo thêm [tài liệu CORS](/docs/{{version}}/routing#cors).
+
+### Query Time Casts
+
+_Query time casting được đóng góp bởi [Matt Barlow](https://github.com/mpbarlow)_.
+
+Thỉnh thoảng bạn có thể cần phải áp dụng các cast trong khi thực hiện một query, chẳng hạn như khi chọn một giá trị thô từ một bảng. Ví dụ: hãy xem xét query sau:
+
+    use App\Post;
+    use App\User;
+
+    $users = User::select([
+        'users.*',
+        'last_posted_at' => Post::selectRaw('MAX(created_at)')
+                ->whereColumn('user_id', 'users.id')
     ])->get();
 
-Ngoài ra, hàm `orderBy` của query builder cũng hỗ trợ các subquery. Chúng ta có thể sử dụng chức năng này để sắp xếp tất cả các điểm đến dựa trên thời điểm chuyến bay cuối cùng đến điểm đến đó. Một lần nữa, điều này có thể được thực hiện chỉ trong một truy vấn duy nhất đối với cơ sở dữ liệu:
+Thuộc tính `last_posted_at` trên kết quả của query này sẽ là một chuỗi thô. Sẽ rất tiện lợi nếu chúng ta có thể áp dụng một cast `date` cho thuộc tính này khi thực hiện query. Để thực hiện điều này, chúng ta có thể sử dụng phương thức `withCasts` được cung cấp bởi Laravel 7:
 
-    return Destination::orderByDesc(
-        Flight::select('arrived_at')
-            ->whereColumn('destination_id', 'destinations.id')
-            ->orderBy('arrived_at', 'desc')
-            ->limit(1)
-    )->get();
+    $users = User::select([
+        'users.*',
+        'last_posted_at' => Post::selectRaw('MAX(created_at)')
+                ->whereColumn('user_id', 'users.id')
+    ])->withCasts([
+        'last_posted_at' => 'date'
+    ])->get();
 
-### Laravel UI
+### MySQL 8+ Database Queue Improvements
 
-Scaffolding frontend thường được cung cấp với các bản phát hành trước của Laravel đã được mở rộng thành một package Composer `laravel/ui`. Điều này cho phép các UI scaffolding được phát triển và tạo ra các phiên bản riêng biệt với framework chính. Do sự thay đổi này, mặc định, không có code của Bootstrap hoặc Vue nào xuất hiện trong scaffolding framework và lệnh `make:auth` cũng đã được mở rộng từ framework.
+_MySQL database queue được cải tiến và được đóng góp bởi [Mohamed Said](https://github.com/themsaid)_.
 
-Để khôi phục lại scaffolding của Vue hoặc Bootstrap có trước đó trong các bản phát hành trước của Laravel, bạn có thể cài đặt package `laravel/ui` và sử dụng lệnh Artisan `ui` để cài đặt scaffolding frontend:
+Trong các bản phát hành trước của Laravel, queue `database` không được coi là đủ mạnh để sử dụng trong production, do deadlock. Tuy nhiên, Laravel 7 đã cung cấp các cải tiến cho các ứng dụng sử dụng MySQL 8+ dưới dạng queue được hỗ trợ cơ sở dữ liệu. Bằng cách sử dụng mệnh đề `FOR UPDATE SKIP LOCKED` và các cải tiến SQL khác, driver `database` bây giờ có thể được sử dụng một cách an toàn trong các ứng dụng production lớn.
 
-    composer require laravel/ui "^1.0" --dev
+### Artisan `test` Command
 
-    php artisan ui vue --auth
+_Lệnh `test` được đóng góp bởi [Nuno Maduro](https://twitter.com/enunomaduro)_.
+
+Ngoài lệnh `phpunit`, bây giờ bạn có thể sử dụng lệnh Artisan `test` để chạy các bài test của bạn. Trình chạy test của Artisan cung cấp một giao diện console đẹp mắt và nhiều thông tin hơn về các bài test đang được thực hiện. Ngoài ra, trình chạy này sẽ tự động dừng lại ở lần kiểm thử đầu tiên mà bị thất bại:
+
+    php artisan test
+
+<p align="center">
+<img src="https://laravel.com/img/docs/7x-release-notes-artisan-test-preview.png">
+</p>
+
+Bất kỳ tham số nào mà có thể được truyền vào cho lệnh `phpunit` thì cũng có thể được truyền vào cho lệnh Artisan `test`:
+
+    php artisan test --group=feature
+
+### Markdown Mail Template Improvements
+
+_Template markdown mail đã được cải tiến và được đóng góp bởi [Taylor Otwell](https://twitter.com/taylorotwell)_.
+
+Template markdown mail mặc định đã nhận được một thiết kế mới, hiện đại hơn dựa trên bảng màu của Tailwind CSS. Tất nhiên, template này có thể được export và tùy chỉnh theo nhu cầu ứng dụng của bạn:
+
+<p align="center">
+<img src="https://laravel.com/img/docs/7x-release-notes-notification-preview.png">
+</p>
+
+Để biết thêm thông tin về markdown mail, vui lòng tham khảo [tài liệu về mail](/docs/{{version}}/mail#markdown-mailables).
+
+### Stub Customization
+
+_Tuỳ chỉnh stub được đóng góp bởi [Taylor Otwell](https://twitter.com/taylorotwell)_.
+
+Lệnh `make` của Artisan console sẽ được sử dụng để tạo nhiều class khác nhau, chẳng hạn như controller, job, migration và các bài test. Các class này được tạo ra bằng cách sử dụng các file "stub" được điền sẵn các giá trị dựa trên đầu vào mà bạn đưa vào. Tuy nhiên, thỉnh thoảng bạn có thể muốn thực hiện các thay đổi nhỏ đối với các file do Artisan tạo ra. Để thực hiện điều này, Laravel 7 cung cấp một lệnh `stub:publish` để export ra các stub cơ bản nhất để tùy chỉnh:
+
+    php artisan stub:publish
+
+Các file stub đã được export sẽ nằm trong thư mục `stubs` trong thư mục gốc của ứng dụng của bạn. Bất kỳ thay đổi nào mà bạn thực hiện đối với các file stub này sẽ được phản ánh khi bạn tạo các class tương ứng khi sử dụng lệnh Artisan `make`.
+
+### Queue `maxExceptions` Configuration
+
+_Thuộc tính `maxExceptions` được đóng góp bởi [Mohamed Said](https://twitter.com/themsaid)_.
+
+Thỉnh thoảng bạn có thể muốn chỉ định một job có thể được thử lại nhiều lần, nhưng sẽ thất bại nếu trong các lần thử lại được kích hoạt bởi một số lượng exception nhất định. Trong Laravel 7, bạn có thể định nghĩa một thuộc tính `maxExceptions` trên class job của bạn:
+
+    <?php
+
+    namespace App\Jobs;
+
+    class ProcessPodcast implements ShouldQueue
+    {
+        /**
+         * The number of times the job may be attempted.
+         *
+         * @var int
+         */
+        public $tries = 25;
+
+        /**
+         * The maximum number of exceptions to allow before failing.
+         *
+         * @var int
+         */
+        public $maxExceptions = 3;
+
+        /**
+         * Execute the job.
+         *
+         * @return void
+         */
+        public function handle()
+        {
+            Redis::throttle('key')->allow(10)->every(60)->then(function () {
+                // Lock obtained, process the podcast...
+            }, function () {
+                // Unable to obtain lock...
+                return $this->release(10);
+            });
+        }
+    }
+
+Trong ví dụ này, job sẽ được giải phóng trong 10 giây nếu ứng dụng không thể lấy được Redis lock và sẽ tiếp tục được thử lại tối đa 25 lần. Tuy nhiên, job sẽ thất bại nếu job đưa ra quá ba exception.

@@ -5,6 +5,7 @@
 - [Bus Fake](#bus-fake)
 - [Event Fake](#event-fake)
     - [Scoped Event Fakes](#scoped-event-fakes)
+- [HTTP Fake](#http-fake)
 - [Mail Fake](#mail-fake)
 - [Notification Fake](#notification-fake)
 - [Queue Fake](#queue-fake)
@@ -77,7 +78,8 @@ Thay cho việc làm giả, bạn có thể sử dụng phương thức `fake` c
 
             // Perform order shipping...
 
-            Bus::assertDispatched(ShipOrder::class, function ($job) use ($order) {
+            // Assert a specific type of job was dispatched meeting the given truth test...
+            Bus::assertDispatched(function (ShipOrder $job) use ($order) {
                 return $job->order->id === $order->id;
             });
 
@@ -113,8 +115,9 @@ Thay cho việc làm giả, bạn có thể sử dụng phương thức `fake` c
 
             // Perform order shipping...
 
-            Event::assertDispatched(OrderShipped::class, function ($e) use ($order) {
-                return $e->order->id === $order->id;
+            // Assert a specific type of event was dispatched meeting the given truth test...
+            Event::assertDispatched(function (OrderShipped $event) use ($order) {
+                return $event->order->id === $order->id;
             });
 
             // Assert an event was dispatched twice...
@@ -184,6 +187,11 @@ Nếu bạn chỉ muốn làm giả một event listener trong một phần bài
         }
     }
 
+<a name="http-fake"></a>
+## HTTP Fake
+
+Phương thức `fake` của facade `Http` cho phép bạn hướng dẫn HTTP client trả về các stubbed hoặc dummy response khi một request được tạo. Để biết thêm thông tin chi tiết về việc faking các request HTTP được gửi đi, vui lòng tham khảo [tài liệu testing HTTP Client](/docs/{{version}}/http-client#testing).
+
 <a name="mail-fake"></a>
 ## Mail Fake
 
@@ -210,7 +218,8 @@ Bạn có thể sử dụng phương thức `fake` của facade `Mail` để ng�
 
             // Perform order shipping...
 
-            Mail::assertSent(OrderShipped::class, function ($mail) use ($order) {
+            // Assert a specific type of mailable was dispatched meeting the given truth test...
+            Mail::assertSent(function (OrderShipped $mail) use ($order) {
                 return $mail->order->id === $order->id;
             });
 
@@ -261,10 +270,10 @@ Bạn có thể sử dụng phương thức `fake` của facade `Notification` �
 
             // Perform order shipping...
 
+            // Assert a specific type of notification was sent meeting the given truth test...
             Notification::assertSentTo(
                 $user,
-                OrderShipped::class,
-                function ($notification, $channels) use ($order) {
+                function (OrderShipped $notification, $channels) use ($order) {
                     return $notification->order->id === $order->id;
                 }
             );
@@ -323,7 +332,8 @@ Thay cho việc làm giả, bạn có thể sử dụng phương thức `fake` c
 
             // Perform order shipping...
 
-            Queue::assertPushed(ShipOrder::class, function ($job) use ($order) {
+            // Assert a specific type of job was pushed meeting the given truth test...
+            Queue::assertPushed(function (ShipOrder $job) use ($order) {
                 return $job->order->id === $order->id;
             });
 

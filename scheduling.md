@@ -106,12 +106,19 @@ Method  | Description
 ------------- | -------------
 `->cron('* * * * *');`  |  Chạy task theo một tùy chỉnh Cron schedule
 `->everyMinute();`  |  Chạy task mỗi phút
+`->everyTwoMinutes();`  |  Chạy task hai phút một lần
+`->everyThreeMinutes();`  |  Chạy task ba phút một lần
+`->everyFourMinutes();`  |  Chạy task bốn phút một lần
 `->everyFiveMinutes();`  |  Chạy task năm phút một lần
 `->everyTenMinutes();`  |   Chạy task mười phút một lần
 `->everyFifteenMinutes();`  |   Chạy task mười lăm phút một lần
 `->everyThirtyMinutes();`  |   Chạy task ba mươi phút một lần
 `->hourly();`  |   Chạy task một giờ một lần
 `->hourlyAt(17);`  |  Chạy task một giờ một lần vào phút thứ 17
+`->everyTwoHours();`  |  Chạy task hai giờ một lần
+`->everyThreeHours();`  |  Chạy task ba giờ một lần
+`->everyFourHours();`  |  Chạy task bốn giờ một lần
+`->everySixHours();`  | Chạy task sáu giờ một lần
 `->daily();`  |  Chạy task hàng ngày
 `->dailyAt('13:00');`  |  Chạy task hàng ngày vào lúc 13:00
 `->twiceDaily(1, 13);`  | Chạy task hàng ngày vào lúc 1:00 và 13:00
@@ -119,6 +126,7 @@ Method  | Description
 `->weeklyOn(1, '8:00');`  |  Chạy task hàng tuần vào thứ hai lúc 8:00
 `->monthly();`  | Chạy task vào ngày đầu tiên của tháng lúc 00:00
 `->monthlyOn(4, '15:00');`  |  Chạy task hàng ngày vào ngày thứ 4 của tháng và vào lúc 15:00
+`->lastDayOfMonth('15:00');` | Chạy task vào ngày cuối dùng của tháng lúc 15:00
 `->quarterly();` |  Chạy task vào ngày đầu tiên của quý lúc 00:00
 `->yearly();`  | Chạy task vào ngày đầu tiên của năm lúc 00:00
 `->timezone('America/New_York');` | Set timezone
@@ -150,9 +158,18 @@ Method  | Description
 `->thursdays();`  |  Giới hạn task chỉ chạy vào thứ năm
 `->fridays();`  |  Giới hạn task chỉ chạy vào thứ sáu
 `->saturdays();`  |  Giới hạn task chỉ chạy vào thứ bảy
+`->days(array\|mixed);`  |  Giới hạn task chỉ chạy vào ngày cụ thể
 `->between($start, $end);`  | Giới hạn task chỉ chạy chỉ chạy vào giữa thời gian start và end
 `->when(Closure);`  |  Giới hạn task chỉ chạy trên một điều kiện đúng
 `->environments($env);`  |  Giới hạn task trong các môi trường cụ thể
+
+#### Day Constraints
+
+Phương thức `days` có thể được sử dụng để giới hạn việc thực hiện một task trong những ngày cụ thể có trong một tuần. Ví dụ: bạn có thể tạo lịch chạy một lệnh mỗi giờ vào ngày chủ nhật và thứ tư:
+
+    $schedule->command('reminders:send')
+                    ->hourly()
+                    ->days([0, 3]);
 
 #### Between Time Constraints
 
@@ -231,7 +248,7 @@ Nếu cần, bạn có thể chỉ định số phút mà sau khi task được 
 <a name="running-tasks-on-one-server"></a>
 ### Chạy task trên một server
 
-> {note} Để sử dụng tính năng này, ứng dụng của bạn phải sử dụng driver cache `memcached` hoặc `redis` làm driver cache mặc định của ứng dụng của bạn. Ngoài ra, tất cả các server phải được giao tiếp với cùng một server cache trung tâm.
+> {note} Để sử dụng tính năng này, ứng dụng của bạn phải sử dụng driver cache `database`, `memcached` hoặc `redis` làm driver cache mặc định của ứng dụng của bạn. Ngoài ra, tất cả các server phải được giao tiếp với cùng một server cache trung tâm.
 
 Nếu ứng dụng của bạn đang chạy trên nhiều server, bạn có thể giới hạn schedule job chỉ được chạy trên một server duy nhất. Ví dụ: giả sử bạn đang có một task schedule là tạo một báo cáo vào mỗi tối thứ Sáu. Nếu schedule của bạn đang chạy trên ba server worker, thì task schedule sẽ được chạy trên cả ba server và tạo báo cáo ba lần. Không tốt!
 

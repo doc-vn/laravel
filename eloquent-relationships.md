@@ -14,12 +14,14 @@
     - [Một - Nhiều](#one-to-many-polymorphic-relations)
     - [Nhiều - Nhiều](#many-to-many-polymorphic-relations)
     - [Tuỳ biến quan hệ đa hình](#custom-polymorphic-types)
+    - [Quan hệ động](#dynamic-relationships)
 - [Query theo quan hệ](#querying-relations)
     - [Phương thức quan hệ và thuộc tính động](#relationship-methods-vs-dynamic-properties)
     - [Query quan hệ tồn tại](#querying-relationship-existence)
     - [Query quan hệ không tồn tại](#querying-relationship-absence)
     - [Query quan hệ đa hình](#querying-polymorphic-relationships)
     - [Đếm các bản ghi theo quan hệ model](#counting-related-models)
+    - [Đếm model quan hệ trên quan hệ đa hình](#counting-related-models-on-polymorphic-relationships)
 - [Eager Loading](#eager-loading)
     - [Rằng buộc khi eager loading](#constraining-eager-loads)
     - [Lazy Eager Loading](#lazy-eager-loading)
@@ -433,35 +435,39 @@ Nếu bạn đã định nghĩa một quan hệ nhiều-nhiều sử dụng mode
 ### Quan hệ thông qua liên kết một
 
 Các quan hệ "thông-qua-liên-kết-một" là liên kết các model thông qua một quan hệ trung gian duy nhất.
-Ví dụ: nếu mỗi nhà cung cấp có một người dùng và mỗi người dùng lại được liên kết với một bản ghi lại lịch sử người dùng, thì model nhà cung cấp có thể truy cập vào lịch sử của người dùng _through(thông qua)_ người dùng. Hãy xem các bảng cơ sở dữ liệu sau để định nghĩa mối quan hệ này:
 
-    users
+Ví dụ: trong ứng dụng cửa hàng sửa chữa xe, mỗi `Mechanic` có thể có một `Car` và mỗi một `Car` có thể có một `Owner`. Trong khi `Mechanic` và `Owner` không có kết nối trực tiếp với nhau, thì `Mechanic` có thể truy cập vào chính `Owner` đó _thông qua_ `Car`. Hãy xem các bảng cần thiết để định nghĩa quan hệ này:
+
+    mechanics
         id - integer
-        supplier_id - integer
+        name - string
 
-    suppliers
+    cars
         id - integer
+        model - string
+        mechanic_id - integer
 
-    history
+    owners
         id - integer
-        user_id - integer
+        name - string
+        car_id - integer
 
-Mặc dù bảng `history` không chứa cột `supplier_id`, nhưng quan hệ `hasOneThrough` có thể cung cấp quyền truy cập vào lịch sử của người dùng ở model nhà cung cấp. Vậy chúng ta đã kiểm tra xong cấu trúc bảng cho quan hệ này, bây giờ hãy định nghĩa nó trên model `Supplier`:
+Vậy chúng ta đã kiểm tra xong cấu trúc bảng cho quan hệ này, bây giờ hãy định nghĩa nó trên model `Mechanic`:
 
-    <?php
+   <?php
 
     namespace App;
 
     use Illuminate\Database\Eloquent\Model;
 
-    class Supplier extends Model
+    class Mechanic extends Model
     {
         /**
-         * Get the user's history.
+         * Get the car's owner.
          */
-        public function userHistory()
+        public function carOwner()
         {
-            return $this->hasOneThrough('App\History', 'App\User');
+            return $this->hasOneThrough('App\Owner', 'App\Car');
         }
     }
 
@@ -469,20 +475,20 @@ Tham số đầu tiên được truyền cho phương thức `hasOneThrough` là
 
 Các quy ước khóa ngoại Eloquent mặc định sẽ được sử dụng khi thực hiện các truy vấn cho các quan hệ. Nếu bạn muốn tùy chỉnh các khóa cho các quan hệ này, bạn có thể truyền chúng làm tham số thứ ba và thứ tư của phương thức `hasOneThrough`. Tham số thứ ba là tên của khóa ngoại trên model trung gian. Tham số thứ tư là tên của khóa ngoại trên model cuối cùng. Tham số thứ năm là khóa local, trong khi tham số thứ sáu là khóa local của model trung gian:
 
-    class Supplier extends Model
+    class Mechanic extends Model
     {
         /**
-         * Get the user's history.
+         * Get the car's owner.
          */
-        public function userHistory()
+        public function carOwner()
         {
             return $this->hasOneThrough(
-                'App\History',
-                'App\User',
-                'supplier_id', // Foreign key on users table...
-                'user_id', // Foreign key on history table...
-                'id', // Local key on suppliers table...
-                'id' // Local key on users table...
+                'App\Owner',
+                'App\Car',
+                'mechanic_id', // Foreign key on cars table...
+                'car_id', // Foreign key on owners table...
+                'id', // Local key on mechanics table...
+                'id' // Local key on cars table...
             );
         }
     }
@@ -631,7 +637,15 @@ Bạn cũng có thể lấy ra model gốc từ model đa hình bằng cách tru
 
     $imageable = $image->imageable;
 
-Quan hệ `imageable` trên model `Image` sẽ trả về một instance `Post` hoặc `User`, tùy thuộc vào loại model nào sở hữu image đó.
+Quan hệ `imageable` trên model `Image` sẽ trả về một instance `Post` hoặc `User`, tùy thuộc vào loại model mà sở hữu image đó. Nếu bạn cần chỉ định một cột `type` và `id` tùy biến cho mối quan hệ `morphTo`, hãy luôn đảm bảo là bạn đã truyền tên quan hệ (khớp với tên phương thức) làm tham số đầu tiên:
+
+    /**
+     * Get the model that the image belongs to.
+     */
+    public function imageable()
+    {
+        return $this->morphTo(__FUNCTION__, 'imageable_type', 'imageable_id');
+    }
 
 <a name="one-to-many-polymorphic-relations"></a>
 ### Một - Nhiều (đa hình)
@@ -825,6 +839,28 @@ Bạn có thể đăng ký `morphMap` trong hàm `boot` của `AppServiceProvide
 
 > {note} Khi thêm một "morph map" vào ứng dụng hiện có của bạn, mọi giá trị của cột morphable `*_type` trong cơ sở dữ liệu của bạn vẫn sẽ chứa tên đầy đủ của class đó và nó sẽ cần được chuyển đổi thành tên "map" của nó.
 
+Bạn có thể xác định bí danh morph của một model trong khi ứng dụng đang chạy bằng cách sử dụng phương thức `getMorphClass`. Ngược lại, bạn cũng có thể xác định tên class được liên kết với bí danh morph bằng cách sử dụng phương thức `Relation::getMorphedModel`:
+
+    use Illuminate\Database\Eloquent\Relations\Relation;
+
+    $alias = $post->getMorphClass();
+
+    $class = Relation::getMorphedModel($alias);
+
+<a name="dynamic-relationships"></a>
+### Quan hệ động
+
+Bạn có thể sử dụng phương thức `resolveRelationUsing` để định nghĩa các quan hệ giữa các model Eloquent trong khi ứng dụng đang chạy. Mặc dù phương thức này thường không được khuyến nghị khi phát triển ứng dụng thông thường, nhưng điều này đôi khi có thể hữu ích khi phát triển các package Laravel:
+
+    use App\Order;
+    use App\Customer;
+
+    Order::resolveRelationUsing('customer', function ($orderModel) {
+        return $orderModel->belongsTo(Customer::class, 'customer_id');
+    });
+
+> {note} Khi định nghĩa quan hệ động, hãy luôn đảm bảo là bạn đã cung cấp các tham số tên khóa cho các phương thức quan hệ Eloquent.
+
 <a name="querying-relations"></a>
 ## Query theo quan hệ
 
@@ -943,7 +979,7 @@ Nếu bạn cần nhiều hơn thế nữa, bạn có thể sử dụng các ph�
         $query->where('content', 'like', 'foo%');
     })->get();
 
-Bạn có thể sử dụng ký hiệu "dấu chấm" để thực hiện truy vấn các mối quan hệ lồng nhau. Ví dụ: truy vấn sau sẽ lấy ra tất cả các bài đăng mà có nhận xét từ các tác giả không bị cấm:
+Bạn có thể sử dụng ký hiệu "dấu chấm" để thực hiện truy vấn các mối quan hệ lồng nhau. Ví dụ: truy vấn sau sẽ lấy ra tất cả các bài đăng không có nhận xét và các bài đăng đó có các nhận xét từ các tác giả không bị cấm:
 
     use Illuminate\Database\Eloquent\Builder;
 
@@ -1056,6 +1092,34 @@ Nếu bạn cần set thêm các ràng buộc truy vấn cho các truy vấn eag
     $book->loadCount(['reviews' => function ($query) {
         $query->where('rating', 5);
     }])
+
+<a name="counting-related-models-on-polymorphic-relationships"></a>
+### Đếm model quan hệ trên quan hệ đa hình
+
+Nếu bạn muốn eager load một quan hệ `morphTo`, cũng như đếm số lượng quan hệ lồng nhau đó trên các thực thể khác nhau có thể được trả về bởi quan hệ đó, bạn có thể sử dụng phương thức `with` kết hợp với phương thức `morphWithCount` của quan hệ `morphTo`.
+
+Trong ví dụ này, giả sử model `Photo` và `Post` có thể tạo model `ActivityFeed`. Ngoài ra, giả sử rằng model `Photo` được liên kết với model `Tag` và model `Post` cũng được liên kết với model `Comment`.
+
+Bằng cách sử dụng các định nghĩa và các quan hệ model này, chúng ta có thể lấy ra các instance model `ActivityFeed` và eager load tất cả các model `parentable` và đếm số lượng các mối quan hệ lồng nhau tương ứng của chúng:
+
+    use Illuminate\Database\Eloquent\Relations\MorphTo;
+
+    $activities = ActivityFeed::query()
+        ->with(['parentable' => function (MorphTo $morphTo) {
+            $morphTo->morphWithCount([
+                Photo::class => ['tags'],
+                Post::class => ['comments'],
+            ]);
+        }])->get();
+
+Ngoài ra, bạn có thể sử dụng phương thức `loadMorphCount` để eager load đếm tất cả các quan hệ lồng nhau trên các thực thể khác nhau của quan hệ đa hình nếu các model `ActivityFeed` đã được lấy ra:
+
+    $activities = ActivityFeed::with('parentable')
+        ->get()
+        ->loadMorphCount('parentable', [
+            Photo::class => ['tags'],
+            Post::class => ['comments'],
+        ]);
 
 <a name="eager-loading"></a>
 ## Eager Loading
@@ -1292,6 +1356,15 @@ Nếu bạn cần lưu nhiều model quan hệ trong cùng một lúc, bạn có
         new App\Comment(['message' => 'A new comment.']),
         new App\Comment(['message' => 'Another comment.']),
     ]);
+
+Phương thức `save` và `saveMany` sẽ không thêm model mới vào bất kỳ quan hệ nào mà đã được load trước đó vào model cha. Nếu bạn định truy cập vào quan hệ sau khi sử dụng phương thức `save` hoặc `saveMany`, bạn có thể sử dụng phương thức `refresh` để load lại model và các quan hệ của nó:
+
+    $post->comments()->save($comment);
+
+    $post->refresh();
+
+    // All comments, including the newly saved comment...
+    $post->comments;
 
 <a name="the-push-method"></a>
 #### Lưu đệ quy quan hệ và model

@@ -25,7 +25,7 @@ Tất cả các cấu hình worker của bạn được lưu trong một file c�
 
 Bạn có thể sử dụng Composer để cài đặt Horizon vào project Laravel của bạn:
 
-    composer require laravel/horizon ~3.0
+    composer require laravel/horizon
 
 Sau khi cài đặt Horizon, hãy export asset của nó bằng lệnh Artisan `horizon:install`:
 
@@ -46,7 +46,7 @@ Horizon cho phép bạn chọn từ ba chiến lược balance: `simple`, `auto`
 
 Chiến lược `auto` sẽ điều chỉnh số lượng process worker trên mỗi queue dựa trên khối lượng job hiện tại của queue. Ví dụ: nếu queue `notifications` của bạn có 1.000 job đang chờ trong khi queue `render` của bạn thì trống không làm gì, Horizon sẽ phân bổ nhiều worker hơn vào queue `notifications` của bạn cho đến khi nó trống. Khi tùy chọn `balance` là `false`, thì mặc định hành vi của Laravel sẽ được sử dụng, nó sẽ xử lý các queue theo thứ tự mà chúng được liệt kê trong cấu hình của bạn.
 
-Khi sử dụng chiến lược `auto`, vì bạn có thể định nghĩa các tùy chọn cấu hình `minProcesses` và `maxProcesses` để kiểm soát số lượng process tối thiểu và tối đa mà Horizon sẽ tăng hoặc giảm thành. Giá trị `minProcesses` sẽ chỉ định số lượng process tối thiểu có trong mỗi queue, trong khi giá trị `maxProcesses` sẽ chỉ định số lượng process tối đa có trong tất cả các queue:
+Khi sử dụng chiến lược `auto`, vì bạn có thể định nghĩa các tùy chọn cấu hình `minProcesses` và `maxProcesses` để kiểm soát số lượng process tối thiểu và tối đa mà Horizon sẽ tăng hoặc giảm thành:
 
     'environments' => [
         'production' => [
@@ -98,9 +98,19 @@ Trong file `app/Providers/HorizonServiceProvider.php` của bạn, có một ph�
 
 Khi nâng cấp lên phiên bản mới của Horizon, điều quan trọng là bạn phải xem kỹ [hướng dẫn nâng cấp](https://github.com/laravel/horizon/blob/master/UPGRADE.md).
 
-Ngoài ra, bạn nên export lại assets của Horizon:
+Ngoài ra, khi bạn nâng cấp lên bất kỳ phiên bản Horizon mới nào, bạn nên export lại assets của Horizon:
 
-    php artisan horizon:assets
+    php artisan horizon:publish
+
+Để giữ cập nhật các file asset và tránh các sự cố trong tương lai, bạn có thể thêm một lệnh vào trong tập lệnh `post-update-cmd` trong file `composer.json` của bạn:
+
+    {
+        "scripts": {
+            "post-update-cmd": [
+                "@php artisan horizon:publish --ansi"
+            ]
+        }
+    }
 
 <a name="running-horizon"></a>
 ## Chạy Horizon
@@ -253,6 +263,7 @@ Bạn có thể cài đặt số giây thì sẽ được coi là "chờ lâu" t
 
     'waits' => [
         'redis:default' => 60,
+        'redis:critical,high' => 90,
     ],
 
 <a name="metrics"></a>

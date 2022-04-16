@@ -16,6 +16,7 @@
     - [Database Snapshots](#database-snapshots)
     - [Adding Additional Sites](#adding-additional-sites)
     - [Biến environment](#environment-variables)
+    - [Wildcard SSL](#wildcard-ssl)
     - [Cấu hình Cron Schedules](#configuring-cron-schedules)
     - [Cấu hình Mailhog](#configuring-mailhog)
     - [Cấu hình Minio](#configuring-minio)
@@ -70,7 +71,7 @@ Homestead có thể chạy trên nhiều hệ điều hành Windows, Mac, hoặc
 - MySQL
 - lmm for MySQL or MariaDB database snapshots
 - Sqlite3
-- PostgreSQL
+- PostgreSQL (9.6, 10, 11, 12)
 - Composer
 - Node (With Yarn, Bower, Grunt, and Gulp)
 - Redis
@@ -230,6 +231,18 @@ Nếu bạn muốn thay đổi thuộc tính `sites` khi Homestead đã được
 
 > {note} Các script Homestead được xây dựng sao cho phù hợp nhất có thể. Tuy nhiên, nếu bạn đang gặp sự cố trong khi cấp phép, bạn nên xoá và build lại một máy ảo thông qua `vagrant destroy && vagrant up`.
 
+#### Bật hoặc tắt service
+
+Homestead mặc định chạy một số service; tuy nhiên, bạn có thể tùy chỉnh các service nào sẽ được bật hoặc tắt trong quá trình provisioning. Ví dụ: bạn có thể bật PostgreSQL và tắt MySQL:
+
+    services:
+        - enabled:
+            - "postgresql@12-main"
+        - disabled:
+            - "mysql"
+
+Các service cụ thể sẽ được chạy hoặc dừng lại dựa theo thứ tự của chúng trong lệnh `enabled` và `disabled`.
+
 <a name="hostname-resolution"></a>
 #### Hostname Resolution
 
@@ -288,7 +301,7 @@ Các phần mềm tùy chọn sẽ được cài đặt bằng cách sử dụng
         - crystal: true
         - docker: true
         - elasticsearch:
-            version: 7
+            version: 7.9.0
         - gearman: true
         - golang: true
         - grafana: true
@@ -460,6 +473,22 @@ Bạn có thể set biến môi trường global bằng cách thêm chúng vào 
 
 Sau khi đã cập nhật xong file `Homestead.yaml`, hãy tải lại provision cho máy ảo bằng lệnh `vagrant reload --provision`. Lệnh này sẽ cập nhật cấu hình PHP-FPM cho tất cả các phiên bản PHP đã cài đặt và cũng cập nhật môi trường cho user `vagrant`.
 
+<a name="wildcard-ssl"></a>
+### Wildcard SSL
+
+Homestead cấu hình chứng chỉ SSL self-signed cho mỗi trang web được định nghĩa trong phần `sites:` của file `Homestead.yaml` của bạn. Nếu bạn muốn tạo một wildcard SSL cho một trang web, bạn có thể thêm một tùy chọn `wildcard` vào cấu hình của trang web đó. Mặc định, trang web đó sẽ sử dụng chứng chỉ wildcard *thay vì* một chứng chỉ cho một tên miền cụ thể:
+
+    - map: foo.domain.test
+      to: /home/vagrant/domain
+      wildcard: "yes"
+
+Nếu tùy chọn `use_wildcard` được set thành `no`, thì chứng chỉ wildcard sẽ được tạo nhưng sẽ không được sử dụng:
+
+    - map: foo.domain.test
+      to: /home/vagrant/domain
+      wildcard: "yes"
+      use_wildcard: "no"
+
 <a name="configuring-cron-schedules"></a>
 ### Cấu hình schedule cho Cron
 
@@ -479,7 +508,7 @@ Cron job cho site sẽ được thiết lập trong thư mục `/etc/cron.d` tro
 
 Mailhog cho phép bạn dễ dàng gửi email đi và thực hiện việc kiểm tra quá trình gửi mail đó mà không cần phải thực sự gửi mail đến người dùng. Để bắt đầu, hãy cập nhật file `.env` của bạn sử dụng các cài đặt như sau:
 
-    MAIL_DRIVER=smtp
+    MAIL_MAILER=smtp
     MAIL_HOST=localhost
     MAIL_PORT=1025
     MAIL_USERNAME=null
@@ -506,7 +535,7 @@ Mặc định, Minio có sẵn trên cổng 9600. Bạn có thể truy cập và
         'region' => env('AWS_DEFAULT_REGION'),
         'bucket' => env('AWS_BUCKET'),
         'endpoint' => env('AWS_URL'),
-        'use_path_style_endpoint' => true
+        'use_path_style_endpoint' => true,
     ]
 
 Cuối cùng, hãy đảm bảo file `.env` của bạn đã có các tùy chọn sau:
@@ -734,13 +763,21 @@ Tiếp theo, bạn cần cập nhật mã nguồn Homestead. Nếu bạn clone t
 
 Các lệnh pull code này sẽ lấy source code Homestead mới nhất từ GitHub repository, nó sẽ tìm các tag mới nhất và sau đó kiểm tra phiên bản release mà được gắn với tag mới nhất. Bạn có thể tìm thấy phiên bản release mới nhất trên [trang release GitHub](https://github.com/laravel/homestead/releases).
 
-Nếu bạn cài đặt Homestead thông qua file `composer.json` trong project của bạn, bạn nên sửa version Homestead thành `"laravel/homestead": "^10"` trong file đó, rồi sau đó bạn chỉ cần cập nhật thư viện thông qua composer:
+Nếu bạn cài đặt Homestead thông qua file `composer.json` trong project của bạn, bạn nên sửa version Homestead thành `"laravel/homestead": "^11"` trong file đó, rồi sau đó bạn chỉ cần cập nhật thư viện thông qua composer:
 
     composer update
 
 Sau đó, bạn nên cập nhật Vagrant box bằng lệnh `vagrant box update`:
 
     vagrant box update
+
+Tiếp theo, bạn nên chạy lệnh `bash init.sh` từ thư mục Homestead để cập nhật thêm một số file cấu hình. Bạn sẽ có thể bị hỏi là có muốn ghi đè lên các file `Homestead.yaml`, `after.sh` và `aliases` hiện có của bạn hay không:
+
+    // Mac / Linux...
+    bash init.sh
+
+    // Windows...
+    init.bat
 
 Cuối cùng, bạn sẽ cần tạo lại Homestead box của bạn để sử dụng cài đặt Vagrant mới:
 

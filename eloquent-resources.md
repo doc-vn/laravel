@@ -312,13 +312,31 @@ Mặc định, resource ngoài cùng của bạn sẽ được bao bọc bởi m
         ]
     }
 
+Nếu bạn muốn sử dụng một khóa tùy biến thay vì `data`, bạn có thể định nghĩa một thuộc tính `$wrap` trên resource class:
+
+    <?php
+
+    namespace App\Http\Resources;
+
+    use Illuminate\Http\Resources\Json\JsonResource;
+
+    class User extends JsonResource
+    {
+        /**
+         * The "data" wrapper that should be applied.
+         *
+         * @var string
+         */
+        public static $wrap = 'user';
+    }
+
 Nếu bạn muốn vô hiệu hóa việc bao bọc resource này, bạn có thể sử dụng phương thức `withoutWrapping` trên class resource. Thông thường, bạn nên gọi phương thức này từ `AppServiceProvider` hoặc từ một [service provider](/docs/{{version}}/providers) khác để được load cho mọi request trong application của bạn:
 
     <?php
 
     namespace App\Providers;
 
-    use Illuminate\Http\Resources\Json\Resource;
+    use Illuminate\Http\Resources\Json\JsonResource;
     use Illuminate\Support\ServiceProvider;
 
     class AppServiceProvider extends ServiceProvider
@@ -340,7 +358,7 @@ Nếu bạn muốn vô hiệu hóa việc bao bọc resource này, bạn có th�
          */
         public function boot()
         {
-            Resource::withoutWrapping();
+            JsonResource::withoutWrapping();
         }
     }
 

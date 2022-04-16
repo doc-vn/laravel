@@ -1,6 +1,7 @@
 # Email Verification
 
 - [Giới thiệu](#introduction)
+- [Chuẩn bị Model](#model-preparation)
 - [Chuẩn bị cơ sở dữ liệu](#verification-database)
 - [Routing](#verification-routing)
     - [Bảo vệ Route](#protecting-routes)
@@ -13,7 +14,8 @@
 
 Nhiều web application yêu cầu người dùng xác minh địa chỉ email của họ trước khi sử dụng application. Thay vì bắt bạn phải thực hiện lại điều này trên mỗi application của bạn, Laravel cung cấp các phương thức thuận tiện để gửi và xác minh các email.
 
-### Chuẩn bị model
+<a name="model-preparation"></a>
+## Chuẩn bị Model
 
 Để bắt đầu, hãy kiểm tra model `App\User` của bạn đã implement contract `Illuminate\Contracts\Auth\MustVerifyEmail`:
 
@@ -32,8 +34,10 @@ Nhiều web application yêu cầu người dùng xác minh địa chỉ email c
         // ...
     }
 
+Khi interface này đã được thêm vào model của bạn, thì những người dùng đăng ký mới sẽ được tự động gửi một email có chứa link xác minh email. Như bạn có thể thấy hãy kiểm tra `EventServiceProvider` của bạn, Laravel đã chứa sẵn một listener `SendEmailVerificationNotification` gắn với một event `Illuminate\Auth\Events\Registered`.
+
 <a name="verification-database"></a>
-## Chuẩn bị cơ sở dữ liệu
+### Database Considerations
 
 #### The Email Verification Column
 
@@ -62,7 +66,7 @@ Laravel có chứa một class `Auth\VerificationController` dành cho những l
 
 Để tạo ra tất cả các view cần thiết cho việc xác minh email, bạn có thể sử dụng package Composer `laravel/ui`:
 
-    composer require laravel/ui  "^1.2" --dev
+    composer require laravel/ui
 
     php artisan ui vue --auth
 

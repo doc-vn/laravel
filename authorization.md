@@ -483,7 +483,7 @@ Như đã thảo luận ở phía trên, một số hành động như `create` 
 
 Nếu bạn đang sử dụng [resource controller](/docs/{{version}}/controllers#resource-controllers), bạn có thể sử dụng phương thức `authorizeResource` trong hàm constructor của controller đó. Phương thức này sẽ gán một định nghĩa middleware `can` thích hợp cho các phương thức trong resource controller đó.
 
-Phương thức `authorizeResource` sẽ nhận tên class của model làm tham số đầu tiên và tên của tham số route chứa ID của model làm tham số thứ hai của nó:
+Phương thức `authorizeResource` sẽ nhận tên class của model làm tham số đầu tiên và tên của tham số route chứa ID của model làm tham số thứ hai của nó. Bạn nên đảm bảo [resource controller](/docs/{{version}}/controllers#resource-controllers) của bạn cũng được tạo cùng với một flag `--model` để yêu cầu các phương thức bắt buộc và khai báo thêm cho loại model đó:
 
     <?php
 

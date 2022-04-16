@@ -6,8 +6,10 @@
     - [Định nghĩa một Mutator](#defining-a-mutator)
 - [Date Mutator](#date-mutators)
 - [Attribute Casting](#attribute-casting)
+    - [Custom Casts](#custom-casts)
     - [Array và JSON Casting](#array-and-json-casting)
     - [Date Casting](#date-casting)
+    - [Query Time Casting](#query-time-casting)
 
 <a name="introduction"></a>
 ## Giới thiệu
@@ -138,7 +140,7 @@ Như đã lưu ý ở trên, khi lấy các thuộc tính được liệt kê tr
 
 #### Date Formats
 
-Mặc định, timestamp sẽ được định dạng là `'Y-m-d H:i:s'`. Nếu bạn cần tùy biến định dạng timestamp này, hãy set thuộc tính `$dateFormat` trên model của bạn. Thuộc tính này sẽ cho biết cách mà các thuộc tính date được lưu vào trong cơ sở dữ liệu, cũng như định dạng của chúng khi model được chuyển đổi thành một mảng hoặc một định dạng JSON:
+Mặc định, timestamp sẽ được định dạng là `'Y-m-d H:i:s'`. Nếu bạn cần tùy biến định dạng timestamp này, hãy set thuộc tính `$dateFormat` trên model của bạn. Thuộc tính này sẽ cho biết cách mà các thuộc tính date được lưu vào trong cơ sở dữ liệu:
 
     <?php
 
@@ -172,7 +174,7 @@ Thuộc tính `$casts` trên model của bạn cung cấp một phương thức 
     class User extends Model
     {
         /**
-         * The attributes that should be cast to native types.
+         * The attributes that should be cast.
          *
          * @var array
          */
@@ -189,6 +191,234 @@ Bây giờ, thuộc tính `is_admin` sẽ luôn được chuyển thành giá tr
         //
     }
 
+> {note} Các thuộc tính `null` sẽ không được cast. Ngoài ra, bạn đừng bao giờ định nghĩa một cast (hoặc một thuộc tính) có cùng tên với tên của một quan hệ.
+
+<a name="custom-casts"></a>
+### Custom Casts
+
+Laravel có nhiều kiểu cast tích hợp, hữu ích; tuy nhiên, đôi khi bạn có thể cần phải định nghĩa kiểu cast của riêng bạn. Bạn có thể thực hiện điều này bằng cách định nghĩa một class implement interface `CastsAttributes`.
+
+Các class implement interface này phải định nghĩa một phương thức `get` và một phương thức `set`. Phương thức `get` chịu trách nhiệm chuyển đổi một giá trị thô từ cơ sở dữ liệu thành một giá trị cast, trong khi phương thức `set` sẽ chuyển đổi một giá trị cast thành một giá trị thô có thể được lưu được vào trong cơ sở dữ liệu. Ví dụ: chúng ta sẽ implement lại kiểu cast `json` có sẵn dưới dạng là một kiểu cast tùy chỉnh:
+
+    <?php
+
+    namespace App\Casts;
+
+    use Illuminate\Contracts\Database\Eloquent\CastsAttributes;
+
+    class Json implements CastsAttributes
+    {
+        /**
+         * Cast the given value.
+         *
+         * @param  \Illuminate\Database\Eloquent\Model  $model
+         * @param  string  $key
+         * @param  mixed  $value
+         * @param  array  $attributes
+         * @return array
+         */
+        public function get($model, $key, $value, $attributes)
+        {
+            return json_decode($value, true);
+        }
+
+        /**
+         * Prepare the given value for storage.
+         *
+         * @param  \Illuminate\Database\Eloquent\Model  $model
+         * @param  string  $key
+         * @param  array  $value
+         * @param  array  $attributes
+         * @return string
+         */
+        public function set($model, $key, $value, $attributes)
+        {
+            return json_encode($value);
+        }
+    }
+
+Khi bạn đã định nghĩa xong một kiểu cast tùy chỉnh, bạn có thể gắn nó vào một thuộc tính model bằng cách sử dụng tên class của nó:
+
+    <?php
+
+    namespace App;
+
+    use App\Casts\Json;
+    use Illuminate\Database\Eloquent\Model;
+
+    class User extends Model
+    {
+        /**
+         * The attributes that should be cast.
+         *
+         * @var array
+         */
+        protected $casts = [
+            'options' => Json::class,
+        ];
+    }
+
+#### Value Object Casting
+
+Bạn không bị giới hạn trong việc cast giá trị cho các kiểu nguyên thủy. Bạn cũng có thể cast một giá trị cho các đối tượng. Việc định nghĩa các cast tùy chỉnh để cast một giá trị cho các đối tượng rất giống với việc cast kiểu nguyên thủy; tuy nhiên, phương thức `set` sẽ trả về một mảng các cặp khóa và giá trị sẽ được sử dụng để set các giá trị thô, và lưu trữ vào model.
+
+Ví dụ, chúng ta sẽ định nghĩa một class cast tùy chỉnh truyền nhiều giá trị model vào một đối tượng giá trị `Address`. Chúng ta sẽ giả sử giá trị `Address` có hai thuộc tính công khai là : `lineOne` và `lineTwo`:
+
+    <?php
+
+    namespace App\Casts;
+
+    use App\Address;
+    use Illuminate\Contracts\Database\Eloquent\CastsAttributes;
+    use InvalidArgumentException;
+
+    class Address implements CastsAttributes
+    {
+        /**
+         * Cast the given value.
+         *
+         * @param  \Illuminate\Database\Eloquent\Model  $model
+         * @param  string  $key
+         * @param  mixed  $value
+         * @param  array  $attributes
+         * @return \App\Address
+         */
+        public function get($model, $key, $value, $attributes)
+        {
+            return new Address(
+                $attributes['address_line_one'],
+                $attributes['address_line_two']
+            );
+        }
+
+        /**
+         * Prepare the given value for storage.
+         *
+         * @param  \Illuminate\Database\Eloquent\Model  $model
+         * @param  string  $key
+         * @param  \App\Address  $value
+         * @param  array  $attributes
+         * @return array
+         */
+        public function set($model, $key, $value, $attributes)
+        {
+            if (! $value instanceof Address) {
+                throw new InvalidArgumentException('The given value is not an Address instance.');
+            }
+
+            return [
+                'address_line_one' => $value->lineOne,
+                'address_line_two' => $value->lineTwo,
+            ];
+        }
+    }
+
+Khi cast các giá trị của đối tượng, mọi thay đổi được thực hiện đối với giá trị của đối tượng sẽ được tự động đồng bộ trở lại model trước khi model được lưu:
+
+    $user = App\User::find(1);
+
+    $user->address->lineOne = 'Updated Address Value';
+
+    $user->save();
+
+> {tip} Nếu bạn muốn chuyển đổi các model Eloquent của bạn chứa các giá trị của đối tượng thành JSON hoặc một mảng, bạn nên implement interface `Illuminate\Contracts\Support\Arrayable` và interface `JsonSerializable` trên giá trị của đối tượng.
+
+#### Inbound Casting
+
+Đôi khi, bạn có thể cần viết một cast tùy chỉnh chỉ biến đổi các giá trị khi được set vào trong model và không thực hiện bất kỳ hoạt động nào khi các thuộc tính đó được lấy ra từ model. Một ví dụ cổ điển về inbound cast này là cast một thuộc tính "hashing". Một inbound cast tuỳ chỉnh nên được implement interface `CastsInboundAttributes`, interface này chỉ yêu cầu phương thức `set` phải được định nghĩa trên class implement.
+
+    <?php
+
+    namespace App\Casts;
+
+    use Illuminate\Contracts\Database\Eloquent\CastsInboundAttributes;
+
+    class Hash implements CastsInboundAttributes
+    {
+        /**
+         * The hashing algorithm.
+         *
+         * @var string
+         */
+        protected $algorithm;
+
+        /**
+         * Create a new cast class instance.
+         *
+         * @param  string|null  $algorithm
+         * @return void
+         */
+        public function __construct($algorithm = null)
+        {
+            $this->algorithm = $algorithm;
+        }
+
+        /**
+         * Prepare the given value for storage.
+         *
+         * @param  \Illuminate\Database\Eloquent\Model  $model
+         * @param  string  $key
+         * @param  array  $value
+         * @param  array  $attributes
+         * @return string
+         */
+        public function set($model, $key, $value, $attributes)
+        {
+            return is_null($this->algorithm)
+                        ? bcrypt($value)
+                        : hash($this->algorithm, $value);
+        }
+    }
+
+#### Cast Parameters
+
+Khi gắn một cast tùy chỉnh vào một model, các tham số cast có thể được chỉ định bằng cách tách chúng ra khỏi tên class bằng ký tự `:` và phân cách bằng dấu phẩy cho nhiều tham số khác nhau. Các tham số này sẽ được truyền cho hàm khởi tạo của class cast:
+
+    /**
+     * The attributes that should be cast.
+     *
+     * @var array
+     */
+    protected $casts = [
+        'secret' => Hash::class.':sha256',
+    ];
+
+#### Castables
+
+Thay vì gắn một cast tùy chỉnh vào model của bạn, bạn có thể gắn theo một cách khác là gắn vào một class implement interface `Illuminate\Contracts\Database\Eloquent\Castable`:
+
+    protected $casts = [
+        'address' => \App\Address::class,
+    ];
+
+Các đối tượng implement interface `Castable` phải định nghĩa một phương thức `castUsing` trả về tên class của class caster tùy chỉnh chịu trách nhiệm cast đến và đi từ class `Castable`:
+
+    <?php
+
+    namespace App;
+
+    use Illuminate\Contracts\Database\Eloquent\Castable;
+    use App\Casts\Address as AddressCast;
+
+    class Address implements Castable
+    {
+        /**
+         * Get the name of the caster class to use when casting from / to this cast target.
+         *
+         * @return string
+         */
+        public static function castUsing()
+        {
+            return AddressCast::class;
+        }
+    }
+
+Khi sử dụng các class `Castable`, bạn vẫn có thể truyền các tham số trong định nghĩa `$casts`. Các tham số này sẽ được truyền trực tiếp đến class caster:
+
+    protected $casts = [
+        'address' => \App\Address::class.':argument',
+    ];
+
 <a name="array-and-json-casting"></a>
 ### Array và JSON Casting
 
@@ -203,7 +433,7 @@ Kiểu cast `array` đặc biệt hữu ích khi làm việc với các cột đ
     class User extends Model
     {
         /**
-         * The attributes that should be cast to native types.
+         * The attributes that should be cast.
          *
          * @var array
          */
@@ -230,10 +460,34 @@ Khi cast đã được định nghĩa xong, bạn có thể truy cập vào thu�
 Khi sử dụng kiểu `date` hoặc `datetime`, bạn có thể chỉ định định dạng của date đó. Định dạng này sẽ được sử dụng khi [model được chuyển hóa thành một mảng hoặc một chuỗi JSON](/docs/{{version}}/eloquent-serialization):
 
     /**
-     * The attributes that should be cast to native types.
+     * The attributes that should be cast.
      *
      * @var array
      */
     protected $casts = [
         'created_at' => 'datetime:Y-m-d',
     ];
+
+<a name="query-time-casting"></a>
+### Query Time Casting
+
+Thỉnh thoảng bạn có thể cần phải áp dụng các cast trong khi thực hiện một query, chẳng hạn như khi chọn một giá trị thô từ một bảng. Ví dụ: hãy xem xét query sau:
+
+    use App\Post;
+    use App\User;
+
+    $users = User::select([
+        'users.*',
+        'last_posted_at' => Post::selectRaw('MAX(created_at)')
+                ->whereColumn('user_id', 'users.id')
+    ])->get();
+
+Thuộc tính `last_posted_at` trên kết quả của query này sẽ là một chuỗi thô. Sẽ rất tiện lợi nếu chúng ta có thể áp dụng một cast `date` cho thuộc tính này khi thực hiện query. Để thực hiện điều này, chúng ta có thể sử dụng phương thức `withCasts`:
+
+    $users = User::select([
+        'users.*',
+        'last_posted_at' => Post::selectRaw('MAX(created_at)')
+                ->whereColumn('user_id', 'users.id')
+    ])->withCasts([
+        'last_posted_at' => 'datetime'
+    ])->get();

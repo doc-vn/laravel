@@ -19,8 +19,6 @@ Ngoài ra, bạn có thể cài đặt package `predis/predis` thông qua Compos
 
     composer require predis/predis
 
-> {note} Predis đã bị từ bỏ bởi tác giả gốc của package và có thể bị xóa khỏi Laravel trong một bản phát hành trong tương lai.
-
 <a name="configuration"></a>
 ### Cấu hình
 
@@ -46,7 +44,39 @@ Cấu hình Redis cho application của bạn nằm trong file cấu hình `conf
 
     ],
 
-Cấu hình server mặc định sẽ đủ cho môi trường phát triển. Tuy nhiên, bạn có thể tự do sửa mảng này dựa trên môi trường của bạn. Mỗi một server Redis được định nghĩa trong file cấu hình của bạn yêu cầu phải có tên, host và cổng.
+Cấu hình server mặc định sẽ đủ cho môi trường phát triển. Tuy nhiên, bạn có thể tự do sửa mảng này dựa trên môi trường của bạn. Mỗi một server Redis được định nghĩa trong file cấu hình của bạn yêu cầu phải có tên, host và cổng trừ khi bạn định nghĩa một URL để đại diện cho kết nối Redis đó:
+
+    'redis' => [
+
+        'client' => env('REDIS_CLIENT', 'phpredis'),
+
+        'default' => [
+            'url' => 'tcp://127.0.0.1:6379?database=0',
+        ],
+
+        'cache' => [
+            'url' => 'tls://user:password@127.0.0.1:6380?database=1',
+        ],
+
+    ],
+
+#### Configuring The Connection Scheme
+
+Mặc định, các Redis client sẽ sử dụng scheme `tcp` khi kết nối với Redis server của bạn; tuy nhiên, bạn có thể sử dụng mã hóa TLS / SSL bằng cách chỉ định một tùy chọn cấu hình `scheme` trong cấu hình Redis server của bạn:
+
+    'redis' => [
+
+        'client' => env('REDIS_CLIENT', 'phpredis'),
+
+        'default' => [
+            'scheme' => 'tls',
+            'host' => env('REDIS_HOST', '127.0.0.1'),
+            'password' => env('REDIS_PASSWORD', null),
+            'port' => env('REDIS_PORT', 6379),
+            'database' => env('REDIS_DB', 0),
+        ],
+
+    ],
 
 #### Configuring Clusters
 
@@ -123,7 +153,7 @@ Nếu bạn muốn sử dụng extension PhpRedis cùng với tên viết tắt 
 
     'RedisManager' => Illuminate\Support\Facades\Redis::class,
 
-Ngoài các tùy chọn cấu hình server mặc định là `host`, `port`, `database`, và `password`, PhpRedis cũng hỗ trợ thêm các tham số kết nối bổ sung như sau: `persistent`, `prefix`, `read_timeout` và `timeout`. Bạn có thể thêm bất kỳ tùy chọn nào vào cấu hình server Redis của bạn trong file cấu hình `config/database.php`:
+Ngoài các tùy chọn cấu hình server mặc định là `host`, `port`, `database`, và `password`, PhpRedis cũng hỗ trợ thêm các tham số kết nối bổ sung như sau: `persistent`, `prefix`, `read_timeout`, `timeout`, và `context`. Bạn có thể thêm bất kỳ tùy chọn nào vào cấu hình server Redis của bạn trong file cấu hình `config/database.php`:
 
     'default' => [
         'host' => env('REDIS_HOST', 'localhost'),
@@ -131,6 +161,10 @@ Ngoài các tùy chọn cấu hình server mặc định là `host`, `port`, `da
         'port' => env('REDIS_PORT', 6379),
         'database' => 0,
         'read_timeout' => 60,
+        'context' => [
+            // 'auth' => ['username', 'secret'],
+            // 'stream' => ['verify_peer' => false],
+        ],
     ],
 
 #### The Redis Facade

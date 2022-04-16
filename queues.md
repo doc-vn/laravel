@@ -120,6 +120,8 @@ Mặc định, tất cả các job cho application của bạn được lưu tro
 
 Class được tạo ra sẽ implement interface `Illuminate\Contracts\Queue\ShouldQueue`, và cho Laravel biết là job này sẽ được đưa vào queue để chạy không đồng bộ.
 
+> {tip} Các stub của Job có thể được tùy chỉnh bằng cách sử dụng [export stub](/docs/{{version}}/artisan#stub-customization)
+
 <a name="class-structure"></a>
 ### Cấu trúc class
 
@@ -198,7 +200,7 @@ Bởi vì các quan hệ cũng được serialize, nên job có thể trở nên
 <a name="job-middleware"></a>
 ### Job Middleware
 
-Job middleware cho phép bạn custom logic toàn bộ việc chạy các queued job, giảm việc viết code trong các job đó. Ví dụ: phương thức `handle` sau đây có sử dụng các tính năng giới hạn tốc độ của Redis trong Laravel để chỉ cho phép cứ năm giây xử lý một job:
+Job middleware cho phép bạn custom logic của toàn bộ việc chạy các queued job, giảm việc viết code trong các job đó. Ví dụ: phương thức `handle` sau đây có sử dụng các tính năng giới hạn tốc độ của Redis trong Laravel để chỉ cho phép cứ năm giây xử lý một job:
 
     /**
      * Execute the job.
@@ -298,6 +300,12 @@ Khi bạn đã viết xong các class job của bạn, bạn có thể dispatch 
         }
     }
 
+Nếu bạn muốn gửi một job có điều kiện, bạn có thể sử dụng các phương thức `dispatchIf` và `dispatchUnless`:
+
+    ProcessPodcast::dispatchIf($accountActive === true, $podcast);
+
+    ProcessPodcast::dispatchUnless($accountSuspended === false, $podcast);
+
 <a name="delayed-dispatching"></a>
 ### Delayed Dispatching
 
@@ -329,6 +337,23 @@ Nếu bạn muốn delay việc thực hiện một queued job, bạn có thể 
     }
 
 > {note} service SQS queue của Amazon có thời gian delay tối đa là 15 phút.
+
+#### Dispatching After The Response Is Sent To Browser
+
+Ngoài ra, phương thức `dispatchAfterResponse` sẽ làm chậm việc gửi một job cho đến khi response được gửi về trình duyệt của người dùng. Điều này sẽ vẫn cho phép người dùng bắt đầu sử dụng ứng dụng ngay cả khi queued job vẫn đang được thực hiện. Điều này thường chỉ được sử dụng cho các job ngắn thường một giây, chẳng hạn như việc gửi email:
+
+    use App\Jobs\SendNotification;
+
+    SendNotification::dispatchAfterResponse();
+
+Bạn có thể `dispatch` một Closure và kết hợp thêm phương thức `afterResponse` vào helper để thực hiện một Closure sau khi response đã được gửi về trình duyệt:
+
+    use App\Mail\WelcomeMessage;
+    use Illuminate\Support\Facades\Mail;
+
+    dispatch(function () {
+        Mail::to('taylor@laravel.com')->send(new WelcomeMessage);
+    })->afterResponse();
 
 <a name="synchronous-dispatching"></a>
 ### Đồng bộ Dispatching
@@ -367,6 +392,16 @@ Kết hợp job cho phép bạn khai báo một danh sách các queued job sẽ 
     ProcessPodcast::withChain([
         new OptimizePodcast,
         new ReleasePodcast
+    ])->dispatch();
+
+Ngoài việc kết hợp các instance của job class, bạn cũng có thể kết hợp thêm các Closures:
+
+    ProcessPodcast::withChain([
+        new OptimizePodcast,
+        new ReleasePodcast,
+        function () {
+            Podcast::update(...);
+        },
     ])->dispatch();
 
 > {note} Việc xóa các job bằng phương thức `$this->delete()` sẽ không ngăn một chuỗi job ngừng xử lý. Chuỗi job sẽ chỉ bị ngừng xử lý nếu một job trong chuỗi job đó bị thất bại.
@@ -445,22 +480,6 @@ Bạn có thể kết hợp các phương thức `onConnection` và `onQueue` đ
                   ->onConnection('sqs')
                   ->onQueue('processing');
 
-Ngoài ra, bạn có thể chỉ định `connection` làm một thuộc tính trong class job:
-
-    <?php
-
-    namespace App\Jobs;
-
-    class ProcessPodcast implements ShouldQueue
-    {
-        /**
-         * The queue connection that should handle the job.
-         *
-         * @var string
-         */
-        public $connection = 'sqs';
-    }
-
 <a name="max-job-attempts-and-timeout"></a>
 ### Khai báo số lần chạy Job tối đa / giá trị timeout
 
@@ -503,9 +522,51 @@ Thay thế cho việc định nghĩa số lần một job có thể được ch�
 
 > {tip} Bạn cũng có thể định nghĩa phương thức `retryUntil` trên các queued event listener của bạn.
 
+#### Max Exceptions
+
+Thỉnh thoảng bạn có thể muốn chỉ định một job có thể được thử lại nhiều lần, nhưng sẽ thất bại nếu trong các lần thử lại được kích hoạt bởi một số lượng exception nhất định. Để thực hiện điều này, bạn có thể định nghĩa một thuộc tính `maxExceptions` trên class job của bạn:
+
+    <?php
+
+    namespace App\Jobs;
+
+    class ProcessPodcast implements ShouldQueue
+    {
+        /**
+         * The number of times the job may be attempted.
+         *
+         * @var int
+         */
+        public $tries = 25;
+
+        /**
+         * The maximum number of exceptions to allow before failing.
+         *
+         * @var int
+         */
+        public $maxExceptions = 3;
+
+        /**
+         * Execute the job.
+         *
+         * @return void
+         */
+        public function handle()
+        {
+            Redis::throttle('key')->allow(10)->every(60)->then(function () {
+                // Lock obtained, process the podcast...
+            }, function () {
+                // Unable to obtain lock...
+                return $this->release(10);
+            });
+        }
+    }
+
+Trong ví dụ này, job sẽ được giải phóng trong 10 giây nếu ứng dụng không thể lấy được Redis lock và sẽ tiếp tục được thử lại tối đa 25 lần. Tuy nhiên, job sẽ thất bại nếu job đưa ra quá ba exception.
+
 #### Timeout
 
-> {note} Tính năng `timeout` được tối ưu hóa cho PHP 7.1+ và PHP extension `pcntl`.
+> {note} PHP extension `pcntl` phải được cài đặt để chỉ định thời gian hết hạn cho job.
 
 Tương tự, thời gian hết hạn của một job có thể được khai báo bằng cách sử dụng switch `--timeout` trên lệnh Artisan:
 
@@ -526,6 +587,8 @@ Tuy nhiên, bạn cũng có thể định nghĩa thời gian hết hạn của m
          */
         public $timeout = 120;
     }
+
+Thỉnh thoảng, các process IO blocking như socket hoặc outgoing HTTP connection có thể không tuân theo thời gian hết hạn đã được chỉ định của bạn. Do đó, khi sử dụng các tính năng này, bạn cũng nên cố gắng chỉ định một thời gian hết hạn bằng cách sử dụng các API của chúng. Ví dụ: khi sử dụng Guzzle, bạn phải luôn chỉ định một connection và một giá trị mà request sẽ hết hạn.
 
 <a name="rate-limiting"></a>
 ### Giới hạn tỷ lệ chạy
@@ -734,10 +797,22 @@ Nếu bạn muốn cấu hình độ trễ thử lại cho từng job khi chúng
      */
     public $retryAfter = 3;
 
+Nếu bạn yêu cầu các logic phức tạp hơn để xác định độ trễ để thử lại, bạn có thể định nghĩa một phương thức `retryAfter` trên class queued job của bạn:
+
+    /**
+    * Calculate the number of seconds to wait before retrying the job.
+    *
+    * @return int
+    */
+    public function retryAfter()
+    {
+        return 3;
+    }
+
 <a name="cleaning-up-after-failed-jobs"></a>
 ### Dọn dẹp sau khi Job failed
 
-Bạn có thể định nghĩa một phương thức `failed` trực tiếp vào class job của bạn, cho phép bạn thực hiện việc dọn dẹp job khi xảy ra lỗi. Đây là một vị trí hoàn hảo để gửi các cảnh báo đến người dùng hoặc revert lại các hành động trước khi thực hiện job. `Exception` sẽ khiến job thất bại và sẽ được chuyển sang phương thức `failed`:
+Bạn có thể định nghĩa một phương thức `failed` trực tiếp vào class job của bạn, cho phép bạn thực hiện việc dọn dẹp job khi xảy ra lỗi. Đây là một vị trí hoàn hảo để gửi các cảnh báo đến người dùng hoặc revert lại các hành động trước khi thực hiện job. `Throwable` sẽ khiến job thất bại và sẽ được chuyển sang phương thức `failed`:
 
     <?php
 
@@ -745,7 +820,7 @@ Bạn có thể định nghĩa một phương thức `failed` trực tiếp vào
 
     use App\AudioProcessor;
     use App\Podcast;
-    use Exception;
+    use Throwable;
     use Illuminate\Bus\Queueable;
     use Illuminate\Contracts\Queue\ShouldQueue;
     use Illuminate\Queue\InteractsWithQueue;
@@ -760,7 +835,7 @@ Bạn có thể định nghĩa một phương thức `failed` trực tiếp vào
         /**
          * Create a new job instance.
          *
-         * @param  Podcast  $podcast
+         * @param  \App\Podcast  $podcast
          * @return void
          */
         public function __construct(Podcast $podcast)
@@ -771,7 +846,7 @@ Bạn có thể định nghĩa một phương thức `failed` trực tiếp vào
         /**
          * Execute the job.
          *
-         * @param  AudioProcessor  $processor
+         * @param  \App\AudioProcessor  $processor
          * @return void
          */
         public function handle(AudioProcessor $processor)
@@ -780,12 +855,12 @@ Bạn có thể định nghĩa một phương thức `failed` trực tiếp vào
         }
 
         /**
-         * The job failed to process.
+         * Handle a job failure.
          *
-         * @param  Exception  $exception
+         * @param  \Throwable  $exception
          * @return void
          */
-        public function failed(Exception $exception)
+        public function failed(Throwable $exception)
         {
             // Send user notification of failure, etc...
         }
@@ -840,9 +915,15 @@ Nếu bạn muốn đăng ký một event sẽ được gọi khi một job th�
 
     php artisan queue:failed
 
-Lệnh `queue:failed` sẽ liệt kê các ID, connection, queue và thời gian bị thất bại của job. ID của job có thể được sử dụng để chạy lại những job đã bị thất bại. Chẳng hạn, để chạy lại một của job đã bị thất bại có ID là `5`, thì hãy chạy lệnh như sau:
+Lệnh `queue:failed` sẽ liệt kê các ID, connection, queue, thời gian bị thất bại, và các thông tin khác về job. ID của job có thể được sử dụng để chạy lại những job đã bị thất bại. Chẳng hạn, để chạy lại một của job đã bị thất bại có ID là `5`, thì hãy chạy lệnh như sau:
 
     php artisan queue:retry 5
+
+Nếu cần thiết, bạn cũng có thể truyền nhiều ID hoặc một dải ID (khi sử dụng ID số) vào lệnh:
+
+    php artisan queue:retry 5 6 7 8 9 10
+
+    php artisan queue:retry --range=5-10
 
 Để chạy lại tất cả các job bị thất bại, bạn hãy chạy lệnh `queue:retry` và truyền vào `all` làm ID:
 

@@ -15,7 +15,7 @@
 
 Ngoài những cách authentication thông thường dựa trên form, Laravel cũng cung cấp thêm một số cách đơn giản, thuận tiện để authentication với các provider OAuth khác bằng cách sử dụng [Laravel Socialite](https://github.com/laravel/socialite). Socialite hiện hỗ trợ authentication với Facebook, Twitter, LinkedIn, Google, GitHub, GitLab và Bitbucket.
 
-> {tip} Bộ chuyển đổi cho các nền tảng này được liệt kê trong trang web [Socialite Providers](https://socialiteproviders.netlify.com/) do cộng đồng phát triển.
+> {tip} Bộ chuyển đổi cho các nền tảng này được liệt kê trong trang web [Socialite Providers](https://socialiteproviders.com/) do cộng đồng phát triển.
 
 <a name="upgrading-socialite"></a>
 ## Cập nhật Socialite
@@ -52,7 +52,7 @@ Tiếp theo, bạn đã sẵn sàng để authenticate người dùng! Bạn s�
     namespace App\Http\Controllers\Auth;
 
     use App\Http\Controllers\Controller;
-    use Socialite;
+    use Laravel\Socialite\Facades\Socialite;
 
     class LoginController extends Controller
     {

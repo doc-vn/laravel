@@ -65,7 +65,7 @@ Hoặc, bạn có thể sử dụng phương thức `withHeaders` để chỉ đ
                     'X-Header-Two' => 'Header Value',
                 ]);
 
-##### Cache Control Middleware
+#### Cache Control Middleware
 
 Laravel có chứa một middleware `cache.headers`, middleware này có thể được sử dụng để thiết lập nhanh một header `Cache-Control` cho một nhóm các route. Nếu `etag` được chỉ định trong danh sách lệnh, một hash MD5 của nội dung response sẽ được tự động set làm ETag identifier:
 
@@ -150,7 +150,7 @@ Nếu bạn đang chuyển hướng đến một route mà có tham số "ID" đ
 
     return redirect()->route('profile', [$user]);
 
-Nếu bạn muốn tùy biến giá trị được lấy trong tham số route, bạn cần ghi đè phương thức `getRouteKey` trên model Eloquent của bạn:
+Nếu bạn muốn tùy biến giá trị được lấy trong tham số route, bạn có thể chỉ định cột trong định nghĩa tham số route (`profile/{id:slug}`) hoặc bạn có thể ghi đè phương thức `getRouteKey` trên model Eloquent của bạn:
 
     /**
      * Get the value of the model's route key.
@@ -224,7 +224,7 @@ Phương thức `json` sẽ tự động set header `Content-Type` của respons
 
     return response()->json([
         'name' => 'Abigail',
-        'state' => 'CA'
+        'state' => 'CA',
     ]);
 
 Nếu bạn muốn tạo một JSONP response, bạn có thể sử dụng phương thức `json` kết hợp với phương thức `withCallback`:

@@ -23,7 +23,7 @@ Tuy nhiên, nếu bạn không muốn dùng Homestead, thì bạn hãy chắc ch
 - PHP >= 7.2.5
 - BCMath PHP Extension
 - Ctype PHP Extension
-- Fileinfo PHP Extension
+- Fileinfo PHP extension
 - JSON PHP Extension
 - Mbstring PHP Extension
 - OpenSSL PHP Extension
@@ -64,7 +64,7 @@ Sau khi đã cài đặt xong, lệnh `laravel new` sẽ tạo một project m�
 
 Hoặc, bạn cũng có thể cài đặt laravel bằng cách chạy lệnh `create-project` trong terminal của bạn:
 
-    composer create-project --prefer-dist laravel/laravel blog "6.*"
+    composer create-project --prefer-dist laravel/laravel:^7.0 blog
 
 #### Local Development Server
 

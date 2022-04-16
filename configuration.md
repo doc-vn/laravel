@@ -10,6 +10,7 @@
 - [Caching các biến config](#configuration-caching)
 - [Chế độ bảo trì](#maintenance-mode)
 
+<a name="introduction"></a>
 ## Giới thiệu
 
 Tất cả các file config cho Laravel framework được lưu trữ trong thư mục `config`. Các biến config đều đã được tài liệu hoá bằng comment, nên hãy xem qua và làm quen với chúng.
@@ -19,7 +20,7 @@ Tất cả các file config cho Laravel framework được lưu trữ trong thư
 
 Nó rất hữu dụng cho những giá trị config khác nhau dựa trên môi trường, nơi mà ứng dụng của bạn đang được chạy. Ví dụ, bạn có thể muốn dùng một loại cache riêng ở local, hơn là dùng loại cache mà đang được sử dụng ở trên server production.
 
-Để dễ dàng hơn, Laravel sử dụng thư viện PHP [DotEnv](https://github.com/vlucas/phpdotenv) được tạo bởi Vance Lucas. Trong thư mục project gốc của bạn có chứa một file `.env.example`. Nếu  bạn cài đặt project thông qua Laravel installer hoặc Composer. Thì file đó sẽ được tự động sửa thành tên `.env`. Nếu không có file đó, thì bạn nên tạo file đó.
+Để dễ dàng hơn, Laravel sử dụng thư viện PHP [DotEnv](https://github.com/vlucas/phpdotenv) được tạo bởi Vance Lucas. Trong thư mục project gốc của bạn có chứa một file `.env.example`. Nếu  bạn cài đặt project thông qua Laravel installer hoặc Composer. Thì file đó sẽ được tự động copy thành tên `.env`. Nếu không có file đó, thì bạn nên copy file đó bằng tay.
 
 File `.env` không nên commit vào trong source code của bạn, bởi vì mỗi người phát triển hoặc mỗi server mà đang chạy web application của bạn có thể yêu cầu những biến môi trường khác nhau. Hơn thế nữa, nó cũng là một rủi ro bảo mật trong trường hợp có kẻ nào đó xâm nhập được vào source code của bạn, thì tất cả các thông tin đều sẽ bị lộ.
 
@@ -78,9 +79,9 @@ Bạn cũng có thể truyền vào hàm `environment` tên của một môi tr�
 <a name="hiding-environment-variables-from-debug"></a>
 ### Ẩn các biến môi trường khỏi các trang gỡ lỗi
 
-Khi có một lỗi và biến môi trường `APP_DEBUG` bằng `true`, thì trang gỡ lỗi sẽ hiển thị tất cả các biến môi trường và nội dung của chúng. Trong một số trường hợp, bạn có thể muốn không hiển thị một số biến nhất định. Bạn có thể thực hiện việc này bằng cách cập nhật tùy chọn `debug_blacklist` trong file cấu hình `config/app.php` của bạn.
+Khi có một lỗi và biến môi trường `APP_DEBUG` bằng `true`, thì trang gỡ lỗi sẽ hiển thị tất cả các biến môi trường và nội dung của chúng. Trong một số trường hợp, bạn có thể muốn không hiển thị một số biến nhất định. Bạn có thể thực hiện việc này bằng cách cập nhật tùy chọn `debug_hide` trong file cấu hình `config/app.php` của bạn.
 
-Có một số biến có trong cả biến môi trường và requet dữ liệu server. Do đó, bạn có thể cần đưa chúng vào blacklist cho cả `$_ENV` và `$_SERVER`:
+Có một số biến có trong cả biến môi trường và requet dữ liệu server. Do đó, bạn có thể cần đưa chúng vào danh sách ẩn cho cả `$_ENV` và `$_SERVER`:
 
     return [
 
@@ -109,6 +110,9 @@ Có một số biến có trong cả biến môi trường và requet dữ liệ
 Bạn có thể dễ dàng gọi biến mà bạn đã cấu hình bằng hàm helper `config` từ mọi nơi trong application của bạn. Giá trị config có thể được gọi thông qua dấu "chấm", nó sẽ chứa tên file config và tên biến mà bạn muốn nhận về. Và bạn cũng có thể tạo một giá trị mặc định, nếu giá trị config đó không tồn tại:
 
     $value = config('app.timezone');
+
+    // Retrieve a default value if the configuration value does not exist...
+    $value = config('app.timezone', 'Asia/Seoul');
 
 Để tạo một giá trị config khi đang chạy, bạn có thể truyền một array vào hàm helper `config`:
 

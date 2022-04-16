@@ -8,12 +8,12 @@
     - [Lệnh "Park"](#the-park-command)
     - [Lệnh "Link"](#the-link-command)
     - [Bảo vệ site với TLS](#securing-sites)
+    - [Chạy một site mặc định](#serving-a-default-site)
 - [Chia sẻ site](#sharing-sites)
-- [Chạy một site mặc định](#serving-a-default-site)
 - [Các biến môi trường cho trang web](#site-specific-environment-variables)
+- [Proxying Services](#proxying-services)
 - [Tuỳ chỉnh Valet Driver](#custom-valet-drivers)
     - [Local Driver](#local-drivers)
-- [Cấu hình PHP](#php-configuration)
 - [Các lệnh Valet khác](#other-valet-commands)
 - [Thư mục và file valet](#valet-directories-and-files)
 
@@ -43,8 +43,9 @@ Mặc định, Valet hỗ trợ những phần sau, nhưng không giới hạn:
 - [CakePHP 3](https://cakephp.org)
 - [Concrete5](https://www.concrete5.org/)
 - [Contao](https://contao.org/en/)
-- [Craft CMS](https://craftcms.com)
+- [Craft](https://craftcms.com)
 - [Drupal](https://www.drupal.org/)
+- [ExpressionEngine](https://www.expressionengine.com/)
 - [Jigsaw](https://jigsaw.tighten.co)
 - [Joomla](https://www.joomla.org/)
 - [Katana](https://github.com/themsaid/katana)
@@ -165,6 +166,13 @@ Mặc định, Valet sẽ tạo site trên HTTP. Tuy nhiên, nếu bạn muốn 
 
     valet unsecure laravel
 
+<a name="serving-a-default-site"></a>
+### Serving A Default Site
+
+Thỉnh thoảng, bạn có thể muốn cấu hình Valet chạy một trang web "mặc định" thay vì trang `404` khi truy cập vào tên miền `test` không có. Để thực hiện điều này, bạn có thể thêm một tùy chọn `default` vào file cấu hình `~/.config/valet/config.json` của bạn để chứa đường dẫn đến trang web sẽ đóng vai trò là trang web mặc định của bạn:
+
+    "default": "/Users/Sally/Sites/foo",
+
 <a name="sharing-sites"></a>
 ## Chia sẻ site
 
@@ -177,6 +185,12 @@ Valet đã chứa một lệnh để chia sẻ các trang web ở local của b�
 Để ngừng chia sẻ trang web của bạn, hãy nhấn `Control + C` để hủy quá trình.
 
 > {tip} Bạn có thể truyền thêm các tham số cho lệnh chia sẻ, chẳng hạn như `valet share --region=eu`. Để biết thêm thông tin, hãy tham khảo [tài liệu ngrok](https://ngrok.com/docs).
+
+### Sharing Sites Via Expose
+
+Nếu bạn đã cài đặt [Expose](https://beyondco.de/docs/expose), bạn có thể chia sẻ trang web của bạn bằng cách di chuyển đến thư mục chứa trang web của bạn trong terminal và chạy lệnh `expose`. Tham khảo tài liệu expose để biết thêm các tham số command-line mà nó hỗ trợ. Sau khi chia sẻ trang web, Expose sẽ hiển thị một sharable URL mà bạn có thể sử dụng trên các thiết bị khác của bạn hoặc giữa các thành viên trong team.
+
+Để dừng chia sẻ trang web của bạn, hãy nhấn `Control + C` để huỷ process.
 
 ### Sharing Sites On Your Local Network
 
@@ -209,12 +223,22 @@ Một số ứng dụng sử dụng các framework khác có thể phụ thuộc
         ],
     ];
 
-<a name="serving-a-default-site"></a>
-## Chạy một site mặc định
+<a name="proxying-services"></a>
+## Proxying Services
 
-Thỉnh thoảng, bạn có thể muốn cấu hình Valet để chạy một trang web "mặc định" thay vì `404` khi truy cập vào tên miền `test` không đúng. Để thực hiện điều này, bạn có thể thêm tùy chọn `default` vào file cấu hình `~/.config/valet/config.json` của bạn để chứa đường dẫn đến trang web sẽ hoạt động như là một trang web mặc định của bạn:
+Thỉnh thoảng bạn có thể muốn proxy một tên miền Valet cho một service khác trên máy local của bạn. Ví dụ: đôi khi bạn có thể cần chạy Valet trong khi cũng cần chạy một trang web khác trong Docker; tuy nhiên, cả Valet và Docker không thể cùng liên kết đến cổng 80 cùng một lúc.
 
-    "default": "/Users/Sally/Sites/foo",
+Để giải quyết vấn đề này, bạn có thể sử dụng lệnh `proxy` để tạo proxy. Ví dụ: bạn có thể proxy tất cả các lưu lượng truy cập từ `http://elasticsearch.test` đến `http://127.0.0.1:9200`:
+
+    valet proxy elasticsearch http://127.0.0.1:9200
+
+Bạn có thể xóa proxy đó bằng lệnh `unproxy`:
+
+    valet unproxy elasticsearch
+
+Bạn có thể sử dụng lệnh `proxies` để hiển thị tất cả cấu hình trang web mà đang được proxy:
+
+    valet proxies
 
 <a name="custom-valet-drivers"></a>
 ## Tuỳ chỉnh Valet Drivers
@@ -319,19 +343,6 @@ Nếu bạn muốn định nghĩa một Valet driver tùy chỉnh cho một appl
             return $sitePath.'/public_html/index.php';
         }
     }
-
-<a name="php-configuration"></a>
-## Cấu hình PHP
-
-Bạn có thể thêm các file cấu hình `.ini` của PHP vào trong thư mục `/usr/local/etc/php/7.X/conf.d/` để tùy chỉnh cài đặt PHP của bạn. Khi bạn đã thêm hoặc cập nhật các cài đặt này, bạn nên chạy `valet restart php`.
-
-### PHP Memory Limits
-
-Mặc định, Valet chỉ định giới hạn bộ nhớ của cài đặt PHP và kích thước file upload tối đa trong file cấu hình `/usr/local/etc/php/7.X/conf.d/php-memory-limits.ini`. Điều này cũng ảnh hưởng đến cả process CLI và cả process FPM PHP.
-
-### PHP-FPM Pool Processes
-
-Cấu hình PHP-FPM của Valet được chứa trong file cấu hình `/usr/local/etc/php/7.X/php-fpm.d/valet-fpm.conf`. Trong file này, bạn có thể tăng số lượng FPM server và các process con được ứng dụng PHP của bạn sử dụng.
 
 <a name="other-valet-commands"></a>
 ## Các lệnh Valet khác

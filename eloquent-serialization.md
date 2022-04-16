@@ -170,6 +170,21 @@ Ngoài ra, bạn cũng có thể chỉ dẫn instance model thêm các thuộc t
 <a name="date-serialization"></a>
 ## Date Serialization
 
+#### Customizing The Default Date Format
+
+Bạn có thể tùy chỉnh định dạng chuyển đổi mặc định bằng cách ghi đè phương thức `serializeDate`:
+
+    /**
+     * Prepare a date for array / JSON serialization.
+     *
+     * @param  \DateTimeInterface  $date
+     * @return string
+     */
+    protected function serializeDate(DateTimeInterface $date)
+    {
+        return $date->format('Y-m-d');
+    }
+
 #### Customizing The Date Format Per Attribute
 
 Bạn có thể tùy chỉnh định dạng chuyển đổi của từng thuộc tính date trong Eloquent bằng cách chỉ định định dạng date trong [khai báo](/docs/{{version}}/eloquent-mutators#attribute-casting) của Eloquent đó:

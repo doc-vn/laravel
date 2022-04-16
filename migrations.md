@@ -35,6 +35,8 @@ Laravel [facade](/docs/{{version}}/facades) `Schema` cung cấp một cách đ�
 
 File migration mới sẽ được lưu trong thư mục `database/migrations` của bạn. Mỗi tên file migration đều có chứa một dấu mốc timestamp cho phép Laravel xác định thứ tự migration.
 
+> {tip} Các stub của migration có thể được tùy chỉnh bằng cách sử dụng [export stub](/docs/{{version}}/artisan#stub-customization)
+
 Các tùy chọn `--table` và `--create` cũng có thể được sử dụng để chỉ định tên bảng và migration có tạo một bảng mới hay không. Những tùy chọn này sẽ được điền trước vào file migration sẽ được tạo cùng với tên bảng đã được chỉ định:
 
     php artisan make:migration create_users_table --create=users
@@ -66,7 +68,7 @@ Trong cả hai phương thức này, bạn đều có thể sử dụng schema b
         public function up()
         {
             Schema::create('flights', function (Blueprint $table) {
-                $table->bigIncrements('id');
+                $table->id();
                 $table->string('name');
                 $table->string('airline');
                 $table->timestamps();
@@ -144,7 +146,7 @@ Lệnh `migrate:fresh` sẽ xóa tất cả các bảng ra khỏi cơ sở dữ 
 Để tạo một bảng cơ sở dữ liệu mới, hãy sử dụng phương thức `create` trên facade `Schema`. Phương thức `create` chấp nhận hai tham số: tham số đầu tiên là tên của bảng, trong khi tham số thứ hai là một `Closure` nhận vào một đối tượng `Blueprint` có thể được sử dụng để định nghĩa một bảng mới:
 
     Schema::create('users', function (Blueprint $table) {
-        $table->bigIncrements('id');
+        $table->id();
     });
 
 Khi tạo bảng, bạn có thể sử dụng bất kỳ [column methods](#creating-columns) nào của schema builder để định nghĩa các cột của bảng.
@@ -166,7 +168,7 @@ Bạn có thể kiểm tra sự tồn tại của một bảng hoặc một cộ
 Nếu bạn muốn thực hiện một schema trên một kết nối cơ sở dữ liệu không phải là kết nối mặc định của bạn, hãy sử dụng phương thức `connection`:
 
     Schema::connection('foo')->create('users', function (Blueprint $table) {
-        $table->bigIncrements('id');
+        $table->id();
     });
 
 Bạn có thể sử dụng các lệnh sau trên schema builder để định nghĩa các tùy chọn cho bảng:
@@ -174,8 +176,8 @@ Bạn có thể sử dụng các lệnh sau trên schema builder để định n
 Command  |  Description
 -------  |  -----------
 `$table->engine = 'InnoDB';`  |  Khai báo engine cho table storage (MySQL).
-`$table->charset = 'utf8';`  |  Khai báo character mặc định cho table (MySQL).
-`$table->collation = 'utf8_unicode_ci';`  |  Khai báo collation mặc định cho table (MySQL).
+`$table->charset = 'utf8mb4';`  |  Khai báo character mặc định cho table (MySQL).
+`$table->collation = 'utf8mb4_unicode_ci';`  |  Khai báo collation mặc định cho table (MySQL).
 `$table->temporary();`  |  Tạo một table tạm thời (ngoại trừ SQL Server).
 
 <a name="renaming-and-dropping-tables"></a>
@@ -213,6 +215,8 @@ Schema builder cũng sẽ chứa nhiều loại cột mà bạn có thể khai b
 
 Lệnh  |  Mô tả
 -------  |  -----------
+`$table->id();`  |  Bí danh của `$table->bigIncrements('id')`.
+`$table->foreignId('user_id');`  |  Bí danh của `$table->unsignedBigInteger('user_id')`.
 `$table->bigIncrements('id');`  |  Tương đương với cột (primary key) tự động tăng và là số dương kiểu BIGINT.
 `$table->bigInteger('votes');`  |  Tương đương với cột kiểu BIGINT.
 `$table->binary('data');`  |  Tương đương với cột kiểu BLOB.
@@ -252,8 +256,8 @@ Lệnh  |  Mô tả
 `$table->set('flavors', ['strawberry', 'vanilla']);`  |  SET giá trị có thể được lưu cho một cột.
 `$table->smallIncrements('id');`  |  Tương đương với cột (primary key) tự động tăng và là số dương kiểu SMALLINT.
 `$table->smallInteger('votes');`  |  Tương đương với cột kiểu SMALLINT.
-`$table->softDeletes(0);`  |  Thêm cột nullable `deleted_at` kiểu TIMESTAMP cùng với tổng số ký tự cho soft deletes.
-`$table->softDeletesTz(0);`  |  Thêm cột nullable `deleted_at` kiểu TIMESTAMP (cùng timezone) cùng với tổng số ký tự cho soft deletes.
+`$table->softDeletes('deleted_at', 0);`  |  Thêm cột nullable `deleted_at` kiểu TIMESTAMP cùng với tổng số ký tự cho soft deletes.
+`$table->softDeletesTz('deleted_at', 0);`  |  Thêm cột nullable `deleted_at` kiểu TIMESTAMP (cùng timezone) cùng với tổng số ký tự cho soft deletes.
 `$table->string('name', 100);`  |  Tương đương với cột kiểu VARCHAR cùng một tuỳ chọn độ dài.
 `$table->text('description');`  |  Tương đương với cột kiểu TEXT.
 `$table->time('sunrise', 0);`   |  Tương đương với cột kiểu TIME cùng với tổng số ký tự.
@@ -288,8 +292,8 @@ Modifier  |  Mô tả
 --------  |  -----------
 `->after('column')`  |  Set một column vào "sau" một column khác (MySQL)
 `->autoIncrement()`  |  Set một cột kiểu INTEGER là tự động tăng (primary key)
-`->charset('utf8')`  |  Khai báo character set cho cột (MySQL)
-`->collation('utf8_unicode_ci')`  |  Khai báo collation cho cột (MySQL/PostgreSQL/SQL Server)
+`->charset('utf8mb4')`  |  Khai báo character set cho cột (MySQL)
+`->collation('utf8mb4_unicode_ci')`  |  Khai báo collation cho cột (MySQL/PostgreSQL/SQL Server)
 `->comment('my comment')`  |  Thêm comment vào một column (MySQL/PostgreSQL)
 `->default($value)`  |  Khai báo giá trị "default" cho cột
 `->first()`  |  Set một column vào vị trí "đầu tiên" trong table (MySQL)
@@ -322,7 +326,7 @@ Modifier `default` sẽ chấp nhận một giá trị hoặc một instance `\I
         public function up()
         {
             Schema::create('flights', function (Blueprint $table) {
-                $table->bigIncrements('id');
+                $table->id();
                 $table->json('movies')->default(new Expression('(JSON_ARRAY())'));
                 $table->timestamps();
             });
@@ -354,7 +358,7 @@ Chúng ta cũng có thể sửa một cột thành nullable:
         $table->string('name', 50)->nullable()->change();
     });
 
-> {note} Chỉ có thể "thay đổi" các loại cột sau: bigInteger, binary, boolean, date, dateTime, dateTimeTz, decimal, integer, json, longText, mediumText, smallInteger, string, text, time, unsignedBigInteger, unsignedInteger và unsignedSmallInteger.
+> {note} Chỉ có thể "thay đổi" các loại cột sau: bigInteger, binary, boolean, date, dateTime, dateTimeTz, decimal, integer, json, longText, mediumText, smallInteger, string, text, time, unsignedBigInteger, unsignedInteger, unsignedSmallInteger và uuid.
 
 #### Renaming Columns
 
@@ -482,11 +486,30 @@ Laravel cũng cung cấp hỗ trợ để tạo các ràng buộc khóa ngoại,
         $table->foreign('user_id')->references('id')->on('users');
     });
 
+Vì cú pháp này khá dài dòng, nên Laravel đã cung cấp thêm các phương thức bổ sung, ngắn gọn hơn sử dụng quy ước để cung cấp trải nghiệm tốt hơn cho nhà phát triển. Ví dụ trên có thể được viết lại như sau:
+
+    Schema::table('posts', function (Blueprint $table) {
+        $table->foreignId('user_id')->constrained();
+    });
+
+Phương thức `foreignId` là một bí danh cho phương thức `unsignedBigInteger` trong khi phương thức `constrained` sẽ sử dụng quy ước để xác định tên bảng và tên cột đang được tham chiếu. Nếu tên bảng của bạn không phù hợp với quy ước, bạn có thể chỉ định tên bảng bằng cách truyền nó làm một tham số cho phương thức `constrained`:
+
+    Schema::table('posts', function (Blueprint $table) {
+        $table->foreignId('user_id')->constrained('users');
+    });
+
+
 Bạn cũng có thể khai báo hành động mong muốn cho các thuộc tính của ràng buộc "khi xóa" hoặc "khi cập nhật":
 
-    $table->foreign('user_id')
-          ->references('id')->on('users')
+    $table->foreignId('user_id')
+          ->constrained()
           ->onDelete('cascade');
+
+Bất kỳ [các sửa đổi bổ sung cho cột](#column-modifiers) sẽ đều phải được gọi trước khi `constrained`:
+
+    $table->foreignId('user_id')
+          ->nullable()
+          ->constrained();
 
 Để xoá khóa ngoại, bạn có thể sử dụng phương thức `dropForeign` và truyền ràng buộc khóa ngoại sẽ bị xóa dưới dạng tham số. Các ràng buộc khóa ngoại sẽ được sử dụng theo quy ước đặt tên giống với các index dựa trên tên bảng và tên cột trong ràng buộc, theo sau là hậu tố "\_foreign":
 
@@ -502,4 +525,4 @@ Bạn có thể bật hoặc tắt các ràng buộc khóa ngoại trong migrati
 
     Schema::disableForeignKeyConstraints();
 
-> {note} Mặc định, SQLite sẽ vô hiệu hóa các ràng buộc khóa ngoại. Khi sử dụng SQLite, bạn hãy chắc chắn rằng là [đã bật hỗ trợ khóa ngoại](/docs/{{version}}/database#configuration) trong cấu hình cơ sở dữ liệu của bạn trước khi tạo chúng trong quá trình migration của bạn.
+> {note} Mặc định, SQLite sẽ vô hiệu hóa các ràng buộc khóa ngoại. Khi sử dụng SQLite, bạn hãy chắc chắn rằng là [đã bật hỗ trợ khóa ngoại](/docs/{{version}}/database#configuration) trong cấu hình cơ sở dữ liệu của bạn trước khi tạo chúng trong quá trình migration của bạn. Ngoài ra, SQLite chỉ hỗ trợ khóa ngoại khi tạo bảng và [không hỗ trợ khi bảng bị thay đổi](https://www.sqlite.org/omitted.html).
