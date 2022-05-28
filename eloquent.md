@@ -24,7 +24,9 @@
     - [Local Scope](#local-scopes)
 - [So sánh Model](#comparing-models)
 - [Event](#events)
+    - [Dùng Closures](#events-using-closures)
     - [Observer](#observers)
+    - [Tắt event](#muting-events)
 
 <a name="introduction"></a>
 ## Giới thiệu
@@ -497,6 +499,19 @@ Phương thức `wasChanged` sẽ xác định xem đã có bất kỳ thuộc t
     $user->wasChanged('title'); // true
     $user->wasChanged('first_name'); // false
 
+Phương thức `getOriginal` sẽ trả về một mảng chứa các thuộc tính ban đầu của model bất kể có thay đổi nào từ khi model được load. Bạn có thể truyền vào tên của một thuộc tính cụ thể để nhận về giá trị ban đầu của một thuộc tính đó:
+
+    $user = User::find(1);
+
+    $user->name; // John
+    $user->email; // john@example.com
+
+    $user->name = "Jack";
+    $user->name; // Jack
+
+    $user->getOriginal('name'); // John
+    $user->getOriginal(); // Array of original attributes...
+
 <a name="mass-assignment"></a>
 ### Mass Assignment
 
@@ -530,25 +545,7 @@ Nếu bạn đã có một instance model, bạn có thể sử dụng phương 
 
     $flight->fill(['name' => 'Flight 22']);
 
-#### Guarding Attributes
-
-Trong khi `$fillable` đóng vai trò là một "danh sách trắng" cho các thuộc tính có thể được sử dụng để mass assignable, thì bạn cũng có thể chọn sử dụng `$guarded`. Thuộc tính `$guarded` sẽ chứa một mảng các thuộc tính mà bạn không muốn được sử dụng cho mass assignable. Tất cả các thuộc tính khác không có trong mảng này sẽ được sử dụng cho mass assignable. Vì vậy, thuộc tính `$guarded` giống như là một "danh sách đen". Một điều quan trọng là bạn nên sử dụng `$fillable` hoặc `$guarded` - nhưng không phải là cả hai. Trong ví dụ dưới đây, tất cả các thuộc tính **ngoại trừ `price`** sẽ được sử dụng cho mass assignable:
-
-    <?php
-
-    namespace App;
-
-    use Illuminate\Database\Eloquent\Model;
-
-    class Flight extends Model
-    {
-        /**
-         * The attributes that aren't mass assignable.
-         *
-         * @var array
-         */
-        protected $guarded = ['price'];
-    }
+#### Allowing Mass Assignment
 
 Nếu bạn muốn làm cho tất cả các thuộc tính đều có thể được sử dụng mass assignable, bạn có thể định nghĩa thuộc tính `$guarded` là một mảng trống:
 
@@ -618,6 +615,8 @@ Trong ví dụ trên, chúng ta đang lấy một model từ cơ sở dữ liệ
 
     App\Flight::destroy(collect([1, 2, 3]));
 
+> {note} Phương thức `destroy` sẽ load từng model và gọi phương thức `delete` trên từng model đó để kích hoạt các event `deleting` và `deleted`.
+
 #### Deleting Models By Query
 
 Bạn cũng có thể chạy một câu lệnh xóa trên một tập các model. Trong ví dụ này, chúng ta sẽ xóa tất cả các flight có đánh dấu là không hoạt động. Giống như mass update, mass delete cũng sẽ không kích hoạt bất kỳ event nào của model khi các model bị xóa:
@@ -647,9 +646,19 @@ Ngoài việc xóa các bản ghi ra khỏi cơ sở dữ liệu của bạn, El
 
 Bạn cũng cần thêm cột `deleted_at` vào bảng cơ sở dữ liệu của bạn. [Schema builder](/docs/{{version}}/migrations) của Laravel có chứa một phương thức helper để tạo cột này:
 
-    Schema::table('flights', function (Blueprint $table) {
-        $table->softDeletes();
-    });
+    public function up()
+    {
+        Schema::table('flights', function (Blueprint $table) {
+            $table->softDeletes();
+        });
+    }
+
+    public function down()
+    {
+        Schema::table('flights', function (Blueprint $table) {
+            $table->dropSoftDeletes();
+        });
+    }
 
 Bây giờ, khi bạn gọi phương thức `delete` trên model, cột `deleted_at` sẽ được set thành ngày giờ của hiện tại. Và khi truy vấn một model mà có sử dụng soft delete, thì các model mà đã bị soft delete thì sẽ bị tự động loại khỏi ra tất cả các kết quả truy vấn.
 
@@ -766,7 +775,7 @@ Viết một global scope rất đơn giản. Định nghĩa một class impleme
 
 #### Applying Global Scopes
 
-Để gán một global scope cho một model, bạn nên ghi đè phương thức `boot` của một model và sử dụng phương thức `addGlobalScope`:
+Để gán một global scope cho một model, bạn nên ghi đè phương thức `booted` của một model và sử dụng phương thức `addGlobalScope`:
 
     <?php
 
@@ -778,14 +787,12 @@ Viết một global scope rất đơn giản. Định nghĩa một class impleme
     class User extends Model
     {
         /**
-         * The "booting" method of the model.
+         * The "booted" method of the model.
          *
          * @return void
          */
-        protected static function boot()
+        protected static function booted()
         {
-            parent::boot();
-
             static::addGlobalScope(new AgeScope);
         }
     }
@@ -808,14 +815,12 @@ Eloquent cũng cho phép bạn định nghĩa global scope bằng cách sử d�
     class User extends Model
     {
         /**
-         * The "booting" method of the model.
+         * The "booted" method of the model.
          *
          * @return void
          */
-        protected static function boot()
+        protected static function booted()
         {
-            parent::boot();
-
             static::addGlobalScope('age', function (Builder $builder) {
                 $builder->where('age', '>', 200);
             });
@@ -939,7 +944,7 @@ Thỉnh thoảng bạn có thể cần xác định xem hai model có "giống n
 
 Các eloquent model sẽ kích hoạt một số event, cho phép bạn hook đến các chỗ khác trong vòng đời của một model: `retrieved`, `creating`, `created`, `updating`, `updated`, `saving`, `saved`, `deleting`, `deleted`, `restoring`, `restored`. Event cho phép bạn dễ dàng thực thi code mỗi khi một class model cụ thể nào đó được lưu hoặc được cập nhật vào trong cơ sở dữ liệu. Mỗi event sẽ nhận về một instance của model đó thông qua phương thức khởi tạo của event đó.
 
-Event `retrieved` sẽ được kích hoạt khi một model được lấy ra khỏi cơ sở dữ liệu. Khi một model mới được lưu vào lần đầu tiên, các event `creating` và `created` sẽ kích hoạt. Nếu một model đã có trong cơ sở dữ liệu và phương thức `save` được gọi, thì các event `updating` và `updated` sẽ kích hoạt. Tuy nhiên, trong cả hai trường hợp trên, thì các event `saving` / `saved` cũng sẽ kích hoạt.
+Event `retrieved` sẽ được kích hoạt khi một model được lấy ra khỏi cơ sở dữ liệu. Khi một model mới được lưu vào lần đầu tiên, các event `creating` và `created` sẽ kích hoạt. Các event `updating` / `updated` sẽ kích hoạt khi một model đang tồn tại có sửa đổi và gọi đến phương thức `save`. Các event `saving` / `saved` sẽ kích hoạt khi một model mới được tạo hoặc cập nhật.
 
 > {note} Khi bạn cập nhật một loạt dữ liệu thông qua Eloquent, thì các event của model như `saved`, `updated`, `deleting`, và `deleted` sẽ không được kích hoạt cho các model đó. Điều này là do các model không thực sự được lấy ra khi bạn chạy các cập nhật hoặc xoá bỏ.
 
@@ -969,6 +974,32 @@ Event `retrieved` sẽ được kích hoạt khi một model được lấy ra k
     }
 
 Sau khi định nghĩa và ánh xạ các event Eloquent của bạn, bạn có thể sử dụng [event listener](https://laravel.com/docs/{{version}}/events#defining-listeners) để xử lý các event đó.
+
+<a name="events-using-closures"></a>
+### Dùng Closures
+
+Thay vì sử dụng các class event tùy biến, bạn có thể đăng ký một Closures để được chạy khi các event model khác nhau được kích hoạt. Thông thường, bạn nên đăng ký các Closures này trong phương thức `booted` của model của bạn:
+
+    <?php
+
+    namespace App;
+
+    use Illuminate\Database\Eloquent\Model;
+
+    class User extends Model
+    {
+        /**
+         * The "booted" method of the model.
+         *
+         * @return void
+         */
+        protected static function booted()
+        {
+            static::created(function ($user) {
+                //
+            });
+        }
+    }
 
 <a name="observers"></a>
 ### Observer
@@ -1066,3 +1097,16 @@ Lệnh này sẽ lưu file observer mới vào trong thư mục `App/Observers` 
             User::observe(UserObserver::class);
         }
     }
+
+<a name="muting-events"></a>
+### Tắt event
+
+Đôi khi bạn có thể muốn tạm thời "tắt" tất cả các event do một model kích hoạt. Bạn có thể làm được điều này bằng cách sử dụng phương thức `withoutEvents`. Phương thức `withoutEvents` chấp nhận một Closure làm tham số duy nhất của nó. Bất kỳ code nào được chạy trong Closure này sẽ không kích hoạt bất kỳ event nào của model. Ví dụ: code sau sẽ tìm và xóa một instance `App\User` mà không kích hoạt bất kỳ event model nào. Bất kỳ giá trị nào được trả về bởi Closure cũng là giá trị sẽ được trả về bởi phương thức `withoutEvents`:
+
+    use App\User;
+
+    $user = User::withoutEvents(function () use () {
+        User::findOrFail(1)->delete();
+
+        return User::find(2);
+    });

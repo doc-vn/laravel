@@ -54,7 +54,7 @@ Bạn có thể hash một mật khẩu bằng cách gọi phương thức `make
 Nếu bạn đang thuật toán Bcrypt, thì phương thức `make` cũng cho phép bạn quản lý work factor của thuật toán bcrypt hashing bằng cách sử dụng tùy chọn `rounds`; tuy nhiên, giá trị mặc định được chấp nhận cho hầu hết các application:
 
     $hashed = Hash::make('password', [
-        'rounds' => 12
+        'rounds' => 12,
     ]);
 
 #### Adjusting The Argon2 Work Factor

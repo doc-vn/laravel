@@ -11,6 +11,7 @@
 - [Lệnh where](#where-clauses)
     - [Group tham số](#parameter-grouping)
     - [Lệnh where exist](#where-exists-clauses)
+    - [Lệnh where cho truy vấn con](#subquery-where-clauses)
     - [Lệnh where cho JSON](#json-where-clauses)
 - [Ordering, Grouping, Limit và Offset](#ordering-grouping-limit-and-offset)
 - [Điều kiện cho lệnh](#conditional-clauses)
@@ -264,7 +265,7 @@ Nếu bạn muốn thực hiện "left join" hoặc "right join" thay vì "inner
 
 Để thực hiện "cross join", hãy sử dụng phương thức `crossJoin` với tên bảng mà bạn muốn cross join. Các cross join sẽ tạo ra một bảng mới có hàng là các hàng của bảng đầu tiên và bảng thứ hai nhân chéo vào nhau:
 
-    $users = DB::table('sizes')
+    $sizes = DB::table('sizes')
                 ->crossJoin('colors')
                 ->get();
 
@@ -405,6 +406,8 @@ Phương thức `whereNotIn` sẽ kiểm tra giá trị của một cột đã c
                         ->whereNotIn('id', [1, 2, 3])
                         ->get();
 
+> {note} Nếu bạn đang thêm một mảng integer lớn vào truy vấn của bạn, phương thức `whereIntegerInRaw` hoặc `whereIntegerNotInRaw` có thể được sử dụng để giảm đáng kể mức sử dụng bộ nhớ của bạn.
+
 **whereNull / whereNotNull / orWhereNull / orWhereNotNull**
 
 Phương thức `whereNull` sẽ kiểm tra giá trị của một cột đã cho là `NULL` hay không:
@@ -512,6 +515,21 @@ Truy vấn trên sẽ tạo ra lệnh SQL như sau:
         select 1 from orders where orders.user_id = users.id
     )
 
+<a name="subquery-where-clauses"></a>
+### Lệnh where cho truy vấn con
+
+Thỉnh thoảng bạn có thể cần phải xây dựng một mệnh đề where so sánh kết quả của một truy vấn con với một giá trị nhất định. Bạn có thể thực hiện điều này bằng cách truyền một Closure và một giá trị cho phương thức `where`. Ví dụ: truy vấn sau sẽ lấy ra tất cả người dùng gần đây nhất mà có "tư cách thành viên" của một loại nhất định;
+
+    use App\User;
+
+    $users = User::where(function ($query) {
+        $query->select('type')
+            ->from('membership')
+            ->whereColumn('user_id', 'users.id')
+            ->orderByDesc('start_date')
+            ->limit(1);
+    }, 'Pro')->get();
+
 <a name="json-where-clauses"></a>
 ### Lệnh where cho JSON
 
@@ -558,6 +576,13 @@ Phương thức `orderBy` cho phép bạn sắp xếp kết quả của truy v�
                     ->orderBy('name', 'desc')
                     ->get();
 
+Nếu bạn cần sắp xếp theo nhiều cột, bạn có thể gọi `orderBy` nhiều lần nếu cần:
+
+    $users = DB::table('users')
+                    ->orderBy('name', 'desc')
+                    ->orderBy('email', 'asc')
+                    ->get();
+
 #### latest / oldest
 
 Các phương thức `latest` và `oldest` cho phép bạn dễ dàng sắp xếp kết quả theo ngày. Mặc định, kết quả sẽ được sắp xếp theo cột `created_at`. Hoặc, bạn có thể truyền vào một tên cột mà bạn muốn sắp xếp theo:
@@ -573,6 +598,20 @@ Phương thức `inRandomOrder` có thể được sử dụng để sắp xếp
     $randomUser = DB::table('users')
                     ->inRandomOrder()
                     ->first();
+
+#### reorder
+
+Phương thức `reorder` cho phép bạn xóa tất cả các orderBy hiện có và một tùy chọn cho phép bạn áp dụng một orderBy mới. Ví dụ: bạn có thể xóa tất cả các orderBy hiện có:
+
+    $query = DB::table('users')->orderBy('name');
+
+    $unorderedUsers = $query->reorder()->get();
+
+Để xóa tất cả các orderBy hiện có và áp dụng một orderBy mới, hãy cung cấp một cột và một chiều làm tham số cho phương thức:
+
+    $query = DB::table('users')->orderBy('name');
+
+    $usersOrderedByEmail = $query->reorder('email', 'desc')->get();
 
 #### groupBy / having
 
@@ -645,14 +684,14 @@ Bạn thậm chí có thể thêm nhiều bản ghi vào bảng của cơ sở d
 
     DB::table('users')->insert([
         ['email' => 'taylor@example.com', 'votes' => 0],
-        ['email' => 'dayle@example.com', 'votes' => 0]
+        ['email' => 'dayle@example.com', 'votes' => 0],
     ]);
 
 Phương thức `insertOrIgnore` sẽ bỏ qua các bản ghi trùng lặp trong khi chèn bản ghi vào cơ sở dữ liệu:
 
     DB::table('users')->insertOrIgnore([
         ['id' => 1, 'email' => 'taylor@example.com'],
-        ['id' => 2, 'email' => 'dayle@example.com']
+        ['id' => 2, 'email' => 'dayle@example.com'],
     ]);
 
 #### Auto-Incrementing IDs
@@ -713,6 +752,8 @@ Cả hai phương thức này đều chấp nhận ít nhất một tham số l�
 Bạn cũng có thể khai báo thêm các cột để cập nhật trong quá trình hoạt động:
 
     DB::table('users')->increment('votes', 1, ['name' => 'John']);
+
+> {note} Các model event sẽ không được kích hoạt khi sử dụng phương thức `increment` và `decrement`.
 
 <a name="deletes"></a>
 ## Delete

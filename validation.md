@@ -117,9 +117,9 @@ Ngoài ra, các quy tắc validation có thể được chỉ định dưới d�
         'body' => ['required'],
     ]);
 
-Nếu bạn muốn chỉ định [error bag](#named-error-bags) mà thông báo lỗi sẽ được đặt vào, bạn có thể sử dụng phương thức `validateWithBag`:
+Bạn có thể sử dụng phương thức `validateWithBag` để kiểm tra một request và lưu bất kỳ thông báo lỗi nào vào trong một [named error bag](#named-error-bags):
 
-    $request->validateWithBag('blog', [
+    $validatedData = $request->validateWithBag('post', [
         'title' => ['required', 'unique:posts', 'max:255'],
         'body' => ['required'],
     ]);
@@ -319,7 +319,7 @@ Bạn có thể tùy biến các thông báo lỗi được sử dụng bởi fo
     {
         return [
             'title.required' => 'A title is required',
-            'body.required'  => 'A message is required',
+            'body.required' => 'A message is required',
         ];
     }
 
@@ -411,6 +411,13 @@ Nếu bạn muốn tự tạo một validator instance nhưng vẫn muốn tận
         'body' => 'required',
     ])->validate();
 
+Bạn có thể sử dụng phương thức `validateWithBag` để lưu thông báo lỗi vào trong một [named error bag](#named-error-bags) nếu quá trình kiểm tra không thành công:
+
+    Validator::make($request->all(), [
+        'title' => 'required|unique:posts|max:255',
+        'body' => 'required',
+    ])->validateWithBag('post');
+
 <a name="named-error-bags"></a>
 ### Tên của Error Bags
 
@@ -497,10 +504,10 @@ Nếu cần, bạn có thể tùy biến thông báo lỗi cho validation thay v
 Trong ví dụ này, `:attribute` sẽ được thay thế bằng tên thực sự của field mà được validation. Bạn cũng có thể sử dụng các attribute khác trong validation messages. Ví dụ:
 
     $messages = [
-        'same'    => 'The :attribute and :other must match.',
-        'size'    => 'The :attribute must be exactly :size.',
+        'same' => 'The :attribute and :other must match.',
+        'size' => 'The :attribute must be exactly :size.',
         'between' => 'The :attribute value :input is not between :min - :max.',
-        'in'      => 'The :attribute must be one of the following types: :values',
+        'in' => 'The :attribute must be one of the following types: :values',
     ];
 
 #### Chỉ định một Custom Message cho một attribute nhất định
@@ -522,13 +529,21 @@ Trong hầu hết các trường hợp, bạn có thể sẽ cần chỉ định
         ],
     ],
 
-#### Chỉ định Custom Attributes trong file Language
+#### Chỉ định Custom giá trị Attributes
 
 Nếu bạn muốn phần `:attribute` trong thông báo validation của bạn được thay thế bằng một tên attribute tùy biến, bạn có thể chỉ định tên tùy biến này trong mảng `attributes` của file language `resources/lang/xx/validation.php`:
 
     'attributes' => [
         'email' => 'email address',
     ],
+
+Bạn cũng có thể truyền các thuộc tính tùy chỉnh làm tham số thứ tư cho phương thức `Validator::make`:
+
+    $customAttributes = [
+        'email' => 'email address',
+    ];
+
+    $validator = Validator::make($input, $rules, $messages, $customAttributes);
 
 #### Chỉ định Custom Values trong file Language
 
@@ -594,7 +609,7 @@ Dưới đây là danh sách tất cả các quy tắc validation có sẵn và 
 [Digits Between](#rule-digits-between)
 [Dimensions (Image Files)](#rule-dimensions)
 [Distinct](#rule-distinct)
-[E-Mail](#rule-email)
+[Email](#rule-email)
 [Ends With](#rule-ends-with)
 [Exclude If](#rule-exclude-if)
 [Exclude Unless](#rule-exclude-unless)
@@ -1180,6 +1195,24 @@ Field được validation phải là một mã định danh (UUID) RFC 4122 (phi
 
 <a name="conditionally-adding-rules"></a>
 ## Thêm điều kiện cho Rule
+
+#### Skipping Validation When Fields Have Certain Values
+
+Đôi khi bạn có thể muốn không kiểm tra một trường nhất định nếu một trường khác có giá trị đã cho. Bạn có thể thực hiện điều này bằng cách sử dụng quy tắc validation `exclude_if`. Trong ví dụ này, các trường `appointment_date` và `doctor_name` sẽ không bị kiểm tra nếu trường `has_appointment` có giá trị là `false`:
+
+    $v = Validator::make($data, [
+        'has_appointment' => 'required|bool',
+        'appointment_date' => 'exclude_if:has_appointment,false|required|date',
+        'doctor_name' => 'exclude_if:has_appointment,false|required|string',
+    ]);
+
+Ngoài ra, bạn có thể sử dụng quy tắc `exclude_unless` để không kiểm tra một trường nhất định trừ khi một trường khác có một giá trị đã cho:
+
+    $v = Validator::make($data, [
+        'has_appointment' => 'required|bool',
+        'appointment_date' => 'exclude_unless:has_appointment,true|required|date',
+        'doctor_name' => 'exclude_unless:has_appointment,true|required|string',
+    ]);
 
 #### Validate khi tồn tại
 

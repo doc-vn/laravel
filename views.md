@@ -4,6 +4,7 @@
 - [Truyền dữ liệu đến Views](#passing-data-to-views)
     - [Chia sẽ dữ liệu với tất cả các Views](#sharing-data-with-all-views)
 - [View Composers](#view-composers)
+- [Optimizing Views](#optimizing-views)
 
 <a name="creating-views"></a>
 ## Tạo Views
@@ -214,3 +215,16 @@ Phương thức `composer` cũng chấp nhận một ký tự `*` làm ký tự 
 View **creators** giống với view composer; tuy nhiên, chúng được thực thi ngay lập tức sau khi view được khởi tạo thay vì đợi cho đến khi view sắp được hiển thị. Để đăng ký một view creator, hãy sử dụng phương thức `creator`:
 
     View::creator('profile', 'App\Http\View\Creators\ProfileCreator');
+
+<a name="optimizing-views"></a>
+## Optimizing Views
+
+Mặc định, các view sẽ được biên dịch theo từng request. Khi một request được thực hiện làm hiển thị một view, thì Laravel sẽ xác định xem có tồn tại một phiên bản đã biên dịch của view đó hay không. Nếu file có tồn tại, Laravel sẽ xác định xem gần đây view chưa biên dịch có gì sửa đổi hơn với view đã được biên dịch hay không. Nếu view đã biên dịch không tồn tại hoặc view chưa được biên dịch đã có sửa đổi mới, thì Laravel sẽ biên dịch lại view.
+
+Việc biên dịch các view trong quá trình request sẽ ảnh hưởng tiêu cực đến hiệu suất, vì vậy Laravel cung cấp lệnh Artisan `view:cache` để biên dịch trước tất cả các view mà được ứng dụng của bạn sử dụng. Để tăng hiệu suất, bạn có thể muốn chạy lệnh này như là một phần trong quá trình deploy của bạn:
+
+    php artisan view:cache
+
+Bạn có thể sử dụng lệnh `view:clear` để xóa cache của view:
+
+    php artisan view:clear

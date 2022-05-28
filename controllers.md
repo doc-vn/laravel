@@ -11,6 +11,7 @@
     - [Nested Resources](#restful-nested-resources)
     - [Naming Resource Routes](#restful-naming-resource-routes)
     - [Naming Resource Route Parameters](#restful-naming-resource-route-parameters)
+    - [Scoping Resource Routes](#restful-scoping-resource-routes)
     - [Localizing Resource URIs](#restful-localizing-resource-uris)
     - [Supplementing Resource Controller](#restful-supplementing-resource-controllers)
 - [Dependency Injection và Controller](#dependency-injection-and-controllers)
@@ -101,6 +102,8 @@ Bạn có thể tạo một controller chỉ có một action duy nhất bằng 
 
     php artisan make:controller ShowProfile --invokable
 
+> {tip} Bạn có thể tùy chỉnh các stub của controller bằng cách [export chúng](/docs/{{version}}/artisan#stub-customization)
+
 <a name="controller-middleware"></a>
 ## Controller Middleware
 
@@ -156,7 +159,7 @@ Bạn có thể đăng ký nhiều resource controller cùng một lúc bằng c
 
     Route::resources([
         'photos' => 'PhotoController',
-        'posts' => 'PostController'
+        'posts' => 'PostController',
     ]);
 
 #### Các hành động được xử lý bởi Resource Controller
@@ -208,7 +211,7 @@ Bạn có thể đăng ký nhiều resource controller cho API cùng một lúc 
 
     Route::apiResources([
         'photos' => 'PhotoController',
-        'posts' => 'PostController'
+        'posts' => 'PostController',
     ]);
 
 Để tạo nhanh một API resource controller mà không chứa các phương thức `create` hoặc `edit`, hãy sử dụng switch `--api` khi chạy lệnh `make:controller`:
@@ -265,6 +268,26 @@ Mặc định, `Route::resource` sẽ tạo các tham số route cho các resour
 Ví dụ ở trên sẽ tạo ra một URI như ở dưới cho một route `show` của resource:
 
     /users/{admin_user}
+
+
+<a name="restful-scoping-resource-routes"></a>
+### Scoping Resource Routes
+
+Thỉnh thoảng, khi liên kết ngầm nhiều model Eloquent trong các định nghĩa về resource route, bạn có thể muốn scope model Eloquent thứ hai sao cho nó phải là con của model Eloquent thứ nhất. Ví dụ: hãy xem tình huống sau lấy ra một bài đăng trong blog bằng slug cho một user cụ thể:
+
+    use App\Http\Controllers\PostsController;
+
+    Route::resource('users.posts', PostsController::class)->scoped();
+
+Bạn có thể ghi đè các key route của model mặc định bằng cách truyền một mảng vào phương thức `scoped`:
+
+    use App\Http\Controllers\PostsController;
+
+    Route::resource('users.posts', PostsController::class)->scoped([
+        'post' => 'slug',
+    ]);
+
+Khi sử dụng liên kết ngầm có key tùy biến làm một tham số route lồng nhau, Laravel sẽ tự động scope truy vấn để lấy ra các model lồng nhau thông qua cha của nó bằng cách sử dụng các quy ước để đặt tên quan hệ trên cha. Trong trường hợp này, sẽ giả định rằng model `User` có một quan hệ có tên là `posts` (số nhiều của tên tham số route) có thể được sử dụng để lấy ra model `Post`.
 
 <a name="restful-localizing-resource-uris"></a>
 ### Localizing Resource URIs

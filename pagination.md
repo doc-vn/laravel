@@ -8,6 +8,7 @@
 - [Hiển thị kết quả phân trang](#displaying-pagination-results)
     - [Chuyển kết quả thành JSON](#converting-results-to-json)
 - [Tuỳ biến View của phân trang](#customizing-the-pagination-view)
+    - [Dùng Tailwind](#using-tailwind)
 - [Các phương thức có sẵn](#paginator-instance-methods)
 
 <a name="introduction"></a>
@@ -114,6 +115,10 @@ Bạn có thể nối thêm các tham số vào các link phân trang bằng ph�
 
     {{ $users->appends(['sort' => 'votes'])->links() }}
 
+Nếu bạn muốn nối tất cả các giá trị query string hiện tại vào các link phân trang, bạn có thể sử dụng phương thức `withQueryString`:
+
+    {{ $users->withQueryString()->links() }}
+
 Nếu bạn muốn nối thêm một "hash fragment" vào các URL của trình phân trang, bạn có thể sử dụng phương thức `fragment`. Ví dụ: để nối `#foo` vào cuối của mỗi link phân trang, hãy thực hiện gọi đến phương thức `fragment` như sau:
 
     {{ $users->fragment('foo')->links() }}
@@ -184,6 +189,18 @@ Nếu bạn muốn chỉ định một file khác làm pagination view mặc đ�
         Paginator::defaultSimpleView('view-name');
     }
 
+<a name="using-tailwind"></a>
+### Dùng Tailwind
+
+Laravel có chứa các view phân trang được xây dựng bằng [Tailwind CSS](https://tailwindcss.com/). Để sử dụng các view này thay vì các view Bootstrap mặc định, bạn có thể gọi phương thức `useTailwind` của paginator trong `AppServiceProvider` của bạn:
+
+    use Illuminate\Pagination\Paginator;
+
+    public function boot()
+    {
+        Paginator::useTailwind();
+    }
+
 <a name="paginator-instance-methods"></a>
 ## Các phương thức có sẵn
 
@@ -191,21 +208,21 @@ Mỗi instance phân trang cung cấp thêm các thông tin phân trang thông q
 
 Method  |  Description
 -------  |  -----------
-`$results->count()`  |  Lấy số lượng các item cho trang hiện tại.
-`$results->currentPage()`  |  Lấy page number trong trang hiện tại.
-`$results->firstItem()`  |  Lấy số lượng kết quả của item đầu tiên trong kết quả.
-`$results->getOptions()`  |  Lấy các tùy chọn paginator.
-`$results->getUrlRange($start, $end)`  |  Tạo một loạt các URL phân trang.
-`$results->hasPages()`  |  Kiểm tra xem có đủ item để chia thành nhiều trang hay không.
-`$results->hasMorePages()`  |  Kiểm tra xem có nhiều item hơn trong data store hay không.
-`$results->items()`  |  Lấy các item cho trang hiện tại.
-`$results->lastItem()`  |  Lấy số lượng kết quả của item cuối cùng trong kết quả.
-`$results->lastPage()`  |  Lấy page number của trang cuối cùng có sẵn. (Không khả dụng khi sử dụng `simplePaginate`).
-`$results->nextPageUrl()`  |  Lấy URL cho trang tiếp theo.
-`$results->onFirstPage()`  |  Kiểm tra xem paginator có đang ở trang đầu tiên hay không.
-`$results->perPage()`  |  Số lượng item được hiển thị trên mỗi trang.
-`$results->previousPageUrl()`  |  Lấy URL cho trang trước đó.
-`$results->total()`  |  Kiểm tra tổng số item phù hợp trong data store. (Không khả dụng khi sử dụng `simplePaginate`).
-`$results->url($page)`  |  Lấy URL cho một trang nhất định.
-`$results->getPageName()`  |  Lấy biến query string được sử dụng để lưu trữ trang.
-`$results->setPageName($name)`  |  Set biến query string được sử dụng để lưu trữ trang.
+`$paginator->count()`  |  Lấy số lượng các item cho trang hiện tại.
+`$paginator->currentPage()`  |  Lấy page number trong trang hiện tại.
+`$paginator->firstItem()`  |  Lấy số lượng kết quả của item đầu tiên trong kết quả.
+`$paginator->getOptions()`  |  Lấy các tùy chọn paginator.
+`$paginator->getUrlRange($start, $end)`  |  Tạo một loạt các URL phân trang.
+`$paginator->hasPages()`  |  Kiểm tra xem có đủ item để chia thành nhiều trang hay không.
+`$paginator->hasMorePages()`  |  Kiểm tra xem có nhiều item hơn trong data store hay không.
+`$paginator->items()`  |  Lấy các item cho trang hiện tại.
+`$paginator->lastItem()`  |  Lấy số lượng kết quả của item cuối cùng trong kết quả.
+`$paginator->lastPage()`  |  Lấy page number của trang cuối cùng có sẵn. (Không khả dụng khi sử dụng `simplePaginate`).
+`$paginator->nextPageUrl()`  |  Lấy URL cho trang tiếp theo.
+`$paginator->onFirstPage()`  |  Kiểm tra xem paginator có đang ở trang đầu tiên hay không.
+`$paginator->perPage()`  |  Số lượng item được hiển thị trên mỗi trang.
+`$paginator->previousPageUrl()`  |  Lấy URL cho trang trước đó.
+`$paginator->total()`  |  Kiểm tra tổng số item phù hợp trong data store. (Không khả dụng khi sử dụng `simplePaginate`).
+`$paginator->url($page)`  |  Lấy URL cho một trang nhất định.
+`$paginator->getPageName()`  |  Lấy biến query string được sử dụng để lưu trữ trang.
+`$paginator->setPageName($name)`  |  Set biến query string được sử dụng để lưu trữ trang.

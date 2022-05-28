@@ -7,12 +7,15 @@
     - [Lấy item trong cache](#retrieving-items-from-the-cache)
     - [Lưu item trong cache](#storing-items-in-the-cache)
     - [Xoá item trong cache](#removing-items-from-the-cache)
-    - [Atomic Lock](#atomic-locks)
     - [Cache helper](#the-cache-helper)
 - [Cache tag](#cache-tags)
     - [Lưu item vào cache tag](#storing-tagged-cache-items)
     - [Truy cập item từ cache tag](#accessing-tagged-cache-items)
     - [Xoá item từ cache tag](#removing-tagged-cache-items)
+- [Atomic Locks](#atomic-locks)
+    - [Yêu cầu driver](#lock-driver-prerequisites)
+    - [Quản lý Locks](#managing-locks)
+    - [Quản lý Locks trong Processes](#managing-locks-across-processes)
 - [Thêm tuỳ biến cache driver](#adding-custom-cache-drivers)
     - [Viết driver](#writing-the-driver)
     - [Đăng ký driver](#registering-the-driver)
@@ -209,10 +212,81 @@ Bạn có thể xóa toàn bộ cache bằng phương thức `flush`:
 
 > {note} Khi xóa toàn bộ cache thì nó sẽ xóa tất cả các item ra khỏi cache mà không tâm đến cache prefix. Hãy xem xét điều này một cách cẩn thận trước khi xóa, nếu cache đó đang được dùng để chia sẻ cho các application khác.
 
-<a name="atomic-locks"></a>
-### Atomic Lock
+<a name="the-cache-helper"></a>
+### The Cache Helper
 
-> {note} Để sử dụng tính năng này, ứng dụng của bạn phải sử dụng cache driver `memcached`, `dynamodb`, hoặc `redis` làm cache driver mặc định. Ngoài ra, tất cả các server phải được giao tiếp với cùng một server cache trung tâm.
+Ngoài việc sử dụng facade `Cache` hoặc [cache contract](/docs/{{version}}/contracts), bạn cũng có thể sử dụng hàm global `cache` để lấy và lưu trữ dữ liệu vào bộ nhớ cache. Khi hàm `cache` được gọi với một tham số chuỗi, nó sẽ trả về giá trị của khóa tương ứng với chuỗi đó:
+
+    $value = cache('key');
+
+Nếu bạn cung cấp một mảng các cặp khóa, giá trị và một khoảng thời gian hết hạn cho hàm, thì nó sẽ lưu trữ các cặp khoá, giá trị đó vào trong bộ nhớ cache với khoảng thời gian hết hạn đã được chỉ định đó:
+
+    cache(['key' => 'value'], $seconds);
+
+    cache(['key' => 'value'], now()->addMinutes(10));
+
+Khi hàm `cache` được gọi mà không có bất kỳ tham số nào được truyền vào, thì nó sẽ trả về một instance của implementation `Illuminate\Contracts\Cache\Factory`, cho phép bạn gọi các phương thức caching khác:
+
+    cache()->remember('users', $seconds, function () {
+        return DB::table('users')->get();
+    });
+
+> {tip} Khi testing tới các lệnh gọi hàm global `cache`, bạn có thể sử dụng phương thức `Cache::shouldReceive` giống như bạn đang [testing một facade](/docs/{{version}}/mocking#mocking-facades).
+
+<a name="cache-tags"></a>
+## Cache Tags
+
+> {note} Cache tag sẽ không được hỗ trợ khi sử dụng các cache driver `file`, `dynamodb`, hoặc `database`. Hơn nữa, khi sử dụng nhiều tag với các cache mà được lưu trữ "mãi mãi", thì hiệu suất sẽ tốt nhất với một driver như `memcached`, loại tự động xóa các record cũ.
+
+<a name="storing-tagged-cache-items"></a>
+### Storing Tagged Cache Items
+
+Cache tag cho phép bạn gắn tag cho các item liên quan đến nhau vào trong bộ nhớ cache và sau đó sẽ xóa tất cả các giá trị đã được gán tag trước đó. Bạn có thể truy cập vào một giá trị đã được gắn tag bằng cách truyền vào một dãy tên tag có thứ tự. Ví dụ: hãy truy cập vào một giá trị đã được gắn tag và `put` các giá trị vào các giá trị đã được gắn đó:
+
+    Cache::tags(['people', 'artists'])->put('John', $john, $seconds);
+
+    Cache::tags(['people', 'authors'])->put('Anne', $anne, $seconds);
+
+<a name="accessing-tagged-cache-items"></a>
+### Accessing Tagged Cache Items
+
+Để lấy ra một item mà đã được gắn tag, hãy truyền cùng một danh sách các tag được sắp xếp theo thứ tự cho phương thức `tags` và sau đó gọi phương thức `get` với khóa mà bạn muốn lấy:
+
+    $john = Cache::tags(['people', 'artists'])->get('John');
+
+    $anne = Cache::tags(['people', 'authors'])->get('Anne');
+
+<a name="removing-tagged-cache-items"></a>
+### Removing Tagged Cache Items
+
+Bạn có thể xóa tất cả các item được gán tag hoặc một danh sách tag. Ví dụ: câu lệnh sau sẽ xóa tất cả các giá trị đã được gắn tag là `people`, `authors`, hoặc cả hai. Vì vậy, cả `Anne` và `John` sẽ đều bị xóa khỏi bộ nhớ cache:
+
+    Cache::tags(['people', 'authors'])->flush();
+
+Ngược lại, câu lệnh này sẽ chỉ xóa các giá trị đã được gắn tagg là `authors`, nên `Anne` sẽ bị xóa, và không xóa `John`:
+
+    Cache::tags('authors')->flush();
+
+<a name="atomic-locks"></a>
+## Atomic Locks
+
+> {note} Để sử dụng tính năng này, ứng dụng của bạn phải sử dụng cache driver `memcached`, `dynamodb`, `redis`, `database`, hoặc `array` làm cache driver mặc định của ứng dụng của bạn. Ngoài ra, tất cả các server phải được giao tiếp với cùng một server cache trung tâm.
+
+<a name="lock-driver-prerequisites"></a>
+### Yêu cầu driver
+
+#### Database
+
+Khi sử dụng cache driver `database`, bạn sẽ cần cài đặt một bảng để chứa các cache lock. Bạn có thể tham khảo một khai báo `Schema` mẫu như bảng dưới đây:
+
+    Schema::create('cache_locks', function ($table) {
+        $table->string('key')->primary();
+        $table->string('owner');
+        $table->integer('expiration');
+    });
+
+<a name="managing-locks"></a>
+### Quản lý Locks
 
 Atomic lock cho phép thao tác với các khóa phân tán mà không cần lo lắng về việc nhiều thread cùng truy cập cùng lúc. Ví dụ: [Laravel Forge](https://forge.laravel.com) sử dụng Atomic lock để đảm bảo rằng chỉ có một tác vụ đang được thực thi trên một máy chủ tại một thời điểm. Bạn có thể tạo và quản lý các khóa bằng phương thức `Cache::lock`:
 
@@ -252,7 +326,8 @@ Nếu khóa chưa sẵn sàng tại thời điểm bạn yêu cầu, bạn có t
         // Lock acquired after waiting maximum of 5 seconds...
     });
 
-#### Managing Locks Across Processes
+<a name="managing-locks-across-processes"></a>
+### Quản lý Locks trong Processes
 
 Thỉnh thoảng, bạn có thể muốn có được một khóa trong một process và giải phóng nó trong một process khác. Ví dụ: bạn có thể muốn có được khóa trong một web request và muốn mở khóa khi kết thúc một queued job được kích hoạt bởi chính request đó. Trong trường hợp này, bạn nên truyền vào một "owner token" trong scope của khóa cho queued job để job có thể khởi tạo lại khóa đó bằng cách sử dụng token được truyền vào:
 
@@ -271,61 +346,6 @@ Thỉnh thoảng, bạn có thể muốn có được một khóa trong một pr
 Nếu bạn muốn giải phóng khóa mà bỏ qua owner hiện tại của khoá, bạn có thể sử dụng phương thức `forceRelease`:
 
     Cache::lock('foo')->forceRelease();
-
-<a name="the-cache-helper"></a>
-### Cache helper
-
-Ngoài việc sử dụng facade `Cache` hoặc [cache contract](/docs/{{version}}/contracts), bạn cũng có thể sử dụng global helper `cache` để lấy hoặc lưu trữ dữ liệu vào cache. Khi hàm helper `cache` được gọi với một tham số key, nó sẽ trả về giá trị của key đó:
-
-    $value = cache('key');
-
-Nếu bạn gọi tới hàm helper đó với một mảng gồm các cặp key / value và thời gian hết hạn của chúng, thì nó sẽ lưu các giá trị đó vào trong cache với khoảng thời gian đã được cho:
-
-    cache(['key' => 'value'], $seconds);
-
-    cache(['key' => 'value'], now()->addMinutes(10));
-
-Khi phương thức `cache` được gọi mà không truyền vào bất kỳ tham số nào, thì nó sẽ trả về một instance của `Illuminate\Contracts\Cache\Factory` implementation, cho phép bạn gọi các phương thức khác trong bộ nhớ đệm:
-
-    cache()->remember('users', $seconds, function () {
-        return DB::table('users')->get();
-    });
-
-> {tip} Khi testing cần gọi đến hàm global `cache`, bạn có thể sử dụng phương thức `Cache::shouldReceive` giống như khi bạn [testing một facade](/docs/{{version}}/mocking#mocking-facades).
-
-<a name="cache-tags"></a>
-## Cache tag
-
-> {note} Cache tag không được hỗ trợ khi sử dụng cache driver `file` hoặc `database`. Hơn nữa, khi sử dụng nhiều tag với các bộ nhớ cache được lưu trữ "forever", thì hiệu suất sẽ tốt nhất với các driver như `memcached`, các loại mà tự động xóa các bản ghi cũ.
-
-<a name="storing-tagged-cache-items"></a>
-### Lưu item vào cache tag
-
-Cache tag cho phép bạn gắn tag vào các item liên quan tới nhau vào trong cache và sau đó xóa tất cả các giá trị được lưu trong bộ nhớ cache mà đã được gán với một tag nhất định. Bạn có thể truy cập vào cache được gắn tag bằng cách truyền vào một mảng các tag theo thứ tự. Ví dụ: hãy truy cập vào cache được gắn tag và `put` một giá trị vào trong cache đó:
-
-    Cache::tags(['people', 'artists'])->put('John', $john, $seconds);
-
-    Cache::tags(['people', 'authors'])->put('Anne', $anne, $seconds);
-
-<a name="accessing-tagged-cache-items"></a>
-### Truy cập item từ cache tag
-
-Để lấy ra một item cache mà được gắn tag, thì chúng ta truyền vào một danh sách các tag theo thứ tự cho phương thức `tags` và sau đó gọi phương thức `get` bằng key mà bạn muốn lấy:
-
-    $john = Cache::tags(['people', 'artists'])->get('John');
-
-    $anne = Cache::tags(['people', 'authors'])->get('Anne');
-
-<a name="removing-tagged-cache-items"></a>
-### Xoá item từ cache tag
-
-Bạn có thể xóa tất cả các item được gán một tag hoặc một danh sách các tag. Ví dụ, câu lệnh này sẽ xóa tất cả các bộ nhớ cache được gắn tag `people`, `authors` hoặc cả hai. Vì vậy, cả `Anne` và `John` sẽ bị xóa khỏi cache:
-
-    Cache::tags(['people', 'authors'])->flush();
-
-Ngược lại, câu lệnh này sẽ chỉ xóa các bộ nhớ cache được gắn thẻ `authors`, vì vậy `Anne` sẽ bị xóa, nhưng không xóa `John`:
-
-    Cache::tags('authors')->flush();
 
 <a name="adding-custom-cache-drivers"></a>
 ## Thêm tuỳ biến cache driver

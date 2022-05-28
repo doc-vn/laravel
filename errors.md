@@ -36,10 +36,10 @@ Ví dụ, nếu bạn cần report các loại ngoại lệ khác nhau theo các
      *
      * This is a great spot to send exceptions to Flare, Sentry, Bugsnag, etc.
      *
-     * @param  \Exception  $exception
+     * @param  \Throwable  $exception
      * @return void
      */
-    public function report(Exception $exception)
+    public function report(Throwable $exception)
     {
         if ($exception instanceof CustomException) {
             //
@@ -74,7 +74,7 @@ Thỉnh thoảng bạn có thể cần report một ngoại lệ nhưng vẫn ti
     {
         try {
             // Validate the value...
-        } catch (Exception $e) {
+        } catch (Throwable $e) {
             report($e);
 
             return false;
@@ -107,10 +107,10 @@ Phương thức `render` chịu trách nhiệm chuyển một ngoại lệ thàn
      * Render an exception into an HTTP response.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  \Exception  $exception
+     * @param  \Throwable  $exception
      * @return \Illuminate\Http\Response
      */
-    public function render($request, Exception $exception)
+    public function render($request, Throwable $exception)
     {
         if ($exception instanceof CustomException) {
             return response()->view('errors.custom', [], 500);

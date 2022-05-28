@@ -59,7 +59,7 @@ Tốt nhất là bạn hãy hình dung middleware như là các "layers" mà cá
 
 > {tip} Tất cả các middleware đều được resolve thông qua [service container](/docs/{{version}}/container), vì vậy bạn có thể khai báo bất kỳ phụ thuộc nào mà bạn cần trong phương thức khởi tạo của middleware.
 
-### Trước và Sau khi Middleware
+#### Trước và Sau khi Middleware
 
 Việc một middleware chạy trước hay sau một request phụ thuộc vào chính middleware đó. Ví dụ: middleware ở dưới đây sẽ thực hiện một số tác vụ **trước** khi request được ứng dụng xử lý:
 
@@ -146,6 +146,22 @@ Khi gán middleware, bạn cũng có thể truyền tên class của middleware:
         //
     })->middleware(CheckAge::class);
 
+Khi gán một middleware cho một nhóm các route, đôi khi bạn có thể cần ngăn middleware này được chạy cho một route cụ thể trong nhóm. Bạn có thể thực hiện việc này bằng phương thức `withoutMiddleware`:
+
+    use App\Http\Middleware\CheckAge;
+
+    Route::middleware([CheckAge::class])->group(function () {
+        Route::get('/', function () {
+            //
+        });
+
+        Route::get('admin/profile', function () {
+            //
+        })->withoutMiddleware([CheckAge::class]);
+    });
+
+Phương thức `withoutMiddleware` sẽ chỉ có thể xóa middleware route và không áp dụng được cho [global middleware](#global-middleware).
+
 <a name="middleware-groups"></a>
 ### Middleware Groups
 
@@ -205,7 +221,8 @@ Hiếm khi, bạn cần middleware của bạn thực thi theo một thứ tự 
     protected $middlewarePriority = [
         \Illuminate\Session\Middleware\StartSession::class,
         \Illuminate\View\Middleware\ShareErrorsFromSession::class,
-        \App\Http\Middleware\Authenticate::class,
+        \Illuminate\Contracts\Auth\Middleware\AuthenticatesRequests::class,
+        \Illuminate\Routing\Middleware\ThrottleRequests::class,
         \Illuminate\Session\Middleware\AuthenticateSession::class,
         \Illuminate\Routing\Middleware\SubstituteBindings::class,
         \Illuminate\Auth\Middleware\Authorize::class,

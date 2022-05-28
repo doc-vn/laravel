@@ -1,6 +1,7 @@
 # Mail
 
 - [Giới thiệu](#introduction)
+    - [Cấu hình](#configuration)
     - [Yêu cầu driver](#driver-prerequisites)
 - [Tạo Mailables](#generating-mailables)
 - [Viết Mailables](#writing-mailables)
@@ -27,6 +28,11 @@
 
 Laravel cung cấp một API đơn giản, gọn gàng trên thư viện [SwiftMailer](https://swiftmailer.symfony.com/) với các driver như SMTP, Mailgun, Postmark, Amazon SES và `sendmail`, cho phép bạn nhanh chóng bắt đầu gửi mail thông qua dịch vụ trên đám mây hoặc local mà bạn chọn.
 
+<a name="configuration"></a>
+### Cấu hình
+
+Các email service của Laravel có thể được cấu hình thông qua file cấu hình `mail`. Mỗi mailer được cấu hình trong file này có thể có các tùy chọn riêng và thậm chí là "transport" của riêng nó, cho phép ứng dụng của bạn sử dụng các email service khác nhau để gửi một số email message nhất định. Ví dụ: ứng dụng của bạn có thể sử dụng Postmark để gửi email giao dịch trong khi sử dụng Amazon SES để gửi email hàng loạt.
+
 <a name="driver-prerequisites"></a>
 ### Yêu cầu driver
 
@@ -36,7 +42,7 @@ Các driver dựa trên API như Mailgun, và Postmark thường đơn giản h�
 
 #### Mailgun Driver
 
-Để sử dụng driver Mailgun, trước tiên bạn hãy cài đặt Guzzle, sau đó set tùy chọn `driver` trong file cấu hình `config/mail.php` của bạn thành `mailgun`. Tiếp theo, hãy kiểm tra file cấu hình `config/services.php` của bạn đã có chứa các tùy chọn sau chưa:
+Để sử dụng driver Mailgun, trước tiên bạn hãy cài đặt Guzzle, sau đó set tùy chọn `default` trong file cấu hình `config/mail.php` của bạn thành `mailgun`. Tiếp theo, hãy kiểm tra file cấu hình `config/services.php` của bạn đã có chứa các tùy chọn sau chưa:
 
     'mailgun' => [
         'domain' => 'your-mailgun-domain',
@@ -57,7 +63,7 @@ Nếu bạn không sử dụng [Mailgun khu vực](https://documentation.mailgun
 
     composer require wildbit/swiftmailer-postmark
 
-Tiếp theo, cài đặt Guzzle và set tùy chọn `driver` trong file cấu hình `config/mail.php` của bạn thành `postmark`. Cuối cùng, hãy đảm bảo rằng file cấu hình `config/services.php` của bạn đã chứa các tùy chọn sau:
+Tiếp theo, cài đặt Guzzle và set tùy chọn `default` trong file cấu hình `config/mail.php` của bạn thành `postmark`. Cuối cùng, hãy đảm bảo rằng file cấu hình `config/services.php` của bạn đã chứa các tùy chọn sau:
 
     'postmark' => [
         'token' => 'your-postmark-token',
@@ -69,7 +75,7 @@ Tiếp theo, cài đặt Guzzle và set tùy chọn `driver` trong file cấu h�
 
     "aws/aws-sdk-php": "~3.0"
 
-Tiếp theo hãy set tùy chọn `driver` trong file cấu hình `config/mail.php` của bạn thành `ses`. Tiếp theo, hãy kiểm tra file cấu hình `config/services.php` của bạn đã có chứa các tùy chọn sau chưa:
+Tiếp theo hãy set tùy chọn `default` trong file cấu hình `config/mail.php` của bạn thành `ses`. Tiếp theo, hãy kiểm tra file cấu hình `config/services.php` của bạn đã có chứa các tùy chọn sau chưa:
 
     'ses' => [
         'key' => 'your-ses-key',
@@ -196,6 +202,7 @@ Thông thường, bạn sẽ muốn chuyển một số dữ liệu cho view mà
         /**
          * Create a new message instance.
          *
+         * @param  \App\Order  $order
          * @return void
          */
         public function __construct(Order $order)
@@ -247,6 +254,7 @@ Nếu bạn muốn tùy chỉnh định dạng dữ liệu email của bạn tr�
         /**
          * Create a new message instance.
          *
+         * @param  \App\Order $order
          * @return void
          */
         public function __construct(Order $order)
@@ -318,7 +326,7 @@ Nếu bạn đã lưu một file trên một trong các [filesystem disk](/docs/
      */
     public function build()
     {
-       return $this->view('email.orders.shipped')
+       return $this->view('emails.orders.shipped')
                    ->attachFromStorage('/path/to/file');
     }
 
@@ -331,7 +339,7 @@ Nếu cần, bạn có thể chỉ định tên file đính kèm và các tùy c
      */
     public function build()
     {
-       return $this->view('email.orders.shipped')
+       return $this->view('emails.orders.shipped')
                    ->attachFromStorage('/path/to/file', 'name.pdf', [
                        'mime' => 'application/pdf'
                    ]);
@@ -346,7 +354,7 @@ Phương thức `attachFromStorageDisk` có thể được sử dụng nếu b�
      */
     public function build()
     {
-       return $this->view('email.orders.shipped')
+       return $this->view('emails.orders.shipped')
                    ->attachFromStorageDisk('s3', '/path/to/file');
     }
 
@@ -535,30 +543,28 @@ Nếu bạn muốn xây dựng một theme mới cho các component Markdown c�
 
 Bạn không bị giới hạn chỉ trong khai báo người nhận "to" khi gửi message. Mà bạn có thể tự do set "to", "cc" và "bcc" cho người nhận, tất cả có thể được kết hợp trong một chuỗi phương thức duy nhất:
 
+    use Illuminate\Support\Facades\Mail;
+
     Mail::to($request->user())
         ->cc($moreUsers)
         ->bcc($evenMoreUsers)
         ->send(new OrderShipped($order));
 
-<a name="rendering-mailables"></a>
-## Hiển thị Mailable
+#### Looping Over Recipients
 
-Thỉnh thoảng bạn có thể muốn xem nội dung HTML của một mailable mà không cần phải gửi. Để thực hiện điều này, bạn có thể gọi phương thức `render` của mailable. Phương thức này sẽ trả về nội dung của mailable dưới dạng một chuỗi:
+Đôi khi, bạn có thể cần gửi một mailable đến một danh sách người nhận thông qua cách lặp qua một mảng gồm người nhận và địa chỉ email của họ. Vì phương thức `to` sẽ gắn các địa chỉ email vào danh sách người nhận của mailable, nên bạn luôn phải tạo lại instance mailable cho từng người nhận:
 
-    $invoice = App\Invoice::find(1);
+    foreach (['taylor@example.com', 'dries@example.com'] as $recipient) {
+        Mail::to($recipient)->send(new OrderShipped($order));
+    }
 
-    return (new App\Mail\InvoicePaid($invoice))->render();
+#### Sending Mail Via A Specific Mailer
 
-<a name="previewing-mailables-in-the-browser"></a>
-### Xem trước Mailable trên trình duyệt
+Mặc định, Laravel sẽ sử dụng mailer được cấu hình làm mailer `default` trong file cấu hình` mail` của bạn. Tuy nhiên, bạn có thể sử dụng phương thức `mailer` để gửi một message với một cấu hình mailer cụ thể:
 
-Khi thiết kế một template của một mailable, sẽ rất tiện lợi, nếu xem được mailable đó trong trình duyệt web của bạn giống như một template Blade. Vì lý do này, Laravel cho phép bạn trả về một mailable bất kỳ từ một route Closure hoặc controller. Khi một mailable được trả về, nó sẽ được tạo và hiển thị trong trình duyệt, cho phép bạn nhanh chóng xem trước thiết kế của nó mà không cần phải gửi nó đến một địa chỉ email thực tế:
-
-    Route::get('mailable', function () {
-        $invoice = App\Invoice::find(1);
-
-        return new App\Mail\InvoicePaid($invoice);
-    });
+    Mail::mailer('postmark')
+            ->to($request->user())
+            ->send(new OrderShipped($order));
 
 <a name="queueing-mail"></a>
 ### Queueing Mail
@@ -608,6 +614,26 @@ Nếu bạn có class mailable mà luôn muốn sử dụng queue, bạn có th�
     {
         //
     }
+
+<a name="rendering-mailables"></a>
+## Rendering Mailables
+
+Thỉnh thoảng bạn có thể muốn xem nội dung HTML của một mailable mà không cần thiết phải gửi đi. Để thực hiện điều này, bạn có thể gọi phương thức `render` của mailable. Phương thức này sẽ trả về nội dung của mailable dưới dạng một chuỗi:
+
+    $invoice = App\Invoice::find(1);
+
+    return (new App\Mail\InvoicePaid($invoice))->render();
+
+<a name="previewing-mailables-in-the-browser"></a>
+### Previewing Mailables In The Browser
+
+Khi thiết kế một template của một mailable, sẽ thật thuận tiện nếu có thể nhanh chóng xem trước được mailable trong trình duyệt của bạn như là một dạng template Blade điển hình. Vì lý do này, Laravel cho phép bạn trả về bất kỳ mailable nào trực tiếp từ một route Closure hoặc một controller. Khi một mailable được trả về, nó sẽ được tạo và hiển thị trong trình duyệt của bạn, cho phép bạn nhanh chóng xem trước các thiết kế của nó mà không cần phải gửi nó đến một địa chỉ email cụ thể:
+
+    Route::get('mailable', function () {
+        $invoice = App\Invoice::find(1);
+
+        return new App\Mail\InvoicePaid($invoice);
+    });
 
 <a name="localizing-mailables"></a>
 ## Ngôn ngữ trong Mailable

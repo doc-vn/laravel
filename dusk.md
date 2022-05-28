@@ -12,6 +12,10 @@
     - [Browser Macros](#browser-macros)
     - [Authentication](#authentication)
     - [Database Migration](#migrations)
+    - [Cookies](#cookies)
+    - [Chụp screenshot](#taking-a-screenshot)
+    - [Lưu output của console vào disk](#storing-console-output-to-disk)
+    - [Lưu source page vào disk](#storing-page-source-to-disk)
 - [Tương tác với Element](#interacting-with-elements)
     - [Dusk Selector](#dusk-selectors)
     - [Clicking Link](#clicking-links)
@@ -23,6 +27,7 @@
     - [Dùng Mouse](#using-the-mouse)
     - [Scoping Selectors](#scoping-selectors)
     - [Chờ Elements](#waiting-for-elements)
+    - [Scrolling một phần tử vào view](#scrolling-an-element-into-view)
     - [Tạo Vue Assertions](#making-vue-assertions)
 - [Assertion có sẵn](#available-assertions)
 - [Page](#pages)
@@ -256,6 +261,10 @@ Khi kiểm tra không thành công, Dusk sẽ tự động thay đổi kích th�
 
     $browser->disableFitOnFailure();
 
+Bạn có thể sử dụng phương thức `move` để di chuyển cửa sổ trình duyệt đến một vị trí khác trên màn hình của bạn:
+
+    $browser->move(100, 100);
+
 <a name="browser-macros"></a>
 ### Browser Macros
 
@@ -324,6 +333,46 @@ Khi bài test của bạn yêu cầu migration, như ví dụ bài test authenti
         use DatabaseMigrations;
     }
 
+<a name="cookies"></a>
+### Cookies
+
+Bạn có thể sử dụng phương thức `cookie` để lấy hoặc set một giá trị cho một cookie đã được mã hóa:
+
+    $browser->cookie('name');
+
+    $browser->cookie('name', 'Taylor');
+
+Bạn có thể sử dụng phương thức `plainCookie` để lấy hoặc set một giá trị cho một cookie không được mã hóa:
+
+    $browser->plainCookie('name');
+
+    $browser->plainCookie('name', 'Taylor');
+
+Bạn có thể sử dụng phương thức `deleteCookie` để xóa một cookie đã cho:
+
+    $browser->deleteCookie('name');
+
+<a name="taking-a-screenshot"></a>
+### Chụp screenshot
+
+Bạn có thể sử dụng phương thức `screenshot` để chụp một screenshot và lưu nó với một tên file đã cho. Tất cả ảnh chụp screenshot sẽ được lưu trong thư mục `tests/Browser/screenshots`:
+
+    $browser->screenshot('filename');
+
+<a name="storing-console-output-to-disk"></a>
+### Lưu output của console vào disk
+
+Bạn có thể sử dụng phương thức `storeConsoleLog` để ghi output của console vào disk với một tên tệp đã cho. Output của console sẽ được lưu trong thư mục `tests/Browser/console`:
+
+    $browser->storeConsoleLog('filename');
+
+<a name="storing-page-source-to-disk"></a>
+### Lưu source page vào disk
+
+Bạn có thể sử dụng phương thức `storeSource` để ghi source của page vào disk với một tên tệp đã cho. Source của page sẽ được lưu trong thư mục `tests/Browser/source`:
+
+    $browser->storeSource('filename');
+
 <a name="interacting-with-elements"></a>
 ## Tương tác với Element
 
@@ -357,7 +406,13 @@ Dusk selector cho phép bạn tập trung vào viết các bài test hiệu qu�
 
     $browser->clickLink($linkText);
 
-> {note} Phương thức này tương tác với jQuery. Nếu jQuery không có sẵn trong trang, Dusk sẽ tự động tích hợp nó vào trang để nó có sẵn trong thời gian test.
+Bạn có thể sử dụng phương thức `seeLink` để xác định xem một link có nội dung đã cho có được hiển thị trên trang web hay không:
+
+    if ($browser->seeLink($linkText)) {
+        // ...
+    }
+
+> {note} Các phương thức này tương tác với jQuery. Nếu jQuery không có sẵn trong trang, Dusk sẽ tự động tích hợp nó vào trang để nó có sẵn trong thời gian test.
 
 <a name="text-values-and-attributes"></a>
 ### Text, Values, và Attributes
@@ -371,6 +426,11 @@ Dusk cung cấp một số phương thức để tương tác với text đượ
 
     // Set the value...
     $browser->value('selector', 'value');
+
+ạn có thể sử dụng phương thức `inputValue` để lấy ra "giá trị" của phần tử input có một tên đã cho:
+
+    // Retrieve the value of an input element...
+    $inputValue = $browser->inputValue('field');
 
 #### Retrieving Text
 
@@ -403,6 +463,17 @@ Lưu ý rằng, phương thức này chấp nhận một tham số nếu cần, 
 Bạn có thể xóa giá trị của một input bằng phương thức `clear`:
 
     $browser->clear('email');
+
+Bạn có thể hướng dẫn Dusk nhập văn bản chậm bằng phương thức `typeSlowly`. Mặc định, Dusk sẽ tạm dừng trong 100 mili giây giữa các lần nhập. Để tùy chỉnh lượng thời gian giữa các lần nhập, bạn có thể truyền số mili giây mà bạn muốn làm tham số thứ ba cho phương thức:
+
+    $browser->typeSlowly('mobile', '+1 (202) 555-5555');
+
+    $browser->typeSlowly('mobile', '+1 (202) 555-5555', 300);
+
+Bạn có thể sử dụng phương thức `appendSlowly` để nối văn bản một cách từ từ:
+
+    $browser->type('tags', 'foo')
+            ->appendSlowly('tags', ', bar, baz');
 
 #### Dropdowns
 
@@ -459,6 +530,30 @@ Phương thức `click` có thể được sử dụng để "click" vào một 
 
     $browser->click('.selector');
 
+Phương thức `clickAtXPath` có thể được sử dụng để "nhấp" vào một phần tử khớp với biểu thức XPath đã cho:
+
+    $browser->clickAtXPath('//div[@class = "selector"]');
+
+Phương thức `clickAtPoint` có thể được sử dụng để "nhấp" vào phần tử đầu tiên tại một tọa độ nhất định của trình duyệt:
+
+    $browser->clickAtPoint(0, 0);
+
+Phương thức `doubleClick` có thể được sử dụng để mô phỏng hành động "nhấp đúp" của chuột:
+
+    $browser->doubleClick();
+
+Phương thức `rightClick` có thể được sử dụng để mô phỏng hành động "nhấp chuột phải" của chuột:
+
+    $browser->rightClick();
+
+    $browser->rightClick('.selector');
+
+Phương thức `clickAndHold` có thể được sử dụng để mô phỏng một hành động nhấp và giữ chuột. Một lệnh gọi tiếp theo đến phương thức `releaseMouse` sẽ hoàn trả lại hành động này và thả nút giữ chuột ra:
+
+    $browser->clickAndHold()
+            ->pause(1000)
+            ->releaseMouse();
+
 #### Mouseover
 
 Phương thức `mouseover` có thể được sử dụng khi bạn cần di chuyển chuột qua một element giống với một selector đã cho:
@@ -477,6 +572,10 @@ Hoặc, bạn có thể kéo một element theo một hướng:
     $browser->dragRight('.selector', 10);
     $browser->dragUp('.selector', 10);
     $browser->dragDown('.selector', 10);
+
+Cuối cùng, bạn có thể drag một phần tử đi theo một khoảng nhất định:
+
+    $browser->dragOffset('.selector', 10, 10);
 
 <a name="javascript-dialogs"></a>
 ### JavaScript Dialogs
@@ -509,6 +608,16 @@ Dusk cung cấp nhiều phương thức khác nhau để tương tác với Java
         $table->assertSee('Hello World')
               ->clickLink('Delete');
     });
+
+Đôi khi bạn có thể cần chạy các kiểm tra bên ngoài phạm vi selector hiện tại. Bạn có thể sử dụng phương thức `elsewhere` để thực hiện điều này:
+
+     $browser->with('.table', function ($table) {
+        // Current scope is `body .table`...
+        $browser->elsewhere('.page-title', function ($title) {
+            // Current scope is `body .page-title`...
+            $title->assertSee('Hello World');
+        });
+     });
 
 <a name="waiting-for-elements"></a>
 ### Chờ Elements
@@ -622,6 +731,14 @@ Nhiều phương thức "chờ" trong Dusk được dựa trên phương thức 
         return $something->isReady();
     }, "Something wasn't ready in time.");
 
+<a name="scrolling-an-element-into-view"></a>
+### Scrolling một phần tử vào view
+
+Đôi khi bạn không thể nhấp vào một phần tử vì nó nằm ngoài vùng xem của trình duyệt. Phương thức `scrollIntoView` sẽ cuộn cửa sổ trình duyệt cho đến khi phần tử đó nằm trong vùng có thể xem được của trình duyệt:
+
+    $browser->scrollIntoView('selector')
+            ->click('selector');
+
 <a name="making-vue-assertions"></a>
 ### Tạo Vue Assertions
 
@@ -639,7 +756,7 @@ Dusk thậm chí cho phép bạn thực hiện các kiểm tra về trạng thá
         data: function () {
             return {
                 user: {
-                  name: 'Taylor'
+                    name: 'Taylor'
                 }
             };
         }
@@ -697,7 +814,9 @@ Dusk cung cấp nhiều yêu cầu kiểm tra mà bạn có thể đưa ra đố
 [assertFragmentBeginsWith](#assert-fragment-begins-with)
 [assertFragmentIsNot](#assert-fragment-is-not)
 [assertHasCookie](#assert-has-cookie)
+[assertHasPlainCookie](#assert-has-plain-cookie)
 [assertCookieMissing](#assert-cookie-missing)
+[assertPlainCookieMissing](#assert-plain-cookie-missing)
 [assertCookieValue](#assert-cookie-value)
 [assertPlainCookieValue](#assert-plain-cookie-value)
 [assertSee](#assert-see)
@@ -717,9 +836,13 @@ Dusk cung cấp nhiều yêu cầu kiểm tra mà bạn có thể đưa ra đố
 [assertSelected](#assert-selected)
 [assertNotSelected](#assert-not-selected)
 [assertSelectHasOptions](#assert-select-has-options)
+[assertSelectMissingOption](#assert-select-missing-option)
 [assertSelectMissingOptions](#assert-select-missing-options)
 [assertSelectHasOption](#assert-select-has-option)
 [assertValue](#assert-value)
+[assertAttribute](#assert-attribute)
+[assertAriaAttribute](#assert-aria-attribute)
+[assertDataAttribute](#assert-data-attribute)
 [assertVisible](#assert-visible)
 [assertPresent](#assert-present)
 [assertMissing](#assert-missing)
@@ -730,6 +853,9 @@ Dusk cung cấp nhiều yêu cầu kiểm tra mà bạn có thể đưa ra đố
 [assertButtonDisabled](#assert-button-disabled)
 [assertFocused](#assert-focused)
 [assertNotFocused](#assert-not-focused)
+[assertAuthenticated](#assert-authenticated)
+[assertGuest](#assert-guest)
+[assertAuthenticatedAs](#assert-authenticated-as)
 [assertVue](#assert-vue)
 [assertVueIsNot](#assert-vue-is-not)
 [assertVueContains](#assert-vue-contains)
@@ -845,21 +971,21 @@ Yêu cầu tham số query string phải tồn tại và có giá trị đã cho
 Yêu cầu tham số query string bị thiếu:
 
     $browser->assertQueryStringMissing($name);
-    
+
 <a name="assert-fragment-is"></a>
 #### assertFragmentIs
 
 Yêu cầu fragment hiệnt tại phải đúng với fragment đã cho:
 
     $browser->assertFragmentIs('anchor');
-    
+
 <a name="assert-fragment-begins-with"></a>
 #### assertFragmentBeginsWith
 
 Yêu cầu fragment hiệnt tại phải bắt đầu từ fragment đã cho:
 
     $browser->assertFragmentBeginsWith('anchor');
-    
+
 <a name="assert-fragment-is-not"></a>
 #### assertFragmentIsNot
 
@@ -870,21 +996,35 @@ Yêu cầu fragment hiệnt tại không phải là fragment đã cho:
 <a name="assert-has-cookie"></a>
 #### assertHasCookie
 
-Yêu cầu cookie đã cho phải tồn tại:
+Yêu cầu cookie mã hoá đã cho phải tồn tại:
 
     $browser->assertHasCookie($name);
+
+<a name="assert-has-plain-cookie"></a>
+#### assertHasPlainCookie
+
+Yêu cầu cookie không mã hoá đã cho phải tồn tại:
+
+    $browser->assertHasPlainCookie($name);
 
 <a name="assert-cookie-missing"></a>
 #### assertCookieMissing
 
-Yêu cầu cookie đã cho phải không tồn tại:
+Yêu cầu cookie mã hoá đã cho phải không tồn tại:
 
     $browser->assertCookieMissing($name);
+
+<a name="assert-plain-cookie-missing"></a>
+#### assertPlainCookieMissing
+
+Yêu cầu cookie không mã hoá đã cho phải không tồn tại:
+
+    $browser->assertPlainCookieMissing($name);
 
 <a name="assert-cookie-value"></a>
 #### assertCookieValue
 
-Yêu cầu cookie phải có một giá trị đã cho:
+Yêu cầu cookie mã hoá phải có một giá trị đã cho:
 
     $browser->assertCookieValue($name, $value);
 
@@ -1014,6 +1154,13 @@ Yêu cầu một mảng giá trị có thể được chọn:
 
     $browser->assertSelectHasOptions($field, $values);
 
+<a name="assert-select-missing-option"></a>
+#### assertSelectMissingOption
+
+Yêu cầu một giá trị đã cho không thể được chọn:
+
+    $browser->assertSelectMissingOption($field, $value);
+
 <a name="assert-select-missing-options"></a>
 #### assertSelectMissingOptions
 
@@ -1034,6 +1181,35 @@ Yêu cầu một giá trị có thể được chọn trên một field:
 Yêu cầu element giống với selector đã cho:
 
     $browser->assertValue($selector, $value);
+
+<a name="assert-attribute"></a>
+#### assertAttribute
+
+Yêu cầu element giống với selector đã cho có giá trị thuộc tính là giá trị đã cung cấp:
+
+    $browser->assertAttribute($selector, $attribute, $value);
+
+<a name="assert-aria-attribute"></a>
+#### assertAriaAttribute
+
+Yêu cầu element giống với selector đã cho có giá trị thuộc tính aria là giá trị đã cung cấp:
+
+    $browser->assertAriaAttribute($selector, $attribute, $value);
+
+Ví dụ: với thẻ button `<button aria-label =" Add "> </button>`, bạn có thể kiểm tra thuộc tính `aria-label` như sau:
+
+    $browser->assertAriaAttribute('button', 'label', 'Add')
+
+<a name="assert-data-attribute"></a>
+#### assertDataAttribute
+
+Yêu cầu element giống với selector đã cho có giá trị thuộc tính data là giá trị đã cung cấp:
+
+    $browser->assertDataAttribute($selector, $attribute, $value);
+
+Ví dụ: với thẻ tr `<tr id="row-1" data-content="attendees"></tr>`, bạn có thể kiểm tra thuộc tính `data-label` như sau:
+
+    $browser->assertDataAttribute('#row-1', 'content', 'attendees')
 
 <a name="assert-visible"></a>
 #### assertVisible
@@ -1104,6 +1280,27 @@ Yêu cầu field đã cho đang bị focus:
 Yêu cầu field đã cho không bị focus:
 
     $browser->assertNotFocused($field);
+
+<a name="assert-authenticated"></a>
+#### assertAuthenticated
+
+Yêu cầu người dùng phải được xác thực:
+
+    $browser->assertAuthenticated();
+
+<a name="assert-guest"></a>
+#### assertGuest
+
+Yêu cầu người dùng chưa được xác thực:
+
+    $browser->assertGuest();
+
+<a name="assert-authenticated-as"></a>
+#### assertAuthenticatedAs
+
+Yêu cầu người dùng được xác thực phải là người dùng đã cho:
+
+    $browser->assertAuthenticatedAs($user);
 
 <a name="assert-vue"></a>
 #### assertVue
@@ -1186,6 +1383,20 @@ Khi một page đã được cấu hình, bạn có thể điều hướng đế
     use Tests\Browser\Pages\Login;
 
     $browser->visit(new Login);
+
+Bạn có thể sử dụng phương thức `visitRoute` để điều hướng đến một route đã đặt tên:
+
+    $browser->visitRoute('login');
+
+Bạn có thể điều hướng "back" và "forward" bằng cách sử dụng phương thức `back` và `forward`:
+
+    $browser->back();
+
+    $browser->forward();
+
+Bạn có thể sử dụng phương thức `refresh` để refresh lại trang:
+
+    $browser->refresh();
 
 Thỉnh thoảng bạn có thể đã ở trên một trang và cần "load" lại các selector và phương thức của trang đó vào test hiện tại. Điều này rất phổ biến khi bạn nhấn một nút và được chuyển hướng đến một trang khác mà không điều hướng đến nó. Trong tình huống này, bạn có thể sử dụng phương thức `on` để load trang:
 
@@ -1427,6 +1638,12 @@ Nếu bạn đang sử dụng CircleCI để chạy các bài test, bạn có th
                 - store_artifacts:
                     path: tests/Browser/screenshots
 
+                - store_artifacts:
+                    path: tests/Browser/console
+
+                - store_artifacts:
+                    path: storage/logs
+
 
 <a name="running-tests-on-codeship"></a>
 ### Codeship
@@ -1500,20 +1717,24 @@ Nếu bạn đang sử dụng [Github Actions](https://github.com/features/actio
       dusk-php:
         runs-on: ubuntu-latest
         steps:
-          - uses: actions/checkout@v1
+          - uses: actions/checkout@v2
           - name: Prepare The Environment
             run: cp .env.example .env
           - name: Create Database
-            run: mysql --user="root" --password="root" -e "CREATE DATABASE my-database character set UTF8mb4 collate utf8mb4_bin;"
+            run: |
+              sudo systemctl start mysql
+              mysql --user="root" --password="root" -e "CREATE DATABASE 'my-database' character set UTF8mb4 collate utf8mb4_bin;"
           - name: Install Composer Dependencies
             run: composer install --no-progress --no-suggest --prefer-dist --optimize-autoloader
           - name: Generate Application Key
             run: php artisan key:generate
           - name: Upgrade Chrome Driver
-            run: php artisan dusk:chrome-driver
+            run: php artisan dusk:chrome-driver `/opt/google/chrome/chrome --version | cut -d " " -f3 | cut -d "." -f1`
           - name: Start Chrome Driver
             run: ./vendor/laravel/dusk/bin/chromedriver-linux &
           - name: Run Laravel Server
             run: php artisan serve &
           - name: Run Dusk Tests
+            env:
+              APP_URL: "http://127.0.0.1:8000"
             run: php artisan dusk

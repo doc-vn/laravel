@@ -5,7 +5,8 @@
     - [Cấu hình](#configuration)
     - [Bỏ bớt Data](#data-pruning)
     - [Tuỳ chỉnh Migration](#migration-customization)
-- [Dashboard Authorization](#dashboard-authorization)
+    - [Dashboard Authorization](#dashboard-authorization)
+- [Cập nhật Telescope](#upgrading-telescope)
 - [Filtering](#filtering)
     - [Entries](#filtering-entries)
     - [Batches](#filtering-batches)
@@ -26,6 +27,7 @@
     - [Redis Watcher](#redis-watcher)
     - [Request Watcher](#request-watcher)
     - [Schedule Watcher](#schedule-watcher)
+- [Displaying User Avatars](#displaying-user-avatars)
 
 <a name="introduction"></a>
 ## Giới thiệu
@@ -41,7 +43,7 @@ Laravel Telescope là một trình gỡ lỗi cho Laravel framework. Telescope s
 
 Bạn có thể sử dụng Composer để cài đặt Telescope vào project Laravel của bạn:
 
-    composer require laravel/telescope:^3.0
+    composer require laravel/telescope "^3.0"
 
 Sau khi cài đặt Telescope, hãy export nội dung của nó bằng lệnh Artisan `telescope:install`. Sau khi cài đặt Telescope xong, bạn cũng nên chạy lệnh `migrate`:
 
@@ -49,17 +51,11 @@ Sau khi cài đặt Telescope, hãy export nội dung của nó bằng lệnh Ar
 
     php artisan migrate
 
-#### Cập nhật Telescope
-
-Khi cập nhật Telescope xong, bạn nên export lại nội dung của Telescope một lần nữa:
-
-    php artisan telescope:publish
-
 ### Cài đặt trong một môi trường cụ thể
 
 Nếu bạn chỉ định sử dụng Telescope để hỗ trợ quá trình phát triển local của bạn, bạn có thể thêm cài đặt Telescope bằng flag `--dev`:
 
-    composer require laravel/telescope --dev
+    composer require laravel/telescope "^3.0" --dev
 
 Sau khi chạy `telescope:install`, bạn nên xóa đăng ký service provider `TelescopeServiceProvider` ra khỏi file cấu hình `app` của bạn. Thay vào đó, hãy đăng ký service provider đó trong phương thức `register` của `AppServiceProvider`:
 
@@ -71,9 +67,20 @@ Sau khi chạy `telescope:install`, bạn nên xóa đăng ký service provider 
     public function register()
     {
         if ($this->app->isLocal()) {
+            $this->app->register(\Laravel\Telescope\TelescopeServiceProvider::class);
             $this->app->register(TelescopeServiceProvider::class);
         }
     }
+
+Bạn cũng nên ngăn package Telescope [tự động đăng ký](/docs/{{version}}/packages#package-discovery) bằng cách thêm code sau vào file `composer.json` của bạn:
+
+    "extra": {
+        "laravel": {
+            "dont-discover": [
+                "laravel/telescope"
+            ]
+        }
+    },
 
 <a name="migration-customization"></a>
 ### Tuỳ chỉnh Migration
@@ -101,7 +108,7 @@ Mặc định, tất cả các dữ liệu cũ hơn 24 giờ sẽ bị lược b
     $schedule->command('telescope:prune --hours=48')->daily();
 
 <a name="dashboard-authorization"></a>
-## Dashboard Authorization
+### Dashboard Authorization
 
 Telescope sẽ làm lộ một trang tổng quan tại `/telescope`. Mặc định, bạn sẽ chỉ có thể truy cập được trang tổng quan này trong môi trường `local`. Trong file `app/Providers/TelescopeServiceProvider.php` của bạn, sẽ có một phương thức `gate`. Authorization gate này sẽ kiểm soát quyền truy cập vào Telescope trong các môi trường **không phải là local**. Bạn có thể thoải mái sửa gate này nếu cần để hạn chế quyền truy cập vào cài đặt telescope của bạn:
 
@@ -119,6 +126,26 @@ Telescope sẽ làm lộ một trang tổng quan tại `/telescope`. Mặc đị
                 'taylor@laravel.com',
             ]);
         });
+    }
+
+> {note} Bạn nên đảm bảo là bạn đã thay đổi biến môi trường `APP_ENV` thành `production` trong môi trường production của bạn. Nếu không, các cài đặt Telescope của bạn sẽ bị công khai trên môi trường internet.
+
+<a name="upgrading-telescope"></a>
+## Cập nhật Telescope
+
+Khi nâng cấp lên phiên bản mới của Telescope, điều quan trọng là bạn phải xem kỹ [hướng dẫn nâng cấp](https://github.com/laravel/telescope/blob/master/UPGRADE.md).
+
+Ngoài ra, khi bạn nâng cấp lên bất kỳ phiên bản Telescope mới nào, bạn nên export lại assets của Telescope:
+    php artisan telescope:publish
+
+Để giữ cập nhật các file asset và tránh các sự cố trong tương lai, bạn có thể thêm một lệnh `telescope:publish` vào trong tập lệnh `post-update-cmd` trong file `composer.json` của bạn:
+
+    {
+        "scripts": {
+            "post-update-cmd": [
+                "@php artisan telescope:publish --ansi"
+            ]
+        }
     }
 
 <a name="filtering"></a>
@@ -340,3 +367,23 @@ Request watcher sẽ ghi lại dữ liệu request, header, session và response
 ### Schedule Watcher
 
 Schedule watcher sẽ ghi lại các lệnh và output của bất kỳ task schedule nào mà do ứng dụng của bạn chạy.
+
+<a name="displaying-user-avatars"></a>
+## Displaying User Avatars
+
+Trang tổng quan của Telescope sẽ hiển thị ảnh đại diện cho người dùng đã đăng nhập khi một mục nào đó được lưu. Mặc định, Telescope sẽ lấy ảnh đại diện bằng dịch vụ Gravatar web. Tuy nhiên, bạn có thể tùy chỉnh URL hình đại diện bằng cách đăng ký một lệnh callback trong `TelescopeServiceProvider` của bạn. Lệnh callback này sẽ nhận vào một ID và một địa chỉ email của người dùng và sẽ trả về URL hình ảnh đại diện của người dùng:
+
+    use App\User;
+    use Laravel\Telescope\Telescope;
+
+    /**
+     * Register any application services.
+     *
+     * @return void
+     */
+    public function register()
+    {
+        Telescope::avatar(function ($id, $email) {
+            return '/avatars/'.User::find($id)->avatar_path;
+        });
+    }

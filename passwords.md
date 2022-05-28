@@ -23,7 +23,9 @@ Hầu hết các ứng dụng web đều cung cấp một cách để người d
 
 #### Generating The Reset Token Table Migration
 
-Tiếp theo, một bảng phải được tạo để lưu trữ các mã token reset. Mặc định, việc migration cho bảng này đã được đi kèm trong Laravel và nằm trong thư mục `database/migrations`. Vì vậy, tất cả những gì bạn cần làm là chạy migration cho cơ sở dữ liệu của bạn:
+Tiếp theo, một bảng phải được tạo để lưu trữ các mã token reset. Mặc định, việc migration cho bảng này đã có sẵn trong package Composer `laravel/ui`. Sau khi bạn cài đặt package `laravel/ui` xong, bạn có thể sử dụng lệnh `migrate` để tạo bảng reset password:
+
+    composer require laravel/ui
 
     php artisan migrate
 
@@ -32,7 +34,7 @@ Tiếp theo, một bảng phải được tạo để lưu trữ các mã token 
 
 Laravel đã có sẵn các class `Auth\ForgotPasswordController` và `Auth\ResetPasswordController` để chứa các logic cần thiết cho việc gửi e-mail reset mật khẩu. Tất cả các route cần thiết để thực hiện việc reset mật khẩu có thể được tạo bằng lệnh Artisan của package Composer `laravel/ui`:
 
-    composer require laravel/ui --dev
+    composer require laravel/ui
 
     php artisan ui vue --auth
 
@@ -41,7 +43,7 @@ Laravel đã có sẵn các class `Auth\ForgotPasswordController` và `Auth\Rese
 
 Để tạo tất cả view cần thiết cho việc reset lại mật khẩu, bạn có thể sử dụng package Composer `laravel/ui`:
 
-    composer require laravel/ui --dev
+    composer require laravel/ui
 
     php artisan ui vue --auth
 

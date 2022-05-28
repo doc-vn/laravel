@@ -14,7 +14,7 @@ Mặc dù Laravel không ra lệnh cho bạn phải sử dụng JavaScript hoặ
 
 Bootstrap và Vue scaffolding được cung cấp bởi Laravel nằm trong package Composer `laravel/ui`, bạn có thể được cài đặt nó qua Composer:
 
-    composer require laravel/ui:^1.0 --dev
+    composer require laravel/ui:^2.4
 
 Khi package `laravel/ui` đã được cài đặt, bạn có thể cài đặt frontend scaffolding bằng lệnh Artisan `ui`:
 
@@ -95,7 +95,9 @@ Nếu bạn muốn tìm hiểu thêm về cách viết các Vue component, bạn
 
 Nếu bạn thích sử dụng React để xây dựng application JavaScript của bạn, thì Laravel làm nó dễ dàng để chuyển đổi giữa Vue và React:
 
-    composer require laravel/ui:^1.0 --dev
+    composer require laravel/ui
+
+    // Generate basic scaffolding...
 
     php artisan ui react
 

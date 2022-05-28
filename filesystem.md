@@ -43,6 +43,13 @@ Một khi một file đã được lưu trữ và link liên kết ảo đã đ�
 
     echo asset('storage/file.txt');
 
+Bạn có thể cấu hình thêm các link ảo trong file cấu hình `filesystems` của bạn. Mỗi link được cấu hình sẽ được tạo khi bạn chạy lệnh `storage:link`:
+
+    'links' => [
+        public_path('storage') => storage_path('app/public'),
+        public_path('images') => storage_path('app/images'),
+    ],
+
 <a name="the-local-driver"></a>
 ### Local Driver
 
@@ -206,9 +213,9 @@ Nếu bạn cần chỉ định thêm một [S3 request parameters](https://docs
         ['ResponseContentType' => 'application/octet-stream']
     );
 
-#### Local URL Host Customization
+#### URL Host Customization
 
-Nếu như bạn muốn định nghĩa host cho các file đang được lưu trữ trên một disk mà đang dùng driver `local`, bạn có thể thêm tùy chọn `url` vào mảng cấu hình của disk:
+Nếu như bạn muốn định nghĩa thêm host cho các URL mà được tạo ra khi đang dùng facade `Storage`, bạn có thể thêm tùy chọn `url` vào mảng cấu hình của disk:
 
     'public' => [
         'driver' => 'local',
@@ -334,6 +341,14 @@ Mặc định, phương thức này sẽ sử dụng disk mặc định. Nếu b
         'avatars/'.$request->user()->id, 's3'
     );
 
+Nếu bạn đang sử dụng phương thức `storeAs`, bạn có thể truyền tên disk làm tham số thứ ba cho phương thức:
+
+    $path = $request->file('avatar')->storeAs(
+        'avatars',
+        $request->user()->id,
+        's3'
+    );
+
 #### Other File Information
 
 Nếu bạn muốn lấy tên gốc của file đã được tải lên, bạn có thể làm như vậy bằng cách sử dụng phương thức `getClientOriginalName`:
@@ -360,6 +375,16 @@ Nếu file đã được lưu trữ, visibility của nó có thể được l�
     $visibility = Storage::getVisibility('file.jpg');
 
     Storage::setVisibility('file.jpg', 'public');
+
+Khi tương tác với các file được upload, bạn có thể sử dụng các phương thức `storePublicly` hoặc `storePubliclyAs` để lưu trữ các file đã được upload với chế độ `public`:
+
+    $path = $request->file('avatar')->storePublicly('avatars', 's3');
+
+    $path = $request->file('avatar')->storePubliclyAs(
+        'avatars',
+        $request->user()->id,
+        's3'
+    );
 
 <a name="deleting-files"></a>
 ## Xoá File
@@ -427,11 +452,11 @@ Tiếp theo, bạn nên tạo một [service provider](/docs/{{version}}/provide
 
     namespace App\Providers;
 
+    use Illuminate\Support\Facades\Storage;
     use Illuminate\Support\ServiceProvider;
     use League\Flysystem\Filesystem;
     use Spatie\Dropbox\Client as DropboxClient;
     use Spatie\FlysystemDropbox\DropboxAdapter;
-    use Storage;
 
     class DropboxServiceProvider extends ServiceProvider
     {

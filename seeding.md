@@ -9,14 +9,14 @@
 <a name="introduction"></a>
 ## Giới thiệu
 
-Laravel có chứa một phương thức đơn giản để tạo cơ sở dữ liệu cho việc test bằng cách sử dụng các class Seed. Tất cả các class Seed được lưu trong thư mục `database/seeds`. Các class Seed có thể có bất kỳ tên nào mà bạn muốn, nhưng có lẽ nên tuân theo một số quy ước hợp lý, chẳng hạn như `UsersTableSeeder`, vv... Mặc định, một class `DatabaseSeeder` đã được định nghĩa sẵn cho bạn. Từ class này, bạn có thể sử dụng phương thức `call` để chạy các class seed khác nhau của bạn, cho phép bạn kiểm soát thứ tự được tạo.
+Laravel có chứa một phương thức đơn giản để tạo cơ sở dữ liệu cho việc test bằng cách sử dụng các class Seed. Tất cả các class Seed được lưu trong thư mục `database/seeds`. Các class Seed có thể có bất kỳ tên nào mà bạn muốn, nhưng có lẽ nên tuân theo một số quy ước hợp lý, chẳng hạn như `UserSeeder`, vv... Mặc định, một class `DatabaseSeeder` đã được định nghĩa sẵn cho bạn. Từ class này, bạn có thể sử dụng phương thức `call` để chạy các class seed khác nhau của bạn, cho phép bạn kiểm soát thứ tự được tạo.
 
 <a name="writing-seeders"></a>
 ## Viết Seeder
 
 Để tạo một file seed, hãy chạy [Lệnh Artisan](/docs/{{version}}/artisan) `make:seeder`. Tất cả các seeder được tạo ra bởi lệnh này sẽ được lưu trong thư mục `database/seeds`:
 
-    php artisan make:seeder UsersTableSeeder
+    php artisan make:seeder UserSeeder
 
 Một class seeder chỉ chứa một phương thức mặc định là: `run`. Phương thức này được gọi khi [Lệnh Artisan](/docs/{{version}}/artisan) `db:seed` được chạy. Trong phương thức `run`, bạn có thể thêm dữ liệu vào cơ sở dữ liệu của bạn theo cách mà bạn mong muốn. Bạn có thể sử dụng [query builder](/docs/{{version}}/queries) để thêm dữ liệu theo cách thủ công hoặc bạn có thể sử dụng [Eloquent model factories](/docs/{{version}}/database-testing#writing-factories).
 
@@ -82,9 +82,9 @@ Trong class `DatabaseSeeder`, bạn có thể sử dụng phương thức `call`
     public function run()
     {
         $this->call([
-            UsersTableSeeder::class,
-            PostsTableSeeder::class,
-            CommentsTableSeeder::class,
+            UserSeeder::class,
+            PostSeeder::class,
+            CommentSeeder::class,
         ]);
     }
 
@@ -99,7 +99,7 @@ Bây giờ bạn có thể sử dụng lệnh Artisan `db:seed` để tạo cơ 
 
     php artisan db:seed
 
-    php artisan db:seed --class=UsersTableSeeder
+    php artisan db:seed --class=UserSeeder
 
 Bạn cũng có thể tạo cơ sở dữ liệu cho bạn bằng lệnh `migrate:fresh`, lệnh này sẽ xoá tất cả các bảng và chạy lại tất cả các migration của bạn. Nó sẽ hữu ích khi bạn building lại hoàn toàn cơ sở dữ liệu của bạn:
 

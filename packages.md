@@ -11,6 +11,7 @@
     - [Route](#routes)
     - [Translation](#translations)
     - [View](#views)
+    - [View Components](#view-components)
 - [Lệnh](#commands)
 - [Public Assets](#public-assets)
 - [Publishing File Groups](#publishing-file-groups)
@@ -254,6 +255,36 @@ Nếu bạn muốn export các view vào thư mục `resources/views/vendor` c�
     }
 
 Bây giờ, nếu người dùng package của bạn chạy lệnh Artisan `vendor:publish` của Laravel, thì các view package của bạn sẽ được export đến vị trí export mà bạn đã khai báo.
+
+<a name="view-components"></a>
+### View Components
+
+Nếu package của bạn chứa các [view component](/docs/{{version}}/blade#components), bạn có thể sử dụng phương thức `loadViewComponentsAs` để thông báo cho Laravel về cách load chúng. Phương thức `loadViewComponentsAs` chấp nhận hai tham số: một là tag tiền tố cho các view component của bạn và hai là một mảng gồm tên class của view component của bạn. Ví dụ: nếu tiền tố package của bạn là `courier` và bạn có hai view component là `Alert` và `Button`, bạn sẽ cần thêm code sau vào phương thức `boot` của service provider:
+
+    /**
+     * Bootstrap any application services.
+     *
+     * @return void
+     */
+    public function boot()
+    {
+        $this->loadViewComponentsAs('courier', [
+            Alert::class,
+            Button::class,
+        ]);
+    }
+
+Sau khi các view component của bạn được đăng ký xong trong một service provider, bạn có thể tham chiếu đến chúng trong view của bạn như sau:
+
+    <x-courier-alert />
+
+    <x-courier-button />
+
+#### Anonymous Components
+
+Nếu package của bạn chứa các component ẩn, thì chúng phải được lưu trong thư mục `components` của thư mục "views" trong package của bạn (như được chỉ định bởi `loadViewsFrom`). Sau đó, bạn có thể hiển thị chúng bằng cách thêm tiền tố tên component với namespace view của package:
+
+    <x-courier::alert />
 
 <a name="commands"></a>
 ## Lệnh

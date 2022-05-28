@@ -8,6 +8,7 @@
     - [Configuring Model Indexes](#configuring-model-indexes)
     - [Configuring Searchable Data](#configuring-searchable-data)
     - [Configuring The Model ID](#configuring-the-model-id)
+    - [Identifying Users](#identifying-users)
 - [Indexing](#indexing)
     - [Batch Import](#batch-import)
     - [Adding Records](#adding-records)
@@ -35,7 +36,7 @@ Hiện tại, Scout đang làm việc cùng driver [Algolia](https://www.algolia
 
 Đầu tiên, hãy cài đặt Scout thông qua package manager Composer:
 
-    composer require laravel/scout
+    composer require laravel/scout:^8.0
 
 Sau khi cài đặt Scout xong, bạn nên export cấu hình của Scout bằng lệnh Artisan `vendor:publish`. Lệnh này sẽ export file cấu hình `scout.php` vào thư mục `config` của bạn:
 
@@ -170,6 +171,15 @@ Mặc định, Scout sẽ sử dụng khóa chính của model làm ID được 
             return 'email';
         }
     }
+
+<a name="identifying-users"></a>
+### Identifying Users
+
+Scout cũng cho phép bạn tự động xác định người dùng khi sử dụng Algolia. Việc liên kết người dùng đã authenticate với các thao tác tìm kiếm có thể hữu ích khi xem bảng phân tích tìm kiếm trong bảng điều khiển của Algolia. Bạn có thể bật nhận dạng người dùng bằng cách set `SCOUT_IDENTIFY` thành `true` trong file `.env` của bạn:
+
+    SCOUT_IDENTIFY=true
+
+Bật tính năng này, nó cũng sẽ truyền địa chỉ IP của request và khoá chính của người dùng đã authenticate của bạn tới Algolia để dữ liệu này được liên kết với bất kỳ request tìm kiếm nào được người dùng thực hiện.
 
 <a name="indexing"></a>
 ## Indexing

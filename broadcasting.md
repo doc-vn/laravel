@@ -83,6 +83,10 @@ Cuối cùng, bạn sẽ cần thay đổi driver broadcast của bạn thành `
 
     BROADCAST_DRIVER=pusher
 
+#### Pusher Compatible Laravel Websockets
+
+[Laravel-websockets](https://github.com/beyondcode/laravel-websockets) là một package websocket thuần PHP, tương thích với Pusher cho Laravel. Package này cho phép bạn tận dụng toàn bộ sức mạnh của Laravel broadcasting mà không cần đến các nhà cung cấp websocket bên ngoài hoặc Node. Để biết thêm thông tin về cách cài đặt và sử dụng package này, vui lòng tham khảo [tài liệu chính thức](https://beyondco.de/docs/laravel-websockets) của nó.
+
 #### Redis
 
 Nếu bạn đang sử dụng broadcaster Redis, bạn nên cài đặt extension phpredis của PHP thông qua PECL hoặc cài đặt thư viện Predis thông qua Composer:
@@ -126,6 +130,8 @@ Trước khi broadcasting các event, bạn cũng sẽ cần cấu hình và ch�
 Broadcasting event của Laravel cho phép bạn broadcast các event Laravel ở phía máy chủ của bạn tới các application ở JavaScript bên phía client bằng cách sử dụng các phương pháp tiếp cận dựa trên các driver WebSockets. Hiện tại, Laravel hỗ trợ [Pusher Channels](https://pusher.com/channels) và driver Redis. Các event có thể được sử dụng dễ dàng ở phía client bằng cách sử dụng package Javascript [Laravel Echo](#installing-laravel-echo).
 
 Các event được broadcast qua các "channels", có thể chỉ định là công khai hoặc là riêng tư. Bất kỳ client nào truy cập vào application của bạn đều có thể đăng ký channel công khai mà không cần bất kỳ authentication hoặc authorization nào; tuy nhiên, để đăng ký channel private, người dùng phải được authentication và authorization để listen trên channel đó.
+
+> {tip} Nếu bạn muốn sử dụng một open source dựa trên PHP để thay thế cho Pusher, hãy xem thử package [laravel-websockets](https://github.com/beyondcode/laravel-websockets).
 
 <a name="using-example-application"></a>
 ### Sử dụng một application mẫu

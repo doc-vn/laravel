@@ -19,7 +19,7 @@ Trước khi sử dụng bộ mã hóa của Laravel, bạn cần phải cài đ
 
 #### Encrypting A Value
 
-Bạn có thể mã hóa một giá trị bằng cách sử dụng helper `encrypt`. Tất cả các giá trị mã hóa đều được mã hóa bằng OpenSSL và mật mã `AES-256-CBC`. Hơn nữa, tất cả các giá trị mã hóa mà được ký bằng message authentication code (MAC) đều có thể phát hiện bất kỳ sửa đổi nào đối với giá trị đã được mã hóa:
+Bạn có thể mã hóa một giá trị bằng cách sử dụng phương thức `encryptString` của facade `Crypt`. Tất cả các giá trị mã hóa đều được mã hóa bằng OpenSSL và mật mã `AES-256-CBC`. Hơn nữa, tất cả các giá trị mã hóa mà được ký bằng message authentication code (MAC) đều có thể phát hiện bất kỳ sửa đổi nào đối với giá trị đã được mã hóa:
 
     <?php
 
@@ -28,6 +28,7 @@ Bạn có thể mã hóa một giá trị bằng cách sử dụng helper `encry
     use App\Http\Controllers\Controller;
     use App\User;
     use Illuminate\Http\Request;
+    use Illuminate\Support\Facades\Crypt;
 
     class UserController extends Controller
     {
@@ -43,29 +44,20 @@ Bạn có thể mã hóa một giá trị bằng cách sử dụng helper `encry
             $user = User::findOrFail($id);
 
             $user->fill([
-                'secret' => encrypt($request->secret),
+                'secret' => Crypt::encryptString($request->secret),
             ])->save();
         }
     }
 
-#### Encrypting Without Serialization
-
-Các giá trị đã được mã hóa sẽ được truyền qua `serialize` trong quá trình mã hóa, cho phép bạn mã hóa các đối tượng và mảng. Do đó, các client không phải là PHP nếu nhận được các giá trị đã mã hóa sẽ cần phải `unserialize` dữ liệu. Nếu bạn muốn mã hóa và giải mã các giá trị mà không cần qua serialization, bạn có thể sử dụng các phương thức `encryptString` và `decryptString` của facade `Crypt`:
-
-    use Illuminate\Support\Facades\Crypt;
-
-    $encrypted = Crypt::encryptString('Hello world.');
-
-    $decrypted = Crypt::decryptString($encrypted);
-
 #### Decrypting A Value
 
-Bạn có thể giải mã các giá trị bằng cách sử dụng helper `decrypt`. Nếu giá trị không thể được giải mã chính xác, chẳng hạn như khi MAC không hợp lệ, một `Illuminate\Contracts\Encryption\DecryptException` sẽ được tạo ra:
+Bạn có thể giải mã các giá trị bằng cách sử dụng phương thức `decryptString` của facade `Crypt`. Nếu giá trị không thể được giải mã chính xác, chẳng hạn như khi MAC không hợp lệ, một `Illuminate\Contracts\Encryption\DecryptException` sẽ được tạo ra:
 
     use Illuminate\Contracts\Encryption\DecryptException;
+    use Illuminate\Support\Facades\Crypt;
 
     try {
-        $decrypted = decrypt($encryptedValue);
+        $decrypted = Crypt::decryptString($encryptedValue);
     } catch (DecryptException $e) {
         //
     }

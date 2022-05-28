@@ -18,6 +18,7 @@
 - [Đăng ký Command](#registering-commands)
 - [Chạy command bên ngoài CLI](#programmatically-executing-commands)
     - [Gọi Command từ một Command khác](#calling-commands-from-other-commands)
+- [Tùy chỉnh Stub](#stub-customization)
 
 <a name="introduction"></a>
 ## Giới thiệu
@@ -61,7 +62,7 @@ Tinker có sử dụng một danh sách trắng để xác định các lệnh A
         // App\Console\Commands\ExampleCommand::class,
     ],
 
-#### Alias Blacklist
+#### Classes That Should Not Be Aliased
 
 Thông thường, Tinker sẽ tự động đặt bí danh cho các class khi bạn require chúng vào trong Tinker. Tuy nhiên, bạn có thể muốn không đặt bí danh cho một số class. Bạn có thể thực hiện điều này bằng cách thêm các class đó vào trong mảng `dont_alias` của file cấu hình `tinker.php` của bạn:
 
@@ -518,3 +519,12 @@ Nếu bạn muốn gọi một command khác và xoá đi tất cả các output
     $this->callSilent('email:send', [
         'user' => 1, '--queue' => 'default'
     ]);
+
+<a name="stub-customization"></a>
+## Tùy chỉnh Stub
+
+Lệnh `make` của Artisan console sẽ được sử dụng để tạo nhiều class khác nhau, chẳng hạn như controller, job, migration và các bài test. Các class này được tạo ra bằng cách sử dụng các file "stub" được điền sẵn các giá trị dựa trên đầu vào mà bạn đưa vào. Tuy nhiên, thỉnh thoảng bạn có thể muốn thực hiện các thay đổi nhỏ đối với các file do Artisan tạo ra. Để thực hiện điều này, bạn có thể sử dụng lệnh `stub:publish` để export ra các stub cơ bản nhất để tùy chỉnh:
+
+    php artisan stub:publish
+
+Các file stub đã được export sẽ nằm trong thư mục `stubs` trong thư mục gốc của ứng dụng của bạn. Bất kỳ thay đổi nào mà bạn thực hiện đối với các file stub này sẽ được phản ánh khi bạn tạo các class tương ứng khi sử dụng lệnh Artisan `make`.

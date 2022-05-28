@@ -12,6 +12,7 @@
 - [Thông báo](#notifications)
     - [Slack](#slack)
     - [Discord](#discord)
+    - [Telegram](#telegram)
 
 <a name="introduction"></a>
 ## Giới thiệu
@@ -27,7 +28,7 @@
 
 Vì các thư viện Composer global đôi khi có thể gây ra xung đột phiên bản package, nên bạn có thể muốn xem xét sử dụng `cgr`, đây là một thay thế cho lệnh `composer global require`. Hướng dẫn cài đặt của thư viện `cgr` này có thể [được tìm thấy trên GitHub](https://github.com/consolidation-org/cgr).
 
-> {note} Hãy đảm bảo là bạn đã set link của thư mục `~/.composer/vendor/bin` vào trong PATH của bạn để có thể chạy lệnh `envoy` trong terminal của bạn.
+> {note} Hãy đảm bảo là bạn đã set link của thư mục `$HOME/.config/composer/vendor/bin` hoặc `$HOME/.composer/vendor/bin` vào trong PATH của bạn để có thể chạy lệnh `envoy` trong terminal của bạn.
 
 #### Updating Envoy
 
@@ -46,7 +47,7 @@ Tất cả các task Envoy của bạn phải được định nghĩa trong file
         ls -la
     @endtask
 
-Như bạn có thể thấy, một mảng `@servers` sẽ được định nghĩa ở đầu file, cho phép bạn tham chiếu đến các server này trong tùy chọn `on` trong task của bạn. Ở trong khai báo `@task` của bạn, bạn nên viết các lệnh Bash code sẽ được chạy trên server của bạn khi tác vụ được thực thi.
+Như bạn có thể thấy, một mảng `@servers` sẽ được định nghĩa ở đầu file, cho phép bạn tham chiếu đến các server này trong tùy chọn `on` trong task của bạn. Khai báo `@server` phải luôn được viết trên một dòng. Ở trong khai báo `@task` của bạn, bạn nên viết các lệnh Bash code sẽ được chạy trên server của bạn khi task được thực thi.
 
 Bạn có thể bắt buộc một tập lệnh phải chạy ở local bằng cách khai báo địa chỉ IP của server là `127.0.0.1`:
 
@@ -191,4 +192,13 @@ Envoy cũng hỗ trợ gửi thông báo đến [Discord](https://discord.com) s
 
     @finished
         @discord('discord-webhook-url')
+    @endfinished
+
+<a name="telegram"></a>
+### Telegram
+
+Envoy cũng hỗ trợ gửi thông báo tới [Telegram](https://telegram.org) sau mỗi task được thực thi. Lệnh `@telegram` chấp nhận một Telegram Bot ID và một Chat ID. Bạn có thể lấy ra Bot ID của bạn bằng cách tạo một bot mới bằng [BotFather](https://t.me/botfather) Bạn có thể lấy ra Chat ID bằng cách [@username_to_id_bot](https://t.me/username_to_id_bot). Bạn nên truyền toàn bộ Bot ID và Chat ID vào lệnh `@telegram`:
+
+    @finished
+        @telegram('<bot-id>','<chat-id>')
     @endfinished

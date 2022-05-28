@@ -46,6 +46,14 @@ Ngoài ra, class `Illuminate\Database\Eloquent\Collection` cũng sẽ cung cấp
     #collection-method-list a {
         display: block;
     }
+
+    .collection-method code {
+        font-size: 14px;
+    }
+
+    .collection-method:not(.first-collection-method) {
+        margin-top: 50px;
+    }
 </style>
 
 <div id="collection-method-list" markdown="1">
@@ -62,12 +70,14 @@ Ngoài ra, class `Illuminate\Database\Eloquent\Collection` cũng sẽ cung cấp
 [makeVisible](#method-makeVisible)
 [makeHidden](#method-makeHidden)
 [only](#method-only)
+[toQuery](#method-toquery)
 [unique](#method-unique)
 
 </div>
 
 <a name="method-contains"></a>
-#### `contains($key, $operator = null, $value = null)`
+#### `contains($key, $operator = null, $value = null)` {.collection-method .first-collection-method}
+
 
 Phương thức `contains` có thể được sử dụng để xác định xem một instance model có trong một collection hay không. Phương thức này chấp nhận một khóa chính hoặc một instance model:
 
@@ -76,7 +86,7 @@ Phương thức `contains` có thể được sử dụng để xác định xem
     $users->contains(User::find(1));
 
 <a name="method-diff"></a>
-#### `diff($items)`
+#### `diff($items)` {.collection-method}
 
 Phương thức `diff` sẽ trả về tất cả các model không có trong một collection đã cho:
 
@@ -85,14 +95,14 @@ Phương thức `diff` sẽ trả về tất cả các model không có trong m�
     $users = $users->diff(User::whereIn('id', [1, 2, 3])->get());
 
 <a name="method-except"></a>
-#### `except($keys)`
+#### `except($keys)` {.collection-method}
 
 Phương thức `except` sẽ trả về tất cả các model không chứa một mảng khóa chính đã cho:
 
     $users = $users->except([1, 2, 3]);
 
 <a name="method-find"></a>
-#### `find($key)` {#collection-method .first-collection-method}
+#### `find($key)` {.collection-method}
 
 Phương thức `find` sẽ tìm một model bầng một khóa chính cho trước. Nếu `$key` là một instance model, phương thức `find` sẽ cố gắng trả về một model khớp với khóa chính của model đã cho. Nếu `$key` là một mảng gồm các khóa chính, thì phương thức `find` sẽ trả về tất cả các model mà khớp với `$key` bằng cách sử dụng phương thức `whereIn()`:
 
@@ -101,7 +111,7 @@ Phương thức `find` sẽ tìm một model bầng một khóa chính cho trư�
     $user = $users->find(1);
 
 <a name="method-fresh"></a>
-#### `fresh($with = [])`
+#### `fresh($with = [])` {.collection-method}
 
 Phương thức `fresh` sẽ lấy ra lại một instance mới của mỗi model trong collection từ cơ sở dữ liệu. Ngoài ra, bất kỳ mối quan hệ được chỉ định nào cũng sẽ được eager loading lại:
 
@@ -110,7 +120,7 @@ Phương thức `fresh` sẽ lấy ra lại một instance mới của mỗi mod
     $users = $users->fresh('comments');
 
 <a name="method-intersect"></a>
-#### `intersect($items)`
+#### `intersect($items)` {.collection-method}
 
 Phương thức `intersect` sẽ trả về tất cả các model cũng có trong collection đã cho:
 
@@ -119,7 +129,7 @@ Phương thức `intersect` sẽ trả về tất cả các model cũng có tron
     $users = $users->intersect(User::whereIn('id', [1, 2, 3])->get());
 
 <a name="method-load"></a>
-#### `load($relations)`
+#### `load($relations)` {.collection-method}
 
 Phương thức `load` sẽ eager loading tất cả các quan hệ đã cho, cho tất cả các model có trong collection:
 
@@ -128,7 +138,7 @@ Phương thức `load` sẽ eager loading tất cả các quan hệ đã cho, ch
     $users->load('comments.author');
 
 <a name="method-loadMissing"></a>
-#### `loadMissing($relations)`
+#### `loadMissing($relations)` {.collection-method}
 
 Phương thức `loadMissing`sẽ eager loading tất cả các quan hệ đã cho, cho tất cả các model có trong collection nếu các quan hệ đó chưa được load:
 
@@ -137,7 +147,7 @@ Phương thức `loadMissing`sẽ eager loading tất cả các quan hệ đã c
     $users->loadMissing('comments.author');
 
 <a name="method-modelKeys"></a>
-#### `modelKeys()`
+#### `modelKeys()` {.collection-method}
 
 Phương thức `modelKeys` sẽ trả về các khóa chính của tất cả các model có trong collection:
 
@@ -146,28 +156,39 @@ Phương thức `modelKeys` sẽ trả về các khóa chính của tất cả c
     // [1, 2, 3, 4, 5]
 
 <a name="method-makeVisible"></a>
-#### `makeVisible($attributes)`
+#### `makeVisible($attributes)` {.collection-method}
 
 Phương thức `makeVisible` sẽ làm cho các thuộc tính bị "hidden" sẽ hiển thị trên mỗi model có trong collection:
 
     $users = $users->makeVisible(['address', 'phone_number']);
 
 <a name="method-makeHidden"></a>
-#### `makeHidden($attributes)`
+#### `makeHidden($attributes)` {.collection-method}
 
 Phương thức `makeHidden` sẽ làm cho các thuộc tính được "visible" sẽ bị ẩn trên mỗi model có trong collection:
 
     $users = $users->makeHidden(['address', 'phone_number']);
 
 <a name="method-only"></a>
-#### `only($keys)`
+#### `only($keys)` {.collection-method}
 
 Phương thức `only` sẽ trả về tất cả các model có khóa chính đã cho:
 
     $users = $users->only([1, 2, 3]);
 
+<a name="method-toquery"></a>
+#### `toQuery()` {.collection-method}
+
+Phương thức `toQuery` sẽ trả về một instance query builder của Eloquent chứa câu lệnh điều kiện `whereIn` trên các khóa chính của model collection:
+
+    $users = App\User::where('status', 'VIP')->get();
+
+    $users->toQuery()->update([
+        'status' => 'Administrator',
+    ]);
+
 <a name="method-unique"></a>
-#### `unique($key = null, $strict = false)`
+#### `unique($key = null, $strict = false)` {.collection-method}
 
 Phương thức `unique` sẽ trả về tất cả các unique model có trong collection. Tất cả các model có cùng khóa chính với các model khác có trong collection đều sẽ bị xóa.
 

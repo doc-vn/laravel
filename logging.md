@@ -164,6 +164,7 @@ Nếu bạn muốn tạo một stack để ghi log ở nhiều channel khác nha
 
     Log::stack(['single', 'slack'])->info('Something happened!');
 
+
 <a name="advanced-monolog-channel-customization"></a>
 ## Tuỳ biến Monolog Channel nâng cao
 
@@ -187,6 +188,8 @@ Sau khi bạn đã cấu hình tùy chọn `tap` trong file cấu hình channel 
 
     namespace App\Logging;
 
+    use Monolog\Formatter\LineFormatter;
+
     class CustomizeFormatter
     {
         /**
@@ -198,7 +201,9 @@ Sau khi bạn đã cấu hình tùy chọn `tap` trong file cấu hình channel 
         public function __invoke($logger)
         {
             foreach ($logger->getHandlers() as $handler) {
-                $handler->setFormatter(...);
+                $handler->setFormatter(new LineFormatter(
+                    '[%datetime%] %channel%.%level_name%: %message% %context% %extra%'
+                ));
             }
         }
     }

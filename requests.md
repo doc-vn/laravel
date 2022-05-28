@@ -329,6 +329,18 @@ Nếu bạn muốn tạo một instance `Symfony\Component\HttpFoundation\Cookie
 
     return response('Hello World')->cookie($cookie);
 
+#### Expiring Cookies Early
+
+Bạn có thể xóa một cookie bằng cách làm cho nó hết hạn thông qua phương thức `forget` của facade `Cookie`:
+
+    Cookie::queue(Cookie::forget('name'));
+
+Ngoài ra, bạn có thể đính kèm một cookie đã hết hạn vào một instance response:
+
+    $cookie = Cookie::forget('name');
+
+    return response('Hello World')->withCookie($cookie);
+
 <a name="files"></a>
 ## Files
 
@@ -365,7 +377,7 @@ Class `UploadedFile` cũng chứa các phương thức có thể truy cập đ�
 
 #### Other File Methods
 
-Có nhiều phương thức khác có sẵn trong các instance `UploadedFile`. Hãy kiểm tra [tài liệu API cho class này](https://api.symfony.com/3.0/Symfony/Component/HttpFoundation/File/UploadedFile.html) để biết thêm thông tin về các phương thức này.
+Có nhiều phương thức khác có sẵn trong các instance `UploadedFile`. Hãy kiểm tra [tài liệu API cho class này](https://api.symfony.com/master/Symfony/Component/HttpFoundation/File/UploadedFile.html) để biết thêm thông tin về các phương thức này.
 
 <a name="storing-uploaded-files"></a>
 ### Lưu file upload
@@ -415,7 +427,7 @@ Khi application của bạn đang chạy sau một hệ thống load balancer, m
         /**
          * The headers that should be used to detect proxies.
          *
-         * @var string
+         * @var int
          */
         protected $headers = Request::HEADER_X_FORWARDED_ALL;
     }

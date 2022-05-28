@@ -5,6 +5,8 @@
     - [Liên kết cơ bản](#binding-basics)
     - [Liên kết Interfaces tới Implementations](#binding-interfaces-to-implementations)
     - [Liên kết bối cảnh](#contextual-binding)
+    - [Liên kết kiểu dữ liệu đơn giản](#binding-primitives)
+    - [Liên kết nhiều loại](#binding-typed-variadics)
     - [Thẻ](#tagging)
     - [Liên kết mở rộng](#extending-bindings)
 - [Resolving](#resolving)
@@ -16,7 +18,7 @@
 <a name="introduction"></a>
 ## Giới thiệu
 
-Laravel service container là một công cụ mạnh mẽ để quản lý các class phụ thuộc và thực hiện tích hợp các class phụ thuộc đó vào các class khác. Tích hợp class phụ thuộc là một cụm từ tuyệt vời có nghĩa cơ bản là: class phụ thuộc sẽ được "tích hợp" vào một class khác thông qua hàm tạo hoặc trong một số trường hợp là hàm "setter".
+Laravel service container là một công cụ mạnh mẽ để quản lý các class phụ thuộc và thực hiện tích hợp các class phụ thuộc đó vào các class khác. Tích hợp class phụ thuộc là một cụm từ tuyệt vời có nghĩa cơ bản là: class phụ thuộc sẽ được "tích hợp" vào một class khác thông qua hàm khởi tạo hoặc trong một số trường hợp là hàm "setter".
 
 Hãy xem một ví dụ đơn giản:
 
@@ -102,14 +104,6 @@ Bạn cũng có thể liên kết một object instance đã tồn tại vào co
 
     $this->app->instance('HelpSpot\API', $api);
 
-#### Liên kết primitives
-
-Thỉnh thoảng, bạn có một class nhận vào một số các class tích hợp, nhưng bạn cũng có thể muốn thêm một số các giá trị khác nhau để thêm vào những class đó, ví dụ như là một giá trị integer. Bạn có thể dễ dàng sử dụng liên kết theo ngữ cảnh đó để đưa vào một giá trị mà class của bạn có thể cần:
-
-    $this->app->when('App\Http\Controllers\UserController')
-              ->needs('$variableName')
-              ->give($value);
-
 <a name="binding-interfaces-to-implementations"></a>
 ### Liên kết Interfaces tới Implementations
 
@@ -157,6 +151,68 @@ Thỉnh thoảng bạn cũng có thể có hai class sử dụng chung một int
               ->give(function () {
                   return Storage::disk('s3');
               });
+
+<a name="binding-primitives"></a>
+### Liên kết kiểu dữ liệu đơn giản
+
+Thỉnh thoảng, bạn có một class nhận vào một số các class tích hợp, nhưng bạn cũng có thể muốn thêm một số các giá trị khác nhau để thêm vào những class đó, ví dụ như là một giá trị integer. Bạn có thể dễ dàng sử dụng liên kết theo ngữ cảnh đó để đưa vào một giá trị mà class của bạn có thể cần:
+
+    $this->app->when('App\Http\Controllers\UserController')
+              ->needs('$variableName')
+              ->give($value);
+
+Thỉnh thoảng một class có thể gắn vào một mảng các instance đã được gắn tag. Sử dụng phương thức `giveTagged`, bạn có thể dễ dàng gắn tất cả các liên kết container này với tag đó:
+
+    $this->app->when(ReportAggregator::class)
+        ->needs('$reports')
+        ->giveTagged('reports');
+
+<a name="binding-typed-variadics"></a>
+### Liên kết nhiều loại
+
+Đôi khi bạn có thể có một class nhận vào một mảng các đối tượng thông qua khai báo một tham số trong phương thức khởi tạo của class:
+
+    class Firewall
+    {
+        protected $logger;
+        protected $filters;
+
+        public function __construct(Logger $logger, Filter ...$filters)
+        {
+            $this->logger = $logger;
+            $this->filters = $filters;
+        }
+    }
+
+Sử dụng liên kết theo ngữ cảnh đó, bạn có thể resolve sự phụ thuộc này bằng cách cung cấp phương thức `give` với một Closure trả về một mảng các instance `Filter`:
+
+    $this->app->when(Firewall::class)
+              ->needs(Filter::class)
+              ->give(function ($app) {
+                    return [
+                        $app->make(NullFilter::class),
+                        $app->make(ProfanityFilter::class),
+                        $app->make(TooLongFilter::class),
+                    ];
+              });
+
+Để thuận tiện, bạn cũng có thể chỉ cần cung cấp một mảng tên class để container resolve bất cứ khi nào `Firewall` cần các instances `Filter`:
+
+    $this->app->when(Firewall::class)
+              ->needs(Filter::class)
+              ->give([
+                  NullFilter::class,
+                  ProfanityFilter::class,
+                  TooLongFilter::class,
+              ]);
+
+#### Variadic Tag Dependencies
+
+Thỉnh thoảng một class có thể có nhiều phụ thuộc khác nhau được khai báo như một class (`Report ...$reports`). Sử dụng các phương thức `needs` và `giveTagged`, bạn có thể dễ dàng gắn tất cả các liên kết container này với một tag đã cho:
+
+    $this->app->when(ReportAggregator::class)
+        ->needs(Report::class)
+        ->giveTagged('reports');
 
 <a name="tagging"></a>
 ### Thẻ

@@ -18,7 +18,7 @@
 
 Tuy nhiên, nếu bạn muốn tạo một bug, thì bug của bạn nên chứa một tiêu đề và một mô tả rõ ràng về bug mà bạn gặp phải. Bạn cũng nên mô tả càng nhiều thông tin liên quan đến bug càng tốt và một code ví dụ để tạo ra bug đó. Mục tiêu của báo bug là giúp bạn dễ dàng - và những người khác - tái hiện lại bug đó và phát triển các bản sửa bug.
 
-Hãy nhớ rằng, báo bug được tạo ra với hy vọng rằng những người khác có cùng vấn đề với bạn có thể cộng tác với nhau để cùng nhau sửa bug. Bạn đừng hy vọng rằng báo bug sẽ làm khởi động một quá trình sửa bug nào đó hoặc người khác sẽ nhảy vào để sửa giúp bạn. Tạo một bug để giúp chính bạn và những người khác, bắt đầu một quá trình sửa bug mà bạn đã báo cáo.
+Hãy nhớ rằng, báo bug được tạo ra với hy vọng rằng những người khác có cùng vấn đề với bạn có thể cộng tác với nhau để cùng nhau sửa bug. Bạn đừng hy vọng rằng báo bug sẽ làm khởi động một quá trình sửa bug nào đó hoặc người khác sẽ nhảy vào để sửa giúp bạn. Tạo một bug để giúp chính bạn và những người khác, bắt đầu một quá trình sửa bug mà bạn đã báo cáo. Nếu bạn muốn trợ giúp, bạn có thể trợ giúp bằng cách sửa [bất kỳ lỗi nào được liệt kê trong issue tracker của chúng tôi](https://github.com/issues?q=is%3Aopen+is%3Aissue+label%3Abug+user%3Alaravel+-repo%3Alaravel%2Fnova-issues).
 
 Mã nguồn của Laravel được quản lý trên GitHub và có các repository cho từng dự án của Laravel:
 
@@ -27,17 +27,22 @@ Mã nguồn của Laravel được quản lý trên GitHub và có các reposito
 - [Laravel Application](https://github.com/laravel/laravel)
 - [Laravel Art](https://github.com/laravel/art)
 - [Laravel Documentation](https://github.com/laravel/docs)
-- [Laravel Cashier](https://github.com/laravel/cashier)
+- [Laravel Dusk](https://github.com/laravel/dusk)
+- [Laravel Cashier Stripe](https://github.com/laravel/cashier)
+- [Laravel Cashier Paddle](https://github.com/laravel/cashier-paddle)
+- [Laravel Echo](https://github.com/laravel/echo)
 - [Laravel Envoy](https://github.com/laravel/envoy)
 - [Laravel Framework](https://github.com/laravel/framework)
 - [Laravel Homestead](https://github.com/laravel/homestead)
 - [Laravel Homestead Build Scripts](https://github.com/laravel/settler)
 - [Laravel Horizon](https://github.com/laravel/horizon)
 - [Laravel Passport](https://github.com/laravel/passport)
+- [Laravel Sanctum](https://github.com/laravel/sanctum)
 - [Laravel Scout](https://github.com/laravel/scout)
 - [Laravel Socialite](https://github.com/laravel/socialite)
 - [Laravel Telescope](https://github.com/laravel/telescope)
 - [Laravel Website](https://github.com/laravel/laravel.com-next)
+- [Laravel UI](https://github.com/laravel/ui)
 
 </div>
 
@@ -48,6 +53,7 @@ GitHub issue tracker của Laravel không nhằm mục đích cung cấp các tr
 
 <div class="content-list" markdown="1">
 
+- [GitHub Discussions](https://github.com/laravel/framework/discussions)
 - [Laracasts Forums](https://laracasts.com/discuss)
 - [Laravel.io Forums](https://laravel.io/forum)
 - [StackOverflow](https://stackoverflow.com/questions/tagged/laravel)

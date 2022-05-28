@@ -4,7 +4,6 @@
 - [Kế thừa template](#template-inheritance)
     - [Định nghĩa một layout](#defining-a-layout)
     - [Kế thừa một Layout](#extending-a-layout)
-- [Components và Slots](#components-and-slots)
 - [Hiển thị dữ liệu](#displaying-data)
     - [Blade và JavaScript Frameworks](#blade-and-javascript-frameworks)
 - [Control Structures](#control-structures)
@@ -14,10 +13,18 @@
     - [Biến loop](#the-loop-variable)
     - [Comments](#comments)
     - [PHP](#php)
+    - [Lệnh `@once`](#the-once-directive)
 - [Forms](#forms)
     - [CSRF Field](#csrf-field)
     - [Method Field](#method-field)
     - [Validation Errors](#validation-errors)
+- [Components](#components)
+    - [Hiển thị Components](#displaying-components)
+    - [Truyền dữ liệu tới Components](#passing-data-to-components)
+    - [Quản lý Attributes](#managing-attributes)
+    - [Slots](#slots)
+    - [Inline Component Views](#inline-component-views)
+    - [Component ẩn](#anonymous-components)
 - [Thêm Subviews](#including-subviews)
     - [Tạo Views cho Collections](#rendering-views-for-collections)
 - [Stacks](#stacks)
@@ -94,77 +101,6 @@ Blade view có thể được trả về từ route khi dùng với global helpe
         return view('child');
     });
 
-<a name="components-and-slots"></a>
-## Components và Slots
-
-Các component và slot cung cấp nhiều lợi ích tương tự như các section và layout; tuy nhiên, có một số loại của component và slot là dễ hiểu hơn. Trước tiên, hãy tưởng tượng một component "cảnh báo" có thể tái sử dụng và chúng ta muốn sử dụng lại nó trong suốt quá trình phát triển ứng dụng của bạn:
-
-    <!-- /resources/views/alert.blade.php -->
-
-    <div class="alert alert-danger">
-        {{ $slot }}
-    </div>
-
-Biến `{{ $slot }}` sẽ chứa nội dung mà chúng ta muốn đưa vào component. Bây giờ, để sử dụng component này, chúng ta có thể sử dụng lệnh `@component` Blade:
-
-    @component('alert')
-        <strong>Whoops!</strong> Something went wrong!
-    @endcomponent
-
-Để hướng dẫn Laravel load view đầu tiên tồn tại từ một mảng view cho một component, bạn có thể sử dụng lệnh `componentFirst`:
-
-    @componentfirst(['custom.alert', 'alert'])
-        <strong>Whoops!</strong> Something went wrong!
-    @endcomponentfirst
-
-Thỉnh thoảng chúng ra sẽ cần định nghĩa nhiều slot cho một component. Hãy chỉnh sửa component cảnh báo của chúng ta để cho phép injection một "title". Các slot đã được đặt tên có thể được hiển thị bằng cách "echoing" biến khớp với tên của chúng:
-
-    <!-- /resources/views/alert.blade.php -->
-
-    <div class="alert alert-danger">
-        <div class="alert-title">{{ $title }}</div>
-
-        {{ $slot }}
-    </div>
-
-Bây giờ, chúng ta có thể inject nội dung vào slot đã được đặt tên bằng cách sử dụng lệnh `@slot`. Bất kỳ nội dung nào mà không nằm trong lệnh `@slot` sẽ được truyền đến component trong biến `$slot`:
-
-    @component('alert')
-        @slot('title')
-            Forbidden
-        @endslot
-
-        You are not allowed to access this resource!
-    @endcomponent
-
-#### Truyền thêm dữ liệu bổ sung đến component
-
-Thỉnh thoảng bạn có thể cần truyền thêm dữ liệu cho một component. Bạn có thể truyền một mảng dữ liệu làm tham số thứ hai cho lệnh  `@component`. Tất cả các dữ liệu sẽ được truyền cho component template dưới dạng các biến:
-
-    @component('alert', ['foo' => 'bar'])
-        ...
-    @endcomponent
-
-#### Bí danh Component
-
-Nếu các component Blade của bạn được lưu trữ trong một thư mục con, bạn có thể muốn đặt tên bí danh cho chúng để dễ dàng truy cập hơn. Ví dụ, hãy tưởng tượng một component Blade được lưu trữ trong thư mục `resources/views/components/alert.blade.php`. Bạn có thể sử dụng phương thức `component` để đặt tên bí danh cho component từ `components.alert` thành `alert`. Thông thường, điều này nên được thực hiện trong phương thức `boot` của `AppServiceProvider` của bạn:
-
-    use Illuminate\Support\Facades\Blade;
-
-    Blade::component('components.alert', 'alert');
-
-Khi component đã được đặt tên bí danh, bạn có thể render nó bằng cách sử dụng lệnh sau:
-
-    @alert(['type' => 'danger'])
-        You are not allowed to access this resource!
-    @endalert
-
-Bạn có thể bỏ qua các parameter của component nếu nó không có thêm slot:
-
-    @alert
-        You are not allowed to access this resource!
-    @endalert
-
 <a name="displaying-data"></a>
 ## Hiển thị dữ liệu
 
@@ -210,12 +146,6 @@ Tuy nhiên, thay vì gọi thủ công `json_encode`, bạn có thể sử dụn
 
 > {note} Bạn chỉ nên sử dụng lệnh `@json` để hiển thị các biến hiện có dưới dạng JSON. Template cho Blade được dựa trên các biểu thức chính quy và việc cố gắng truyền vào một biểu thức phức tạp cho lệnh có thể gây ra lỗi mà bạn không mong muốn.
 
-Lệnh `@json` cũng có thể hữu ích để truyền biến vào các Vue component hoặc các thuộc tính `data-*`:
-
-    <example-component :some-prop='@json($array)'></example-component>
-
-> {note} Sử dụng `@json` trong các thuộc tính của phần tử sẽ yêu cầu nó phải được nằm trong một dấu ngoặc kép.
-
 #### Mã hóa thực thể HTML
 
 Mặc định, Blade (cũng như helper `e` của Laravel) sẽ mã hóa kép các thực thể HTML. Nếu bạn không muốn mã hóa kép này, hãy gọi phương thức `Blade::withoutDoubleEncoding` từ phương thức `boot` của `AppServiceProvider` của bạn:
@@ -250,6 +180,14 @@ Do nhiều framework JavaScript cũng sử dụng hai lần dấu ngoặc nhọn
     Hello, @{{ name }}.
 
 Trong ví dụ này, ký hiệu `@` sẽ bị xóa bởi Blade; tuy nhiên, biểu thức `{{ name }}` sẽ vẫn còn và sẽ không được xử lý bởi Blade engine, điều này cho phép các biểu thức đó sẽ được render bởi framework JavaScript của bạn.
+
+Các symbol `@` cũng có thể được sử dụng cho các lệnh Blade:
+
+    {{-- Blade --}}
+    @@json()
+
+    <!-- HTML output -->
+    @json()
 
 #### Lệnh `@verbatim`
 
@@ -297,7 +235,7 @@ Ngoài các lệnh có điều kiện đã được thảo luận ở trên, cá
 
 #### Lệnh authentication
 
-Các lệnh `@auth` và `@guest` có thể được sử dụng để xác định xem người dùng hiện tại đã được xác thực chưa? hay là khách:
+Các lệnh `@auth` và `@guest` có thể được sử dụng để xác định xem người dùng hiện tại đã được xác thực chưa hay là khách:
 
     @auth
         // The user is authenticated...
@@ -328,6 +266,32 @@ Bạn có thể kiểm tra xem một section có nội dung hay không bằng c�
 
         <div class="clearfix"></div>
     @endif
+
+Bạn có thể sử dụng lệnh `sectionMissing` để xác định một section không có nội dung:
+
+    @sectionMissing('navigation')
+        <div class="pull-right">
+            @include('default-navigation')
+        </div>
+    @endif
+
+#### Environment Directives
+
+Bạn có thể kiểm tra xem ứng dụng của bạn có đang chạy trong môi trường production hay không bằng cách sử dụng lệnh `@production`:
+
+    @production
+        // Production specific content...
+    @endproduction
+
+Hoặc, bạn có thể xác định xem ứng dụng của bạn có đang chạy trong một môi trường cụ thể hay không bằng cách sử dụng lệnh `@env`:
+
+    @env('staging')
+        // The application is running in "staging"...
+    @endenv
+
+    @env(['staging', 'production'])
+        // The application is running in "staging" or "production"...
+    @endenv
 
 <a name="switch-statements"></a>
 ### Lệnh switch
@@ -456,6 +420,19 @@ Trong một số trường hợp, có thể bạn cần nhúng code PHP vào tro
 
 > {tip} Mặc dù Blade cung cấp tính năng này, nhưng việc sử dụng nó thường xuyên có thể là một tín hiệu cho thấy bạn đang có quá nhiều logic đang được nhúng vào trong template của bạn.
 
+<a name="the-once-directive"></a>
+### Lệnh `@once`
+
+Lệnh `@once` cho phép bạn định nghĩa một phần của template sẽ chỉ được kiểm tra một lần duy nhất cho mỗi chu kỳ hiển thị. Điều này có thể hữu ích khi đưa một đoạn code JavaScript nhất định vào tiêu đề của trang web bằng cách sử dụng [stacks](#stacks). Ví dụ: nếu bạn đang hiển thị một [component](#components) trong một vòng lặp, bạn có thể chỉ muốn đưa một đoạn code JavaScript vào tiêu đề trong lần hiển thị đầu tiên của component:
+
+    @once
+        @push('scripts')
+            <script>
+                // Your custom JavaScript...
+            </script>
+        @endpush
+    @endonce
+
 <a name="forms"></a>
 ## Forms
 
@@ -507,6 +484,340 @@ Bạn có thể truyền [tên của một error bag cụ thể](/docs/{{version
     @error('email', 'login')
         <div class="alert alert-danger">{{ $message }}</div>
     @enderror
+
+<a name="components"></a>
+## Components
+
+Các component và slot sẽ cung cấp các lợi ích tương tự cho các section và layout; tuy nhiên, một số có thể thấy model của các component và slot sẽ dễ hiểu hơn. Có hai cách tiếp cận để viết các component: các component dựa trên class và các component ẩn.
+
+Để tạo một component dựa trên class, bạn có thể sử dụng lệnh Artisan `make:component`. Để minh họa cách sử dụng của các component này, chúng ta sẽ tạo một component `Alert` đơn giản. Lệnh `make:component` sẽ lưu component vào trong thư mục `App\View\Components`:
+
+    php artisan make:component Alert
+
+Lệnh `make:component` cũng sẽ tạo một view template cho component. View sẽ được đặt trong thư mục `resources/views/components`.
+
+#### Manually Registering Package Components
+
+Khi viết các component cho ứng dụng của bạn, các component sẽ tự động được đăng ký trong thư mục `app/View/Components` và thư mục `resources/views/components`.
+
+Tuy nhiên, nếu bạn đang xây dựng một package sử dụng các component Blade, bạn sẽ cần phải đăng ký thủ công các class component của bạn và các bí danh tag HTML của nó. Thông thường, bạn nên đăng ký các component của bạn trong phương thức `boot` của service provider trong package của bạn:
+
+    use Illuminate\Support\Facades\Blade;
+
+    /**
+     * Bootstrap your package's services.
+     */
+    public function boot()
+    {
+        Blade::component('package-alert', AlertComponent::class);
+    }
+
+Khi component của bạn đã được đăng ký, nó có thể được hiển thị bằng bí danh tag của nó:
+
+    <x-package-alert/>
+
+<a name="displaying-components"></a>
+### Hiển thị Components
+
+Để hiển thị một component, bạn có thể sử dụng tag component Blade trong một template Blade của bạn. Các tag component Blade bắt đầu bằng chuỗi `x-` theo sau là tên kebab case của class component:
+
+    <x-alert/>
+
+    <x-user-profile/>
+
+Nếu class component được lồng sâu hơn trong thư mục `pp\View\Components`, bạn có thể sử dụng ký tự `.` để biểu thị sự lồng thư mục. Ví dụ: nếu chúng ta giả sử là một component được lưu tại `App\View\Components\Inputs\Button.php`, thì chúng ta có thể hiển thị nó như sau:
+
+    <x-inputs.button/>
+
+<a name="passing-data-to-components"></a>
+### Truyền dữ liệu tới Components
+
+Bạn có thể truyền dữ liệu đến các component Blade bằng cách sử dụng các thuộc tính HTML. Các giá trị theo kiểu nguyên thủy hoặc hard code có thể được truyền đến component bằng các thuộc tính HTML đơn giản. Các biểu thức hoặc biến PHP phải được truyền đến component thông qua các thuộc tính có tiền tố là `:`:
+
+    <x-alert type="error" :message="$message"/>
+
+Bạn nên định nghĩa các dữ liệu cần thiết của component trong phương thức khởi tạo class của nó. Tất cả các thuộc tính public trong một component sẽ được tự động truyền view của component. Không cần thiết phải truyền dữ liệu vào view từ phương thức `render` của component:
+
+    <?php
+
+    namespace App\View\Components;
+
+    use Illuminate\View\Component;
+
+    class Alert extends Component
+    {
+        /**
+         * The alert type.
+         *
+         * @var string
+         */
+        public $type;
+
+        /**
+         * The alert message.
+         *
+         * @var string
+         */
+        public $message;
+
+        /**
+         * Create the component instance.
+         *
+         * @param  string  $type
+         * @param  string  $message
+         * @return void
+         */
+        public function __construct($type, $message)
+        {
+            $this->type = $type;
+            $this->message = $message;
+        }
+
+        /**
+         * Get the view / contents that represent the component.
+         *
+         * @return \Illuminate\View\View|\Closure|string
+         */
+        public function render()
+        {
+            return view('components.alert');
+        }
+    }
+
+Khi component của bạn được tạo, bạn có thể hiển thị nội dung của các biến public của component bằng cách echo các biến theo tên của nó:
+
+    <div class="alert alert-{{ $type }}">
+        {{ $message }}
+    </div>
+
+#### Casing
+
+Các tham số của hàm khởi tạo component phải được chỉ định bằng cách sử dụng quy tắc đặt tên `camelCase`, trong khi quy tắc đặt tên `kebab-case` nên được sử dụng khi tham chiếu đến tên tham số đó trong các thuộc tính HTML của bạn. Ví dụ: cho hàm khởi tạo component sau:
+
+    /**
+     * Create the component instance.
+     *
+     * @param  string  $alertType
+     * @return void
+     */
+    public function __construct($alertType)
+    {
+        $this->alertType = $alertType;
+    }
+
+Tham số `$alertType` có thể được truyền giá trị vào như sau:
+
+    <x-alert alert-type="danger" />
+
+#### Component Methods
+
+Ngoài các biến public có sẵn trong component template của bạn, bất kỳ phương thức public nào có trong component cũng có thể được thực thi. Ví dụ: hãy tưởng tượng một component có phương thức `isSelected`:
+
+    /**
+     * Determine if the given option is the current selected option.
+     *
+     * @param  string  $option
+     * @return bool
+     */
+    public function isSelected($option)
+    {
+        return $option === $this->selected;
+    }
+
+Bạn có thể thực thi phương thức này từ trong component template của bạn bằng cách gọi một biến khớp với tên của phương thức đó:
+
+    <option {{ $isSelected($value) ? 'selected="selected"' : '' }} value="{{ $value }}">
+        {{ $label }}
+    </option>
+
+#### Using Attributes & Slots Inside The Class
+
+Các Blade component cũng cho phép bạn truy cập vào tên component, thuộc tính và slot bên trong phương thức render của class. Tuy nhiên, để truy cập vào các dữ liệu này, bạn nên trả về một Closure từ phương thức `render` của component của bạn. Closure sẽ nhận vào một mảng `$data` làm tham số duy nhất của nó:
+
+    /**
+     * Get the view / contents that represent the component.
+     *
+     * @return \Illuminate\View\View|\Closure|string
+     */
+    public function render()
+    {
+        return function (array $data) {
+            // $data['componentName'];
+            // $data['attributes'];
+            // $data['slot'];
+
+            return '<div>Component content</div>';
+        };
+    }
+
+Tên `componentName` sẽ là tên được sử dụng trong thẻ HTML sau tiền tố `x-`. Vì vậy, `componentName` của `<x-alert />` sẽ là `alert`. Phần tử `attributes` sẽ chứa tất cả các thuộc tính có trong thẻ HTML. Phần tử `slot` là một instance `Illuminate\Support\HtmlString` với nội dung là của slot từ component.
+
+#### Additional Dependencies
+
+Nếu component của bạn yêu cầu các component khác từ [service container](/docs/{{version}}/container) của Laravel, bạn có thể liệt kê chúng lên trước các thuộc tính dữ liệu được truyền vào của component và chúng sẽ tự động được container đưa vào:
+
+    use App\AlertCreator
+
+    /**
+     * Create the component instance.
+     *
+     * @param  \App\AlertCreator  $creator
+     * @param  string  $type
+     * @param  string  $message
+     * @return void
+     */
+    public function __construct(AlertCreator $creator, $type, $message)
+    {
+        $this->creator = $creator;
+        $this->type = $type;
+        $this->message = $message;
+    }
+
+<a name="managing-attributes"></a>
+### Quản lý Attributes
+
+Chúng ta đã xem cách truyền các thuộc tính dữ liệu cho một component; tuy nhiên, đôi khi bạn có thể cần chỉ định thêm các thuộc tính HTML, chẳng hạn như `class`, không phải là một dữ liệu cần thiết để một component hoạt động. Thông thường, bạn sẽ muốn truyền các thuộc tính bổ sung đó vào phần tử gốc của component template. Ví dụ: hãy tưởng tượng chúng ta muốn hiển thị một component `alert` như sau:
+
+    <x-alert type="error" :message="$message" class="mt-4"/>
+
+Tất cả các thuộc tính mà không nằm trong phương thức khởi tạo của component sẽ tự động được thêm vào "attribute bag" của component. Attribute bag này được tạo tự động cho component thông qua biến `$attributes`. Tất cả các thuộc tính có thể được hiển thị trong component bằng cách echo biến này:
+
+    <div {{ $attributes }}>
+        <!-- Component Content -->
+    </div>
+
+> {note} Việc echo các biến (`{{ $attributes }}`) hoặc sử dụng các lệnh trực tiếp như `@env` trên một component hiện không được hỗ trợ.
+
+#### Default / Merged Attributes
+
+Thỉnh thoảng bạn có thể cần chỉ định các giá trị mặc định cho các thuộc tính hoặc merge thêm các giá trị vào một số thuộc tính của component. Để thực hiện điều này, bạn có thể sử dụng phương thức `merge` của attribute bag:
+
+    <div {{ $attributes->merge(['class' => 'alert alert-'.$type]) }}>
+        {{ $message }}
+    </div>
+
+Nếu chúng ta giả sử rằng component này được sử dụng như sau:
+
+    <x-alert type="error" :message="$message" class="mb-4"/>
+
+Cuối cùng, HTML mà được tạo ra của component sẽ xuất hiện như thế này:
+
+    <div class="alert alert-error mb-4">
+        <!-- Contents of the $message variable -->
+    </div>
+
+#### Filtering Attributes
+
+Bạn có thể lọc các thuộc tính bằng phương thức `filter`. Phương thức này chấp nhận một Closure sẽ trả về giá trị `true` nếu bạn muốn giữ lại các thuộc tính trong attribute bag:
+
+    {{ $attributes->filter(fn ($value, $key) => $key == 'foo') }}
+
+Để thuận tiện, bạn có thể sử dụng phương thức `whereStartsWith` để lấy ra tất cả các thuộc tính có khóa bắt đầu bằng một chuỗi đã cho:
+
+    {{ $attributes->whereStartsWith('wire:model') }}
+
+Sử dụng phương thức `first`, bạn có thể hiển thị thuộc tính đầu tiên có trong một attribute bag nhất định:
+
+    {{ $attributes->whereStartsWith('wire:model')->first() }}
+
+<a name="slots"></a>
+### Slots
+
+Thông thường, bạn sẽ cần truyền thêm nội dung vào component của bạn thông qua "slots". Hãy tưởng tượng rằng một component `alert` mà chúng ta đã tạo có định dạng như sau:
+
+    <!-- /resources/views/components/alert.blade.php -->
+
+    <div class="alert alert-danger">
+        {{ $slot }}
+    </div>
+
+Chúng ta có thể truyền nội dung vào `slot` bằng cách đưa nội dung vào trong component:
+
+    <x-alert>
+        <strong>Whoops!</strong> Something went wrong!
+    </x-alert>
+
+Thỉnh thoảng một component có thể cần hiển thị nhiều slot khác nhau ở các vị trí khác nhau trong component. Hãy thử sửa alert component của chúng ta để cho phép chèn một "title" vào component:
+
+    <!-- /resources/views/components/alert.blade.php -->
+
+    <span class="alert-title">{{ $title }}</span>
+
+    <div class="alert alert-danger">
+        {{ $slot }}
+    </div>
+
+Bạn có thể định nghĩa nội dung của một slot cụ thể bằng tag `x-slot`. Mọi nội dung không nằm trong tag `x-slot` sẽ được truyền đến component thông qua biến `$slot`:
+
+    <x-alert>
+        <x-slot name="title">
+            Server Error
+        </x-slot>
+
+        <strong>Whoops!</strong> Something went wrong!
+    </x-alert>
+
+#### Scoped Slots
+
+Nếu bạn đã sử dụng một JavaScript framework như Vue, bạn có thể quen thuộc với các "scoped slot", cho phép bạn truy cập vào dữ liệu hoặc phương thức của component trong slot của bạn. Bạn cũng có thể làm ra hành vi tương tự đó trong Laravel bằng cách định nghĩa các phương thức hoặc thuộc tính public trong component của bạn và truy cập vào component đó trong slot của bạn thông qua biến `$component`:
+
+    <x-alert>
+        <x-slot name="title">
+            {{ $component->formatAlert('Server Error') }}
+        </x-slot>
+
+        <strong>Whoops!</strong> Something went wrong!
+    </x-alert>
+
+<a name="inline-component-views"></a>
+### Inline Component Views
+
+Đối với các component rất nhỏ, bạn có thể cảm thấy cồng kềnh khi quản lý cả một class component và template view của component đó. Vì lý do đó, bạn có thể trả về một component trực tiếp từ phương thức `render`:
+
+    /**
+     * Get the view / contents that represent the component.
+     *
+     * @return \Illuminate\View\View|\Closure|string
+     */
+    public function render()
+    {
+        return <<<'blade'
+            <div class="alert alert-danger">
+                {{ $slot }}
+            </div>
+        blade;
+    }
+
+#### Generating Inline View Components
+
+Để tạo một component theo dạng inline view, bạn có thể sử dụng tùy chọn `inline` khi chạy lệnh `make:component`:
+
+    php artisan make:component Alert --inline
+
+<a name="anonymous-components"></a>
+### Component ẩn
+
+Tương tự như các component inline, các component ẩn cũng cung cấp cơ chế quản lý một component thông qua một file duy nhất. Tuy nhiên, các component ẩn sẽ sử dụng một file view và không có class nào liên kết đến nó. Để định nghĩa một component ẩn, bạn chỉ cần set một template Blade vào trong thư mục `resources/views/components` của bạn. Ví dụ: giả sử bạn đã định nghĩa một component tại `resources/views/components/alert.blade.php`:
+
+    <x-alert/>
+
+Bạn có thể sử dụng ký tự `.` để cho biết một component được nằm sâu bên trong thư mục `component`. Ví dụ: giả sử component được định nghĩa tại `resources/views/components/inputs/button.blade.php`, bạn có thể hiển thị nó như sau:
+
+    <x-inputs.button/>
+
+#### Data Properties / Attributes
+
+Vì các component ẩn này không có bất kỳ class nào liên kết đến với nó, và bạn có thể tự hỏi là làm cách nào để phân biệt được dữ liệu nào là được truyền vào cho component dưới dạng biến và thuộc tính nào sẽ được set vào trong [attribute bag](#managing-attributes) của component.
+
+Bạn có thể chỉ định các thuộc tính sẽ được coi là biến dữ liệu bằng cách sử dụng lệnh `@props` ở đầu file template Blade của component của bạn. Tất cả các thuộc tính khác có trong component sẽ luôn có sẵn trong attribute bag của component. Nếu bạn muốn cung cấp cho một biến dữ liệu với một giá trị mặc định, bạn có thể chỉ định tên của biến đó làm khóa của mảng và giá trị mặc định đó sẽ là giá trị của mảng:
+
+    <!-- /resources/views/components/alert.blade.php -->
+
+    @props(['type' => 'info', 'message'])
+
+    <div {{ $attributes->merge(['class' => 'alert alert-'.$type]) }}>
+        {{ $message }}
+    </div>
 
 <a name="including-subviews"></a>
 ## Thêm Subviews
@@ -662,7 +973,7 @@ Như bạn có thể thấy, chúng ta sẽ nối phương thức `format` vào 
 <a name="custom-if-statements"></a>
 ### Tuỳ biến lệnh if
 
-Lập trình một lệnh tùy biến đôi khi lại là phức tạp hơn là định nghĩa một câu lệnh điều kiện tùy biến đơn giản. Vì lý do đó, Blade cung cấp phương thức `Blade::if` cho phép bạn nhanh chóng định nghĩa các lệnh tùy biến có điều kiện bằng cách sử dụng Closures. Ví dụ: hãy định nghĩa một điều kiện tùy biến có thể kiểm tra biến môi trường hiện tại của application. Chúng ta có thể làm điều này trong phương thức `boot` của `AppServiceProvider`:
+Lập trình một lệnh tùy biến đôi khi lại là phức tạp hơn là định nghĩa một câu lệnh điều kiện tùy biến đơn giản. Vì lý do đó, Blade cung cấp phương thức `Blade::if` cho phép bạn nhanh chóng định nghĩa các lệnh tùy biến có điều kiện bằng cách sử dụng Closures. Ví dụ: hãy định nghĩa một điều kiện tùy biến có thể kiểm tra cloud provider hiện tại của application. Chúng ta có thể làm điều này trong phương thức `boot` của `AppServiceProvider`:
 
     use Illuminate\Support\Facades\Blade;
 
@@ -673,21 +984,21 @@ Lập trình một lệnh tùy biến đôi khi lại là phức tạp hơn là 
      */
     public function boot()
     {
-        Blade::if('env', function ($environment) {
-            return app()->environment($environment);
+        Blade::if('cloud', function ($provider) {
+            return config('filesystems.default') === $provider;
         });
     }
 
 Khi điều kiện tùy biến đã được định nghĩa xong, chúng ta có thể dễ dàng sử dụng nó trên các template của bạn:
 
-    @env('local')
-        // The application is in the local environment...
-    @elseenv('testing')
-        // The application is in the testing environment...
+    @cloud('digitalocean')
+        // The application is using the digitalocean cloud provider...
+    @elsecloud('aws')
+        // The application is using the aws provider...
     @else
-        // The application is not in the local or testing environment...
-    @endenv
+        // The application is not using the digitalocean or aws environment...
+    @endcloud
 
-    @unlessenv('production')
-        // The application is not in the production environment...
-    @endenv
+    @unlesscloud('aws')
+        // The application is not using the aws environment...
+    @endcloud

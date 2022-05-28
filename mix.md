@@ -172,7 +172,7 @@ Mặc định, Laravel Mix và Webpack sẽ tìm file `example.png`, và sao ch�
 
 Tính năng này rất hữu ích, nhưng có thể cấu trúc thư mục hiện tại của bạn đã bị thay đổi theo cách mà bạn muốn. Nếu trong trường hợp đó, bạn có thể vô hiệu hóa việc viết lại `url()` như sau:
 
-    mix.sass('resources/app/app.scss', 'public/css')
+    mix.sass('resources/sass/app.scss', 'public/css')
         .options({
             processCssUrls: false
         });
@@ -354,7 +354,7 @@ Bạn có thể đưa các biến môi trường vào Mix bằng cách thêm ti�
 
     MIX_SENTRY_DSN_PUBLIC=http://example.com
 
-Sau khi các biến đã được định nghĩa trong file `.env` của bạn, bạn có thể truy cập thông qua đối tượng `process.env`. Nếu giá trị đó bị thay đổi trong khi bạn đang chạy lệnh `watch`, thì bạn sẽ cần khởi động lại lệnh này:
+Sau khi các biến đã được định nghĩa trong file `.env` của bạn, bạn có thể truy cập vào nó thông qua đối tượng `process.env`. Nếu giá trị đó bị thay đổi trong khi bạn đang chạy lệnh `watch`, thì bạn sẽ cần khởi động lại lệnh này:
 
     process.env.MIX_SENTRY_DSN_PUBLIC
 

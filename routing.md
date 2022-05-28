@@ -21,6 +21,7 @@
 - [Rate Limiting](#rate-limiting)
 - [Form Method giả](#form-method-spoofing)
 - [Truy cập vào Route hiện tại](#accessing-the-current-route)
+- [Cross-Origin Resource Sharing (CORS)](#cors)
 
 <a name="basic-routing"></a>
 ## Routing cơ bản
@@ -64,7 +65,7 @@ Thỉnh thoảng, bạn có thể cần phải đăng ký một route với nhi�
 
 #### Bảo vệ CSRF
 
-Bất kỳ form HTML nào mà trỏ đến các route `POST`, `PUT` hoặc `DELETE` được định nghĩa trong file route `web`, đều phải chứa một field CSRF token. Nếu không có field đó, request sẽ bị từ chối. Bạn có thể đọc thêm về bảo vệ CSRF trong [tài liệu CSRF](/docs/{{version}}/csrf):
+Bất kỳ form HTML nào mà trỏ đến các route `POST`, `PUT`, `PATCH` hoặc `DELETE` được định nghĩa trong file route `web`, đều phải chứa một field CSRF token. Nếu không có field đó, request sẽ bị từ chối. Bạn có thể đọc thêm về bảo vệ CSRF trong [tài liệu CSRF](/docs/{{version}}/csrf):
 
     <form method="POST" action="/profile">
         @csrf
@@ -191,6 +192,8 @@ Các tên của route cho phép tạo các URL hoặc các chuyển hướng đ�
 Bạn cũng có thể đặt tên route cho các hành động của controller:
 
     Route::get('user/profile', 'UserProfileController@show')->name('profile');
+
+> {note} Tên route phải luôn là duy nhất.
 
 #### Tạo URLs từ tên route
 
@@ -326,7 +329,28 @@ Laravel sẽ tự động resolve các model Eloquent được định nghĩa tr
 
 Vì biến `$user` được khai báo có kiểu là model Eloquent `App\User` và tên biến này cũng khớp với tham số URI `{user}`, nên Laravel sẽ tự động inject một instance model có ID là giá trị tương ứng từ URI request. Nếu không tìm thấy instance model nào phù hợp trong cơ sở dữ liệu, phản hồi HTTP 404 sẽ được đưa tạo.
 
-#### Tuỳ chỉnh tên Key
+#### Tuỳ chỉnh Key
+
+Thỉnh thoảng bạn có thể muốn resolve các model Eloquent bằng cách sử dụng một cột khác, khác với cột `id`. Để làm như vậy, bạn có thể chỉ định một cột khác trong định nghĩa tham route:
+
+    Route::get('api/posts/{post:slug}', function (App\Post $post) {
+        return $post;
+    });
+
+#### Custom Keys & Scoping
+
+Thỉnh thoảng, khi liên kết ngầm nhiều model Eloquent trong một định nghĩa route, bạn có thể muốn scope model Eloquent thứ hai sao cho nó phải là con của model Eloquent thứ nhất. Ví dụ: hãy xem tình huống sau lấy ra một bài đăng trong blog bằng slug cho một user cụ thể:
+
+    use App\Post;
+    use App\User;
+
+    Route::get('api/users/{user}/posts/{post:slug}', function (User $user, Post $post) {
+        return $post;
+    });
+
+Khi sử dụng liên kết ngầm có key tùy biến làm một tham số route lồng nhau, Laravel sẽ tự động scope truy vấn để lấy ra các model lồng nhau thông qua cha của nó bằng cách sử dụng các quy ước để đặt tên quan hệ trên cha. Trong trường hợp này, sẽ giả định rằng model `User` có một quan hệ có tên là `posts` (số nhiều của tên tham số route) có thể được sử dụng để lấy ra model `Post`.
+
+#### Customizing The Default Key Name
 
 Nếu bạn muốn tuỳ biến một liên kết của một model mà sử dụng một cột khác, khác với cột `id` trong cơ sở dữ liệu, bạn có thể ghi đè phương thức `getRouteKeyName` trong model Eloquent:
 
@@ -386,9 +410,10 @@ Ngoài ra, bạn có thể ghi đè phương thức `resolveRouteBinding` trên 
      * Retrieve the model for a bound value.
      *
      * @param  mixed  $value
+     * @param  string|null  $field
      * @return \Illuminate\Database\Eloquent\Model|null
      */
-    public function resolveRouteBinding($value)
+    public function resolveRouteBinding($value, $field = null)
     {
         return $this->where('name', $value)->firstOrFail();
     }
@@ -488,3 +513,10 @@ Bạn có thể dùng các phương thức `current`, `currentRouteName`, và `c
     $action = Route::currentRouteAction();
 
 Tham khảo tài liệu API cho [class facade Route](https://laravel.com/api/{{version}}/Illuminate/Routing/Router.html) và cả [instance Route](https://laravel.com/api/{{version}}/Illuminate/Routing/Route.html) để biết thêm các phương thức khác có thể truy cập được.
+
+<a name="cors"></a>
+## Cross-Origin Resource Sharing (CORS)
+
+Laravel có thể tự động respond các CORS OPTIONS request với các giá trị mà bạn đã cấu hình. Tất cả các cài đặt CORS có thể được cấu hình trong file cấu hình `cors` của bạn và mặc định, các OPTIONS request sẽ được tự động xử lý bởi middleware `HandleCors` nằm theo trong stack global middleware của bạn.
+
+> {tip} Để biết thêm thông tin về CORS và header CORS, vui lòng tham khảo [tài liệu web MDN về CORS](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS#The_HTTP_response_headers).

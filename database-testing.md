@@ -263,7 +263,7 @@ Nếu bạn muốn sử dụng [database seeders](/docs/{{version}}/seeding) đ�
 
     use Illuminate\Foundation\Testing\RefreshDatabase;
     use Illuminate\Foundation\Testing\WithoutMiddleware;
-    use OrderStatusesTableSeeder;
+    use OrderStatusSeeder;
     use Tests\TestCase;
 
     class ExampleTest extends TestCase
@@ -281,7 +281,7 @@ Nếu bạn muốn sử dụng [database seeders](/docs/{{version}}/seeding) đ�
             $this->seed();
 
             // Run a single seeder...
-            $this->seed(OrderStatusesTableSeeder::class);
+            $this->seed(OrderStatusSeeder::class);
 
             // ...
         }
@@ -294,6 +294,7 @@ Laravel cung cấp sẵn một số phương thức kiểm tra cơ sở dữ li�
 
 Method  | Description
 ------------- | -------------
+`$this->assertDatabaseCount($table, int $count);`  |  Yêu cầu một bảng trong cơ sở dữ liệu phải chứa số lượng record nhất định.
 `$this->assertDatabaseHas($table, array $data);`  |  Yêu cầu một bảng trong cơ sở dữ liệu phải chứa dữ liệu đã cho.
 `$this->assertDatabaseMissing($table, array $data);`  |  Yêu cầu một bảng trong cơ sở dữ liệu không được chứa dữ liệu đã cho.
 `$this->assertDeleted($table, array $data);`  |  Yêu cầu bản ghi đã cho đã bị delete.

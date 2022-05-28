@@ -41,4 +41,8 @@ Bạn có thể kiểm tra lệnh này bằng cách sử dụng bài test dướ
              ->assertExitCode(0);
     }
 
+Khi viết một lệnh để kiểm tra một confirmation dưới dạng câu trả lời "có" hoặc "không", bạn có thể sử dụng phương thức `expectsConfirmation`:
 
+    $this->artisan('module:import')
+        ->expectsConfirmation('Do you really wish to run this command?', 'no')
+        ->assertExitCode(1);

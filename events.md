@@ -135,11 +135,13 @@ Một event class là một data container chứa các thông tin liên quan đ�
     namespace App\Events;
 
     use App\Order;
+    use Illuminate\Broadcasting\InteractsWithSockets;
+    use Illuminate\Foundation\Events\Dispatchable;
     use Illuminate\Queue\SerializesModels;
 
     class OrderShipped
     {
-        use SerializesModels;
+        use Dispatchable, InteractsWithSockets, SerializesModels;
 
         public $order;
 
@@ -254,9 +256,21 @@ Nếu bạn muốn tùy chỉnh kết nối của queue, tên queue hoặc delay
         public $delay = 60;
     }
 
+Nếu bạn muốn định nghĩa một queue cho một listener trong khi ứng dụng đang chạy, bạn có thể định nghĩa một phương thức `viaQueue` trong listener:
+
+    /**
+     * Get the name of the listener's queue.
+     *
+     * @return string
+     */
+    public function viaQueue()
+    {
+        return 'listeners';
+    }
+
 #### Conditionally Queueing Listeners
 
-Thỉnh thoảng, bạn có thể cần phải xác định xem một listener có nên được queue hay không dựa vào một số dữ liệu chỉ có trong lúc runtime. Để thực hiện điều này, phương thức `shouldQueue` có thể được thêm vào trong listener để xác định xem đó này có nên được queue và chạy đồng bộ ở dưới background hay không:
+Thỉnh thoảng, bạn có thể cần phải xác định xem một listener có nên được queue hay không dựa vào một số dữ liệu chỉ có trong lúc runtime. Để thực hiện điều này, phương thức `shouldQueue` có thể được thêm vào trong listener để xác định xem listener này có nên được queue hay không. Nếu phương thức `shouldQueue` trả về `false`, listener sẽ không được thực thi:
 
     <?php
 
@@ -353,7 +367,7 @@ Thỉnh thoảng queue của event listener của bạn có thể bị thất b�
          * Handle a job failure.
          *
          * @param  \App\Events\OrderShipped  $event
-         * @param  \Exception  $exception
+         * @param  \Throwable  $exception
          * @return void
          */
         public function failed(OrderShipped $event, $exception)
@@ -392,6 +406,10 @@ Thỉnh thoảng queue của event listener của bạn có thể bị thất b�
             event(new OrderShipped($order));
         }
     }
+
+Ngoài ra, nếu event của bạn sử dụng trait `Illuminate\Foundation\Events\Dispatchable`, bạn có thể gọi phương thức static `dispatch` trên event. Bất kỳ tham số nào được truyền vào cho phương thức `dispatch` sẽ được truyền đến phương thức khởi tạo của event:
+
+    OrderShipped::dispatch($order);
 
 > {tip} Khi testing, nếu bạn cần kiểm tra một số event được gửi đi mà không cần chạy đến các listener của các event. [built-in testing helpers](/docs/{{version}}/mocking#event-fake) có thể làm điều đó trở lên dễ dàng.
 
