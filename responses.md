@@ -19,6 +19,7 @@
 <a name="creating-responses"></a>
 ## Tạo Responses
 
+<a name="strings-arrays"></a>
 #### Strings và Arrays
 
 Tất cả các route và các controller đều sẽ trả về một response và được gửi về cho trình duyệt web của người dùng. Laravel cung cấp một số cách khác nhau để trả về một response. Response cơ bản nhất là trả về một chuỗi từ một route hoặc một controller. Framework sẽ tự động chuyển đổi chuỗi đó thành một HTTP response đầy đủ:
@@ -35,19 +36,31 @@ Ngoài việc trả về một chuỗi từ route và controller của bạn, b�
 
 > {tip} Bạn có biết rằng bạn cũng có thể trả về [Eloquent collections](/docs/{{version}}/eloquent-collections) từ một route hoặc một controller của bạn không? Chúng sẽ tự động được chuyển đổi thành JSON. Bạn cứ thử đi!
 
+<a name="response-objects"></a>
 #### Response Objects
 
 Thông thường, bạn sẽ không chỉ trả về một chuỗi hoặc một mảng từ route action của bạn. Thay vào đó, bạn có thể sẽ muốn trả lại cả một instance `Illuminate\Http\Response` hoặc một [views](/docs/{{version}}/views).
 
 Trả về cả một instance `Response` cho phép bạn tùy biến status code và header của response's HTTP. Một instance `Response` sẽ được extend từ class `Symfony\Component\HttpFoundation\Response`, cung cấp nhiều phương thức để xây dựng các HTTP response:
 
-    Route::get('home', function () {
+    Route::get('/home', function () {
         return response('Hello World', 200)
                       ->header('Content-Type', 'text/plain');
     });
 
+<a name="eloquent-models-and-collections"></a>
+#### Eloquent Models & Collections
+
+Bạn cũng có thể trả về các model và collection [Eloquent ORM](/docs/{{version}}/eloquent) trực tiếp từ các route và controller của bạn. Khi bạn làm như vậy, Laravel sẽ tự động chuyển đổi các model và collection thành JSON response trong khi vẫn giữ các [thuộc tính ẩn](/docs/{{version}}/eloquent-serialization#hiding-attributes-from-json):
+
+    use App\Models\User;
+
+    Route::get('/user/{user}', function (User $user) {
+        return $user;
+    });
+
 <a name="attaching-headers-to-responses"></a>
-#### Gắn Header vào Responses
+### Gắn Header vào Responses
 
 Hãy nhớ rằng hầu hết các phương thức response đều có thể kết hợp lại với nhau, cho phép bạn dễ dàng khởi tạo một response instance. Ví dụ, bạn có thể sử dụng phương thức `header` để thêm một danh sách header cho response trước khi gửi chúng về cho người dùng:
 
@@ -65,41 +78,64 @@ Hoặc, bạn có thể sử dụng phương thức `withHeaders` để chỉ đ
                     'X-Header-Two' => 'Header Value',
                 ]);
 
+<a name="cache-control-middleware"></a>
 #### Cache Control Middleware
 
-Laravel có chứa một middleware `cache.headers`, middleware này có thể được sử dụng để thiết lập nhanh một header `Cache-Control` cho một nhóm các route. Nếu `etag` được chỉ định trong danh sách lệnh, một hash MD5 của nội dung response sẽ được tự động set làm ETag identifier:
+Laravel có chứa một middleware `cache.headers`, middleware này có thể được sử dụng để thiết lập nhanh một header `Cache-Control` cho một nhóm các route. Các nội dung được cung cấp cho header này có thể được chỉ thị bằng cách sử dụng "snake case" tương ứng với chỉ thị corresponding cache-control và phải được phân tách bằng dấu chấm phẩy. Nếu `etag` được chỉ định trong danh sách lệnh, một hash MD5 của nội dung response sẽ được tự động set làm ETag identifier:
 
     Route::middleware('cache.headers:public;max_age=2628000;etag')->group(function () {
-        Route::get('privacy', function () {
+        Route::get('/privacy', function () {
             // ...
         });
 
-        Route::get('terms', function () {
+        Route::get('/terms', function () {
             // ...
         });
     });
 
 <a name="attaching-cookies-to-responses"></a>
-#### Gắn Cookies vào Responses
+### Gắn Cookies vào Responses
 
-Phương thức `cookie` trong response instance cho phép bạn dễ dàng gắn một cookie vào response. Ví dụ, bạn có thể sử dụng phương thức `cookie` để tạo một cookie và dễ dàng gắn nó vào response như sau:
+Bạn có thể đính kèm cookie vào instance `Illuminate\Http\Response` được gửi đi bằng phương thức `cookie`. Bạn nên truyền tên, giá trị và số phút hết hạn tới phương thức này:
 
-    return response($content)
-                    ->header('Content-Type', $type)
-                    ->cookie('name', 'value', $minutes);
+    return response('Hello World')->cookie(
+        'name', 'value', $minutes
+    );
 
 Phương thức `cookie` cũng cho phép thêm một vài tham số ít sử dụng hơn. Nói chung, các tham số này có cùng mục đích và ý nghĩa như các tham số được cung cấp bởi phương thức [setcookie](https://secure.php.net/manual/en/function.setcookie.php) của PHP:
 
-    ->cookie($name, $value, $minutes, $path, $domain, $secure, $httpOnly)
+    return response('Hello World')->cookie(
+        'name', 'value', $minutes, $path, $domain, $secure, $httpOnly
+    );
 
-Ngoài ra, bạn có thể sử dụng facade `Cookie` để "queue" cookie cho việc gán vào response trả về từ application. Phương thức `queue` chấp nhận một instance `Cookie` hoặc các tham số cần thiết để tạo một instance `Cookie`. Các cookie này sẽ được gán vào response trước khi nó được gửi về cho trình duyệt:
+Nếu bạn muốn đảm bảo rằng cookie được gửi cùng với response khi trả về nhưng bạn chưa có instance của response trả về đó, bạn có thể sử dụng facade `Cookie` để "queue" cookie cho việc gán vào response khi nó được trả về từ application. Phương thức `queue` chấp nhận một instance `Cookie` hoặc các tham số cần thiết để tạo một instance `Cookie`. Các cookie này sẽ được gán vào response trước khi nó được gửi về cho trình duyệt:
 
-    Cookie::queue(Cookie::make('name', 'value', $minutes));
+    use Illuminate\Support\Facades\Cookie;
 
     Cookie::queue('name', 'value', $minutes);
 
+<a name="generating-cookie-instances"></a>
+#### Generating Cookie Instances
+
+Nếu bạn muốn tạo một instance `Symfony\Component\HttpFoundation\Cookie` có thể được gắn vào một instance response sau này, bạn có thể sử dụng global helper `cookie`. Cookie này sẽ không được gửi về cho khách hàng trừ khi nó được gán với một instance response:
+
+    $cookie = cookie('name', 'value', $minutes);
+
+    return response('Hello World')->cookie($cookie);
+
+<a name="expiring-cookies-early"></a>
+#### Expiring Cookies Early
+
+Bạn có thể xóa một cookie bằng cách làm nó hết hạn thông qua phương thức `withoutCookie` của response:
+
+    return response('Hello World')->withoutCookie('name');
+
+Nếu bạn chưa có instance của response, bạn có thể sử dụng phương thức `expire` của facade `Cookie` để hết hạn cookie:
+
+    Cookie::expire('name');
+
 <a name="cookies-and-encryption"></a>
-#### Cookies và Encryption
+### Cookies và Encryption
 
 Mặc định, tất cả các cookie được tạo bởi Laravel đều được mã hóa và được ký để client không thể sửa đổi hoặc đọc chúng. Nếu bạn muốn tắt mã hóa cho một số cookie mà bạn tạo ra, bạn có thể sử dụng thuộc tính `$except` của middleware `App\Http\Middleware\EncryptCookies`, nằm trong thư mục `app/Http/Middleware`:
 
@@ -117,13 +153,13 @@ Mặc định, tất cả các cookie được tạo bởi Laravel đều đư�
 
 Redirect response là một instance của class `Illuminate\Http\RedirectResponse` và chứa các header cần thiết để chuyển hướng người dùng đến một URL khác. Có một số cách để tạo ra một instance `RedirectResponse`. Phương pháp đơn giản nhất là sử dụng global helper `redirect`:
 
-    Route::get('dashboard', function () {
+    Route::get('/dashboard', function () {
         return redirect('home/dashboard');
     });
 
-Thỉnh thoảng bạn có thể muốn chuyển hướng người dùng đến một trang trước đó, chẳng hạn như khi nhập form không hợp lệ. Bạn có thể làm như vậy bằng cách sử dụng hàm global helper `back`. Vì chức năng này sử dụng [session](/docs/{{version}}/session), nên hãy đảm bảo là route được gọi bởi hàm `back` cũng đang dùng group middleware `web` hoặc đang dùng tất cả các middleware session:
+Thỉnh thoảng bạn có thể muốn chuyển hướng người dùng đến một trang trước đó, chẳng hạn như khi nhập form không hợp lệ. Bạn có thể làm như vậy bằng cách sử dụng hàm global helper `back`. Vì chức năng này sử dụng [session](/docs/{{version}}/session), nên hãy đảm bảo là route được gọi bởi hàm `back` cũng đang dùng group middleware `web`:
 
-    Route::post('user/profile', function () {
+    Route::post('/user/profile', function () {
         // Validate the request...
 
         return back()->withInput();
@@ -138,19 +174,20 @@ Khi bạn gọi helper `redirect` mà không truyền vào tham số, thì một
 
 Nếu route đó có yêu cầu truyền tham số, bạn có thể truyền chúng qua tham số thứ 2 của phương thức `route`:
 
-    // For a route with the following URI: profile/{id}
+    // For a route with the following URI: /profile/{id}
 
     return redirect()->route('profile', ['id' => 1]);
 
+<a name="populating-parameters-via-eloquent-models"></a>
 #### Nhúng Parameter thông qua Eloquent Model
 
 Nếu bạn đang chuyển hướng đến một route mà có tham số "ID" đang được nhúng trong một model Eloquent, bạn có thể truyền chính model đó vào làm tham số. ID sẽ được trích xuất tự động:
 
-    // For a route with the following URI: profile/{id}
+    // For a route with the following URI: /profile/{id}
 
     return redirect()->route('profile', [$user]);
 
-Nếu bạn muốn tùy biến giá trị được lấy trong tham số route, bạn có thể chỉ định cột trong định nghĩa tham số route (`profile/{id:slug}`) hoặc bạn có thể ghi đè phương thức `getRouteKey` trên model Eloquent của bạn:
+Nếu bạn muốn tùy biến giá trị được lấy trong tham số route, bạn có thể chỉ định cột trong định nghĩa tham số route (`/profile/{id:slug}`) hoặc bạn có thể ghi đè phương thức `getRouteKey` trên model Eloquent của bạn:
 
     /**
      * Get the value of the model's route key.
@@ -165,14 +202,16 @@ Nếu bạn muốn tùy biến giá trị được lấy trong tham số route, 
 <a name="redirecting-controller-actions"></a>
 ### Redirecting đến Controller Action
 
-Bạn cũng có thể tạo chuyển hướng đến một [controller actions](/docs/{{version}}/controllers). Để làm như vậy, hãy truyền một controller và tên action của nó cho phương thức `action`. Hãy nhớ rằng, bạn không cần thêm namespace cho controller vì `RouteServiceProvider` của Laravel đã tự động cài đặt sẵn namespace cho controller đó:
+Bạn cũng có thể tạo chuyển hướng đến một [controller actions](/docs/{{version}}/controllers). Để làm như vậy, hãy truyền một controller và tên action của nó cho phương thức `action`:
 
-    return redirect()->action('HomeController@index');
+    use App\Http\Controllers\UserController;
+
+    return redirect()->action([UserController::class, 'index']);
 
 Nếu controller route của bạn yêu cầu tham số, bạn có thể truyền chúng làm tham số thứ hai cho phương thức `action`:
 
     return redirect()->action(
-        'UserController@profile', ['id' => 1]
+        [UserController::class, 'profile'], ['id' => 1]
     );
 
 <a name="redirecting-external-domains"></a>
@@ -187,8 +226,8 @@ Thỉnh thoảng bạn có thể cần chuyển hướng đến một domain ở
 
 Chuyển hướng đến một URL mới và [flashing data tới session](/docs/{{version}}/session#flash-data) thường được thực hiện cùng một lúc. Thông thường, điều này được sử dụng sau khi thực hiện thành công một action nào đó và bạn muốn flash một mesage báo thành công đến session. Để thuận tiện, bạn có thể tạo một instance `RedirectResponse` và flash dữ liệu đó vào session với chỉ một chuỗi phương thức đơn giản:
 
-    Route::post('user/profile', function () {
-        // Update the user's profile...
+    Route::post('/user/profile', function () {
+        // ...
 
         return redirect('dashboard')->with('status', 'Profile updated!');
     });
@@ -200,6 +239,13 @@ Sau khi người dùng đã được chuyển hướng, bạn có thể hiển t
             {{ session('status') }}
         </div>
     @endif
+
+<a name="redirecting-with-input"></a>
+#### Redirecting With Input
+
+Bạn có thể sử dụng phương thức `withInput` do instance `RedirectResponse` cung cấp để flash dữ liệu input của request hiện tại vào session trước khi chuyển hướng người dùng đến một vị trí mới. Điều này thường được thực hiện nếu người dùng gặp phải lỗi xác thực. Sau khi dữ liệu input đã được chuyển sang session, bạn có thể dễ dàng [lấy ra nó](/docs/{{version}}/requests#retrieving-old-input) trong request tiếp theo để điền lại vào form:
+
+    return back()->withInput();
 
 <a name="other-response-types"></a>
 ## Các loại Response khác
@@ -215,7 +261,7 @@ Nếu bạn cần kiểm soát trạng thái và header của response nhưng c�
                 ->view('hello', $data, 200)
                 ->header('Content-Type', $type);
 
-Và dĩ nhiên, nếu bạn không cần tuỳ chỉnh HTTP status code hoặc custom header, bạn nên dùng hàm global helper `view`.
+Và dĩ nhiên, nếu bạn không cần tuỳ chỉnh HTTP status code hoặc custom header, bạn có thể dùng hàm global helper `view`.
 
 <a name="json-responses"></a>
 ### JSON Responses
@@ -242,13 +288,14 @@ Phương thức `download` có thể được sử dụng để tạo response b
 
     return response()->download($pathToFile, $name, $headers);
 
-    return response()->download($pathToFile)->deleteFileAfterSend();
-
 > {note} Quản lý file download Symfony HttpFoundation yêu cầu file download phải có tên file là ASCII.
 
+<a name="streamed-downloads"></a>
 #### Streamed Downloads
 
 Thỉnh thoảng bạn có thể muốn biến chuỗi response của một hoạt động nhất định thành một download response mà không cần phải ghi nội dung của hoạt động đó vào disk. Bạn có thể sử dụng phương thức `streamDownload` trong trường hợp đó. Phương thức này chấp nhận một callback, một tên file và một mảng header tùy chọn làm tham số của nó:
+
+    use App\Services\GitHub;
 
     return response()->streamDownload(function () {
         echo GitHub::api('repo')
@@ -268,7 +315,7 @@ Phương thức `file` có thể được sử dụng để hiển thị một f
 <a name="response-macros"></a>
 ## Response Macros
 
-Nếu bạn muốn định nghĩa một response tùy biến mà bạn có thể sử dụng lại trong nhiều route hoặc các controller khác nhau, bạn có thể sử dụng phương thức `macro` trong facade `Response`. Ví dụ: từ phương thức `boot` trong [service provider's](/docs/{{version}}/providers):
+Nếu bạn muốn định nghĩa một response tùy biến mà bạn có thể sử dụng lại trong nhiều route hoặc các controller khác nhau, bạn có thể sử dụng phương thức `macro` trong facade `Response`. Thông thường, bạn nên gọi phương thức này từ phương thức `boot` của một trong các [service provider](/docs/{{version}}/providers) trong ứng dụng của bạn, chẳng hạn như service provider `App\Providers\AppServiceProvider`:
 
     <?php
 
@@ -277,10 +324,10 @@ Nếu bạn muốn định nghĩa một response tùy biến mà bạn có thể
     use Illuminate\Support\Facades\Response;
     use Illuminate\Support\ServiceProvider;
 
-    class ResponseMacroServiceProvider extends ServiceProvider
+    class AppServiceProvider extends ServiceProvider
     {
         /**
-         * Register the application's response macros.
+         * Bootstrap any application services.
          *
          * @return void
          */
@@ -292,6 +339,6 @@ Nếu bạn muốn định nghĩa một response tùy biến mà bạn có thể
         }
     }
 
-Hàm `macro` chấp nhận tên hàm làm tham số đầu tiên và một Closure làm tham số thứ hai. Closure của macro sẽ được thực thi khi gọi tên của hàm macro từ implementation `ResponseFactory` hoặc helper `response`:
+Hàm `macro` chấp nhận tên hàm làm tham số đầu tiên và một closure làm tham số thứ hai. closure của macro sẽ được thực thi khi gọi tên của hàm macro từ implementation `ResponseFactory` hoặc helper `response`:
 
     return response()->caps('foo');

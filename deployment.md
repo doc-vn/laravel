@@ -1,6 +1,7 @@
 # Deployment
 
 - [Giới thiệu](#introduction)
+- [Yêu cầu server](#server-requirements)
 - [Cấu hình server](#server-configuration)
     - [Nginx](#nginx)
 - [Tối ưu](#optimization)
@@ -8,6 +9,7 @@
     - [Tối ưu load config](#optimizing-configuration-loading)
     - [Tối ưu load route](#optimizing-route-loading)
     - [Tối ưu View Loading](#optimizing-view-loading)
+- [Chế độ debug](#debug-mode)
 - [Deploy cùng Forge và Vapor](#deploying-with-forge-or-vapor)
 
 <a name="introduction"></a>
@@ -15,21 +17,43 @@
 
 Khi bạn đã sẵn sàng deploy application Laravel của bạn vào production, có một số điều quan trọng mà bạn có thể làm để đảm bảo application của bạn chạy hiệu quả nhất có thể. Trong tài liệu này, chúng tôi sẽ đề cập đến một số điểm khởi đầu tuyệt vời để đảm bảo application Laravel của bạn được deploy đúng cách.
 
+<a name="server-requirements"></a>
+## Yêu cầu server
+
+Laravel framework có một số yêu cầu về hệ thống. Bạn nên đảm bảo rằng server web của bạn có phiên bản PHP tối thiểu và các extension sau:
+
+<div class="content-list" markdown="1">
+
+- PHP >= 7.3
+- BCMath PHP Extension
+- Ctype PHP Extension
+- Fileinfo PHP Extension
+- JSON PHP Extension
+- Mbstring PHP Extension
+- OpenSSL PHP Extension
+- PDO PHP Extension
+- Tokenizer PHP Extension
+- XML PHP Extension
+
+</div>
+
 <a name="server-configuration"></a>
 ## Cấu hình server
 
 <a name="nginx"></a>
 ### Nginx
 
-Nếu bạn đang deploy application của bạn đến một server đang chạy Nginx, bạn có thể sử dụng file cấu hình sau đây để làm điểm bắt đầu cho cấu hình web server của bạn. Nhiều khả năng, file này sẽ cần được tùy chỉnh tùy thuộc vào cấu hình server của bạn. Nếu bạn muốn được hỗ trợ trong việc quản lý server, hãy cân nhắc sử dụng một dịch vụ như [Laravel Forge](https://forge.laravel.com):
+Nếu bạn đang deploy application của bạn đến một server đang chạy Nginx, bạn có thể sử dụng file cấu hình sau đây để làm điểm bắt đầu cho cấu hình web server của bạn. Nhiều khả năng, file này sẽ cần được tùy chỉnh tùy thuộc vào cấu hình server của bạn. **Nếu bạn muốn được hỗ trợ trong việc quản lý server của bạn, hãy xem xét sử dụng dịch vụ triển khai và quản lý server Laravel, chẳng hạn như [Laravel Forge](https://forge.laravel.com).**
+
+Hãy đảm bảo, giống như cấu hình bên dưới, server web của bạn sẽ hướng tất cả các request đến file `public/index.php` của ứng dụng của bạn. Bạn đừng bao giờ cố gắng di chuyển file `index.php` đến thư mục gốc của dự án của bạn, vì việc phân phát request của ứng dụng từ thư mục gốc của dự án sẽ làm lộ nhiều file cấu hình nhạy cảm lên Internet:
 
     server {
         listen 80;
+        listen [::]:80;
         server_name example.com;
         root /srv/example.com/public;
 
         add_header X-Frame-Options "SAMEORIGIN";
-        add_header X-XSS-Protection "1; mode=block";
         add_header X-Content-Type-Options "nosniff";
 
         index index.php;
@@ -77,7 +101,7 @@ Khi deploy application vào production, bạn cũng nên đảm bảo là bạn 
 
 Lệnh này sẽ nối tất cả các file config của Laravel thành một file và được lưu vào trong bộ nhớ cache, giúp giảm đáng kể số lượng trao đổi giữa framework với filesystem khi tải các value config của bạn.
 
-> {note} Nếu bạn chạy lệnh `config:cache` trong quá trình deploy, bạn nên đảm bảo là bạn chỉ gọi hàm `env` từ trong các file cấu hình của bạn. Khi các file cấu hình đã được lưu vào trong bộ nhớ cache, thì file `.env` sẽ không được load và tất cả các code được gọi đến hàm `env` sẽ đều trả về `null`.
+> {note} Nếu bạn chạy lệnh `config:cache` trong quá trình deploy, bạn nên đảm bảo là bạn chỉ gọi hàm `env` từ trong các file cấu hình của bạn. Khi các file cấu hình đã được lưu vào trong bộ nhớ cache, thì file `.env` sẽ không được load và tất cả các code gọi đến hàm `env` để lấy biến trong file `.env` ra sẽ đều trả về `null`.
 
 <a name="optimizing-route-loading"></a>
 ### Tối ưu load route
@@ -88,8 +112,6 @@ Nếu bạn đang build một application lớn với nhiều route, bạn nên 
 
 Lệnh này sẽ giảm tất cả các đăng ký route của bạn vào trong một phương thức duy nhất và lưu trong một file ở cache, nó giúp cải thiện hiệu suất của việc đăng ký route khi đăng ký hàng trăm route.
 
-> {note} Vì chức nằng này sẽ dùng hàm mã hoá chuỗi của PHP, nên bạn chỉ có thể cache được các loại route cho apllication theo loại route cơ bản. PHP sẽ không thể mã hoá được các hàm callback.
-
 <a name="optimizing-view-loading"></a>
 ### Tối ưu View Loading
 
@@ -99,13 +121,24 @@ Khi deploy ứng dụng của bạn vào production, bạn nên đảm bảo r�
 
 Lệnh này biên dịch tất cả các view Blade của bạn để chúng không cần phải biên dịch mỗi khi có request đến, cải thiện hiệu suất cho mỗi request trả về một view.
 
+<a name="debug-mode"></a>
+## Chế độ debug
+
+Tùy chọn debug trong file cấu hình config/app.php của bạn sẽ xác định lượng thông tin lỗi sẽ thực sự được hiển thị cho người dùng. Mặc định, tùy chọn này được set để ưu tiên giá trị của biến môi trường APP_DEBUG, được lưu trong file .env của bạn.
+
+**Trong môi trường production của bạn, giá trị này phải luôn là `false`. Nếu biến `APP_DEBUG` được set thành `true` trong quá trình production, bạn có nguy cơ bị lộ các giá trị cấu hình nhạy cảm cho người dùng ứng dụng của bạn.**
+
 <a name="deploying-with-forge-or-vapor"></a>
 ## Deploy cùng Forge và Vapor
+
+<a name="laravel-forge"></a>
+#### Laravel Forge
 
 Nếu bạn chưa sẵn sàng để quản lý cấu hình server của bạn hoặc không thoải mái với cấu hình các dịch vụ khác nhau cần thiết để chạy ứng dụng Laravel, [Laravel Forge](https://forge.laravel.com) là một điều thay thế tuyệt vời.
 
 Laravel Forge có thể tạo server trên các nhà cung cấp khác nhau như DigitalOcean, Linode, AWS, v.v. Ngoài ra, Forge có thể cài đặt và quản lý tất cả các công cụ cần thiết để xây dựng các ứng dụng Laravel, như Nginx, MySQL, Redis, Memcached, Beanstalk,...
 
+<a name="laravel-vapor"></a>
 #### Laravel Vapor
 
 Nếu bạn muốn một nền tảng deploy hoàn toàn không có server, và tự động lớn dần theo thời gian, hãy xem xét sử dụng [Laravel Vapor](https://vapor.laravel.com). Laravel Vapor là một nền tảng deploy không có server cho Laravel, và được cung cấp bởi AWS. Chạy ứng dụng Laravel của bạn trên Vapor và yêu thích sự đơn giản có thể mở rộng đến vô tận của serverless. Laravel Vapor được những người tạo ra Laravel tinh chỉnh để hoạt động liền mạch với framework, do đó bạn có thể tiếp tục viết các ứng dụng Laravel của bạn giống hệt với những điều bạn đã từng làm.

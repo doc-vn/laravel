@@ -22,6 +22,7 @@ Laravel chứa một loạt các hàm PHP global "helper". Nhiều trong số c�
     }
 </style>
 
+<a name="arrays-and-objects-method-list"></a>
 ### Arrays & Objects
 
 <div class="collection-method-list" markdown="1">
@@ -52,7 +53,10 @@ Laravel chứa một loạt các hàm PHP global "helper". Nhiều trong số c�
 [Arr::shuffle](#method-array-shuffle)
 [Arr::sort](#method-array-sort)
 [Arr::sortRecursive](#method-array-sort-recursive)
+[Arr::toCssClasses](#method-array-to-css-classes)
+[Arr::undot](#method-array-undot)
 [Arr::where](#method-array-where)
+[Arr::whereNotNull](#method-array-where-not-null)
 [Arr::wrap](#method-array-wrap)
 [data_fill](#method-data-fill)
 [data_get](#method-data-get)
@@ -61,6 +65,7 @@ Laravel chứa một loạt các hàm PHP global "helper". Nhiều trong số c�
 [last](#method-last)
 </div>
 
+<a name="paths-method-list"></a>
 ### Paths
 
 <div class="collection-method-list" markdown="1">
@@ -76,6 +81,7 @@ Laravel chứa một loạt các hàm PHP global "helper". Nhiều trong số c�
 
 </div>
 
+<a name="strings-method-list"></a>
 ### Strings
 
 <div class="collection-method-list" markdown="1">
@@ -95,6 +101,7 @@ Laravel chứa một loạt các hàm PHP global "helper". Nhiều trong số c�
 [Str::containsAll](#method-str-contains-all)
 [Str::endsWith](#method-ends-with)
 [Str::finish](#method-str-finish)
+[Str::headline](#method-str-headline)
 [Str::is](#method-str-is)
 [Str::isAscii](#method-str-is-ascii)
 [Str::isUuid](#method-str-is-uuid)
@@ -102,15 +109,21 @@ Laravel chứa một loạt các hàm PHP global "helper". Nhiều trong số c�
 [Str::length](#method-str-length)
 [Str::limit](#method-str-limit)
 [Str::lower](#method-str-lower)
+[Str::markdown](#method-str-markdown)
+[Str::mask](#method-str-mask)
 [Str::orderedUuid](#method-str-ordered-uuid)
 [Str::padBoth](#method-str-padboth)
 [Str::padLeft](#method-str-padleft)
 [Str::padRight](#method-str-padright)
 [Str::plural](#method-str-plural)
+[Str::pluralStudly](#method-str-plural-studly)
 [Str::random](#method-str-random)
+[Str::remove](#method-str-remove)
+[Str::replace](#method-str-replace)
 [Str::replaceArray](#method-str-replace-array)
 [Str::replaceFirst](#method-str-replace-first)
 [Str::replaceLast](#method-str-replace-last)
+[Str::reverse](#method-str-reverse)
 [Str::singular](#method-str-singular)
 [Str::slug](#method-str-slug)
 [Str::snake](#method-snake-case)
@@ -118,17 +131,21 @@ Laravel chứa một loạt các hàm PHP global "helper". Nhiều trong số c�
 [Str::startsWith](#method-starts-with)
 [Str::studly](#method-studly-case)
 [Str::substr](#method-str-substr)
+[Str::substrCount](#method-str-substrcount)
+[Str::substrReplace](#method-str-substrreplace)
 [Str::title](#method-title-case)
+[Str::toHtmlString](#method-str-to-html-string)
 [Str::ucfirst](#method-str-ucfirst)
 [Str::upper](#method-str-upper)
 [Str::uuid](#method-str-uuid)
+[Str::wordCount](#method-str-word-count)
 [Str::words](#method-str-words)
 [trans](#method-trans)
 [trans_choice](#method-trans-choice)
 
 </div>
 
-<a name="fluent-strings"></a>
+<a name="fluent-strings-method-list"></a>
 ### Fluent Strings
 
 <div class="collection-method-list" markdown="1">
@@ -140,6 +157,7 @@ Laravel chứa một loạt các hàm PHP global "helper". Nhiều trong số c�
 [basename](#method-fluent-str-basename)
 [before](#method-fluent-str-before)
 [beforeLast](#method-fluent-str-before-last)
+[between](#method-fluent-str-between)
 [camel](#method-fluent-str-camel)
 [contains](#method-fluent-str-contains)
 [containsAll](#method-fluent-str-contains-all)
@@ -152,24 +170,30 @@ Laravel chứa một loạt các hàm PHP global "helper". Nhiều trong số c�
 [isAscii](#method-fluent-str-is-ascii)
 [isEmpty](#method-fluent-str-is-empty)
 [isNotEmpty](#method-fluent-str-is-not-empty)
+[isUuid](#method-fluent-str-is-uuid)
 [kebab](#method-fluent-str-kebab)
 [length](#method-fluent-str-length)
 [limit](#method-fluent-str-limit)
 [lower](#method-fluent-str-lower)
 [ltrim](#method-fluent-str-ltrim)
+[markdown](#method-fluent-str-markdown)
+[mask](#method-fluent-str-mask)
 [match](#method-fluent-str-match)
 [matchAll](#method-fluent-str-match-all)
 [padBoth](#method-fluent-str-padboth)
 [padLeft](#method-fluent-str-padleft)
 [padRight](#method-fluent-str-padright)
+[pipe](#method-fluent-str-pipe)
 [plural](#method-fluent-str-plural)
 [prepend](#method-fluent-str-prepend)
+[remove](#method-fluent-str-remove)
 [replace](#method-fluent-str-replace)
 [replaceArray](#method-fluent-str-replace-array)
 [replaceFirst](#method-fluent-str-replace-first)
 [replaceLast](#method-fluent-str-replace-last)
 [replaceMatches](#method-fluent-str-replace-matches)
 [rtrim](#method-fluent-str-rtrim)
+[scan](#method-fluent-str-scan)
 [singular](#method-fluent-str-singular)
 [slug](#method-fluent-str-slug)
 [snake](#method-fluent-str-snake)
@@ -178,16 +202,31 @@ Laravel chứa một loạt các hàm PHP global "helper". Nhiều trong số c�
 [startsWith](#method-fluent-str-starts-with)
 [studly](#method-fluent-str-studly)
 [substr](#method-fluent-str-substr)
+[substrReplace](#method-fluent-str-substrreplace)
+[tap](#method-fluent-str-tap)
+[test](#method-fluent-str-test)
 [title](#method-fluent-str-title)
 [trim](#method-fluent-str-trim)
 [ucfirst](#method-fluent-str-ucfirst)
 [upper](#method-fluent-str-upper)
 [when](#method-fluent-str-when)
+[whenContains](#method-fluent-str-when-contains)
+[whenContainsAll](#method-fluent-str-when-contains-all)
 [whenEmpty](#method-fluent-str-when-empty)
+[whenNotEmpty](#method-fluent-str-when-not-empty)
+[whenStartsWith](#method-fluent-str-when-starts-with)
+[whenEndsWith](#method-fluent-str-when-ends-with)
+[whenExactly](#method-fluent-str-when-exactly)
+[whenIs](#method-fluent-str-when-is)
+[whenIsAscii](#method-fluent-str-when-is-ascii)
+[whenIsUuid](#method-fluent-str-when-is-uuid)
+[whenTest](#method-fluent-str-when-test)
+[wordCount](#method-fluent-str-word-count)
 [words](#method-fluent-str-words)
 
 </div>
 
+<a name="urls-method-list"></a>
 ### URLs
 
 <div class="collection-method-list" markdown="1">
@@ -201,6 +240,7 @@ Laravel chứa một loạt các hàm PHP global "helper". Nhiều trong số c�
 
 </div>
 
+<a name="miscellaneous-method-list"></a>
 ### Miscellaneous
 
 <div class="collection-method-list" markdown="1">
@@ -223,11 +263,9 @@ Laravel chứa một loạt các hàm PHP global "helper". Nhiều trong số c�
 [csrf_token](#method-csrf-token)
 [dd](#method-dd)
 [dispatch](#method-dispatch)
-[dispatch_now](#method-dispatch-now)
 [dump](#method-dump)
 [env](#method-env)
 [event](#method-event)
-[factory](#method-factory)
 [filled](#method-filled)
 [info](#method-info)
 [logger](#method-logger)
@@ -276,7 +314,7 @@ Laravel chứa một loạt các hàm PHP global "helper". Nhiều trong số c�
 <a name="method-array-accessible"></a>
 #### `Arr::accessible()` {.collection-method .first-collection-method}
 
-Hàm `Arr::accessible` sẽ kiểm tra xem giá trị đã cho có phải là mảng có thể truy cập được hay không:
+Hàm `Arr::accessible` sẽ xác định xem giá trị đã cho có phải là mảng có thể truy cập được hay không:
 
     use Illuminate\Support\Arr;
     use Illuminate\Support\Collection;
@@ -327,7 +365,7 @@ Hàm `Arr::collapse` sẽ thu gọn một mảng gồm nhiều mảng con thành
 <a name="method-array-crossjoin"></a>
 #### `Arr::crossJoin()` {.collection-method}
 
-Phương thức `Arr::crossJoin` sẽ join chéo các giá trị của mảng đã cho, và trả về một tích chéo với tất cả các hoán vị có thể có:
+Hàm `Arr::crossJoin` sẽ join chéo các giá trị của mảng đã cho, và trả về một tích chéo với tất cả các hoán vị có thể có:
 
     use Illuminate\Support\Arr;
 
@@ -360,7 +398,7 @@ Phương thức `Arr::crossJoin` sẽ join chéo các giá trị của mảng đ
 <a name="method-array-divide"></a>
 #### `Arr::divide()` {.collection-method}
 
-Hàm `Arr::divide` trả về hai mảng, một mảng chứa các key và một mảng chứa các giá trị của mảng đã cho:
+Hàm `Arr::divide` trả về hai mảng: một mảng chứa các key và một mảng chứa các giá trị của mảng đã cho:
 
     use Illuminate\Support\Arr;
 
@@ -473,7 +511,7 @@ Hàm `Arr::get` lấy một giá trị từ một mảng bị lồng vào nhau b
 
     // 100
 
-Hàm `Arr::get` cũng chấp nhận một giá trị mặc định, sẽ được trả về nếu không tìm thấy key:
+Hàm `Arr::get` cũng chấp nhận một giá trị mặc định, sẽ được trả về nếu khóa được chỉ định không có trong mảng:
 
     use Illuminate\Support\Arr;
 
@@ -643,7 +681,13 @@ Hàm `Arr::query` sẽ chuyển đổi một mảng thành một chuỗi query:
 
     use Illuminate\Support\Arr;
 
-    $array = ['name' => 'Taylor', 'order' => ['column' => 'created_at', 'direction' => 'desc']];
+    $array = [
+        'name' => 'Taylor',
+        'order' => [
+            'column' => 'created_at',
+            'direction' => 'desc'
+        ]
+    ];
 
     Arr::query($array);
 
@@ -662,7 +706,7 @@ Hàm `Arr::random` sẽ trả về một giá trị ngẫu nhiên từ một m�
 
     // 4 - (retrieved randomly)
 
-Bạn cũng có thể chỉ định số lượng item sẽ được trả về làm tham số thứ hai. Lưu ý rằng việc cung cấp tham số này sẽ trả về một mảng, ngay cả khi chỉ có một item mong muốn:
+Bạn cũng có thể chỉ định số lượng item sẽ được trả về làm tham số thứ hai. Lưu ý rằng việc cung cấp tham số này sẽ trả về một mảng ngay cả khi chỉ có một item mong muốn:
 
     use Illuminate\Support\Arr;
 
@@ -707,7 +751,7 @@ Hàm `Arr::sort` sẽ sắp xếp một mảng theo các giá trị của nó:
 
     // ['Chair', 'Desk', 'Table']
 
-Bạn cũng có thể sắp xếp mảng theo kết quả của Closure đã cho:
+Bạn cũng có thể sắp xếp mảng theo kết quả của closure đã cho:
 
     use Illuminate\Support\Arr;
 
@@ -752,10 +796,46 @@ Hàm `Arr::sortRecursive` sẽ sắp xếp đệ quy một mảng bằng cách s
         ]
     */
 
+<a name="method-array-to-css-classes"></a>
+#### `Arr::toCssClasses()` {.collection-method}
+
+Hàm `Arr::toCssClasses` sẽ compile ra một chuỗi class CSS theo một điều kiện. Phương thức chấp nhận một mảng gồm các class trong đó khóa mảng sẽ chứa class hoặc các class mà bạn muốn thêm vào, trong khi giá trị là một biểu thức boolean. Nếu một phần tử mảng có một khóa là dạng số, thì nó sẽ luôn được đưa vào danh sách class được tạo:
+
+    use Illuminate\Support\Arr;
+
+    $isActive = false;
+    $hasError = true;
+
+    $array = ['p-4', 'font-bold' => $isActive, 'bg-red' => $hasError];
+
+    $classes = Arr::toCssClasses($array);
+
+    /*
+        'p-4 bg-red'
+    */
+
+Phương thức này sẽ hỗ trợ chức năng của Laravel cho phép [nối các class với các attribute bag của Blade component](/docs/{{version}}/blade#conditionally-merge-classes) cũng như [lệnh Blade](/docs/{{version}}/blade#conditional-classes) `@class`.
+
+<a name="method-array-undot"></a>
+#### `Arr::undot()` {.collection-method}
+
+Hàm `Arr::undot` mở rộng một mảng một chiều sử dụng ký tự "chấm" thành một mảng nhiều chiều:
+
+    use Illuminate\Support\Arr;
+
+    $array = [
+        'user.name' => 'Kevin Malone',
+        'user.occupation' => 'Accountant',
+    ];
+
+    $array = Arr::undot($array);
+
+    // ['user' => ['name' => 'Kevin Malone', 'occupation' => 'Accountant']]
+
 <a name="method-array-where"></a>
 #### `Arr::where()` {.collection-method}
 
-Hàm `Arr::where` sẽ lọc một mảng bằng cách sử dụng Closure:
+Hàm `Arr::where` sẽ lọc một mảng bằng cách sử dụng closure:
 
     use Illuminate\Support\Arr;
 
@@ -767,10 +847,23 @@ Hàm `Arr::where` sẽ lọc một mảng bằng cách sử dụng Closure:
 
     // [1 => '200', 3 => '400']
 
+<a name="method-array-where-not-null"></a>
+#### `Arr::whereNotNull()` {.collection-method}
+
+Hàm `Arr::whereNotNull` sẽ loại bỏ tất cả các giá trị `null` ra khỏi mảng đã cho:
+
+    use Illuminate\Support\Arr;
+
+    $array = [0, null];
+
+    $filtered = Arr::whereNotNull($array);
+
+    // [0 => 0]
+
 <a name="method-array-wrap"></a>
 #### `Arr::wrap()` {.collection-method}
 
-Hàm `Arr::wrap` sẽ bao bọc giá trị đã cho vào trong một mảng. Nếu giá trị đã cho là một mảng, nó sẽ không bị thay đổi:
+Hàm `Arr::wrap` sẽ bao bọc giá trị đã cho vào trong một mảng. Nếu giá trị đã cho là một mảng, nó sẽ được trả về mà không cần sửa đổi gì:
 
     use Illuminate\Support\Arr;
 
@@ -780,13 +873,11 @@ Hàm `Arr::wrap` sẽ bao bọc giá trị đã cho vào trong một mảng. N�
 
     // ['Laravel']
 
-Nếu giá trị đã cho là null, một mảng trống sẽ được trả về:
+Nếu giá trị đã cho là `null`, một mảng trống sẽ được trả về:
 
     use Illuminate\Support\Arr;
 
-    $nothing = null;
-
-    $array = Arr::wrap($nothing);
+    $array = Arr::wrap(null);
 
     // []
 
@@ -864,7 +955,7 @@ Hàm `data_set` sẽ set một giá trị trong một mảng hoặc một đối
 
     // ['products' => ['desk' => ['price' => 200]]]
 
-Hàm này cũng chấp nhận ký tự đại diện và để set giá trị cho mục tiêu tương ứng:
+Hàm này cũng chấp nhận ký tự đại diện hoa thị và để set giá trị cho mục tiêu tương ứng:
 
     $data = [
         'products' => [
@@ -884,11 +975,11 @@ Hàm này cũng chấp nhận ký tự đại diện và để set giá trị ch
         ]
     */
 
-Mặc định, bất kỳ giá trị hiện có sẽ bị ghi đè. Nếu bạn chỉ muốn set một giá trị nếu nó không tồn tại, bạn có thể truyền `false` làm tham số thứ tư:
+Mặc định, bất kỳ giá trị hiện có sẽ bị ghi đè. Nếu bạn chỉ muốn set một giá trị nếu nó không tồn tại, bạn có thể truyền `false` làm tham số thứ tư cho hàm:
 
     $data = ['products' => ['desk' => ['price' => 100]]];
 
-    data_set($data, 'products.desk.price', 200, false);
+    data_set($data, 'products.desk.price', 200, $overwrite = false);
 
     // ['products' => ['desk' => ['price' => 100]]]
 
@@ -920,7 +1011,7 @@ Hàm `last` trả về phần tử cuối cùng trong mảng đã cho:
 <a name="method-app-path"></a>
 #### `app_path()` {.collection-method}
 
-Hàm `app_path` trả về đường dẫn đến thư mục `app`. Bạn cũng có thể sử dụng hàm `app_path` để tạo đường dẫn đến một file có bắt đầu từ thư mục app:
+Hàm `app_path` trả về đường dẫn đến thư mục `app` của application của bạn. Bạn cũng có thể sử dụng hàm `app_path` để tạo đường dẫn đến một file có bắt đầu từ thư mục app:
 
     $path = app_path();
 
@@ -929,7 +1020,7 @@ Hàm `app_path` trả về đường dẫn đến thư mục `app`. Bạn cũng 
 <a name="method-base-path"></a>
 #### `base_path()` {.collection-method}
 
-Hàm `base_path` trả về đường dẫn đến thư mục gốc dự án. Bạn cũng có thể sử dụng hàm `base_path` để tạo đường dẫn đến một file đã cho có bắt đầu từ thư mục gốc của dự án:
+Hàm `base_path` trả về đường dẫn đến thư mục root  của application của bạn. Bạn cũng có thể sử dụng hàm `base_path` để tạo đường dẫn đến một file đã cho có bắt đầu từ thư mục gốc của dự án:
 
     $path = base_path();
 
@@ -938,7 +1029,7 @@ Hàm `base_path` trả về đường dẫn đến thư mục gốc dự án. B�
 <a name="method-config-path"></a>
 #### `config_path()` {.collection-method}
 
-Hàm `config_path` trả về đường dẫn đến thư mục `config`. Bạn cũng có thể sử dụng hàm `config_path` để tạo đường dẫn đến một file đã cho trong thư mục config của application:
+Hàm `config_path` trả về đường dẫn đến thư mục `config` của application của bạn. Bạn cũng có thể sử dụng hàm `config_path` để tạo đường dẫn đến một file đã cho trong thư mục config của application:
 
     $path = config_path();
 
@@ -947,7 +1038,7 @@ Hàm `config_path` trả về đường dẫn đến thư mục `config`. Bạn 
 <a name="method-database-path"></a>
 #### `database_path()` {.collection-method}
 
-Hàm `database_path` trả về đường dẫn đến thư mục `database`. Bạn cũng có thể sử dụng hàm `database_path` để tạo đường dẫn đến một file đã cho trong thư mục database:
+Hàm `database_path` trả về đường dẫn đến thư mục `database` của application của bạn. Bạn cũng có thể sử dụng hàm `database_path` để tạo đường dẫn đến một file đã cho trong thư mục database:
 
     $path = database_path();
 
@@ -963,7 +1054,7 @@ Hàm `mix` trả về đường dẫn đến [file Mix đã được version](/d
 <a name="method-public-path"></a>
 #### `public_path()` {.collection-method}
 
-Hàm `public_path` trả về đường dẫn đến thư mục `public`. Bạn cũng có thể sử dụng hàm `public_path` để tạo đường dẫn đến một file đã cho trong thư mục public:
+Hàm `public_path` trả về đường dẫn đến thư mục `public` của application của bạn. Bạn cũng có thể sử dụng hàm `public_path` để tạo đường dẫn đến một file đã cho trong thư mục public:
 
     $path = public_path();
 
@@ -972,7 +1063,7 @@ Hàm `public_path` trả về đường dẫn đến thư mục `public`. Bạn 
 <a name="method-resource-path"></a>
 #### `resource_path()` {.collection-method}
 
-Hàm `resource_path` trả về đường dẫn đến thư mục `resource`. Bạn cũng có thể sử dụng hàm `resource_path` để tạo đường dẫn đến một file đã cho trong thư mục resources:
+Hàm `resource_path` trả về đường dẫn đến thư mục `resource` của application của bạn. Bạn cũng có thể sử dụng hàm `resource_path` để tạo đường dẫn đến một file đã cho trong thư mục resources:
 
     $path = resource_path();
 
@@ -981,7 +1072,7 @@ Hàm `resource_path` trả về đường dẫn đến thư mục `resource`. B�
 <a name="method-storage-path"></a>
 #### `storage_path()` {.collection-method}
 
-Hàm `storage_path` trả về đường dẫn đến thư mục` storage`. Bạn cũng có thể sử dụng hàm `storage_path` để tạo đường dẫn đến một file đã cho trong thư mục storage:
+Hàm `storage_path` trả về đường dẫn đến thư mục` storage` của application của bạn. Bạn cũng có thể sử dụng hàm `storage_path` để tạo đường dẫn đến một file đã cho trong thư mục storage:
 
     $path = storage_path();
 
@@ -1110,7 +1201,7 @@ Hàm `Str::camel` chuyển đổi chuỗi đã cho thành `camelCase`:
 <a name="method-str-contains"></a>
 #### `Str::contains()` {.collection-method}
 
-Hàm `Str::contains` xác định xem chuỗi đã cho có chứa giá trị đã cho hay không (phân biệt chữ hoa chữ thường):
+Hàm `Str::contains` xác định xem chuỗi đã cho có chứa giá trị đã cho hay không. Phương thức này phân biệt chữ hoa và chữ thường:
 
     use Illuminate\Support\Str;
 
@@ -1149,7 +1240,7 @@ Hàm `Str::endsWith` sẽ kiểm tra chuỗi đã cho có kết thúc bằng gi�
     // true
 
 
-Bạn cũng có thể truyền một mảng các giá trị để kiểm tra xem chuỗi đã cho có kết thúc bằng các giá trị có trong số các giá trị đã cho hay không:
+Bạn cũng có thể truyền một mảng các giá trị để kiểm tra xem chuỗi đã cho có kết thúc bằng các giá trị có trong số các giá trị đã cho hay không in the array:
 
     use Illuminate\Support\Str;
 
@@ -1176,10 +1267,25 @@ Hàm `Str::finish` sẽ thêm một instance của giá trị đã cho vào mộ
 
     // this/string/
 
+<a name="method-str-headline"></a>
+#### `Str::headline()` {.collection-method}
+
+Hàm `Str::headline` sẽ chuyển các chuỗi được phân tách bằng cách viết hoa chữ cái đầu, dấu gạch ngang hoặc dấu gạch dưới thành một chuỗi được phân cách bằng dấu cách và chữ cái đầu tiên của mỗi từ được viết hoa:
+
+    use Illuminate\Support\Str;
+
+    $headline = Str::headline('steve_jobs');
+
+    // Steve Jobs
+
+    $headline = Str::headline('EmailNotificationSent');
+
+    // Email Notification Sent
+
 <a name="method-str-is"></a>
 #### `Str::is()` {.collection-method}
 
-Hàm `Str::is` sẽ xác định xem một chuỗi đã cho có khớp với pattern đã cho hay không. Dấu hoa thị có thể được sử dụng để làm ký tự đại diện:
+Hàm `Str::is` sẽ xác định xem một chuỗi đã cho có khớp với mẫu đã cho hay không. Dấu hoa thị có thể được sử dụng để làm giá trị đại diện:
 
     use Illuminate\Support\Str;
 
@@ -1246,7 +1352,7 @@ Hàm `Str::length` sẽ trả về độ dài của chuỗi đã cho:
 <a name="method-str-limit"></a>
 #### `Str::limit()` {.collection-method}
 
-Hàm `Str::limit` sẽ cắt ngắn chuỗi đã cho ở độ dài nhất định:
+Hàm `Str::limit` sẽ cắt ngắn chuỗi đã cho đến độ dài nhất định:
 
     use Illuminate\Support\Str;
 
@@ -1254,7 +1360,7 @@ Hàm `Str::limit` sẽ cắt ngắn chuỗi đã cho ở độ dài nhất đị
 
     // The quick brown fox...
 
-Bạn cũng có thể truyền một tham số thứ ba để thay đổi chuỗi sẽ được nối vào cuối chuỗi:
+Bạn có thể truyền một tham số thứ ba vào phương thức để thay đổi chuỗi sẽ được nối vào cuối chuỗi bị cắt ngắn:
 
     use Illuminate\Support\Str;
 
@@ -1273,10 +1379,44 @@ Hàm `Str::lower` sẽ chuyển một chuỗi đã cho thành chữ thường:
 
     // laravel
 
+<a name="method-str-markdown"></a>
+#### `Str::markdown()` {.collection-method}
+
+Hàm `Str::markdown` sẽ chuyển đổi Markdown định dạng theo chuẩn GitHub thành HTML:
+
+    use Illuminate\Support\Str;
+
+    $html = Str::markdown('# Laravel');
+
+    // <h1>Laravel</h1>
+
+    $html = Str::markdown('# Taylor <b>Otwell</b>', [
+        'html_input' => 'strip',
+    ]);
+
+    // <h1>Taylor Otwell</h1>
+
+<a name="method-str-mask"></a>
+#### `Str::mask()` {.collection-method}
+
+Hàm `Str::mask` sẽ che giấu một phần của chuỗi với một ký tự lặp lại và có thể được sử dụng để làm xáo trộn các phân đoạn của chuỗi như địa chỉ email hoặc các số điện thoại:
+
+    use Illuminate\Support\Str;
+
+    $string = Str::mask('taylor@example.com', '*', 3);
+
+    // tay***************
+
+Nếu cần, bạn cũng có thể cung cấp một số âm làm tham số thứ ba cho phương thức `mask`, điều này sẽ hướng dẫn phương thức bắt đầu tạo chuỗi ở khoảng cách nhất định tính từ cuối chuỗi trở về:
+
+    $string = Str::mask('taylor@example.com', '*', -15, 3);
+
+    // tay***@example.com
+
 <a name="method-str-ordered-uuid"></a>
 #### `Str::orderedUuid()` {.collection-method}
 
-Hàm `Str::orderedUuid` sẽ tạo một UUID "timestamp first" có thể được lưu trữ tốt trong một cột được index trong cơ sở dữ liệu:
+Hàm `Str::orderedUuid` sẽ tạo một UUID "timestamp first" có thể được lưu trữ tốt trong một cột được index trong cơ sở dữ liệu. Mỗi UUID được tạo ra bằng phương thức này sẽ được sắp xếp sau các UUID đã được tạo ra trước đó:
 
     use Illuminate\Support\Str;
 
@@ -1285,7 +1425,7 @@ Hàm `Str::orderedUuid` sẽ tạo một UUID "timestamp first" có thể đư�
 <a name="method-str-padboth"></a>
 #### `Str::padBoth()` {.collection-method}
 
-Hàm `Str::padBoth` sẽ wrap hàm `str_pad` của PHP, sẽ thêm vào cả hai bên của một chuỗi để thành một chuỗi khác:
+Hàm `Str::padBoth` sẽ wrap hàm `str_pad` của PHP, sẽ thêm vào cả hai bên của một chuỗi để thành một chuỗi khác cho đến khi chuỗi cuối cùng đạt đến độ dài mong muốn:
 
     use Illuminate\Support\Str;
 
@@ -1300,7 +1440,7 @@ Hàm `Str::padBoth` sẽ wrap hàm `str_pad` của PHP, sẽ thêm vào cả hai
 <a name="method-str-padleft"></a>
 #### `Str::padLeft()` {.collection-method}
 
-Hàm `Str::padLeft` sẽ wrap hàm `str_pad` của PHP, sẽ thêm vào phía bên trái của một chuỗi để thành một chuỗi khác:
+Hàm `Str::padLeft` sẽ wrap hàm `str_pad` của PHP, sẽ thêm vào phía bên trái của một chuỗi để thành một chuỗi khác cho đến khi chuỗi cuối cùng đạt đến độ dài mong muốn:
 
     use Illuminate\Support\Str;
 
@@ -1315,7 +1455,7 @@ Hàm `Str::padLeft` sẽ wrap hàm `str_pad` của PHP, sẽ thêm vào phía b�
 <a name="method-str-padright"></a>
 #### `Str::padRight()` {.collection-method}
 
-Hàm `Str::padRight` sẽ wrap hàm `str_pad` của PHP, sẽ thêm vào phía bên phải của một chuỗi để thành một chuỗi khác:
+Hàm `Str::padRight` sẽ wrap hàm `str_pad` của PHP, sẽ thêm vào phía bên phải của một chuỗi để thành một chuỗi khác cho đến khi chuỗi cuối cùng đạt đến độ dài mong muốn:
 
     use Illuminate\Support\Str;
 
@@ -1350,9 +1490,36 @@ Bạn có thể cung cấp một số nguyên dưới dạng tham số thứ hai
 
     // children
 
-    $plural = Str::plural('child', 1);
+    $singular = Str::plural('child', 1);
 
     // child
+
+<a name="method-str-plural-studly"></a>
+#### `Str::pluralStudly()` {.collection-method}
+
+Hàm `Str::pluralStudly` sẽ chuyển một chuỗi từ số ít sang số nhiều. Chức năng này hiện chỉ được hỗ trợ trong ngôn ngữ tiếng Anh:
+
+    use Illuminate\Support\Str;
+
+    $plural = Str::pluralStudly('VerifiedHuman');
+
+    // VerifiedHumans
+
+    $plural = Str::pluralStudly('UserFeedback');
+
+    // UserFeedback
+
+Bạn có thể cung cấp một số nguyên làm tham số thứ hai cho phương thức để trả về dạng số ít hoặc số nhiều của chuỗi:
+
+    use Illuminate\Support\Str;
+
+    $plural = Str::pluralStudly('VerifiedHuman', 2);
+
+    // VerifiedHumans
+
+    $singular = Str::pluralStudly('VerifiedHuman', 1);
+
+    // VerifiedHuman
 
 <a name="method-str-random"></a>
 #### `Str::random()` {.collection-method}
@@ -1362,6 +1529,34 @@ Hàm `Str::random` sẽ tạo ra một chuỗi ngẫu nhiên có độ dài đư
     use Illuminate\Support\Str;
 
     $random = Str::random(40);
+
+<a name="method-str-remove"></a>
+#### `Str::remove()` {.collection-method}
+
+Hàm `Str::remove` sẽ xoá các giá trị hoặc một mảng các giá trị ra khỏi chuỗi:
+
+    use Illuminate\Support\Str;
+
+    $string = 'Peter Piper picked a peck of pickled peppers.';
+
+    $removed = Str::remove('e', $string);
+
+    // Ptr Pipr pickd a pck of pickld ppprs.
+
+Bạn cũng có thể truyền một tham số `false` làm tham số thứ ba cho phương thức `remove` để xoá cả chữ hoa chữ thường.
+
+<a name="method-str-replace"></a>
+#### `Str::replace()` {.collection-method}
+
+Hàm `Str::replace` sẽ thay thế một chuỗi trong chuỗi:
+
+    use Illuminate\Support\Str;
+
+    $string = 'Laravel 8.x';
+
+    $replaced = Str::replace('8.x', '9.x', $string);
+
+    // Laravel 9.x
 
 <a name="method-str-replace-array"></a>
 #### `Str::replaceArray()` {.collection-method}
@@ -1397,6 +1592,18 @@ Hàm `Str::replaceLast` sẽ thay thế giá trị cuối cùng có trong chuỗ
     $replaced = Str::replaceLast('the', 'a', 'the quick brown fox jumps over the lazy dog');
 
     // the quick brown fox jumps over a lazy dog
+
+
+<a name="method-str-reverse"></a>
+#### `Str::reverse()` {.collection-method}
+
+Hàm `Str::reverse` sẽ đảo ngược chuỗi đã cho:
+
+    use Illuminate\Support\Str;
+
+    $reversed = Str::reverse('Hello World');
+
+    // dlroW olleH
 
 <a name="method-str-singular"></a>
 #### `Str::singular()` {.collection-method}
@@ -1435,6 +1642,10 @@ Hàm `Str::snake` sẽ chuyển đổi chuỗi đã cho thành `Str::snake`:
 
     // foo_bar
 
+    $converted = Str::snake('fooBar', '-');
+
+    // foo-bar
+
 <a name="method-str-start"></a>
 #### `Str::start()` {.collection-method}
 
@@ -1461,6 +1672,12 @@ Hàm `started_with` sẽ kiểm tra chuỗi đã cho có bắt đầu bằng gi�
 
     // true
 
+Nếu một mảng các giá trị được truyền, thì phương thức `startsWith` sẽ trả về `true` nếu chuỗi bắt đầu bằng một trong các giá trị đã cho:
+
+    $result = Str::startsWith('This is my name', ['This', 'That', 'There']);
+
+    // true
+
 <a name="method-studly-case"></a>
 #### `Str::studly()` {.collection-method}
 
@@ -1483,6 +1700,30 @@ Hàm `Str::substr` sẽ trả lại phần chuỗi được chỉ định bởi 
 
     // Laravel
 
+<a name="method-str-substrcount"></a>
+#### `Str::substrCount()` {.collection-method}
+
+Hàm `Str::substrCount` sẽ trả về số lần xuất hiện của một giá trị trong một chuỗi đã cho:
+
+    use Illuminate\Support\Str;
+
+    $count = Str::substrCount('If you like ice cream, you will like snow cones.', 'like');
+
+    // 2
+
+<a name="method-str-substrreplace"></a>
+#### `Str::substrReplace()` {.collection-method}
+
+Hàm `Str::substrReplace` sẽ thay thế text có trong một phần của chuỗi, bắt đầu từ vị trí được chỉ định bởi tham số thứ ba và thay thế số ký tự được chỉ định bởi tham số thứ tư. Truyền tham số thứ tư là `0` nếu muốn chèn chuỗi vào vị trí đã chỉ định mà không thay thế bất kỳ ký tự nào có trong chuỗi:
+
+    use Illuminate\Support\Str;
+
+    $result = Str::substrReplace('1300', ':', 2);
+    // 13:
+
+    $result = Str::substrReplace('1300', ':', 2, 0);
+    // 13:00
+
 <a name="method-title-case"></a>
 #### `Str::title()` {.collection-method}
 
@@ -1493,6 +1734,15 @@ Hàm `Str::title` chuyển đổi chuỗi đã cho thành` Title Case`:
     $converted = Str::title('a nice title uses the correct case');
 
     // A Nice Title Uses The Correct Case
+
+<a name="method-str-to-html-string"></a>
+#### `Str::toHtmlString()` {.collection-method}
+
+Hàm `Str::toHtmlString` sẽ chuyển một instance chuỗi thành một instance của `Illuminate\Support\HtmlString`, để có thể được hiển thị trong các template Blade:
+
+    use Illuminate\Support\Str;
+
+    $htmlString = Str::of('Nuno Maduro')->toHtmlString();
 
 <a name="method-str-ucfirst"></a>
 #### `Str::ucfirst()` {.collection-method}
@@ -1525,10 +1775,21 @@ Hàm `Str::uuid` sẽ tạo ra một UUID (phiên bản 4):
 
     return (string) Str::uuid();
 
+<a name="method-str-word-count"></a>
+#### `Str::wordCount()` {.collection-method}
+
+Hàm `Str::wordCount` sẽ trả về số lượng từ mà một chuỗi chứa:
+
+```php
+use Illuminate\Support\Str;
+
+Str::wordCount('Hello, world!'); // 2
+```
+
 <a name="method-str-words"></a>
 #### `Str::words()` {.collection-method}
 
-Hàm `Str::words` sẽ giới hạn số lượng từ có trong một chuỗi:
+Hàm `Str::words` sẽ giới hạn số lượng từ có trong một chuỗi. Một chuỗi bổ sung có thể được truyền cho phương thức này thông qua tham số thứ ba của nó để chỉ định chuỗi nào sẽ được thêm vào cuối chuỗi bị cắt ngắn:
 
     use Illuminate\Support\Str;
 
@@ -1562,7 +1823,7 @@ Fluent string cung cấp một interface hướng đối tượng, trôi chảy 
 <a name="method-fluent-str-after"></a>
 #### `after` {.collection-method}
 
-Phương thức `after` sẽ trả về mọi thứ nằm sau giá trị đã cho trong một chuỗi. Toàn bộ chuỗi sẽ được trả về nếu giá trị truyền vào không tồn tại trong chuỗi:
+Hàm `after` sẽ trả về mọi thứ nằm sau giá trị đã cho trong một chuỗi. Toàn bộ chuỗi sẽ được trả về nếu giá trị truyền vào không tồn tại trong chuỗi:
 
     use Illuminate\Support\Str;
 
@@ -1573,7 +1834,7 @@ Phương thức `after` sẽ trả về mọi thứ nằm sau giá trị đã ch
 <a name="method-fluent-str-after-last"></a>
 #### `afterLast` {.collection-method}
 
-Phương thức `afterLast` sẽ trả về mọi thứ sau lần xuất hiện cuối cùng của giá trị đã cho trong một chuỗi. Toàn bộ chuỗi sẽ được trả về nếu giá trị truyền vào không tồn tại trong chuỗi:
+Hàm `afterLast` sẽ trả về mọi thứ sau lần xuất hiện cuối cùng của giá trị đã cho trong một chuỗi. Toàn bộ chuỗi sẽ được trả về nếu giá trị truyền vào không tồn tại trong chuỗi:
 
     use Illuminate\Support\Str;
 
@@ -1584,7 +1845,7 @@ Phương thức `afterLast` sẽ trả về mọi thứ sau lần xuất hiện 
 <a name="method-fluent-str-append"></a>
 #### `append` {.collection-method}
 
-Phương thức `append` sẽ nối các giá trị đã cho vào chuỗi:
+Hàm `append` sẽ nối các giá trị đã cho vào chuỗi:
 
     use Illuminate\Support\Str;
 
@@ -1595,7 +1856,7 @@ Phương thức `append` sẽ nối các giá trị đã cho vào chuỗi:
 <a name="method-fluent-str-ascii"></a>
 #### `ascii` {.collection-method}
 
-Phương thức `ascii` sẽ thử chuyển một chuỗi thành giá trị ASCII:
+Hàm `ascii` sẽ thử chuyển một chuỗi thành giá trị ASCII:
 
     use Illuminate\Support\Str;
 
@@ -1606,7 +1867,7 @@ Phương thức `ascii` sẽ thử chuyển một chuỗi thành giá trị ASCI
 <a name="method-fluent-str-basename"></a>
 #### `basename` {.collection-method}
 
-Phương thức `basename` sẽ trả về phần cuối cùng của chuỗi đã cho:
+Hàm `basename` sẽ trả về phần cuối cùng của chuỗi đã cho:
 
     use Illuminate\Support\Str;
 
@@ -1625,7 +1886,7 @@ Nếu cần, bạn có thể cung cấp một "extension" sẽ bị xóa ra kh�
 <a name="method-fluent-str-before"></a>
 #### `before` {.collection-method}
 
-Phương thức `before` trả về mọi thứ đứng trước giá trị đã cho trong một chuỗi:
+Hàm `before` trả về mọi thứ đứng trước giá trị đã cho trong một chuỗi:
 
     use Illuminate\Support\Str;
 
@@ -1636,7 +1897,7 @@ Phương thức `before` trả về mọi thứ đứng trước giá trị đã
 <a name="method-fluent-str-before-last"></a>
 #### `beforeLast` {.collection-method}
 
-Phương thức `beforeLast` trả về mọi thứ đứng trước, trước lần xuất hiện cuối cùng của giá trị đã cho trong một chuỗi:
+Hàm `beforeLast` trả về mọi thứ đứng trước, trước lần xuất hiện cuối cùng của giá trị đã cho trong một chuỗi:
 
     use Illuminate\Support\Str;
 
@@ -1644,10 +1905,21 @@ Phương thức `beforeLast` trả về mọi thứ đứng trước, trước l
 
     // 'This '
 
+<a name="method-fluent-str-between"></a>
+#### `between` {.collection-method}
+
+Hàm `between` sẽ trả về một phần của chuỗi nằm giữa hai giá trị:
+
+    use Illuminate\Support\Str;
+
+    $converted = Str::of('This is my name')->between('This', 'name');
+
+    // ' is my '
+
 <a name="method-fluent-str-camel"></a>
 #### `camel` {.collection-method}
 
-Phương thức `camel` sẽ chuyển đổi chuỗi đã cho thành `camelCase`:
+Hàm `camel` sẽ chuyển đổi chuỗi đã cho thành `camelCase`:
 
     use Illuminate\Support\Str;
 
@@ -1658,7 +1930,7 @@ Phương thức `camel` sẽ chuyển đổi chuỗi đã cho thành `camelCase`
 <a name="method-fluent-str-contains"></a>
 #### `contains` {.collection-method}
 
-Phương thức `contains` sẽ xác định xem chuỗi đã cho có chứa giá trị đã cho hay không (phân biệt chữ hoa chữ thường):
+Hàm `contains` sẽ xác định xem chuỗi đã cho có chứa giá trị đã cho hay không. Phương thức này sẽ phân biệt chữ hoa chữ thường:
 
     use Illuminate\Support\Str;
 
@@ -1677,7 +1949,7 @@ Bạn cũng có thể truyền một mảng giá trị để xác định xem ch
 <a name="method-fluent-str-contains-all"></a>
 #### `containsAll` {.collection-method}
 
-Phương thức `containsAll` sẽ xác định xem chuỗi đã cho có chứa tất cả các giá trị của một mảng đã cho hay không:
+Hàm `containsAll` sẽ xác định xem chuỗi đã cho có chứa tất cả các giá trị của một mảng đã cho hay không:
 
     use Illuminate\Support\Str;
 
@@ -1688,7 +1960,7 @@ Phương thức `containsAll` sẽ xác định xem chuỗi đã cho có chứa 
 <a name="method-fluent-str-dirname"></a>
 #### `dirname` {.collection-method}
 
-Phương thức `dirname` sẽ trả về phần thư mục cha của chuỗi đã cho:
+Hàm `dirname` sẽ trả về phần thư mục cha của chuỗi đã cho:
 
     use Illuminate\Support\Str;
 
@@ -1696,7 +1968,7 @@ Phương thức `dirname` sẽ trả về phần thư mục cha của chuỗi đ
 
     // '/foo/bar'
 
-Ngoải ra, bạn có thể chỉ định thêm số lượng cấp của thư mục mà bạn muốn cắt ra khỏi chuỗi:
+Nếu cần, bạn có thể chỉ định thêm số lượng cấp của thư mục mà bạn muốn cắt ra khỏi chuỗi:
 
     use Illuminate\Support\Str;
 
@@ -1707,7 +1979,7 @@ Ngoải ra, bạn có thể chỉ định thêm số lượng cấp của thư m
 <a name="method-fluent-str-ends-with"></a>
 #### `endsWith` {.collection-method}
 
-Phương thức `endsWith` sẽ xác định xem chuỗi đã cho có kết thúc bằng giá trị đã cho hay không:
+Hàm `endsWith` sẽ xác định xem chuỗi đã cho có kết thúc bằng giá trị đã cho hay không:
 
     use Illuminate\Support\Str;
 
@@ -1730,7 +2002,7 @@ Bạn cũng có thể truyền một mảng giá trị để xác định xem ch
 <a name="method-fluent-str-exactly"></a>
 #### `exactly` {.collection-method}
 
-Phương thức `exactly` sẽ xác định xem chuỗi đã cho có khớp với một chuỗi khác hay không:
+Hàm `exactly` sẽ xác định xem chuỗi đã cho có khớp với một chuỗi khác hay không:
 
     use Illuminate\Support\Str;
 
@@ -1741,7 +2013,7 @@ Phương thức `exactly` sẽ xác định xem chuỗi đã cho có khớp vớ
 <a name="method-fluent-str-explode"></a>
 #### `explode` {.collection-method}
 
-Phương thức `explode` sẽ chia chuỗi ra theo dấu phân cách đã cho và trả về một collection chứa từng chuỗi nhỏ của chuỗi đã cho:
+Hàm `explode` sẽ chia chuỗi ra theo dấu phân cách đã cho và trả về một collection chứa từng chuỗi nhỏ của chuỗi đã cho:
 
     use Illuminate\Support\Str;
 
@@ -1752,7 +2024,7 @@ Phương thức `explode` sẽ chia chuỗi ra theo dấu phân cách đã cho v
 <a name="method-fluent-str-finish"></a>
 #### `finish` {.collection-method}
 
-Phương thức `finish` sẽ thêm một giá trị đã cho vào sau một chuỗi nếu nó chưa kết thúc bằng giá trị đó:
+Hàm `finish` sẽ thêm một giá trị đã cho vào sau một chuỗi nếu nó chưa kết thúc bằng giá trị đó:
 
     use Illuminate\Support\Str;
 
@@ -1767,7 +2039,7 @@ Phương thức `finish` sẽ thêm một giá trị đã cho vào sau một chu
 <a name="method-fluent-str-is"></a>
 #### `is` {.collection-method}
 
-Phương thức `is` sẽ xác định xem một chuỗi đã cho có khớp với một pattern nhất định hay không. Dấu hoa thị có thể được sử dụng để biểu thị cho ký tự đại diện:
+Hàm `is` sẽ xác định xem một chuỗi đã cho có khớp với một pattern nhất định hay không. Dấu hoa thị có thể được sử dụng để biểu thị cho giá trị đại diện:
 
     use Illuminate\Support\Str;
 
@@ -1782,7 +2054,7 @@ Phương thức `is` sẽ xác định xem một chuỗi đã cho có khớp v�
 <a name="method-fluent-str-is-ascii"></a>
 #### `isAscii` {.collection-method}
 
-Phương thức `isAscii` sẽ xác định xem một chuỗi đã cho có phải là chuỗi ASCII hay không:
+Hàm `isAscii` sẽ xác định xem một chuỗi đã cho có phải là chuỗi ASCII hay không:
 
     use Illuminate\Support\Str;
 
@@ -1797,7 +2069,7 @@ Phương thức `isAscii` sẽ xác định xem một chuỗi đã cho có phả
 <a name="method-fluent-str-is-empty"></a>
 #### `isEmpty` {.collection-method}
 
-Phương thức `isEmpty` sẽ xác định xem chuỗi đã cho có trống hay không:
+Hàm `isEmpty` sẽ xác định xem chuỗi đã cho có trống hay không:
 
     use Illuminate\Support\Str;
 
@@ -1812,7 +2084,7 @@ Phương thức `isEmpty` sẽ xác định xem chuỗi đã cho có trống hay
 <a name="method-fluent-str-is-not-empty"></a>
 #### `isNotEmpty` {.collection-method}
 
-Phương thức `isNotEmpty` sẽ xác định xem chuỗi đã cho không trống đúng không:
+Hàm `isNotEmpty` sẽ xác định xem chuỗi đã cho không trống đúng không:
 
 
     use Illuminate\Support\Str;
@@ -1825,10 +2097,25 @@ Phương thức `isNotEmpty` sẽ xác định xem chuỗi đã cho không trố
 
     // true
 
+<a name="method-fluent-str-is-uuid"></a>
+#### `isUuid` {.collection-method}
+
+Hàm `isUuid` sẽ xác định xem một chuỗi đã cho có phải là dạng UUID hay không:
+
+    use Illuminate\Support\Str;
+
+    $result = Str::of('5ace9ab9-e9cf-4ec6-a19d-5881212a452c')->isUuid();
+
+    // true
+
+    $result = Str::of('Taylor')->isUuid();
+
+    // false
+
 <a name="method-fluent-str-kebab"></a>
 #### `kebab` {.collection-method}
 
-Phương thức `kebab` sẽ chuyển đổi một chuỗi đã cho thành một dạng `kebab-case`:
+Hàm `kebab` sẽ chuyển đổi một chuỗi đã cho thành một dạng `kebab-case`:
 
     use Illuminate\Support\Str;
 
@@ -1839,7 +2126,7 @@ Phương thức `kebab` sẽ chuyển đổi một chuỗi đã cho thành một
 <a name="method-fluent-str-length"></a>
 #### `length` {.collection-method}
 
-Phương thức `length` sẽ trả về độ dài của chuỗi đã cho:
+Hàm `length` sẽ trả về độ dài của chuỗi đã cho:
 
     use Illuminate\Support\Str;
 
@@ -1850,7 +2137,7 @@ Phương thức `length` sẽ trả về độ dài của chuỗi đã cho:
 <a name="method-fluent-str-limit"></a>
 #### `limit` {.collection-method}
 
-Phương thức `limit` sẽ cắt chuỗi đã cho theo một độ dài nhất định:
+Hàm `limit` sẽ cắt chuỗi đã cho đến một độ dài nhất định:
 
     use Illuminate\Support\Str;
 
@@ -1869,7 +2156,7 @@ Bạn cũng có thể truyền thêm một tham số thứ hai để nối vào 
 <a name="method-fluent-str-lower"></a>
 #### `lower` {.collection-method}
 
-Phương thức `lower` sẽ chuyển đổi chuỗi đã cho thành chữ thường:
+Hàm `lower` sẽ chuyển đổi chuỗi đã cho thành chữ thường:
 
     use Illuminate\Support\Str;
 
@@ -1880,7 +2167,7 @@ Phương thức `lower` sẽ chuyển đổi chuỗi đã cho thành chữ thư�
 <a name="method-fluent-str-ltrim"></a>
 #### `ltrim` {.collection-method}
 
-Phương thức `ltrim` sẽ cắt bên trái của chuỗi đã cho:
+Hàm `ltrim` sẽ cắt bên trái của chuỗi đã cho:
 
     use Illuminate\Support\Str;
 
@@ -1892,10 +2179,44 @@ Phương thức `ltrim` sẽ cắt bên trái của chuỗi đã cho:
 
     // 'Laravel/'
 
+<a name="method-fluent-str-markdown"></a>
+#### `markdown` {.collection-method}
+
+Hàm `markdown` sẽ chuyển đổi Markdown định dạng theo chuẩn GitHub thành HTML:
+
+    use Illuminate\Support\Str;
+
+    $html = Str::of('# Laravel')->markdown();
+
+    // <h1>Laravel</h1>
+
+    $html = Str::of('# Taylor <b>Otwell</b>')->markdown([
+        'html_input' => 'strip',
+    ]);
+
+    // <h1>Taylor Otwell</h1>
+
+<a name="method-fluent-str-mask"></a>
+#### `mask` {.collection-method}
+
+Hàm `mask` sẽ che giấu một phần của chuỗi với một ký tự lặp lại và có thể được sử dụng để làm xáo trộn các phân đoạn của chuỗi như địa chỉ email hoặc các số điện thoại:
+
+    use Illuminate\Support\Str;
+
+    $string = Str::of('taylor@example.com')->mask('*', 3);
+
+    // tay***************
+
+Nếu cần, bạn cũng có thể cung cấp một số âm làm tham số thứ ba cho phương thức `mask`, điều này sẽ hướng dẫn phương thức bắt đầu tạo chuỗi ở khoảng cách nhất định tính từ cuối chuỗi trở về:
+
+    $string = Str::of('taylor@example.com')->mask('*', -15, 3);
+
+    // tay***@example.com
+
 <a name="method-fluent-str-match"></a>
 #### `match` {.collection-method}
 
-Phương thức `match` sẽ trả về một phần của chuỗi khớp với một biểu thức chính quy đã cho:
+Hàm `match` sẽ trả về một phần của chuỗi khớp với một biểu thức chính quy đã cho:
 
     use Illuminate\Support\Str;
 
@@ -1910,7 +2231,7 @@ Phương thức `match` sẽ trả về một phần của chuỗi khớp với 
 <a name="method-fluent-str-match-all"></a>
 #### `matchAll` {.collection-method}
 
-Phương thức `matchAll` sẽ trả về một collection chứa các phần của một chuỗi khớp với một biểu thức chính quy đã cho:
+Hàm `matchAll` sẽ trả về một collection chứa các phần của một chuỗi khớp với một biểu thức chính quy đã cho:
 
     use Illuminate\Support\Str;
 
@@ -1931,7 +2252,7 @@ Nếu không tìm thấy kết quả phù hợp, một collection trống sẽ �
 <a name="method-fluent-str-padboth"></a>
 #### `padBoth` {.collection-method}
 
-Phương thức `padBoth` sẽ wrap phương thức `str_pad` của PHP, sẽ thêm vào cả hai bên của một chuỗi để thành một chuỗi khác:
+Hàm `padBoth` sẽ wrap phương thức `str_pad` của PHP, sẽ thêm vào cả hai bên của một chuỗi để thành một chuỗi khác cho đến khi chuỗi cuối cùng đạt đến độ dài mong muốn:
 
     use Illuminate\Support\Str;
 
@@ -1946,7 +2267,7 @@ Phương thức `padBoth` sẽ wrap phương thức `str_pad` của PHP, sẽ th
 <a name="method-fluent-str-padleft"></a>
 #### `padLeft` {.collection-method}
 
-Phương thức `padLeft` sẽ wrap phương thức `str_pad` của PHP, sẽ thêm vào bên trái của một chuỗi để thành một chuỗi khác:
+Hàm `padLeft` sẽ wrap phương thức `str_pad` của PHP, sẽ thêm vào bên trái của một chuỗi để thành một chuỗi khác cho đến khi chuỗi cuối cùng đạt đến độ dài mong muốn:
 
     use Illuminate\Support\Str;
 
@@ -1961,7 +2282,7 @@ Phương thức `padLeft` sẽ wrap phương thức `str_pad` của PHP, sẽ th
 <a name="method-fluent-str-padright"></a>
 #### `padRight` {.collection-method}
 
-Phương thức `padRight` sẽ wrap phương thức `str_pad` của PHP, sẽ thêm vào bên phải của một chuỗi để thành một chuỗi khác:
+Hàm `padRight` sẽ wrap phương thức `str_pad` của PHP, sẽ thêm vào bên phải của một chuỗi để thành một chuỗi khác cho đến khi chuỗi cuối cùng đạt đến độ dài mong muốn:
 
     use Illuminate\Support\Str;
 
@@ -1973,10 +2294,27 @@ Phương thức `padRight` sẽ wrap phương thức `str_pad` của PHP, sẽ t
 
     // 'James     '
 
+<a name="method-fluent-str-pipe"></a>
+#### `pipe` {.collection-method}
+
+Hàm `pipe` cho phép bạn chuyển đổi chuỗi bằng cách truyền giá trị hiện tại của nó sang một hàm gọi lại:
+
+    use Illuminate\Support\Str;
+
+    $hash = Str::of('Laravel')->pipe('md5')->prepend('Checksum: ');
+
+    // 'Checksum: a5c95b86291ea299fcbe64458ed12702'
+
+    $closure = Str::of('foo')->pipe(function ($str) {
+        return 'bar';
+    });
+
+    // 'bar'
+
 <a name="method-fluent-str-plural"></a>
 #### `plural` {.collection-method}
 
-Phương thức `plural` sẽ chuyển một chuỗi từ dạng số ít sang dạng số nhiều của nó. Chức năng này hiện chỉ hỗ trợ ngôn ngữ tiếng Anh:
+Hàm `plural` sẽ chuyển một chuỗi từ dạng số ít sang dạng số nhiều của nó. Chức năng này hiện chỉ hỗ trợ ngôn ngữ tiếng Anh:
 
     use Illuminate\Support\Str;
 
@@ -2003,7 +2341,7 @@ Bạn có thể cung cấp một số nguyên làm tham số thứ hai cho phư�
 <a name="method-fluent-str-prepend"></a>
 #### `prepend` {.collection-method}
 
-Phương thức `prepend` sẽ thêm các giá trị đã cho vào chuỗi:
+Hàm `prepend` sẽ thêm các giá trị đã cho vào chuỗi:
 
     use Illuminate\Support\Str;
 
@@ -2011,10 +2349,23 @@ Phương thức `prepend` sẽ thêm các giá trị đã cho vào chuỗi:
 
     // Laravel Framework
 
+<a name="method-fluent-str-remove"></a>
+#### `remove` {.collection-method}
+
+Hàm `remove` sẽ xoá các giá trị hoặc một mảng các giá trị ra khỏi chuỗi:
+
+    use Illuminate\Support\Str;
+
+    $string = Str::of('Arkansas is quite beautiful!')->remove('quite');
+
+    // Arkansas is beautiful!
+
+You may also pass `false` as a second parameter to ignore case when removing strings.
+
 <a name="method-fluent-str-replace"></a>
 #### `replace` {.collection-method}
 
-Phương thức `replace` sẽ thay thế một chuỗi đã cho trong chuỗi:
+Hàm `replace` sẽ thay thế một chuỗi đã cho trong chuỗi:
 
     use Illuminate\Support\Str;
 
@@ -2025,7 +2376,7 @@ Phương thức `replace` sẽ thay thế một chuỗi đã cho trong chuỗi:
 <a name="method-fluent-str-replace-array"></a>
 #### `replaceArray` {.collection-method}
 
-Phương thức `replaceArray` sẽ thay thế từng giá trị một vào trong chuỗi bằng cách sử dụng một mảng:
+Hàm `replaceArray` sẽ thay thế từng giá trị một vào trong chuỗi bằng cách sử dụng một mảng:
 
     use Illuminate\Support\Str;
 
@@ -2038,7 +2389,7 @@ Phương thức `replaceArray` sẽ thay thế từng giá trị một vào tron
 <a name="method-fluent-str-replace-first"></a>
 #### `replaceFirst` {.collection-method}
 
-Phương thức `replaceFirst` sẽ thay vào chỗ xuất hiện đầu tiên của một giá trị đã cho vào trong một chuỗi:
+Hàm `replaceFirst` sẽ thay vào chỗ xuất hiện đầu tiên của một giá trị đã cho vào trong một chuỗi:
 
     use Illuminate\Support\Str;
 
@@ -2049,7 +2400,7 @@ Phương thức `replaceFirst` sẽ thay vào chỗ xuất hiện đầu tiên c
 <a name="method-fluent-str-replace-last"></a>
 #### `replaceLast` {.collection-method}
 
-Phương thức `replaceLast` sẽ thay vào chỗ xuất hiện cuối cùng của một giá trị đã cho vào trong một chuỗi:
+Hàm `replaceLast` sẽ thay vào chỗ xuất hiện cuối cùng của một giá trị đã cho vào trong một chuỗi:
 
     use Illuminate\Support\Str;
 
@@ -2060,7 +2411,7 @@ Phương thức `replaceLast` sẽ thay vào chỗ xuất hiện cuối cùng c�
 <a name="method-fluent-str-replace-matches"></a>
 #### `replaceMatches` {.collection-method}
 
-Phương thức `replaceMatches` sẽ thay thế tất cả các phần của một chuỗi mà khớp với một pattern đã cho:
+Hàm `replaceMatches` sẽ thay thế tất cả các phần của một chuỗi mà khớp với một mẫu:
 
     use Illuminate\Support\Str;
 
@@ -2068,7 +2419,7 @@ Phương thức `replaceMatches` sẽ thay thế tất cả các phần của m�
 
     // '15015551000'
 
-Phương thức `replaceMatches` cũng chấp nhận một Closure sẽ được gọi với từng phần của chuỗi mà khớp với pattern đã cho, cho phép bạn thực hiện các logic chi tiết trong Closure và trả về giá trị đã thay thế:
+Hàm `replaceMatches` cũng chấp nhận một Closure sẽ được gọi với từng phần của chuỗi mà khớp với mẫu đã cho, cho phép bạn thực hiện các logic chi tiết trong closure và trả về giá trị đã thay thế:
 
     use Illuminate\Support\Str;
 
@@ -2081,7 +2432,7 @@ Phương thức `replaceMatches` cũng chấp nhận một Closure sẽ được
 <a name="method-fluent-str-rtrim"></a>
 #### `rtrim` {.collection-method}
 
-Phương thức `rtrim` sẽ cắt bên phải của chuỗi đã cho:
+Hàm `rtrim` sẽ cắt bên phải của chuỗi đã cho:
 
     use Illuminate\Support\Str;
 
@@ -2093,10 +2444,21 @@ Phương thức `rtrim` sẽ cắt bên phải của chuỗi đã cho:
 
     // '/Laravel'
 
+<a name="method-fluent-str-scan"></a>
+#### `scan` {.collection-method}
+
+Hàm `scan` sẽ phân tích cú pháp đầu vào của một chuỗi thành một collection theo định dạng được hỗ trợ bởi [hàm `sscanf` của PHP](https://www.php.net/manual/en/function.sscanf.php):
+
+    use Illuminate\Support\Str;
+
+    $collection = Str::of('filename.jpg')->scan('%[^.].%s');
+
+    // collect(['filename', 'jpg'])
+
 <a name="method-fluent-str-singular"></a>
 #### `singular` {.collection-method}
 
-Phương thức `singular` sẽ chuyển một chuỗi thành dạng số ít của nó. Chức năng này hiện chỉ hỗ trợ ngôn ngữ tiếng Anh:
+Hàm `singular` sẽ chuyển một chuỗi thành dạng số ít của nó. Chức năng này hiện chỉ hỗ trợ ngôn ngữ tiếng Anh:
 
     use Illuminate\Support\Str;
 
@@ -2111,7 +2473,7 @@ Phương thức `singular` sẽ chuyển một chuỗi thành dạng số ít c�
 <a name="method-fluent-str-slug"></a>
 #### `slug` {.collection-method}
 
-Phương thức `slug` sẽ tạo ra một "slug" thân thiện với URL từ một chuỗi đã cho:
+Hàm `slug` sẽ tạo ra một "slug" thân thiện với URL từ một chuỗi đã cho:
 
     use Illuminate\Support\Str;
 
@@ -2122,7 +2484,7 @@ Phương thức `slug` sẽ tạo ra một "slug" thân thiện với URL từ m
 <a name="method-fluent-str-snake"></a>
 #### `snake` {.collection-method}
 
-Phương thức `snake` sẽ chuyển chuỗi đã cho thành `snake_case`:
+Hàm `snake` sẽ chuyển chuỗi đã cho thành `snake_case`:
 
     use Illuminate\Support\Str;
 
@@ -2133,7 +2495,7 @@ Phương thức `snake` sẽ chuyển chuỗi đã cho thành `snake_case`:
 <a name="method-fluent-str-split"></a>
 #### `split` {.collection-method}
 
-Phương thức `split` sẽ cắt một chuỗi thành một collection bằng cách sử dụng một biểu thức chính quy:
+Hàm `split` sẽ cắt một chuỗi thành một collection bằng cách sử dụng một biểu thức chính quy:
 
     use Illuminate\Support\Str;
 
@@ -2144,7 +2506,7 @@ Phương thức `split` sẽ cắt một chuỗi thành một collection bằng 
 <a name="method-fluent-str-start"></a>
 #### `start` {.collection-method}
 
-Phương thức `start` sẽ thêm một giá trị đã cho vào một chuỗi nếu nó chưa bắt đầu bằng giá trị đó:
+Hàm `start` sẽ thêm một giá trị đã cho vào một chuỗi nếu nó chưa bắt đầu bằng giá trị đó:
 
     use Illuminate\Support\Str;
 
@@ -2159,7 +2521,7 @@ Phương thức `start` sẽ thêm một giá trị đã cho vào một chuỗi 
 <a name="method-fluent-str-starts-with"></a>
 #### `startsWith` {.collection-method}
 
-Phương thức `startsWith` sẽ xác định xem chuỗi đã cho có bắt đầu bằng giá trị đã cho hay không:
+Hàm `startsWith` sẽ xác định xem chuỗi đã cho có bắt đầu bằng giá trị đã cho hay không:
 
     use Illuminate\Support\Str;
 
@@ -2170,7 +2532,7 @@ Phương thức `startsWith` sẽ xác định xem chuỗi đã cho có bắt đ
 <a name="method-fluent-str-studly"></a>
 #### `studly` {.collection-method}
 
-Phương thức `studly` sẽ chuyển chuỗi đã cho thành dạng `StudlyCase`:
+Hàm `studly` sẽ chuyển chuỗi đã cho thành dạng `StudlyCase`:
 
     use Illuminate\Support\Str;
 
@@ -2193,10 +2555,52 @@ Hàm `substr` sẽ trả lại phần chuỗi được chỉ định bởi các 
 
     // Frame
 
+<a name="method-fluent-str-substrreplace"></a>
+#### `substrReplace` {.collection-method}
+
+Hàm `substrReplace` sẽ thay thế text có trong một phần của chuỗi, bắt đầu từ vị trí được chỉ định bởi tham số thứ ba và thay thế số ký tự được chỉ định bởi tham số thứ tư. Truyền tham số thứ tư là `0` nếu muốn chèn chuỗi vào vị trí đã chỉ định mà không thay thế bất kỳ ký tự nào có trong chuỗi:
+
+    use Illuminate\Support\Str;
+
+    $string = Str::of('1300')->substrReplace(':', 2);
+
+    // 13:
+
+    $string = Str::of('The Framework')->substrReplace(' Laravel', 3, 0);
+
+    // The Laravel Framework
+
+<a name="method-fluent-str-tap"></a>
+#### `tap` {.collection-method}
+
+Hàm `tap` sẽ truyền chuỗi đến một closure đã cho, cho phép bạn kiểm tra và tương tác với chuỗi trong khi không ảnh hưởng đến chính chuỗi đó. Chuỗi ban đầu sẽ được trả về bởi phương thức `tap` bất kể giá trị trả về của closure là thế nào:
+
+    use Illuminate\Support\Str;
+
+    $string = Str::of('Laravel')
+        ->append(' Framework')
+        ->tap(function ($string) {
+            dump('String after append: ' . $string);
+        })
+        ->upper();
+
+    // LARAVEL FRAMEWORK
+
+<a name="method-fluent-str-test"></a>
+#### `test` {.collection-method}
+
+Hàm `test` sẽ xác định xem một chuỗi có khớp với một biểu thức chính quy đã cho hay không:
+
+    use Illuminate\Support\Str;
+
+    $result = Str::of('Laravel Framework')->test('/Laravel/');
+
+    // true
+
 <a name="method-fluent-str-title"></a>
 #### `title` {.collection-method}
 
-Phương thức `title` sẽ chuyển một chuỗi đã cho thành dạng `Title Case`:
+Hàm `title` sẽ chuyển một chuỗi đã cho thành dạng `Title Case`:
 
     use Illuminate\Support\Str;
 
@@ -2207,7 +2611,7 @@ Phương thức `title` sẽ chuyển một chuỗi đã cho thành dạng `Titl
 <a name="method-fluent-str-trim"></a>
 #### `trim` {.collection-method}
 
-Phương thức `trim` sẽ cắt chuỗi đã cho:
+Hàm `trim` sẽ cắt chuỗi đã cho:
 
     use Illuminate\Support\Str;
 
@@ -2222,7 +2626,7 @@ Phương thức `trim` sẽ cắt chuỗi đã cho:
 <a name="method-fluent-str-ucfirst"></a>
 #### `ucfirst` {.collection-method}
 
-Phương thức `ucfirst` sẽ trả về chuỗi đã cho với ký tự đầu tiên được viết hoa:
+Hàm `ucfirst` sẽ trả về chuỗi đã cho với ký tự đầu tiên được viết hoa:
 
     use Illuminate\Support\Str;
 
@@ -2233,7 +2637,7 @@ Phương thức `ucfirst` sẽ trả về chuỗi đã cho với ký tự đầu
 <a name="method-fluent-str-upper"></a>
 #### `upper` {.collection-method}
 
-Phương thức `upper` sẽ chuyển một chuỗi đã cho thành viết chữ hoa toàn bộ chuỗi:
+Hàm `upper` sẽ chuyển một chuỗi đã cho thành viết chữ hoa toàn bộ chuỗi:
 
     use Illuminate\Support\Str;
 
@@ -2244,7 +2648,7 @@ Phương thức `upper` sẽ chuyển một chuỗi đã cho thành viết chữ
 <a name="method-fluent-str-when"></a>
 #### `when` {.collection-method}
 
-Phương thức `when` sẽ gọi Closure nếu một điều kiện đã cho là đúng. Closure sẽ nhận vào một instance fluent string:
+Hàm `when` sẽ gọi Closure nếu một điều kiện đã cho là `đúng`. Closure sẽ nhận vào một instance chuỗi ban đầu:
 
     use Illuminate\Support\Str;
 
@@ -2257,10 +2661,53 @@ Phương thức `when` sẽ gọi Closure nếu một điều kiện đã cho l�
 
 Nếu cần thiết, bạn có thể truyền một Closure khác làm tham số thứ ba cho phương thức `when`. Closure này sẽ được thực thi nếu tham số điều kiện là `false`.
 
+<a name="method-fluent-str-when-contains"></a>
+#### `whenContains` {.collection-method}
+
+Hàm `whenContains` sẽ gọi closure đã cho nếu chuỗi chứa giá trị đã cho. Closure sẽ nhận vào instance chuỗi:
+
+    use Illuminate\Support\Str;
+
+    $string = Str::of('tony stark')
+                ->whenContains('tony', function ($string) {
+                    return $string->title();
+                });
+
+    // 'Tony Stark'
+
+Nếu cần, bạn có thể truyền một closure khác làm tham số thứ ba cho phương thức `when`. Closure này sẽ thực hiện nếu chuỗi không chứa giá trị đã cho.
+
+Bạn cũng có thể truyền một mảng các giá trị để xác định xem chuỗi đã cho có chứa bất kỳ giá trị nào có trong mảng hay không:
+
+    use Illuminate\Support\Str;
+
+    $string = Str::of('tony stark')
+                ->whenContains(['tony', 'hulk'], function ($string) {
+                    return $string->title();
+                });
+
+    // Tony Stark
+
+<a name="method-fluent-str-when-contains-all"></a>
+#### `whenContainsAll` {.collection-method}
+
+Hàm `whenContainsAll` sẽ gọi closure nếu chuỗi chứa tất cả các chuỗi con đã cho. Closure này sẽ nhận vào instance chuỗi:
+
+    use Illuminate\Support\Str;
+
+    $string = Str::of('tony stark')
+                    ->whenContainsAll(['tony', 'stark'], function ($string) {
+                        return $string->title();
+                    });
+
+    // 'Tony Stark'
+
+Nếu cần thiết, bạn có thể truyền một closure khác làm tham số thứ ba cho phương thức `when`. Closure này sẽ được thực thi nếu tham số điều kiện là `false`.
+
 <a name="method-fluent-str-when-empty"></a>
 #### `whenEmpty` {.collection-method}
 
-Phương thức `whenEmpty` sẽ gọi một Closure nếu chuỗi là trống. Nếu Closure trả về một giá trị, thì giá trị đó cũng sẽ được trả về từ phương thức `whenEmpty`. Nếu Closure không trả về giá trị nào, thì instance fluent string sẽ được trả về:
+Hàm `whenEmpty` sẽ gọi một closure nếu chuỗi là trống. Nếu closure trả về một giá trị, thì giá trị đó cũng sẽ được trả về từ phương thức `whenEmpty`. Nếu closure không trả về giá trị nào, thì instance string sẽ được trả về:
 
     use Illuminate\Support\Str;
 
@@ -2270,10 +2717,125 @@ Phương thức `whenEmpty` sẽ gọi một Closure nếu chuỗi là trống. 
 
     // 'Laravel'
 
+<a name="method-fluent-str-when-not-empty"></a>
+#### `whenNotEmpty` {.collection-method}
+
+Hàm `whenNotEmpty` sẽ gọi closure đã cho nếu chuỗi đã cho có giá trị. Nếu closure trả về một giá trị, thì giá trị đó cũng sẽ được trả về bởi phương thức `whenNotEmpty`. Nếu closure không trả về giá trị gì, thì instance chuỗi ban đầu sẽ được trả về:
+
+    use Illuminate\Support\Str;
+
+    $string = Str::of('Framework')->whenNotEmpty(function ($string) {
+        return $string->prepend('Laravel ');
+    });
+
+    // 'Laravel Framework'
+
+<a name="method-fluent-str-when-starts-with"></a>
+#### `whenStartsWith` {.collection-method}
+
+Hàm `whenStartsWith` sẽ gọi closure đã cho nếu chuỗi bắt đầu bằng chuỗi con đã cho. Closure sẽ nhận vào instance chuỗi:
+
+    use Illuminate\Support\Str;
+
+    $string = Str::of('disney world')->whenStartsWith('disney', function ($string) {
+        return $string->title();
+    });
+
+    // 'Disney World'
+
+<a name="method-fluent-str-when-ends-with"></a>
+#### `whenEndsWith` {.collection-method}
+
+Hàm `whenEndsWith` sẽ gọi closure đã cho nếu chuỗi kết thúc bằng chuỗi con đã cho. Closure sẽ nhận vào instance chuỗi:
+
+    use Illuminate\Support\Str;
+
+    $string = Str::of('disney world')->whenEndsWith('world', function ($string) {
+        return $string->title();
+    });
+
+    // 'Disney World'
+
+<a name="method-fluent-str-when-exactly"></a>
+#### `whenExactly` {.collection-method}
+
+Hàm `whenExactly` sẽ gọi closure đã cho nếu chuỗi đúng bằng chuỗi đã cho. Closure sẽ nhận vào instance chuỗi:
+
+    use Illuminate\Support\Str;
+
+    $string = Str::of('laravel')->whenExactly('laravel', function ($string) {
+        return $string->title();
+    });
+
+    // 'Laravel'
+
+<a name="method-fluent-str-when-is"></a>
+#### `whenIs` {.collection-method}
+
+Hàm `whenIs` sẽ gọi closure đã cho nếu chuỗi khớp với một mẫu nhất định. Dấu hoa thị có thể được sử dụng làm một ký tự đại diện. Closure sẽ nhận vào instance chuỗi:
+
+    use Illuminate\Support\Str;
+
+    $string = Str::of('foo/bar')->whenIs('foo/*', function ($string) {
+        return $string->append('/baz');
+    });
+
+    // 'foo/bar/baz'
+
+<a name="method-fluent-str-when-is-ascii"></a>
+#### `whenIsAscii` {.collection-method}
+
+Hàm `whenIsAscii` sẽ gọi closure đã cho nếu chuỗi là một dạng ASCII 7 bit. Closure sẽ nhận vào instance chuỗi:
+
+    use Illuminate\Support\Str;
+
+    $string = Str::of('foo/bar')->whenIsAscii('laravel', function ($string) {
+        return $string->title();
+    });
+
+    // 'Laravel'
+
+<a name="method-fluent-str-when-is-uuid"></a>
+#### `whenIsUuid` {.collection-method}
+
+Hàm `whenIsUuid` sẽ gọi closure đã cho nếu chuỗi là một UUID hợp lệ. Closure sẽ nhận vào instance chuỗi:
+
+    use Illuminate\Support\Str;
+
+    $string = Str::of('foo/bar')->whenIsUuid('a0a2a2d2-0b87-4a18-83f2-2529882be2de', function ($string) {
+        return $string->substr(0, 8);
+    });
+
+    // 'a0a2a2d2'
+
+<a name="method-fluent-str-when-test"></a>
+#### `whenTest` {.collection-method}
+
+Hàm `whenTest` sẽ gọi closure đã cho nếu chuỗi khớp với một biểu thức chính quy. Closure sẽ nhận vào instance chuỗi:
+
+    use Illuminate\Support\Str;
+
+    $string = Str::of('laravel framework')->whenTest('/laravel/', function ($string) {
+        return $string->title();
+    });
+
+    // 'Laravel Framework'
+
+<a name="method-fluent-str-word-count"></a>
+#### `wordCount` {.collection-method}
+
+Hàm `wordCount` trả về số lượng từ mà một chuỗi đó chứa:
+
+```php
+use Illuminate\Support\Str;
+
+Str::of('Hello, world!')->wordCount(); // 2
+```
+
 <a name="method-fluent-str-words"></a>
 #### `words` {.collection-method}
 
-Phương thức `words` sẽ giới hạn số lượng từ trong một chuỗi:
+Hàm `words` sẽ giới hạn số lượng từ trong một chuỗi. Nếu cần, bạn có thể chỉ định một chuỗi bổ sung sẽ được thêm vào chuỗi bị cắt ngắn:
 
     use Illuminate\Support\Str;
 
@@ -2287,15 +2849,15 @@ Phương thức `words` sẽ giới hạn số lượng từ trong một chuỗi
 <a name="method-action"></a>
 #### `action()` {.collection-method}
 
-Hàm `action` sẽ tạo ra một URL cho một action của controller đã cho. Bạn không cần phải truyền namespace của controller. Thay vào đó, hãy truyền tên class của controller liên kết đến namespace `App\Http\Controllers`:
+Hàm `action` sẽ tạo ra một URL cho một action của controller đã cho:
 
-    $url = action('HomeController@index');
+    use App\Http\Controllers\HomeController;
 
     $url = action([HomeController::class, 'index']);
 
 Nếu phương thức chấp nhận tham số cho route, bạn có thể truyền chúng làm tham số thứ hai cho phương thức:
 
-    $url = action('UserController@profile', ['id' => 1]);
+    $url = action([UserController::class, 'profile'], ['id' => 1]);
 
 <a name="method-asset"></a>
 #### `asset()` {.collection-method}
@@ -2304,7 +2866,7 @@ Hàm `asset` sẽ tạo URL cho một asset bằng cách sử dụng scheme hi�
 
     $url = asset('img/photo.jpg');
 
-Bạn có thể cấu hình URL host cho asset bằng cách set biến `ASSET_URL` trong file `.env` của bạn. Điều này có thể hữu ích nếu bạn đang lưu trữ các asset của bạn trong một dịch vụ bên ngoài như Amazon S3:
+Bạn có thể cấu hình URL host cho asset bằng cách set biến `ASSET_URL` trong file `.env` của bạn. Điều này có thể hữu ích nếu bạn đang lưu trữ các asset của bạn trong một dịch vụ bên ngoài như Amazon S3 hoặc một dịch vụ CDN khác:
 
     // ASSET_URL=http://example.com/assets
 
@@ -2313,17 +2875,17 @@ Bạn có thể cấu hình URL host cho asset bằng cách set biến `ASSET_UR
 <a name="method-route"></a>
 #### `route()` {.collection-method}
 
-Hàm `route` sẽ tạo một URL cho route đã được đặt tên:
+Hàm `route` sẽ tạo một URL cho một [route đã được đặt tên](/docs/{{version}}/routing#named-routes):
 
-    $url = route('routeName');
+    $url = route('route.name');
 
 Nếu route có chấp nhận tham số, bạn có thể truyền chúng làm tham số thứ hai cho phương thức:
 
-    $url = route('routeName', ['id' => 1]);
+    $url = route('route.name', ['id' => 1]);
 
-Mặc định, hàm `route` sẽ tạo ra một URL tuyệt đối. Nếu bạn muốn tạo một URL tương đối, bạn có thể truyền `false` làm tham số thứ ba:
+Mặc định, hàm `route` sẽ tạo ra một URL tuyệt đối. Nếu bạn muốn tạo một URL tương đối, bạn có thể truyền `false` làm tham số thứ ba cho phương thức:
 
-    $url = route('routeName', ['id' => 1], false);
+    $url = route('route.name', ['id' => 1], false);
 
 <a name="method-secure-asset"></a>
 #### `secure_asset()` {.collection-method}
@@ -2335,7 +2897,7 @@ Hàm `secure_asset` sẽ tạo URL cho một asset bằng HTTPS:
 <a name="method-secure-url"></a>
 #### `secure_url()` {.collection-method}
 
-Hàm `secure_url` tạo URL HTTPS cho đường dẫn đã cho:
+Hàm `secure_url` sẽ tạo URL HTTPS cho đường dẫn đã cho. Các parameter của URL có thể được truyền vào thông qua tham số thứ hai của phương thức:
 
     $url = secure_url('user/profile');
 
@@ -2368,7 +2930,7 @@ Hàm `abort` sẽ đưa ra một [exception HTTP](/docs/{{version}}/errors#http-
 
     abort(403);
 
-Bạn cũng có thể cung cấp response text và response header tùy biến cho exception:
+Bạn cũng có thể cung cấp message và response header tùy biến của exception mà sẽ được gửi về trình duyệt:
 
     abort(403, 'Unauthorized.', $headers);
 
@@ -2379,7 +2941,7 @@ Hàm `abort_if` sẽ đưa ra một exception HTTP nếu một biểu thức boo
 
     abort_if(! Auth::user()->isAdmin(), 403);
 
-Giống như phương thức `abort`, bạn cũng có thể cung cấp response text cho exception làm tham số thứ ba và một mảng các response header tùy biến làm tham số thứ tư.
+Giống như phương thức `abort`, bạn cũng có thể cung cấp response text cho exception làm tham số thứ ba và một mảng các response header tùy biến làm tham số thứ tư cho phương thức.
 
 <a name="method-abort-unless"></a>
 #### `abort_unless()` {.collection-method}
@@ -2388,7 +2950,7 @@ Hàm `abort_unless` sẽ đưa ra một exception HTTP nếu một biểu thức
 
     abort_unless(Auth::user()->isAdmin(), 403);
 
-Giống như phương thức `abort`, bạn cũng có thể cung cấp response text cho exception làm tham số thứ ba và một mảng các response header tùy biến làm tham số thứ tư.
+Giống như phương thức `abort`, bạn cũng có thể cung cấp response text cho exception làm tham số thứ ba và một mảng các response header tùy biến làm tham số thứ tư cho phương thức.
 
 <a name="method-app"></a>
 #### `app()` {.collection-method}
@@ -2404,7 +2966,7 @@ Bạn có thể truyền một tên class hoặc một tên interface để reso
 <a name="method-auth"></a>
 #### `auth()` {.collection-method}
 
-Hàm `auth` sẽ trả về một instance [authenticator](/docs/{{version}}/authentication). Bạn có thể sử dụng nó thay vì dùng facade `Auth` cho thuận tiện:
+Hàm `auth` sẽ trả về một instance [authenticator](/docs/{{version}}/authentication). Bạn có thể sử dụng nó như là một thay thế cho facade `Auth`:
 
     $user = auth()->user();
 
@@ -2417,21 +2979,21 @@ Nếu cần, bạn có thể khai báo loại instance guard mà bạn muốn tr
 
 Hàm `back` sẽ tạo ra một [response HTTP chuyển hướng](/docs/{{version}}/responses#redirects) đến vị trí trước đó của người dùng:
 
-    return back($status = 302, $headers = [], $fallback = false);
+    return back($status = 302, $headers = [], $fallback = '/');
 
     return back();
 
 <a name="method-bcrypt"></a>
 #### `bcrypt()` {.collection-method}
 
-Hàm `bcrypt` sẽ [hashes](/docs/{{version}}/hashing) giá trị đã cho bằng Bcrypt. Bạn có thể sử dụng nó như là một thay thế cho facade `Hash`:
+Hàm `bcrypt` sẽ [hashes](/docs/{{version}}/hashing) giá trị đã cho bằng Bcrypt. Bạn có thể sử dụng phương thức này như là một thay thế cho facade `Hash`:
 
     $password = bcrypt('my-secret-password');
 
 <a name="method-blank"></a>
 #### `blank()` {.collection-method}
 
-Hàm `blank` sẽ trả về giá trị đã cho là "blank" hay không:
+Hàm `blank` sẽ xác định xem giá trị đã cho là "blank" hay không:
 
     blank('');
     blank('   ');
@@ -2455,6 +3017,8 @@ Hàm `broadcast` sẽ [broadcasts](/docs/{{version}}/broadcasting) một [event]
 
     broadcast(new UserRegistered($user));
 
+    broadcast(new UserRegistered($user))->toOthers();
+
 <a name="method-cache"></a>
 #### `cache()` {.collection-method}
 
@@ -2475,7 +3039,7 @@ Bạn có thể thêm các item vào cache bằng cách truyền một mảng c�
 
 Hàm `class_uses_recursive` sẽ trả về tất cả các trait được sử dụng bởi một class, bao gồm cả các trait được sử dụng bởi tất cả các class cha của nó:
 
-    $traits = class_uses_recursive(App\User::class);
+    $traits = class_uses_recursive(App\Models\User::class);
 
 <a name="method-collect"></a>
 #### `collect()` {.collection-method}
@@ -2493,7 +3057,7 @@ Hàm `config` sẽ lấy giá trị của biến [configuration](/docs/{{version
 
     $value = config('app.timezone', $default);
 
-Bạn có thể set các biến cấu hình trong thời gian chạy bằng cách truyền một mảng các cặp key / giá trị:
+Bạn có thể set các biến cấu hình trong thời gian chạy bằng cách truyền một mảng các cặp key / giá trị. Tuy nhiên, lưu ý rằng chức năng này chỉ ảnh hưởng đến các giá trị cấu hình cho request hiện tại và không cập nhật giá trị cấu hình thực tế của bạn:
 
     config(['app.debug' => true]);
 
@@ -2536,13 +3100,6 @@ Hàm `dispatch` sẽ tạo [job](/docs/{{version}}/queues#creating-jobs) vào La
 
     dispatch(new App\Jobs\SendEmails);
 
-<a name="method-dispatch-now"></a>
-#### `dispatch_now()` {.collection-method}
-
-Hàm `dispatch_now` sẽ chạy ngay lập tức [job](/docs/{{version}}/queues#creating-jobs) và trả về giá trị từ phương thức `handle` của nó:
-
-    $result = dispatch_now(new App\Jobs\SendEmails);
-
 <a name="method-dump"></a>
 #### `dump()` {.collection-method}
 
@@ -2561,7 +3118,6 @@ Hàm `env` sẽ lấy ra giá trị của [environment variable](/docs/{{version
 
     $env = env('APP_ENV');
 
-    // Returns 'production' if APP_ENV is not set...
     $env = env('APP_ENV', 'production');
 
 > {note} Nếu bạn chạy lệnh `config:cache` trong quá trình deploy của bạn, bạn nên chắc chắn rằng bạn chỉ gọi hàm `env` từ các file cấu hình của bạn. Khi các option cấu hình đã được lưu vào cached, file `.env` sẽ không được load và tất cả các lệnh gọi đến hàm `env` sẽ trả về `null`.
@@ -2573,17 +3129,10 @@ Hàm `event` sẽ dispatch [event](/docs/{{version}}/events) đến listener:
 
     event(new UserRegistered($user));
 
-<a name="method-factory"></a>
-#### `factory()` {.collection-method}
-
-Hàm `factory` sẽ tạo một model factory builder cho một class, tên và số lượng nhất định. Nó có thể được sử dụng trong khi [testing](/docs/{{version}}/database-testing#writing-factories) hoặc [seeding](/docs/{{version}}/seeding#using-model-factories):
-
-    $user = factory(App\User::class)->make();
-
 <a name="method-filled"></a>
 #### `filled()` {.collection-method}
 
-Hàm `filled` sẽ trả về giá trị đã cho không là "blank" hay không:
+Hàm `filled` sẽ xác định xem giá trị đã cho không là "blank" hay không:
 
     filled(0);
     filled(true);
@@ -2603,7 +3152,7 @@ Hàm `filled` sẽ trả về giá trị đã cho không là "blank" hay không:
 <a name="method-info"></a>
 #### `info()` {.collection-method}
 
-Hàm `info` sẽ ghi thông tin vào [log](/docs/{{version}}/logging):
+Hàm `info` sẽ ghi thông tin vào [log](/docs/{{version}}/logging) của application của bạn:
 
     info('Some helpful information!');
 
@@ -2660,25 +3209,25 @@ Hàm `optional` nhận vào bất kỳ tham số nào và cho phép bạn truy c
 
     {!! old('name', optional($user)->name) !!}
 
-Phương thức `optional` cũng chấp nhận một Closure làm tham số thứ hai của nó. Closure sẽ được gọi nếu giá trị tham số đầu tiên không phải là một giá trị null:
+Hàm `optional` cũng chấp nhận một closure làm tham số thứ hai của nó. Closure sẽ được gọi nếu giá trị tham số đầu tiên không phải là một giá trị null:
 
     return optional(User::find($id), function ($user) {
-        return new DummyUser;
+        return $user->name;
     });
 
 <a name="method-policy"></a>
 #### `policy()` {.collection-method}
 
-Phương thức `policy` sẽ lấy ra một instance [policy](/docs/{{version}}/authorization#creating-policies) cho một class nhất định:
+Hàm `policy` sẽ lấy ra một instance [policy](/docs/{{version}}/authorization#creating-policies) cho một class nhất định:
 
-    $policy = policy(App\User::class);
+    $policy = policy(App\Models\User::class);
 
 <a name="method-redirect"></a>
 #### `redirect()` {.collection-method}
 
 Hàm `redirect` sẽ trả về một [response HTTP chuyển hướng](/docs/{{version}}/responses#redirects) hoặc trả về instance chuyển hướng nếu không có tham số được truyền vào:
 
-    return redirect($to = null, $status = 302, $headers = [], $secure = null);
+    return redirect($to = null, $status = 302, $headers = [], $https = null);
 
     return redirect('/home');
 
@@ -2687,14 +3236,18 @@ Hàm `redirect` sẽ trả về một [response HTTP chuyển hướng](/docs/{{
 <a name="method-report"></a>
 #### `report()` {.collection-method}
 
-Hàm `report` sẽ report một exception bằng cách sử dụng phương thức `report` của [exception handler](/docs/{{version}}/errors#the-exception-handler) của bạn:
+Hàm `report` sẽ report một exception bằng cách sử dụng [exception handler](/docs/{{version}}/errors#the-exception-handler) của bạn:
 
     report($e);
+
+Hàm `report` cũng sẽ chấp nhận một chuỗi làm tham số đầu vào. Khi một chuỗi được cấp cho hàm, hàm sẽ tạo ra một ngoại lệ với chuỗi đã cho dưới dạng một thông báo của nó:
+
+    report('Something went wrong.');
 
 <a name="method-request"></a>
 #### `request()` {.collection-method}
 
-Hàm `request` trả về instance [request](/docs/{{version}}/requests) hiện tại hoặc lấy ra một input item:
+Hàm `request` trả về instance [request](/docs/{{version}}/requests) hiện tại hoặc lấy ra một giá trị của trường input từ request hiện tại:
 
     $request = request();
 
@@ -2703,13 +3256,13 @@ Hàm `request` trả về instance [request](/docs/{{version}}/requests) hiện 
 <a name="method-rescue"></a>
 #### `rescue()` {.collection-method}
 
-Hàm `rescue` sẽ thực thi Closure đã cho và catch bất kỳ exception nào xảy ra trong quá trình thực thi. Tất cả các exception bị catch sẽ được gửi đến phương thức `report` của [exception handler](/docs/{{version}}/errors#the-exception-handler) của bạn; tuy nhiên, request sẽ tiếp tục xử lý:
+Hàm `rescue` sẽ thực thi closure đã cho và catch bất kỳ exception nào xảy ra trong quá trình thực thi. Tất cả các exception bị catch sẽ được gửi đến [exception handler](/docs/{{version}}/errors#the-exception-handler) của bạn; tuy nhiên, request sẽ tiếp tục xử lý:
 
     return rescue(function () {
         return $this->method();
     });
 
-Bạn cũng có thể truyền tham số thứ hai cho hàm `rescue`. Tham số này sẽ là giá trị "default" cần được trả về nếu có exception xảy ra trong khi thực hiện Closure:
+Bạn cũng có thể truyền tham số thứ hai cho hàm `rescue`. Tham số này sẽ là giá trị "default" cần được trả về nếu có exception xảy ra trong khi thực hiện closure:
 
     return rescue(function () {
         return $this->method();
@@ -2724,7 +3277,7 @@ Bạn cũng có thể truyền tham số thứ hai cho hàm `rescue`. Tham số 
 <a name="method-resolve"></a>
 #### `resolve()` {.collection-method}
 
-Hàm `resolve` sẽ resolve một tên class hoặc một interface đã cho thành một instance của nó bằng cách sử dụng [service container](/docs/{{version}}/container):
+Hàm `resolve` sẽ resolve một tên class hoặc một interface đã cho thành một instance bằng cách sử dụng [service container](/docs/{{version}}/container):
 
     $api = resolve('HelpSpot\API');
 
@@ -2746,6 +3299,23 @@ Hàm `retry` sẽ thử thực hiện callback đã cho, cho đến khi đạt �
         // Attempt 5 times while resting 100ms in between attempts...
     }, 100);
 
+Nếu bạn muốn đưa vào một số lượng mili giây để ngủ giữa các lần thử, bạn có thể truyền một closure làm tham số thứ ba cho hàm `retry`:
+
+    return retry(5, function () {
+        // ...
+    }, function ($attempt) {
+        return $attempt * 100;
+    });
+
+
+Để chỉ thử lại trong một điều kiện cụ thể, bạn có thể truyền một closure làm tham số thứ tư cho hàm `retry`:
+
+    return retry(5, function () {
+        // ...
+    }, 100, function ($exception) {
+        return $exception instanceof RetryException;
+    });
+
 <a name="method-session"></a>
 #### `session()` {.collection-method}
 
@@ -2766,7 +3336,7 @@ Session store sẽ được trả về nếu không có giá trị nào được
 <a name="method-tap"></a>
 #### `tap()` {.collection-method}
 
-Hàm `tap` sẽ nhận vào hai tham số: một là `$value` và một Closure. `$value` sẽ được truyền đến phần Closure và sau đó được trả về bởi hàm `tap`. Giá trị trả về của Closure sẽ không liên quan:
+Hàm `tap` sẽ nhận vào hai tham số: một là `$value` và một closure. `$value` sẽ được truyền đến phần closure và sau đó được trả về bởi hàm `tap`. Giá trị trả về của closure sẽ không liên quan:
 
     $user = tap(User::first(), function ($user) {
         $user->name = 'taylor';
@@ -2774,14 +3344,14 @@ Hàm `tap` sẽ nhận vào hai tham số: một là `$value` và một Closure.
         $user->save();
     });
 
-Nếu không có Closure nào được truyền đến hàm `tap`, bạn có thể gọi bất kỳ phương thức nào trên `$value` đã cho. Giá trị trả về của phương thức bạn gọi sẽ luôn là `$value`, bất kể phương thức đó thực sự trả về định nghĩa gì đi chăng nữa. Ví dụ, phương thức `update` Eloquent thường trả về một số nguyên. Tuy nhiên, chúng ta có thể buộc phương thức này trả về chính model đó bằng cách gọi phương thức `update` thông qua hàm `tap`:
+Nếu không có closure nào được truyền đến hàm `tap`, bạn có thể gọi bất kỳ phương thức nào trên `$value` đã cho. Giá trị trả về của phương thức bạn gọi sẽ luôn là `$value`, bất kể phương thức đó thực sự trả về định nghĩa gì đi chăng nữa. Ví dụ, phương thức `update` Eloquent thường trả về một số nguyên. Tuy nhiên, chúng ta có thể buộc phương thức này trả về chính model đó bằng cách gọi phương thức `update` thông qua hàm `tap`:
 
     $user = tap($user)->update([
         'name' => $name,
         'email' => $email,
     ]);
 
-Để thêm một phương thức `tap` vào một class, bạn có thể thêm trait `Illuminate\Support\Traits\Tappable` vào class. Phương thức `tap` của trait này sẽ chấp nhận một Closure làm tham số duy nhất của nó. Chính instance đối tượng sẽ được truyền đến Closure và sau đó được trả về bởi phương thức `tap`:
+Để thêm một phương thức `tap` vào một class, bạn có thể thêm trait `Illuminate\Support\Traits\Tappable` vào class. Hàm `tap` của trait này sẽ chấp nhận một Closure làm tham số duy nhất của nó. Chính instance đối tượng sẽ được truyền đến Closure và sau đó được trả về bởi phương thức `tap`:
 
     return $user->tap(function ($user) {
         //
@@ -2797,7 +3367,7 @@ Hàm `throw_if` sẽ đưa ra exception đã cho nếu một biểu thức boole
     throw_if(
         ! Auth::user()->isAdmin(),
         AuthorizationException::class,
-        'You are not allowed to access this page'
+        'You are not allowed to access this page.'
     );
 
 <a name="method-throw-unless"></a>
@@ -2810,7 +3380,7 @@ Hàm `throw_unless` sẽ đưa ra exception đã cho nếu một biểu thức b
     throw_unless(
         Auth::user()->isAdmin(),
         AuthorizationException::class,
-        'You are not allowed to access this page'
+        'You are not allowed to access this page.'
     );
 
 <a name="method-today"></a>
@@ -2830,7 +3400,7 @@ Hàm `trait_uses_recursive` trả về tất cả các trait được sử dụn
 <a name="method-transform"></a>
 #### `transform()` {.collection-method}
 
-Hàm `transform` sẽ thực thi một `Closure` trên một giá trị đã cho nếu giá trị không [blank](#method-blank) và trả về kết quả của một `Closure`:
+Hàm `transform` sẽ thực thi một closure trên một giá trị đã cho nếu giá trị không [blank](#method-blank) và sau đó trả về giá trị trả về của một closure:
 
     $callback = function ($value) {
         return $value * 2;
@@ -2840,7 +3410,7 @@ Hàm `transform` sẽ thực thi một `Closure` trên một giá trị đã cho
 
     // 10
 
-Một giá trị mặc định hoặc một `Closure` cũng có thể được truyền làm tham số thứ ba cho phương thức. Giá trị này sẽ được trả về nếu giá trị đã cho là blank:
+Một giá trị mặc định hoặc một closure có thể được truyền làm tham số thứ ba cho phương thức. Giá trị này sẽ được trả về nếu giá trị đã cho là blank:
 
     $result = transform(null, $callback, 'The value is blank');
 
@@ -2849,14 +3419,14 @@ Một giá trị mặc định hoặc một `Closure` cũng có thể được t
 <a name="method-validator"></a>
 #### `validator()` {.collection-method}
 
-Hàm `validator` sẽ tạo ra một instance [validator](/docs/{{version}}/validation) mới với các tham số đã cho. Bạn có thể sử dụng nó thay vì facade `Validator` cho thuận tiện:
+Hàm `validator` sẽ tạo ra một instance [validator](/docs/{{version}}/validation) mới với các tham số đã cho. Bạn có thể sử dụng nó như là một thay thế cho facade `Auth`:
 
     $validator = validator($data, $rules, $messages);
 
 <a name="method-value"></a>
 #### `value()` {.collection-method}
 
-Hàm `value` sẽ trả về giá trị được cho. Tuy nhiên, nếu bạn truyền một `Closure` cho hàm, thì` Closure` sẽ được thực thi sau đó kết quả của nó sẽ được trả về:
+Hàm `value` sẽ trả về giá trị được cho. Tuy nhiên, nếu bạn truyền một closure cho hàm, thì closure sẽ được thực thi và giá trị trả về của nó sẽ được trả về:
 
     $result = value(true);
 
@@ -2878,10 +3448,10 @@ Hàm `view` sẽ lấy ra một instance [view](/docs/{{version}}/views):
 <a name="method-with"></a>
 #### `with()` {.collection-method}
 
-Hàm `with` sẽ trả về giá trị được cho. Nếu một `Closure` được truyền làm tham số thứ hai cho hàm, thì `Closure` đó sẽ được thực thi và sau đó kết quả của nó sẽ được trả về:
+Hàm `with` sẽ trả về giá trị được cho. Nếu một closure được truyền làm tham số thứ hai cho hàm, thì closure đó sẽ được thực thi và giá trị trả về của nó sẽ được trả về:
 
     $callback = function ($value) {
-        return (is_numeric($value)) ? $value * 2 : 0;
+        return is_numeric($value) ? $value * 2 : 0;
     };
 
     $result = with(5, $callback);
