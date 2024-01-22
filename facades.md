@@ -11,11 +11,14 @@
 <a name="introduction"></a>
 ## Giới thiệu
 
-Facades cung cấp một "static" interface cho các class có trong [service container](/docs/{{version}}/container) của application. Laravel có sẵn rất nhiều facade cung cấp các quyền truy cập vào hầu hết các tính năng của Laravel. Facade của Laravel đóng vai trò như là một "static proxies" cho các class cơ bản nằm trong service container, mang lại lợi ích của một cú pháp ngắn gọn, hàm ý trong khi vẫn duy trì khả năng kiểm thử và tính linh hoạt cao so với các phương thức static truyền thống.
+Trong suốt tài liệu Laravel, bạn sẽ thấy các ví dụ về code tương tác với các tính năng của Laravel thông qua "facades". Facade cung cấp một "static" interface cho các class có trong [service container](/docs/{{version}}/container) của application. Laravel có sẵn rất nhiều facade cung cấp các quyền truy cập vào hầu hết các tính năng của Laravel.
+
+Facade của Laravel đóng vai trò như là một "static proxies" cho các class cơ bản nằm trong service container, mang lại lợi ích của một cú pháp ngắn gọn, hàm ý trong khi vẫn duy trì khả năng kiểm thử và tính linh hoạt cao so với các phương thức static truyền thống. Sẽ hoàn toàn ổn nếu bạn không hoàn toàn hiểu về cách mà facade hoạt động - chỉ cần tiếp tục và tiếp tục tìm hiểu về Laravel.
 
 Tất cả các facade của Laravel được định nghĩa trong namespace `Illuminate\Support\Facades`. Vì vậy, chúng ta có thể dễ dàng truy cập vào một facade như sau:
 
     use Illuminate\Support\Facades\Cache;
+    use Illuminate\Support\Facades\Route;
 
     Route::get('/cache', function () {
         return Cache::get('key');
@@ -23,14 +26,33 @@ Tất cả các facade của Laravel được định nghĩa trong namespace `Il
 
 Trong suốt tài liệu của Laravel, nhiều ví dụ sẽ sử dụng các facade để thực hiện các tính năng khác nhau của framework.
 
+<a name="helper-functions"></a>
+#### Helper Functions
+
+Để bổ sung cho các facade, Laravel cung cấp nhiều "helper functions" global giúp cho việc tương tác với các tính năng cơ bản của Laravel trở nên dễ dàng hơn. Một số hàm helper phổ biến mà bạn có thể tương tác là `view`, `response`, `url`, `config`, v.v. Mỗi hàm helper được cung cấp bởi Laravel đều được ghi lại với tính năng tương ứng của chúng; tuy nhiên, có một danh sách đầy đủ có sẵn trong [tài liệu helper](/docs/{{version}}/helpers) chuyên dụng.
+
+Ví dụ: thay vì sử dụng facade `Illuminate\Support\Facades\Response` để tạo một JSON response, chúng ta có thể chỉ cần sử dụng hàm `response`. Vì các hàm helper này là các hàm global, nên bạn không cần khai báo bất kỳ class nào để sử dụng chúng:
+
+    use Illuminate\Support\Facades\Response;
+
+    Route::get('/users', function () {
+        return Response::json([
+            // ...
+        ]);
+    });
+
+    Route::get('/users', function () {
+        return response()->json([
+            // ...
+        ]);
+    });
+
 <a name="when-to-use-facades"></a>
 ## Khi nào dùng Facade
 
 Facade có nhiều lợi ích. Chúng cung cấp một cú pháp ngắn gọn, dễ nhớ cho phép bạn sử dụng các tính năng của Laravel mà không cần phải nhớ các tên class dài sẽ phải khai báo hoặc phải tự cấu hình. Hơn nữa, do cách sử dụng độc đáo của các phương thức động của PHP, chúng rất dễ để test.
 
-Tuy nhiên, một số lưu ý phải được thực hiện khi sử dụng facade. Mối nguy hiểm chính của facade là class bị quá giới hạn. Vì facade rất dễ sử dụng và không cần phải khai báo, nên nó rất dễ để các class của bạn lớn lên và sử dụng nhiều facade trong một class. Việc dùng nhiều khai báo phụ thuộc, làm cho việc phát triển các dòng code trong class của bạn ngày càng lớn hơn. Và vì vậy, khi sử dụng facade, đặc biệt chú ý đến giới hạn của class của bạn để giới hạn của nó ở trong giới hạn cho phép.
-
-> {tip} Khi phát triển một package third-party tương tác với Laravel, tốt hơn là bạn nên khai báo [Laravel contracts](/docs/{{version}}/contracts) thay vì sử dụng facade. Vì các package này được xây dựng ở bên ngoài của Laravel, nên bạn sẽ không có quyền truy cập vào các facade testing helper của Laravel.
+Tuy nhiên, một số lưu ý phải được thực hiện khi sử dụng facade. Mối nguy hiểm chính của facade là class bị quá giới hạn. Vì facade rất dễ sử dụng và không cần phải khai báo, nên nó rất dễ để các class của bạn lớn lên và sử dụng nhiều facade trong một class. Việc dùng nhiều khai báo phụ thuộc, làm cho việc phát triển các dòng code trong class của bạn ngày càng lớn hơn. Và vì vậy, khi sử dụng facade, đặc biệt chú ý đến giới hạn của class của bạn để giới hạn của nó ở trong giới hạn cho phép. Nếu class của bạn quá lớn, hãy xem xét việc chia nó thành nhiều class nhỏ hơn.
 
 <a name="facades-vs-dependency-injection"></a>
 ### Facades và khai báo phụ thuộc
@@ -45,7 +67,7 @@ Thông thường, không thể giả lập hoặc khai báo một phương thứ
         return Cache::get('key');
     });
 
-Chúng ta có thể viết test sau để kiểm tra phương thức `Cache::get` đã được gọi với tham số mà chúng ta mong muốn hay chưa:
+Để sử dụng các phương thức kiểm tra facade của Laravel, chúng ta có thể viết test sau để kiểm tra phương thức `Cache::get` đã được gọi với tham số mà chúng ta mong muốn hay chưa:
 
     use Illuminate\Support\Facades\Cache;
 
@@ -60,8 +82,9 @@ Chúng ta có thể viết test sau để kiểm tra phương thức `Cache::get
              ->with('key')
              ->andReturn('value');
 
-        $this->visit('/cache')
-             ->see('value');
+        $response = $this->get('/cache');
+
+        $response->assertSee('value');
     }
 
 <a name="facades-vs-helper-functions"></a>
@@ -69,7 +92,7 @@ Chúng ta có thể viết test sau để kiểm tra phương thức `Cache::get
 
 Ngoài facade, Laravel còn chứa nhiều hàm "helper" để có thể thực hiện các task phổ biến như tạo views, kích hoạt event, gửi job hoặc gửi response HTTP. Nhiều hàm của helper này thực hiện giống với facade tương ứng. Ví dụ: facade này và helper này là tương đương:
 
-    return View::make('profile');
+    return Illuminate\Support\Facades\View::make('profile');
 
     return view('profile');
 
@@ -94,8 +117,9 @@ Hoàn toàn không có sự khác biệt giữa facade và helper. Khi sử dụ
              ->with('key')
              ->andReturn('value');
 
-        $this->visit('/cache')
-             ->see('value');
+        $response = $this->get('/cache');
+
+        $response->assertSee('value');
     }
 
 <a name="how-facades-work"></a>
@@ -147,11 +171,11 @@ Thay vào đó, facade `Cache` sẽ được extend từ class `Facade` và đ�
 <a name="real-time-facades"></a>
 ## Real-Time Facades
 
-Sử dụng real-time facade, bạn có thể coi bất kỳ class nào trong ứng dụng của bạn như là một facade. Để minh họa cách sử dụng này, hãy xem một ví dụ. Ví dụ: giả sử model `Podcast` của chúng ta có một phương thức là `publish`. Tuy nhiên, để publish một podcast, chúng ta cần khai báo một instance `Publisher`:
+Sử dụng real-time facade, bạn có thể coi bất kỳ class nào trong ứng dụng của bạn như là một facade. Để minh họa cách sử dụng này, đầu tiên chúng ta hãy xem một số code không sử dụng facade thời gian thực. Ví dụ: giả sử model `Podcast` của chúng ta có một phương thức là `publish`. Tuy nhiên, để publish một podcast, chúng ta cần khai báo một instance `Publisher`:
 
     <?php
 
-    namespace App;
+    namespace App\Models;
 
     use App\Contracts\Publisher;
     use Illuminate\Database\Eloquent\Model;
@@ -176,7 +200,7 @@ Việc khai báo một implementation của publisher vào trong phương thức
 
     <?php
 
-    namespace App;
+    namespace App\Models;
 
     use Facades\App\Contracts\Publisher;
     use Illuminate\Database\Eloquent\Model;
@@ -202,7 +226,7 @@ Khi real-time facade được sử dụng, việc implementation của publisher
 
     namespace Tests\Feature;
 
-    use App\Podcast;
+    use App\Models\Podcast;
     use Facades\App\Contracts\Publisher;
     use Illuminate\Foundation\Testing\RefreshDatabase;
     use Tests\TestCase;
@@ -218,7 +242,7 @@ Khi real-time facade được sử dụng, việc implementation của publisher
          */
         public function test_podcast_can_be_published()
         {
-            $podcast = factory(Podcast::class)->create();
+            $podcast = Podcast::factory()->create();
 
             Publisher::shouldReceive('publish')->once()->with($podcast);
 
@@ -246,6 +270,7 @@ Cache (Instance)  |  [Illuminate\Cache\Repository](https://laravel.com/api/{{ver
 Config  |  [Illuminate\Config\Repository](https://laravel.com/api/{{version}}/Illuminate/Config/Repository.html)  |  `config`
 Cookie  |  [Illuminate\Cookie\CookieJar](https://laravel.com/api/{{version}}/Illuminate/Cookie/CookieJar.html)  |  `cookie`
 Crypt  |  [Illuminate\Encryption\Encrypter](https://laravel.com/api/{{version}}/Illuminate/Encryption/Encrypter.html)  |  `encrypter`
+Date  |  [Illuminate\Support\DateFactory](https://laravel.com/api/{{version}}/Illuminate/Support/DateFactory.html)  |  `date`
 DB  |  [Illuminate\Database\DatabaseManager](https://laravel.com/api/{{version}}/Illuminate/Database/DatabaseManager.html)  |  `db`
 DB (Instance)  |  [Illuminate\Database\Connection](https://laravel.com/api/{{version}}/Illuminate/Database/Connection.html)  |  `db.connection`
 Event  |  [Illuminate\Events\Dispatcher](https://laravel.com/api/{{version}}/Illuminate/Events/Dispatcher.html)  |  `events`

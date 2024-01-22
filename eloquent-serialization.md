@@ -11,7 +11,9 @@
 <a name="introduction"></a>
 ## Giới thiệu
 
-Khi xây dựng một API JSON, bạn thường sẽ cần phải chuyển đổi các model và các quan hệ của bạn thành các mảng hoặc JSON. Eloquent có chứa các phương thức thuận tiện để thực hiện các chuyển đổi này, cũng như kiểm soát các thuộc tính nào sẽ được thêm vào trong các chuyển đổi của bạn.
+Khi xây dựng một API mà dùng Laravel, bạn thường sẽ cần phải chuyển đổi các model và các quan hệ của bạn thành các mảng hoặc JSON. Eloquent có chứa các phương thức thuận tiện để thực hiện các chuyển đổi này, cũng như kiểm soát các thuộc tính nào sẽ được thêm vào trong các chuyển đổi representation of your models.
+
+> {tip} Để biết cách xử lý chuyển hóa JSON của collection và model Eloquent hiệu quả hơn nữa, hãy xem tài liệu về [resource API Eloquent](/docs/{{version}}/eloquent-resources).
 
 <a name="serializing-models-and-collections"></a>
 ## Serialize Model và Collection
@@ -21,28 +23,32 @@ Khi xây dựng một API JSON, bạn thường sẽ cần phải chuyển đổ
 
 Để chuyển đổi một model và [quan hệ](/docs/{{version}}/eloquent-relationships) của nó thành một mảng, bạn nên sử dụng phương thức `toArray`. Phương thức này là phương thức đệ quy, vì vậy tất cả các thuộc tính và các quan hệ (bao gồm cả quan hệ của quan hệ) cũng sẽ được chuyển đổi thành mảng:
 
-    $user = App\User::with('roles')->first();
+    use App\Models\User;
+
+    $user = User::with('roles')->first();
 
     return $user->toArray();
 
-Để chỉ chuyển đổi các thuộc tính của một model thành một mảng, hãy sử dụng phương thức `attributesToArray`:
+Phương thức `attributesToArray` có thể được sử dụng để chuyển đổi các thuộc tính của model thành một mảng không có các quan hệ của nó:
 
-    $user = App\User::first();
+    $user = User::first();
 
     return $user->attributesToArray();
 
-Bạn cũng có thể chuyển đổi toàn bộ [collection](/docs/{{version}}/eloquent-collections) của các model thành một mảng:
+Bạn cũng có thể chuyển đổi toàn bộ [collection](/docs/{{version}}/eloquent-collections) của các model thành một mảng bằng cách gọi phương thức `toArray` trong instance collection:
 
-    $users = App\User::all();
+    $users = User::all();
 
     return $users->toArray();
 
 <a name="serializing-to-json"></a>
 ### Serialize vào JSON
 
-Để chuyển đổi một model thành dạng JSON, bạn có thể sử dụng phương thức `toJson`. Giống như phương thức `toArray`, phương thức` toJson` cũng là phương thức đệ quy, nên tất cả các thuộc tính và các quan hệ sẽ được chuyển đổi thành dạng JSON. Ngoài ra, bạn cũng có thể chỉ định thêm các tùy chọn mã hóa JSON [được hỗ trợ bởi PHP](https://secure.php.net/manual/en/function.json-encode.php):
+Để chuyển đổi một model thành dạng JSON, bạn có thể sử dụng phương thức `toJson`. Giống như phương thức `toArray`, phương thức` toJson` cũng là phương thức đệ quy, nên tất cả các thuộc tính và các quan hệ sẽ được chuyển đổi thành dạng JSON. Ngoài ra, bạn cũng có thể chỉ định thêm bất kỳ tùy chọn mã hóa JSON nào mà [được hỗ trợ bởi PHP](https://secure.php.net/manual/en/function.json-encode.php):
 
-    $user = App\User::find(1);
+    use App\Models\User;
+
+    $user = User::find(1);
 
     return $user->toJson();
 
@@ -50,28 +56,27 @@ Bạn cũng có thể chuyển đổi toàn bộ [collection](/docs/{{version}}/
 
 Ngoài ra, bạn có thể cast một model hoặc một collection thành một chuỗi, nó cũng sẽ được tự động gọi phương thức `toJson` trên các model hoặc các collection đó của bạn:
 
-    $user = App\User::find(1);
+    return (string) User::find(1);
 
-    return (string) $user;
-
-Vì các model và các collection sẽ được chuyển đổi thành dạng JSON khi bị cast thành một chuỗi, nên bạn có thể trả về các đối tượng Eloquent trực tiếp từ các route hoặc các controller của application của bạn:
+Vì các model và các collection sẽ được chuyển đổi thành dạng JSON khi bị cast thành một chuỗi, nên bạn có thể trả về các đối tượng Eloquent trực tiếp từ các route hoặc các controller của application của bạn. Laravel sẽ tự động chuyển hóa các model và collection Eloquent của bạn thành JSON khi chúng được trả về từ các route hoặc controller:
 
     Route::get('users', function () {
-        return App\User::all();
+        return User::all();
     });
 
+<a name="relationships"></a>
 #### Relationships
 
-Khi một model Eloquent được chuyển đổi thành JSON, các quan hệ mà đã được load của model đó cũng sẽ bị tự động chuyển đổi và đưa vào làm một thuộc tính trên đối tượng JSON. Ngoài ra, mặc dù các phương thức quan hệ của Eloquent được định nghĩa bằng quy tắc "camel case", nhưng khi chuyển đổi thuộc tính JSON của quan hệ sẽ bị chuyển thành "snake case".
+Khi một model Eloquent được chuyển đổi thành JSON, các quan hệ mà đã được load của model đó cũng sẽ bị tự động chuyển đổi và đưa vào làm một thuộc tính trên đối tượng JSON. Ngoài ra, mặc dù các phương thức quan hệ của Eloquent được định nghĩa bằng quy tắc đặt tên "camel case", nhưng khi chuyển đổi thuộc tính JSON của quan hệ sẽ bị chuyển thành "snake case".
 
 <a name="hiding-attributes-from-json"></a>
 ## Ẩn thuộc tính từ JSON
 
-Thỉnh thoảng bạn cũng có thể muốn giới hạn các thuộc tính, chẳng hạn như mật khẩu, được chứa trong mảng hoặc JSON của model của bạn. Để làm như vậy, hãy thêm một thuộc tính `$hidden` vào model của bạn:
+Thỉnh thoảng bạn cũng có thể muốn giới hạn các thuộc tính, chẳng hạn như mật khẩu, được chứa trong mảng hoặc JSON của model của bạn. Để làm như vậy, hãy thêm một thuộc tính `$hidden` vào model của bạn. Trong các thuộc tính được liệt kê trong mảng của thuộc tính `$hidden` sẽ không được chuyển đổi khi model của bạn được chuyển đổi:
 
     <?php
 
-    namespace App;
+    namespace App\Models;
 
     use Illuminate\Database\Eloquent\Model;
 
@@ -85,13 +90,13 @@ Thỉnh thoảng bạn cũng có thể muốn giới hạn các thuộc tính, c
         protected $hidden = ['password'];
     }
 
-> {note} Để ẩn các quan hệ hãy sử dụng tên phương thức của quan hệ đó.
+> {tip} Để ẩn các quan hệ, hãy thêm tên phương thức của quan hệ đó vào thuộc tính `$hidden` của model Eloquent của bạn.
 
-Ngoài ra, bạn có thể sử dụng thuộc tính `visible` để định nghĩa một danh sách các thuộc tính có thể hiển trong mảng hoặc JSON của bạn. Tất cả các thuộc tính khác sẽ bị ẩn khi model bị chuyển đổi thành một mảng hoặc một JSON:
+Ngoài ra, bạn có thể sử dụng thuộc tính `visible` để định nghĩa một danh sách các thuộc tính có thể hiển thị trong mảng hoặc JSON của bạn. Tất cả các thuộc tính không có mặt trong mảng `$visible` sẽ bị ẩn khi model được chuyển đổi thành một mảng hoặc một JSON:
 
     <?php
 
-    namespace App;
+    namespace App\Models;
 
     use Illuminate\Database\Eloquent\Model;
 
@@ -105,31 +110,32 @@ Ngoài ra, bạn có thể sử dụng thuộc tính `visible` để định ngh
         protected $visible = ['first_name', 'last_name'];
     }
 
+<a name="temporarily-modifying-attribute-visibility"></a>
 #### Temporarily Modifying Attribute Visibility
 
-Nếu bạn muốn một số thuộc tính bị ẩn được hiển thị trên một instance model, bạn có thể sử dụng phương thức `makeVisible`. Phương thức `makeVisible` sẽ trả về instance của model đó giúp cho việc kết hợp với các phương thức khác thuận tiện hơn:
+Nếu bạn muốn một số thuộc tính bị ẩn được hiển thị trên một instance model, bạn có thể sử dụng phương thức `makeVisible`. Phương thức `makeVisible` sẽ trả về instance của model:
 
     return $user->makeVisible('attribute')->toArray();
 
-Tương tự, nếu bạn muốn một số thuộc tính được hiển thị bị ẩn trong một instance model, bạn có thể sử dụng phương thức `makeHidden`.
+Tương tự, nếu bạn muốn ẩn một số thuộc tính thường được hiển thị, bạn có thể sử dụng phương thức `makeHidden`.
 
     return $user->makeHidden('attribute')->toArray();
 
 <a name="appending-values-to-json"></a>
 ## Thêm giá trị vào JSON
 
-Đôi khi, khi cast một model thành một mảng hoặc một JSON, bạn có thể muốn thêm các thuộc tính mà không có cột tương ứng trong cơ sở dữ liệu. Để làm như vậy, trước tiên, hãy định nghĩa một [accessor](/docs/{{version}}/eloquent-mutators) cho thuộc tính đó:
+Đôi khi, khi chuyển đổi một model thành một mảng hoặc một JSON, bạn có thể muốn thêm các thuộc tính mà không có cột tương ứng trong cơ sở dữ liệu. Để làm như vậy, trước tiên, hãy định nghĩa một [accessor](/docs/{{version}}/eloquent-mutators) cho thuộc tính đó:
 
     <?php
 
-    namespace App;
+    namespace App\Models;
 
     use Illuminate\Database\Eloquent\Model;
 
     class User extends Model
     {
         /**
-         * Get the administrator flag for the user.
+         * Determine if the user is an administrator.
          *
          * @return bool
          */
@@ -139,11 +145,11 @@ Tương tự, nếu bạn muốn một số thuộc tính được hiển thị 
         }
     }
 
-Sau khi tạo accessor xong, hãy thêm tên thuộc tính đó vào thuộc tính `appends` trên model. Lưu ý rằng tên thuộc tính thường được tham chiếu theo kiểu "snake case", mặc dù accessor được định nghĩa theo kiểu "camel case":
+Sau khi tạo accessor xong, hãy thêm tên thuộc tính đó vào thuộc tính `appends` của model của bạn. Lưu ý rằng tên thuộc tính thường được tham chiếu thường sử dụng quy ước "snake case", mặc dù phương phức PHP của accessor được định nghĩa theo kiểu "camel case":
 
     <?php
 
-    namespace App;
+    namespace App\Models;
 
     use Illuminate\Database\Eloquent\Model;
 
@@ -159,9 +165,10 @@ Sau khi tạo accessor xong, hãy thêm tên thuộc tính đó vào thuộc tí
 
 Khi thuộc tính đã được thêm vào mảng `appends` xong, nó sẽ được hiển thị trong JSON hoặc mảng của model. Các thuộc tính trong mảng `appends` cũng sẽ sử dụng được các cài đặt `visible` và `hidden` trên model.
 
+<a name="appending-at-run-time"></a>
 #### Appending At Run Time
 
-Ngoài ra, bạn cũng có thể chỉ dẫn instance model thêm các thuộc tính bằng cách sử dụng phương thức `append`. Hoặc, bạn có thể sử dụng phương thức `setAppends` để ghi đè toàn bộ mảng thuộc tính sẽ được thêm vào một instance model đã cho:
+Trong lúc chạy, bạn cũng có thể chỉ dẫn instance model thêm các thuộc tính bổ sung bằng cách sử dụng phương thức `append`. Hoặc, bạn có thể sử dụng phương thức `setAppends` để ghi đè toàn bộ mảng thuộc tính sẽ được thêm vào một instance model đã cho:
 
     return $user->append('is_admin')->toArray();
 
@@ -170,9 +177,10 @@ Ngoài ra, bạn cũng có thể chỉ dẫn instance model thêm các thuộc t
 <a name="date-serialization"></a>
 ## Date Serialization
 
+<a name="customizing-the-default-date-format"></a>
 #### Customizing The Default Date Format
 
-Bạn có thể tùy chỉnh định dạng chuyển đổi mặc định bằng cách ghi đè phương thức `serializeDate`:
+Bạn có thể tùy chỉnh định dạng chuyển đổi mặc định bằng cách ghi đè phương thức `serializeDate`. Phương thức này không ảnh hưởng đến cách định dạng ngày của bạn khi lưu trong cơ sở dữ liệu:
 
     /**
      * Prepare a date for array / JSON serialization.
@@ -185,9 +193,10 @@ Bạn có thể tùy chỉnh định dạng chuyển đổi mặc định bằng
         return $date->format('Y-m-d');
     }
 
+<a name="customizing-the-date-format-per-attribute"></a>
 #### Customizing The Date Format Per Attribute
 
-Bạn có thể tùy chỉnh định dạng chuyển đổi của từng thuộc tính date trong Eloquent bằng cách chỉ định định dạng date trong [khai báo](/docs/{{version}}/eloquent-mutators#attribute-casting) của Eloquent đó:
+Bạn có thể tùy chỉnh định dạng chuyển đổi của từng thuộc tính date trong Eloquent bằng cách chỉ định định dạng date trong [khai báo](/docs/{{version}}/eloquent-mutators#attribute-casting) của model đó:
 
     protected $casts = [
         'birthday' => 'date:Y-m-d',

@@ -13,20 +13,18 @@
 <a name="introduction"></a>
 ## Giới thiệu
 
-Middleware cung cấp một cơ chế thuận tiện để lọc các request HTTP vào ứng dụng của bạn. Ví dụ: Laravel có chứa một middleware để xác minh người dùng vào ứng dụng của bạn đã được xác thực hay chưa. Nếu người dùng chưa được xác thực, middleware sẽ chuyển hướng người dùng đến màn hình login. Và, nếu người dùng đã được xác thực, middleware sẽ cho phép request đó tiếp tục vào ứng dụng.
+Middleware cung cấp một cơ chế thuận tiện để xem xét và lọc các request HTTP vào ứng dụng của bạn. Ví dụ: Laravel có chứa một middleware để xác minh người dùng vào ứng dụng của bạn đã được xác thực hay chưa. Nếu người dùng chưa được xác thực, middleware sẽ chuyển hướng người dùng đến màn hình login của application của bạn. Và, nếu người dùng đã được xác thực, middleware sẽ cho phép request đó tiếp tục vào ứng dụng.
 
-Bạn có thể muốn viết thêm các middleware khác để thực hiện các nhiệm vụ khác, ngoài việc xác thực. Một middleware CORS có thể chịu trách nhiệm cho việc thêm một thuộc tính header vào tất cả các response mà application của bạn gửi về client. Hoặc là một middleware logging có thể log tất cả các request đến application của bạn.
-
-Có một số middleware đã có sẵn trong framework Laravel, bao gồm cả middleware để xác thực và bảo vệ CSRF. Tất cả các middleware này đều nằm trong thư mục `app/Http/Middleware`.
+Bạn có thể muốn viết thêm các middleware khác để thực hiện các nhiệm vụ khác, ngoài việc xác thực. Ví dụ, một middleware logging có thể log tất cả các request đến application của bạn. Có một số middleware đã có sẵn trong framework Laravel, bao gồm cả middleware để xác thực và bảo vệ CSRF. Tất cả các middleware này đều nằm trong thư mục `app/Http/Middleware`.
 
 <a name="defining-middleware"></a>
 ## Định nghĩa Middleware
 
 Để tạo một middleware mới, hãy dùng lệnh Artisan `make:middleware`:
 
-    php artisan make:middleware CheckAge
+    php artisan make:middleware EnsureTokenIsValid
 
-Lệnh này sẽ lưu một class `CheckAge` mới vào trong thư mục `app/Http/Middleware` của bạn. Trong middleware này, chúng ta sẽ chỉ cho phép truy cập vào route nếu `age` nhập vào lớn hơn 200. Và nếu không, chúng ta sẽ chuyển hướng người dùng trở lại URI `home`:
+Lệnh này sẽ lưu một class `EnsureTokenIsValid` mới vào trong thư mục `app/Http/Middleware` của bạn. Trong middleware này, chúng ta sẽ chỉ cho phép truy cập vào route nếu input `token` trùng với một giá trị cụ thể. Và nếu không, chúng ta sẽ chuyển hướng người dùng trở lại URI `home`:
 
     <?php
 
@@ -34,7 +32,7 @@ Lệnh này sẽ lưu một class `CheckAge` mới vào trong thư mục `app/Ht
 
     use Closure;
 
-    class CheckAge
+    class EnsureTokenIsValid
     {
         /**
          * Handle an incoming request.
@@ -45,7 +43,7 @@ Lệnh này sẽ lưu một class `CheckAge` mới vào trong thư mục `app/Ht
          */
         public function handle($request, Closure $next)
         {
-            if ($request->age <= 200) {
+            if ($request->input('token') !== 'my-secret-token') {
                 return redirect('home');
             }
 
@@ -53,15 +51,17 @@ Lệnh này sẽ lưu một class `CheckAge` mới vào trong thư mục `app/Ht
         }
     }
 
-Như bạn có thể thấy, nếu `age` đã cho nhỏ hơn hoặc bằng `200`, middleware sẽ trả về một chuyển hướng HTTP cho client; nếu không, request sẽ được tiếp tục vào ứng dụng. Để request tiếp tục vào ứng dụng, hãy gọi một callback là `$next` cùng với `$request`.
+Như bạn có thể thấy, nếu `token` không trùng với một secret token, thì middleware sẽ trả về một chuyển hướng HTTP cho client; nếu ngược lại, request sẽ được tiếp tục vào ứng dụng. Để request tiếp tục vào ứng dụng, bạn nên gọi một callback là `$next` cùng với `$request`.
 
 Tốt nhất là bạn hãy hình dung middleware như là các "layers" mà các HTTP request phải vượt qua trước khi chúng đến được với ứng dụng của bạn. Mỗi layer có thể kiểm tra request và thậm chí từ chối nó hoàn toàn.
 
 > {tip} Tất cả các middleware đều được resolve thông qua [service container](/docs/{{version}}/container), vì vậy bạn có thể khai báo bất kỳ phụ thuộc nào mà bạn cần trong phương thức khởi tạo của middleware.
 
-#### Trước và Sau khi Middleware
+<a name="before-after-middleware"></a>
+<a name="middleware-and-responses"></a>
+#### Middleware và Responses
 
-Việc một middleware chạy trước hay sau một request phụ thuộc vào chính middleware đó. Ví dụ: middleware ở dưới đây sẽ thực hiện một số tác vụ **trước** khi request được ứng dụng xử lý:
+Tất nhiên, middleware có thể thực hiện các tác vụ trước hoặc sau khi truyền request vào sâu hơn trong ứng dụng. Ví dụ: middleware ở dưới đây sẽ thực hiện một số tác vụ **trước** khi request được ứng dụng xử lý:
 
     <?php
 
@@ -110,9 +110,9 @@ Nếu bạn muốn một middleware chạy trong mỗi request HTTP đến appli
 <a name="assigning-middleware-to-routes"></a>
 ### Gán Middleware với Routes
 
-Nếu bạn muốn gán một middleware cho một route cụ thể, trước tiên bạn nên gán middleware đó với một khoá trong file `app/Http/Kernel.php` của bạn. Mặc định, thuộc tính `$routeMiddleware` của class này sẽ chứa sẵn một danh sách middleware đi kèm với Laravel. Để thêm middleware của bạn, hãy thêm nó vào danh sách này và gán cho nó một khóa mà bạn chọn:
+Nếu bạn muốn gán một middleware cho một route cụ thể, trước tiên bạn nên gán middleware đó với một khoá trong file `app/Http/Kernel.php` trong application của bạn. Mặc định, thuộc tính `$routeMiddleware` của class này sẽ chứa sẵn một danh sách middleware đi kèm với Laravel. Bạn có thể thêm middleware của bạn vào danh sách này và gán cho nó một khóa mà bạn chọn:
 
-    // Within App\Http\Kernel Class...
+    // Within App\Http\Kernel class...
 
     protected $routeMiddleware = [
         'auth' => \App\Http\Middleware\Authenticate::class,
@@ -128,36 +128,49 @@ Nếu bạn muốn gán một middleware cho một route cụ thể, trước ti
 
 Khi middleware đã được định nghĩa trong HTTP kernel, bạn có thể sử dụng phương thức `middleware` để gán middleware đó cho một route:
 
-    Route::get('admin/profile', function () {
+    Route::get('/profile', function () {
         //
     })->middleware('auth');
 
-Bạn cũng có thể gán nhiều middleware cho một route:
+Bạn có thể gán nhiều middleware cho một route bằng cách truyền một mảng gồm các tên của middleware cho phương thức `middleware`:
 
     Route::get('/', function () {
         //
-    })->middleware('first', 'second');
+    })->middleware(['first', 'second']);
 
 Khi gán middleware, bạn cũng có thể truyền tên class của middleware:
 
-    use App\Http\Middleware\CheckAge;
+    use App\Http\Middleware\EnsureTokenIsValid;
 
-    Route::get('admin/profile', function () {
+    Route::get('/profile', function () {
         //
-    })->middleware(CheckAge::class);
+    })->middleware(EnsureTokenIsValid::class);
+
+<a name="excluding-middleware"></a>
+#### Excluding Middleware
 
 Khi gán một middleware cho một nhóm các route, đôi khi bạn có thể cần ngăn middleware này được chạy cho một route cụ thể trong nhóm. Bạn có thể thực hiện việc này bằng phương thức `withoutMiddleware`:
 
-    use App\Http\Middleware\CheckAge;
+    use App\Http\Middleware\EnsureTokenIsValid;
 
-    Route::middleware([CheckAge::class])->group(function () {
+    Route::middleware([EnsureTokenIsValid::class])->group(function () {
         Route::get('/', function () {
             //
         });
 
-        Route::get('admin/profile', function () {
+        Route::get('/profile', function () {
             //
-        })->withoutMiddleware([CheckAge::class]);
+        })->withoutMiddleware([EnsureTokenIsValid::class]);
+    });
+
+You may also exclude a given set of middleware from an entire [group](/docs/{{version}}/routing#route-groups) of route definitions:
+
+    use App\Http\Middleware\EnsureTokenIsValid;
+
+    Route::withoutMiddleware([EnsureTokenIsValid::class])->group(function () {
+        Route::get('/profile', function () {
+            //
+        });
     });
 
 Phương thức `withoutMiddleware` sẽ chỉ có thể xóa middleware route và không áp dụng được cho [global middleware](#global-middleware).
@@ -165,9 +178,9 @@ Phương thức `withoutMiddleware` sẽ chỉ có thể xóa middleware route v
 <a name="middleware-groups"></a>
 ### Middleware Groups
 
-Thỉnh thoảng bạn cũng có thể muốn group nhiều middleware dưới một tên để dễ dàng gán chúng với route. Bạn có thể làm diều này bằng cách sử dụng thuộc tính `$middlewareGroups` trong class HTTP kernel của bạn.
+Thỉnh thoảng bạn cũng có thể muốn group nhiều middleware dưới một tên để dễ dàng gán chúng vào route. Bạn có thể hoàn thành điều này bằng cách sử dụng thuộc tính `$middlewareGroups` trong class HTTP kernel của bạn.
 
-Mặc định, Laravel đã có sẵn các group middleware `web` và `api`, chứa các middleware phổ biến mà bạn có thể muốn áp dụng cho các route API hoặc web UI của bạn:
+Mặc định, Laravel đã có sẵn các group middleware `web` và `api`, chứa các middleware phổ biến mà bạn có thể muốn áp dụng cho các web hoặc route API của bạn. Hãy nhớ rằng, các group middleware này được service provider `App\Providers\RouteServiceProvider` trong ứng dụng của bạn tự động áp dụng cho các route có trong các file route `web` và `api` của bạn:
 
     /**
      * The application's route middleware groups.
@@ -179,14 +192,15 @@ Mặc định, Laravel đã có sẵn các group middleware `web` và `api`, ch�
             \App\Http\Middleware\EncryptCookies::class,
             \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
             \Illuminate\Session\Middleware\StartSession::class,
+            // \Illuminate\Session\Middleware\AuthenticateSession::class,
             \Illuminate\View\Middleware\ShareErrorsFromSession::class,
             \App\Http\Middleware\VerifyCsrfToken::class,
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
         ],
 
         'api' => [
-            'throttle:60,1',
-            'auth:api',
+            'throttle:api',
+            \Illuminate\Routing\Middleware\SubstituteBindings::class,
         ],
     ];
 
@@ -196,33 +210,31 @@ Các group middleware có thể được gán cho một route hoặc một contr
         //
     })->middleware('web');
 
-    Route::group(['middleware' => ['web']], function () {
+    Route::middleware(['web'])->group(function () {
         //
     });
 
-    Route::middleware(['web', 'subscribed'])->group(function () {
-        //
-    });
-
-> {tip} Mặc định, group middleware `web` sẽ được tự động gán cho file `routes/web.php` bởi `RouteServiceProvider`.
+> {tip} Mặc định, group middleware `web` và `api` sẽ được tự động áp dụng cho các file `routes/web.php` và `routes/api.php` tương ứng trong ứng dụng của bạn bởi `App\Providers\RouteServiceProvider`.
 
 <a name="sorting-middleware"></a>
 ### Sắp xếp Middleware
 
-Hiếm khi, bạn cần middleware của bạn thực thi theo một thứ tự cụ thể nhưng lại không thể sắp xếp thứ tự của chúng khi chúng được chỉ định cho route. Trong trường hợp này, bạn có thể chỉ định mức độ ưu tiên middleware của bạn bằng cách sử dụng thuộc tính `$middlewarePriority` trong file `app/Http/Kernel.php` của bạn:
+Hiếm khi, bạn cần middleware của bạn thực thi theo một thứ tự cụ thể nhưng lại không thể sắp xếp thứ tự của chúng khi chúng được chỉ định cho route. Trong trường hợp này, bạn có thể chỉ định mức độ ưu tiên middleware của bạn bằng cách sử dụng thuộc tính `$middlewarePriority` trong file `app/Http/Kernel.php` của bạn. Mặc định, thuộc tính này có thể không tồn tại trong HTTP kernel. Nếu nó không tồn tại, bạn có thể copy định nghĩa của nó ở bên dưới:
 
     /**
      * The priority-sorted list of middleware.
      *
      * This forces non-global middleware to always be in the given order.
      *
-     * @var array
+     * @var string[]
      */
     protected $middlewarePriority = [
+        \Illuminate\Cookie\Middleware\EncryptCookies::class,
         \Illuminate\Session\Middleware\StartSession::class,
         \Illuminate\View\Middleware\ShareErrorsFromSession::class,
         \Illuminate\Contracts\Auth\Middleware\AuthenticatesRequests::class,
         \Illuminate\Routing\Middleware\ThrottleRequests::class,
+        \Illuminate\Routing\Middleware\ThrottleRequestsWithRedis::class,
         \Illuminate\Session\Middleware\AuthenticateSession::class,
         \Illuminate\Routing\Middleware\SubstituteBindings::class,
         \Illuminate\Auth\Middleware\Authorize::class,
@@ -231,7 +243,7 @@ Hiếm khi, bạn cần middleware của bạn thực thi theo một thứ tự 
 <a name="middleware-parameters"></a>
 ## Middleware Parameters
 
-Middleware cũng có thể nhận vào thêm các tham số bổ sung. Ví dụ: nếu ứng dụng của bạn cần xác minh rằng người dùng đang được xác thực phải có một "role" nhất định thì mới thực hiện được một hành động, vì vậy bạn có thể tạo một middleware `CheckRole` nhận thêm tên role làm tham số bổ sung.
+Middleware cũng có thể nhận vào thêm các tham số bổ sung. Ví dụ: nếu ứng dụng của bạn cần xác minh rằng người dùng đang được xác thực phải có một "role" nhất định thì mới thực hiện được một hành động, vì vậy bạn có thể tạo một middleware `EnsureUserHasRole` nhận thêm tên role làm tham số bổ sung.
 
 Các tham số middleware bổ sung sẽ được truyền đến middleware sau tham số `$next`:
 
@@ -241,7 +253,7 @@ Các tham số middleware bổ sung sẽ được truyền đến middleware sau
 
     use Closure;
 
-    class CheckRole
+    class EnsureUserHasRole
     {
         /**
          * Handle the incoming request.
@@ -264,7 +276,7 @@ Các tham số middleware bổ sung sẽ được truyền đến middleware sau
 
 Các tham số middleware có thể được định nghĩa khi tạo route bằng cách tách tên của middleware và tham số với một dấu `:`. Nếu có nhiều tham số thì nên được phân cách bằng dấu phẩy:
 
-    Route::put('post/{id}', function ($id) {
+    Route::put('/post/{id}', function ($id) {
         //
     })->middleware('role:editor');
 
@@ -279,24 +291,38 @@ Các tham số middleware có thể được định nghĩa khi tạo route bằ
 
     use Closure;
 
-    class StartSession
+    class TerminatingMiddleware
     {
+        /**
+         * Handle an incoming request.
+         *
+         * @param  \Illuminate\Http\Request  $request
+         * @param  \Closure  $next
+         * @return mixed
+         */
         public function handle($request, Closure $next)
         {
             return $next($request);
         }
 
+        /**
+         * Handle tasks after the response has been sent to the browser.
+         *
+         * @param  \Illuminate\Http\Request  $request
+         * @param  \Illuminate\Http\Response  $response
+         * @return void
+         */
         public function terminate($request, $response)
         {
-            // Store the session data...
+            // ...
         }
     }
 
 Phương thức `terminate` sẽ nhận vào cả request và response. Khi bạn đã định nghĩa một middleware terminate, bạn nên thêm nó vào danh sách route hoặc global middleware trong file `app/Http/Kernel.php`.
 
-Khi gọi phương thức `terminate` trong middleware của bạn, Laravel sẽ resolve một instance mới của middleware từ [service container](/docs/{{version}}/container). Nếu bạn muốn sử dụng lại cùng một instance middleware khi các phương thức `handle` và `terminate` được gọi, hãy đăng ký middleware với container bằng phương thức `singleton` của container. Thông thường, điều này nên được thực hiện trong phương thức `register` của `AppServiceProvider.php` của bạn:
+Khi gọi phương thức `terminate` trong middleware của bạn, Laravel sẽ resolve một instance mới của middleware từ [service container](/docs/{{version}}/container). Nếu bạn muốn sử dụng lại cùng một instance middleware khi các phương thức `handle` và `terminate` được gọi, hãy đăng ký middleware với container bằng phương thức `singleton` của container. Thông thường, điều này nên được thực hiện trong phương thức `register` của `AppServiceProvider` của bạn:
 
-    use App\Http\Middleware\TerminableMiddleware;
+    use App\Http\Middleware\TerminatingMiddleware;
 
     /**
      * Register any application services.
@@ -305,5 +331,5 @@ Khi gọi phương thức `terminate` trong middleware của bạn, Laravel sẽ
      */
     public function register()
     {
-        $this->app->singleton(TerminableMiddleware::class);
+        $this->app->singleton(TerminatingMiddleware::class);
     }

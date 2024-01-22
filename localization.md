@@ -13,7 +13,9 @@
 <a name="introduction"></a>
 ## Giới thiệu
 
-Các tính năng localization của Laravel cung cấp một cách thuận tiện để lấy ra các chuỗi bằng nhiều ngôn ngữ khác nhau, cho phép bạn dễ dàng hỗ trợ nhiều ngôn ngữ trong application của bạn. Các chuỗi ngôn ngữ được lưu trữ trong các file ở thư mục `resources/lang`. Trong thư mục này cần có thư mục con cho mỗi ngôn ngữ được application của bạn hỗ trợ:
+Các tính năng localization của Laravel cung cấp một cách thuận tiện để lấy ra các chuỗi bằng nhiều ngôn ngữ khác nhau, cho phép bạn dễ dàng hỗ trợ nhiều ngôn ngữ trong application của bạn.
+
+Laravel cung cấp hai cách để quản lý chuỗi được dịch. Đầu tiên, các chuỗi ngôn ngữ có thể được lưu trữ trong các file ở thư mục `resources/lang`. Trong thư mục này, có thể có các thư mục con cho mỗi ngôn ngữ được application của bạn hỗ trợ. Đây là cách tiếp cận mà Laravel sử dụng để quản lý các chuỗi dịch cho các tính năng được tích hợp sẵn của Laravel, chẳng hạn như thông báo lỗi validation:
 
     /resources
         /lang
@@ -22,22 +24,25 @@ Các tính năng localization của Laravel cung cấp một cách thuận tiệ
             /es
                 messages.php
 
-Tất cả các file ngôn ngữ đều trả về một mảng của các chuỗi đã được đặt key. Ví dụ:
+Hoặc, các chuỗi dịch có thể được định nghĩa trong các file JSON được lưu trong thư mục `resources/lang`. Khi thực hiện cách này, mỗi ngôn ngữ được ứng dụng của bạn hỗ trợ sẽ có một file JSON tương ứng trong thư mục này. Cách tiếp cận này được khuyến cáo cho các ứng dụng có số lượng lớn chuỗi cần phải dịch:
 
-    <?php
+    /resources
+        /lang
+            en.json
+            es.json
 
-    return [
-        'welcome' => 'Welcome to our application',
-    ];
-
-> {note} Đối với các ngôn ngữ khác nhau theo lãnh thổ, bạn nên set tên cho các thư mục ngôn ngữ đó theo chuẩn ISO 15897. Ví dụ: "en_GB" nên được sử dụng cho tiếng Anh-Anh thay vì "en-gb".
+Chúng ta sẽ thảo luận về từng cách quản lý chuỗi dịch này trong tài liệu dưới.
 
 <a name="configuring-the-locale"></a>
 ### Cấu hình ngôn ngữ
 
-Ngôn ngữ mặc định cho application của bạn được lưu trữ trong file cấu hình `config/app.php`. Bạn có thể sửa đổi giá trị này cho phù hợp với nhu cầu application của bạn. Bạn cũng có thể thay đổi ngôn ngữ hoạt động trong lúc chạy bằng cách sử dụng phương thức `setLocale` trên facade `App`:
+Ngôn ngữ mặc định cho application của bạn được lưu trữ trong tuỳ chọn cấu hình `locale` của file cấu hình `config/app.php`. Bạn hãy thoải mái sửa giá trị này cho phù hợp với nhu cầu application của bạn.
 
-    Route::get('welcome/{locale}', function ($locale) {
+Bạn có thể sửa ngôn ngữ mặc định cho một HTTP request khi đang chạy bằng cách sử dụng phương thức `setLocale` được cung cấp bởi facade `App`:
+
+    use Illuminate\Support\Facades\App;
+
+    Route::get('/greeting/{locale}', function ($locale) {
         if (! in_array($locale, ['en', 'es', 'fr'])) {
             abort(400);
         }
@@ -51,11 +56,14 @@ Bạn có thể cấu hình "fallback language", ngôn ngữ này sẽ được 
 
     'fallback_locale' => 'en',
 
+<a name="determining-the-current-locale"></a>
 #### Xác định ngôn ngữ hiện tại
 
-Bạn có thể sử dụng các phương thức `getLocale` và `isLocale` trên facade `App` để xác định ngôn ngữ hiện tại hoặc kiểm tra xem ngôn ngữ có phải là một giá trị nào đó hay không:
+Bạn có thể sử dụng các phương thức `currentLocale` và `isLocale` trên facade `App` để xác định ngôn ngữ hiện tại hoặc kiểm tra xem ngôn ngữ có phải là một giá trị nào đó hay không:
 
-    $locale = App::getLocale();
+    use Illuminate\Support\Facades\App;
+
+    $locale = App::currentLocale();
 
     if (App::isLocale('en')) {
         //
@@ -67,7 +75,7 @@ Bạn có thể sử dụng các phương thức `getLocale` và `isLocale` trê
 <a name="using-short-keys"></a>
 ### Sử dụng short key
 
-Thông thường, các chuỗi translation được lưu trữ trong các file trong thư mục `resources/lang`. Trong thư mục này cần có thư mục con cho mỗi ngôn ngữ được application hỗ trợ:
+Thông thường, các chuỗi dịch được lưu trữ trong các file trong thư mục `resources/lang`. Trong thư mục này, cần có thư mục con cho mỗi ngôn ngữ được application của bạn hỗ trợ. Đây là cách tiếp cận mà Laravel sử dụng để quản lý các chuỗi dịch cho các tính năng được tích hợp sẵn của Laravel, chẳng hạn như thông báo lỗi validation:
 
     /resources
         /lang
@@ -83,38 +91,46 @@ Tất cả các file ngôn ngữ đều trả về một mảng của các chu�
     // resources/lang/en/messages.php
 
     return [
-        'welcome' => 'Welcome to our application',
+        'welcome' => 'Welcome to our application!',
     ];
+
+> {note} Đối với các ngôn ngữ khác nhau theo lãnh thổ, bạn nên set tên thư mục của ngôn ngữ theo tiêu chuẩn ISO 15897. Ví dụ: "en_GB" nên được sử dụng cho tiếng Anh của nước Anh thay vì "en-gb".
 
 <a name="using-translation-strings-as-keys"></a>
 ### Sử dụng chuỗi translation như key
 
-Đối với các application có yêu cầu dịch thuật nặng, việc xác định mọi chuỗi bằng "short key" có thể nhanh chóng gây nhầm lẫn khi tham chiếu chúng trong các view của bạn. Vì lý do này, Laravel cũng cung cấp một hỗ trợ để xác định chuỗi translation bằng cách sử dụng bản translation "default" của chuỗi làm khóa.
+Đối với các application có một số lượng lớn các chuỗi cần phải dịch, việc định nghĩa mọi chuỗi bằng "short key" có thể nhanh chóng gây nhầm lẫn khi tham chiếu các key đó vào trong các file view của bạn và thật khó khăn khi liên tục phải tạo ra các khóa cho mọi chuỗi được ứng dụng của bạn hỗ trợ.
 
-Các file translation sử dụng chuỗi translation làm khóa được lưu trữ dưới dạng file JSON trong thư mục `resources/lang`. Ví dụ: nếu ứng dụng của bạn có bản translation tiếng Tây Ban Nha, bạn nên tạo file `resources/lang/es.json`:
+Vì lý do này, Laravel cũng cung cấp hỗ trợ cho việc định nghĩa chuỗi dịch bằng cách sử dụng bản dịch "mặc định" của chuỗi làm khóa. Các file translation sử dụng chuỗi translation làm khóa được lưu dưới dạng file JSON trong thư mục `resources/lang`. Ví dụ: nếu ứng dụng của bạn có bản translation tiếng Tây Ban Nha, bạn nên tạo file `resources/lang/es.json`:
 
-    {
-        "I love programming.": "Me encanta programar."
-    }
+```js
+{
+    "I love programming.": "Me encanta programar."
+}
+```
+
+#### Key / File Conflicts
+
+Bạn không nên định nghĩa các khóa chuỗi dịch xung đột với các tên file dịch khác. Ví dụ: dịch `__('Action')` cho ngôn ngữ "NL" trong khi file `nl/action.php` tồn tại nhưng file `nl.json` không tồn tại sẽ dẫn đến việc translator sẽ hiểu nhầm và trả về nội dung của `nl/action.php`.
 
 <a name="retrieving-translation-strings"></a>
 ## Lấy chuỗi translation
 
-Bạn có thể lấy các chuỗi đã được dịch từ các file ngôn ngữ bằng cách sử dụng hàm helper `__`. Phương thức `__` chấp nhận tên file và khóa của chuỗi đã dịch làm tham số đầu tiên của nó. Ví dụ: hãy lấy chuỗi đã được  đượcdịch `welcome` từ file ngôn ngữ `resources/lang/messages.php`:
+Bạn có thể lấy chuỗi dịch từ các file ngôn ngữ của bạn bằng hàm helper `__`. Nếu bạn đang sử dụng "short keys" để định nghĩa các chuỗi dịch của bạn, bạn nên truyền file chứa khóa và chính khóa của nó cho hàm `__` bằng cú pháp "chấm". Ví dụ: có thể lấy chuỗi đã được dịch `welcome` từ file ngôn ngữ `resources/lang/en/messages.php`:
 
     echo __('messages.welcome');
 
+Nếu chuỗi dịch được chỉ định không tồn tại, hàm `__` sẽ trả về khóa của chuỗi dịch. Vì vậy, theo ví dụ trên, hàm `__` sẽ trả về `messages.welcome` nếu chuỗi dịch đó không tồn tại.
+
+Nếu bạn đang sử dụng [chuỗi dịch mặc định làm khóa dịch](#using-translation-strings-as-keys), bạn nên truyền bản dịch mặc định của chuỗi đó cho hàm `__`;
+
     echo __('I love programming.');
 
-Nếu bạn đang sử dụng [Blade templating engine](/docs/{{version}}/blade), bạn có thể sử dụng cú pháp `{{ }}` để echo một chuỗi đã được dịch hoặc sử dụng lệnh `@lang`:
+Một lần nữa, nếu chuỗi dịch đó không tồn tại, hàm `__` sẽ trả về khóa của chuỗi dịch và nó đã được cung cấp.
+
+Nếu đang sử dụng [Blade templating engine](/docs/{{version}}/blade), bạn có thể sử dụng cú pháp echo `{{ }}` để hiển thị chuỗi dịch:
 
     {{ __('messages.welcome') }}
-
-    @lang('messages.welcome')
-
-Nếu chuỗi cần dịch được chỉ định không tồn tại, hàm `__` sẽ trả về khóa của chuỗi cần dịch. Vì vậy, nếu sử dụng ví dụ trên, thì hàm `__` sẽ trả về `messages.welcome` nếu chuỗi cần dịch không tồn tại.
-
-> {note} Lệnh `@lang` không loại bỏ các ký tự đặc biệt ra khỏi output. Bạn cần phải **chịu trách nhiệm** về việc loại bỏ các ký tự đặc biệt ra khỏi output của bạn khi sử dụng lệnh này.
 
 <a name="replacing-parameters-in-translation-strings"></a>
 ### Thay thế parameter trong chuỗi translation
@@ -123,7 +139,7 @@ Nếu bạn muốn, bạn có thể định nghĩa một thuộc tính thay th�
 
     'welcome' => 'Welcome, :name',
 
-Để thay đổi các thuộc tính thay thế khi lấy chuỗi translation, hãy truyền một mảng các thay thế làm tham số thứ hai cho hàm `__`:
+Để thay đổi các thuộc tính thay thế khi lấy chuỗi translation, bạn có thể truyền một mảng các thay thế làm tham số thứ hai cho hàm `__`:
 
     echo __('messages.welcome', ['name' => 'dayle']);
 
@@ -135,11 +151,19 @@ Nếu biến thay của bạn đều là chữ in hoa hoặc chỉ viết hoa ch
 <a name="pluralization"></a>
 ### Số nhiều
 
-Số nhiều là một vấn đề phức tạp, vì các ngôn ngữ khác nhau có nhiều quy tắc phức tạp cho số nhiều. Bằng cách sử dụng ký tự "|", bạn có thể phân biệt các dạng số ít và số nhiều của chuỗi:
+Số nhiều là một vấn đề phức tạp, vì các ngôn ngữ khác nhau lại có nhiều quy tắc phức tạp cho số nhiều; Tuy nhiên, Laravel có thể giúp bạn dịch các chuỗi khác nhau dựa trên các quy tắc số nhiều mà bạn đã định nghĩa. Sử dụng một ký tự "|", bạn có thể phân biệt các dạng số ít và số nhiều của chuỗi:
 
     'apples' => 'There is one apple|There are many apples',
 
-Bạn thậm chí có thể tạo các quy tắc số nhiều phức tạp hơn, bằng cách chỉ định các chuỗi translation cho nhiều đoạn trong dãy số:
+Tất nhiên, số nhiều cũng được hỗ trợ khi sử dụng [chuỗi dịch làm khóa](#using-translation-strings-as-keys):
+
+```js
+{
+    "There is one apple|There are many apples": "Hay una manzana|Hay muchas manzanas"
+}
+```
+
+Bạn thậm chí có thể tạo ra các quy tắc số nhiều phức tạp hơn, bằng cách chỉ định các chuỗi translation cho nhiều phạm vi giá trị khác nhau:
 
     'apples' => '{0} There are none|[1,19] There are some|[20,*] There are many',
 
@@ -153,7 +177,7 @@ Bạn cũng có thể định nghĩa các thuộc tính thay thế trong các ch
 
     echo trans_choice('time.minutes_ago', 5, ['value' => 5]);
 
-Nếu bạn muốn hiển thị giá trị integer đã được truyền vào hàm `trans_choice`, bạn có thể sử dụng thuộc tính thay thế `:count`:
+Nếu bạn muốn hiển thị giá trị integer đã được truyền vào hàm `trans_choice`, bạn có thể sử dụng thuộc tính thay thế `:count` có sẵn:
 
     'apples' => '{0} There are none|{1} There is one|[2,*] There are :count',
 

@@ -21,6 +21,7 @@
     - [Thư mục `Jobs`](#the-jobs-directory)
     - [Thư mục `Listeners`](#the-listeners-directory)
     - [Thư mục `Mail`](#the-mail-directory)
+    - [Thư mục `Models`](#the-models-directory)
     - [Thư mục `Notifications`](#the-notifications-directory)
     - [Thư mục `Policies`](#the-policies-directory)
     - [Thư mục `Providers`](#the-providers-directory)
@@ -30,12 +31,6 @@
 ## Giới thiệu
 
 Cấu trúc thư mục mặc định của Laravel nhằm cung cấp một khởi đầu tốt cho tất cả các application lớn và nhỏ. Nhưng bạn có thể tự tổ chức theo cách mà bạn muốn. Laravel sẽ gần như không áp đặt một hạn chế nào về mặt vị trí cho bất cứ class nào, miễn là Composer có thể load class đó.
-
-#### Thư mục Model sẽ ở đâu?
-
-Khi mới bắt đầu với Laravel, nhiều người phát triển cảm thấy bị thiếu thư mục `models`. Tuy nhiên, việc thiếu đó là chủ đích của chúng tôi. Chúng tôi thấy từ "models" rất là mơ hồ, vì nó có nhiều ý nghĩa khác nhau tuỳ theo nhà phát triển. Một số nhà phát triển nghĩ rằng "model" sẽ là tổng hợp tất cả business logic, nhưng một số khác lại cho rằng "model" là một lớp tương tác với database.
-
-Vì lý do đó, chúng tôi đã chọn nơi chứa mặc định của Eloquent model là ở trong thư mục `app`, và cho phép nhà phát triển lưu lại nơi chứa nếu họ muốn.
 
 <a name="the-root-directory"></a>
 ## Thư mục gốc
@@ -48,7 +43,7 @@ Thư mục `app` là nơi chứa phần core code của application. Chúng tôi
 <a name="the-bootstrap-directory"></a>
 #### Thư mục Bootstrap
 
-Thư mục `bootstrap` sẽ chứa file `app.php` dành cho khởi động framework. Thư mục này cũng chứa thư mục `cache` dành cho framework, tạo ra các file để tối ưu hoá tốc độ cho route và service.
+Thư mục `bootstrap` sẽ chứa file `app.php` dành cho khởi động framework. Thư mục này cũng chứa thư mục `cache` dành cho framework, tạo ra các file để tối ưu tốc độ cho route và service. Bạn thường không cần phải sửa bất kỳ file nào trong thư mục này.
 
 <a name="the-config-directory"></a>
 #### Thư mục Config
@@ -68,32 +63,32 @@ Thư mục `public` chứa file `index.php` là điểm khởi đầu vào cho m
 <a name="the-resources-directory"></a>
 #### Thư mục Resources
 
-Thư mục `resources` chứa file view cũng như file raw, và các file chưa được biên dịch như là LESS, SASS, hoặc JavaScript. Thư mục này cũng chứa những file language.
+Thư mục `resources` chứa file [view](/docs/{{version}}/views) cũng như file raw, và các file chưa được biên dịch như là CSS hoặc JavaScript. Thư mục này cũng chứa những file language.
 
 <a name="the-routes-directory"></a>
 #### Thư mục Routes
 
-Thư mục `routes` chứa tất cả các file định nghĩa route cho application của bạn. Mặc đinh, sẽ bao gồm những file sau đây: `web.php`, `api.php`, `console.php` và `channels.php`.
+Thư mục `routes` chứa tất cả các file định nghĩa route cho application của bạn. Mặc đinh, sẽ bao gồm những file sau đây: `web.php`, `api.php`, `console.php`, và `channels.php`.
 
-File `web.php` sẽ chứa những route mà được load bởi file `RouteServiceProvider` và lưu trữ những route đó vào trong một group middleware có tên là `web`, middleware này cung cấp session, bảo vệ route trước các cuộc tấn công CSRF và mã hoá cookie. Nếu application của bạn chỉ dùng session và không dùng RESTful API, thì tất cả route của bạn có thế được định nghĩa trong file `web.php`.
+File `web.php` sẽ chứa những route mà được load bởi file `RouteServiceProvider` và lưu trữ những route đó vào trong một group middleware có tên là `web`, middleware này cung cấp session, bảo vệ route trước các cuộc tấn công CSRF và mã hoá cookie. Nếu application của bạn chỉ dùng session và không dùng RESTful API thì có khả năng là tất cả route của bạn có thế được định nghĩa trong file `web.php` duy nhất.
 
-File `api.php` chứa những route mà được load bởi file `RouteServiceProvider` và lưu trữ những route đó vào trong một group middleware có tên là `api`, middleware này cung cấp giới hạn chạy cho những route đó. Những route này sẽ được chủ đích là không dùng session, vì vậy request đến application của bạn thông qua những route này sẽ được authenticated thông qua token và không có quyền truy cập vào session.
+File `api.php` chứa những route mà được load bởi file `RouteServiceProvider` và lưu trữ những route đó vào trong một group middleware có tên là `api`. Những route này sẽ được chủ đích là không dùng session, vì vậy request đến application của bạn thông qua những route này sẽ được authenticated [thông qua token](/docs/{{version}}/sanctum) và không có quyền truy cập vào session.
 
-File `console.php` là nơi bạn có thể định nghĩa tất cả các [Closure](https://www.php.net/manual/en/functions.anonymous.php) dựa trên các lệnh chạy ở console. Mỗi Closure sẽ tương ứng với một câu lệnh, nên bạn sẽ dễ dàng tiếp cận được với các phương thức input và output của mỗi câu lệnh. File này sẽ không định nghĩa các Http route của application, mà nó chỉ định nghĩa các console route tới application của bạn.
+File `console.php` là nơi bạn có thể định nghĩa tất cả các [closure](https://www.php.net/manual/en/functions.anonymous.php) dựa trên các lệnh chạy ở console. Mỗi closure sẽ tương ứng với một câu lệnh, nên bạn sẽ dễ dàng tiếp cận được với các phương thức input và output của mỗi câu lệnh. File này sẽ không định nghĩa các Http route của application, mà nó chỉ định nghĩa các console route tới application của bạn.
 
-File `channels.php` sẽ là nơi mà bạn có thể đăng ký các tất cả các event broadcasting channel mà application bạn hỗ trợ.
+File `channels.php` sẽ là nơi mà bạn có thể đăng ký các tất cả các [event broadcasting](/docs/{{version}}/broadcasting) channel mà application bạn hỗ trợ.
 
 <a name="the-storage-directory"></a>
 #### Thư mục Storage
 
-Thư mục `storage` sẽ chứa những file Blade đã được biên dịch, file session, file cache, và các file khác được tạo ra bởi framework. Thư mục này sẽ chứa các thư mục con là: `app`, `framework`, và `logs`. Thư mục `app` có thể dùng để lưu tất cả các file được tạo ra bởi application của bạn. Thư mục `framework` sẽ dùng để lưu các file được tạo ra bởi framework và cache, Cuối cùng là thư mục `logs`, được dùng để chứa các file log của application.
+Thư mục `storage` sẽ chứa những file log, Blade đã được biên dịch, file session, file cache, và các file khác được tạo ra bởi framework. Thư mục này sẽ chứa các thư mục con là: `app`, `framework`, và `logs`. Thư mục `app` có thể dùng để lưu tất cả các file được tạo ra bởi application của bạn. Thư mục `framework` sẽ dùng để lưu các file được tạo ra bởi framework và cache, Cuối cùng là thư mục `logs`, được dùng để chứa các file log của application.
 
-Thư mục `storage/app/public` có thể được dùng để lưu trữ các file mà user tạo như là: avatars, những loại mà được phép public. Bạn cũng nên tạo một link ảo `public/storage` để trỏ vào thư mục này. Bạn có thể tạo link ảo đó bằng câu lệnh sau: `php artisan storage:link`.
+Thư mục `storage/app/public` có thể được dùng để lưu trữ các file mà user tạo như là: avatars, những loại mà được phép public. Bạn cũng nên tạo một link ảo `public/storage` để trỏ vào thư mục này. Bạn có thể tạo link ảo đó bằng câu lệnh Artisan sau: `php artisan storage:link`.
 
 <a name="the-tests-directory"></a>
 #### Thư mục Tests
 
-Thư mục `tests` sẽ chứa các file test tự động. Mặc định, một ví dụ [PHPUnit](https://phpunit.de/) test mẫu sẽ được khởi tạo sẵn trong project. Mỗi class test nên lưu lại với hậu tố là `Test`. Bạn có thể chạy test của bạn bằng câu lệnh `phpunit` hoặc `php vendor/bin/phpunit`.
+Thư mục `tests` sẽ chứa các file test tự động. Mặc định, một ví dụ [PHPUnit](https://phpunit.de/) unit test và một bài test chức năng đã được cung cấp sẵn trong project. Mỗi class test nên lưu lại với hậu tố là `Test`. Bạn có thể chạy test của bạn bằng câu lệnh `phpunit` hoặc `php vendor/bin/phpunit`. Hoặc, nếu bạn muốn hiển thị chi tiết hơn và đẹp mắt hơn về kết quả test của bạn, bạn có thể chạy test của bạn bằng lệnh Artisan `php artisan test`.
 
 <a name="the-vendor-directory"></a>
 #### Thư mục Vendor
@@ -149,17 +144,22 @@ Mặc định, thư mục này không tồn tại, nhưng nó sẽ được tạ
 <a name="the-mail-directory"></a>
 #### Thư mục Mail
 
-Mặc định, thư mục này không tồn tại, nhưng nó sẽ được tạo ra cho bạn, nếu bạn chạy lệnh Artisan `make:mail`. Thư mục `Mail` chứa tất cả các class cho việc tạo email được gửi đi bởi application của bạn. Đối tượng Mail cho phép bạn gói gọn tất cả logic của việc xây dựng email vào trong một class đơn giản, có thể được gửi bằng phương thức `Mail::send`.
+Mặc định, thư mục này không tồn tại, nhưng nó sẽ được tạo ra cho bạn, nếu bạn chạy lệnh Artisan `make:mail`. Thư mục `Mail` chứa tất cả các [class cho việc tạo email](/docs/{{version}}/mail) được gửi đi bởi application của bạn. Đối tượng Mail cho phép bạn gói gọn tất cả logic của việc xây dựng email vào trong một class đơn giản, có thể được gửi bằng phương thức `Mail::send`.
+
+<a name="the-models-directory"></a>
+#### Thư mục Models
+
+Thư mục `Models` sẽ chứa tất cả [các class model Eloquent](/docs/{{version}}/eloquent) của bạn. Eloquent ORM đi kèm với Laravel đã cung cấp một implement ActiveRecord đơn giản, đẹp mắt để làm việc với cơ sở dữ liệu của bạn. Mỗi bảng cơ sở dữ liệu có một "Model" tương ứng để sử dụng để tương tác với bảng đó. Model cho phép bạn truy vấn vào dữ liệu trong bảng của bạn, cũng như chèn thêm các bản ghi mới vào bảng.
 
 <a name="the-notifications-directory"></a>
 #### Thư mục Notifications
 
-Mặc định, thư mục này không tồn tại, nhưng nó sẽ được tạo ra cho bạn, nếu bạn chạy lệnh Artisan `make:notification`. Thư mục `Notifications` chứa tất cả các thông báo "transactional" mà được gửi bởi application của bạn, như là một thông báo về một sự kiện xảy ra trong application của bạn. Tính năng thông báo của Laravel sẽ gửi thông báo đi qua nhiều driver khác nhau như email, Slack, SMS hoặc được lưu trữ trong cơ sở dữ liệu.
+Mặc định, thư mục này không tồn tại, nhưng nó sẽ được tạo ra cho bạn, nếu bạn chạy lệnh Artisan `make:notification`. Thư mục `Notifications` chứa tất cả các [thông báo](/docs/{{version}}/notifications) "transactional" mà được gửi bởi application của bạn, như là một thông báo về một sự kiện xảy ra trong application của bạn. Tính năng thông báo của Laravel sẽ gửi thông báo đi qua nhiều driver khác nhau như email, Slack, SMS hoặc được lưu trữ trong cơ sở dữ liệu.
 
 <a name="the-policies-directory"></a>
 #### Thư mục Policies
 
-Mặc định, thư mục này không tồn tại, nhưng nó sẽ được tạo ra cho bạn, nếu bạn chạy lệnh Artisan `make:policy`. Thư mục `Policies` chứa các class về quyền trong application của bạn. Policies sẽ dùng để xác định xem một user có thể thực hiện một hành động nhất định đối với một resource hay không. Để có thêm thông tin, hãy đọc thêm ở [authorization documentation](/docs/{{version}}/authorization).
+Mặc định, thư mục này không tồn tại, nhưng nó sẽ được tạo ra cho bạn, nếu bạn chạy lệnh Artisan `make:policy`. Thư mục `Policies` chứa các [class về quyền](/docs/{{version}}/authorization) trong application của bạn. Policies sẽ dùng để xác định xem một user có thể thực hiện một hành động nhất định đối với một resource hay không. Để có thêm thông tin, hãy đọc thêm ở [authorization documentation](/docs/{{version}}/authorization).
 
 <a name="the-providers-directory"></a>
 #### Thư mục Providers

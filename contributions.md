@@ -14,11 +14,11 @@
 <a name="bug-reports"></a>
 ## Báo Bug
 
-Để khuyến khích cho sự phát triển, Laravel rất khuyến khích bạn tạo các pull request, không chỉ là báo bug. "Báo bug" cũng có thể là một pull request được gửi dưới dạng là một bài test thất bại.
+Để khuyến khích cho sự phát triển, Laravel rất khuyến khích bạn tạo các pull request, không chỉ là báo bug. "Báo bug" cũng có thể là một pull request được gửi dưới dạng là một bài test thất bại. Pull request sẽ chỉ được xem xét khi được đánh dấu là "ready for review" (không phải ở trạng thái "draft") và tất cả các bài test cho các tính năng mới phải được pass. Các pull request kéo dài, không hoạt động, và để ở trạng thái "draft" sẽ bị close sau một vài ngày.
 
 Tuy nhiên, nếu bạn muốn tạo một bug, thì bug của bạn nên chứa một tiêu đề và một mô tả rõ ràng về bug mà bạn gặp phải. Bạn cũng nên mô tả càng nhiều thông tin liên quan đến bug càng tốt và một code ví dụ để tạo ra bug đó. Mục tiêu của báo bug là giúp bạn dễ dàng - và những người khác - tái hiện lại bug đó và phát triển các bản sửa bug.
 
-Hãy nhớ rằng, báo bug được tạo ra với hy vọng rằng những người khác có cùng vấn đề với bạn có thể cộng tác với nhau để cùng nhau sửa bug. Bạn đừng hy vọng rằng báo bug sẽ làm khởi động một quá trình sửa bug nào đó hoặc người khác sẽ nhảy vào để sửa giúp bạn. Tạo một bug để giúp chính bạn và những người khác, bắt đầu một quá trình sửa bug mà bạn đã báo cáo. Nếu bạn muốn trợ giúp, bạn có thể trợ giúp bằng cách sửa [bất kỳ lỗi nào được liệt kê trong issue tracker của chúng tôi](https://github.com/issues?q=is%3Aopen+is%3Aissue+label%3Abug+user%3Alaravel+-repo%3Alaravel%2Fnova-issues).
+Hãy nhớ rằng, báo bug được tạo ra với hy vọng rằng những người khác có cùng vấn đề với bạn có thể cộng tác với nhau để cùng nhau sửa bug. Bạn đừng hy vọng rằng báo bug sẽ làm khởi động một quá trình sửa bug nào đó hoặc người khác sẽ nhảy vào để sửa giúp bạn. Tạo một bug để giúp chính bạn và những người khác, bắt đầu một quá trình sửa bug mà bạn đã báo cáo. Nếu bạn muốn trợ giúp, bạn có thể trợ giúp bằng cách sửa [bất kỳ lỗi nào được liệt kê trong issue tracker của chúng tôi](https://github.com/issues?q=is%3Aopen+is%3Aissue+label%3Abug+user%3Alaravel). Bạn phải được xác thực bằng GitHub để xem tất cả các issue của Laravel.
 
 Mã nguồn của Laravel được quản lý trên GitHub và có các repository cho từng dự án của Laravel:
 
@@ -36,13 +36,14 @@ Mã nguồn của Laravel được quản lý trên GitHub và có các reposito
 - [Laravel Homestead](https://github.com/laravel/homestead)
 - [Laravel Homestead Build Scripts](https://github.com/laravel/settler)
 - [Laravel Horizon](https://github.com/laravel/horizon)
+- [Laravel Jetstream](https://github.com/laravel/jetstream)
 - [Laravel Passport](https://github.com/laravel/passport)
+- [Laravel Sail](https://github.com/laravel/sail)
 - [Laravel Sanctum](https://github.com/laravel/sanctum)
 - [Laravel Scout](https://github.com/laravel/scout)
 - [Laravel Socialite](https://github.com/laravel/socialite)
 - [Laravel Telescope](https://github.com/laravel/telescope)
 - [Laravel Website](https://github.com/laravel/laravel.com-next)
-- [Laravel UI](https://github.com/laravel/ui)
 
 </div>
 
@@ -57,34 +58,34 @@ GitHub issue tracker của Laravel không nhằm mục đích cung cấp các tr
 - [Laracasts Forums](https://laracasts.com/discuss)
 - [Laravel.io Forums](https://laravel.io/forum)
 - [StackOverflow](https://stackoverflow.com/questions/tagged/laravel)
-- [Discord](https://discordapp.com/invite/KxwQuKb)
+- [Discord](https://discord.gg/laravel)
 - [Larachat](https://larachat.co)
-- [IRC](https://webchat.freenode.net/?nick=artisan&channels=%23laravel&prompt=1)
+- [IRC](https://web.libera.chat/?nick=artisan&channels=#laravel)
 
 </div>
 
 <a name="core-development-discussion"></a>
 ## Các kênh phát triển chính
 
-Bạn có thể đề xuất các tính năng mới hoặc các cải tiến về các hành động của Laravel trong Laravel Ideas [issue board](https://github.com/laravel/ideas/issues). Nếu bạn đề xuất một tính năng mới, vui lòng làm sẵn một số code cần thiết để hoàn thành tính năng này.
+Bạn có thể đề xuất các tính năng mới hoặc các cải tiến về các hành động của Laravel trong repository [gitHub discussion board](https://github.com/laravel/framework/discussions) của Laravel framework . Nếu bạn đề xuất một tính năng mới, vui lòng làm sẵn một số code cần thiết để hoàn thành tính năng này.
 
-Kênh `#internals` của [Laravel Discord server](https://discordapp.com/invite/mPZNm7A) sẽ thảo luận về các lỗi, tính năng mới và triển khai các tính năng hiện tại. Taylor Otwell, maintainer của Laravel, thường có mặt trong kênh này vào các ngày trong tuần từ 8 giờ sáng đến 5 giờ chiều (UTC-06:00 or America/Chicago) và xuất hiện thường xuyên trong kênh vào các thời điểm khác.
+Kênh `#internals` của [Laravel Discord server](https://discord.gg/laravel) sẽ thảo luận về các lỗi, tính năng mới và triển khai các tính năng hiện tại. Taylor Otwell, maintainer của Laravel, thường có mặt trong kênh này vào các ngày trong tuần từ 8 giờ sáng đến 5 giờ chiều (UTC-06:00 or America/Chicago) và xuất hiện thường xuyên trong kênh vào các thời điểm khác.
 
 <a name="which-branch"></a>
 ## Branch nào?
 
-**Tất cả** các bản sửa lỗi phải được gửi đến branch ổn định mới nhất hoặc tới các [branch LTS hiện tại](/docs/{{version}}/releases#support-policy). Các bản sửa lỗi sẽ **không** được gửi đến branch `master` trừ khi chúng sửa các tính năng đã tồn tại trong bản phát hành sắp tới.
+**Tất cả** các bản sửa lỗi phải được gửi đến branch ổn định mới nhất. Các bản sửa lỗi sẽ **không** được gửi đến branch `master` trừ khi chúng sửa các tính năng đã tồn tại trong bản phát hành sắp tới.
 
 Các tính năng **phụ** có **tương thích** với bản phát hành hiện tại thì có thể được gửi đến branch ổn định mới nhất.
 
 Các tính năng **chính** mới phải luôn được gửi đến branch `master`, nơi chứa code của các bản phát hành sắp tới.
 
-Nếu bạn không chắc chắn tính năng của bạn là chính hay là phụ, vui lòng hỏi Taylor Otwell trong kênh `#internals` của [Laravel Discord server](https://discordapp.com/invite/mPZNm7A).
+Nếu bạn không chắc chắn tính năng của bạn là chính hay là phụ, vui lòng hỏi Taylor Otwell trong kênh `#internals` của [Laravel Discord server](https://discord.gg/laravel).
 
 <a name="compiled-assets"></a>
 ## Biên dịch Asset
 
-Nếu bạn đang gửi một thay đổi sẽ ảnh hưởng đến các file đã được biên dịch, chẳng hạn như các file ở trong `resources/sass` hoặc `resources/js` của repository `laravel/laravel`, thì đừng commit các file đã biên dịch trên. Bởi vì, trên thực tế, do kích thước của file đó quá lớn, nên chúng sẽ không thể được review bởi người quản lý. Và điều này cũng có thể bị khai thác như là một cách để đưa mã độc vào trong source code của Laravel. Để ngăn chặn điều này, tất cả các file đã biên dịch sẽ được tạo và commit bởi những người quản lý source Laravel.
+Nếu bạn đang gửi một thay đổi sẽ ảnh hưởng đến các file đã được biên dịch, chẳng hạn như các file ở trong `resources/css` hoặc `resources/js` của repository `laravel/laravel`, thì đừng commit các file đã biên dịch trên. Bởi vì, trên thực tế, do kích thước của file đó quá lớn, nên chúng sẽ không thể được review bởi người quản lý. Và điều này cũng có thể bị khai thác như là một cách để đưa mã độc vào trong source code của Laravel. Để ngăn chặn điều này, tất cả các file đã biên dịch sẽ được tạo và commit bởi những người quản lý source Laravel.
 
 <a name="security-vulnerabilities"></a>
 ## Lỗ hổng bảo mật

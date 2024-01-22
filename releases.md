@@ -1,400 +1,394 @@
 # Release Notes
 
 - [Cấu trúc phiên bản](#versioning-scheme)
+    - [Ngoại lệ](#exceptions)
 - [Chính sách hỗ trợ](#support-policy)
-- [Laravel 7](#laravel-7)
+- [Laravel 8](#laravel-8)
 
 <a name="versioning-scheme"></a>
 ## Cấu trúc phiên bản
 
-Laravel và các package khác của nó tuân theo [Phiên bản Semantic](https://semver.org). Các phiên bản được phát hành chính thức của framework được phát hành sáu tháng một lần (khoảng tháng 2 và khoảng tháng 8), trong khi các bản phát hành nhỏ hơn và các bản sửa lỗi có thể được phát hành thường xuyên hơn, có thể là mỗi tuần. Các bản phát hành nhỏ và các bản sửa lỗi sẽ **không bao giờ** chứa các thay đổi mà có thể dẫn đến hệ thống của bạn bị lỗi.
+Laravel và các package khác của nó tuân theo [Phiên bản Semantic](https://semver.org). Các phiên bản được phát hành chính thức của framework được phát hành một năm một lần (khoảng tháng 2), trong khi các bản phát hành nhỏ hơn và các bản sửa lỗi có thể được phát hành thường xuyên hơn, có thể là mỗi tuần. Các bản phát hành nhỏ và các bản sửa lỗi sẽ **không bao giờ** chứa các thay đổi mà có thể dẫn đến hệ thống của bạn bị lỗi.
 
-Khi sủ dụng framework Laravel hoặc các component của nó từ application của bạn hoặc từ package, bạn phải luôn luôn sử dụng một ràng buộc phiên bản, chẳng hạn như là `^7.0`, Vì các bản phát hành chính thức của Laravel có thể chứa các thay đổi mà có thể làm hệ thống của bạn bị lỗi. Tuy nhiên, chúng tôi sẽ cố gắng đảm bảo rằng: bạn có thể cập nhật lên bản phát hành chính thức trong một ngày hoặc ít hơn.
+Khi sủ dụng framework Laravel hoặc các component của nó từ application của bạn hoặc từ package, bạn phải luôn luôn sử dụng một ràng buộc phiên bản, chẳng hạn như là `^8.0`, Vì các bản phát hành chính thức của Laravel có thể chứa các thay đổi mà có thể làm hệ thống của bạn bị lỗi. Tuy nhiên, chúng tôi sẽ cố gắng đảm bảo rằng: bạn có thể cập nhật lên bản phát hành chính thức trong một ngày hoặc ít hơn.
+
+<a name="exceptions"></a>
+### Ngoại lệ
+
+<a name="named-arguments"></a>
+#### Named Arguments
+
+Tại thời điểm này, chức năng [đặt tên cho tham số](https://www.php.net/manual/en/functions.arguments.php#functions.named-arguments) của PHP không nằm trong nguyên tắc tương thích ngược của Laravel. Chúng tôi có thể đổi tên các tham số bất cứ khi nào để cải thiện codebase của Laravel. Do đó, việc sử dụng các kiểu đặt tên cho tham số khi gọi các phương thức của Laravel nên được thực hiện một cách cẩn trọng và nên hiểu rằng tên tham số có thể thay đổi trong tương lai.
 
 <a name="support-policy"></a>
 ## Chính sách hỗ trợ
 
-Đối với các bản phát hành hỗ trợ dài hạn, chẳng hạn như Laravel 6, các bản sửa lỗi được cung cấp trong 2 năm và các bản sửa lỗi bảo mật được cung cấp trong 3 năm. Những bản phát hành này cung cấp các hỗ trợ và bảo trì dài nhất. Đối với các bản phát hành bình thường, các bản sửa lỗi được cung cấp trong 6 tháng và các bản sửa lỗi bảo mật được cung cấp trong 1 năm. Đối với tất cả các thư viện, bao gồm cả Lumen, chỉ bản phát hành mới nhất mới nhận được các bản sửa lỗi. Ngoài ra, hãy xem các phiên bản cơ sở dữ liệu [được hỗ trợ bởi Laravel](/docs/{{version}}/database#introduction).
+Đối với tất cả các bản phát hành chính thức, các bản sửa lỗi sẽ được cung cấp trong 18 tháng và các bản sửa lỗi bảo mật được cung cấp trong 2 năm. Đối với tất cả các thư viện, bao gồm cả Lumen, chỉ bản phát hành mới nhất mới nhận được các bản sửa lỗi. Ngoài ra, hãy xem các phiên bản cơ sở dữ liệu [được hỗ trợ bởi Laravel](/docs/{{version}}/database#introduction).
 
-| Version | Release | Bug Fixes Until | Security Fixes Until |
-| --- | --- | --- | --- |
-| 6 (LTS) | ngày 3 tháng 9 năm 2019 | ngày 3 tháng 9 năm 2021 | ngày 3 tháng 9 năm 2022 |
-| 7 | March 3rd, 2020 | September 10th, 2020 | March 3rd, 2021 |
-| 8 | September 8th, 2020 | March 8th, 2021 | September 8th, 2021 |
+| Version | PHP (*) | Release | Bug Fixes Until | Security Fixes Until |
+| --- | --- | --- | --- | --- |
+| 6 (LTS) | 7.2 - 8.0 | ngày 3 tháng 9 năm 2019 | ngày 25 tháng 1 năm 2022 | ngày 6 tháng 9 năm 2022 |
+| 7 | 7.2 - 8.0 | ngày 3 tháng 3 năm 2020 | ngày 6 tháng 10 năm 2020 | ngày 3 tháng 3 năm 2021 |
+| 8 | 7.3 - 8.1 | ngày 8 tháng 9 năm 2020 | ngày 26 tháng 7 năm 2022 | ngày 24 tháng 1 năm 2023 |
+| 9 | 8.0 - 8.1 | ngày 8 tháng 2 năm 2022 | ngày 8 tháng 8 năm 2023 | ngày 8 tháng 2 năm 2024 |
+| 10 | 8.0 - 8.1 | ngày 7 tháng 2 năm 2023 | ngày 7 tháng 8 năm 2024 | ngày 8 tháng 2 năm 2025 |
 
-<a name="laravel-7"></a>
-## Laravel 7
+<div class="version-colors">
+    <div class="end-of-life">
+        <div class="color-box"></div>
+        <div>End of life</div>
+    </div>
+    <div class="security-fixes">
+        <div class="color-box"></div>
+        <div>Security fixes only</div>
+    </div>
+</div>
 
-Laravel 7 tiếp tục những cải tiến được thực hiện trong Laravel 6.x bằng cách giới thiệu thêm Laravel Sanctum, cải tiến tốc độ routing, tùy chỉnh Eloquent cast, Blade component tag, xử lý chuỗi, HTTP client sẽ tập trung vào nhà phát triển, hỗ trợ CORS của bên thứ nhất, cải thiện scoping cho các route model binding, tùy chỉnh stub, cải tiến database queue, multiple mail driver, truy vấn cast thời gian, lệnh `artisan test` mới, và một loạt các bản sửa lỗi và cải tiến khả năng sử dụng khác.
+(*) Supported PHP versions
 
-### Laravel Sanctum
+<a name="laravel-8"></a>
+## Laravel 8
 
-_Laravel Sanctum được xây dựng bởi [Taylor Otwell](https://github.com/taylorotwell)_.
+Laravel 8 tiếp tục những cải tiến được thực hiện trong Laravel 7.x bằng cách giới thiệu Laravel Jetstream, các class model factory, nén migration, job batch, cải thiện giới hạn tỷ lệ, cải tiến queue, Blade component động, pagination view bằng Tailwind, tương tác với thời gian trong các bài test, cải tiến cho `artisan serve`, cải tiến event listener, và một loạt các bản sửa lỗi và cải tiến khả năng sử dụng khác.
 
-Laravel Sanctum cung cấp một hệ thống xác thực nhẹ cho các SPAs (các ứng dụng single page), ứng dụng di động và các API đơn giản dựa trên token. Sanctum cho phép mỗi người dùng ứng dụng của bạn tạo ra nhiều API token cho tài khoản của họ. Các token này có thể được cấp các quyền / phạm vi cụ thể cho các hành động mà token được phép thực hiện.
+<a name="laravel-jetstream"></a>
+### Laravel Jetstream
 
-Để biết thêm thông tin về Laravel Sanctum, hãy tham khảo [tài liệu về Sanctum](/docs/{{version}}/sanctum).
+_Laravel Jetstream được xây dựng bởi [Taylor Otwell](https://github.com/taylorotwell)_.
 
-### Custom Eloquent Casts
+[Laravel Jetstream](https://jetstream.laravel.com) cung cấp một scaffolding ứng dụng được thiết kế đẹp mắt cho Laravel. Jetstream cung cấp điểm khởi đầu hoàn hảo cho dự án tiếp theo của bạn và bao gồm đăng nhập, đăng ký, xác minh email, xác thực hai yếu tố, quản lý session, hỗ trợ API thông qua Laravel Sanctum và tuỳ chọn quản lý team. Laravel Jetstream thay thế và cải tiến dựa trên scaffolding UI xác thực cũ có sẵn trong các phiên bản trước đó của Laravel.
 
-_Tuỳ chỉnh Eloquent cast được đóng góp bởi [Taylor Otwell](https://github.com/taylorotwell)_.
+Jetstream được thiết kế bằng [Tailwind CSS](https://tailwindcss.com) và cho bạn lựa chọn [Livewire](https://laravel-livewire.com) hoặc [Inertia.js](https://inertiajs.com) để chạy frontend scaffolding.
 
-Laravel có nhiều kiểu cast có sẵn và hữu ích; tuy nhiên, đôi khi bạn có thể cần phải định nghĩa thêm kiểu cast của riêng bạn. Giờ đây, bạn có thể thực hiện điều này bằng cách định nghĩa thêm một class implement interface `CastsAttributes`.
+<a name="models-directory"></a>
+### Models Directory
 
-Các class implement interface này phải định nghĩa hai phương thức `get` và `set`. Phương thức `get` chịu trách nhiệm chuyển đổi một giá trị từ cơ sở dữ liệu thành một giá trị theo kiểu cast, trong khi phương thức `set` sẽ biến đổi một giá trị theo kiểu cast thành một giá trị có thể được lưu trữ được vào trong cơ sở dữ liệu. Ví dụ: chúng ta sẽ implement lại kiểu cast `json` có sẵn trong laravel dưới dạng một kiểu cast tùy chỉnh:
+Do nhu cầu quá lớn của cộng đồng, Laravel framework mặc định chứa thư mục `app/Models`. Chúng tôi hy vọng bạn sẽ thích ngôi nhà mới này cho các model Eloquent của bạn! Tất cả các lệnh tạo model liên quan đã được cập nhật để giả sử rằng các model tồn tại trong thư mục `app/Models` nếu thư mục đó tồn tại. Nếu thư mục đó không tồn tại, thì framework sẽ giả sử rằng các model của bạn đang được lưu trong thư mục `app`.
 
-    <?php
+<a name="model-factory-classes"></a>
+### Model Factory Classes
 
-    namespace App\Casts;
+_Model factory classes được xây dựng bởi [Taylor Otwell](https://github.com/taylorotwell)_.
 
-    use Illuminate\Contracts\Database\Eloquent\CastsAttributes;
-
-    class Json implements CastsAttributes
-    {
-        /**
-         * Cast the given value.
-         *
-         * @param  \Illuminate\Database\Eloquent\Model  $model
-         * @param  string  $key
-         * @param  mixed  $value
-         * @param  array  $attributes
-         * @return array
-         */
-        public function get($model, $key, $value, $attributes)
-        {
-            return json_decode($value, true);
-        }
-
-        /**
-         * Prepare the given value for storage.
-         *
-         * @param  \Illuminate\Database\Eloquent\Model  $model
-         * @param  string  $key
-         * @param  array  $value
-         * @param  array  $attributes
-         * @return string
-         */
-        public function set($model, $key, $value, $attributes)
-        {
-            return json_encode($value);
-        }
-    }
-
-Khi bạn đã định nghĩa xpng một kiểu cast tùy chỉnh, bạn có thể gắn nó vào một thuộc tính của model bằng cách sử dụng tên class của nó:
+Eloquent [model factory](/docs/{{version}}/database-testing#defining-model-factories) đã được viết lại hoàn toàn dưới dạng các factory dựa trên class và được cải tiến để ưu tiên hỗ trợ quan hệ. Ví dụ: `UserFactory` đi kèm với Laravel được viết như sau:
 
     <?php
 
-    namespace App;
+    namespace Database\Factories;
 
-    use App\Casts\Json;
-    use Illuminate\Database\Eloquent\Model;
+    use App\Models\User;
+    use Illuminate\Database\Eloquent\Factories\Factory;
+    use Illuminate\Support\Str;
 
-    class User extends Model
+    class UserFactory extends Factory
     {
         /**
-         * The attributes that should be cast to native types.
-         *
-         * @var array
-         */
-        protected $casts = [
-            'options' => Json::class,
-        ];
-    }
-
-Để tìm hiểu thêm về cách viết các Eloquent cast tùy chỉnh, bao gồm cả các cast tùy chỉnh cho các giá trị đối tượng, vui lòng tham khảo [tài liệu về Eloquent](/docs/{{version}}/eloquent-mutators#custom-casts).
-
-### Blade Component Tags & Improvements
-
-_Blade component tag được đóng góp bởi [Spatie](https://spatie.be/), [Marcel Pociot](https://twitter.com/marcelpociot), [Caleb Porzio](https://twitter.com/calebporzio), [Dries Vints](https://twitter.com/driesvints), và [Taylor Otwell](https://github.com/taylorotwell)_.
-
-> {tip} Các blade component đã được làm lại để cho phép việc hiển thị dựa trên tag, quản lý thuộc tính, các component class, các component inline view và hơn thế nữa. Vì việc làm lại các blade component rất rộng, nên vui lòng tham khảo [tài liệu đầy đủ về component blade](/docs/{{version}}/blade#components) để tìm hiểu về các tính năng này.
-
-Tóm lại, một component bây giờ có thể có một class được liên kết với một loạt dữ liệu chỉ định mà nó chấp nhận. Tất cả các thuộc tính và phương thức công khai được định nghĩa trên class component sẽ tự động được cung cấp cho view component. Bất kỳ thuộc tính HTML thêm mới nào được chỉ định trong component đều có thể được quản lý bằng biến `$attributes` có sẵn trong component, là một instance chứa nhiều thuộc tính.
-
-Trong ví dụ này, chúng ta sẽ giả định rằng component `App\View\Components\Alert` đã được định nghĩa như sau:
-
-    <?php
-
-    namespace App\View\Components;
-
-    use Illuminate\View\Component;
-
-    class Alert extends Component
-    {
-        /**
-         * The alert type.
+         * The name of the factory's corresponding model.
          *
          * @var string
          */
-        public $type;
+        protected $model = User::class;
 
         /**
-         * Create the component instance.
+         * Define the model's default state.
          *
-         * @param  string  $type
-         * @return void
+         * @return array
          */
-        public function __construct($type)
+        public function definition()
         {
-            $this->type = $type;
-        }
-
-        /**
-         * Get the class for the given alert type.
-         *
-         * @return string
-         */
-        public function classForType()
-        {
-            return $this->type == 'danger' ? 'alert-danger' : 'alert-warning';
-        }
-
-        /**
-         * Get the view / contents that represent the component.
-         *
-         * @return \Illuminate\View\View|string
-         */
-        public function render()
-        {
-            return view('components.alert');
+            return [
+                'name' => $this->faker->name(),
+                'email' => $this->faker->unique()->safeEmail(),
+                'email_verified_at' => now(),
+                'password' => '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', // password
+                'remember_token' => Str::random(10),
+            ];
         }
     }
 
-Và, giả sử template blade của component đã được định nghĩa như sau:
+Nhờ trait `HasFactory` mới có sẵn trên các model được tạo, nên model factory có thể được sử dụng như sau:
 
-    <!-- /resources/views/components/alert.blade.php -->
+    use App\Models\User;
 
-    <div class="alert {{ $classForType }}" {{ $attributes }}>
-        {{ $heading }}
+    User::factory()->count(50)->create();
 
-        {{ $slot }}
-    </div>
+Vì các model factory hiện nay là các class PHP đơn giản nên các phép biến đổi trạng thái có thể được viết dưới dạng các phương thức của class. Ngoài ra, bạn có thể thêm bất kỳ class helper nào khác vào model factory Eloquent của bạn nếu cần.
 
-Component có thể được tạo trong view blade khác bằng cách sử dụng tag của component:
+Ví dụ: model `User` của bạn có thể có trạng thái `suspended` và sửa một trong các giá trị thuộc tính mặc định của nó. Bạn có thể định nghĩa các phép biến đổi trạng thái của bạn bằng phương thức `state` của base factory. Bạn có thể đặt tên cho phương thức trạng thái của bạn bằng bất kỳ tên gì mà bạn thích. Xét cho cùng, đây cũng chỉ là một phương thức PHP điển hình:
 
-    <x-alert type="error" class="mb-4">
-        <x-slot name="heading">
-            Alert content...
-        </x-slot>
-
-        Default slot content...
-    </x-alert>
-
-Như đã đề cập, đây chỉ là một ví dụ rất nhỏ về chức năng của component blade trong Laravel 7 và không thể hiện các component ẩn, component inline view và nhiều tính năng khác. Vui lòng tham khảo thêm [tài liệu đầy đủ về component blade](/docs/{{version}}/blade#components) để tìm hiểu thêm về các tính năng này.
-
-> {note} Cú pháp `@component` trước đó của component blade sẽ chưa và sẽ không bị xóa.
-
-### HTTP Client
-
-_HTTP client là một wrapper của thư viện Guzzle và được đóng góp bởi [Adam Wathan](https://twitter.com/adamwathan), [Jason McCreary](https://twitter.com/gonedark), và [Taylor Otwell](https://github.com/taylorotwell)_.
-
-Laravel cung cấp một API nhỏ, rõ ràng dựa trên thư viện [Guzzle HTTP client](http://docs.guzzlephp.org/en/stable/), cho phép bạn nhanh chóng thực hiện các HTTP request giao tiếp với các ứng dụng web khác. API này tập trung vào các trường hợp sử dụng phổ biến và giúp tăng trải nghiệm tuyệt vời dành cho nhà phát triển. Ví dụ: client có thể dễ dàng tạo ra một `POST` request và thêm dữ liệu JSON:
-
-    use Illuminate\Support\Facades\Http;
-
-    $response = Http::withHeaders([
-        'X-First' => 'foo',
-        'X-Second' => 'bar'
-    ])->post('http://test.com/users', [
-        'name' => 'Taylor',
-    ]);
-
-    return $response['id'];
-
-Ngoài ra, HTTP client cũng cung cấp các chức năng testing tuyệt vời, tiện dụng:
-
-    Http::fake([
-        // Stub a JSON response for GitHub endpoints...
-        'github.com/*' => Http::response(['foo' => 'bar'], 200, ['Headers']),
-
-        // Stub a string response for Google endpoints...
-        'google.com/*' => Http::response('Hello World', 200, ['Headers']),
-
-        // Stub a series of responses for Facebook endpoints...
-        'facebook.com/*' => Http::sequence()
-                                ->push('Hello World', 200)
-                                ->push(['foo' => 'bar'], 200)
-                                ->pushStatus(404),
-    ]);
-
-Để tìm hiểu thêm về tất cả các tính năng của HTTP client, vui lòng tham khảo thêm [tài liệu về HTTP client](/docs/{{version}}/http-client).
-
-### Fluent String Operations
-
-_Xử lý chuỗi được đóng góp bởi [Taylor Otwell](https://github.com/taylorotwell)_.
-
-Có thể bạn đã quen thuộc với class `Illuminate\Support\Str` hiện có của Laravel, class này cung cấp nhiều chức năng xử lý chuỗi hữu ích. Laravel 7 bây giờ cung cấp một thư viện xử lý chuỗi hoàn thiện hơn, hướng đối tượng hơn được xây dựng dựa trên các hàm này. Bạn có thể tạo ra một đối tượng `Illuminate\Support\Stringable` bằng cách sử dụng phương thức `Str::of`. Sau đó, nhiều phương thức có thể được kết hợp vào trong đối tượng để xử lý chuỗi:
-
-    return (string) Str::of('  Laravel Framework 6.x ')
-                        ->trim()
-                        ->replace('6.x', '7.x')
-                        ->slug();
-
-Để biết thêm thông tin về các phương thức có sẵn để xử lý chuỗi, vui lòng tham khảo [tài liệu đầy đủ](/docs/{{version}}/helpers#fluent-strings) của nó.
-
-### Route Model Binding Improvements
-
-_Route model binding đã được cải tiến và được đóng góp bởi [Taylor Otwell](https://github.com/taylorotwell)_.
-
-#### Key Customization
-
-Thỉnh thoảng bạn có thể muốn resolve các model Eloquent ra bằng cách sử dụng một cột khác, khác với cột `id`. Để làm như thế, Laravel 7 cho phép bạn chỉ định cột trong định nghĩa tham số route:
-
-    Route::get('api/posts/{post:slug}', function (App\Post $post) {
-        return $post;
-    });
-
-#### Automatic Scoping
-
-Thỉnh thoảng, khi liên kết ngầm nhiều model Eloquent trong một định nghĩa route, bạn có thể muốn scope model Eloquent thứ hai sao cho nó phải là con của model Eloquent thứ nhất. Ví dụ: hãy xem tình huống sau lấy ra một bài đăng trong blog bằng slug cho một user cụ thể:
-
-    use App\Post;
-    use App\User;
-
-    Route::get('api/users/{user}/posts/{post:slug}', function (User $user, Post $post) {
-        return $post;
-    });
-
-Khi sử dụng liên kết ngầm có key tùy biến làm một tham số route lồng nhau, Laravel 7 sẽ tự động scope truy vấn để lấy ra các model lồng nhau thông qua cha của nó bằng cách sử dụng các quy ước để đặt tên quan hệ trên cha. Trong trường hợp này, sẽ giả định rằng model `User` có một quan hệ có tên là `posts` (số nhiều của tên tham số route) có thể được sử dụng để lấy ra model `Post`.
-
-Để biết thêm thông tin về route model binding, vui lòng tham khảo [tài liệu định route](/docs/{{version}}/routing#route-model-binding).
-
-### Multiple Mail Drivers
-
-_Multiple mail driver đã được hỗ trợ và được đóng góp bởi [Taylor Otwell](https://github.com/taylorotwell)_.
-
-Laravel 7 allows the confi
-Laravel 7 cho phép cấu hình nhiều "mailers" trong một ứng dụng. Mỗi mailers được cấu hình trong file cấu hình `mail` có thể có thêm các tùy chọn riêng nó hoặc thậm chí là một "transport" của riêng nó, cho phép ứng dụng của bạn sử dụng các dịch vụ email khác nhau để gửi một số email nhất định. Ví dụ: ứng dụng của bạn có thể sử dụng Postmark để gửi mail giao dịch trong khi sử dụng Amazon SES để gửi các mail hàng loạt.
-
-Mặc định, Laravel sẽ sử dụng mailer được cấu hình làm mailer `default` trong file cấu hình` mail` của bạn. Tuy nhiên, bạn có thể sử dụng phương thức `mailer` để gửi một message với một cấu hình mailer cụ thể:
-
-    Mail::mailer('postmark')
-            ->to($request->user())
-            ->send(new OrderShipped($order));
-
-### Route Caching Speed Improvements
-
-_Route caching đã được cải thiện về tốc độ và được đóng góp bởi cộng đồng [Symfony](https://symfony.com) và [Dries Vints](https://twitter.com/driesvints)_.
-
-Laravel 7 có chứa một phương thức mới để tìm các route đã được biên dịch, được lưu trong bộ nhớ cache bằng cách sử dụng lệnh Artisan `route:cache`. Trên các ứng dụng lớn (ví dụ: ứng dụng có 800 route trở lên), những cải thiện này có thể dẫn đến cải thiện về tốc độ nhanh hơn **2 lần** trong các request trên mỗi giây với một ví dụ "Hello World" đơn giản. Và không cần thay đổi ứng dụng của bạn.
-
-### CORS Support
-
-_Hỗ trợ CORS được đóng góp bởi [Barry vd. Heuvel](https://twitter.com/barryvdh)_.
-
-Laravel 7 có hỗ trợ cấu hình phản hồi request Cross-Origin Resource Sharing (CORS) `OPTIONS` bằng cách tích hợp package Laravel CORS được viết bởi Barry vd. Heuvel. Một cấu hình `cors` mới đã được thêm vào trong [framework laravel mặc định](https://github.com/laravel/laravel/blob/develop/config/cors.php).
-
-Để biết thêm thông tin về hỗ trợ CORS trong Laravel 7.x, vui lòng tham khảo thêm [tài liệu CORS](/docs/{{version}}/routing#cors).
-
-### Query Time Casts
-
-_Query time casting được đóng góp bởi [Matt Barlow](https://github.com/mpbarlow)_.
-
-Thỉnh thoảng bạn có thể cần phải áp dụng các cast trong khi thực hiện một query, chẳng hạn như khi chọn một giá trị thô từ một bảng. Ví dụ: hãy xem xét query sau:
-
-    use App\Post;
-    use App\User;
-
-    $users = User::select([
-        'users.*',
-        'last_posted_at' => Post::selectRaw('MAX(created_at)')
-                ->whereColumn('user_id', 'users.id')
-    ])->get();
-
-Thuộc tính `last_posted_at` trên kết quả của query này sẽ là một chuỗi thô. Sẽ rất tiện lợi nếu chúng ta có thể áp dụng một cast `date` cho thuộc tính này khi thực hiện query. Để thực hiện điều này, chúng ta có thể sử dụng phương thức `withCasts` được cung cấp bởi Laravel 7:
-
-    $users = User::select([
-        'users.*',
-        'last_posted_at' => Post::selectRaw('MAX(created_at)')
-                ->whereColumn('user_id', 'users.id')
-    ])->withCasts([
-        'last_posted_at' => 'date'
-    ])->get();
-
-### MySQL 8+ Database Queue Improvements
-
-_MySQL database queue được cải tiến và được đóng góp bởi [Mohamed Said](https://github.com/themsaid)_.
-
-Trong các bản phát hành trước của Laravel, queue `database` không được coi là đủ mạnh để sử dụng trong production, do deadlock. Tuy nhiên, Laravel 7 đã cung cấp các cải tiến cho các ứng dụng sử dụng MySQL 8+ dưới dạng queue được hỗ trợ cơ sở dữ liệu. Bằng cách sử dụng mệnh đề `FOR UPDATE SKIP LOCKED` và các cải tiến SQL khác, driver `database` bây giờ có thể được sử dụng một cách an toàn trong các ứng dụng production lớn.
-
-### Artisan `test` Command
-
-_Lệnh `test` được đóng góp bởi [Nuno Maduro](https://twitter.com/enunomaduro)_.
-
-Ngoài lệnh `phpunit`, bây giờ bạn có thể sử dụng lệnh Artisan `test` để chạy các bài test của bạn. Trình chạy test của Artisan cung cấp một giao diện console đẹp mắt và nhiều thông tin hơn về các bài test đang được thực hiện. Ngoài ra, trình chạy này sẽ tự động dừng lại ở lần kiểm thử đầu tiên mà bị thất bại:
-
-    php artisan test
-
-<p align="center">
-<img src="https://laravel.com/img/docs/7x-release-notes-artisan-test-preview.png">
-</p>
-
-Bất kỳ tham số nào mà có thể được truyền vào cho lệnh `phpunit` thì cũng có thể được truyền vào cho lệnh Artisan `test`:
-
-    php artisan test --group=feature
-
-### Markdown Mail Template Improvements
-
-_Template markdown mail đã được cải tiến và được đóng góp bởi [Taylor Otwell](https://twitter.com/taylorotwell)_.
-
-Template markdown mail mặc định đã nhận được một thiết kế mới, hiện đại hơn dựa trên bảng màu của Tailwind CSS. Tất nhiên, template này có thể được export và tùy chỉnh theo nhu cầu ứng dụng của bạn:
-
-<p align="center">
-<img src="https://laravel.com/img/docs/7x-release-notes-notification-preview.png">
-</p>
-
-Để biết thêm thông tin về markdown mail, vui lòng tham khảo [tài liệu về mail](/docs/{{version}}/mail#markdown-mailables).
-
-### Stub Customization
-
-_Tuỳ chỉnh stub được đóng góp bởi [Taylor Otwell](https://twitter.com/taylorotwell)_.
-
-Lệnh `make` của Artisan console sẽ được sử dụng để tạo nhiều class khác nhau, chẳng hạn như controller, job, migration và các bài test. Các class này được tạo ra bằng cách sử dụng các file "stub" được điền sẵn các giá trị dựa trên đầu vào mà bạn đưa vào. Tuy nhiên, thỉnh thoảng bạn có thể muốn thực hiện các thay đổi nhỏ đối với các file do Artisan tạo ra. Để thực hiện điều này, Laravel 7 cung cấp một lệnh `stub:publish` để export ra các stub cơ bản nhất để tùy chỉnh:
-
-    php artisan stub:publish
-
-Các file stub đã được export sẽ nằm trong thư mục `stubs` trong thư mục gốc của ứng dụng của bạn. Bất kỳ thay đổi nào mà bạn thực hiện đối với các file stub này sẽ được phản ánh khi bạn tạo các class tương ứng khi sử dụng lệnh Artisan `make`.
-
-### Queue `maxExceptions` Configuration
-
-_Thuộc tính `maxExceptions` được đóng góp bởi [Mohamed Said](https://twitter.com/themsaid)_.
-
-Thỉnh thoảng bạn có thể muốn chỉ định một job có thể được thử lại nhiều lần, nhưng sẽ thất bại nếu trong các lần thử lại được kích hoạt bởi một số lượng exception nhất định. Trong Laravel 7, bạn có thể định nghĩa một thuộc tính `maxExceptions` trên class job của bạn:
-
-    <?php
-
-    namespace App\Jobs;
-
-    class ProcessPodcast implements ShouldQueue
+    /**
+     * Indicate that the user is suspended.
+     *
+     * @return \Illuminate\Database\Eloquent\Factories\Factory
+     */
+    public function suspended()
     {
-        /**
-         * The number of times the job may be attempted.
-         *
-         * @var int
-         */
-        public $tries = 25;
-
-        /**
-         * The maximum number of exceptions to allow before failing.
-         *
-         * @var int
-         */
-        public $maxExceptions = 3;
-
-        /**
-         * Execute the job.
-         *
-         * @return void
-         */
-        public function handle()
-        {
-            Redis::throttle('key')->allow(10)->every(60)->then(function () {
-                // Lock obtained, process the podcast...
-            }, function () {
-                // Unable to obtain lock...
-                return $this->release(10);
-            });
-        }
+        return $this->state([
+            'account_status' => 'suspended',
+        ]);
     }
 
-Trong ví dụ này, job sẽ được giải phóng trong 10 giây nếu ứng dụng không thể lấy được Redis lock và sẽ tiếp tục được thử lại tối đa 25 lần. Tuy nhiên, job sẽ thất bại nếu job đưa ra quá ba exception.
+Sau khi định nghĩa xong phương thức chuyển đổi trạng thái, chúng ta có thể sử dụng nó như sau:
+
+    use App\Models\User;
+
+    User::factory()->count(5)->suspended()->create();
+
+Như đã đề cập, các model factory của Laravel 8 ưu tiên hỗ trợ cho các quan hệ. Vì vậy, giả sử model `User` của chúng ta có phương thức quan hệ `posts`, chúng ta có thể chỉ cần chạy đoạn code sau để tạo người dùng có ba bài đăng:
+
+    $users = User::factory()
+                ->hasPosts(3, [
+                    'published' => false,
+                ])
+                ->create();
+
+Để đơn giản hóa quá trình nâng cấp, package [laravel/legacy-factories](https://github.com/laravel/legacy-factories) đã được phát hành để cung cấp hỗ trợ cho phiên bản trước đó của các model factory trong Laravel 8.x.
+
+Các factory đã được viết lại của Laravel chứa nhiều tính năng hơn mà chúng tôi nghĩ bạn sẽ thích. Để tìm hiểu thêm về các model factory, vui lòng tham khảo [tài liệu database testing](/docs/{{version}}/database-testing#defining-model-factories).
+
+<a name="migration-squashing"></a>
+### Migration Squashing
+
+_Migration squashing được xây dựng bởi [Taylor Otwell](https://github.com/taylorotwell)_.
+
+Khi bạn xây dựng ứng dụng của bạn, bạn có thể bị tích tụ ngày càng nhiều file migration theo thời gian. Điều này có thể dẫn đến việc thư mục migration của bạn trở nên quá tải với hàng trăm file migration. Nếu bạn đang sử dụng MySQL hoặc PostgreSQL, giờ đây bạn có thể "nén" migration của bạn vào một file SQL duy nhất. Để bắt đầu, hãy chạy lệnh `schema:dump`:
+
+    php artisan schema:dump
+
+    // Dump the current database schema and prune all existing migrations...
+    php artisan schema:dump --prune
+
+Khi bạn chạy lệnh này, Laravel sẽ ghi ra một file "schema" vào thư mục `database/schema` trong ứng dụng của bạn. Bây giờ, khi bạn chạy migrate cơ sở dữ liệu của bạn mà chưa chạy file migration nào khác, thì Laravel sẽ chạy các câu lệnh SQL trong file schema trước tiên. Sau khi chạy xong các câu lệnh của file schema, Laravel sẽ chạy tiếp các file migrate còn lại mà không có trong schema dump.
+
+<a name="job-batching"></a>
+### Job Batching
+
+_Job batching được xây dựng bởi [Taylor Otwell](https://github.com/taylorotwell) và [Mohamed Said](https://github.com/themsaid)_.
+
+Tính năng job batch của Laravel cho phép bạn dễ dàng thực hiện một loạt các job và sau đó thực hiện một số hành động sau khi một loạt các job đó đã hoàn thành việc chạy.
+
+Phương thức `batch` mới của facade `Bus` có thể được sử dụng để gửi một loạt các job. Tất nhiên, việc tạo batch chủ yếu hữu ích khi kết hợp với các lệnh callback khi hoàn thành. Vì vậy, bạn có thể sử dụng các phương thức `then`, `catch` và `final` để định nghĩa các lệnh callback khi hoàn thành cho batch. Mỗi lệnh callback này sẽ nhận vào một instance `Illuminate\Bus\Batch` khi callback được gọi:
+
+    use App\Jobs\ProcessPodcast;
+    use App\Podcast;
+    use Illuminate\Bus\Batch;
+    use Illuminate\Support\Facades\Bus;
+    use Throwable;
+
+    $batch = Bus::batch([
+        new ProcessPodcast(Podcast::find(1)),
+        new ProcessPodcast(Podcast::find(2)),
+        new ProcessPodcast(Podcast::find(3)),
+        new ProcessPodcast(Podcast::find(4)),
+        new ProcessPodcast(Podcast::find(5)),
+    ])->then(function (Batch $batch) {
+        // All jobs completed successfully...
+    })->catch(function (Batch $batch, Throwable $e) {
+        // First batch job failure detected...
+    })->finally(function (Batch $batch) {
+        // The batch has finished executing...
+    })->dispatch();
+
+    return $batch->id;
+
+Để tìm hiểu thêm về việc job batch, vui lòng tham khảo [tài liệu về queue](/docs/{{version}}/queues#job-batching).
+
+<a name="improved-rate-limiting"></a>
+### Improved Rate Limiting
+
+_Rate limiting được cải tiến và xây dựng bởi [Taylor Otwell](https://github.com/taylorotwell)_.
+
+Tính năng giới hạn tỷ lệ request của Laravel đã được tăng cường với nhiều tính linh hoạt và nhiều sức mạnh hơn, trong khi vẫn duy trì khả năng tương thích ngược với các phiên bản API middleware `throttle` trước đó.
+
+Bộ giới hạn tỷ lệ được định nghĩa bằng phương thức `for` của facade `RateLimiter`. Phương thức `for` sẽ chấp nhận tên của giới hạn tỷ lệ và một closure trả về cấu hình tỷ lệ giới hạn sẽ được áp dụng cho các route, những cái mà sẽ được chỉ định dùng giới hạn tỷ lệ này:
+
+    use Illuminate\Cache\RateLimiting\Limit;
+    use Illuminate\Support\Facades\RateLimiter;
+
+    RateLimiter::for('global', function (Request $request) {
+        return Limit::perMinute(1000);
+    });
+
+Vì lệnh callback giới hạn tỷ lệ nhận vào được một instance HTTP request nên bạn có thể xây dựng một giới hạn tỷ lệ phù hợp dựa trên request đến hoặc số lượng người dùng được xác thực:
+
+    RateLimiter::for('uploads', function (Request $request) {
+        return $request->user()->vipCustomer()
+                    ? Limit::none()
+                    : Limit::perMinute(100);
+    });
+
+Thỉnh thoảng bạn có thể muốn phân giới hạn tỷ lệ theo một số giá trị tùy ý. Ví dụ: bạn có thể muốn cho phép người dùng truy cập vào một route nhất định 100 lần mỗi phút cho mỗi địa chỉ IP. Để thực hiện điều này, bạn có thể sử dụng phương thức `by` khi xây dựng giới hạn tỷ lệ của bạn:
+
+    RateLimiter::for('uploads', function (Request $request) {
+        return $request->user()->vipCustomer()
+                    ? Limit::none()
+                    : Limit::perMinute(100)->by($request->ip());
+    });
+
+Giới hạn tỷ lệ có thể được gắn vào các route hoặc một nhóm route bằng cách sử dụng `throttle` [middleware](/docs/{{version}}/middleware). Middleware throttle sẽ chấp nhận tên của giới hạn tỷ lệ mà bạn muốn gán cho route:
+
+    Route::middleware(['throttle:uploads'])->group(function () {
+        Route::post('/audio', function () {
+            //
+        });
+
+        Route::post('/video', function () {
+            //
+        });
+    });
+
+Để tìm hiểu thêm về giới hạn tỷ lệ, vui lòng tham khảo thêm [tài liệu route](/docs/{{version}}/routing#rate-limiting).
+
+<a name="improved-maintenance-mode"></a>
+### Improved Maintenance Mode
+
+_Các cải tiến về chế độ bảo trì được đóng góp bởi [Taylor Otwell](https://github.com/taylorotwell) với cảm hứng từ [Spatie](https://spatie.be)_.
+
+Trong các bản phát hành trước của Laravel, tính năng chế độ bảo trì `php artisan down` có thể bypass bằng cách sử dụng một "allow list" các địa chỉ IP được phép truy cập vào ứng dụng. Tính năng này đã bị loại bỏ để thay thế bằng giải pháp "secret" và token đơn giản hơn.
+
+Khi ở chế độ bảo trì, bạn có thể sử dụng tùy chọn `secret` để chỉ định token để bypass chế độ bảo trì:
+
+    php artisan down --secret="1630542a-246b-4b66-afa1-dd72a4c43515"
+
+Sau khi set ứng dụng của bạn vào chế độ bảo trì, bạn có thể vào URL ứng dụng khớp cùng với token và Laravel sẽ cấp cookie bypass chế độ bảo trì cho trình duyệt của bạn:
+
+    https://example.com/1630542a-246b-4b66-afa1-dd72a4c43515
+
+Khi truy cập vào route ẩn này, bạn sẽ được chuyển hướng đến route `/` của ứng dụng. Khi cookie đã được cấp cho trình duyệt của bạn, bạn sẽ có thể xem ứng dụng bình thường như thể nó không có ở trong chế độ bảo trì.
+
+<a name="pre-rendering-the-maintenance-mode-view"></a>
+#### Pre-Rendering The Maintenance Mode View
+
+Nếu bạn sử dụng lệnh `php artisan down` trong khi deploy, người dùng của bạn đôi khi vẫn có thể gặp lỗi nếu họ truy cập ứng dụng trong khi các library của Composer hoặc các thành phần cơ sở hạ tầng khác của bạn đang cập nhật. Điều này xảy ra vì một phần quan trọng của Laravel framework phải khởi động để xác định ứng dụng của bạn có đang ở trong chế độ bảo trì hay không và hiển thị view chế độ bảo trì bằng cách sử dụng công cụ tạo template.
+
+Vì lý do này, Laravel cho phép bạn tạo trước các view khi ở trong chế độ bảo trì và sẽ được trả về ngay khi bắt đầu chu trình của request. View này sẽ được hiển thị trước khi bất kỳ library nào của ứng dụng của bạn được load. Bạn có thể tạo trước một template của bạn chọn bằng cách sử dụng tùy chọn `render` trong lệnh `down`:
+
+    php artisan down --render="errors::503"
+
+<a name="closure-dispatch-chain-catch"></a>
+### Closure Dispatch / Chain `catch`
+
+_Các cải tiến về catch của queue job được đóng góp bởi [Mohamed Said](https://github.com/themsaid)_.
+
+Bằng cách sử dụng phương thức `catch` mới, giờ đây bạn có thể cung cấp một closure sẽ được chạy nếu một queued closure bị thất bại sau khi dùng hết tất cả các lần thử lại đã được cấu hình trong queue của bạn:
+
+    use Throwable;
+
+    dispatch(function () use ($podcast) {
+        $podcast->publish();
+    })->catch(function (Throwable $e) {
+        // This job has failed...
+    });
+
+<a name="dynamic-blade-components"></a>
+### Dynamic Blade Components
+
+_Dynamic Blade component được xây dựng bởi [Taylor Otwell](https://github.com/taylorotwell)_.
+
+Thỉnh thoảng bạn có thể cần tạo ra một component nhưng không biết component nào sẽ được tạo ra cho đến khi chạy. Trong tình huống này, bạn có thể sử dụng một component `dynamic-component` được tích hợp sẵn của Laravel để hiển thị component dựa vào giá trị trong thời gian chạy hoặc biến:
+
+    <x-dynamic-component :component="$componentName" class="mt-4" />
+
+Để tìm hiểu thêm về các Blade component, vui lòng tham khảo [tài liệu về Blade](/docs/{{version}}/blade#components).
+
+<a name="event-listener-improvements"></a>
+### Event Listener Improvements
+
+_Các cải tiến về event listener được đóng góp bởi [Taylor Otwell](https://github.com/taylorotwell)_.
+
+Event listener dựa trên closure hiện có thể được đăng ký bằng cách chỉ truyền closure tới phương thức `Event::listen`. Laravel sẽ kiểm tra closure để xác định loại event nào mà listener sẽ xử lý:
+
+    use App\Events\PodcastProcessed;
+    use Illuminate\Support\Facades\Event;
+
+    Event::listen(function (PodcastProcessed $event) {
+        //
+    });
+
+Ngoài ra, event listener dựa trên closure hiện có thể được đánh dấu là xử lý bằng queue bằng cách sử dụng phương thức `Illuminate\Events\queueable`:
+
+    use App\Events\PodcastProcessed;
+    use function Illuminate\Events\queueable;
+    use Illuminate\Support\Facades\Event;
+
+    Event::listen(queueable(function (PodcastProcessed $event) {
+        //
+    }));
+
+Giống như queued job, bạn có thể sử dụng các phương thức `onConnection`, `onQueue`, và `delay` để tùy chỉnh việc thực thi queued listener:
+
+    Event::listen(queueable(function (PodcastProcessed $event) {
+        //
+    })->onConnection('redis')->onQueue('podcasts')->delay(now()->addSeconds(10)));
+
+Nếu bạn muốn xử lý các lỗi nonymous queued listener, bạn có thể cung cấp một closure cho phương thức `catch` trong khi định nghĩa listener `queueable`:
+
+    use App\Events\PodcastProcessed;
+    use function Illuminate\Events\queueable;
+    use Illuminate\Support\Facades\Event;
+    use Throwable;
+
+    Event::listen(queueable(function (PodcastProcessed $event) {
+        //
+    })->catch(function (PodcastProcessed $event, Throwable $e) {
+        // The queued listener failed...
+    }));
+
+<a name="time-testing-helpers"></a>
+### Time Testing Helpers
+
+_Các tương tác với thời gian trong các bài test được đóng góp bởi [Taylor Otwell](https://github.com/taylorotwell) với cảm hứng từ Ruby on Rails_.
+
+Khi kiểm tra, đôi khi bạn có thể cần sửa thời gian được trả về bởi helper, chẳng hạn như `now` hoặc `Illuminate\Support\Carbon::now()`. Rất may, class kiểm tra cơ bản của Laravel đã chứa các helper cho phép bạn thao tác với thời gian hiện tại:
+
+    public function testTimeCanBeManipulated()
+    {
+        // Travel into the future...
+        $this->travel(5)->milliseconds();
+        $this->travel(5)->seconds();
+        $this->travel(5)->minutes();
+        $this->travel(5)->hours();
+        $this->travel(5)->days();
+        $this->travel(5)->weeks();
+        $this->travel(5)->years();
+
+        // Travel into the past...
+        $this->travel(-5)->hours();
+
+        // Travel to an explicit time...
+        $this->travelTo(now()->subHours(6));
+
+        // Return back to the present time...
+        $this->travelBack();
+    }
+
+<a name="artisan-serve-improvements"></a>
+### Artisan `serve` Improvements
+
+_Các cải tiến về lệnh artisan `serve` được đóng góp bởi [Taylor Otwell](https://github.com/taylorotwell)_.
+
+Lệnh Artisan `serve` đã được cải tiến với tính năng tự động load lại khi phát hiện thấy có thay đổi về biến môi trường trong file `.env` local của bạn. Trước đây, lệnh này phải được dừng và khởi động lại mới cập nhật biến môi trường.
+
+<a name="tailwind-pagination-views"></a>
+### Tailwind Pagination Views
+
+Mặc định, paginator của Laravel đã được cập nhật để sử dụng framework [Tailwind CSS](https://tailwindcss.com). Tailwind CSS là một framework CSS cấp thấp, có khả năng tùy chỉnh cao, cung cấp cho bạn tất cả các block mà bạn cần để xây dựng các thiết kế của riêng bạn mà không có bất kỳ style khó chịu nào mà bạn phải đấu tranh để tuỳ chỉnh lại. Tất nhiên, view Bootstrap 3 và 4 vẫn có sẵn.
+
+<a name="routing-namespace-updates"></a>
+### Routing Namespace Updates
+
+Trong các bản phát hành trước của Laravel, `RouteServiceProvider` có chứa thuộc tính `$namespace`. Giá trị của thuộc tính này sẽ tự động được thêm vào trong các tiền tố của các định nghĩa route của controller và các lệnh gọi đến phương thức helper `action` và `URL::action`. Trong Laravel 8.x, thuộc tính này mặc định là `null`. Điều này có nghĩa là Laravel sẽ không thực hiện việc tự động thêm tiền tố namespace. Do đó, trong các ứng dụng Laravel 8.x mới, định nghĩa route của controller phải được định nghĩa bằng cú pháp PHP tiêu chuẩn:
+
+    use App\Http\Controllers\UserController;
+
+    Route::get('/users', [UserController::class, 'index']);
+
+Các lệnh gọi đến các phương thức liên quan đến `action` cũng phải sử dụng cùng một cú pháp:
+
+    action([UserController::class, 'index']);
+
+    return Redirect::action([UserController::class, 'index']);
+
+Nếu bạn thích tiền tố route của controller theo kiểu Laravel 7.x, bạn có thể chỉ cần thêm thuộc tính `$namespace` vào `RouteServiceProvider` của ứng dụng của bạn.
+
+> {note} Thay đổi này chỉ ảnh hưởng đến các ứng dụng Laravel 8.x mới. Các ứng dụng mà nâng cấp từ Laravel 7.x vẫn sẽ có thuộc tính `$namespace` trong `RouteServiceProvider` của chúng.
