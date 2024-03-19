@@ -151,7 +151,7 @@ Sau khi set ứng dụng ở chế độ bảo trì, bạn có thể điều hư
 
 Khi truy cập vào route ẩn này, bạn sẽ được chuyển hướng đến route `/` của ứng dụng. Khi cookie đã được cấp cho trình duyệt của bạn, bạn sẽ có thể xem ứng dụng bình thường như thể nó không đang ở trong chế độ bảo trì.
 
-> {tip} Secret trong chế độ bảo trì của bạn sẽ thường phải chứa các ký tự chữ và số và các dấu gạch ngang. Bạn nên tránh sử dụng các ký tự có ý nghĩa đặc biệt trong URL, chẳng hạn như `?`.
+> {tip} Secret trong chế độ bảo trì của bạn sẽ thường phải chứa các ký tự chữ và số và các dấu gạch ngang. Bạn nên tránh sử dụng các ký tự có ý nghĩa đặc biệt trong URL, chẳng hạn như `?` hoặc `&`.
 
 <a name="pre-rendering-the-maintenance-mode-view"></a>
 #### Pre-Rendering The Maintenance Mode View

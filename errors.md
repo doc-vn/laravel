@@ -7,6 +7,7 @@
     - [Chặn exceptions theo loại](#ignoring-exceptions-by-type)
     - [Rendering Exceptions](#rendering-exceptions)
     - [Reportable và Renderable Exceptions](#renderable-exceptions)
+    - [Mapping Exceptions theo loại](#mapping-exceptions-by-type)
 - [HTTP Exceptions](#http-exceptions)
     - [Tuỳ biến page HTTP Error](#custom-http-error-pages)
 
@@ -241,6 +242,33 @@ Nếu ngoại lệ của bạn chứa logic reporting tùy chỉnh mà chỉ c�
     }
 
 > {tip} Bạn có thể khai báo bất kỳ phụ thuộc nào bắt buộc của phương thức `report` và chúng sẽ tự động được tích hợp vào trong phương thức bởi [service container](/docs/{{version}}/container).
+
+<a name="mapping-exceptions-by-type"></a>
+### Mapping Exceptions theo loại
+
+Thỉnh thoảng, các thư viện của bên thứ ba mà ứng dụng của bạn sử dụng có thể đưa ra các ngoại lệ mà bạn muốn tạo ra các [renderable](#renderable-exceptions) cho các ngoại lệ đó, nhưng không thể làm được vì bạn không có quyền định nghĩa các ngoại lệ ở trong thư viện của bên thứ ba.
+
+Rất may, Laravel cho phép bạn map từ ngoại lệ này sang ngoại lệ khác một cách thuận tiện mà bạn có thể quản lý trong ứng dụng của bạn. Để thực hiện điều này, hãy gọi phương thức `map` trong phương thức `register` của exception handler của bạn:
+
+    use League\Flysystem\Exception;
+    use App\Exceptions\FilesystemException;
+
+    /**
+     * Register the exception handling callbacks for the application.
+     *
+     * @return void
+     */
+    public function register()
+    {
+        $this->map(Exception::class, FilesystemException::class);
+    }
+
+Nếu bạn muốn kiểm soát nhiều hơn việc tạo ngoại lệ cho ngoại lệ đích, bạn có thể truyền một closure cho phương thức `map`:
+
+    use League\Flysystem\Exception;
+    use App\Exceptions\FilesystemException;
+
+    $this->map(fn (Exception $e) => new FilesystemException($e));
 
 <a name="http-exceptions"></a>
 ## HTTP Exceptions

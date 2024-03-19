@@ -252,7 +252,7 @@ Khi người dùng đang xem một trong các đơn hàng của họ, chúng ta 
 
     namespace App\Events;
 
-    use App\Order;
+    App\Models\Order;
     use Illuminate\Broadcasting\Channel;
     use Illuminate\Broadcasting\InteractsWithSockets;
     use Illuminate\Broadcasting\PresenceChannel;

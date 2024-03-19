@@ -883,7 +883,7 @@ Modifier  |  Mô tả
 `->unsigned()`  |  Set một cột kiểu INTEGER là luôn dương (MySQL).
 `->useCurrent()`  |  Set cột TIMESTAMP dùng CURRENT_TIMESTAMP làm giá trị mặc định.
 `->useCurrentOnUpdate()`  |  Set cột TIMESTAMP dùng CURRENT_TIMESTAMP khi bản ghi được cập nhật.
-`->virtualAs($expression)`  |  Tạo một cột lấy data từ cột khác nhưng không được lưu trữ (MySQL).
+`->virtualAs($expression)`  |  Tạo một cột lấy data từ cột khác nhưng không được lưu trữ (MySQL / PostgreSQL / SQLite).
 `->generatedAs($expression)`  |  Tạo một cột identity với tùy chọn tăng dần được chỉ định (PostgreSQL).
 `->always()`  |  Định nghĩa mức độ ưu tiên của các giá trị tăng dần so với giá trị đầu vào cho một cột identity (PostgreSQL).
 `->isGeometry()`  |  Set cột thành `geometry` - loại mặc định là `geography` (PostgreSQL).

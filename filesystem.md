@@ -139,7 +139,7 @@ Thông thường, sau khi cập nhật thông tin đăng nhập của disk để
 <a name="caching"></a>
 ### Caching
 
-Để kích hoạt bộ nhớ cache cho một disk nhất định, bạn có thể thêm tuỳ chọn `cache` vào các tùy chọn cấu hình của disk. Tùy chọn `cache` sẽ phải là một mảng gồm các tùy chọn là tên `disk`, thời gian hết hạn `expire` tính bằng giây và tiền tố `prefix`:
+Để kích hoạt bộ nhớ cache cho một disk nhất định, bạn có thể thêm tuỳ chọn `cache` vào các tùy chọn cấu hình của disk. Tùy chọn `cache` sẽ phải là một mảng gồm các tùy chọn là tên cache `store`, thời gian hết hạn `expire` tính bằng giây và tiền tố `prefix`:
 
     's3' => [
         'driver' => 's3',

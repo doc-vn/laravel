@@ -56,6 +56,7 @@ Homestead có thể chạy trên nhiều hệ điều hành Windows, macOS, ho�
 </style>
 
 <div id="software-list" markdown="1">
+
 - Ubuntu 20.04
 - Git
 - PHP 8.1
@@ -82,6 +83,7 @@ Homestead có thể chạy trên nhiều hệ điều hành Windows, macOS, ho�
 - Xdebug
 - XHProf / Tideways / XHGui
 - wp-cli
+
 </div>
 
 <a name="optional-software"></a>
@@ -96,6 +98,7 @@ Homestead có thể chạy trên nhiều hệ điều hành Windows, macOS, ho�
 </style>
 
 <div id="software-list" markdown="1">
+
 - Apache
 - Blackfire
 - Cassandra
@@ -125,6 +128,7 @@ Homestead có thể chạy trên nhiều hệ điều hành Windows, macOS, ho�
 - TimescaleDB
 - Trader <small>(PHP extension)</small>
 - Webdriver & Laravel Dusk Utilities
+
 </div>
 
 <a name="installation-and-setup"></a>

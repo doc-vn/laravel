@@ -414,7 +414,6 @@ Thông thường, liên kết model ngầm sẽ không lấy ra các model đã 
         return $user->email;
     })->withTrashed();
 
-<a name="customizing-the-key"></a>
 <a name="customizing-the-default-key-name"></a>
 #### Customizing The Key
 
