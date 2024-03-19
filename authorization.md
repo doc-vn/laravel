@@ -233,7 +233,7 @@ Gate::allowIf(fn ($user) => $user->isAdministrator());
 Gate::denyIf(fn ($user) => $user->banned());
 ```
 
-Nếu hành động không được phép hoặc nếu không có người dùng nào đang được xác thực, thì Laravel sẽ tự động đưa ra một exception `Illuminate\Auth\Access\AuthorizationException`. Các instance của `AuthorizationException` được exception handler của Laravel tự động chuyển thành HTTP response 403:
+Nếu hành động không được phép hoặc nếu không có người dùng nào đang được xác thực, thì Laravel sẽ tự động đưa ra một exception `Illuminate\Auth\Access\AuthorizationException`. Các instance của `AuthorizationException` được exception handler của Laravel tự động chuyển thành HTTP response 403.
 
 <a name="creating-policies"></a>
 ## Tạo Policies

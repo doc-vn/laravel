@@ -37,7 +37,7 @@ php artisan migrate
 Khi bạn đã tạo xong một ứng dụng Laravel mới, bạn có thể cài đặt Laravel Breeze bằng Composer:
 
 ```bash
-composer require laravel/breeze --dev
+composer require laravel/breeze:1.9.2
 ```
 
 Sau khi Composer đã cài đặt xong package Laravel Breeze, bạn có thể chạy lệnh Artisan `breeze:install`. Lệnh này sẽ export ra các view xác thực, route, controller và các resource khác cho ứng dụng của bạn. Laravel Breeze sẽ export tất cả các code của nó vào ứng dụng của bạn để bạn có toàn quyền kiểm soát và hiển thị các tính năng cũng như cách triển khai của nó. Sau khi Breeze đã được cài đặt, bạn cũng nên compile lại asset của bạn để tạo file CSS cho ứng dụng:
@@ -74,7 +74,7 @@ php artisan migrate
 <a name="breeze-and-next"></a>
 ### Breeze và Next.js / API
 
-Laravel Breeze cũng có thể xây dựng một API xác thực sẵn sàng cho xác thực các ứng dụng JavaScript hiện đại, chẳng hạn như các ứng dụng được tạo bởi [Next](https://nextjs.org), [Nuxt](https://nuxtjs.org) và các ứng dụng khác. Để bắt đầu, hãy chỉ định stack `api` làm stack mong muốn của bạn khi thực hiện lệnh Artisan `breeze:install`:
+Laravel Breeze cũng có thể xây dựng một API xác thực sẵn sàng cho xác thực các ứng dụng JavaScript hiện đại, chẳng hạn như các ứng dụng được tạo bởi [Next](https://nextjs.org), [Nuxt](https://nuxt.com) và các ứng dụng khác. Để bắt đầu, hãy chỉ định stack `api` làm stack mong muốn của bạn khi thực hiện lệnh Artisan `breeze:install`:
 
 ```nothing
 php artisan breeze:install api
@@ -96,4 +96,4 @@ Trong khi Laravel Breeze cung cấp một điểm khởi đầu đơn giản và
 
 Jetstream cung cấp một scaffolding ứng dụng được thiết kế đẹp mắt cho Laravel và chứa các form đăng nhập, đăng ký, xác minh email, xác thực hai yếu tố, quản lý session, hỗ trợ API thông qua Laravel Sanctum và tùy chọn quản lý team. Jetstream được thiết kế bằng [Tailwind CSS](https://tailwindcss.com) và cho bạn lựa chọn [Livewire](https://laravel-livewire.com) hoặc [Inertia.js](https://inertiajs.com) để chạy frontend scaffolding.
 
-Bạn có thể tìm thấy tài liệu đầy đủ về cách cài đặt Laravel Jetstream trong [tài liệu Jetstream chính thức](https://jetstream.laravel.com/2.x/introduction.html).
+Bạn có thể tìm thấy tài liệu đầy đủ về cách cài đặt Laravel Jetstream trong [tài liệu Jetstream chính thức](https://jetstream.laravel.com/introduction.html).

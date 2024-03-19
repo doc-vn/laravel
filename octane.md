@@ -458,8 +458,8 @@ Trong khi xây dựng ứng dụng của bạn, bạn nên đặc biệt cẩn t
 Khi sử dụng Swoole, bạn có thể thực hiện các thao tác đồng bộ thông qua các tác vụ background có dung lượng nhẹ. Bạn có thể thực hiện việc này bằng phương thức `concurrently` của Octane. Bạn có thể kết hợp phương thức này với việc gán mảng PHP để lấy ra kết quả của từng thao tác:
 
 ```php
-use App\User;
-use App\Server;
+use App\Models\User;
+use App\Models\Server;
 use Laravel\Octane\Facades\Octane;
 
 [$users, $servers] = Octane::concurrently([

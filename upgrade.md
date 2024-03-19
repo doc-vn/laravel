@@ -194,8 +194,8 @@ Chức năng [chế độ bảo trì](/docs/{{version}}/configuration#maintenanc
 
     define('LARAVEL_START', microtime(true));
 
-    if (file_exists(__DIR__.'/../storage/framework/maintenance.php')) {
-        require __DIR__.'/../storage/framework/maintenance.php';
+    if (file_exists($maintenance = __DIR__.'/../storage/framework/maintenance.php')) {
+        require $maintenance;
     }
 
 <a name="artisan-down-message"></a>

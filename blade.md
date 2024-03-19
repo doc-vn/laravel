@@ -471,7 +471,7 @@ Blade cũng cho phép bạn định nghĩa một comment trong view của bạn.
 
 Các component và slot sẽ cung cấp các lợi ích tương tự cho các section, layouts, và includes; tuy nhiên, một số có thể thấy model của các component và slot sẽ dễ hiểu hơn. Có hai cách tiếp cận để viết các component: các component dựa trên class và các component ẩn.
 
-Để tạo một component dựa trên class, bạn có thể sử dụng lệnh Artisan `make:component`. Để minh họa cách sử dụng của các component này, chúng ta sẽ tạo một component `Alert` đơn giản. Lệnh `make:component` sẽ lưu component vào trong thư mục `App\View\Components`:
+Để tạo một component dựa trên class, bạn có thể sử dụng lệnh Artisan `make:component`. Để minh họa cách sử dụng của các component này, chúng ta sẽ tạo một component `Alert` đơn giản. Lệnh `make:component` sẽ lưu component vào trong thư mục `app/View/Components`:
 
     php artisan make:component Alert
 
@@ -481,7 +481,7 @@ Bạn cũng có thể tạo các component trong các thư mục con:
 
     php artisan make:component Forms/Input
 
-Lệnh trên sẽ tạo một component `Input` trong thư mục `App\View\Components\Forms` và view sẽ được lưu trong thư mục `resources/views/components/forms`.
+Lệnh trên sẽ tạo một component `Input` trong thư mục `app/View/Components/Forms` và view sẽ được lưu trong thư mục `resources/views/components/forms`.
 
 <a name="manually-registering-package-components"></a>
 #### Manually Registering Package Components
@@ -534,7 +534,7 @@ Blade sẽ tự động phát hiện class được liên kết với component 
 
     <x-user-profile/>
 
-Nếu class component được lồng sâu hơn trong thư mục `pp\View\Components`, bạn có thể sử dụng ký tự `.` để biểu thị sự lồng thư mục. Ví dụ: nếu chúng ta giả sử là một component được lưu tại `App\View\Components\Inputs\Button.php`, thì chúng ta có thể hiển thị nó như sau:
+Nếu class component được lồng sâu hơn trong thư mục `app/View/Components`, bạn có thể sử dụng ký tự `.` để biểu thị sự lồng thư mục. Ví dụ: nếu chúng ta giả sử là một component được lưu tại `app/View/Components/Inputs/Button.php`, thì chúng ta có thể hiển thị nó như sau:
 
     <x-inputs.button/>
 

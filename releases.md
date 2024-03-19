@@ -23,15 +23,15 @@ Tại thời điểm này, chức năng [đặt tên cho tham số](https://www.
 <a name="support-policy"></a>
 ## Chính sách hỗ trợ
 
-Đối với tất cả các bản phát hành chính thức, các bản sửa lỗi sẽ được cung cấp trong 18 tháng và các bản sửa lỗi bảo mật được cung cấp trong 2 năm. Đối với tất cả các thư viện, bao gồm cả Lumen, chỉ bản phát hành mới nhất mới nhận được các bản sửa lỗi. Ngoài ra, hãy xem các phiên bản cơ sở dữ liệu [được hỗ trợ bởi Laravel](/docs/{{version}}/database#introduction).
+Đối với tất cả các bản phát hành chính thức, các bản sửa lỗi sẽ được cung cấp trong 18 tháng và các bản sửa lỗi bảo mật được cung cấp trong 2 năm. Đối với tất cả các thư viện, bao gồm cả Lumen, chỉ bản phát hành chính thức mới nhất mới nhận được các bản sửa lỗi. Ngoài ra, hãy xem các phiên bản cơ sở dữ liệu [được hỗ trợ bởi Laravel](/docs/{{version}}/database#introduction).
 
 | Version | PHP (*) | Release | Bug Fixes Until | Security Fixes Until |
 | --- | --- | --- | --- | --- |
 | 6 (LTS) | 7.2 - 8.0 | ngày 3 tháng 9 năm 2019 | ngày 25 tháng 1 năm 2022 | ngày 6 tháng 9 năm 2022 |
 | 7 | 7.2 - 8.0 | ngày 3 tháng 3 năm 2020 | ngày 6 tháng 10 năm 2020 | ngày 3 tháng 3 năm 2021 |
 | 8 | 7.3 - 8.1 | ngày 8 tháng 9 năm 2020 | ngày 26 tháng 7 năm 2022 | ngày 24 tháng 1 năm 2023 |
-| 9 | 8.0 - 8.1 | ngày 8 tháng 2 năm 2022 | ngày 8 tháng 8 năm 2023 | ngày 8 tháng 2 năm 2024 |
-| 10 | 8.0 - 8.1 | ngày 7 tháng 2 năm 2023 | ngày 7 tháng 8 năm 2024 | ngày 8 tháng 2 năm 2025 |
+| 9 | 8.0 - 8.1 | ngày 8 tháng 2 năm 2022 | ngày 8 tháng 8 năm 2023 | ngày 6 tháng 2 năm 2024 |
+| 10 | 8.1 | ngày 7 tháng 2 năm 2023 | ngày 6 tháng 8 năm 2024 | ngày 4 tháng 2 năm 2025 |
 
 <div class="version-colors">
     <div class="end-of-life">
@@ -170,7 +170,7 @@ Tính năng job batch của Laravel cho phép bạn dễ dàng thực hiện m�
 Phương thức `batch` mới của facade `Bus` có thể được sử dụng để gửi một loạt các job. Tất nhiên, việc tạo batch chủ yếu hữu ích khi kết hợp với các lệnh callback khi hoàn thành. Vì vậy, bạn có thể sử dụng các phương thức `then`, `catch` và `final` để định nghĩa các lệnh callback khi hoàn thành cho batch. Mỗi lệnh callback này sẽ nhận vào một instance `Illuminate\Bus\Batch` khi callback được gọi:
 
     use App\Jobs\ProcessPodcast;
-    use App\Podcast;
+    use App\Models\Podcast;
     use Illuminate\Bus\Batch;
     use Illuminate\Support\Facades\Bus;
     use Throwable;

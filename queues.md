@@ -263,7 +263,7 @@ Trong một số trường hợp nhất định, bạn có thể muốn định 
 
     <?php
 
-    use App\Product;
+    use App\Models\Product;
     use Illuminate\Contracts\Queue\ShouldQueue;
     use Illuminate\Contracts\Queue\ShouldBeUnique;
 
@@ -303,7 +303,7 @@ Mặc định, các job unique sẽ được "mở khóa" sau khi một job hoà
 
     <?php
 
-    use App\Product;
+    use App\Models\Product;
     use Illuminate\Contracts\Queue\ShouldQueue;
     use Illuminate\Contracts\Queue\ShouldBeUniqueUntilProcessing;
 
