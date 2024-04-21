@@ -18,6 +18,7 @@
     - [Ports](#ports)
     - [Phiên bản PHP](#php-versions)
     - [Kết nối đến database](#connecting-to-databases)
+    - [Tạo Databases](#creating-databases)
     - [Sao lưu database](#database-backups)
     - [Cấu hình Cron Schedules](#configuring-cron-schedules)
     - [Cấu hình MailHog](#configuring-mailhog)
@@ -42,7 +43,8 @@ Laravel cố gắng làm cho toàn bộ trải nghiệm phát triển PHP của 
 
 Homestead có thể chạy trên nhiều hệ điều hành Windows, macOS, hoặc Linux, và chứa Nginx, PHP, MySQL, PostgreSQL, Redis, Memcached, Node, và những software tuyệt vời khác để giúp bạn phát triển application của bạn.
 
-> {note} Nếu bạn đang dùng Windows, bạn có thể cần bật hardware virtualization (VT-x). Nó có thể được bật thông qua BIOS của bạn. Nếu bạn đang dùng Hyper-V trên hệ thống UEFI, bạn có thể cần phải tắt Hyper-V để có thể truy cập vào VT-x.
+> **Warning**
+> Nếu bạn đang dùng Windows, bạn có thể cần bật hardware virtualization (VT-x). Nó có thể được bật thông qua BIOS của bạn. Nếu bạn đang dùng Hyper-V trên hệ thống UEFI, bạn có thể cần phải tắt Hyper-V để có thể truy cập vào VT-x.
 
 <a name="included-software"></a>
 ### Software cài đặt sẵn
@@ -59,6 +61,7 @@ Homestead có thể chạy trên nhiều hệ điều hành Windows, macOS, ho�
 
 - Ubuntu 20.04
 - Git
+- PHP 8.2 (Default)
 - PHP 8.1
 - PHP 8.0
 - PHP 7.4
@@ -71,9 +74,10 @@ Homestead có thể chạy trên nhiều hệ điều hành Windows, macOS, ho�
 - MySQL 8.0
 - lmm
 - Sqlite3
-- PostgreSQL 13
+- PostgreSQL 15
 - Composer
-- Node (With Yarn, Bower, Grunt, and Gulp)
+- Docker
+- Node 18 (With Yarn, Bower, Grunt, and Gulp)
 - Redis
 - Memcached
 - Beanstalkd
@@ -105,12 +109,13 @@ Homestead có thể chạy trên nhiều hệ điều hành Windows, macOS, ho�
 - Chronograf
 - CouchDB
 - Crystal & Lucky Framework
-- Docker
 - Elasticsearch
 - EventStoreDB
+- Flyway
 - Gearman
 - Go
 - Grafana
+- Heroku CLI
 - InfluxDB
 - MariaDB
 - Meilisearch
@@ -120,7 +125,7 @@ Homestead có thể chạy trên nhiều hệ điều hành Windows, macOS, ho�
 - Oh My Zsh
 - Open Resty
 - PM2
-- Python
+- Python 3
 - R
 - RabbitMQ
 - RVM (Ruby Version Manager)
@@ -137,7 +142,7 @@ Homestead có thể chạy trên nhiều hệ điều hành Windows, macOS, ho�
 <a name="first-steps"></a>
 ### Bước đầu tiên
 
-Trước khi chạy môi trường Homestead của bạn, bạn cần phải cài đặt [Vagrant](https://www.vagrantup.com/downloads.html) hoặc một trong những nhà cung cấp được hỗ trợ sau:
+Trước khi chạy môi trường Homestead của bạn, bạn cần phải cài đặt [Vagrant](https://developer.hashicorp.com/vagrant/downloads) hoặc một trong những nhà cung cấp được hỗ trợ sau:
 
 - [VirtualBox 6.1.x](https://www.virtualbox.org/wiki/Downloads)
 - [Parallels](https://www.parallels.com/products/desktop/)
@@ -151,23 +156,27 @@ Tất cả các package phần mềm này đều có cách cài đặt trực qu
 
 Bạn có thể cài đặt Homestead bằng cách clone repository của Homestead vào trong máy local của bạn. Sau đó lưu thư mục đã clone đó vào trong thư mục có tên là `Homestead` trong thư mục "home" của bạn, vì máy ảo Homestead sẽ đóng vai trò là server lưu trữ cho tất cả các application Laravel của bạn. Nên trong suốt tài liệu này, chúng ta sẽ gọi thư mục này là "thư mục Homestead" của bạn:
 
-```bash
+```shell
 git clone https://github.com/laravel/homestead.git ~/Homestead
 ```
 
 Sau khi clone repository Laravel Homestead, bạn nên checkout ra branch `release`. Branch này luôn chứa bản phát hành mới nhất của Homestead:
 
-    cd ~/Homestead
+```shell
+cd ~/Homestead
 
-    git checkout release
+git checkout release
+```
 
 Tiếp theo, chạy lệnh `bash init.sh` từ trong thư mục Homestead để tạo file configuration `Homestead.yaml`, File `Homestead.yaml` này là nơi bạn sẽ chứa cấu hình tất cả các cài đặt cho Homestead của bạn. File này sẽ được lưu trong thư mục Homestead:
 
-    // macOS / Linux...
-    bash init.sh
+```shell
+# macOS / Linux...
+bash init.sh
 
-    // Windows...
-    init.bat
+# Windows...
+init.bat
+```
 
 <a name="configuring-homestead"></a>
 ### Cấu hình Homestead
@@ -179,7 +188,8 @@ Từ khoá `provider` trong file `Homestead.yaml` của bạn sẽ chỉ ra lo�
 
     provider: virtualbox
 
-> {note} Nếu bạn đang sử dụng Apple Silicon, bạn nên thêm `box: laravel/homestead-arm` vào file `Homestead.yaml` của bạn. Apple Silicon yêu cầu nhà cung cấp Parallels.
+> **Warning**
+> Nếu bạn đang sử dụng Apple Silicon, bạn nên thêm `box: laravel/homestead-arm` vào file `Homestead.yaml` của bạn. Apple Silicon yêu cầu nhà cung cấp Parallels.
 
 <a name="configuring-shared-folders"></a>
 #### Cài đặt thư mục chia sẻ
@@ -192,7 +202,8 @@ folders:
       to: /home/vagrant/project1
 ```
 
-> {note} Người dùng Windows không nên sử dụng cú pháp đường dẫn `~/` và thay vào đó nên sử dụng đường dẫn đầy đủ đến project của họ, chẳng hạn như `C:\Users\user\Code\project1`.
+> **Warning**
+> Người dùng Windows không nên sử dụng cú pháp đường dẫn `~/` và thay vào đó nên sử dụng đường dẫn đầy đủ đến project của họ, chẳng hạn như `C:\Users\user\Code\project1`.
 
 Bạn nên map các project nhỏ thành các thư mục riêng của chúng thay vì map toàn bộ thư mục `~/code` của bạn. Khi bạn map một thư mục, máy ảo phải theo dõi tất cả disk IO  cho *mọi file* có trong thư mục đó. Điều đó sẽ dẫn đến các vấn đề về hiệu suất nếu bạn có một lượng lớn các file trong một thư mục.
 
@@ -204,39 +215,48 @@ folders:
       to: /home/vagrant/project2
 ```
 
-> {note} Bạn không nên mount `.` (thư mục hiện tại) khi sử dụng Homestead. Điều này khiến Vagrant không map được thư mục hiện tại thành `/vagrant` và sẽ phá vỡ các tính năng tùy chọn và gây ra kết quả không mong muốn khi cấp phép.
+> **Warning**
+> Bạn không nên mount `.` (thư mục hiện tại) khi sử dụng Homestead. Điều này khiến Vagrant không map được thư mục hiện tại thành `/vagrant` và sẽ phá vỡ các tính năng tùy chọn và gây ra kết quả không mong muốn khi cấp phép.
 
 Để bật [NFS](https://www.vagrantup.com/docs/synced-folders/nfs.html), bạn có thể thêm tùy chọn `type` vào thư mục mapping của bạn:
 
-    folders:
-        - map: ~/code/project1
-          to: /home/vagrant/project1
-          type: "nfs"
+```yaml
+folders:
+    - map: ~/code/project1
+      to: /home/vagrant/project1
+      type: "nfs"
+```
 
-> {note} Khi dùng NFS trên Windows, bạn nên cân nhắc cài đặt plug-in [vagrant-winnfsd](https://github.com/winnfsd/vagrant-winnfsd). Plug-in này duy trì chính xác các quyền user và group cho các file và các thư mục trong máy ảo Homestead.
+> **Warning**
+> Khi dùng NFS trên Windows, bạn nên cân nhắc cài đặt plug-in [vagrant-winnfsd](https://github.com/winnfsd/vagrant-winnfsd). Plug-in này duy trì chính xác các quyền user và group cho các file và các thư mục trong máy ảo Homestead.
 
 Bạn cũng có thể thêm vào các option khác được hỗ trợ bởi Vagrant [Synced Folders](https://www.vagrantup.com/docs/synced-folders/basic_usage.html) bằng cách liệt kê chúng dưới từ khoá `options`:
 
-    folders:
-        - map: ~/code/project1
-          to: /home/vagrant/project1
-          type: "rsync"
-          options:
-              rsync__args: ["--verbose", "--archive", "--delete", "-zz"]
-              rsync__exclude: ["node_modules"]
+```yaml
+folders:
+    - map: ~/code/project1
+      to: /home/vagrant/project1
+      type: "rsync"
+      options:
+          rsync__args: ["--verbose", "--archive", "--delete", "-zz"]
+          rsync__exclude: ["node_modules"]
+```
 
 <a name="configuring-nginx-sites"></a>
 ### Cấu hình Nginx Site
 
 Nếu bạn chưa biết Nginx? Không sao cả. Thuộc tính `sites` của file `Homestead.yaml` của bạn cho phép bạn dễ dàng map một "domain" tới một thư mục trên môi trường phát triển Homestead. Một cấu hình site mẫu đã được chứa trong file `Homestead.yaml`. Một lần nữa, bạn có thể thêm nhiều site vào môi trường phát triển Homestead của bạn nếu cần. Homestead có thể phục vụ như một môi trường ảo hóa, thuận tiện cho mọi application Laravel mà bạn đang làm việc:
 
-    sites:
-        - map: homestead.test
-          to: /home/vagrant/project1/public
+```yaml
+sites:
+    - map: homestead.test
+      to: /home/vagrant/project1/public
+```
 
 Nếu bạn muốn thay đổi thuộc tính `sites` khi máy ảo Homestead đã được cài đặt, bạn nên chạy lệnh `vagrant reload --provision` trong terminal của bạn để cập nhật cấu hình Nginx trên máy ảo.
 
-> {note} Các script Homestead được xây dựng sao cho phù hợp nhất có thể. Tuy nhiên, nếu bạn đang gặp sự cố trong khi cấp phép, bạn nên xoá và build lại một máy ảo bằng cách chạy lệnh `vagrant destroy && vagrant up`.
+> **Warning**
+> Các script Homestead được xây dựng sao cho phù hợp nhất có thể. Tuy nhiên, nếu bạn đang gặp sự cố trong khi cấp phép, bạn nên xoá và build lại một máy ảo bằng cách chạy lệnh `vagrant destroy && vagrant up`.
 
 <a name="hostname-resolution"></a>
 #### Hostname Resolution
@@ -249,7 +269,7 @@ Sử dụng hostname tự động sẽ hoạt động tốt nhất cho [cài đ�
 
 Hãy chắc chắn rằng địa chỉ IP được liệt kê là địa chỉ được cài đặt trong file `Homestead.yaml` của bạn. Khi bạn đã thêm tên miền vào file `hosts` của bạn và khởi chạy Vagrant, bạn có thể truy cập trang web thông qua trình duyệt web của bạn:
 
-```bash
+```shell
 http://homestead.test
 ```
 
@@ -282,17 +302,19 @@ Thay vì cài đặt Homestead globally và chia sẻ máy ảo Homestead đó c
 
 Để cài đặt Homestead vào project của bạn, thì bạn phải cài nó thông qua Composer:
 
-```bash
+```shell
 composer require laravel/homestead --dev
 ```
 
 Khi mà Homestead đã cài đặt xong, gọi lệnh `make` của Homestead để tạo ra 2 file `Vagrantfile` và `Homestead.yaml` cho project của bạn. Những file này sẽ được lưu trong thư mục gốc của dự án của bạn. Lệnh `make` sẽ tự động cấu hình các thuộc tính `sites` và `folders` vào trong file `Homestead.yaml`.
 
-    // macOS / Linux...
-    php vendor/bin/homestead make
+```shell
+# macOS / Linux...
+php vendor/bin/homestead make
 
-    // Windows...
-    vendor\\bin\\homestead make
+# Windows...
+vendor\\bin\\homestead make
+```
 
 Tiếp theo, chạy lệnh `vagrant up` trong terminal để có thể truy cập vào project của bạn trên địa chỉ `http://homestead.test` trong web browser. Hãy nhớ rằng, bạn cần phải thêm domain `homestead.test` vào file `/etc/hosts` hoặc tên domain mà bạn thích nếu bạn không muốn sử dụng [hostname resolution](#hostname-resolution)
 
@@ -301,53 +323,63 @@ Tiếp theo, chạy lệnh `vagrant up` trong terminal để có thể truy cậ
 
 Các phần mềm tùy chọn sẽ được cài đặt bằng cách sử dụng tuỳ chọn `features` trong file `Homestead.yaml` của bạn. Hầu hết các chức năng đều có thể được bật hoặc tắt bằng giá trị boolean, trong khi đó có một số chức năng cho phép nhiều tùy chọn cấu hình:
 
-    features:
-        - blackfire:
-            server_id: "server_id"
-            server_token: "server_value"
-            client_id: "client_id"
-            client_token: "client_value"
-        - cassandra: true
-        - chronograf: true
-        - couchdb: true
-        - crystal: true
-        - docker: true
-        - elasticsearch:
-            version: 7.9.0
-        - eventstore: true
-            version: 21.2.0
-        - gearman: true
-        - golang: true
-        - grafana: true
-        - influxdb: true
-        - mariadb: true
-        - meilisearch: true
-        - minio: true
-        - mongodb: true
-        - neo4j: true
-        - ohmyzsh: true
-        - openresty: true
-        - pm2: true
-        - python: true
-        - r-base: true
-        - rabbitmq: true
-        - rvm: true
-        - solr: true
-        - timescaledb: true
-        - trader: true
-        - webdriver: true
+```yaml
+features:
+    - blackfire:
+        server_id: "server_id"
+        server_token: "server_value"
+        client_id: "client_id"
+        client_token: "client_value"
+    - cassandra: true
+    - chronograf: true
+    - couchdb: true
+    - crystal: true
+    - elasticsearch:
+        version: 7.9.0
+    - eventstore: true
+        version: 21.2.0
+    - flyway: true
+    - gearman: true
+    - golang: true
+    - grafana: true
+    - heroku: true
+    - influxdb: true
+    - mariadb: true
+    - meilisearch: true
+    - minio: true
+    - mongodb: true
+    - mysql: true
+    - neo4j: true
+    - ohmyzsh: true
+    - openresty: true
+    - pm2: true
+    - python: true
+    - r-base: true
+    - rabbitmq: true
+    - rvm: true
+    - solr: true
+    - timescaledb: true
+    - trader: true
+    - webdriver: true
+```
 
 <a name="elasticsearch"></a>
 #### Elasticsearch
 
 Bạn có thể chỉ định phiên bản được hỗ trợ cho Elasticsearch, nó phải là phiên bản chính xác (major.minor.patch). Cài đặt mặc định sẽ tạo ra một cụm có tên là 'homestead'. Bạn đừng nên cho Elasticsearch nhiều hơn một nửa bộ nhớ của máy ảo, vì vậy hãy đảm bảo rằng máy ảo Homestead của bạn có ít nhất gấp đôi lượng được phân bổ cho Elasticsearch.
 
-> {tip} Hãy xem [tài liệu về Elasticsearch](https://www.elastic.co/guide/en/elasticsearch/reference/current) để tìm hiểu cách tùy chỉnh cấu hình của bạn.
+> **Note**
+> Hãy xem [tài liệu về Elasticsearch](https://www.elastic.co/guide/en/elasticsearch/reference/current) để tìm hiểu cách tùy chỉnh cấu hình của bạn.
 
 <a name="mariadb"></a>
 #### MariaDB
 
-Hãy bật MariaDB rồi xóa MySQL và cài đặt MariaDB. MariaDB server thường sẽ đóng vai trò thay thế cho MySQL, vì vậy bạn vẫn nên sử dụng driver cơ sở dữ liệu là `mysql` trong cấu hình cơ sở dữ liệu trong ứng dụng của bạn.
+Hãy bật MariaDB rồi xóa MySQL và cài đặt MariaDB. MariaDB server thường sẽ đóng vai trò thay thế cho MySQL, vì vậy bạn vẫn nên sử dụng driver cơ sở dữ liệu là `mysql` trong cấu hình cơ sở dữ liệu trong ứng dụng của bạn:
+
+```yaml
+features:
+  - mariadb: true
+```
 
 <a name="mongodb"></a>
 #### MongoDB
@@ -364,8 +396,10 @@ Mặc định, cài đặt của Neo4j sẽ lưu tên người dùng trong cơ s
 
 Bạn có thể thêm các alias của Bash vào trong máy ảo Homestead của bạn bằng cách sửa file `aliases` trong thư mục Homestead của bạn:
 
-    alias c='clear'
-    alias ..='cd ..'
+```shell
+alias c='clear'
+alias ..='cd ..'
+```
 
 Sau khi bạn đã update file `aliases`, bạn nên chạy lại máy ảo Homestead bằng lệnh `vagrant reload --provision`. Điều này sẽ đảm bảo rằng các alias mới của bạn sẽ được cài đặt vào máy ảo.
 
@@ -374,35 +408,47 @@ Sau khi bạn đã update file `aliases`, bạn nên chạy lại máy ảo Home
 
 Trước khi bạn bắt đầu cập nhật Homestead, hãy đảm bảo là bạn đã xóa máy ảo hiện tại của bạn bằng cách chạy lệnh sau trong thư mục Homestead của bạn:
 
-    vagrant destroy
+```shell
+vagrant destroy
+```
 
 Tiếp theo, bạn cần cập nhật mã nguồn của Homestead. Nếu bạn clone từ repository Homestead, bạn có thể chạy những lệnh dưới đây từ thư mục mà bạn đã clone để cập nhật.
 
-    git fetch
+```shell
+git fetch
 
-    git pull origin release
+git pull origin release
+```
 
 Các lệnh pull code này sẽ lấy source code Homestead mới nhất từ GitHub repository, nó sẽ tìm các tag mới nhất và sau đó kiểm tra phiên bản release mà được gắn với tag mới nhất. Bạn có thể tìm thấy phiên bản release mới nhất trên [trang release GitHub](https://github.com/laravel/homestead/releases).
 
 Nếu bạn cài đặt Homestead thông qua file `composer.json` trong project của bạn, bạn nên sửa version Homestead thành `"laravel/homestead": "^12"` trong file đó, rồi sau đó bạn chỉ cần cập nhật thư viện thông qua composer:
 
-    composer update
+```shell
+composer update
+```
 
 Sau đó, bạn nên cập nhật Vagrant box bằng lệnh `vagrant box update`:
 
-    vagrant box update
+```shell
+vagrant box update
+```
 
 Tiếp theo, bạn nên chạy lệnh `bash init.sh` từ thư mục Homestead để cập nhật thêm một số file cấu hình. Bạn sẽ có thể bị hỏi là có muốn ghi đè lên các file `Homestead.yaml`, `after.sh` và `aliases` hiện có của bạn hay không:
 
-    // macOS / Linux...
-    bash init.sh
+```shell
+# macOS / Linux...
+bash init.sh
 
-    // Windows...
-    init.bat
+# Windows...
+init.bat
+```
 
 Cuối cùng, bạn sẽ cần tạo lại Homestead box của bạn để sử dụng cài đặt Vagrant mới:
 
-    vagrant up
+```shell
+vagrant up
+```
 
 <a name="daily-usage"></a>
 ## Daily Usage
@@ -417,13 +463,16 @@ Bạn có thể SSH vào máy ảo của bạn bằng cách chạy lệnh termin
 
 Khi môi trường Homestead của bạn đã được cài đặt và chạy xong, bạn có thể muốn thêm một site mới cho  những dự án Laravel khác của bạn. Bạn có thể chạy nhiều dự án Laravel tùy thích trên một môi trường Homestead duy nhất. Để thêm những thông tin site mới này, hăy thêm site vào file `Homestead.yaml` của bạn:
 
-    sites:
-        - map: homestead.test
-          to: /home/vagrant/project1/public
-        - map: another.test
-          to: /home/vagrant/project2/public
+```yaml
+sites:
+    - map: homestead.test
+      to: /home/vagrant/project1/public
+    - map: another.test
+      to: /home/vagrant/project2/public
+```
 
-> {note} Bạn nên đảm bảo là bạn đã cấu hình [folder mapping](#configuring-shared-folders) cho thư mục của dự án trước khi thêm site.
+> **Warning**
+> Bạn nên đảm bảo là bạn đã cấu hình [folder mapping](#configuring-shared-folders) cho thư mục của dự án trước khi thêm site.
 
 Nếu Vagrant không tự động quản lý file "hosts" cho bạn, thì bạn có thể cần thêm thông tin site mới vào file host như sau. Trên Mac và Linux, file này được lưu tại `/etc/hosts`. Trên Windows, file đó được lưu tại `C:\Windows\System32\drivers\etc\hosts`.
 
@@ -451,23 +500,27 @@ Các loại site được hỗ trợ là: `apache`, `laravel` (mặc định), `
 
 Bạn có thể thêm các giá trị Nginx `fastcgi_param` vào site của bạn thông qua `params` trong site:
 
-    sites:
-        - map: homestead.test
-          to: /home/vagrant/project1/public
-          params:
-              - key: FOO
-                value: BAR
+```yaml
+sites:
+    - map: homestead.test
+      to: /home/vagrant/project1/public
+      params:
+          - key: FOO
+            value: BAR
+```
 
 <a name="environment-variables"></a>
 ### Biến môi trường
 
 Bạn có thể định nghĩa biến môi trường global bằng cách thêm chúng vào file `Homestead.yaml` của bạn:
 
-    variables:
-        - key: APP_ENV
-          value: local
-        - key: FOO
-          value: bar
+```yaml
+variables:
+    - key: APP_ENV
+      value: local
+    - key: FOO
+      value: bar
+```
 
 Sau khi đã cập nhật xong file `Homestead.yaml`, hãy tải lại provision cho máy ảo bằng cách chạy lệnh `vagrant reload --provision`. Lệnh này sẽ cập nhật cấu hình PHP-FPM cho tất cả các phiên bản PHP đã cài đặt và cũng cập nhật môi trường cho user `vagrant`.
 
@@ -488,12 +541,14 @@ Mặc định, các cổng dưới đây sẽ được thiết lập để chuy�
 
 Nếu muốn, bạn có thể chuyển tiếp các cổng bổ sung tới Vagrant box bằng cách định nghĩa một cấu hình `ports` trong file `Homestead.yaml` của bạn. Sau khi cập nhật file `Homestead.yaml` này, hãy đảm bảo là bạn đã provision lại bằng cách thực hiện lệnh `vagrant reload --provision`:
 
-    ports:
-        - send: 50000
-          to: 5000
-        - send: 7777
-          to: 777
-          protocol: udp
+```yaml
+ports:
+    - send: 50000
+      to: 5000
+    - send: 7777
+      to: 777
+      protocol: udp
+```
 
 Dưới đây là danh sách các cổng service Homestead mà bạn có thể muốn map từ host của bạn tới Vagrant box:
 
@@ -512,41 +567,67 @@ Dưới đây là danh sách các cổng service Homestead mà bạn có thể m
 <a name="php-versions"></a>
 ### Phiên bản PHP
 
-Homestead 6 đã giới thiệu chức năng hỗ trợ cho nhiều phiên bản PHP trên cùng một máy ảo. Bạn có thể chỉ định phiên bản PHP nào sẽ sử dụng cho một trang web nhất định trong file `Homestead.yaml` của bạn. Các phiên bản PHP có sẵn là: "5.6", "7.0", "7.1", "7.2", "7.3", "7.4", "8.0" (mặc định), và "8.1":
+Homestead hỗ trợ cho nhiều phiên bản PHP trên cùng một máy ảo. Bạn có thể chỉ định phiên bản PHP nào sẽ sử dụng cho một trang web nhất định trong file `Homestead.yaml` của bạn. Các phiên bản PHP có sẵn là: "5.6", "7.0", "7.1", "7.2", "7.3", "7.4", "8.0", "8.1", và "8.2" (mặc định):
 
-    sites:
-        - map: homestead.test
-          to: /home/vagrant/project1/public
-          php: "7.1"
+```yaml
+sites:
+    - map: homestead.test
+      to: /home/vagrant/project1/public
+      php: "7.4"
+```
 
 [Trong máy ảo Homestead của bạn](#connecting-via-ssh), bạn có thể sử dụng bất kỳ phiên bản PHP nào được hỗ trợ thông qua CLI:
 
-    php5.6 artisan list
-    php7.0 artisan list
-    php7.1 artisan list
-    php7.2 artisan list
-    php7.3 artisan list
-    php7.4 artisan list
-    php8.0 artisan list
-    php8.1 artisan list
+```shell
+php5.6 artisan list
+php7.0 artisan list
+php7.1 artisan list
+php7.2 artisan list
+php7.3 artisan list
+php7.4 artisan list
+php8.0 artisan list
+php8.1 artisan list
+php8.2 artisan list
+```
 
-Bạn cũng có thể cập nhật phiên bản mặc định của PHP mà CLI sử dụng bằng cách chạy các lệnh sau từ bên trong máy ảo Homestead của bạn:
+Bạn cũng có thể chỉ định phiên bản PHP mà CLI sẽ sử dụng trong file `Homestead.yaml` của bạn:
 
-    php56
-    php70
-    php71
-    php72
-    php73
-    php74
-    php80
-    php81
+```yaml
+php: 8.0
+```
+
+Hoặc, bạn có thể thay đổi thủ công bằng cách chạy các lệnh sau từ bên trong máy ảo Homestead của bạn:
+
+```shell
+php56
+php70
+php71
+php72
+php73
+php74
+php80
+php81
+php82
+```
 
 <a name="connecting-to-databases"></a>
 ### Kết nối đến database
 
 Một database `homestead` sẽ được cấu hình cho cả MySQL và PostgreSQL. Để kết nối đến database MySQL hoặc PostgreSQL từ máy thật của bạn, bạn cần kết nối tới địa chỉ `127.0.0.1` và cổng là `33060` (MySQL) hoặc `54320` (PostgreSQL). Với username và password sẽ là `homestead` và `secret`.
 
-> {note} Bạn chỉ nên sử dụng các cổng không mặc định này khi kết nối với cơ sở dữ liệu từ máy thật của bạn. Bạn sẽ dùng các cổng mặc định 3306 và 5432 trong file cấu hình `database` trong application của bạn vì Laravel đang chạy _trong_ máy ảo chứ không phải máy thật của bạn.
+> **Warning**
+> Bạn chỉ nên sử dụng các cổng không mặc định này khi kết nối với cơ sở dữ liệu từ máy thật của bạn. Bạn sẽ dùng các cổng mặc định 3306 và 5432 trong file cấu hình `database` trong application của bạn vì Laravel đang chạy _trong_ máy ảo chứ không phải máy thật của bạn.
+
+<a name="creating-databases"></a>
+### Tạo Databases
+
+Homestead có thể tự động tạo bất kỳ cơ sở dữ liệu nào mà ứng dụng của bạn cần. Nếu một database service đang chạy trong quá trình cung cấp, Homestead sẽ đảm bảo rằng mỗi cơ sở dữ liệu trong file cấu hình `Homestead.yaml` của bạn đều sẽ được tạo nếu nó chưa tồn tại:
+
+```yaml
+databases:
+  - database_1
+  - database_2
+```
 
 <a name="database-backups"></a>
 ### Sao lưu database
@@ -555,7 +636,7 @@ Homestead có thể tự động backup cơ sở dữ liệu của bạn khi Vag
 
     backup: true
 
-Sau khi đã được cấu hình, Homestead sẽ export cơ sở dữ liệu của bạn sang các thư mục `mysql_backup` và `postgres_backup` khi lệnh `vagrant destroy` được thực thi. Bạn có thể tìm thấy những thư mục này trong thư mục mà bạn đã clone Homestead hoặc trong thư mục gốc của project nếu bạn đang sử dụng phương thức [cài đặt Homestead cho từng dự án](#per-project-installation).
+Sau khi đã được cấu hình, Homestead sẽ export cơ sở dữ liệu của bạn sang các thư mục `.backup/mysql_backup` và `.backup/postgres_backup` khi lệnh `vagrant destroy` được thực thi. Bạn có thể tìm thấy những thư mục này trong thư mục mà bạn đã clone Homestead hoặc trong thư mục gốc của project nếu bạn đang sử dụng phương thức [cài đặt Homestead cho từng dự án](#per-project-installation).
 
 <a name="configuring-cron-schedules"></a>
 ### Cấu hình schedule cho Cron
@@ -578,12 +659,14 @@ Cron job cho site sẽ được thiết lập trong thư mục `/etc/cron.d` tro
 
 [MailHog](https://github.com/mailhog/MailHog) cho phép bạn chặn việc gửi email và thực hiện việc kiểm tra quá trình gửi mail đó mà không cần phải thực sự gửi mail đến người dùng. Để bắt đầu, hãy cập nhật file `.env` trong application của bạn sử dụng các cài đặt như sau:
 
-    MAIL_MAILER=smtp
-    MAIL_HOST=localhost
-    MAIL_PORT=1025
-    MAIL_USERNAME=null
-    MAIL_PASSWORD=null
-    MAIL_ENCRYPTION=null
+```ini
+MAIL_MAILER=smtp
+MAIL_HOST=localhost
+MAIL_PORT=1025
+MAIL_USERNAME=null
+MAIL_PASSWORD=null
+MAIL_ENCRYPTION=null
+```
 
 Khi MailHog đã được cấu hình xong, bạn có thể truy cập vào bảng điều khiển của MailHog tại `http://localhost:8025`.
 
@@ -610,7 +693,7 @@ Mặc định, Minio có sẵn trên cổng 9600. Bạn có thể truy cập và
 
 Cuối cùng, hãy đảm bảo file `.env` của bạn đã có các tùy chọn sau:
 
-```bash
+```ini
 AWS_ACCESS_KEY_ID=homestead
 AWS_SECRET_ACCESS_KEY=secretkey
 AWS_DEFAULT_REGION=us-east-1
@@ -648,13 +731,18 @@ Sau khi bật feature `webdriver`, bạn nên chạy lại lệnh `vagrant reloa
 
 Để giải quyết vấn đề này, Homestead chứa một lệnh `share` của riêng nó. Để bắt đầu, [hãy SSH vào máy ảo Homestead của bạn](#connecting-via-ssh) thông qua `vagrant ssh` và chạy lệnh `share homestead.test`. Lệnh này sẽ chia sẻ trang web `homestead.test` từ file cấu hình` Homestead.yaml` của bạn. Bạn có thể thay thế `homestead.test` thành bất kỳ trang web nào mà bạn muốn:
 
-    share homestead.test
+```shell
+share homestead.test
+```
 
 Sau khi chạy lệnh, bạn sẽ thấy một màn hình Ngrok xuất hiện chứa nhật ký hoạt động của URL và có thể truy cập được từ internet cho trang web vừa được chia sẻ. Nếu bạn muốn chỉ định một region hoặc một subdomain hoặc một tùy chọn thời gian chạy Ngrok, bạn có thể thêm chúng vào lệnh `share` của bạn:
 
-    share homestead.test -region=eu -subdomain=laravel
+```shell
+share homestead.test -region=eu -subdomain=laravel
+```
 
-> {note} Hãy nhớ rằng, Vagrant vốn không an toàn và bạn đang công khai máy ảo của bạn với Internet khi bạn chạy lệnh `share`.
+> **Warning**
+> Hãy nhớ rằng, Vagrant vốn không an toàn và bạn đang công khai máy ảo của bạn với Internet khi bạn chạy lệnh `share`.
 
 <a name="debugging-and-profiling"></a>
 ## Debugging và Profiling
@@ -664,9 +752,12 @@ Sau khi chạy lệnh, bạn sẽ thấy một màn hình Ngrok xuất hiện ch
 
 Homestead có hỗ trợ debug bằng [Xdebug](https://xdebug.org). Ví dụ: bạn có thể truy cập vào một trang web trên trình duyệt của bạn và PHP sẽ kết nối đến IDE của bạn để cho phép kiểm tra và sửa lỗi code đang chạy.
 
-Mặc định, Xdebug đã được chạy và sẵn sàng cho viêc kết nối. Nếu bạn cần kích hoạt Xdebug trên CLI, hãy chạy lệnh `sudo phpenmod xdebug` trong máy ảo Homestead của bạn. Tiếp theo, làm theo hướng dẫn của IDE để kích hoạt debug. Cuối cùng, cấu hình trình duyệt mà bạn muốn chạy trang web để kích hoạt Xdebug, bạn có thể kích hoạt Xdebug bằng một extension hoặc [bookmarklet](https://www.jetbrains.com/phpstorm/marklets/).
+Mặc định, Xdebug đã được chạy và sẵn sàng cho viêc kết nối. Nếu bạn cần bật hoặc tắt Xdebug trên CLI, hãy chạy lệnh `sudo phpenmod xdebug` hoặc `sudo phpdismod xdebug` trong máy ảo Homestead của bạn.
 
-> {note} Xdebug sẽ khiến PHP chạy chậm hơn đáng kể. Để tắt Xdebug, hãy chạy `sudo phpdismod xdebug` trong máy ảo Homestead của bạn và khởi động lại FPM service.
+Tiếp theo, làm theo hướng dẫn của IDE để bật debug. Cuối cùng, cấu hình trình duyệt mà bạn muốn chạy trang web để kích hoạt Xdebug, bạn có thể kích hoạt Xdebug bằng một extension hoặc [bookmarklet](https://www.jetbrains.com/phpstorm/marklets/).
+
+> **Warning**
+> Xdebug sẽ khiến PHP chạy chậm hơn đáng kể. Để tắt Xdebug, hãy chạy `sudo phpdismod xdebug` trong máy ảo Homestead của bạn và khởi động lại FPM service.
 
 <a name="autostarting-xdebug"></a>
 #### Autostarting Xdebug
@@ -675,8 +766,9 @@ Khi debug các bài test chức năng thực hiện request đến web server, v
 
 ```ini
 ; If Homestead.yaml contains a different subnet for the IP address, this address may be different...
-xdebug.remote_host = 192.168.10.1
-xdebug.remote_autostart = 1
+xdebug.client_host = 192.168.10.1
+xdebug.mode = debug
+xdebug.start_with_request = yes
 ```
 
 <a name="debugging-cli-applications"></a>
@@ -704,7 +796,7 @@ features:
         client_token: "client_value"
 ```
 
-Thông tin xác thực server và thông tin xác thực client của Blackfire [yêu cầu một tài khoản Blackfire](https://blackfire.io/signup). Blackfire cung cấp các tùy chọn khác nhau để lập hồ sơ cho ứng dụng, bao gồm một công cụ CLI và một extension trình duyệt. Vui lòng [xem tài liệu Blackfire để biết thêm chi tiết](https://blackfire.io/docs/cookbooks/index).
+Thông tin xác thực server và thông tin xác thực client của Blackfire [yêu cầu một tài khoản Blackfire](https://blackfire.io/signup). Blackfire cung cấp các tùy chọn khác nhau để lập hồ sơ cho ứng dụng, bao gồm một công cụ CLI và một extension trình duyệt. Vui lòng [xem tài liệu Blackfire để biết thêm chi tiết](https://blackfire.io/docs/php/integrations/laravel/index).
 
 <a name="network-interfaces"></a>
 ## Network Interfaces
@@ -741,10 +833,12 @@ Bạn có thể mở rộng Homestead bằng cách sử dụng script `after.sh`
 
 Khi đang tùy chỉnh Homestead, Ubuntu có thể hỏi bạn muốn giữ lại cấu hình ban đầu của package hay ghi đè cấu hình đó bằng file cấu hình mới. Để tránh điều này, bạn nên sử dụng lệnh sau đây để khi cài đặt các package để tránh ghi đè lên bất kỳ cấu hình nào đã được Homestead viết trước đó:
 
-    sudo apt-get -y \
-        -o Dpkg::Options::="--force-confdef" \
-        -o Dpkg::Options::="--force-confold" \
-        install package-name
+```shell
+sudo apt-get -y \
+    -o Dpkg::Options::="--force-confdef" \
+    -o Dpkg::Options::="--force-confold" \
+    install package-name
+```
 
 <a name="user-customizations"></a>
 ### User Customizations

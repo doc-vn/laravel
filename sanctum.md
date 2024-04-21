@@ -10,6 +10,7 @@
     - [Quyền của token](#token-abilities)
     - [Bảo vệ route](#protecting-routes)
     - [Thu hồi token](#revoking-tokens)
+    - [Thời hạn token](#token-expiration)
 - [SPA Authentication](#spa-authentication)
     - [Cấu hình](#spa-configuration)
     - [Authenticating](#spa-authenticating)
@@ -47,24 +48,32 @@ Thứ hai, Sanctum cũng cung cấp một cách đơn giản để xác thực c
 
 Sanctum sẽ chỉ cố gắng xác thực bằng cookie khi request bắt nguồn từ frontend SPA của chính bạn. Khi Sanctum kiểm tra một request HTTP đến, trước tiên nó sẽ kiểm tra cookie authentication và nếu không có cookie nào thì Sanctum sẽ kiểm tra header `Authorization` để tìm API token hợp lệ.
 
-> {tip} Sẽ hoàn toàn tốt nếu chỉ sử dụng Sanctum để xác thực các API token hoặc là xác thực SPA. Nếu bạn sử dụng Sanctum không có nghĩa là bạn bị bắt buộc phải sử dụng cả hai tính năng mà nó cung cấp, bạn có thể sử dụng một trong hai.
+> **Note**
+> Sẽ hoàn toàn tốt nếu chỉ sử dụng Sanctum để xác thực các API token hoặc là xác thực SPA. Nếu bạn sử dụng Sanctum không có nghĩa là bạn bị bắt buộc phải sử dụng cả hai tính năng mà nó cung cấp, bạn có thể sử dụng một trong hai.
 
 <a name="installation"></a>
 ## Cài đặt
 
-> {tip} Phiên bản mới nhất của Laravel đã chứa Laravel Sanctum. Tuy nhiên, nếu file `composer.json` của ứng dụng của bạn không chứa `laravel/sanctum`, bạn có thể làm theo hướng dẫn cài đặt bên dưới.
+> **Note**
+> Phiên bản mới nhất của Laravel đã chứa Laravel Sanctum. Tuy nhiên, nếu file `composer.json` của ứng dụng của bạn không chứa `laravel/sanctum`, bạn có thể làm theo hướng dẫn cài đặt bên dưới.
 
 Bạn có thể cài đặt Laravel Sanctum thông qua Composer package manager:
 
-    composer require laravel/sanctum
+```shell
+composer require laravel/sanctum
+```
 
 Tiếp theo, bạn nên export cấu hình Sanctum và các file migration bằng lệnh Artisan `vendor:publish`. File cấu hình `sanctum` sẽ được lưu trong thư mục `config` của application:
 
-    php artisan vendor:publish --provider="Laravel\Sanctum\SanctumServiceProvider"
+```shell
+php artisan vendor:publish --provider="Laravel\Sanctum\SanctumServiceProvider"
+```
 
 Cuối cùng, bạn nên chạy migration cơ sở dữ liệu của bạn. Sanctum sẽ tạo ra một bảng cơ sở dữ liệu để lưu trữ các API token:
 
-    php artisan migrate
+```shell
+php artisan migrate
+```
 
 Tiếp theo, nếu bạn muốn sử dụng Sanctum để xác thực một SPA, bạn nên thêm middleware của Sanctum vào group middleware `api` trong file `app/Http/Kernel.php` của application:
 
@@ -112,7 +121,8 @@ Sau đó, bạn có thể hướng dẫn Sanctum sử dụng model tùy chỉnh 
 <a name="api-token-authentication"></a>
 ## API Token Authentication
 
-> {tip} Bạn không nên sử dụng API token để xác thực các ứng dụng SPA của riêng bạn. Thay vào đó, hãy sử dụng [chức năng xác thực SPA](#spa-authentication) được tích hợp sẵn của Sanctum.
+> **Note**
+> Bạn không nên sử dụng API token để xác thực các ứng dụng SPA của riêng bạn. Thay vào đó, hãy sử dụng [chức năng xác thực SPA](#spa-authentication) được tích hợp sẵn của Sanctum.
 
 <a name="issuing-api-tokens"></a>
 ### Phát hành API Token
@@ -220,6 +230,21 @@ Bạn có thể "thu hồi" token bằng cách xóa chúng ra khỏi cơ sở d�
     // Revoke a specific token...
     $user->tokens()->where('id', $tokenId)->delete();
 
+<a name="token-expiration"></a>
+### Thời hạn token
+
+Mặc định, Sanctum token sẽ không bao giờ hết hạn và chỉ có thể bị vô hiệu hóa bằng cách [thu hồi token](#revoking-tokens). Tuy nhiên, nếu bạn muốn cấu hình thời gian hết hạn cho một token API của ứng dụng, bạn có thể thực hiện điều này thông qua tùy chọn cấu hình `expiration` được định nghĩa trong file cấu hình `sanctum` của ứng dụng. Tùy chọn cấu hình này sẽ định nghĩa số phút cho đến khi token đã phát hành sẽ bị coi là hết hạn:
+
+```php
+'expiration' => 525600,
+```
+
+Nếu bạn đã cấu hình thời gian hết hạn token cho ứng dụng của bạn, bạn cũng có thể muốn [schedule một task](/docs/{{version}}/scheduling) để xoá các token đã hết hạn của ứng dụng. Rất may, Sanctum đã chứa sẵn một lệnh Artisan `sanctum:prune-expired` mà bạn có thể sử dụng để thực hiện việc này. Ví dụ: bạn có thể cấu hình một scheduled task để xóa tất cả các record token trong cơ sở dữ liệu đã hết hạn trong 24 giờ qua:
+
+```php
+$schedule->command('sanctum:prune-expired --hours=24')->daily();
+```
+
 <a name="spa-authentication"></a>
 ## SPA Authentication
 
@@ -227,7 +252,8 @@ Sanctum cũng cung cấp một phương thức đơn giản để xác thực c�
 
 Đối với tính năng này, Sanctum không sử dụng bất kỳ loại token nào. Thay vào đó, Sanctum sử dụng các service xác thực session dựa trên cookie được tích hợp sẵn trong Laravel. Cách xác thực này cung cấp các lợi ích về bảo vệ CSRF, xác thực session, cũng như bảo vệ chống rò rỉ thông tin xác thực thông qua XSS.
 
-> {note} Để xác thực, SPA và API của bạn phải chia sẻ cùng một tên miền. Tuy nhiên, chúng có thể được set trên các subdomain khác nhau. Additionally, you should ensure that you send the `Accept: application/json` header with your request.
+> **Warning**
+> Để xác thực, SPA và API của bạn phải chia sẻ cùng một tên miền. Tuy nhiên, chúng có thể được set trên các subdomain khác nhau. Additionally, you should ensure that you send the `Accept: application/json` header with your request.
 
 
 <a name="spa-configuration"></a>
@@ -238,7 +264,8 @@ Sanctum cũng cung cấp một phương thức đơn giản để xác thực c�
 
 Đầu tiên, bạn nên cấu hình các tên miền mà SPA của bạn sẽ thực hiện request từ đó. Bạn có thể cấu hình các tên miền này bằng cách sử dụng tùy chọn cấu hình `stateful` trong file cấu hình `sanctum` của bạn. Cài đặt cấu hình này sẽ xác định xem tên miền nào sẽ duy trì "trạng thái" xác thực bằng cách sử dụng session cookie Laravel khi tạo request tới API của bạn.
 
-> {note} Nếu bạn đang truy cập ứng dụng của bạn thông qua URL có cổng (`127.0.0.1:8000`), bạn nên đảm bảo là bạn đã cấu hình cả số cổng với tên miền.
+> **Warning**
+> Nếu bạn đang truy cập ứng dụng của bạn thông qua URL có cổng (`127.0.0.1:8000`), bạn nên đảm bảo là bạn đã cấu hình cả số cổng với tên miền.
 
 <a name="sanctum-middleware"></a>
 #### Sanctum Middleware
@@ -260,7 +287,9 @@ Bạn nên đảm bảo là cấu hình CORS của ứng dụng của bạn đan
 
 Ngoài ra, bạn cũng nên thêm tùy chọn `withCredentials` trên instance global `axios` của application của bạn. Thông thường, điều này sẽ được thực hiện trong file `resources/js/bootstrap.js` của bạn. Nếu bạn không sử dụng Axios để thực hiện các request HTTP từ fontend của bạn, bạn nên thực hiện cấu hình tương đương trên HTTP client của riêng bạn:
 
-    axios.defaults.withCredentials = true;
+```js
+axios.defaults.withCredentials = true;
+```
 
 Cuối cùng, bạn nên đảm bảo cấu hình session cookie của têm miền trong ứng dụng hỗ trợ tất cả các subdomain của tên miền gốc. Bạn có thể hoàn thành việc này bằng cách set thêm tiền tố dấu `.` đứng trước tên miền bằng trong file cấu hình `config/session.php` của application của bạn:
 
@@ -274,9 +303,11 @@ Cuối cùng, bạn nên đảm bảo cấu hình session cookie của têm mi�
 
 Để xác thực SPA của bạn, trước tiên, trang đăng nhập của SPA của bạn phải thực hiện một request đến route `/sanctum/csrf-cookie` để khởi tạo bảo vệ CSRF cho ứng dụng:
 
-    axios.get('/sanctum/csrf-cookie').then(response => {
-        // Login...
-    });
+```js
+axios.get('/sanctum/csrf-cookie').then(response => {
+    // Login...
+});
+```
 
 Trong request này, Laravel sẽ set cookie `XSRF-TOKEN` chứa token CSRF hiện tại. Token này sau đó sẽ được truyền vào trong header `X-XSRF-TOKEN` trong các request tiếp theo, đối với các thư viện HTTP client như Axios và Angular HttpClient sẽ tự động thực hiện điều này cho bạn. Nếu thư viện JavaScript HTTP của bạn không set giá trị này cho bạn, bạn sẽ cần phải tự set header `X-XSRF-TOKEN` để khớp với giá trị của cookie `XSRF-TOKEN` được set theo route này.
 
@@ -289,7 +320,8 @@ Nếu request đăng nhập thành công, bạn sẽ được xác thực và c�
 
 Tất nhiên, nếu session người dùng của bạn hết hạn do không hoạt động, thì các request tiếp theo tới ứng dụng Laravel có thể nhận được response lỗi HTTP 401 hoặc 419. Trong trường hợp này, bạn nên chuyển hướng người dùng đến trang đăng nhập SPA của bạn.
 
-> {note} Bạn có thể tự do thoải mái viết bất kỳ endpoint `/login` nào của riêng bạn; tuy nhiên, bạn nên đảm bảo rằng nó xác thực người dùng bằng cách sử dụng tiêu chuẩn [dịch vụ xác thực dựa trên session mà Laravel cung cấp](/docs/{{version}}/authentication#authenticating-users). Thông thường, điều này có nghĩa là sử dụng guard authentication `web`.
+> **Warning**
+> Bạn có thể tự do thoải mái viết bất kỳ endpoint `/login` nào của riêng bạn; tuy nhiên, bạn nên đảm bảo rằng nó xác thực người dùng bằng cách sử dụng tiêu chuẩn [dịch vụ xác thực dựa trên session mà Laravel cung cấp](/docs/{{version}}/authentication#authenticating-users). Thông thường, điều này có nghĩa là sử dụng guard authentication `web`.
 
 <a name="protecting-spa-routes"></a>
 ### Bảo vệ route
@@ -311,28 +343,30 @@ Nếu SPA của bạn cần xác thực với [các channel private / presence b
 
 Tiếp theo, để các authorization request của Pusher thành công, bạn sẽ cần phải cung cấp một tùy chỉnh `authorizer` của Pusher khi khởi tạo [Laravel Echo](/docs/{{version}}/broadcasting#client-side-installation). Điều này cho phép ứng dụng của bạn cấu hình Pusher để sử dụng một instance `axios` được [cấu hình đúng cho các request cross-domain](#cors-and-cookies):
 
-    window.Echo = new Echo({
-        broadcaster: "pusher",
-        cluster: process.env.MIX_PUSHER_APP_CLUSTER,
-        encrypted: true,
-        key: process.env.MIX_PUSHER_APP_KEY,
-        authorizer: (channel, options) => {
-            return {
-                authorize: (socketId, callback) => {
-                    axios.post('/api/broadcasting/auth', {
-                        socket_id: socketId,
-                        channel_name: channel.name
-                    })
-                    .then(response => {
-                        callback(false, response.data);
-                    })
-                    .catch(error => {
-                        callback(true, error);
-                    });
-                }
-            };
-        },
-    })
+```js
+window.Echo = new Echo({
+    broadcaster: "pusher",
+    cluster: import.meta.env.VITE_PUSHER_APP_CLUSTER,
+    encrypted: true,
+    key: import.meta.env.VITE_PUSHER_APP_KEY,
+    authorizer: (channel, options) => {
+        return {
+            authorize: (socketId, callback) => {
+                axios.post('/api/broadcasting/auth', {
+                    socket_id: socketId,
+                    channel_name: channel.name
+                })
+                .then(response => {
+                    callback(false, response.data);
+                })
+                .catch(error => {
+                    callback(true, error);
+                });
+            }
+        };
+    },
+})
+```
 
 <a name="mobile-application-authentication"></a>
 ## Mobile Application Authentication
@@ -371,7 +405,8 @@ Thông thường, bạn sẽ tạo một request tới route token từ màn hì
 
 Khi ứng dụng di động sử dụng token để thực hiện một request API đối với application của bạn, ứng dụng đó sẽ truyền token vào trong header `Authorization` dưới dạng một token `Bearer`.
 
-> {mẹo} Khi phát hành token cho ứng dụng di động, bạn cũng có thể tự do chỉ định [các quyền cho token](#token-abilities).
+> **Note**
+> Khi phát hành token cho ứng dụng di động, bạn cũng có thể tự do chỉ định [các quyền cho token](#token-abilities).
 
 <a name="protecting-mobile-api-routes"></a>
 ### Bảo vệ route

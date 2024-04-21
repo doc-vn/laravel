@@ -3,7 +3,7 @@
 - [Giới thiệu](#introduction)
 - [Tương tác với request](#interacting-with-the-request)
     - [Truy cập vào Request](#accessing-the-request)
-    - [Request Path và Method](#request-path-and-method)
+    - [Request Path, Host, và Method](#request-path-and-method)
     - [Request Headers](#request-headers)
     - [Request IP Address](#request-ip-address)
     - [Content Negotiation](#content-negotiation)
@@ -97,7 +97,7 @@ Bạn vẫn có thể khai báo kiểu `Illuminate\Http\Request` và truy cập 
     }
 
 <a name="request-path-and-method"></a>
-### Request Path và Method
+### Request Path, Host, và Method
 
 Instance `Illuminate\Http\Request` cung cấp nhiều phương thức để kiểm tra HTTP request đến và nó được extend từ class `Symfony\Component\HttpFoundation\Request`. Chúng tôi sẽ nói về một số phương thức quan trọng dưới đây.
 
@@ -135,6 +135,15 @@ Bằng cách sử dụng phương thức `routeIs`, bạn có thể xác định
 Nếu bạn muốn nối thêm biến vào URL hiện tại, bạn có thể gọi phương thức `fullUrlWithQuery`. Phương thức này sẽ nối một mảng các biến đã cho vào các biến hiện tại:
 
     $request->fullUrlWithQuery(['type' => 'phone']);
+
+<a name="retrieving-the-request-host"></a>
+#### Retrieving The Request Host
+
+Bạn có thể lấy ra "host" của request đến thông qua các phương thức `host`, `httpHost` và `schemeAndHttpHost`:
+
+    $request->host();
+    $request->httpHost();
+    $request->schemeAndHttpHost();
 
 <a name="retrieving-the-request-method"></a>
 #### Lấy Request Method
@@ -201,8 +210,10 @@ Vì nhiều ứng dụng chỉ cần HTML hoặc JSON nên bạn có thể sử 
 
 [Tiêu chuẩn PSR-7](https://www.php-fig.org/psr/psr-7/) định nghĩa interface cho các message HTTP, bao gồm cả các request và response. Nếu bạn muốn có một instance của PSR-7 request thay vì Laravel request, trước tiên bạn sẽ cần cài đặt một vài thư viện. Laravel sẽ sử dụng component *Symfony HTTP Message Bridge* để chuyển đổi các request và response của Laravel thành các implementation tương thích PSR-7:
 
-    composer require symfony/psr-http-message-bridge
-    composer require nyholm/psr7
+```shell
+composer require symfony/psr-http-message-bridge
+composer require nyholm/psr7
+```
 
 Khi bạn đã cài đặt xong các thư viện trên, bạn có thể lấy được PSR-7 request bằng cách khai báo kiểu request interface trên vào route closure hoặc controller method:
 
@@ -212,7 +223,8 @@ Khi bạn đã cài đặt xong các thư viện trên, bạn có thể lấy đ
         //
     });
 
-> {tip} Nếu bạn muốn trả về một instance response PSR-7 từ một route hoặc một controller, nó sẽ tự động được chuyển đổi trở lại thành một instance response Laravel và được hiển thị bởi framework.
+> **Note**
+> Nếu bạn muốn trả về một instance response PSR-7 từ một route hoặc một controller, nó sẽ tự động được chuyển đổi trở lại thành một instance response Laravel và được hiển thị bởi framework.
 
 <a name="input"></a>
 ## Input
@@ -276,9 +288,16 @@ Bạn có thể gọi phương thức `query` mà không có bất kỳ tham s�
 <a name="retrieving-json-input-values"></a>
 #### Lấy JSON Input Values
 
-Khi gửi các JSON request cho application của bạn, bạn có thể truy cập dữ liệu JSON thông qua phương thức `input` miễn là `Content-Type` header của request đó được set là `application/json`. Bạn thậm chí có thể sử dụng cú pháp "chấm" để lấy ra các phần tử con trong mảng JSON:
+Khi gửi các JSON request cho application của bạn, bạn có thể truy cập dữ liệu JSON thông qua phương thức `input` miễn là `Content-Type` header của request đó được set là `application/json`. Bạn thậm chí có thể sử dụng cú pháp "chấm" để lấy ra các phần tử con trong mảng JSON hoặc object:
 
     $name = $request->input('user.name');
+
+<a name="retrieving-stringable-input-values"></a>
+#### Retrieving Stringable Input Values
+
+Thay vì lấy dữ liệu input của request dưới dạng `string` đơn giản, bạn có thể sử dụng phương thức `string` để lấy dữ liệu request dưới dạng một instance của [`Illuminate\Support\Stringable`](/docs/{{version}}/helpers#fluent-strings):
+
+    $name = $request->string('name')->trim();
 
 <a name="retrieving-boolean-input-values"></a>
 #### Lấy giá trị input là boolean
@@ -299,6 +318,15 @@ Tham số thứ hai và thứ ba được phương thức `date` chấp nhận l
     $elapsed = $request->date('elapsed', '!H:i', 'Europe/Madrid');
 
 Nếu có giá trị input nhưng có định dạng không hợp lệ, lỗi `InvalidArgumentException` sẽ được đưa ra; do đó, bạn nên xác thực dữ liệu input trước khi gọi phương thức `date`.
+
+<a name="retrieving-enum-input-values"></a>
+#### Retrieving Enum Input Values
+
+Giá trị input tương ứng với [PHP enums](https://www.php.net/manual/en/language.types.enumerations.php) cũng có thể được lấy ra từ request. Nếu request không chứa giá trị input có tên đã cho hoặc enum không có giá trị nào khớp với giá trị input, `null` sẽ được trả về. Phương thức `enum` sẽ chấp nhận tên của giá trị input và class enum làm tham số thứ nhất và thứ hai của nó:
+
+    use App\Enums\Status;
+
+    $status = $request->enum('status', Status::class);
 
 <a name="retrieving-input-via-dynamic-properties"></a>
 #### Retrieving Input Via Dynamic Properties
@@ -322,7 +350,8 @@ Nếu bạn cần truy xuất một tập con của dữ liệu input, bạn có
 
     $input = $request->except('credit_card');
 
-> {note} Phương thức `only` trả về tất cả các cặp key / value mà bạn yêu cầu; tuy nhiên, nó sẽ không trả về các cặp key / value mà không có trong request.
+> **Warning**
+> Phương thức `only` trả về tất cả các cặp key / value mà bạn yêu cầu; tuy nhiên, nó sẽ không trả về các cặp key / value mà không có trong request.
 
 <a name="determining-if-input-is-present"></a>
 ### Xác nhận nếu Input tồn tại
@@ -359,13 +388,13 @@ Phương thức `hasAny` trả về `true` nếu có bất kỳ giá trị nào 
         //
     }
 
-Nếu bạn muốn xác định xem một giá trị có tồn tại trong request và không trống hay không, bạn có thể sử dụng phương thức `filled`:
+Nếu bạn muốn xác định xem một giá trị có tồn tại trong request và không rỗng hay không, bạn có thể sử dụng phương thức `filled`:
 
     if ($request->filled('name')) {
         //
     }
 
-Phương thức `whenFilled` sẽ chạy closure đã cho nếu có một giá trị trong request và không trống:
+Phương thức `whenFilled` sẽ chạy closure đã cho nếu có một giá trị trong request và không rỗng:
 
     $request->whenFilled('name', function ($input) {
         //
@@ -379,16 +408,22 @@ Closure thứ hai có thể được truyền đến phương thức `whenFilled
         // The "name" value is not filled...
     });
 
-Để xác định xem một khóa nào đó có bị thiếu trong request hay không, bạn có thể sử dụng phương thức `missing`:
+Để xác định xem một khóa nào đó có bị thiếu trong request hay không, bạn có thể sử dụng phương thức `missing` và phương thức `whenMissing`:
 
     if ($request->missing('name')) {
         //
     }
 
+    $request->whenMissing('name', function ($input) {
+        // The "name" value is missing...
+    }, function () {
+        // The "name" value is present...
+    });
+
 <a name="merging-additional-input"></a>
 ### Merge thêm giá trị Input
 
-Thỉnh thoảng, bạn có thể cần tự merge thêm dữ liệu input vào dữ liệu input hiện có của request. Để thực hiện điều này, bạn có thể sử dụng phương thức `merge`:
+Thỉnh thoảng, bạn có thể cần tự merge thêm dữ liệu input vào dữ liệu input hiện có của request. Để thực hiện điều này, bạn có thể sử dụng phương thức `merge`. Nếu khóa input đã tồn tại trong request, thì khóa này sẽ bị ghi đè bằng dữ liệu được cung cấp cho phương thức `merge`:
 
     $request->merge(['votes' => 0]);
 
@@ -451,9 +486,34 @@ Tất cả các cookie được tạo bởi Laravel framework đều được m�
 <a name="input-trimming-and-normalization"></a>
 ## Cắt và chuẩn hoá Input
 
-Mặc định, Laravel sẽ chứa các middleware `App\Http\Middleware\TrimStrings` và `App\Http\Middleware\ConvertEmptyStringsToNull` trong stack middleware global của application. Các middleware trên được liệt kê trong stack bởi class `App\Http\Kernel`. Các middleware này sẽ tự động trim tất cả các field dạng chuỗi trên request, cũng như chuyển đổi bất kỳ field nào đang ở dạng chuỗi trống thành `null`. Điều này cho phép bạn cần không phải lo lắng về những định dạng chuỗi có trong các route và controller của bạn.
+Mặc định, Laravel sẽ chứa các middleware `App\Http\Middleware\TrimStrings` và `Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull` trong stack middleware global của application. Các middleware trên được liệt kê trong stack bởi class `App\Http\Kernel`. Các middleware này sẽ tự động trim tất cả các field dạng chuỗi trên request, cũng như chuyển đổi bất kỳ field nào đang ở dạng chuỗi trống thành `null`. Điều này cho phép bạn cần không phải lo lắng về những định dạng chuỗi có trong các route và controller của bạn.
 
-Nếu bạn muốn vô hiệu hóa hành vi này, bạn có thể xóa chúng ra khỏi stack middleware của application bằng cách xóa chúng ra khỏi thuộc tính `$middleware` của class `App\Http\Kernel` của bạn.
+#### Disabling Input Normalization
+
+Nếu bạn muốn vô hiệu hóa hành vi này cho tất cả các request, bạn có thể xóa chúng ra khỏi stack middleware của application bằng cách xóa chúng ra khỏi thuộc tính `$middleware` của class `App\Http\Kernel` của bạn.
+
+Nếu bạn muốn vô hiệu hóa việc cắt chuỗi và việc chuyển đổi một chuỗi rỗng cho một tập hợp con các requests đến ứng dụng của bạn, bạn có thể sử dụng phương thức `skipWhen` do cả hai middleware này cung cấp. Phương thức này chấp nhận một closure trả về `true` hoặc `false` để chỉ ra rằng liệu có nên bỏ qua chuẩn hóa input đầu vào hay không. Thông thường, phương thức `skipWhen` cũng phải được gọi trong phương thức `boot` của `AppServiceProvider` trong ứng dụng của bạn.
+
+```php
+use App\Http\Middleware\TrimStrings;
+use Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull;
+
+/**
+ * Bootstrap any application services.
+ *
+ * @return void
+ */
+public function boot()
+{
+    TrimStrings::skipWhen(function ($request) {
+        return $request->is('admin/*');
+    });
+
+    ConvertEmptyStringsToNull::skipWhen(function ($request) {
+        // ...
+    });
+}
+```
 
 <a name="files"></a>
 ## Files
@@ -494,7 +554,7 @@ Class `UploadedFile` cũng chứa các phương thức có thể truy cập đ�
 <a name="other-file-methods"></a>
 #### Other File Methods
 
-Có nhiều phương thức khác có sẵn trong các instance `UploadedFile`. Hãy kiểm tra [tài liệu API cho class này](https://api.symfony.com/master/Symfony/Component/HttpFoundation/File/UploadedFile.html) để biết thêm thông tin về các phương thức này.
+Có nhiều phương thức khác có sẵn trong các instance `UploadedFile`. Hãy kiểm tra [tài liệu API cho class này](https://github.com/symfony/symfony/blob/6.0/src/Symfony/Component/HttpFoundation/File/UploadedFile.php) để biết thêm thông tin về các phương thức này.
 
 <a name="storing-uploaded-files"></a>
 ### Lưu file upload
@@ -515,7 +575,8 @@ Nếu bạn không muốn tên tệp được tự động tạo, bạn có th�
 
     $path = $request->photo->storeAs('images', 'filename.jpg', 's3');
 
-> {tip} Để biết thêm thông tin về việc lưu file trong Laravel, hãy xem [tài liệu về lưu file](/docs/{{version}}/filesystem).
+> **Note**
+> Để biết thêm thông tin về việc lưu file trong Laravel, hãy xem [tài liệu về lưu file](/docs/{{version}}/filesystem).
 
 <a name="configuring-trusted-proxies"></a>
 ## Cấu hình Trusted Proxies
@@ -551,7 +612,8 @@ Khi application của bạn đang chạy sau một hệ thống load balancer, m
         protected $headers = Request::HEADER_X_FORWARDED_FOR | Request::HEADER_X_FORWARDED_HOST | Request::HEADER_X_FORWARDED_PORT | Request::HEADER_X_FORWARDED_PROTO;
     }
 
-> {tip} Nếu bạn đang sử dụng AWS Elastic Load Balancing, thì giá trị `$headers` của bạn phải là `Request::HEADER_X_FORWARDED_AWS_ELB`. Để biết thêm thông tin về các hằng số có thể được sử dụng trong thuộc tính `$headers`, hãy xem tài liệu của Symfony về [trusting proxies](https://symfony.com/doc/current/deployment/proxies.html).
+> **Note**
+> Nếu bạn đang sử dụng AWS Elastic Load Balancing, thì giá trị `$headers` của bạn phải là `Request::HEADER_X_FORWARDED_AWS_ELB`. Để biết thêm thông tin về các hằng số có thể được sử dụng trong thuộc tính `$headers`, hãy xem tài liệu của Symfony về [trusting proxies](https://symfony.com/doc/current/deployment/proxies.html).
 
 <a name="trusting-all-proxies"></a>
 #### Trusting tất cả Proxies

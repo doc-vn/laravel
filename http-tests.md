@@ -15,6 +15,7 @@
 - [Available Assertions](#available-assertions)
     - [Response Assertions](#response-assertions)
     - [Authentication Assertions](#authentication-assertions)
+    - [Validation Assertions](#validation-assertions)
 
 <a name="introduction"></a>
 ## Giới thiệu
@@ -78,7 +79,8 @@ Thay vì trả về một instance `Illuminate\Http\Response`, các phương th�
 
 Nói chung, mỗi bài test của bạn chỉ nên đưa ra một yêu cầu kiểm tra cho ứng dụng của bạn. Hành vi không mong muốn có thể xảy ra nếu cho nhiều yêu cầu kiểm tra cho một bài test.
 
-> {tip} Để thuận tiện, CSRF middleware sẽ tự động bị tắt khi chạy test.
+> **Note**
+> Để thuận tiện, CSRF middleware sẽ tự động bị tắt khi chạy test.
 
 <a name="customizing-request-headers"></a>
 ### Tuỳ biến Request Header
@@ -151,7 +153,7 @@ Laravel cũng cung cấp một số helper để làm việc với session trong
         }
     }
 
-Cách dùng chủ yếu của session là để duy trì trạng thái người dùng đã được xác thực. Phương thức helper `actingAs` sẽ cung cấp một cách đơn giản để xác thực một người dùng. Ví dụ: chúng ta có thể sử dụng một [model factory](/docs/{{version}}/database-testing#writing-factories) để tạo và xác thực một người dùng:
+Cách dùng chủ yếu của session là để duy trì trạng thái người dùng đã được xác thực. Phương thức helper `actingAs` sẽ cung cấp một cách đơn giản để xác thực một người dùng. Ví dụ: chúng ta có thể sử dụng một [model factory](/docs/{{version}}/eloquent-factories) để tạo và xác thực một người dùng:
 
     <?php
 
@@ -172,7 +174,7 @@ Cách dùng chủ yếu của session là để duy trì trạng thái người 
         }
     }
 
-Bạn cũng có thể khai báo guard nào sẽ được sử dụng để xác thực người dùng bằng cách truyền tên guard làm tham số thứ hai cho phương thức `actingAs`:
+Bạn cũng có thể khai báo guard nào sẽ được sử dụng để xác thực người dùng bằng cách truyền tên guard làm tham số thứ hai cho phương thức `actingAs`. Guard được cung cấp cho phương thức `actingAs` cũng sẽ trở thành guard mặc định trong suốt thời gian test:
 
     $this->actingAs($user, 'web')
 
@@ -278,7 +280,8 @@ Ngoài ra, dữ liệu JSON response có thể được truy cập dưới dạn
 
     $this->assertTrue($response['created']);
 
-> {tip} Phương thức `assertJson` sẽ chuyển response thành một mảng và sử dụng `PHPUnit::assertArraySubset` để kiểm tra mảng đó có tồn tại trong response JSON mà được application trả về hay không. Vì vậy, nếu có các thuộc tính khác trong response JSON, bài test này vẫn sẽ được pass miễn là có đoạn đã cho.
+> **Note**
+> Phương thức `assertJson` sẽ chuyển response thành một mảng và sử dụng `PHPUnit::assertArraySubset` để kiểm tra mảng đó có tồn tại trong response JSON mà được application trả về hay không. Vì vậy, nếu có các thuộc tính khác trong response JSON, bài test này vẫn sẽ được pass miễn là có đoạn đã cho.
 
 <a name="verifying-exact-match"></a>
 #### Asserting Exact JSON Matches
@@ -338,6 +341,10 @@ Nếu bạn muốn kiểm tra rằng response JSON phải chứa một dữ li�
         }
     }
 
+Phương thức `assertJsonPath` cũng sẽ chấp nhận một closure, có thể được sử dụng để xác định xem bài kiểm tra này có pass hay không:
+
+    $response->assertJsonPath('team.owner.name', fn ($name) => strlen($name) >= 3);
+
 <a name="fluent-json-testing"></a>
 ### Fluent JSON Testing
 
@@ -358,6 +365,8 @@ Laravel cũng cung cấp một cách hay để kiểm tra dễ dàng các JSON r
             ->assertJson(fn (AssertableJson $json) =>
                 $json->where('id', 1)
                      ->where('name', 'Victoria Faith')
+                     ->where('email', fn ($email) => str($email)->is('victoria@gmail.com'))
+                     ->whereNot('status', 'pending')
                      ->missing('password')
                      ->etc()
             );
@@ -368,6 +377,8 @@ Laravel cũng cung cấp một cách hay để kiểm tra dễ dàng các JSON r
 Trong ví dụ trên, bạn có thể nhận thấy chúng ta đã gọi phương thức `etc` ở cuối chuỗi yêu cầu. Phương thức này thông báo cho Laravel là có thể có các thuộc tính khác tồn tại trong JSON object. Nếu phương thức `etc` không được sử dụng, quá trình kiểm tra sẽ thất bại nếu có thuộc tính khác mà bạn không đưa yêu cầu tồn tại cho nó.
 
 Mục đích đằng sau của hành động này là để bảo vệ bạn khỏi vô tình làm lộ thông tin nhạy cảm trong JSON response của bạn bằng cách buộc bạn phải đưa ra các yêu cầu rõ ràng cho thuộc tính hoặc cho phép thêm các thuộc tính khác thông qua phương thức `etc`.
+
+Tuy nhiên, bạn nên lưu ý rằng việc không thêm phương thức `etc` vào chuỗi yêu cầu của bạn sẽ không đảm bảo là các thuộc tính bổ sung sẽ không được thêm vào trong mảng lồng nhau trong đối tượng JSON của bạn. Phương thức `etc` chỉ đảm bảo là không có thuộc tính bổ sung nào tồn tại ở cùng cấp độ lồng ở chỗ phương thức `etc` được gọi.
 
 <a name="asserting-json-attribute-presence-and-absence"></a>
 #### Asserting Attribute Presence / Absence
@@ -382,8 +393,8 @@ Mục đích đằng sau của hành động này là để bảo vệ bạn kh�
 Ngoài ra, phương thức `hasAll` và `missingAll` cho phép yêu cầu tồn tại hoặc không tồn tại của nhiều thuộc tính cùng một lúc:
 
     $response->assertJson(fn (AssertableJson $json) =>
-        $json->hasAll('status', 'data')
-             ->missingAll('message', 'code')
+        $json->hasAll(['status', 'data'])
+             ->missingAll(['message', 'code'])
     );
 
 Bạn có thể sử dụng phương thức `hasAny` để xác định xem có tồn tại ít nhất một thuộc tính trong danh sách các thuộc tính nhất định hay không:
@@ -410,6 +421,7 @@ Trong những trường hợp như thế này, chúng ta có thể sử dụng p
                  ->first(fn ($json) =>
                     $json->where('id', 1)
                          ->where('name', 'Victoria Faith')
+                         ->where('email', fn ($email) => str($email)->is('victoria@gmail.com'))
                          ->missing('password')
                          ->etc()
                  )
@@ -436,6 +448,7 @@ Khi kiểm tra các route này, bạn có thể sử dụng phương thức `has
                  ->has('users.0', fn ($json) =>
                     $json->where('id', 1)
                          ->where('name', 'Victoria Faith')
+                         ->where('email', fn ($email) => str($email)->is('victoria@gmail.com'))
                          ->missing('password')
                          ->etc()
                  )
@@ -449,6 +462,7 @@ Tuy nhiên, thay vì thực hiện hai lệnh gọi riêng biệt đến phươn
                  ->has('users', 3, fn ($json) =>
                     $json->where('id', 1)
                          ->where('name', 'Victoria Faith')
+                         ->where('email', fn ($email) => str($email)->is('victoria@gmail.com'))
                          ->missing('password')
                          ->etc()
                  )
@@ -582,7 +596,7 @@ Nếu cần, bạn có thể sử dụng phương thức `blade` để so sánh 
 
     $view->assertSee('Taylor');
 
-Bạn có thể sử dụng phương thức `component` để so sánh và hiển thị một [Blade component](/docs/{{version}}/blade#components). Giống như phương thức `view`, phương thức `component` sẽ trả về một instance của `Illuminate\Testing\TestView`:
+Bạn có thể sử dụng phương thức `component` để so sánh và hiển thị một [Blade component](/docs/{{version}}/blade#components). Phương thức `component` sẽ trả về một instance của `Illuminate\Testing\TestComponent`:
 
     $view = $this->component(Profile::class, ['name' => 'Taylor']);
 
@@ -598,12 +612,14 @@ Class `Illuminate\Testing\TestResponse` của Laravel cung cấp nhiều phươn
 
 <style>
     .collection-method-list > p {
-        column-count: 2; -moz-column-count: 2; -webkit-column-count: 2;
-        column-gap: 2em; -moz-column-gap: 2em; -webkit-column-gap: 2em;
+        columns: 14.4em 2; -moz-columns: 14.4em 2; -webkit-columns: 14.4em 2;
     }
 
     .collection-method-list a {
         display: block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
     }
 </style>
 
@@ -624,20 +640,26 @@ Class `Illuminate\Testing\TestResponse` của Laravel cung cấp nhiều phươn
 [assertJson](#assert-json)
 [assertJsonCount](#assert-json-count)
 [assertJsonFragment](#assert-json-fragment)
+[assertJsonIsArray](#assert-json-is-array)
+[assertJsonIsObject](#assert-json-is-object)
 [assertJsonMissing](#assert-json-missing)
 [assertJsonMissingExact](#assert-json-missing-exact)
 [assertJsonMissingValidationErrors](#assert-json-missing-validation-errors)
 [assertJsonPath](#assert-json-path)
+[assertJsonMissingPath](#assert-json-missing-path)
 [assertJsonStructure](#assert-json-structure)
 [assertJsonValidationErrors](#assert-json-validation-errors)
 [assertJsonValidationErrorFor](#assert-json-validation-error-for)
 [assertLocation](#assert-location)
+[assertContent](#assert-content)
 [assertNoContent](#assert-no-content)
+[assertStreamedContent](#assert-streamed-content)
 [assertNotFound](#assert-not-found)
 [assertOk](#assert-ok)
 [assertPlainCookie](#assert-plain-cookie)
 [assertRedirect](#assert-redirect)
 [assertRedirectContains](#assert-redirect-contains)
+[assertRedirectToRoute](#assert-redirect-to-route)
 [assertRedirectToSignedRoute](#assert-redirect-to-signed-route)
 [assertSee](#assert-see)
 [assertSeeInOrder](#assert-see-in-order)
@@ -651,7 +673,6 @@ Class `Illuminate\Testing\TestResponse` của Laravel cung cấp nhiều phươn
 [assertSessionHasNoErrors](#assert-session-has-no-errors)
 [assertSessionDoesntHaveErrors](#assert-session-doesnt-have-errors)
 [assertSessionMissing](#assert-session-missing)
-[assertSimilarJson](#assert-similar-json)
 [assertStatus](#assert-status)
 [assertSuccessful](#assert-successful)
 [assertUnauthorized](#assert-unauthorized)
@@ -786,6 +807,20 @@ Yêu cầu response phải chứa đoạn JSON data ở bất kỳ nơi nào tro
 
     $response->assertJsonFragment(['name' => 'Taylor Otwell']);
 
+<a name="assert-json-is-array"></a>
+#### assertJsonIsArray
+
+Yêu cầu JSON response phải là một mảng:
+
+    $response->assertJsonIsArray();
+
+<a name="assert-json-is-object"></a>
+#### assertJsonIsObject
+
+Yêu cầu JSON response phải là một đối tượng:
+
+    $response->assertJsonIsObject();
+
 <a name="assert-json-missing"></a>
 #### assertJsonMissing
 
@@ -807,7 +842,8 @@ Yêu cầu response không chứa các lỗi JSON validation cho các khóa đã
 
     $response->assertJsonMissingValidationErrors($keys);
 
-> {tip} Phương thức [assertValid](#assert-valid) có thể được sử dụng để xác nhận các response được trả về dưới dạng JSON không có lỗi validation **và** không có lỗi nào được load vào bộ nhớ session.
+> **Note**
+> Phương thức [assertValid](#assert-valid) có thể được sử dụng để xác nhận các response được trả về dưới dạng JSON không có lỗi validation **và** không có lỗi nào được load vào bộ nhớ session.
 
 <a name="assert-json-path"></a>
 #### assertJsonPath
@@ -816,9 +852,9 @@ Yêu cầu response phải chứa một số dữ liệu đã cho tại một đ
 
     $response->assertJsonPath($path, $expectedValue);
 
-Ví dụ: nếu JSON response được ứng dụng của bạn trả về chứa dữ liệu sau:
+Ví dụ: nếu JSON response dưới đây được ứng dụng của bạn trả về:
 
-```js
+```json
 {
     "user": {
         "name": "Steve Schoger"
@@ -830,6 +866,27 @@ Bạn có thể yêu cầu thuộc tính `name` của đối tượng `user` kh�
 
     $response->assertJsonPath('user.name', 'Steve Schoger');
 
+<a name="assert-json-missing-path"></a>
+#### assertJsonMissingPath
+
+Yêu cầu response không chứa đường dẫn đã cho:
+
+    $response->assertJsonMissingPath($path);
+
+Ví dụ: nếu JSON response sau đây được ứng dụng của bạn trả về:
+
+```json
+{
+    "user": {
+        "name": "Steve Schoger"
+    }
+}
+```
+
+Bạn có thể yêu cầu nó không chứa thuộc tính `email` trong đối tượng `user`:
+
+    $response->assertJsonMissingPath('user.email');
+
 <a name="assert-json-structure"></a>
 #### assertJsonStructure
 
@@ -839,7 +896,7 @@ Yêu cầu response có cấu trúc JSON đã cho:
 
 Ví dụ: nếu JSON response được ứng dụng của bạn trả về chứa dữ liệu sau:
 
-```js
+```json
 {
     "user": {
         "name": "Steve Schoger"
@@ -857,7 +914,7 @@ Bạn có thể yêu cầu cấu trúc JSON sẽ phù hợp với mong đợi c�
 
 Đôi khi, các JSON response được ứng dụng của bạn trả về có thể chứa các mảng đối tượng:
 
-```js
+```json
 {
     "user": [
         {
@@ -893,7 +950,8 @@ Yêu cầu JSON response phải trả về lỗi validation cho key đã cho. N�
 
     $response->assertJsonValidationErrors(array $data, $responseKey = 'errors');
 
-> {tip} Phương thức [assertInvalid](#assert-invalid) có thể được sử dụng để yêu cầu một response được trả về dưới dạng JSON có lỗi validation **hoặc** các lỗi đó đã được load vào bộ lưu trữ session.
+> **Note**
+> Phương thức [assertInvalid](#assert-invalid) có thể được sử dụng để yêu cầu một response được trả về dưới dạng JSON có lỗi validation **hoặc** các lỗi đó đã được load vào bộ lưu trữ session.
 
 <a name="assert-json-validation-error-for"></a>
 #### assertJsonValidationErrorFor
@@ -909,12 +967,26 @@ Yêu cầu response có giá trị URI trong header `Location`:
 
     $response->assertLocation($uri);
 
+<a name="assert-content"></a>
+#### assertContent
+
+Yêu cầu response content khớp với một chuỗi đã cho:
+
+    $response->assertContent($value);
+
 <a name="assert-no-content"></a>
 #### assertNoContent
 
 Yêu cầu response có HTTP status code đã cho và không có content:
 
     $response->assertNoContent($status = 204);
+
+<a name="assert-streamed-content"></a>
+#### assertStreamedContent
+
+Yêu cầu streamed response content khớp với một chuỗi đã cho:
+
+    $response->assertStreamedContent($value);
 
 <a name="assert-not-found"></a>
 #### assertNotFound
@@ -951,10 +1023,17 @@ Yêu cầu response có đang chuyển hướng đế một URI có chứa chu�
 
     $response->assertRedirectContains($string);
 
+<a name="assert-redirect-to-route"></a>
+#### assertRedirectToRoute
+
+Yêu cầu response là một chuyển hướng đến một [route đã được đặt tên](/docs/{{version}}/routing#named-routes):
+
+    $response->assertRedirectToRoute($name = null, $parameters = []);
+
 <a name="assert-redirect-to-signed-route"></a>
 #### assertRedirectToSignedRoute
 
-Yêu cầu response là một chuyển hướng đến một route đã được đặt tên:
+Yêu cầu response là một chuyển hướng đến một [signed route](/docs/{{version}}/urls#signed-urls):
 
     $response->assertRedirectToSignedRoute($name = null, $parameters = []);
 
@@ -1045,6 +1124,9 @@ Hoặc, bạn có thể yêu cầu một field nhất định có thông báo l�
         'name' => 'The given name was invalid.'
     ]);
 
+> **Note**
+> Phương thức [assertInvalid](#assert-invalid) tổng quát hơn có thể được sử dụng để yêu cầu một response có lỗi xác thực phải được trả về dưới dạng JSON **hoặc** lỗi đó đã được có trong session storage.
+
 <a name="assert-session-has-errors-in"></a>
 #### assertSessionHasErrorsIn
 
@@ -1065,6 +1147,9 @@ Yêu cầu session không chứa validation lỗi:
 Yêu cầu session không chứa các validation lỗi cho các khóa đã cho:
 
     $response->assertSessionDoesntHaveErrors($keys = [], $format = null, $errorBag = 'default');
+
+> **Note**
+> Phương thức [assertValid](#assert-valid) tổng quát hơn có thể được sử dụng để yêu cầu một response không có lỗi xác thực được trả về dưới dạng JSON **hoặc** lỗi đó không có trong session storage.
 
 <a name="assert-session-missing"></a>
 #### assertSessionMissing
@@ -1203,3 +1288,33 @@ Yêu cầu một user chưa được xác thực:
 Yêu cầu một user cụ thể đã được xác thực:
 
     $this->assertAuthenticatedAs($user, $guard = null);
+
+<a name="validation-assertions"></a>
+## Validation Assertions
+
+Laravel cung cấp hai phương thức yêu cầu chính liên quan đến validation mà bạn có thể sử dụng để đảm bảo dữ liệu trong request của bạn là hợp lệ hoặc không hợp lệ.
+
+<a name="validation-assert-valid"></a>
+#### assertValid
+
+Yêu cầu response không có lỗi xác thực đối với các key đã cho. Phương thức này có thể được sử dụng để yêu cầu các response mà trong đó lỗi validation được trả về dưới dạng cấu trúc JSON hoặc là lỗi validation đã được load vào session:
+
+    // Assert that no validation errors are present...
+    $response->assertValid();
+
+    // Assert that the given keys do not have validation errors...
+    $response->assertValid(['name', 'email']);
+
+<a name="validation-assert-invalid"></a>
+#### assertInvalid
+
+Yêu cầu response có lỗi xác thực đối với các key đã cho. Phương thức này có thể được sử dụng để yêu cầu các response mà trong đó lỗi validation được trả về dưới dạng cấu trúc JSON hoặc là lỗi validation đã được load vào session:
+
+    $response->assertInvalid(['name', 'email']);
+
+Bạn cũng có thể yêu cầu một khóa nhất định có một validation error message. Khi làm như vậy, bạn có thể cung cấp toàn bộ message hoặc chỉ một phần nhỏ của message:
+
+    $response->assertInvalid([
+        'name' => 'The name field is required.',
+        'email' => 'valid email address',
+    ]);

@@ -11,7 +11,8 @@
 
 Laravel có chứa một abstraction giới hạn tỷ lệ dễ sử dụng, kết hợp với [cache](cache) của ứng dụng của bạn, cung cấp một cách dễ dàng để giới hạn bất kỳ hành động nào trong một khoảng thời gian nhất định.
 
-> {tip} Nếu bạn quan tâm đến việc giới hạn tỷ lệ các request HTTP, vui lòng tham khảo [tài liệu về middleware giới hạn tỷ lệ](routing#rate-limiting).
+> **Note**
+> Nếu bạn quan tâm đến việc giới hạn tỷ lệ các request HTTP, vui lòng tham khảo [tài liệu về middleware giới hạn tỷ lệ](routing#rate-limiting).
 
 <a name="cache-configuration"></a>
 ### Cấu hình Cache

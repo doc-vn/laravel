@@ -32,7 +32,8 @@
 
 Vì Fortify không cung cấp fontend, nên bạn cần nối giao diện người dùng của bạn với các route mà Fortify đã đăng ký. Chúng ta sẽ thảo luận chính xác cách thực hiện các request cho các route này trong phần còn lại của tài liệu này.
 
-> {tip} Hãy nhớ rằng, Fortify là một package giúp bạn triển khai các chức năng xác thực của Laravel. **Bạn không bắt buộc phải sử dụng nó.** Bạn có thể tương tác với các service xác thực của Laravel bằng cách làm theo tài liệu có sẵn trong [authentication](/docs/{{version}}/authentication), [reset password](/docs/{{version}}/passwords), và [xác minh email](/docs/{{version}}/verification).
+> **Note**
+> Hãy nhớ rằng, Fortify là một package giúp bạn triển khai các chức năng xác thực của Laravel. **Bạn không bắt buộc phải sử dụng nó.** Bạn có thể tương tác với các service xác thực của Laravel bằng cách làm theo tài liệu có sẵn trong [authentication](/docs/{{version}}/authentication), [reset password](/docs/{{version}}/passwords), và [xác minh email](/docs/{{version}}/verification).
 
 <a name="what-is-fortify"></a>
 ### Fortify là gì?
@@ -70,21 +71,21 @@ Nếu bạn đang thử xây dựng phần xác thực cho một ứng dụng c�
 
 Để bắt đầu, hãy cài đặt Fortify bằng trình quản lý package Composer:
 
-```nothing
+```shell
 composer require laravel/fortify
 ```
 
 Tiếp theo, export resource của Fortify bằng lệnh `vendor:publish`:
 
-```bash
+```shell
 php artisan vendor:publish --provider="Laravel\Fortify\FortifyServiceProvider"
 ```
 
-Lệnh này sẽ export các action của Fortify vào trong thư mục `app/Actions` của bạn, thư mục này sẽ được tạo nếu nó không tồn tại. Ngoài ra, file cấu hình của Fortify và file migration cũng sẽ được export.
+Lệnh này sẽ export các action của Fortify vào trong thư mục `app/Actions` của bạn, thư mục này sẽ được tạo nếu nó không tồn tại. Ngoài ra, file cấu hình `FortifyServiceProvider` và tất cả các file migration cơ sở dữ liệu cần thiết khác cũng sẽ được export.
 
 Tiếp theo, bạn nên migrate cơ sở dữ liệu của bạn:
 
-```bash
+```shell
 php artisan migrate
 ```
 
@@ -271,12 +272,14 @@ Tiếp theo, bạn nên tạo thêm một màn hình trong ứng dụng của b�
 <a name="enabling-two-factor-authentication"></a>
 ### Bật Two Factor Authentication
 
-Để bật xác thực hai lớp, ứng dụng của bạn phải gửi một request POST tới URI `/user/two-factor-authentication` do Fortify định nghĩa. Nếu request thành công, người dùng sẽ được chuyển hướng trở lại URL trước đó và biến session `status` sẽ được set thành `two-factor-authentication-enabled`. Bạn có thể kiểm tra biến session `status` này trong các template của bạn để hiển thị thông báo thành công. Nếu request là một request XHR, thì phản hồi HTTP `200` sẽ được trả về:
+Để bắt đầu bật xác thực hai lớp, ứng dụng của bạn phải gửi một request POST tới URI `/user/two-factor-authentication` do Fortify định nghĩa. Nếu request thành công, người dùng sẽ được chuyển hướng trở lại URL trước đó và biến session `status` sẽ được set thành `two-factor-authentication-enabled`. Bạn có thể kiểm tra biến session `status` này trong các template của bạn để hiển thị thông báo thành công. Nếu request là một request XHR, thì phản hồi HTTP `200` sẽ được trả về.
+
+Sau khi chọn bật xác thực hai lớp, người dùng sẽ vẫn phải “xác nhận” cấu hình xác thực hai lớp của họ bằng cách cung cấp một mã xác thực hai lớp hợp lệ. Vì vậy, thông báo "thành công" của bạn vẫn sẽ phải hướng dẫn người dùng là vẫn cần phải xác nhận xác thực hai lớp:
 
 ```html
 @if (session('status') == 'two-factor-authentication-enabled')
-    <div class="mb-4 font-medium text-sm text-green-600">
-        Two factor authentication has been enabled.
+    <div class="mb-4 font-medium text-sm">
+        Please finish configuring two factor authentication below.
     </div>
 @endif
 ```
@@ -288,6 +291,23 @@ $request->user()->twoFactorQrCodeSvg();
 ```
 
 Nếu bạn đang xây dựng một giao diện người dùng được hỗ trợ bởi JavaScript, thì bạn có thể tạo một request XHR GET tới URI `/user/two-factor-qr-code` để lấy ra mã QR xác thực hai lớp của người dùng. URI này sẽ trả về một đối tượng JSON chứa key `svg`.
+
+<a name="confirming-two-factor-authentication"></a>
+#### Confirming Two Factor Authentication
+
+Ngoài việc hiển thị mã QR cho xác thực hai lớp của người dùng, bạn nên cung cấp một text input để người dùng có thể cung cấp mã xác thực hợp lệ để "xác nhận" cấu hình xác thực hai lớp của họ. Mã này phải được cung cấp cho ứng dụng Laravel thông qua một request POST tới URL `/user/confirmed-two-factor-authentication` được định nghĩa bởi Fortify.
+
+Nếu request thành công, người dùng sẽ được chuyển hướng trở lại URL trước đó và biến session `status` sẽ được set thành `two-factor-authentication-confirmed`:
+
+```html
+@if (session('status') == 'two-factor-authentication-confirmed')
+    <div class="mb-4 font-medium text-sm">
+        Two factor authentication confirmed and enabled successfully.
+    </div>
+@endif
+```
+
+Nếu một request xác nhận xác thực hai lớp được thực hiện thông qua một request XHR, thì một response HTTP `200` sẽ cần được trả về.
 
 <a name="displaying-the-recovery-codes"></a>
 #### Displaying The Recovery Codes
@@ -367,7 +387,7 @@ Fortify sẽ đảm nhận việc định nghĩa route `/register` sẽ trả v�
 
 URI `/register` yêu cầu một chuỗi `name`, một chuỗi địa chỉ email hoặc tên người dùng, `password` và trường `password_confirmation`. Tên của trường email hoặc tên người dùng phải khớp với giá trị cấu hình`username` được định nghĩa trong file cấu hình `fortify` của ứng dụng của bạn.
 
-Nếu thử đăng ký thành công, Fortify sẽ chuyển hướng người dùng đến URI được cấu hình sẵn thông qua tùy chọn cấu hình `home` trong file cấu hình `fortify` của ứng dụng của bạn. Nếu yêu cầu đăng nhập là một request XHR, thì phản hồi 200 HTTP sẽ được trả về.
+Nếu thử đăng ký thành công, Fortify sẽ chuyển hướng người dùng đến URI được cấu hình sẵn thông qua tùy chọn cấu hình `home` trong file cấu hình `fortify` của ứng dụng của bạn. Nếu request là một request XHR, thì phản hồi 201 HTTP sẽ được trả về.
 
 Nếu request không thành công, người dùng sẽ được chuyển hướng trở lại màn hình đăng ký và các lỗi xác thực sẽ có sẵn cho bạn thông qua [biến template blade](/docs/{{version}}/validation#quick-displaying-the-validation-errors) `$errors`. Hoặc, trong trường hợp request là XHR, thì lỗi xác thực sẽ được trả về với response HTTP 422.
 
@@ -459,7 +479,7 @@ URI `/reset-password` sẽ yêu cầu trường chuỗi `email`, trường `pass
 
 Nếu yêu cầu set lại mật khẩu thành công, Fortify sẽ chuyển hướng trở lại route `/login` để người dùng có thể đăng nhập bằng mật khẩu mới của họ. Ngoài ra, biến session `status` sẽ được lưu vào session để bạn có thể hiển thị trạng thái của request set lại mật khẩu thành công trên màn hình đăng nhập của bạn:
 
-```html
+```blade
 @if (session('status'))
     <div class="mb-4 font-medium text-sm text-green-600">
         {{ session('status') }}
@@ -514,7 +534,7 @@ Nếu muốn, bạn cũng có thể thêm một nút vào template `verify-email
 
 Nếu việc gửi lại link này thành công, Fortify sẽ chuyển hướng người dùng quay lại URI `/email/verify` với biến session `status`, cho phép bạn hiển thị thông báo cho họ về hoạt động đã được thực hiện thành công. Nếu request là request XHR, phản hồi HTTP 202 sẽ được trả về:
 
-```html
+```blade
 @if (session('status') == 'verification-link-sent')
     <div class="mb-4 font-medium text-sm text-green-600">
         A new email verification link has been emailed to you!

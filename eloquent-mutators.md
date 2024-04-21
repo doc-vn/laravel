@@ -28,14 +28,15 @@ Accessors, mutators, và attribute casting cho phép bạn chuyển đổi các 
 <a name="defining-an-accessor"></a>
 ### Định nghĩa một Accessor
 
-Accessor sẽ biến đổi một giá trị thuộc tính Eloquent khi nó được truy cập. Để định nghĩa một accessor, hãy tạo một phương thức `get{Attribute}Attribute` trên model của bạn trong đó `{Attribute}` là tên được đặt theo kiểu "studly" của cột mà bạn muốn truy cập.
+Accessor sẽ biến đổi một giá trị thuộc tính Eloquent khi nó được truy cập. Để định nghĩa một accessor, hãy tạo một phương thức protected trên model của bạn để thể hiện cho thuộc tính đó. Tên phương thức này phải tương ứng với kiểu đặt tên "camel case" của một cột trong cơ sở dữ liệu hoặc một thuộc tính model thực sự khi áp dụng.
 
-Trong ví dụ này, chúng ta sẽ định nghĩa một accessor cho thuộc tính `first_name`. Accessor sẽ tự động được gọi bởi Eloquent khi bạn truy xuất vào thuộc tính `first_name`:
+Trong ví dụ này, chúng ta sẽ định nghĩa một accessor cho thuộc tính `first_name`. Accessor sẽ tự động được gọi bởi Eloquent khi bạn truy xuất vào thuộc tính `first_name`. Tất cả các phương thức accessor hoặc mutator cho thuộc tính đều phải khai báo kiểu trả về là kiểu `Illuminate\Database\Eloquent\Casts\Attribute`:
 
     <?php
 
     namespace App\Models;
 
+    use Illuminate\Database\Eloquent\Casts\Attribute;
     use Illuminate\Database\Eloquent\Model;
 
     class User extends Model
@@ -43,14 +44,17 @@ Trong ví dụ này, chúng ta sẽ định nghĩa một accessor cho thuộc t�
         /**
          * Get the user's first name.
          *
-         * @param  string  $value
-         * @return string
+         * @return \Illuminate\Database\Eloquent\Casts\Attribute
          */
-        public function getFirstNameAttribute($value)
+        protected function firstName(): Attribute
         {
-            return ucfirst($value);
+            return Attribute::make(
+                get: fn ($value) => ucfirst($value),
+            );
         }
     }
+
+Tất cả các phương thức accessor đều trả về một instance `Attribute` sẽ định nghĩa cách lấy thuộc tính ra và, tùy thích thay đổi. Trong ví dụ này, chúng ta sẽ chỉ định nghĩa cách lấy thuộc tính. Để làm như vậy, chúng ta cần cung cấp tham số `get` cho hàm constructor của class `Attribute`.
 
 Như bạn có thể thấy, giá trị ban đầu của cột được truyền vào accessor, cho phép bạn thao tác và trả về một giá trị khác. Để truy cập vào giá trị của accessor, bạn có thể truy cập dễ dàng vào thuộc tính `first_name` trên một instance model:
 
@@ -60,48 +64,107 @@ Như bạn có thể thấy, giá trị ban đầu của cột được truyền
 
     $firstName = $user->first_name;
 
-Bạn không bị giới hạn trong việc tương tác với một thuộc tính trong accessor của bạn. Bạn cũng có thể sử dụng accessor để trả về các giá trị mới, được tính toán từ các thuộc tính hiện có:
+> **Note**
+> Nếu bạn muốn thêm các giá trị được tính toán này vào một mảng hoặc một chuỗi JSON trong model của bạn, [bạn sẽ cần thêm chúng](/docs/{{version}}/eloquent-serialization#appending-values-to-json).
 
-    /**
-     * Get the user's full name.
-     *
-     * @return string
-     */
-    public function getFullNameAttribute()
-    {
-        return "{$this->first_name} {$this->last_name}";
-    }
+<a name="building-value-objects-from-multiple-attributes"></a>
+#### Building Value Objects From Multiple Attributes
 
-> {tip} Nếu bạn muốn thêm các giá trị đã được tính toán này vào mảng hoặc JSON được chuyển đổi của model, [bạn sẽ cần thêm chúng vào](/docs/{{version}}/eloquent-serialization#appending-values-to-json).
+Thỉnh thoảng, accessor của bạn có thể cần chuyển đổi nhiều thuộc tính model thành một "đối tượng giá trị" duy nhất. Để làm như vậy, closure `get` của bạn có thể chấp nhận tham số thứ hai của `$attributes`, tham số này sẽ được tự động cung cấp cho closure và sẽ chứa một mảng gồm tất cả các thuộc tính hiện có của model:
+
+```php
+use App\Support\Address;
+use Illuminate\Database\Eloquent\Casts\Attribute;
+
+/**
+ * Interact with the user's address.
+ *
+ * @return  \Illuminate\Database\Eloquent\Casts\Attribute
+ */
+protected function address(): Attribute
+{
+    return Attribute::make(
+        get: fn ($value, $attributes) => new Address(
+            $attributes['address_line_one'],
+            $attributes['address_line_two'],
+        ),
+    );
+}
+```
+
+<a name="accessor-caching"></a>
+#### Accessor Caching
+
+Khi trả về các đối tượng giá trị từ các accessor, mọi thay đổi được thực hiện trên các đối tượng giá trị này sẽ được tự động đồng bộ trở lại model trước khi model đó được lưu. Điều này có thể thực hiện được là vì Eloquent sẽ giữ lại các instance được trả về bởi các accessor, để các accessor đó có thể trả về cùng một instance mỗi khi accessor được gọi:
+
+    use App\Models\User;
+
+    $user = User::find(1);
+
+    $user->address->lineOne = 'Updated Address Line 1 Value';
+    $user->address->lineTwo = 'Updated Address Line 2 Value';
+
+    $user->save();
+
+Tuy nhiên, thỉnh thoảng bạn có thể muốn cho phép cache lại cho các giá trị nguyên thủy như kiểu chuỗi và boolean, đặc biệt nếu chúng có cường độ tính toán cao. Để thực hiện điều này, bạn có thể gọi phương thức `shouldCache` khi định nghĩa accessor của bạn:
+
+```php
+protected function hash(): Attribute
+{
+    return Attribute::make(
+        get: fn ($value) => bcrypt(gzuncompress($value)),
+    )->shouldCache();
+}
+```
+
+Nếu bạn muốn bỏ hành vi lưu cache này cho đối tượng của các thuộc tính, bạn có thể gọi phương thức `withoutObjectCaching` khi định nghĩa thuộc tính:
+
+```php
+/**
+ * Interact with the user's address.
+ *
+ * @return  \Illuminate\Database\Eloquent\Casts\Attribute
+ */
+protected function address(): Attribute
+{
+    return Attribute::make(
+        get: fn ($value, $attributes) => new Address(
+            $attributes['address_line_one'],
+            $attributes['address_line_two'],
+        ),
+    )->withoutObjectCaching();
+}
+```
 
 <a name="defining-a-mutator"></a>
 ### Định nghĩa một Mutator
 
-Một mutator sẽ biến đổi một giá trị của một thuộc tính Eloquent khi nó được set. Để định nghĩa một mutator, hãy định nghĩa một phương thức `set{Attribute}Attribute` trên model của bạn trong đó `{Attribute}` là tên được set theo kiểu "studly" của cột mà bạn muốn truy cập.
-
-Hãy định nghĩa một mutator cho thuộc tính `first_name`. Mutator này sẽ được gọi tự động khi bạn set một giá trị cho thuộc tính `first_name` trên model:
+Một mutator sẽ biến đổi một giá trị của một thuộc tính Eloquent khi nó được set. Để định nghĩa một mutator, bạn có thể cung cấp tham số `set` khi định nghĩa thuộc tính của bạn. Hãy định nghĩa một mutator cho thuộc tính `first_name`. Mutator này sẽ được gọi tự động khi bạn set một giá trị cho thuộc tính `first_name` trên model:
 
     <?php
 
     namespace App\Models;
 
+    use Illuminate\Database\Eloquent\Casts\Attribute;
     use Illuminate\Database\Eloquent\Model;
 
     class User extends Model
     {
         /**
-         * Set the user's first name.
+         * Interact with the user's first name.
          *
-         * @param  string  $value
-         * @return void
+         * @return \Illuminate\Database\Eloquent\Casts\Attribute
          */
-        public function setFirstNameAttribute($value)
+        protected function firstName(): Attribute
         {
-            $this->attributes['first_name'] = strtolower($value);
+            return Attribute::make(
+                get: fn ($value) => ucfirst($value),
+                set: fn ($value) => strtolower($value),
+            );
         }
     }
 
-Mutator sẽ nhận vào giá trị mà đang được set cho thuộc tính đó, và cho phép bạn thao tác với giá trị đó rồi set một giá trị mới cho thuộc tính `$attributes` bên trong của model Eloquent. Để sử dụng mutator, chúng ta chỉ cần set thuộc tính `first_name` trên Eloquent model:
+Closure mutator sẽ nhận vào giá trị mà đang được set cho thuộc tính, và cho phép bạn thao tác với giá trị đó rồi trả về một giá trị mới. Để sử dụng mutator, chúng ta chỉ cần set thuộc tính `first_name` trên Eloquent model:
 
     use App\Models\User;
 
@@ -109,7 +172,36 @@ Mutator sẽ nhận vào giá trị mà đang được set cho thuộc tính đ�
 
     $user->first_name = 'Sally';
 
-Trong ví dụ này, hàm `setFirstNameAttribute` sẽ được gọi với giá trị `Sally`. Mutator sẽ sử dụng hàm `strtolower` cho giá trị được đưa vào và set giá trị kết quả cho mảng `$attributes`.
+Trong ví dụ này, hàm callback `set` sẽ được gọi với giá trị `Sally`. Mutator sẽ sử dụng hàm `strtolower` cho giá trị được đưa vào và set giá trị kết quả cho mảng `$attributes` ở bên trong model.
+
+<a name="mutating-multiple-attributes"></a>
+#### Mutating Multiple Attributes
+
+Thỉnh thoảng mutator của bạn có thể cần set nhiều thuộc tính trên một model. Để làm như vậy, bạn có thể trả về một mảng từ closure `set`. Mỗi khóa trong mảng phải tương ứng với một cột của thuộc tính hoặc một cột trong cơ sở dữ liệu được liên kết với model:
+
+```php
+use App\Support\Address;
+use Illuminate\Database\Eloquent\Casts\Attribute;
+
+/**
+ * Interact with the user's address.
+ *
+ * @return  \Illuminate\Database\Eloquent\Casts\Attribute
+ */
+protected function address(): Attribute
+{
+    return Attribute::make(
+        get: fn ($value, $attributes) => new Address(
+            $attributes['address_line_one'],
+            $attributes['address_line_two'],
+        ),
+        set: fn (Address $value) => [
+            'address_line_one' => $value->lineOne,
+            'address_line_two' => $value->lineTwo,
+        ],
+    );
+}
+```
 
 <a name="attribute-casting"></a>
 ## Attribute Casting
@@ -128,7 +220,7 @@ Thuộc tính `$casts` phải là một mảng trong đó khóa là tên của t
 - `datetime`
 - `immutable_date`
 - `immutable_datetime`
-- `decimal:`<code>&lt;digits&gt;</code>
+- <code>decimal:&lt;precision&gt;</code>
 - `double`
 - `encrypted`
 - `encrypted:array`
@@ -178,7 +270,8 @@ Nếu bạn cần thêm một cast mới, tạm thời trong khi chạy, bạn c
         'options' => 'object',
     ]);
 
-> {note} Các thuộc tính `null` sẽ không được cast. Ngoài ra, bạn cũng đừng định nghĩa một cast (hoặc một thuộc tính) có cùng tên với một quan hệ.
+> **Warning**
+> Các thuộc tính `null` sẽ không được cast. Ngoài ra, bạn cũng đừng định nghĩa một cast (hoặc một thuộc tính) có cùng tên với một quan hệ.
 
 <a name="stringable-casting"></a>
 #### Stringable Casting
@@ -332,9 +425,10 @@ Nếu một định dạng tùy chỉnh được áp dụng cho kiểu `date` ho
 <a name="enum-casting"></a>
 ### Enum Casting
 
-> {note} Casting Enum chỉ khả dụng cho PHP 8.1 trở lên.
+> **Warning**
+> Casting Enum chỉ khả dụng cho PHP 8.1 trở lên.
 
-Eloquent cũng cho phép bạn cast các giá trị thuộc tính của bạn sang PHP enums. Để thực hiện điều này, bạn có thể chỉ định thuộc tính và enum mà bạn muốn truyền vào trong mảng thuộc tính `$casts` của model:
+Eloquent cũng cho phép bạn cast các giá trị thuộc tính của bạn sang PHP [Enums](https://www.php.net/manual/en/language.enumerations.backed.php). Để thực hiện điều này, bạn có thể chỉ định thuộc tính và enum mà bạn muốn truyền vào trong mảng thuộc tính `$casts` của model:
 
     use App\Enums\ServerStatus;
 
@@ -349,11 +443,28 @@ Eloquent cũng cho phép bạn cast các giá trị thuộc tính của bạn sa
 
 Khi bạn đã định nghĩa xong kiểu cast trong model của bạn, thuộc tính được chỉ định sẽ tự động được cast đến một enum hoặc một enum chuyển qua khi bạn tương tác với thuộc tính:
 
-    if ($server->status == ServerStatus::provisioned) {
-        $server->status = ServerStatus::ready;
+    if ($server->status == ServerStatus::Provisioned) {
+        $server->status = ServerStatus::Ready;
 
         $server->save();
     }
+
+<a name="casting-arrays-of-enums"></a>
+#### Casting Arrays Of Enums
+
+Thỉnh thoảng bạn có thể cần model của bạn lưu một mảng các giá trị enum trong một cột. Để thực hiện điều này, bạn có thể sử dụng các cast `AsEnumArrayObject` hoặc `AsEnumCollection` do Laravel cung cấp:
+
+    use App\Enums\ServerStatus;
+    use Illuminate\Database\Eloquent\Casts\AsEnumCollection;
+
+    /**
+     * The attributes that should be cast.
+     *
+     * @var array
+     */
+    protected $casts = [
+        'statuses' => AsEnumCollection::class.':'.ServerStatus::class,
+    ];
 
 <a name="encrypted-casting"></a>
 ### Encrypted Casting
@@ -361,6 +472,11 @@ Khi bạn đã định nghĩa xong kiểu cast trong model của bạn, thuộc 
 Cast `encrypted` sẽ mã hóa giá trị thuộc tính của model bằng cách sử dụng các tính năng [mã hóa](/docs/{{version}}/encryption) được tích hợp sẵn trong Laravel. Ngoài ra, các cast `encrypted:array`, `encrypted:collection`, `encrypted:object`, `AsEncryptedArrayObject` và `AsEncryptedCollection` hoạt động cũng giống như các đối tượng không được mã hóa của chúng; tuy nhiên, như bạn có thể mong đợi, giá trị sẽ được mã hóa trở lại khi được lưu vào trong cơ sở dữ liệu của bạn.
 
 Vì độ dài của văn bản được mã hóa không thể dự đoán được hoặc có thể dài hơn so với văn bản gốc của nó, nên hãy đảm bảo cột cơ sở dữ liệu sẽ được gán với loại `TEXT` hoặc có độ dài lớn hơn. Ngoài ra, vì các giá trị đã được mã hóa trong cơ sở dữ liệu nên bạn sẽ không thể truy vấn hoặc tìm kiếm các giá trị của thuộc tính đã được mã hóa.
+
+<a name="key-rotation"></a>
+#### Key Rotation
+
+Như bạn có thể biết, Laravel mã hóa chuỗi bằng cách sử dụng giá trị cấu hình `key` được chỉ định trong file cấu hình `app` trong ứng dụng của bạn. Thông thường, giá trị này tương ứng với giá trị của biến môi trường `APP_KEY`. Nếu cần đổi khóa này của ứng dụng, bạn sẽ cần mã hóa lại các thuộc tính đã được mã hóa, theo cách thủ công bằng khóa mới.
 
 <a name="query-time-casting"></a>
 ### Query Time Casting
@@ -389,9 +505,13 @@ Thuộc tính `last_posted_at` trên kết quả của truy vấn này sẽ là 
 <a name="custom-casts"></a>
 ## Custom Casts
 
-Laravel có nhiều kiểu cast tích hợp, hữu ích; tuy nhiên, đôi khi bạn có thể cần phải định nghĩa kiểu cast của riêng bạn. Bạn có thể thực hiện điều này bằng cách định nghĩa một class implement interface `CastsAttributes`.
+Laravel có nhiều kiểu cast tích hợp, hữu ích; tuy nhiên, đôi khi bạn có thể cần phải định nghĩa kiểu cast của riêng bạn. Để tạo một cast, hãy thực hiện lệnh Artisan `make:cast`. Class cast mới sẽ được lưu trong thư mục `app/Casts` của bạn:
 
-Các class implement interface này phải định nghĩa một phương thức `get` và một phương thức `set`. Phương thức `get` chịu trách nhiệm chuyển đổi một giá trị thô từ cơ sở dữ liệu thành một giá trị cast, trong khi phương thức `set` sẽ chuyển đổi một giá trị cast thành một giá trị thô có thể được lưu được vào trong cơ sở dữ liệu. Ví dụ: chúng ta sẽ implement lại kiểu cast `json` có sẵn dưới dạng là một kiểu cast tùy chỉnh:
+```shell
+php artisan make:cast Json
+```
+
+Tất cả các class cast tùy chỉnh đều được implement từ interface `CastsAttributes`. Các class implement interface này phải định nghĩa một phương thức `get` và một phương thức `set`. Phương thức `get` chịu trách nhiệm chuyển đổi một giá trị thô từ cơ sở dữ liệu thành một giá trị cast, trong khi phương thức `set` sẽ chuyển đổi một giá trị cast thành một giá trị thô có thể được lưu được vào trong cơ sở dữ liệu. Ví dụ: chúng ta sẽ implement lại kiểu cast `json` có sẵn dưới dạng là một kiểu cast tùy chỉnh:
 
     <?php
 
@@ -462,7 +582,7 @@ Ví dụ, chúng ta sẽ định nghĩa một class cast tùy chỉnh truyền n
 
     namespace App\Casts;
 
-    use App\Models\Address as AddressModel;
+    use App\ValueObjects\Address as AddressValueObject;
     use Illuminate\Contracts\Database\Eloquent\CastsAttributes;
     use InvalidArgumentException;
 
@@ -475,11 +595,11 @@ Ví dụ, chúng ta sẽ định nghĩa một class cast tùy chỉnh truyền n
          * @param  string  $key
          * @param  mixed  $value
          * @param  array  $attributes
-         * @return \App\Models\Address
+         * @return \App\ValueObjects\Address
          */
         public function get($model, $key, $value, $attributes)
         {
-            return new AddressModel(
+            return new AddressValueObject(
                 $attributes['address_line_one'],
                 $attributes['address_line_two']
             );
@@ -490,13 +610,13 @@ Ví dụ, chúng ta sẽ định nghĩa một class cast tùy chỉnh truyền n
          *
          * @param  \Illuminate\Database\Eloquent\Model  $model
          * @param  string  $key
-         * @param  \App\Models\Address  $value
+         * @param  \App\ValueObjects\Address  $value
          * @param  array  $attributes
          * @return array
          */
         public function set($model, $key, $value, $attributes)
         {
-            if (! $value instanceof AddressModel) {
+            if (! $value instanceof AddressValueObject) {
                 throw new InvalidArgumentException('The given value is not an Address instance.');
             }
 
@@ -517,7 +637,8 @@ Khi cast các giá trị của đối tượng, mọi thay đổi được thự
 
     $user->save();
 
-> {tip} Nếu bạn muốn chuyển đổi các model Eloquent của bạn chứa các giá trị của đối tượng thành JSON hoặc một mảng, bạn nên implement interface `Illuminate\Contracts\Support\Arrayable` và interface `JsonSerializable` trên giá trị của đối tượng.
+> **Note**
+> Nếu bạn muốn chuyển đổi các model Eloquent của bạn chứa các giá trị của đối tượng thành JSON hoặc một mảng, bạn nên implement interface `Illuminate\Contracts\Support\Arrayable` và interface `JsonSerializable` trên giá trị của đối tượng.
 
 <a name="array-json-serialization"></a>
 ### Array / JSON Serialization
@@ -543,7 +664,15 @@ Do đó, bạn có thể chỉ định class cast tùy chỉnh của bạn sẽ 
 <a name="inbound-casting"></a>
 ### Inbound Casting
 
-Đôi khi, bạn có thể cần viết một cast tùy chỉnh chỉ biến đổi các giá trị khi được set vào trong model và không thực hiện bất kỳ hoạt động nào khi các thuộc tính đó được lấy ra từ model. Một ví dụ cổ điển về inbound cast này là cast một thuộc tính "hashing". Một inbound cast tuỳ chỉnh nên được implement interface `CastsInboundAttributes`, interface này chỉ yêu cầu phương thức `set` phải được định nghĩa trên class implement.
+Đôi khi, bạn có thể cần viết một class cast tùy chỉnh chỉ biến đổi các giá trị khi được set vào trong model và không thực hiện bất kỳ hoạt động nào khi các thuộc tính đó được lấy ra từ model.
+
+Một inbound cast tuỳ chỉnh nên được implement interface `CastsInboundAttributes`, interface này chỉ yêu cầu phương thức `set` phải được định nghĩa trên class implement. Lệnh `make:cast` của Artisan có thể được gọi với tùy chọn `--inbound` để tạo ra một class cast inbound:
+
+```shell
+php artisan make:cast Hash --inbound
+```
+
+Một ví dụ cơ bản về class cast inbound là cast một giá trị "hashing". Ví dụ: chúng ta có thể định nghĩa một cast hash inbound cho một giá trị thông qua một thuật toán nhất định:
 
     <?php
 

@@ -59,7 +59,8 @@ Name | Description
 `stack` | Một wrapper để tạo điều kiện thuận lợi cho việc tạo một channel với "nhiều channel"
 `syslog` | Một driver Monolog dựa trên `SyslogHandler`
 
-> {tip} Xem tài liệu về [tùy chỉnh channel nâng cao](#monolog-channel-customization) để tìm hiểu thêm về driver `monolog` và `custom`.
+> **Note**
+> Xem tài liệu về [tùy chỉnh channel nâng cao](#monolog-channel-customization) để tìm hiểu thêm về driver `monolog` và `custom`.
 
 <a name="channel-prerequisites"></a>
 ### Channel Prerequisites
@@ -74,6 +75,12 @@ Name | Description | Default
 `bubble` | Cho biết messages đang được xử lý có được gửi sang channel khác sau khi xử lý xong hay không | `true`
 `locking` | Cố gắng khóa file log trước khi ghi vào nó | `false`
 `permission` | Quyền của file log | `0644`
+
+Ngoài ra, thời hạn lưu giữ file log cho channel `daily` có thể được cấu hình thông qua tùy chọn `days`:
+
+Name | Description                                                       | Default
+------------- |-------------------------------------------------------------------| -------------
+`days` | Số ngày mà các file daily log phải được lưu giữ | `7`
 
 <a name="configuring-the-papertrail-channel"></a>
 #### Configuring The Papertrail Channel
@@ -137,7 +144,7 @@ Hãy cùng xem xét cấu hình này. Đầu tiên, hãy để ý đến channel
 <a name="log-levels"></a>
 #### Log Levels
 
-Hãy lưu ý tùy chọn cấu hình `level` có trong cấu hình channel `syslog` và `slack` có trong ví dụ ở trên. Tùy chọn này sẽ xác định xem "mức độ" tối thiểu mà một message phải có để có thể được channel ghi log. Monolog hỗ trợ các service ghi log của Laravel, cung cấp tất cả các cấp độ log được định nghĩa trong [đặc tả RFC 5424](https://tools.ietf.org/html/rfc5424): **emergency**, **alert**, **critical**, **error**, **warning**, **notice**, **info**, và **debug**.
+Hãy lưu ý tùy chọn cấu hình `level` có trong cấu hình channel `syslog` và `slack` có trong ví dụ ở trên. Tùy chọn này sẽ xác định xem "mức độ" tối thiểu mà một message phải có để có thể được channel ghi log. Monolog hỗ trợ các service ghi log của Laravel, cung cấp tất cả các cấp độ log được định nghĩa trong [đặc tả RFC 5424](https://tools.ietf.org/html/rfc5424). Theo thứ tự giảm dần về mức độ nghiêm trọng, các mức log này là: **emergency**, **alert**, **critical**, **error**, **warning**, **notice**, **info**, và **debug**.
 
 Vì thế, code dưới đây là chúng ta đang ghi log một message bằng phương thức `debug`:
 
@@ -200,7 +207,7 @@ Một mảng dữ liệu có thể được truyền vào cho các phương th�
 
     Log::info('User failed to login.', ['id' => $user->id]);
 
-Đôi khi, bạn có thể muốn chỉ định một số thông tin ngữ cảnh cần được đưa vào log. Ví dụ: bạn có thể muốn ghi lại ID request được liên kết với từng request được gửi đến ứng dụng của bạn. Để thực hiện điều này, bạn có thể gọi phương thức `withContext` của facade `Log`:
+Đôi khi, bạn có thể muốn chỉ định một số thông tin ngữ cảnh cần được đưa vào log. Ví dụ: bạn có thể muốn ghi lại ID request được liên kết với từng request được gửi đến ứng dụng của bạn trong một channel cụ thể. Để thực hiện điều này, bạn có thể gọi phương thức `withContext` của facade `Log`:
 
     <?php
 
@@ -228,6 +235,26 @@ Một mảng dữ liệu có thể được truyền vào cho các phương th�
             ]);
 
             return $next($request)->header('Request-Id', $requestId);
+        }
+    }
+
+Nếu bạn muốn chia sẻ thông tin ngữ cảnh trên _tất cả_ các channel log, bạn có thể gọi phương thức `Log::shareContext()`. Phương thức này sẽ cung cấp thông tin ngữ cảnh cho tất cả các channel đã tạo và bất kỳ channel nào được tạo sau đó. Thông thường, phương thức `shareContext` phải được gọi từ phương thức `boot` của một application service provider:
+
+    use Illuminate\Support\Facades\Log;
+    use Illuminate\Support\Str;
+
+    class AppServiceProvider
+    {
+        /**
+         * Bootstrap any application services.
+         *
+         * @return void
+         */
+        public function boot()
+        {
+            Log::shareContext([
+                'invocation-id' => (string) Str::uuid(),
+            ]);
         }
     }
 
@@ -310,7 +337,8 @@ Sau khi bạn đã cấu hình tùy chọn `tap` trong file cấu hình channel 
         }
     }
 
-> {tip} Tất cả các class "tap" của bạn đều được [service container](/docs/{{version}}/container) resolve, vì vậy mọi phụ thuộc trong hàm constructor sẽ tự động được đưa vào.
+> **Note**
+> Tất cả các class "tap" của bạn đều được [service container](/docs/{{version}}/container) resolve, vì vậy mọi phụ thuộc trong hàm constructor sẽ tự động được đưa vào.
 
 <a name="creating-monolog-handler-channels"></a>
 ### Tạo Monolog xử lý Channel
@@ -380,6 +408,6 @@ Sau khi bạn đã cấu hình xong driver channel `custom`, bạn đã sẵn s�
          */
         public function __invoke(array $config)
         {
-            return new Logger(...);
+            return new Logger(/* ... */);
         }
     }

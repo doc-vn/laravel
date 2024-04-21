@@ -1,12 +1,13 @@
 # Views
 
 - [Giới thiệu](#introduction)
+    - [Viết view trong React và Vue](#writing-views-in-react-or-vue)
 - [Tạo và render view](#creating-and-rendering-views)
     - [Thư mục view lồng nhau](#nested-view-directories)
     - [Tạo view có sẵn đầu tiên](#creating-the-first-available-view)
     - [Xác định nếu một View tồn tại](#determining-if-a-view-exists)
-- [Truyền dữ liệu đến Views](#passing-data-to-views)
-    - [Chia sẽ dữ liệu với tất cả các Views](#sharing-data-with-all-views)
+- [Truyền dữ liệu đến view](#passing-data-to-views)
+    - [Chia sẽ dữ liệu với tất cả các view](#sharing-data-with-all-views)
 - [View Composers](#view-composers)
     - [View Creators](#view-creators)
 - [Optimizing Views](#optimizing-views)
@@ -14,9 +15,11 @@
 <a name="introduction"></a>
 ## Giới thiệu
 
-Tất nhiên, việc trả về toàn bộ chuỗi code HTML trực tiếp từ route hoặc controller của bạn là không thực tế. Rất may, các view cung cấp một cách thuận tiện để đặt tất cả các code HTML của chúng ta vào các file riêng biệt. View giúp tách logic controller và logic của ứng dụng ra khỏi logic hiển thị của bạn và được lưu trong thư mục `resources/views`. Một view đơn giản có thể trông giống như thế này:
+Tất nhiên, việc trả về toàn bộ chuỗi code HTML trực tiếp từ route hoặc controller của bạn là không thực tế. Rất may, các view cung cấp một cách thuận tiện để đặt tất cả các code HTML của chúng ta vào các file riêng biệt.
 
-```html
+View giúp tách logic controller và logic của ứng dụng ra khỏi logic hiển thị của bạn và được lưu trong thư mục `resources/views`. Khi sử dụng Laravel, các template thường được viết bằng [ngôn ngữ Blade template](/docs/{{version}}/blade). Một view đơn giản có thể trông giống như thế này:
+
+```blade
 <!-- View stored in resources/views/greeting.blade.php -->
 
 <html>
@@ -32,7 +35,15 @@ Vì view được lưu ở trong `resources/views/greeting.blade.php`, nên chú
         return view('greeting', ['name' => 'James']);
     });
 
-> {tip} Looking for more information on how to write Blade templates? Check out the full [Blade documentation](/docs/{{version}}/blade) to get started.
+> **Note**
+> Bạn đang tìm kiếm thêm thông tin về cách viết Blade template? Hãy xem [tài liệu đầy đủ về Blade](/docs/{{version}}/blade) để bắt đầu.
+
+<a name="writing-views-in-react-or-vue"></a>
+### Viết view trong React và Vue
+
+Thay vì viết các template frontend của mình bằng PHP thông qua Blade, nhiều nhà phát triển đã bắt đầu thích viết các template của họ bằng React hoặc Vue. Laravel giúp việc này trở nên dễ dàng hơn nhờ [Inertia](https://inertiajs.com/), một thư viện sẽ giúp bạn dễ dàng liên kết frontend React hoặc Vue của bạn với backend Laravel mà không cần đến những thứ phức tạp thường thấy khi xây dựng SPA (Single Page Application).
+
+[Bộ công cụ khởi động](/docs/{{version}}/starter-kits) Breeze và Jetstream của chúng tôi cung cấp cho bạn một điểm khởi đầu tuyệt vời cho ứng dụng Laravel tiếp theo của bạn mà được hỗ trợ bởi Inertia. Ngoài ra, [Laravel Bootcamp](https://bootcamp.laravel.com) cũng cung cấp bản demo đầy đủ về cách xây dựng ứng dụng Laravel được hỗ trợ bởi Inertia, bao gồm các ví dụ trong Vue và React.
 
 <a name="creating-and-rendering-views"></a>
 ## Tạo và render view
@@ -60,7 +71,8 @@ View cũng có thể được nằm trong một thư mục con của thư mục 
 
     return view('admin.profile', $data);
 
-> {note} Tên thư mục view sẽ không được chứa ký tự `.`.
+> **Warning**
+> Tên thư mục view sẽ không được chứa ký tự `.`.
 
 <a name="creating-the-first-available-view"></a>
 ### Tạo view có sẵn đầu tiên
@@ -83,7 +95,7 @@ Nếu bạn cần kiểm tra một view có tồn tại hay không, bạn có th
     }
 
 <a name="passing-data-to-views"></a>
-## Truyền dữ liệu đến Views
+## Truyền dữ liệu đến view
 
 Như bạn có thể thấy trong các ví dụ trước, bạn có thể truyền một mảng dữ liệu cho view để cung cấp dữ liệu đó cho view:
 
@@ -98,7 +110,7 @@ Khi truyền thông tin theo cách này, dữ liệu phải là một mảng v�
                 ->with('occupation', 'Astronaut');
 
 <a name="sharing-data-with-all-views"></a>
-### Chia sẻ dữ liệu với tất cả View
+### Chia sẽ dữ liệu với tất cả các view
 
 Đôi khi, bạn có thể cần chia sẻ dữ liệu với tất cả các view có trong application của bạn. Bạn có thể làm như vậy bằng cách sử dụng phương thức `share` trong facade `View`. Thông thường, bạn nên thực hiện gọi phương thức `share` trong phương thức `boot` của service provider. Bạn có thể thêm chúng vào class `App\Providers\AppServiceProvider` hoặc tạo một service provider riêng để chứa chúng:
 
@@ -177,7 +189,8 @@ Chúng tôi sẽ sử dụng phương thức `composer` của facade `View` đ�
         }
     }
 
-> {note} Hãy nhớ rằng, nếu bạn tạo một service provider mới để chứa các đăng ký view composer, bạn sẽ cần thêm service provider đó vào mảng `providers` trong file cấu hình `config/app.php`.
+> **Warning**
+> Hãy nhớ rằng, nếu bạn tạo một service provider mới để chứa các đăng ký view composer, bạn sẽ cần thêm service provider đó vào mảng `providers` trong file cấu hình `config/app.php`.
 
 Sau khi chúng ta đã đăng ký xong composer, phương thức `compose` của class `App\View\Composers\ProfileComposer` sẽ được thực thi mỗi khi view `profile` được render. Hãy xem một ví dụ về class composer:
 
@@ -205,7 +218,6 @@ Sau khi chúng ta đã đăng ký xong composer, phương thức `compose` của
          */
         public function __construct(UserRepository $users)
         {
-            // Dependencies are automatically resolved by the service container...
             $this->users = $users;
         }
 
@@ -258,8 +270,12 @@ Mặc định, các view template Blade sẽ được biên dịch theo từng r
 
 Việc biên dịch các view trong quá trình request có thể sẽ ảnh hưởng nhỏ đến hiệu suất, vì vậy Laravel cung cấp lệnh Artisan `view:cache` để biên dịch trước tất cả các view mà được ứng dụng của bạn sử dụng. Để tăng hiệu suất, bạn có thể muốn chạy lệnh này như là một phần trong quá trình deploy của bạn:
 
-    php artisan view:cache
+```shell
+php artisan view:cache
+```
 
 Bạn có thể sử dụng lệnh `view:clear` để xóa cache của view:
 
-    php artisan view:clear
+```shell
+php artisan view:clear
+```

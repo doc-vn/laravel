@@ -5,6 +5,7 @@
 - [Tạo testcase](#creating-tests)
 - [Chạy testcase](#running-tests)
     - [Chạy testcase đồng thời](#running-tests-in-parallel)
+    - [Báo cáo phạm vi chạy testcase](#reporting-test-coverage)
 
 <a name="introduction"></a>
 ## Giới thiệu
@@ -39,18 +40,25 @@ Laravel có chứa một trait `CreatesApplication` được áp dụng cho clas
 
 Để tạo một test case mới, hãy sử dụng lệnh Artisan `make:test`. Mặc định, các bài test sẽ được lưu trong thư mục `tests/Feature`:
 
-    php artisan make:test UserTest
+```shell
+php artisan make:test UserTest
+```
 
 Nếu bạn muốn tạo một bài test trong thư mục `tests/Unit`, bạn có thể sử dụng tùy chọn `--unit` khi chạy lệnh `make:test`:
 
-    php artisan make:test UserTest --unit
+```shell
+php artisan make:test UserTest --unit
+```
 
 Nếu muốn tạo một bài test [Pest PHP](https://pestphp.com), bạn có thể cung cấp tùy chọn `--pest` cho lệnh `make:test`:
 
-    php artisan make:test UserTest --pest
-    php artisan make:test UserTest --unit --pest
+```shell
+php artisan make:test UserTest --pest
+php artisan make:test UserTest --unit --pest
+```
 
-> {tip} Các stub của test có thể được tùy chỉnh bằng cách sử dụng [export stub](/docs/{{version}}/artisan#stub-customization).
+> **Note**
+> Các stub của test có thể được tùy chỉnh bằng cách sử dụng [export stub](/docs/{{version}}/artisan#stub-customization).
 
 Khi file test đã được tạo xong, bạn có thể định nghĩa các phương thức test như khi sử dụng với [PHPUnit](https://phpunit.de). Để chạy test của bạn, hãy chạy lệnh `vendor/bin/phpunit` hoặc lệnh `php artisan test` từ terminal của bạn:
 
@@ -73,45 +81,58 @@ Khi file test đã được tạo xong, bạn có thể định nghĩa các phư
         }
     }
 
-> {note} Nếu bạn định nghĩa một phương thức `setUp` / `tearDown` của riêng bạn trong một test class, hãy nhớ gọi các phương thức `parent::setUp()` / `parent::tearDown()` tương ứng ở trong class parent.
+> **Warning**
+> Nếu bạn định nghĩa một phương thức `setUp` / `tearDown` của riêng bạn trong một test class, hãy nhớ gọi các phương thức `parent::setUp()` / `parent::tearDown()` tương ứng ở trong class parent.
 
 <a name="running-tests"></a>
 ## Chạy testcase
 
 Như đã đề cập trước đó, khi bạn đã viết xong bài test, bạn có thể chạy chúng bằng cách sử dụng `phpunit`:
 
-    ./vendor/bin/phpunit
+```shell
+./vendor/bin/phpunit
+```
 
 Ngoài lệnh `phpunit`, bạn có thể sử dụng lệnh Artisan `test` để chạy các bài test của bạn. Artisan test runner cung cấp các báo cáo test chi tiết để dễ dàng phát triển và gỡ lỗi:
 
-    php artisan test
+```shell
+php artisan test
+```
 
 Bất kỳ tham số nào mà có thể được truyền vào cho lệnh `phpunit` thì cũng có thể được truyền vào cho lệnh Artisan `test`:
 
-    php artisan test --testsuite=Feature --stop-on-failure
-
+```shell
+php artisan test --testsuite=Feature --stop-on-failure
+```
 
 <a name="running-tests-in-parallel"></a>
 ### Chạy testcase đồng thời
 
 Mặc định, Laravel và PHPUnit thực hiện các bài test của bạn theo thứ tự trong một process duy nhất. Tuy nhiên, bạn có thể giảm đáng kể lượng thời gian cần thiết để chạy các bài test bằng cách chạy các bài test đó đồng thời trên nhiều process. Để bắt đầu, hãy đảm bảo ứng dụng của bạn sử dụng library phiên bản `^5.3` trở lên của package `nunomaduro/collision`. Sau đó, thêm tùy chọn `--parallel` khi chạy lệnh Artisan `test`:
 
-    php artisan test --parallel
+```shell
+php artisan test --parallel
+```
 
 Mặc định, Laravel sẽ tạo số process bằng với số lõi CPU có sẵn trên máy của bạn. Tuy nhiên, bạn có thể điều chỉnh số lượng process này bằng tùy chọn `--processes`:
 
-    php artisan test --parallel --processes=4
+```shell
+php artisan test --parallel --processes=4
+```
 
-> {note} Khi chạy test đồng thời, một số tùy chọn PHPUnit (chẳng hạn như `--do-not-cache-result`) có thể không khả dụng.
+> **Warning**
+> Khi chạy test đồng thời, một số tùy chọn PHPUnit (chẳng hạn như `--do-not-cache-result`) có thể không khả dụng.
 
 <a name="parallel-testing-and-databases"></a>
 #### Parallel Testing và Databases
 
-Laravel tự động xử lý việc tạo và migration cơ sở dữ liệu test cho từng process song song đang chạy test của bạn. Cơ sở dữ liệu test sẽ được gắn với một process token duy nhất cho mỗi process. Ví dụ: nếu bạn có hai process test song song, Laravel sẽ tạo và sử dụng cơ sở dữ liệu test là `your_db_test_1` và `your_db_test_2`.
+Miễn là bạn đã cấu hình kết nối cơ sở dữ liệu của bạn, laravel sẽ tự động xử lý việc tạo và migration cơ sở dữ liệu test cho từng process song song đang chạy test của bạn. Cơ sở dữ liệu test sẽ được gắn với một process token duy nhất cho mỗi process. Ví dụ: nếu bạn có hai process test song song, Laravel sẽ tạo và sử dụng cơ sở dữ liệu test là `your_db_test_1` và `your_db_test_2`.
 
 Mặc định, cơ sở dữ liệu test vẫn tồn tại giữa các lần gọi lệnh Artisan `test` để chúng có thể được sử dụng lại cho các lần gọi `test` tiếp theo. Tuy nhiên, bạn có thể tạo lại chúng bằng tùy chọn `--recreate-databases`:
 
-    php artisan test --parallel --recreate-databases
+```shell
+php artisan test --parallel --recreate-databases
+```
 
 <a name="parallel-testing-hooks"></a>
 #### Parallel Testing Hooks
@@ -166,3 +187,24 @@ Bằng cách sử dụng facade `ParallelTesting`, bạn có thể chỉ định
 Nếu bạn muốn truy cập vào "token" process song song hiện tại từ bất kỳ vị trí nào trong code kiểm tra của ứng dụng, bạn có thể sử dụng phương thức `token`. token này là một chuỗi nhận dạng, và duy nhất cho một process test riêng biệt và có thể được sử dụng để phân chia resource trên các process test song song. Ví dụ: Laravel tự động thêm token này vào cuối của tên cơ sở dữ liệu test được tạo bởi process test song song:
 
     $token = ParallelTesting::token();
+
+<a name="reporting-test-coverage"></a>
+### Báo cáo phạm vi chạy testcase
+
+> **Warning**
+> Tính năng này yêu cầu [Xdebug](https://xdebug.org) hoặc [PCOV](https://pecl.php.net/package/pcov).
+
+Khi chạy test ứng dụng, bạn có thể muốn xác định xem các test case của bạn có thực sự bao phủ code ứng dụng của bạn hay không và có bao nhiêu code trong ứng dụng của bạn được sử dụng khi chạy test. Để thực hiện điều này, bạn có thể cung cấp tùy chọn `--coverage` khi gọi lệnh `test`:
+
+```shell
+php artisan test --coverage
+```
+
+<a name="enforcing-a-minimum-coverage-threshold"></a>
+#### Enforcing A Minimum Coverage Threshold
+
+Bạn có thể sử dụng tùy chọn `--min` để định nghĩa ngưỡng phạm vi kiểm tra tối thiểu cho ứng dụng của bạn. Bộ testcase sẽ không thành công nếu ngưỡng này không được đáp ứng:
+
+```shell
+php artisan test --coverage --min=80.3
+```

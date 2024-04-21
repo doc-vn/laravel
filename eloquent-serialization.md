@@ -13,7 +13,8 @@
 
 Khi xây dựng một API mà dùng Laravel, bạn thường sẽ cần phải chuyển đổi các model và các quan hệ của bạn thành các mảng hoặc JSON. Eloquent có chứa các phương thức thuận tiện để thực hiện các chuyển đổi này, cũng như kiểm soát các thuộc tính nào sẽ được thêm vào trong các chuyển đổi representation of your models.
 
-> {tip} Để biết cách xử lý chuyển hóa JSON của collection và model Eloquent hiệu quả hơn nữa, hãy xem tài liệu về [resource API Eloquent](/docs/{{version}}/eloquent-resources).
+> **Note**
+> Để biết cách xử lý chuyển hóa JSON của collection và model Eloquent hiệu quả hơn nữa, hãy xem tài liệu về [resource API Eloquent](/docs/{{version}}/eloquent-resources).
 
 <a name="serializing-models-and-collections"></a>
 ## Serialize Model và Collection
@@ -72,7 +73,7 @@ Khi một model Eloquent được chuyển đổi thành JSON, các quan hệ m�
 <a name="hiding-attributes-from-json"></a>
 ## Ẩn thuộc tính từ JSON
 
-Thỉnh thoảng bạn cũng có thể muốn giới hạn các thuộc tính, chẳng hạn như mật khẩu, được chứa trong mảng hoặc JSON của model của bạn. Để làm như vậy, hãy thêm một thuộc tính `$hidden` vào model của bạn. Trong các thuộc tính được liệt kê trong mảng của thuộc tính `$hidden` sẽ không được chuyển đổi khi model của bạn được chuyển đổi:
+Thỉnh thoảng bạn cũng có thể muốn giới hạn các thuộc tính, chẳng hạn như mật khẩu, được chứa trong mảng hoặc JSON của model của bạn. Để làm như vậy, hãy thêm một thuộc tính `$hidden` vào model của bạn. Các thuộc tính được liệt kê trong mảng của thuộc tính `$hidden` sẽ không được chuyển đổi khi model của bạn được chuyển đổi:
 
     <?php
 
@@ -90,7 +91,8 @@ Thỉnh thoảng bạn cũng có thể muốn giới hạn các thuộc tính, c
         protected $hidden = ['password'];
     }
 
-> {tip} Để ẩn các quan hệ, hãy thêm tên phương thức của quan hệ đó vào thuộc tính `$hidden` của model Eloquent của bạn.
+> **Note**
+> Để ẩn các quan hệ, hãy thêm tên phương thức của quan hệ đó vào thuộc tính `$hidden` của model Eloquent của bạn.
 
 Ngoài ra, bạn có thể sử dụng thuộc tính `visible` để định nghĩa một danh sách các thuộc tính có thể hiển thị trong mảng hoặc JSON của bạn. Tất cả các thuộc tính không có mặt trong mảng `$visible` sẽ bị ẩn khi model được chuyển đổi thành một mảng hoặc một JSON:
 
@@ -121,6 +123,12 @@ Tương tự, nếu bạn muốn ẩn một số thuộc tính thường đượ
 
     return $user->makeHidden('attribute')->toArray();
 
+Nếu bạn muốn tạm thời ghi đè tất cả các thuộc tính ẩn hoặc hiển thị, bạn có thể sử dụng các phương thức `setVisible` và `setHidden` tương ứng:
+
+    return $user->setVisible(['id', 'name'])->toArray();
+
+    return $user->setHidden(['email', 'password', 'remember_token'])->toArray();
+
 <a name="appending-values-to-json"></a>
 ## Thêm giá trị vào JSON
 
@@ -130,6 +138,7 @@ Tương tự, nếu bạn muốn ẩn một số thuộc tính thường đượ
 
     namespace App\Models;
 
+    use Illuminate\Database\Eloquent\Casts\Attribute;
     use Illuminate\Database\Eloquent\Model;
 
     class User extends Model
@@ -137,11 +146,13 @@ Tương tự, nếu bạn muốn ẩn một số thuộc tính thường đượ
         /**
          * Determine if the user is an administrator.
          *
-         * @return bool
+         * @return \Illuminate\Database\Eloquent\Casts\Attribute
          */
-        public function getIsAdminAttribute()
+        protected function isAdmin(): Attribute
         {
-            return $this->attributes['admin'] === 'yes';
+            return new Attribute(
+                get: fn () => 'yes',
+            );
         }
     }
 

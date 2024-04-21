@@ -44,13 +44,17 @@
 
 Bạn có thể sử dụng Composer package manager để cài đặt Telescope vào project Laravel của bạn:
 
-    composer require laravel/telescope "^3.0"
+```shell
+composer require laravel/telescope
+```
 
 Sau khi cài đặt Telescope, hãy export nội dung của nó bằng lệnh Artisan `telescope:install`. Sau khi cài đặt Telescope xong, bạn cũng nên chạy lệnh `migrate` để tạo ra các bảng cần thiết để lưu trữ dữ liệu của Telescope:
 
-    php artisan telescope:install
+```shell
+php artisan telescope:install
 
-    php artisan migrate
+php artisan migrate
+```
 
 <a name="migration-customization"></a>
 #### Migration Customization
@@ -62,11 +66,13 @@ Nếu bạn không định sử dụng các migration mặc định của Telesc
 
 Nếu bạn chỉ định sử dụng Telescope để hỗ trợ quá trình phát triển local của bạn, bạn có thể thêm cài đặt Telescope bằng flag `--dev`:
 
-    composer require laravel/telescope --dev
+```shell
+composer require laravel/telescope --dev
 
-    php artisan telescope:install
+php artisan telescope:install
 
-    php artisan migrate
+php artisan migrate
+```
 
 Sau khi chạy `telescope:install`, bạn nên xóa đăng ký service provider `TelescopeServiceProvider` ra khỏi file cấu hình `config/app.php` của application của bạn. Thay vào đó, hãy tự đăng ký service provider của Telescope vào trong phương thức `register` của class `App\Providers\AppServiceProvider`. Chúng tôi sẽ đảm bảo môi trường hiện tại là `local` trước khi đăng ký provider:
 
@@ -85,13 +91,15 @@ Sau khi chạy `telescope:install`, bạn nên xóa đăng ký service provider 
 
 Cuối cùng, bạn cũng nên ngăn package Telescope [tự động đăng ký](/docs/{{version}}/packages#package-discovery) bằng cách thêm code sau vào file `composer.json` của bạn:
 
-    "extra": {
-        "laravel": {
-            "dont-discover": [
-                "laravel/telescope"
-            ]
-        }
-    },
+```json
+"extra": {
+    "laravel": {
+        "dont-discover": [
+            "laravel/telescope"
+        ]
+    }
+},
+```
 
 <a name="configuration"></a>
 ### Cấu hình
@@ -134,7 +142,8 @@ Trang tổng quan của Telescope có thể truy cập tại route `/telescope`.
         });
     }
 
-> {note} Bạn nên đảm bảo là bạn đã thay đổi biến môi trường `APP_ENV` thành `production` trong môi trường production của bạn. Nếu không, các cài đặt Telescope của bạn sẽ bị công khai trên môi trường internet.
+> **Warning**
+> Bạn nên đảm bảo là bạn đã thay đổi biến môi trường `APP_ENV` thành `production` trong môi trường production của bạn. Nếu không, các cài đặt Telescope của bạn sẽ bị công khai trên môi trường internet.
 
 <a name="upgrading-telescope"></a>
 ## Cập nhật Telescope
@@ -143,17 +152,21 @@ Khi nâng cấp lên phiên bản mới của Telescope, điều quan trọng l�
 
 Ngoài ra, khi bạn nâng cấp lên bất kỳ phiên bản Telescope mới nào, bạn nên export lại assets của Telescope:
 
-    php artisan telescope:publish
+```shell
+php artisan telescope:publish
+```
 
-Để giữ cập nhật các file asset và tránh các sự cố trong tương lai, bạn có thể thêm một lệnh `telescope:publish` vào trong tập lệnh `post-update-cmd` trong file `composer.json` của bạn:
+Để giữ cập nhật các file asset và tránh các sự cố trong tương lai, bạn có thể thêm một lệnh `vendor:publish --tag=laravel-assets` vào trong tập lệnh `post-update-cmd` trong file `composer.json` của bạn:
 
-    {
-        "scripts": {
-            "post-update-cmd": [
-                "@php artisan telescope:publish --ansi"
-            ]
-        }
+```json
+{
+    "scripts": {
+        "post-update-cmd": [
+            "@php artisan vendor:publish --tag=laravel-assets --ansi --force"
+        ]
     }
+}
+```
 
 <a name="filtering"></a>
 ## Filtering

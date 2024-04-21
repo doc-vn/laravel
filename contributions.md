@@ -14,7 +14,7 @@
 <a name="bug-reports"></a>
 ## Báo Bug
 
-Để khuyến khích cho sự phát triển, Laravel rất khuyến khích bạn tạo các pull request, không chỉ là báo bug. "Báo bug" cũng có thể là một pull request được gửi dưới dạng là một bài test thất bại. Pull request sẽ chỉ được xem xét khi được đánh dấu là "ready for review" (không phải ở trạng thái "draft") và tất cả các bài test cho các tính năng mới phải được pass. Các pull request kéo dài, không hoạt động, và để ở trạng thái "draft" sẽ bị close sau một vài ngày.
+Để khuyến khích cho sự phát triển, Laravel rất khuyến khích bạn tạo các pull request, không chỉ là báo bug. Pull request sẽ chỉ được xem xét khi được đánh dấu là "ready for review" (không phải ở trạng thái "draft") và tất cả các bài test cho các tính năng mới phải được pass. Các pull request kéo dài, không hoạt động, và để ở trạng thái "draft" sẽ bị close sau một vài ngày.
 
 Tuy nhiên, nếu bạn muốn tạo một bug, thì bug của bạn nên chứa một tiêu đề và một mô tả rõ ràng về bug mà bạn gặp phải. Bạn cũng nên mô tả càng nhiều thông tin liên quan đến bug càng tốt và một code ví dụ để tạo ra bug đó. Mục tiêu của báo bug là giúp bạn dễ dàng - và những người khác - tái hiện lại bug đó và phát triển các bản sửa bug.
 
@@ -38,6 +38,7 @@ Mã nguồn của Laravel được quản lý trên GitHub và có các reposito
 - [Laravel Horizon](https://github.com/laravel/horizon)
 - [Laravel Jetstream](https://github.com/laravel/jetstream)
 - [Laravel Passport](https://github.com/laravel/passport)
+- [Laravel Pint](https://github.com/laravel/pint)
 - [Laravel Sail](https://github.com/laravel/sail)
 - [Laravel Sanctum](https://github.com/laravel/sanctum)
 - [Laravel Scout](https://github.com/laravel/scout)
@@ -74,13 +75,11 @@ Kênh `#internals` của [Laravel Discord server](https://discord.gg/laravel) s�
 <a name="which-branch"></a>
 ## Branch nào?
 
-**Tất cả** các bản sửa lỗi phải được gửi đến branch ổn định mới nhất. Các bản sửa lỗi sẽ **không** được gửi đến branch `master` trừ khi chúng sửa các tính năng đã tồn tại trong bản phát hành sắp tới.
+**Tất cả** các bản sửa lỗi phải được gửi đến phiên bản mới nhất được hỗ trợ sửa lỗi (hiện tại là `9.x`). Các bản sửa lỗi sẽ **không** được gửi đến branch `master` trừ khi chúng sửa các tính năng đã tồn tại trong bản phát hành sắp tới.
 
-Các tính năng **phụ** có **tương thích** với bản phát hành hiện tại thì có thể được gửi đến branch ổn định mới nhất.
+Các tính năng **phụ** có **tương thích** với bản phát hành hiện tại thì có thể được gửi đến branch ổn định mới nhất (hiện tại là `9.x`).
 
-Các tính năng **chính** mới phải luôn được gửi đến branch `master`, nơi chứa code của các bản phát hành sắp tới.
-
-Nếu bạn không chắc chắn tính năng của bạn là chính hay là phụ, vui lòng hỏi Taylor Otwell trong kênh `#internals` của [Laravel Discord server](https://discord.gg/laravel).
+Các tính năng **chính** mới hoặc các tính năng có những thay đổi nghiêm trọng phải luôn được gửi đến branch `master`, nơi chứa code của các bản phát hành sắp tới.
 
 <a name="compiled-assets"></a>
 ## Biên dịch Asset

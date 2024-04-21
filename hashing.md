@@ -19,8 +19,6 @@ Bcrypt là một lựa chọn tuyệt vời để hashing mật khẩu vì "work
 
 Driver hashing mặc định cho ứng dụng của bạn sẽ được cấu hình trong file cấu hình `config/hashing.php` của ứng dụng của bạn. Hiện tại có nhiều driver được hỗ trợ: [Bcrypt](https://en.wikipedia.org/wiki/Bcrypt) và [Argon2](https://en.wikipedia.org/wiki/Argon2) (Argon2i và biến thể Argon2id).
 
-> {note} Driver Argon2i yêu cầu PHP 7.2.0 hoặc hơn và Driver Argon2id yêu cầu PHP 7.3.0 hoặc hơn.
-
 <a name="basic-usage"></a>
 ## Cách dùng cơ bản
 
@@ -75,7 +73,8 @@ Nếu bạn đang sử dụng thuật toán Argon2, phương thức `make` cho p
         'threads' => 2,
     ]);
 
-> {tip} Để biết thêm thông tin về các tùy chọn này, xin vui lòng tham khảo [tài liệu chính thức của PHP về Argon hashing](https://secure.php.net/manual/en/function.password-hash.php).
+> **Note**
+> Để biết thêm thông tin về các tùy chọn này, xin vui lòng tham khảo [tài liệu chính thức của PHP về Argon hashing](https://secure.php.net/manual/en/function.password-hash.php).
 
 <a name="verifying-that-a-password-matches-a-hash"></a>
 ### Kiểm tra một mật khẩu khớp với một hashing

@@ -6,6 +6,7 @@
     - [Thư mục `bootstrap`](#the-bootstrap-directory)
     - [Thư mục `config`](#the-config-directory)
     - [Thư mục `database`](#the-database-directory)
+    - [Thư mục `lang`](#the-lang-directory)
     - [Thư mục `public`](#the-public-directory)
     - [Thư mục `resources`](#the-resources-directory)
     - [Thư mục `routes`](#the-routes-directory)
@@ -32,6 +33,9 @@
 
 Cấu trúc thư mục mặc định của Laravel nhằm cung cấp một khởi đầu tốt cho tất cả các application lớn và nhỏ. Nhưng bạn có thể tự tổ chức theo cách mà bạn muốn. Laravel sẽ gần như không áp đặt một hạn chế nào về mặt vị trí cho bất cứ class nào, miễn là Composer có thể load class đó.
 
+> **Note**
+> Bạn mới sử dụng Laravel? Hãy xem [Laravel Bootcamp](https://bootcamp.laravel.com) để có thể tham quan thực tế về framework và chúng tôi sẽ hướng dẫn bạn về cách xây dựng ứng dụng Laravel đầu tiên của bạn.
+
 <a name="the-root-directory"></a>
 ## Thư mục gốc
 
@@ -55,6 +59,11 @@ Thư mục `config` mang ý nghĩa rất dễ hiểu, nó dùng để chứa t�
 
 Thư mục `database` chứa các file migration cho database, các file factories để tạo fake data cho model, và các file seed. Nếu bạn muốn, bạn cũng có thể dùng thư mục này để chứa các file SQLite database.
 
+<a name="the-lang-directory"></a>
+#### The Lang Directory
+
+Thư mục `lang` chứa tất cả các file ngôn ngữ của ứng dụng.
+
 <a name="the-public-directory"></a>
 #### Thư mục Public
 
@@ -63,14 +72,14 @@ Thư mục `public` chứa file `index.php` là điểm khởi đầu vào cho m
 <a name="the-resources-directory"></a>
 #### Thư mục Resources
 
-Thư mục `resources` chứa file [view](/docs/{{version}}/views) cũng như file raw, và các file chưa được biên dịch như là CSS hoặc JavaScript. Thư mục này cũng chứa những file language.
+Thư mục `resources` chứa file [view](/docs/{{version}}/views) cũng như file raw, và các file chưa được biên dịch như là CSS hoặc JavaScript.
 
 <a name="the-routes-directory"></a>
 #### Thư mục Routes
 
 Thư mục `routes` chứa tất cả các file định nghĩa route cho application của bạn. Mặc đinh, sẽ bao gồm những file sau đây: `web.php`, `api.php`, `console.php`, và `channels.php`.
 
-File `web.php` sẽ chứa những route mà được load bởi file `RouteServiceProvider` và lưu trữ những route đó vào trong một group middleware có tên là `web`, middleware này cung cấp session, bảo vệ route trước các cuộc tấn công CSRF và mã hoá cookie. Nếu application của bạn chỉ dùng session và không dùng RESTful API thì có khả năng là tất cả route của bạn có thế được định nghĩa trong file `web.php` duy nhất.
+File `web.php` sẽ chứa những route mà được load bởi file `RouteServiceProvider` và lưu trữ những route đó vào trong một group middleware có tên là `web`, middleware này cung cấp session, bảo vệ route trước các cuộc tấn công CSRF và mã hoá cookie. Nếu application của bạn chỉ dùng session và không dùng RESTful API thì tất cả route của bạn có thế được định nghĩa trong file `web.php`.
 
 File `api.php` chứa những route mà được load bởi file `RouteServiceProvider` và lưu trữ những route đó vào trong một group middleware có tên là `api`. Những route này sẽ được chủ đích là không dùng session, vì vậy request đến application của bạn thông qua những route này sẽ được authenticated [thông qua token](/docs/{{version}}/sanctum) và không có quyền truy cập vào session.
 
@@ -104,7 +113,8 @@ Thư mục `app` sẽ chứa một số thư mục bổ sung như `Console`, `Ht
 
 Các thư mục khác sẽ được tạo trong thư mục `app` khi bạn dùng lệnh Artisan `make` để tạo các class tương ứng với thư mục đó. Ví dụ, bình thường, thư mục `app/Jobs` sẽ không tồn tại cho đến khi bạn chạy lệnh Artisan `make:job` để tạo class job.
 
-> {tip} Nhiều class trong thư mục `app` có thể được tạo ra thông qua lệnh Artisan. Để có thể xem các lệnh đó, bạn có chạy lệnh `php artisan list make` trên terminal của bạn.
+> **Note**
+> Nhiều class trong thư mục `app` có thể được tạo ra thông qua lệnh Artisan. Để có thể xem các lệnh đó, bạn có chạy lệnh `php artisan list make` trên terminal của bạn.
 
 <a name="the-broadcasting-directory"></a>
 #### Thư mục `Broadcasting`

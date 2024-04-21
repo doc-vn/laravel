@@ -42,20 +42,25 @@ Các event đóng vai trò là một cách tuyệt vời để tách các khía 
         ],
     ];
 
-> {tip} Lệnh `event:list` có thể được sử dụng để hiển thị danh sách tất cả các event và listener đã được đăng ký bởi ứng dụng của bạn.
+> **Note**
+> Lệnh `event:list` có thể được sử dụng để hiển thị danh sách tất cả các event và listener đã được đăng ký bởi ứng dụng của bạn.
 
 <a name="generating-events-and-listeners"></a>
 ### Tạo Event và Listener
 
 Tất nhiên, việc tạo bằng tay các file cho các event và listener này là rất công kềnh. Thay vào đó, hãy thêm listener và event của nó vào trong `EventServiceProvider` của bạn và sử dụng lệnh Artisan `event:generate`. Lệnh này sẽ tạo ra bất kỳ các event hoặc các listener nào được liệt kê trong mảng `EventServiceProvider` mà chưa tồn tại:
 
-    php artisan event:generate
+```shell
+php artisan event:generate
+```
 
 Ngoài ra, bạn có thể sử dụng các lệnh Artisan `make:event` và `make:listener` để tạo các event và listener riêng lẻ:
 
-    php artisan make:event PodcastProcessed
+```shell
+php artisan make:event PodcastProcessed
 
-    php artisan make:listener SendPodcastNotification --event=PodcastProcessed
+php artisan make:listener SendPodcastNotification --event=PodcastProcessed
+```
 
 <a name="manually-registering-events"></a>
 ### Đăng ký Event thủ công
@@ -137,7 +142,7 @@ Bạn thậm chí có thể đăng ký listener bằng cách sử dụng ký t�
 
 Thay vì phải đăng ký các event và listener theo cách thủ công trong mảng `$listen` của `EventServiceProvider`, bạn có thể bật tính năng event discovery. Khi tính năng event discovery được bật, Laravel sẽ tự động tìm kiếm và đăng ký các event, listener của bạn bằng cách quét thư mục `Listeners` của ứng dụng của bạn. Ngoài ra, mọi event được liệt kê trong `EventServiceProvider` vẫn sẽ được đăng ký.
 
-Laravel sẽ tìm các event listener bằng cách quét các class listener dùng class động của PHP. Khi Laravel tìm thấy bất kỳ phương thức class listener nào bắt đầu bằng `handle`, Laravel sẽ đăng ký các phương thức đó làm event listener cho các event được khai báo trong signature của phương thức:
+Laravel sẽ tìm các event listener bằng cách quét các class listener dùng class động của PHP. Khi Laravel tìm thấy bất kỳ phương thức class listener nào bắt đầu bằng `handle` hoặc `__invoke`, Laravel sẽ đăng ký các phương thức đó làm event listener cho các event được khai báo trong signature của phương thức:
 
     use App\Events\PodcastProcessed;
 
@@ -260,7 +265,8 @@ Tiếp theo, chúng ta hãy xem một listener mẫu cho một event. Listener c
         }
     }
 
-> {tip} Listener event của bạn cũng có thể khai báo bất kỳ sự phụ thuộc nào cần thiết ở trong hàm khởi tạo. Tất cả các listener event sẽ được resolve thông qua [service container](/docs/{{version}}/container), do đó, các phụ thuộc cũng sẽ được tự động thêm vào.
+> **Note**
+> Listener event của bạn cũng có thể khai báo bất kỳ sự phụ thuộc nào cần thiết ở trong hàm khởi tạo. Tất cả các listener event sẽ được resolve thông qua [service container](/docs/{{version}}/container), do đó, các phụ thuộc cũng sẽ được tự động thêm vào.
 
 <a name="stopping-the-propagation-of-an-event"></a>
 #### Stopping The Propagation Of An Event
@@ -435,7 +441,8 @@ Nếu tùy chọn `after_commit` trong cấu hình queue connection được set
         public $afterCommit = true;
     }
 
-> {tip} Để tìm hiểu về cách khắc phục những sự cố này, vui lòng xem lại tài liệu về [queued job và database transaction](/docs/{{version}}/queues#jobs-and-database-transactions).
+> **Note**
+> Để tìm hiểu về cách khắc phục những sự cố này, vui lòng xem lại tài liệu về [queued job và database transaction](/docs/{{version}}/queues#jobs-and-database-transactions).
 
 <a name="handling-failed-jobs"></a>
 ### Xử lý Failed Job
@@ -483,7 +490,7 @@ Thỉnh thoảng queue của event listener của bạn có thể bị thất b�
 
 Nếu một trong những queued listener của bạn gặp phải lỗi, bạn có thể không muốn nó tiếp tục thử lại nó một lần nào nữa. Do đó, Laravel cung cấp nhiều cách khác nhau để chỉ định số lần thử lại hoặc khoảng thời gian của một listener có thể được thử lại.
 
-Bạn có thể định nghĩa thuộc tính `$tries` trên class listener của bạn để chỉ định số lần mà listener có thể được thử lại trước khi nó được coi là thất bại:
+Bạn có thể định nghĩa một thuộc tính `$tries` trên class listener của bạn để chỉ định số lần mà listener có thể được thử lại trước khi nó được coi là thất bại:
 
     <?php
 
@@ -549,7 +556,14 @@ Là một giải pháp thay thế cho việc xác định số lần mà một l
         }
     }
 
-> {tip} Khi testing, nếu bạn cần kiểm tra một số event được gửi đi mà không cần chạy đến các listener của các event. [built-in testing helpers](/docs/{{version}}/mocking#event-fake) có thể làm điều đó trở lên dễ dàng.
+Nếu bạn muốn gửi một event có điều kiện, bạn có thể sử dụng các phương thức `dispatchIf` và `dispatchUnless`:
+
+    OrderShipped::dispatchIf($condition, $order);
+
+    OrderShipped::dispatchUnless($condition, $order);
+
+> **Note**
+> Khi testing, nếu bạn cần kiểm tra một số event được gửi đi mà không cần chạy đến các listener của các event. [built-in testing helpers](/docs/{{version}}/mocking#event-fake) có thể làm điều đó trở lên dễ dàng.
 
 <a name="event-subscribers"></a>
 ## Event Subscriber

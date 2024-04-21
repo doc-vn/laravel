@@ -5,13 +5,15 @@
 - [Quy ước tên Eloquent Model](#eloquent-model-conventions)
     - [Table Names](#table-names)
     - [Primary Keys](#primary-keys)
+    - [UUID và ULID Keys](#uuid-and-ulid-keys)
     - [Timestamps](#timestamps)
     - [Database Connections](#database-connections)
     - [Giá trị thuộc tính mặc định](#default-attribute-values)
+    - [Cấu hình Eloquent Strictness](#configuring-eloquent-strictness)
 - [Lấy ra Model](#retrieving-models)
     - [Collection](#collections)
     - [Phân kết quả](#chunking-results)
-    - [Streaming Results Lazily](#streaming-results-lazily)
+    - [Chunking dùng Lazy Collections](#chunking-using-lazy-collections)
     - [Cursors](#cursors)
     - [Advanced Subqueries](#advanced-subqueries)
 - [Lấy ra một Model / một thống kê](#retrieving-single-models)
@@ -41,22 +43,31 @@
 
 Laravel có chứa Eloquent, một mapper object-relational (ORM) giúp tương tác với cơ sở dữ liệu của bạn trở nên thú vị hơn. Khi sử dụng Eloquent, mỗi table cơ sở dữ liệu có một "Model" tương ứng được sử dụng để tương tác với bảng đó. Ngoài việc truy xuất các bản ghi từ bảng cơ sở dữ liệu, thì các model Eloquent còn cho phép bạn thêm, sửa và xóa các bản ghi ra khỏi bảng.
 
-> {tip} Trước khi bắt đầu, bạn hãy chắc chắn là đã cấu hình kết nối cơ sở dữ liệu trong file cấu hình `config/database.php` của application của bạn. Để biết thêm thông tin về cách cấu hình cơ sở dữ liệu của bạn, hãy xem [tài liệu cấu hình cơ sở dữ liệu](/docs/{{version}}/database#configuration).
+> **Note**
+> Trước khi bắt đầu, bạn hãy chắc chắn là đã cấu hình kết nối cơ sở dữ liệu trong file cấu hình `config/database.php` của application của bạn. Để biết thêm thông tin về cách cấu hình cơ sở dữ liệu của bạn, hãy xem [tài liệu cấu hình cơ sở dữ liệu](/docs/{{version}}/database#configuration).
+
+#### Laravel Bootcamp
+
+Nếu bạn mới làm quen với Laravel, vui lòng tham gia [Laravel Bootcamp](https://bootcamp.laravel.com). Laravel Bootcamp sẽ hướng dẫn bạn xây dựng ứng dụng Laravel bằng Eloquent từ những bước đầu tiên. Đó là một cách tuyệt vời để tìm hiểu mọi thứ mà Laravel và Eloquent cung cấp.
 
 <a name="generating-model-classes"></a>
 ## Tạo class model
 
 Để bắt đầu, bạn hãy tạo một model Eloquent. Các model thường được lưu trong thư mục `app\Models` và extend class `Illuminate\Database\Eloquent\Model`. Bạn có thể sử dụng lệnh `make:model` [Artisan command](/docs/{{version}}/artisan) để tạo một model mới:
 
-    php artisan make:model Flight
+```shell
+php artisan make:model Flight
+```
 
 Nếu bạn muốn tạo cả file [migration cho cơ sở dữ liệu](/docs/{{version}}/migrations) khi bạn tạo model, bạn có thể sử dụng tùy chọn `--migration` hoặc `-m`:
 
-    php artisan make:model Flight --migration
+```shell
+php artisan make:model Flight --migration
+```
 
 Bạn có thể tạo nhiều loại class khác nhau khi tạo model, chẳng hạn như factory, seeder, policy, controller và form request. Ngoài ra, các tùy chọn này cũng có thể được kết hợp với nhau để tạo nhiều class cùng một lúc:
 
-```bash
+```shell
 # Generate a model and a FlightFactory class...
 php artisan make:model Flight --factory
 php artisan make:model Flight -f
@@ -84,6 +95,15 @@ php artisan make:model Flight --all
 
 # Generate a pivot model...
 php artisan make:model Member --pivot
+```
+
+<a name="inspecting-models"></a>
+#### Inspecting Models
+
+Thỉnh thoảng có thể khó xác định tất cả các thuộc tính và các quan hệ sẵn có của một model chỉ bằng cách đọc lướt qua code của nó. Thay vào đó, bạn hãy thử lệnh Artisan `model:show`, lệnh này sẽ cung cấp một cái nhìn tổng quan về tất cả các thuộc tính và các quan hệ của model:
+
+```shell
+php artisan model:show Flight
 ```
 
 <a name="eloquent-model-conventions"></a>
@@ -179,6 +199,69 @@ Nếu khóa chính của model của bạn không phải là dạng integer, th�
 
 Eloquent yêu cầu mỗi model phải có ít nhất một "ID" nhận dạng duy nhất để có thể làm khóa chính. Các khóa chính "Composite" không được hỗ trợ bởi các model Eloquent. Tuy nhiên, bạn có thể tự do thêm các index, nhiều cột vào các bảng cơ sở dữ liệu của bạn ngoài khóa chính để xác định tính duy nhất của bảng.
 
+<a name="uuid-and-ulid-keys"></a>
+### UUID và ULID Keys
+
+Thay vì sử dụng một số tự động tăng làm khóa chính cho model Eloquent, bạn có thể chọn sử dụng UUID thay thế. UUID là một mã định danh chữ và số duy nhất trên toàn cầu có độ dài 36 ký tự.
+
+Nếu bạn muốn một model sử dụng khóa UUID thay vì khóa số nguyên tự động tăng, bạn có thể sử dụng trait `Illuminate\Database\Eloquent\Concerns\HasUuids` trên model. Tất nhiên, bạn nên đảm bảo rằng model có [một cột khóa chính tương ứng với UUID](/docs/{{version}}/migrations#column-method-uuid):
+
+    use Illuminate\Database\Eloquent\Concerns\HasUuids;
+    use Illuminate\Database\Eloquent\Model;
+
+    class Article extends Model
+    {
+        use HasUuids;
+
+        // ...
+    }
+
+    $article = Article::create(['title' => 'Traveling to Europe']);
+
+    $article->id; // "8f8e8478-9035-4d23-b9a7-62f4d2612ce5"
+
+Mặc định, trait `HasUuids` sẽ tạo ra [UUID "có thể sắp xếp"](/docs/{{version}}/helpers#method-str-ordered-uuid) cho model của bạn. Các UUID này hiệu quả cho việc lưu trữ index trong cơ sở dữ liệu vì chúng có thể được sắp xếp theo kiểu từ điển.
+
+Bạn có thể ghi đè process tạo UUID cho một model nhất định bằng cách định nghĩa một phương thức `newUniqueId` trên model. Ngoài ra, bạn có thể chỉ định cột nào đó sẽ nhận UUID bằng cách định nghĩa phương thức `uniqueIds` trên model:
+
+    use Ramsey\Uuid\Uuid;
+
+    /**
+     * Generate a new UUID for the model.
+     *
+     * @return string
+     */
+    public function newUniqueId()
+    {
+        return (string) Uuid::uuid4();
+    }
+
+    /**
+     * Get the columns that should receive a unique identifier.
+     *
+     * @return array
+     */
+    public function uniqueIds()
+    {
+        return ['id', 'discount_code'];
+    }
+
+Nếu muốn, bạn có thể chọn sử dụng "ULIDs" thay vì dùng UUID. ULID tương tự như UUID; tuy nhiên, chúng chỉ có độ dài 26 ký tự. Giống như các UUID có thể được sắp xếp, các ULID có thể được sắp xếp theo kiểu từ điển để lập index cho cơ sở dữ liệu một cách hiệu quả hơn. Để sử dụng ULID, bạn nên sử dụng trait `Illuminate\Database\Eloquent\Concerns\HasUlids` trên model của bạn. Bạn cũng nên đảm bảo rằng model có [cột khóa chính tương ứng ULID](/docs/{{version}}/migrations#column-method-ulid):
+
+    use Illuminate\Database\Eloquent\Concerns\HasUlids;
+    use Illuminate\Database\Eloquent\Model;
+
+    class Article extends Model
+    {
+        use HasUlids;
+
+        // ...
+    }
+
+    $article = Article::create(['title' => 'Traveling to Asia']);
+
+    $article->id; // "01gd4d3tgrrfqeda94gdbtdk5c"
+
 <a name="timestamps"></a>
 ### Timestamps
 
@@ -228,6 +311,10 @@ Nếu bạn cần tùy biến tên của các cột được sử dụng để l
         const UPDATED_AT = 'updated_date';
     }
 
+Nếu bạn muốn thực hiện các thao tác trên model mà không cần sửa timestamp `updated_at` của model, bạn có thể thao tác trên model trong một closure được cung cấp trong phương thức `withoutTimestamps`:
+
+    Model::withoutTimestamps(fn () => $post->increment(['reads']));
+
 <a name="database-connections"></a>
 ### Database Connection
 
@@ -252,7 +339,7 @@ Mặc định, tất cả các model Eloquent sẽ sử dụng kết nối cơ s
 <a name="default-attribute-values"></a>
 ### Giá trị thuộc tính mặc định
 
-Mặc định, một instance model mới khi được tạo sẽ không chứa bất kỳ giá trị thuộc tính nào. Nếu bạn muốn định nghĩa giá trị mặc định cho một số thuộc tính của model, bạn có thể định nghĩa thuộc tính `$attributes` trên model của bạn:
+Mặc định, một instance model mới khi được tạo sẽ không chứa bất kỳ giá trị thuộc tính nào. Nếu bạn muốn định nghĩa giá trị mặc định cho một số thuộc tính của model, bạn có thể định nghĩa thuộc tính `$attributes` trên model của bạn. Các giá trị thuộc tính được set trong mảng `$attributes` phải ở định dạng raw, "lưu trữ được" giống như chúng vừa được đọc ra từ cơ sở dữ liệu:
 
     <?php
 
@@ -268,9 +355,52 @@ Mặc định, một instance model mới khi được tạo sẽ không chứa 
          * @var array
          */
         protected $attributes = [
+            'options' => '[]',
             'delayed' => false,
         ];
     }
+
+<a name="configuring-eloquent-strictness"></a>
+### Cấu hình Eloquent Strictness
+
+Laravel cung cấp một số phương thức cho phép bạn cấu hình hành vi và "sự nghiêm ngặt" của Eloquent trong nhiều tình huống khác nhau.
+
+Đầu tiên, phương thức `preventLazyLoading` sẽ chấp nhận một tham số boolean tùy chọn để cho biết xem liệu có nên chặn việc lazy loading hay không. Ví dụ: bạn có thể muốn tắt lazy loading trong môi trường không phải production để môi trường production của bạn có thể tiếp tục hoạt động bình thường ngay cả khi một lazy load quan hệ vô tình xuất hiện trong code production. Thông thường, phương thức này nên được gọi trong phương thức `boot` của `AppServiceProvider` trong ứng dụng của bạn:
+
+```php
+use Illuminate\Database\Eloquent\Model;
+
+/**
+ * Bootstrap any application services.
+ *
+ * @return void
+ */
+public function boot()
+{
+    Model::preventLazyLoading(! $this->app->isProduction());
+}
+```
+
+Ngoài ra, bạn có thể hướng dẫn Laravel đưa ra một ngoại lệ khi cố gắng đưa vào một thuộc tính không thể đưa bằng cách gọi phương thức `preventSilentlyDiscardingAttributes`. Điều này có thể giúp ngăn ngừa các lỗi không mong muốn trong quá trình phát triển ở local khi cố gắng set một thuộc tính mà chưa được thêm vào trong mảng `fillable` của model:
+
+```php
+Model::preventSilentlyDiscardingAttributes(! $this->app->isProduction());
+```
+
+Cuối cùng, bạn có thể hướng dẫn Eloquent đưa ra một ngoại lệ nếu bạn cố gắng truy cập vào một thuộc tính trên model khi thuộc tính đó không thực sự được lấy ra từ ​​cơ sở dữ liệu hoặc khi thuộc tính đó không tồn tại. Ví dụ: điều này có thể xảy ra khi bạn quên thêm một thuộc tính vào lệnh `select` của truy vấn Eloquent:
+
+```php
+Model::preventAccessingMissingAttributes(! $this->app->isProduction());
+```
+
+<a name="enabling-eloquent-strict-mode"></a>
+#### Enabling Eloquent "Strict Mode"
+
+Để thuận tiện, bạn có thể cho phép cả ba phương thức ở trên vào trong code bằng cách gọi phương thức `shouldBeStrict`:
+
+```php
+Model::shouldBeStrict(! $this->app->isProduction());
+```
 
 <a name="retrieving-models"></a>
 ## Lấy ra Model
@@ -293,7 +423,8 @@ Phương thức `all` của Eloquent sẽ trả về tất cả các bản ghi c
                    ->take(10)
                    ->get();
 
-> {tip} Vì các model Eloquent là các query builder, nên bạn nên xem lại tất cả các phương thức đã được cung cấp bởi [query builder](/docs/{{version}}/queries) của Laravel. Bạn có thể sử dụng bất kỳ phương thức nào khi viết các truy vấn Eloquent của bạn.
+> **Note**
+> Vì các model Eloquent là các query builder, nên bạn nên xem lại tất cả các phương thức đã được cung cấp bởi [query builder](/docs/{{version}}/queries) của Laravel. Bạn có thể sử dụng bất kỳ phương thức nào khi viết các truy vấn Eloquent của bạn.
 
 <a name="refreshing-models"></a>
 #### Refreshing Models
@@ -367,8 +498,8 @@ Flight::where('departed', true)
     }, $column = 'id');
 ```
 
-<a name="streaming-results-lazily"></a>
-### Streaming Results Lazily
+<a name="chunking-using-lazy-collections"></a>
+### Chunking dùng Lazy Collections
 
 Phương thức `lazy` hoạt động tương tự như [phương thức `chunk`](#chunking-results) theo nghĩa là, nó cũng thực thi truy vấn theo chunk. Tuy nhiên, thay vì truyền từng chunk trực tiếp vào một hàm callback như hiện tại, thì phương thức `lazy` trả về [`LazyCollection`](/docs/{{version}}/collections#lazy-collections) của các model Eloquent, cho phép bạn tương tác với các kết quả dưới dạng một luồng duy nhất:
 
@@ -397,7 +528,8 @@ Tương tự như phương thức `lazy`, phương thức `cursor` cũng có th�
 
 Phương thức `cursor` sẽ chỉ thực hiện một truy vấn vào cơ sở dữ liệu; tuy nhiên, các model Eloquent sẽ không được cung cấp bộ nhớ cho đến khi chúng thực sự được lặp qua. Do đó, chỉ có một model Eloquent được lưu trong bộ nhớ tại bất kỳ thời điểm nào trong khi lặp.
 
-> {note} Vì phương thức `cursor` sẽ chỉ lưu một model Eloquent trong bộ nhớ tại một thời điểm nên nó không thể eager load các quan hệ. Nếu bạn cần eager load các quan hệ, hãy cân nhắc sử dụng [phương pháp `lazy`](#streaming-results-lazily) để thay thế.
+> **Warning**
+> Vì phương thức `cursor` sẽ chỉ lưu một model Eloquent trong bộ nhớ tại một thời điểm nên nó không thể eager load các quan hệ. Nếu bạn cần eager load các quan hệ, hãy cân nhắc sử dụng [phương pháp `lazy`](#chunking-using-lazy-collections) để thay thế.
 
 Phương thức `cursor` sử dụng PHP [generators](https://www.php.net/manual/en/lingu.generators.overview.php) để implement chức năng này:
 
@@ -423,7 +555,7 @@ foreach ($users as $user) {
 }
 ```
 
-Mặc dù phương thức `cursor` sử dụng ít bộ nhớ hơn nhiều so với truy vấn thông thường (bằng cách chỉ giữ một model Eloquent duy nhất trong bộ nhớ tại một thời điểm), nhưng cuối cùng nó vẫn sẽ hết bộ nhớ. Điều này là [do driver PDO của PHP sẽ lưu nội bộ tất cả các kết quả truy vấn trong bộ cache của nó](https://www.php.net/manual/en/mysqlinfo.concepts.buffering.php). Nếu bạn đang xử lý một số lượng rất lớn các bản ghi Eloquent, hãy cân nhắc sử dụng [phương thức `lazy`](#streaming-results-lazily) để thay thế.
+Mặc dù phương thức `cursor` sử dụng ít bộ nhớ hơn nhiều so với truy vấn thông thường (bằng cách chỉ giữ một model Eloquent duy nhất trong bộ nhớ tại một thời điểm), nhưng cuối cùng nó vẫn sẽ hết bộ nhớ. Điều này là [do driver PDO của PHP sẽ lưu nội bộ tất cả các kết quả truy vấn trong bộ cache của nó](https://www.php.net/manual/en/mysqlinfo.concepts.buffering.php). Nếu bạn đang xử lý một số lượng rất lớn các bản ghi Eloquent, hãy cân nhắc sử dụng [phương thức `lazy`](#chunking-using-lazy-collections) để thay thế.
 
 <a name="advanced-subqueries"></a>
 ### Advanced Subqueries
@@ -472,9 +604,13 @@ Ngoài việc truy xuất tất cả các bản ghi phù hợp với một truy 
     // Alternative to retrieving the first model matching the query constraints...
     $flight = Flight::firstWhere('active', 1);
 
-Thỉnh thoảng, bạn có thể muốn lấy ra kết quả đầu tiên của một truy vấn hoặc thực hiện một số hành động khác nếu không tìm thấy kết quả nào. Phương thức `firstOr` sẽ trả về kết quả đầu tiên phù hợp với truy vấn hoặc nếu không tìm thấy kết quả nào khác, thì sẽ thực hiện một closure đã cho. Giá trị được trả về bởi closure sẽ được coi là kết quả của phương thức `firstOr`:
+Thỉnh thoảng, bạn có thể muốn thực hiện một số hành động khác nếu không tìm thấy kết quả nào. Phương thức `findOr` và phương thức `firstOr` sẽ trả về một instance model hoặc nếu không tìm thấy kết quả nào khác, thì sẽ thực hiện một closure đã cho. Giá trị được trả về bởi closure sẽ được coi là kết quả của phương thức:
 
-    $model = Flight::where('legs', '>', 3)->firstOr(function () {
+    $flight = Flight::findOr(1, function () {
+        // ...
+    });
+
+    $flight = Flight::where('legs', '>', 3)->firstOr(function () {
         // ...
     });
 
@@ -607,14 +743,15 @@ Cập nhật cũng có thể được thực hiện đối với các model tư�
 
 Phương thức `update` yêu cầu một mảng gồm các cặp: tên cột và giá trị cần được cập nhật. Phương thức `update` này sẽ trả về số hàng bị ảnh hưởng.
 
-> {note} Khi chạy một mass update thông qua Eloquent, thì các event của model như `saving`, `saved`, `updating`, và `updated` sẽ không được kích hoạt. Điều này là do các model đã không được lấy ra khi chạy một mass update.
+> **Warning**
+> Khi chạy một mass update thông qua Eloquent, thì các event của model như `saving`, `saved`, `updating`, và `updated` sẽ không được kích hoạt. Điều này là do các model đã không được lấy ra khi chạy một mass update.
 
 <a name="examining-attribute-changes"></a>
 #### Examining Attribute Changes
 
 Eloquent cung cấp các phương thức `isDirty`, `isClean` và `wasChanged` để kiểm tra xem trạng thái của model của bạn và xác định các thuộc tính của model đã bị thay đổi như thế nào so với khi model được lấy ra.
 
-Phương thức `isDirty` sẽ xác định xem có bất kỳ thuộc tính nào bị thay đổi kể từ khi model được lấy ra. Bạn có thể truyền vào một tên thuộc tính cụ thể để xác định xem thuộc tính đó có bị thay đổi hay không. Phương thức `isClean` sẽ xác định xem một thuộc tính có thay đổi không kể từ khi model được lấy ra. Phương thức này cũng chấp nhận một tùy chọn tham số cho tên thuộc tính:
+Phương thức `isDirty` sẽ xác định xem có bất kỳ thuộc tính nào bị thay đổi kể từ khi model được lấy ra hay không. Bạn có thể truyền vào tên một thuộc tính cụ thể hoặc một mảng các thuộc tính vào phương thức `isDirty` để xác định xem có thuộc tính nào bị "thay đổi" hay không. Phương thức `isClean` sẽ xác định xem một thuộc tính có thay đổi không kể từ khi model được lấy ra. Phương thức này cũng chấp nhận một tùy chọn tham số cho tên thuộc tính:
 
     use App\Models\User;
 
@@ -629,10 +766,12 @@ Phương thức `isDirty` sẽ xác định xem có bất kỳ thuộc tính nà
     $user->isDirty(); // true
     $user->isDirty('title'); // true
     $user->isDirty('first_name'); // false
+    $user->isDirty(['first_name', 'title']); // true
 
     $user->isClean(); // false
     $user->isClean('title'); // false
     $user->isClean('first_name'); // true
+    $user->isClean(['first_name', 'title']); // false
 
     $user->save();
 
@@ -653,7 +792,9 @@ Phương thức `wasChanged` sẽ xác định xem đã có bất kỳ thuộc t
 
     $user->wasChanged(); // true
     $user->wasChanged('title'); // true
+    $user->wasChanged(['title', 'slug']); // true
     $user->wasChanged('first_name'); // false
+    $user->wasChanged(['first_name', 'title']); // true
 
 Phương thức `getOriginal` sẽ trả về một mảng chứa các thuộc tính ban đầu của model bất kể có thay đổi nào kể từ khi nó được lấy ra. Nếu cần, bạn có thể truyền vào tên của một thuộc tính cụ thể để nhận về giá trị ban đầu của một thuộc tính đó:
 
@@ -735,6 +876,25 @@ Nếu bạn muốn làm cho tất cả các thuộc tính của bạn đều có
      */
     protected $guarded = [];
 
+<a name="mass-assignment-exceptions"></a>
+#### Mass Assignment Exceptions
+
+Mặc định, các thuộc tính không có trong mảng `$fillable` sẽ bị loại ra khi thực hiện các thao tác mass-assignment. Trong môi trường production, đây là hành vi được mong đợi; tuy nhiên, trong quá trình phát triển ở local, điều này có thể dẫn đến sự nhầm lẫn về lý do tại sao có những thay đổi về mặt model lại không có hiệu lực.
+
+Nếu muốn, bạn có thể hướng dẫn Laravel đưa ra một ngoại lệ khi cố gắng đưa vào một thuộc tính không thể đưa bằng cách gọi phương thức `preventSilentlyDiscardingAttributes`. Thông thường, phương thức này nên được gọi trong một phương thức `boot` của một service provider trong ứng dụng của bạn:
+
+    use Illuminate\Database\Eloquent\Model;
+
+    /**
+     * Bootstrap any application services.
+     *
+     * @return void
+     */
+    public function boot()
+    {
+        Model::preventSilentlyDiscardingAttributes($this->app->isLocal());
+    }
+
 <a name="upserts"></a>
 ### Upserts
 
@@ -753,6 +913,9 @@ Nếu bạn muốn thực hiện nhiều "uperts" trong một truy vấn, thì b
         ['departure' => 'Oakland', 'destination' => 'San Diego', 'price' => 99],
         ['departure' => 'Chicago', 'destination' => 'New York', 'price' => 150]
     ], ['departure', 'destination'], ['price']);
+
+> **Warning**
+> Tất cả các cơ sở dữ liệu ngoại trừ SQL Server đều yêu cầu các cột trong tham số thứ hai của phương thức `upsert` phải có một cột "primary" hoặc một "unique" index trong đó. Ngoài ra, driver cơ sở dữ liệu MySQL sẽ bỏ qua tham số thứ hai của phương thức `upsert` và luôn sử dụng các "primary" và "unique" indexe của bảng để phát hiện các bản ghi hiện có.
 
 <a name="deleting-models"></a>
 ## Xoá Model
@@ -782,7 +945,8 @@ Trong ví dụ trên, chúng ta đang lấy một model từ cơ sở dữ liệ
 
     Flight::destroy(collect([1, 2, 3]));
 
-> {note} Phương thức `destroy` sẽ load từng model và gọi phương thức `delete` trên từng model đó để kích hoạt các event `deleting` và `deleted`.
+> **Warning**
+> Phương thức `destroy` sẽ load từng model và gọi phương thức `delete` trên từng model đó để kích hoạt các event `deleting` và `deleted`.
 
 <a name="deleting-models-using-queries"></a>
 #### Deleting Models Using Queries
@@ -791,7 +955,8 @@ Bạn cũng có thể chạy một câu lệnh xóa trên một tập các model
 
     $deleted = Flight::where('active', 0)->delete();
 
-> {note} Khi thực hiện câu lệnh mass delete thông qua Eloquent, các event model như là `deleting` và `deleted` sẽ không được kích hoạt cho các model đã bị xóa. Điều này là do các model đã không được lấy ra khi thực hiện câu lệnh xóa.
+> **Warning**
+> Khi thực hiện câu lệnh mass delete thông qua Eloquent, các event model như là `deleting` và `deleted` sẽ không được kích hoạt cho các model đã bị xóa. Điều này là do các model đã không được lấy ra khi thực hiện câu lệnh xóa.
 
 <a name="soft-deleting"></a>
 ### Soft Delete
@@ -810,7 +975,8 @@ Ngoài việc xóa các bản ghi ra khỏi cơ sở dữ liệu của bạn, El
         use SoftDeletes;
     }
 
-> {tip} Trait `SoftDeletes` sẽ tự động cast thuộc tính `deleted_at` thành một instance `DateTime` / `Carbon` cho bạn.
+> **Note**
+> Trait `SoftDeletes` sẽ tự động cast thuộc tính `deleted_at` thành một instance `DateTime` / `Carbon` cho bạn.
 
 Bạn cũng cần thêm cột `deleted_at` vào bảng cơ sở dữ liệu của bạn. [Schema builder](/docs/{{version}}/migrations) của Laravel có chứa một phương thức helper để tạo cột này:
 
@@ -954,9 +1120,12 @@ Nếu bạn muốn bỏ qua một số model ra khỏi pruned trong khi đang pr
 
 Bạn có thể kiểm tra truy vấn `prunable` của bạn bằng cách thực hiện lệnh `model:prune` với tùy chọn `--pretend`. Khi chạy với tuỳ chọn đó, lệnh `model:prune` sẽ chỉ báo cáo ra là có bao nhiêu record sẽ bị pruned nếu lệnh này thực sự chạy:
 
-    php artisan model:prune --pretend
+```shell
+php artisan model:prune --pretend
+```
 
-> {note} Các model soft delete sẽ bị xóa vĩnh viễn (`forceDelete`) nếu chúng phù hợp với câu lệnh truy vấn prunable.
+> **Warning**
+> Các model soft delete sẽ bị xóa vĩnh viễn (`forceDelete`) nếu chúng phù hợp với câu lệnh truy vấn prunable.
 
 <a name="mass-pruning"></a>
 #### Mass Pruning
@@ -1037,7 +1206,7 @@ Interface `Scope` sẽ yêu cầu bạn implement một phương thức: `apply`
 
     <?php
 
-    namespace App\Scopes;
+    namespace App\Models\Scopes;
 
     use Illuminate\Database\Eloquent\Builder;
     use Illuminate\Database\Eloquent\Model;
@@ -1058,7 +1227,8 @@ Interface `Scope` sẽ yêu cầu bạn implement một phương thức: `apply`
         }
     }
 
-> {tip} Nếu global scope của bạn đang thêm các cột vào trong câu lệnh select, thì bạn nên sử dụng phương thức `addSelect` thay vì `select`. Điều này sẽ ngăn việc bạn vô tình thay thế lệnh select hiện tại của truy vấn.
+> **Note**
+> Nếu global scope của bạn đang thêm các cột vào trong câu lệnh select, thì bạn nên sử dụng phương thức `addSelect` thay vì `select`. Điều này sẽ ngăn việc bạn vô tình thay thế lệnh select hiện tại của truy vấn.
 
 <a name="applying-global-scopes"></a>
 #### Applying Global Scopes
@@ -1069,7 +1239,7 @@ Interface `Scope` sẽ yêu cầu bạn implement một phương thức: `apply`
 
     namespace App\Models;
 
-    use App\Scopes\AncientScope;
+    use App\Models\Scopes\AncientScope;
     use Illuminate\Database\Eloquent\Model;
 
     class User extends Model
@@ -1248,9 +1418,10 @@ Các phương thức `is` và `isNot` cũng khả dụng khi sử dụng các [q
 <a name="events"></a>
 ## Event
 
-> {tip} Want to broadcast your Eloquent events directly to your client-side application? Check out Laravel's [model event broadcasting](/docs/{{version}}/broadcasting#model-broadcasting).
+> **Note**
+> Want to broadcast your Eloquent events directly to your client-side application? Check out Laravel's [model event broadcasting](/docs/{{version}}/broadcasting#model-broadcasting).
 
-Các eloquent model sẽ kích hoạt một số event, cho phép bạn hook đến các chỗ khác trong vòng đời của một model: `retrieved`, `creating`, `created`, `updating`, `updated`, `saving`, `saved`, `deleting`, `deleted`, `restoring`, `restored`, và `replicating`.
+Các eloquent model sẽ kích hoạt một số event, cho phép bạn hook đến các chỗ khác trong vòng đời của một model: `retrieved`, `creating`, `created`, `updating`, `updated`, `saving`, `saved`, `deleting`, `deleted`, `trashed`, `forceDeleting`, `forceDeleted`, `restoring`, `restored`, và `replicating`.
 
 Event `retrieved` sẽ được kích hoạt khi một model được lấy ra khỏi cơ sở dữ liệu. Khi một model mới được lưu vào lần đầu tiên, các event `creating` và `created` sẽ kích hoạt. Các event `updating` / `updated` sẽ kích hoạt khi một model đang tồn tại có sửa đổi và gọi đến phương thức `save`. Các event `saving` / `saved` sẽ kích hoạt khi một model mới được tạo hoặc cập nhật - thậm chí cả khi các thuộc tính của model đó không bị thay đổi. Các tên event kết thúc bằng `-ing` được gửi đi trước khi bất kỳ thay đổi nào của model được lưu, trong khi các event kết thúc bằng `-ed` sẽ được gửi sau khi các thay đổi của model được lưu.
 
@@ -1263,6 +1434,7 @@ Event `retrieved` sẽ được kích hoạt khi một model được lấy ra k
     use App\Events\UserDeleted;
     use App\Events\UserSaved;
     use Illuminate\Foundation\Auth\User as Authenticatable;
+    use Illuminate\Notifications\Notifiable;
 
     class User extends Authenticatable
     {
@@ -1281,7 +1453,8 @@ Event `retrieved` sẽ được kích hoạt khi một model được lấy ra k
 
 Sau khi định nghĩa và ánh xạ các event Eloquent của bạn, bạn có thể sử dụng [event listeners](/docs/{{version}}/events#defining-listeners) để xử lý các event đó.
 
-> {note} Khi bạn cập nhật một loạt dữ liệu thông qua Eloquent, thì các event của model như `saved`, `updated`, `deleting`, và `deleted` sẽ không được kích hoạt cho các model đó. Điều này là do các model không thực sự được lấy ra khi bạn chạy các cập nhật hoặc xoá bỏ.
+> **Warning**
+> Khi bạn cập nhật một loạt dữ liệu thông qua Eloquent, thì các event của model như `saved`, `updated`, `deleting`, và `deleted` sẽ không được kích hoạt cho các model đó. Điều này là do các model không thực sự được lấy ra khi bạn chạy các cập nhật hoặc xoá bỏ.
 
 <a name="events-using-closures"></a>
 ### Dùng Closures
@@ -1325,9 +1498,11 @@ Nếu cần, bạn có thể sử dụng một [queue event listener ẩn danh](
 
 Nếu bạn đang listen nhiều event trên một model, bạn có thể sử dụng các observer để nhóm tất cả các listen của bạn vào trong một class duy nhất. Các class observer có tên phương thức chính là tên các event Eloquent mà bạn muốn listen. Mỗi phương thức này nhận vào model bị ảnh hưởng làm tham số duy nhất của chúng. Lệnh Artisan `make:Observer` là cách dễ nhất để tạo một class observer mới:
 
-    php artisan make:observer UserObserver --model=User
+```shell
+php artisan make:observer UserObserver --model=User
+```
 
-Lệnh này sẽ lưu file observer mới vào trong thư mục `App/Observers` của bạn. Nếu thư mục này không tồn tại, Artisan sẽ tạo nó cho bạn. Class observer mới của bạn sẽ trông giống như sau:
+Lệnh này sẽ lưu file observer mới vào trong thư mục `app/Observers` của bạn. Nếu thư mục này không tồn tại, Artisan sẽ tạo nó cho bạn. Class observer mới của bạn sẽ trông giống như sau:
 
     <?php
 
@@ -1371,6 +1546,17 @@ Lệnh này sẽ lưu file observer mới vào trong thư mục `App/Observers` 
         }
 
         /**
+         * Handle the User "restored" event.
+         *
+         * @param  \App\Models\User  $user
+         * @return void
+         */
+        public function restored(User $user)
+        {
+            //
+        }
+
+        /**
          * Handle the User "forceDeleted" event.
          *
          * @param  \App\Models\User  $user
@@ -1397,7 +1583,22 @@ Lệnh này sẽ lưu file observer mới vào trong thư mục `App/Observers` 
         User::observe(UserObserver::class);
     }
 
-> {tip} Có thêm các event mà observer có thể listen, chẳng hạn như `saving` và `retrieved`. Những event này được mô tả trong tài liệu [events](#events).
+Ngoài ra, bạn có thể liệt kê những observer của bạn trong thuộc tính `$observers` của class `App\Providers\EventServiceProvider` trong ứng dụng của bạn:
+
+    use App\Models\User;
+    use App\Observers\UserObserver;
+
+    /**
+     * The model observers for your application.
+     *
+     * @var array
+     */
+    protected $observers = [
+        User::class => [UserObserver::class],
+    ];
+
+> **Note**
+> Có thêm các event mà observer có thể listen, chẳng hạn như `saving` và `retrieved`. Những event này được mô tả trong tài liệu [events](#events).
 
 <a name="observers-and-database-transactions"></a>
 #### Observers & Database Transactions
@@ -1438,7 +1639,7 @@ Khi các model đang được tạo trong một database transaction, bạn có 
 
     use App\Models\User;
 
-    $user = User::withoutEvents(function () use () {
+    $user = User::withoutEvents(function () {
         User::findOrFail(1)->delete();
 
         return User::find(2);
@@ -1454,3 +1655,9 @@ Thỉnh thoảng bạn có thể muốn "lưu" một model nhất định mà kh
     $user->name = 'Victoria Faith';
 
     $user->saveQuietly();
+
+Bạn cũng có thể "update", "delete", "soft delete", "restore", và "replicate" một model nhất định mà không gửi bất kỳ event nào:
+
+    $user->deleteQuietly();
+    $user->forceDeleteQuietly();
+    $user->restoreQuietly();

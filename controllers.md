@@ -13,6 +13,7 @@
     - [Scoping Resource Routes](#restful-scoping-resource-routes)
     - [Localizing Resource URIs](#restful-localizing-resource-uris)
     - [Supplementing Resource Controller](#restful-supplementing-resource-controllers)
+    - [Singleton Resource Controllers](#singleton-resource-controllers)
 - [Dependency Injection và Controller](#dependency-injection-and-controllers)
 
 <a name="introduction"></a>
@@ -32,7 +33,6 @@ Hãy xem một ví dụ về một class controller cơ bản. Lưu ý rằng co
 
     namespace App\Http\Controllers;
 
-    use App\Http\Controllers\Controller;
     use App\Models\User;
 
     class UserController extends Controller
@@ -59,7 +59,8 @@ Bạn có định nghĩa một route tới một phương thức của controlle
 
 Khi một request khớp với URI route đã chỉ định, phương thức `show` trên class `App\Http\Controllers\UserController` sẽ được gọi và các tham số route sẽ được truyền cho phương thức.
 
-> {tip} Các controller không **bắt buộc** phải extend từ một class base. Tuy nhiên, bạn sẽ không có quyền truy cập vào các chức năng tiện lợi như phương thức `middleware` và `authorize`.
+> **Note**
+> Các controller không **bắt buộc** phải extend từ một class base. Tuy nhiên, bạn sẽ không có quyền truy cập vào các chức năng tiện lợi như phương thức `middleware` và `authorize`.
 
 <a name="single-action-controllers"></a>
 ### Single Action Controllers
@@ -70,7 +71,6 @@ Nếu một controller action đặc biệt phức tạp, bạn có thể thấy
 
     namespace App\Http\Controllers;
 
-    use App\Http\Controllers\Controller;
     use App\Models\User;
 
     class ProvisionServer extends Controller
@@ -94,9 +94,12 @@ Khi đăng ký route cho một single action controller, bạn sẽ không cần
 
 Bạn có thể tạo một controller chỉ có một action duy nhất bằng cách sử dụng tùy chọn `--invokable` trong lệnh Artisan `make:controller`:
 
-    php artisan make:controller ProvisionServer --invokable
+```shell
+php artisan make:controller ProvisionServer --invokable
+```
 
-> {tip} Bạn có thể tùy chỉnh các stub của controller bằng cách [export chúng](/docs/{{version}}/artisan#stub-customization).
+> **Note**
+> Bạn có thể tùy chỉnh các stub của controller bằng cách [export chúng](/docs/{{version}}/artisan#stub-customization).
 
 <a name="controller-middleware"></a>
 ## Controller Middleware
@@ -135,7 +138,9 @@ Nếu bạn coi mỗi model Eloquent trong ứng dụng của bạn là một "r
 
 Do đây là những trường hợp rất hay sử dụng, nên route của Laravel resource sẽ chỉ định các route tạo, đọc, cập nhật và xóa ("CRUD") mặc định cho controller với một số dòng code mặc định. Để bắt đầu, chúng ta có thể sử dụng tùy chọn `--resource` của lệnh `make:controller` Artisan để nhanh chóng tạo một controller để xử lý các hành động này:
 
-    php artisan make:controller PhotoController --resource
+```shell
+php artisan make:controller PhotoController --resource
+```
 
 Lệnh này sẽ tạo ra một controller tại `app/Http/Controllers/PhotoController.php`. Controller này sẽ chứa một phương thức cho mỗi hành động resource có sẵn. Tiếp theo, bạn có thể đăng ký một resource route trỏ đến controller:
 
@@ -179,19 +184,36 @@ Thông thường, response HTTP 404 sẽ được tạo nếu không tìm thấy
                 return Redirect::route('photos.index');
             });
 
+<a name="soft-deleted-models"></a>
+#### Soft Deleted Models
+
+Thông thường, liên kết model ẩn sẽ không thể lấy ra các model đã bị [soft delete](/docs/{{version}}/eloquent#soft-deleting) và thay vào đó sẽ trả về response HTTP 404. Tuy nhiên, bạn có thể hướng dẫn framework cho phép lấy ra các model bị soft delete bằng cách gọi phương thức `withTrashed` khi định nghĩa route resource của bạn:
+
+    use App\Http\Controllers\PhotoController;
+
+    Route::resource('photos', PhotoController::class)->withTrashed();
+
+Việc gọi `withTrashed` không có tham số sẽ cho phép lấy ra các model bị soft delete cho các route resource `show`, `edit` và `update`. Bạn có thể chỉ định một tập con của các route bằng cách truyền một mảng tới phương thức `withTrashed`:
+
+    Route::resource('photos', PhotoController::class)->withTrashed(['show']);
+
 <a name="specifying-the-resource-model"></a>
 #### Khai báo Resource Model
 
 Nếu bạn đang sử dụng [liên kết model route](/docs/{{version}}/routing#route-model-binding) và muốn các phương thức của resource controller khai báo sẵn một tham số đầu vào là một model instance, bạn có thể sử dụng tùy chọn `--model` khi tạo controller:
 
-    php artisan make:controller PhotoController --model=Photo --resource
+```shell
+php artisan make:controller PhotoController --model=Photo --resource
+```
 
 <a name="generating-form-requests"></a>
 #### Generating Form Requests
 
 Bạn có thể cung cấp tùy chọn `--requests` khi tạo resource controller để hướng dẫn Artisan tạo [các class request validation form](/docs/{{version}}/validation#form-request-validation) cho các phương thức cập nhật và lưu trữ của controller:
 
-    php artisan make:controller PhotoController --model=Photo --resource --requests
+```shell
+php artisan make:controller PhotoController --model=Photo --resource --requests
+```
 
 <a name="restful-partial-resource-routes"></a>
 ### Partial Resource Routes
@@ -229,7 +251,9 @@ Bạn có thể đăng ký nhiều resource controller cho API cùng một lúc 
 
 Để tạo nhanh một API resource controller mà không chứa các phương thức `create` hoặc `edit`, hãy sử dụng switch `--api` khi chạy lệnh `make:controller`:
 
-    php artisan make:controller PhotoController --api
+```shell
+php artisan make:controller PhotoController --api
+```
 
 <a name="restful-nested-resources"></a>
 ### Nested Resources
@@ -316,7 +340,7 @@ Khi sử dụng liên kết ngầm có key tùy biến làm một tham số rout
 <a name="restful-localizing-resource-uris"></a>
 ### Localizing Resource URIs
 
-Mặc định, `Route::resource` sẽ tạo các URI resource bằng các động từ tiếng Anh. Nếu bạn cần bản địa hóa các động từ này như `create` và `edit`, bạn có thể sử dụng phương thức `Route::resourceVerbs`. Điều này có thể được thực hiện ở đầu của phương thức `boot` trong `App\Providers\RouteServiceProvider` của ứng dụng của bạn:
+Mặc định, `Route::resource` sẽ tạo các URI resource bằng các động từ và quy tắc số nhiều trong tiếng Anh. Nếu bạn cần bản địa hóa các động từ này như `create` và `edit`, bạn có thể sử dụng phương thức `Route::resourceVerbs`. Điều này có thể được thực hiện ở đầu của phương thức `boot` trong `App\Providers\RouteServiceProvider` của ứng dụng của bạn:
 
     /**
      * Define your route model bindings, pattern filters, etc.
@@ -333,11 +357,11 @@ Mặc định, `Route::resource` sẽ tạo các URI resource bằng các độn
         // ...
     }
 
-Khi các động từ đã được tùy biến xong, nếu bạn đăng ký resource route là `Route::resource('fotos', PhotoController::class)` thì sẽ tạo ra các URI như sau:
+Bộ quy tắc số nhiều của Laravel hỗ trợ [một số ngôn ngữ khác nhau mà bạn có thể cấu hình dựa trên nhu cầu của bạn](/docs/{{version}}/localization#pluralization-language). Khi các động từ và quy tắc số nhiều đã được tùy biến xong, nếu bạn đăng ký resource route là `Route::resource('publicacion', PublicacionController::class)` thì sẽ tạo ra các URI như sau:
 
-    /fotos/crear
+    /publicacion/crear
 
-    /fotos/{foto}/editar
+    /publicacion/{publicaciones}/editar
 
 <a name="restful-supplementing-resource-controllers"></a>
 ### Supplementing Resource Controllers
@@ -349,7 +373,83 @@ Nếu bạn cần thêm các route vào các resource controller ngoài các rou
     Route::get('/photos/popular', [PhotoController::class, 'popular']);
     Route::resource('photos', PhotoController::class);
 
-> {tip} Hãy nhớ giữ cho controller của bạn được tập trung. Nếu bạn cảm thấy bạn thường xuyên cần phải thêm các phương thức bên ngoài bộ resource action mặc định, hãy xem xét việc chia controller của bạn thành hai controller nhỏ hơn.
+> **Note**
+>  Hãy nhớ giữ cho controller của bạn được tập trung. Nếu bạn cảm thấy bạn thường xuyên cần phải thêm các phương thức bên ngoài bộ resource action mặc định, hãy xem xét việc chia controller của bạn thành hai controller nhỏ hơn.
+
+<a name="singleton-resource-controllers"></a>
+### Singleton Resource Controllers
+
+Thỉnh thoảng, ứng dụng của bạn sẽ có các resources mà chỉ có thể có một instance duy nhất. Ví dụ: "profile" của người dùng có thể được chỉnh sửa hoặc cập nhật, nhưng một người dùng chỉ thể có nhiều nhất một "profile". Tương tự như vậy, một hình ảnh có thể có một "hình thu nhỏ". Những resources này được gọi là "resources singleton", nghĩa là một và chỉ một instance của resources có thể tồn tại. Trong những trường hợp như thế này, bạn có thể đăng ký resource controller "singleton":
+
+```php
+use App\Http\Controllers\ProfileController;
+use Illuminate\Support\Facades\Route;
+
+Route::singleton('profile', ProfileController::class);
+```
+
+Định nghĩa resources singleton ở trên sẽ tạo ra các đăng ký route như sau. Như bạn có thể thấy, các route "creation" không được đăng ký cho các resources singleton và các route đã đăng ký sẽ không chấp nhận id vì chỉ có một instance của resource có thể tồn tại:
+
+Verb      | URI                               | Action       | Route Name
+----------|-----------------------------------|--------------|---------------------
+GET       | `/profile`                        | show         | profile.show
+GET       | `/profile/edit`                   | edit         | profile.edit
+PUT/PATCH | `/profile`                        | update       | profile.update
+
+Resources singleton cũng có thể được lồng trong một resource tiêu chuẩn:
+
+```php
+Route::singleton('photos.thumbnail', ThumbnailController::class);
+```
+
+Trong ví dụ này, resource `photos` sẽ nhận được tất cả [route resource tiêu chuẩn](#actions-handled-by-resource-controller); tuy nhiên, resource `thumbnail` sẽ là resource singleton với các route như sau:
+
+| Verb      | URI                              | Action  | Route Name               |
+|-----------|----------------------------------|---------|--------------------------|
+| GET       | `/photos/{photo}/thumbnail`      | show    | photos.thumbnail.show    |
+| GET       | `/photos/{photo}/thumbnail/edit` | edit    | photos.thumbnail.edit    |
+| PUT/PATCH | `/photos/{photo}/thumbnail`      | update  | photos.thumbnail.update  |
+
+<a name="creatable-singleton-resources"></a>
+#### Creatable Singleton Resources
+
+Đôi khi, bạn có thể muốn định nghĩa thêm các route creation và storage cho một resource singleton. Để thực hiện điều này, bạn có thể gọi phương thức `creatable` khi đăng ký route resource singleton:
+
+```php
+Route::singleton('photos.thumbnail', ThumbnailController::class)->creatable();
+```
+
+Trong ví dụ này, các route sau sẽ được đăng ký. Như bạn có thể thấy, route `DELETE` cũng sẽ được đăng ký cho các resource singleton:
+
+| Verb      | URI                                | Action  | Route Name               |
+|-----------|------------------------------------|---------|--------------------------|
+| GET       | `/photos/{photo}/thumbnail/create` | create  | photos.thumbnail.create  |
+| POST      | `/photos/{photo}/thumbnail`        | store   | photos.thumbnail.store   |
+| GET       | `/photos/{photo}/thumbnail`        | show    | photos.thumbnail.show    |
+| GET       | `/photos/{photo}/thumbnail/edit`   | edit    | photos.thumbnail.edit    |
+| PUT/PATCH | `/photos/{photo}/thumbnail`        | update  | photos.thumbnail.update  |
+| DELETE    | `/photos/{photo}/thumbnail`        | destroy | photos.thumbnail.destroy |
+
+Nếu bạn muốn Laravel đăng ký route `DELETE` cho một resource singleton nhưng không đăng ký các route creation hoặc storage khác, bạn có thể sử dụng phương thức `destroyable`:
+
+```php
+Route::singleton(...)->destroyable();
+```
+
+<a name="api-singleton-resources"></a>
+#### API Singleton Resources
+
+Phương thức `apiSingleton` có thể được sử dụng để đăng ký một resource singleton sẽ được thao tác thông qua API, và do đó các route `create` và `edit` sẽ trở nên không cần thiết:
+
+```php
+Route::apiSingleton('profile', ProfileController::class);
+```
+
+Tất nhiên, các resource singleton API cũng có thể là loại `creatable`, sẽ đăng ký các route `store` và `destroy` cho resource:
+
+```php
+Route::apiSingleton('photos.thumbnail', ProfileController::class)->creatable();
+```
 
 <a name="dependency-injection-and-controllers"></a>
 ## Dependency Injection và Controllers

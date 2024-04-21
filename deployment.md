@@ -24,14 +24,18 @@ Laravel framework có một số yêu cầu về hệ thống. Bạn nên đảm
 
 <div class="content-list" markdown="1">
 
-- PHP >= 7.3
-- BCMath PHP Extension
+- PHP >= 8.0
 - Ctype PHP Extension
+- cURL PHP Extension
+- DOM PHP Extension
 - Fileinfo PHP Extension
-- JSON PHP Extension
+- Filter PHP Extension
+- Hash PHP Extension
 - Mbstring PHP Extension
 - OpenSSL PHP Extension
+- PCRE PHP Extension
 - PDO PHP Extension
+- Session PHP Extension
 - Tokenizer PHP Extension
 - XML PHP Extension
 
@@ -47,38 +51,40 @@ Nếu bạn đang deploy application của bạn đến một server đang chạ
 
 Hãy đảm bảo, giống như cấu hình bên dưới, server web của bạn sẽ hướng tất cả các request đến file `public/index.php` của ứng dụng của bạn. Bạn đừng bao giờ cố gắng di chuyển file `index.php` đến thư mục gốc của dự án của bạn, vì việc phân phát request của ứng dụng từ thư mục gốc của dự án sẽ làm lộ nhiều file cấu hình nhạy cảm lên Internet:
 
-    server {
-        listen 80;
-        listen [::]:80;
-        server_name example.com;
-        root /srv/example.com/public;
+```nginx
+server {
+    listen 80;
+    listen [::]:80;
+    server_name example.com;
+    root /srv/example.com/public;
 
-        add_header X-Frame-Options "SAMEORIGIN";
-        add_header X-Content-Type-Options "nosniff";
+    add_header X-Frame-Options "SAMEORIGIN";
+    add_header X-Content-Type-Options "nosniff";
 
-        index index.php;
+    index index.php;
 
-        charset utf-8;
+    charset utf-8;
 
-        location / {
-            try_files $uri $uri/ /index.php?$query_string;
-        }
-
-        location = /favicon.ico { access_log off; log_not_found off; }
-        location = /robots.txt  { access_log off; log_not_found off; }
-
-        error_page 404 /index.php;
-
-        location ~ \.php$ {
-            fastcgi_pass unix:/var/run/php/php7.4-fpm.sock;
-            fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
-            include fastcgi_params;
-        }
-
-        location ~ /\.(?!well-known).* {
-            deny all;
-        }
+    location / {
+        try_files $uri $uri/ /index.php?$query_string;
     }
+
+    location = /favicon.ico { access_log off; log_not_found off; }
+    location = /robots.txt  { access_log off; log_not_found off; }
+
+    error_page 404 /index.php;
+
+    location ~ \.php$ {
+        fastcgi_pass unix:/var/run/php/php8.0-fpm.sock;
+        fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
+        include fastcgi_params;
+    }
+
+    location ~ /\.(?!well-known).* {
+        deny all;
+    }
+}
+```
 
 <a name="optimization"></a>
 ## Tối ưu
@@ -88,27 +94,35 @@ Hãy đảm bảo, giống như cấu hình bên dưới, server web của bạn
 
 Khi deploy application vào production, hãy chắc chắn là bạn đã tối ưu hoá class autoloader map của Composer, để Composer có thể nhanh chóng tìm thấy file thích hợp cho một class:
 
-    composer install --optimize-autoloader --no-dev
+```shell
+composer install --optimize-autoloader --no-dev
+```
 
-> {tip} Ngoài việc tối ưu autoloader, bạn cũng nên chắc chắn là luôn có file `composer.lock` trong project source code của bạn. Các library trong project của bạn có thể cài đặt nhanh hơn khi mà có file `composer.lock` này.
+> **Note**
+>  Ngoài việc tối ưu autoloader, bạn cũng nên chắc chắn là luôn có file `composer.lock` trong project source code của bạn. Các library trong project của bạn có thể cài đặt nhanh hơn khi mà có file `composer.lock` này.
 
 <a name="optimizing-configuration-loading"></a>
 ### Tối ưu load config
 
 Khi deploy application vào production, bạn cũng nên đảm bảo là bạn đã chạy lệnh Artisan `config:cache` trong quá trình deploy:
 
-    php artisan config:cache
+```shell
+php artisan config:cache
+```
 
 Lệnh này sẽ nối tất cả các file config của Laravel thành một file và được lưu vào trong bộ nhớ cache, giúp giảm đáng kể số lượng trao đổi giữa framework với filesystem khi tải các value config của bạn.
 
-> {note} Nếu bạn chạy lệnh `config:cache` trong quá trình deploy, bạn nên đảm bảo là bạn chỉ gọi hàm `env` từ trong các file cấu hình của bạn. Khi các file cấu hình đã được lưu vào trong bộ nhớ cache, thì file `.env` sẽ không được load và tất cả các code gọi đến hàm `env` để lấy biến trong file `.env` ra sẽ đều trả về `null`.
+> **Warning**
+> Nếu bạn chạy lệnh `config:cache` trong quá trình deploy, bạn nên đảm bảo là bạn chỉ gọi hàm `env` từ trong các file cấu hình của bạn. Khi các file cấu hình đã được lưu vào trong bộ nhớ cache, thì file `.env` sẽ không được load và tất cả các code gọi đến hàm `env` để lấy biến trong file `.env` ra sẽ đều trả về `null`.
 
 <a name="optimizing-route-loading"></a>
 ### Tối ưu load route
 
 Nếu bạn đang build một application lớn với nhiều route, bạn nên đảm bảo rằng bạn đã chạy lệnh Artisan `route:cache` trong quá trình deploy của bạn:
 
-    php artisan route:cache
+```shell
+php artisan route:cache
+```
 
 Lệnh này sẽ giảm tất cả các đăng ký route của bạn vào trong một phương thức duy nhất và lưu trong một file ở cache, nó giúp cải thiện hiệu suất của việc đăng ký route khi đăng ký hàng trăm route.
 
@@ -117,14 +131,16 @@ Lệnh này sẽ giảm tất cả các đăng ký route của bạn vào trong 
 
 Khi deploy ứng dụng của bạn vào production, bạn nên đảm bảo rằng bạn đã chạy lệnh Artisan `view:cache` trong quá trình deploy của bạn:
 
-    php artisan view:cache
+```shell
+php artisan view:cache
+```
 
 Lệnh này biên dịch tất cả các view Blade của bạn để chúng không cần phải biên dịch mỗi khi có request đến, cải thiện hiệu suất cho mỗi request trả về một view.
 
 <a name="debug-mode"></a>
 ## Chế độ debug
 
-Tùy chọn debug trong file cấu hình config/app.php của bạn sẽ xác định lượng thông tin lỗi sẽ thực sự được hiển thị cho người dùng. Mặc định, tùy chọn này được set để ưu tiên giá trị của biến môi trường APP_DEBUG, được lưu trong file .env của bạn.
+Tùy chọn debug trong file cấu hình config/app.php của bạn sẽ xác định lượng thông tin lỗi sẽ thực sự được hiển thị cho người dùng. Mặc định, tùy chọn này được set để ưu tiên giá trị của biến môi trường `APP_DEBUG`, được lưu trong file .env trong application của bạn.
 
 **Trong môi trường production của bạn, giá trị này phải luôn là `false`. Nếu biến `APP_DEBUG` được set thành `true` trong quá trình production, bạn có nguy cơ bị lộ các giá trị cấu hình nhạy cảm cho người dùng ứng dụng của bạn.**
 
@@ -137,6 +153,9 @@ Tùy chọn debug trong file cấu hình config/app.php của bạn sẽ xác đ
 Nếu bạn chưa sẵn sàng để quản lý cấu hình server của bạn hoặc không thoải mái với cấu hình các dịch vụ khác nhau cần thiết để chạy ứng dụng Laravel, [Laravel Forge](https://forge.laravel.com) là một điều thay thế tuyệt vời.
 
 Laravel Forge có thể tạo server trên các nhà cung cấp khác nhau như DigitalOcean, Linode, AWS, v.v. Ngoài ra, Forge có thể cài đặt và quản lý tất cả các công cụ cần thiết để xây dựng các ứng dụng Laravel, như Nginx, MySQL, Redis, Memcached, Beanstalk,...
+
+> **Note**
+> Bạn muốn có hướng dẫn đầy đủ về cách deploy với Laravel Forge? Hãy xem [Laravel Bootcamp](https://bootcamp.laravel.com/deploying) và [loạt video về Forge có trên Laracasts](https://laracasts.com/series/learn-laravel-forge-2022-edition).
 
 <a name="laravel-vapor"></a>
 #### Laravel Vapor

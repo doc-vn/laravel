@@ -102,7 +102,7 @@ Hoàn toàn không có sự khác biệt giữa facade và helper. Khi sử dụ
         return cache('key');
     });
 
-Ở trong route cache ở trên, hàm helper `cache` sẽ gọi phương thức `get` trong class facade `Cache`. Vì vậy, mặc dù chúng ta đang sử dụng hàm helper, nhưng chúng ta có thể viết bài kiểm tra như ở dưới để kiểm tra phương thức đã được gọi với tham số mà chúng ta mong muốn hay chưa:
+Hàm helper `cache` sẽ gọi phương thức `get` trong class facade `Cache`. Vì vậy, mặc dù chúng ta đang sử dụng hàm helper, nhưng chúng ta có thể viết bài kiểm tra như ở dưới để kiểm tra phương thức đã được gọi với tham số mà chúng ta mong muốn hay chưa:
 
     use Illuminate\Support\Facades\Cache;
 

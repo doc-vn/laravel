@@ -40,11 +40,11 @@ Cấu trúc của phương thức `handle` trong HTTP kernel khá đơn giản: 
 <a name="service-providers"></a>
 #### Service Providers
 
-Một trong những hành động khởi động Kernel quan trọng nhất là load các [service providers](/docs/{{version}}/providers) cho application của bạn. Tất cả các service providers cho application được cấu hình ở mảng `providers` trong file `config/app.php`.
+Một trong những hành động khởi động Kernel quan trọng nhất là load các [service providers](/docs/{{version}}/providers) cho application của bạn. Các service provider chịu trách nhiệm khởi động tất cả các thành phần khác nhau của framework, chẳng hạn như cơ sở dữ liệu, hàng đợi, xác thực và các thành phần routing. Tất cả các service providers cho application được cấu hình ở mảng `providers` trong file `config/app.php`.
 
 Laravel sẽ lặp danh sách của các provider này và khởi tạo từng provider một trong số họ. Sau khi khởi tạo các provider, phương thức `register` sẽ được gọi trên tất cả các provider đó. Và sau đó, khi tất cả các provider đã được đăng ký, phương thức `boot` sẽ được gọi trên mỗi provider. Điều này là do các service provider có thể phụ thuộc vào các liên kết container đang được đăng ký và khả dụng vào thời điểm phương thức `boot` của nó được thực thi.
 
-Các service provider chịu trách nhiệm khởi động tất cả các thành phần khác nhau của framework, chẳng hạn như cơ sở dữ liệu, hàng đợi, xác thực và các thành phần routing. Về cơ bản, mọi tính năng chính do Laravel cung cấp đều được khởi động và cấu hình bởi service provider. Vì nó khởi động và cấu hình rất nhiều tính năng được cung cấp bởi framework, nên các service provider là khía cạnh quan trọng nhất của toàn bộ quy trình khởi động Laravel.
+Về cơ bản, mọi tính năng chính do Laravel cung cấp đều được khởi động và cấu hình bởi service provider. Vì nó khởi động và cấu hình rất nhiều tính năng được cung cấp bởi framework, nên các service provider là khía cạnh quan trọng nhất của toàn bộ quy trình khởi động Laravel.
 
 <a name="routing"></a>
 ### Routing

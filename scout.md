@@ -8,8 +8,11 @@
     - [Configuring Model Indexes](#configuring-model-indexes)
     - [Configuring Searchable Data](#configuring-searchable-data)
     - [Configuring The Model ID](#configuring-the-model-id)
+    - [Configuring Search Engines Per Model](#configuring-search-engines-per-model)
     - [Identifying Users](#identifying-users)
-- [Local Development](#local-development)
+- [Database và Collection Engines](#database-and-collection-engines)
+    - [Database Engine](#database-engine)
+    - [Collection Engine](#collection-engine)
 - [Indexing](#indexing)
     - [Batch Import](#batch-import)
     - [Adding Records](#adding-records)
@@ -30,18 +33,22 @@
 
 [Laravel Scout](https://github.com/laravel/scout) cung cấp một giải pháp dựa trên driver đơn giản để thêm chức năng tìm kiếm full-text vào [các model Eloquent](/docs/{{version}}/eloquent). Sử dụng model observer, Scout sẽ tự động giữ các index tìm kiếm và đồng bộ nó với các bản ghi trong Eloquent của bạn.
 
-Hiện tại, Scout đang làm việc cùng driver [Algolia](https://www.algolia.com/) và driver [MeiliSearch](https://www.meilisearch.com). Ngoài ra, Scout còn chứa một driver "collection" được thiết kế để sử dụng cho hoạt động phát triển local và không yêu cầu bất kỳ library bên ngoài nào hoặc service của bên thứ ba. Hơn nữa, nếu viết một driver tùy biến mới, thì cũng rất đơn giản, bạn có thể tự do mở rộng Scout với việc tạo một tìm kiếm của riêng bạn.
+Hiện tại, Scout đang làm việc cùng driver [Algolia](https://www.algolia.com/), driver [MeiliSearch](https://www.meilisearch.com) và driver MySQL / PostgreSQL (`database`). Ngoài ra, Scout còn chứa một driver "collection" được thiết kế để sử dụng cho hoạt động phát triển local và không yêu cầu bất kỳ library bên ngoài nào hoặc service của bên thứ ba. Hơn nữa, nếu viết một driver tùy biến mới, thì cũng rất đơn giản, bạn có thể tự do mở rộng Scout với việc tạo một tìm kiếm của riêng bạn.
 
 <a name="installation"></a>
 ## Cài đặt
 
 Đầu tiên, hãy cài đặt Scout thông qua package manager Composer:
 
-    composer require laravel/scout
+```shell
+composer require laravel/scout
+```
 
 Sau khi cài đặt Scout xong, bạn nên export file cấu hình của Scout bằng lệnh Artisan `vendor:publish`. Lệnh này sẽ export file cấu hình `scout.php` vào thư mục `config` của application của bạn:
 
-    php artisan vendor:publish --provider="Laravel\Scout\ScoutServiceProvider"
+```shell
+php artisan vendor:publish --provider="Laravel\Scout\ScoutServiceProvider"
+```
 
 Cuối cùng, thêm trait `Laravel\Scout\Searchable` vào model mà bạn muốn thêm chức năng tìm kiếm. Trait này sẽ đăng ký một model observer để tự động giữ cho các model được đồng bộ với driver tìm kiếm của bạn:
 
@@ -65,7 +72,9 @@ Cuối cùng, thêm trait `Laravel\Scout\Searchable` vào model mà bạn muốn
 
 Khi sử dụng driver Algolia, bạn nên cấu hình thông tin đăng nhập `id` và `secret` trong file cấu hình `config/scout.php` của bạn. Khi thông tin đăng nhập của bạn đã được cấu hình xong, bạn cũng sẽ cần cài đặt thêm SDK PHP Algolia thông qua package manager Composer:
 
-    composer require algolia/algoliasearch-client-php
+```shell
+composer require algolia/algoliasearch-client-php
+```
 
 <a name="meilisearch"></a>
 #### MeiliSearch
@@ -74,19 +83,24 @@ Khi sử dụng driver Algolia, bạn nên cấu hình thông tin đăng nhập 
 
 Khi sử dụng driver MeiliSearch, bạn sẽ cần cài đặt MeiliSearch PHP SDK thông qua Composer package manager:
 
-    composer require meilisearch/meilisearch-php http-interop/http-factory-guzzle
+```shell
+composer require meilisearch/meilisearch-php http-interop/http-factory-guzzle
+```
 
 Sau đó, set biến môi trường `SCOUT_DRIVER` cũng như thông tin đăng nhập MeiliSearch `host` và `key` vào trong file `.env` của ứng dụng của bạn:
 
-    SCOUT_DRIVER=meilisearch
-    MEILISEARCH_HOST=http://127.0.0.1:7700
-    MEILISEARCH_KEY=masterKey
+```ini
+SCOUT_DRIVER=meilisearch
+MEILISEARCH_HOST=http://127.0.0.1:7700
+MEILISEARCH_KEY=masterKey
+```
 
 Để biết thêm thông tin về MeiliSearch, vui lòng tham khảo [tài liệu MeiliSearch](https://docs.meilisearch.com/learn/getting_started/quick_start.html).
 
 Ngoài ra, bạn nên đảm bảo rằng bạn đã cài đặt phiên bản `meilisearch/meilisearch-php` tương thích với phiên bản binary MeiliSearch của bạn bằng cách xem lại [tài liệu của MeiliSearch về khả năng tương thích binary](https://github.com/meilisearch/meilisearch-php#-compatibility-with-meilisearch).
 
-> {note} Khi upgrade Scout trên một ứng dụng đã sử dụng MeiliSearch, bạn phải luôn [xem lại những thay đổi nghiêm trọng](https://github.com/meilisearch/MeiliSearch/releases) đối với chính service MeiliSearch của bạn.
+> **Warning**
+> Khi upgrade Scout trên một ứng dụng đã sử dụng MeiliSearch, bạn phải luôn [xem lại những thay đổi nghiêm trọng](https://github.com/meilisearch/MeiliSearch/releases) đối với chính service MeiliSearch của bạn.
 
 <a name="queueing"></a>
 ### Queueing
@@ -96,6 +110,15 @@ Mặc dù không bắt buộc phải sử dụng Scout, nhưng bạn nên cân n
 Khi bạn đã cấu hình xong queue driver, hãy set giá trị của tùy chọn `queue` trong file cấu hình `config/scout.php` của bạn là `true`:
 
     'queue' => true,
+
+Ngay cả khi tùy chọn `queue` được set thành `false`, thì điều quan trọng bạn cần nhớ là một số driver Scout như Algolia và Meilisearch vẫn luôn lập index cho các bản ghi theo chế độ không đồng bộ. Nghĩa là, ngay cả khi hoạt động lập index đã hoàn tất trong ứng dụng Laravel của bạn, thì bản thân công cụ tìm kiếm vẫn có thể không phản ánh ngay lập tức các bản ghi mới hoặc các bản ghi đã được cập nhật.
+
+Để chỉ định kết nối và queue nào mà job Scout của bạn sử dụng, bạn có thể định nghĩa tùy chọn cấu hình `queue` dưới dạng một mảng:
+
+    'queue' => [
+        'connection' => 'redis',
+        'queue' => 'scout'
+    ],
 
 <a name="configuration"></a>
 ## Configuration
@@ -158,6 +181,59 @@ Mặc định, toàn bộ form `toArray` của một model sẽ được lưu th
         }
     }
 
+Một số công cụ tìm kiếm như MeiliSearch sẽ chỉ thực hiện các thao tác lọc (`>`, `<`, vv.) trên đúng loại dữ liệu. Vì vậy, khi sử dụng các công cụ tìm kiếm này và tùy chỉnh searchable data của bạn, bạn nên đảm bảo rằng các giá trị số được chuyển thành đúng loại với chúng:
+
+    public function toSearchableArray()
+    {
+        return [
+            'id' => (int) $this->id,
+            'name' => $this->name,
+            'price' => (float) $this->price,
+        ];
+    }
+
+<a name="configuring-filterable-data-for-meilisearch"></a>
+#### Configuring Filterable Data & Index Settings (MeiliSearch)
+
+Không giống như các driver khác của Scout, MeiliSearch yêu cầu bạn phải định nghĩa trước các cài đặt tìm kiếm index như thuộc tính có thể lọc, thuộc tính có thể sắp xếp và [các trường cài đặt được hỗ trợ khác](https://docs.meilisearch.com/reference/api/settings.html).
+
+Thuộc tính có thể lọc là bất kỳ thuộc tính nào bạn muốn lọc khi gọi phương thức `where` của Scout, trong khi thuộc tính có thể sắp xếp là bất kỳ thuộc tính nào bạn muốn sắp xếp khi gọi phương thức `orderBy` của Scout. Để định nghĩa cài đặt index của bạn, hãy điều chỉnh phần `index-settings` của mục cấu hình `meilisearch` trong file cấu hình `scout` của ứng dụng:
+
+```php
+use App\Models\User;
+use App\Models\Flight;
+
+'meilisearch' => [
+    'host' => env('MEILISEARCH_HOST', 'http://localhost:7700'),
+    'key' => env('MEILISEARCH_KEY', null),
+    'index-settings' => [
+        User::class => [
+            'filterableAttributes'=> ['id', 'name', 'email'],
+            'sortableAttributes' => ['created_at'],
+            // Other settings fields...
+        ],
+        Flight::class => [
+            'filterableAttributes'=> ['id', 'destination'],
+            'sortableAttributes' => ['updated_at'],
+        ],
+    ],
+],
+```
+
+Nếu model cơ sở của một index nhất định là loại có thể soft delete và được chứa trong mảng `index-settings`, thì Scout sẽ tự động hỗ trợ việc lọc trên các model đã soft delete trên index đó. Nếu bạn không có thuộc tính có thể lọc hoặc thuộc tính có thể sắp xếp nào khác để định nghĩa cho index model soft delete, bạn chỉ cần thêm một mục trống vào mảng `index-settings` cho model đó:
+
+```php
+'index-settings' => [
+    Flight::class => []
+],
+```
+
+Sau khi cấu hình xong cài đặt index của ứng dụng, bạn phải gọi lệnh Artisan `scout:sync-index-settings`. Lệnh này sẽ thông báo cho MeiliSearch về cài đặt index hiện được cấu hình của bạn. Để thuận tiện, bạn có thể muốn đưa lệnh này vào process deploy của bạn:
+
+```shell
+php artisan scout:sync-index-settings
+```
+
 <a name="configuring-the-model-id"></a>
 ### Configuring The Model ID
 
@@ -195,19 +271,99 @@ Mặc định, Scout sẽ sử dụng khóa chính của model làm ID / key duy
         }
     }
 
+<a name="configuring-search-engines-per-model"></a>
+### Configuring Search Engines Per Model
+
+Khi tìm kiếm, Scout thường sẽ sử dụng công cụ tìm kiếm mặc định được chỉ định trong file cấu hình `scout` của ứng dụng. Tuy nhiên, công cụ tìm kiếm cho một model cụ thể có thể được thay đổi bằng cách ghi đè phương thức `searchableUsing` trên model:
+
+    <?php
+
+    namespace App\Models;
+
+    use Illuminate\Database\Eloquent\Model;
+    use Laravel\Scout\EngineManager;
+    use Laravel\Scout\Searchable;
+
+    class User extends Model
+    {
+        use Searchable;
+
+        /**
+         * Get the engine used to index the model.
+         *
+         * @return \Laravel\Scout\Engines\Engine
+         */
+        public function searchableUsing()
+        {
+            return app(EngineManager::class)->engine('meilisearch');
+        }
+    }
+
 <a name="identifying-users"></a>
 ### Identifying Users
 
 Scout cũng cho phép bạn tự động xác định người dùng khi sử dụng Algolia. Việc liên kết người dùng đã authenticate với các thao tác tìm kiếm có thể hữu ích khi xem bảng phân tích tìm kiếm trong bảng điều khiển của Algolia. Bạn có thể bật nhận dạng người dùng bằng cách định nghĩa thêm biến môi trường `SCOUT_IDENTIFY` là `true` trong file `.env` của ứng dụng của bạn:
 
-    SCOUT_IDENTIFY=true
+```ini
+SCOUT_IDENTIFY=true
+```
 
 Bật tính năng này, nó cũng sẽ truyền địa chỉ IP của request và khoá chính của người dùng đã authenticate của bạn tới Algolia để dữ liệu này được liên kết với bất kỳ request tìm kiếm nào được người dùng thực hiện.
 
-<a name="local-development"></a>
-## Local Development
+<a name="database-and-collection-engines"></a>
+## Database và Collection Engines
 
-Mặc dù bạn được tự do sử dụng các engine tìm kiếm Algolia hoặc MeiliSearch trong quá trình phát triển ở local, nhưng bạn có thể thấy thuận tiện hơn khi bắt đầu với engine "collection". Công cụ collection sẽ sử dụng lệnh "where" và lọc collection trên các kết quả từ cơ sở dữ liệu hiện có để xác định xem kết quả tìm kiếm nào phù hợp cho truy vấn của bạn. Khi sử dụng engine này, không cần thiết bạn phải "index" các searchable model của bạn vì chúng sẽ được lấy ra từ cơ sở dữ liệu local của bạn.
+<a name="database-engine"></a>
+### Database Engine
+
+> **Warning**
+> Database engine hiện chỉ hỗ trợ MySQL và PostgreSQL.
+
+Nếu ứng dụng của bạn tương tác với các cơ sở dữ liệu có quy mô vừa và nhỏ hoặc có khối lượng công việc nhẹ, bạn có thể thấy thuận tiện hơn khi bắt đầu với "database" engine của Scout. Database engine sẽ sử dụng các lệnh "where like" và index full text khi lọc kết quả từ cơ sở dữ liệu hiện có của bạn để xác định kết quả tìm kiếm phù hợp cho truy vấn của bạn.
+
+Để sử dụng database engine, bạn chỉ cần set giá trị của biến môi trường `SCOUT_DRIVER` thành `database` hoặc chỉ định driver `database` trực tiếp trong file cấu hình `scout` của ứng dụng:
+
+```ini
+SCOUT_DRIVER=database
+```
+
+Sau khi bạn đã chỉ định database engine là driver mặc định của bạn, bạn phải [cấu hình searchable data](#configuring-searchable-data). Sau đó, bạn có thể bắt đầu [thực hiện truy vấn tìm kiếm](#searching) đối với các model của bạn. Việc lập index cho công cụ tìm kiếm, chẳng hạn như lập index để bắt đầu cho các index Algolia hoặc MeiliSearch sẽ cần thiết, nhưng sẽ không cần thiết đối với khi sử dụng database engine.
+
+#### Customizing Database Searching Strategies
+
+Mặc định, database engine sẽ thực hiện truy vấn "where like" đối với mọi thuộc tính model mà bạn đã [cấu hình là searchable](#configuring-searchable-data). Tuy nhiên, trong một số trường hợp, điều này có thể dẫn đến hiệu suất kém. Do đó, chiến lược tìm kiếm của database engine có thể được cấu hình sao cho một số cột được chỉ được sử dụng truy vấn tìm kiếm full text hoặc chỉ được sử dụng ràng buộc "where like" để tìm kiếm tiền tố của chuỗi như là (`example%`) thay vì tìm kiếm trong toàn bộ chuỗi (`%example%`).
+
+Để định nghĩa hành vi này, bạn có thể gán các thuộc tính PHP cho phương thức `toSearchableArray` của model. Bất kỳ cột nào không được gán sẽ tiếp tục sử dụng chiến lược "where like" mặc định:
+
+```php
+use Laravel\Scout\Attributes\SearchUsingFullText;
+use Laravel\Scout\Attributes\SearchUsingPrefix;
+
+/**
+ * Get the indexable data array for the model.
+ *
+ * @return array
+ */
+#[SearchUsingPrefix(['id', 'email'])]
+#[SearchUsingFullText(['bio'])]
+public function toSearchableArray()
+{
+    return [
+        'id' => $this->id,
+        'name' => $this->name,
+        'email' => $this->email,
+        'bio' => $this->bio,
+    ];
+}
+```
+
+> **Warning**
+> Trước khi chỉ định một cột sẽ sử dụng ràng buộc truy vấn full text, hãy đảm bảo rằng cột đó đã được gán với một [index full text](/docs/{{version}}/migrations#available-index-types).
+
+<a name="collection-engine"></a>
+### Collection Engine
+
+Mặc dù bạn được tự do sử dụng các engine tìm kiếm Algolia hoặc MeiliSearch trong quá trình phát triển ở local, nhưng bạn có thể thấy thuận tiện hơn khi bắt đầu với engine "collection". Collection engine sẽ sử dụng lệnh "where" và lọc collection trên các kết quả từ cơ sở dữ liệu hiện có để xác định xem kết quả tìm kiếm nào phù hợp cho truy vấn của bạn. Khi sử dụng engine này, không cần thiết bạn phải "index" các searchable model của bạn vì chúng sẽ được lấy ra từ cơ sở dữ liệu local của bạn.
 
 Để sử dụng engine collection, bạn có thể chỉ cần set giá trị của biến môi trường `SCOUT_DRIVER` thành `collection` hoặc chỉ định trực tiếp driver `collection` trong file cấu hình `scout` của ứng dụng của bạn:
 
@@ -217,6 +373,12 @@ SCOUT_DRIVER=collection
 
 Khi bạn đã chỉ định driver collection làm driver chính của bạn, bạn có thể bắt đầu [thực hiện truy vấn tìm kiếm](#searching) đối với các model của bạn. Index cho các engine tìm kiếm, chẳng hạn như là lập index cần thiết cho các engine Algolia hoặc MeiliSearch, là không cần thiết khi sử dụng engine collection.
 
+#### Differences From Database Engine
+
+Thoạt nhìn, các "database" engine và "collections" engine khá giống nhau. Cả hai đều tương tác trực tiếp với cơ sở dữ liệu của bạn để lấy kết quả tìm kiếm. Tuy nhiên, collection engine không sử dụng index full text hoặc lệnh `LIKE` để tìm các bản ghi phù hợp. Thay vào đó, nó lấy tất cả các bản ghi ra và sử dụng helper `Str::is` của Laravel để xác định xem chuỗi tìm kiếm có tồn tại trong tất cả các giá trị thuộc tính của model đó hay không.
+
+Collection engine là công cụ tìm kiếm linh hoạt nhất vì nó hoạt động trên tất cả các cơ sở dữ liệu quan hệ được Laravel hỗ trợ (bao gồm SQLite và SQL Server); tuy nhiên, nó kém hiệu quả hơn công cụ database của Scout.
+
 <a name="indexing"></a>
 ## Indexing
 
@@ -225,11 +387,15 @@ Khi bạn đã chỉ định driver collection làm driver chính của bạn, b
 
 Nếu bạn đang cài đặt Scout cho một project đã tồn tại, có thể bạn đã có các bản ghi trong cơ sở dữ liệu và bạn cần import nó vào index của bạn. Scout cung cấp một lệnh Artisan `scout:import` mà bạn có thể sử dụng để import tất cả các bản ghi hiện có vào các index tìm kiếm của bạn:
 
-    php artisan scout:import "App\Models\Post"
+```shell
+php artisan scout:import "App\Models\Post"
+```
 
 Lệnh `flush` có thể được sử dụng để xóa tất cả các bản ghi của model ra khỏi các search index của bạn:
 
-    php artisan scout:flush "App\Models\Post"
+```shell
+php artisan scout:flush "App\Models\Post"
+```
 
 <a name="modifying-the-import-query"></a>
 #### Modifying The Import Query
@@ -277,7 +443,8 @@ Hoặc, nếu bạn đã có một collection các model Eloquent trong bộ nh�
 
     $orders->searchable();
 
-> {tip} Phương thức `searchable` có thể được coi như là một hành động "updateOrCreate". Nói cách khác, nếu bản ghi model đã có trong index của bạn, nó sẽ được cập nhật. Nếu nó không tồn tại trong index, nó sẽ được thêm vào index.
+> **Note**
+> Phương thức `searchable` có thể được coi như là một hành động "updateOrCreate". Nói cách khác, nếu bản ghi model đã có trong index của bạn, nó sẽ được cập nhật. Nếu nó không tồn tại trong index, nó sẽ được thêm vào index.
 
 <a name="updating-records"></a>
 ### Updating Records
@@ -355,6 +522,9 @@ Thỉnh thoảng bạn có thể muốn tìm kiếm trong model searchable có t
 
 Phương thức `shouldBeSearchable` chỉ được áp dụng khi bạn thao tác với model thông qua phương thức `save` và `create`, các câu lệnh truy vấn hoặc các quan hệ. Bạn gọi trực tiếp phương thức `searchable` qua model hoặc qua các collection searchable, thì nó sẽ ghi đè kết quả của phương thức `shouldBeSearchable`.
 
+> **Warning**
+> Phương thức `shouldBeSearchable` không áp dụng được khi sử dụng "database" engine của Scout, vì tất cả searchable data luôn được lưu trong cơ sở dữ liệu. Để đạt được hành vi tương tự khi sử dụng database engine, bạn nên sử dụng [lệnh where](#where-clauses) thay thế.
+
 <a name="searching"></a>
 ## Searching
 
@@ -403,6 +573,9 @@ Bạn có thể sử dụng phương thức `whereIn` để hạn chế kết qu
 
 Vì search index không phải là cơ sở dữ liệu quan hệ nên các lệnh "where" nâng cao hiện không được hỗ trợ.
 
+> **Warning**
+> Nếu ứng dụng của bạn đang sử dụng MeiliSearch, bạn phải cấu hình [các thuộc tính có thể lọc](#configuring-filterable-data-for-meilisearch) của ứng dụng trước khi sử dụng lệnh "where" của Scout.
+
 <a name="pagination"></a>
 ### Pagination
 
@@ -437,6 +610,9 @@ Tất nhiên, nếu bạn muốn lấy ra kết quả pagination dưới dạng 
         return Order::search($request->input('query'))->paginate(15);
     });
 
+> **Warning**
+> Vì các công cụ tìm kiếm không biết về định nghĩa global scope của model Eloquent của bạn, bạn không nên sử dụng global scope trong các ứng dụng mà sử dụng phân trang của Scout. Hoặc, bạn nên tạo lại các ràng buộc của global scope khi tìm kiếm thông qua Scout.
+
 <a name="soft-deleting"></a>
 ### Soft Deleting
 
@@ -454,7 +630,8 @@ Khi tùy chọn cấu hình này thành `true`, Scout sẽ không xóa các mode
     // Only include trashed records when retrieving results...
     $orders = Order::search('Star Trek')->onlyTrashed()->get();
 
-> {tip} Khi một model đã bị xóa vĩnh viễn bằng cách sử dụng `forceDelete`, Scout sẽ tự động xóa model đó ra khỏi search index.
+> **Note**
+> Khi một model đã bị xóa vĩnh viễn bằng cách sử dụng `forceDelete`, Scout sẽ tự động xóa model đó ra khỏi search index.
 
 <a name="customizing-engine-searches"></a>
 ### Tuỳ chỉnh Engine Search
@@ -475,6 +652,22 @@ Nếu bạn cần thực hiện một tùy chỉnh nâng cao cho hành động t
             return $algolia->search($query, $options);
         }
     )->get();
+
+<a name="customizing-the-eloquent-results-query"></a>
+#### Customizing The Eloquent Results Query
+
+Sau khi Scout lấy ra danh sách các model Eloquent kết quả từ công cụ tìm kiếm của ứng dụng, Eloquent sẽ được sử dụng kết quả đó để lấy ra tất cả các model khớp theo khóa chính của chúng. Bạn có thể tùy chỉnh truy vấn này bằng cách gọi phương thức `query`. Phương thức `query` sẽ chấp nhận một closure sẽ nhận vào instance Eloquent query builder làm tham số của chúng:
+
+```php
+use App\Models\Order;
+
+$orders = Order::search('Star Trek')
+    ->query(fn ($query) => $query->with('invoices'))
+    ->get();
+```
+
+Since this callback is
+Vì lệnh callback này được gọi sau khi các model liên quan đã được lấy từ công cụ tìm kiếm của ứng dụng, nên phương thức `query` không nên được sử dụng để "lọc" kết quả. Thay vào đó, bạn nên sử dụng [lệnh where trong Scout](#where-clauses).
 
 <a name="custom-engines"></a>
 ## Custom Engines

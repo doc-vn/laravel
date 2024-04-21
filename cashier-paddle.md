@@ -26,6 +26,7 @@
     - [Thay đổi gói](#changing-plans)
     - [Subscription số lượng lớn](#subscription-quantity)
     - [Subscription modifier](#subscription-modifiers)
+    - [Nhiều Subscriptions](#multiple-subscriptions)
     - [Tạm dừng Subscriptions](#pausing-subscriptions)
     - [Huỷ Subscriptions](#cancelling-subscriptions)
 - [Subscription dành cho dùng thử](#subscription-trials)
@@ -48,7 +49,7 @@
 
 [Laravel Cashier Paddle](https://github.com/laravel/cashier-paddle) cung cấp một interface dễ hiểu, rõ ràng cho các dịch vụ thanh toán subscription trực tuyến như [Paddle's](https://paddle.com). Nó gần như đã xử lý tất cả các đoạn code mà bạn đang sợ viết mà có liên quan đến các phần thanh toán subscription. Ngoài quản lý subscription cơ bản, Cashier cũng có thể xử lý cả các phiếu giảm giá, chuyển đổi subscription, đăng ký "nhiều" subscription, thời hạn hủy bỏ và nhiều hơn thế.
 
-Trong khi làm việc với Cashier, chúng tôi khuyên bạn cũng nên xem qua [hướng dẫn sử dụng](https://developer.paddle.com/guides) của Paddle và [tài liệu API](https://developer.paddle.com/api-reference/intro).
+Trong khi làm việc với Cashier, chúng tôi khuyên bạn cũng nên xem qua [hướng dẫn sử dụng](https://developer.paddle.com/guides) của Paddle và [tài liệu API](https://developer.paddle.com/api-reference).
 
 <a name="upgrading-cashier"></a>
 ## Cập nhật Cashier
@@ -60,9 +61,12 @@ Khi nâng cấp lên phiên bản mới của Cashier, điều quan trọng là 
 
 Đầu tiên, cài đặt package Cashier cho Paddle bằng trình quản lý package Composer:
 
-    composer require laravel/cashier-paddle
+```shell
+composer require laravel/cashier-paddle
+```
 
-> {note} Để đảm bảo Cashier xử lý đúng tất cả các event của Paddle, hãy nhớ [thiết lập xử lý webhook của Cashier](#handling-stripe-webhooks).
+> **Warning**
+> Để đảm bảo Cashier xử lý đúng tất cả các event của Paddle, hãy nhớ [thiết lập xử lý webhook của Cashier](#handling-stripe-webhooks).
 
 <a name="paddle-sandbox"></a>
 ### Paddle Sandbox
@@ -71,20 +75,26 @@ Trong quá trình phát triển local và staging, bạn nên [đăng ký một 
 
 Khi sử dụng môi trường Paddle Sandbox, bạn nên set biến môi trường `PADDLE_SANDBOX` thành `true` trong file `.env` của ứng dụng:
 
+```ini
 PADDLE_SANDBOX=true
+```
 
-Sau khi hoàn thành việc phát triển ứng dụng của bạn, bạn có thể [đăng ký tài khoản nhà cung cấp Paddle](https://paddle.com).
+Sau khi hoàn thành việc phát triển ứng dụng của bạn, bạn có thể [đăng ký tài khoản nhà cung cấp Paddle](https://paddle.com). Trước khi ứng dụng của bạn được deploy lên production, Paddle sẽ cần phê duyệt domain ứng dụng của bạn.
 
 <a name="database-migrations"></a>
 ### Database Migrations
 
 Service provider Cashier sẽ đăng ký một thư mục database migration của nó, vì vậy hãy nhớ migrate cơ sở dữ liệu của bạn sau khi cài đặt xong package. Việc migrate Cashier sẽ tạo ra một bảng `customers` mới. Ngoài ra, một bảng `subscriptions` mới cũng sẽ được tạo để lưu trữ tất cả các subscription của khách hàng của bạn. Cuối cùng, một bảng `receipts` mới cũng sẽ được tạo để lưu tất cả thông tin biên lai của ứng dụng của bạn:
 
-    php artisan migrate
+```shell
+php artisan migrate
+```
 
 Nếu bạn cần ghi đè các migration đi kèm với Cashier, bạn có thể export chúng bằng lệnh Artisan `vendor:publish`:
 
-    php artisan vendor:publish --tag="cashier-migrations"
+```shell
+php artisan vendor:publish --tag="cashier-migrations"
+```
 
 Nếu bạn muốn ngăn việc migration của Cashier chạy, bạn có thể sử dụng phương thức `ignoreMigrations` được Cashier cung cấp. Thông thường, phương thức này nên được gọi trong phương thức `register` trong `AppServiceProvider` của bạn:
 
@@ -130,10 +140,12 @@ Nếu bạn có các billable model không phải là các user, bạn cũng có
 
 Tiếp theo, bạn nên cấu hình key của Paddle trong file `.env` của application. Bạn có thể lấy key API Paddle của bạn từ bảng điều khiển của Paddle.
 
-    PADDLE_VENDOR_ID=your-paddle-vendor-id
-    PADDLE_VENDOR_AUTH_CODE=your-paddle-vendor-auth-code
-    PADDLE_PUBLIC_KEY="your-paddle-public-key"
-    PADDLE_SANDBOX=true
+```ini
+PADDLE_VENDOR_ID=your-paddle-vendor-id
+PADDLE_VENDOR_AUTH_CODE=your-paddle-vendor-auth-code
+PADDLE_PUBLIC_KEY="your-paddle-public-key"
+PADDLE_SANDBOX=true
+```
 
 Biến môi trường `PADDLE_SANDBOX` phải được set thành `true` khi bạn đang sử dụng trong [môi trường Sandbox của Paddle](#paddle-sandbox). Biến `PADDLE_SANDBOX` phải được set thành `false` nếu bạn đang triển khai ứng dụng của bạn sang production và đang sử dụng môi trường nhà cung cấp trực tiếp của Paddle.
 
@@ -142,24 +154,31 @@ Biến môi trường `PADDLE_SANDBOX` phải được set thành `true` khi b�
 
 Paddle dựa vào thư viện JavaScript của riêng nó để khởi chạy giao diện thanh toán Paddle. Bạn có thể load thư viện JavaScript này bằng cách viết lệnh Blade `@paddleJS` ngay trước thẻ `</head>` của layout ứng dụng của bạn:
 
-    <head>
-        ...
+```blade
+<head>
+    ...
 
-        @paddleJS
-    </head>
+    @paddleJS
+</head>
+```
 
 <a name="currency-configuration"></a>
 ### Cấu hình đơn vị tiền tệ
 
 Đơn vị tiền mặc định của Cashier là Đô la Mỹ (USD). Bạn có thể thay đổi loại tiền mặc định này bằng cách định nghĩa biến môi trường `CASHIER_CURRENCY` trong file `.env` của ứng dụng của bạn:
 
-    CASHIER_CURRENCY=EUR
+```ini
+CASHIER_CURRENCY=EUR
+```
 
 Ngoài việc cấu hình đơn vị tiền tệ của Cashier, bạn cũng có thể chỉ định ngôn ngữ được sử dụng khi định dạng tiền tệ để hiển thị trong hóa đơn. Cashier sử dụng [class `NumberFormatter` của PHP](https://www.php.net/manual/en/class.numberformatter.php) để set ngôn ngữ tiền tệ:
 
-    CASHIER_CURRENCY_LOCALE=nl_BE
+```ini
+CASHIER_CURRENCY_LOCALE=nl_BE
+```
 
-> {note} Để sử dụng các ngôn ngữ khác, khác với ngôn ngữ `en`, hãy đảm bảo là extension của PHP `ext-intl` đã được cài đặt và cấu hình trên server của bạn.
+> **Warning**
+> Để sử dụng các ngôn ngữ khác, khác với ngôn ngữ `en`, hãy đảm bảo là extension của PHP `ext-intl` đã được cài đặt và cấu hình trên server của bạn.
 
 <a name="overriding-default-models"></a>
 ### Ghi đè Model mặc định
@@ -228,7 +247,8 @@ Giao diện thanh toán bằng Paddle là không đồng bộ. Sau khi người 
 
 Để biết thêm thông tin về link thanh toán, bạn có thể xem lại [tài liệu Paddle API về tạo link thanh toán](https://developer.paddle.com/api-reference/product-api/pay-links/createpaylink).
 
-> {note} Sau khi thay đổi trạng thái đăng ký, độ trễ để nhận được webhook tương ứng thường rất nhỏ nhưng bạn nên tính đến điều này trong ứng dụng của bạn bằng cách cân nhắc rằng subscription của người dùng của bạn có thể không khả dụng ngay sau khi hoàn tất quy trình thanh toán.
+> **Warning**
+> Sau khi thay đổi trạng thái đăng ký, độ trễ để nhận được webhook tương ứng thường rất nhỏ nhưng bạn nên tính đến điều này trong ứng dụng của bạn bằng cách cân nhắc rằng subscription của người dùng của bạn có thể không khả dụng ngay sau khi hoàn tất quy trình thanh toán.
 
 <a name="manually-rendering-pay-links"></a>
 #### Manually Rendering Pay Links
@@ -257,29 +277,36 @@ Nếu bạn không muốn sử dụng giao diện thanh toán theo kiểu "overl
 
 Để giúp bạn dễ dàng bắt đầu với tính năng thanh toán inline, Cashier đã chứa một Blade component `paddle-checkout`. Để bắt đầu, bạn nên [tạo link thanh toán](#pay-links) và truyền link thanh toán đó vào thuộc tính `override` của component:
 
-```html
+```blade
 <x-paddle-checkout :override="$payLink" class="w-full" />
 ```
 
 Để điều chỉnh chiều cao của component inline checkout, bạn có thể truyền thuộc tính `height` cho Blade component:
 
-    <x-paddle-checkout :override="$payLink" class="w-full" height="500" />
+```blade
+<x-paddle-checkout :override="$payLink" class="w-full" height="500" />
+```
 
 <a name="inline-checkout-without-pay-links"></a>
 #### Inline Checkout Without Pay Links
 
 Ngoài ra, bạn có thể tùy chỉnh giao diện con bằng các tùy chọn thay vì sử dụng một link thanh toán:
 
-    $options = [
-        'product' => $productId,
-        'title' => 'Product Title',
-    ];
+```blade
+@php
+$options = [
+    'product' => $productId,
+    'title' => 'Product Title',
+];
+@endphp
 
-    <x-paddle-checkout :options="$options" class="w-full" />
+<x-paddle-checkout :options="$options" class="w-full" />
+```
 
 Vui lòng tham khảo [hướng dẫn về thanh toán inline](https://developer.paddle.com/guides/how-tos/checkout/inline-checkout) của Paddle cũng như [tham khảo tham số](https://developer.paddle.com/reference/paddle-js/parameters) của nó để biết thêm thông tin chi tiết về các tùy chọn có sẵn.
 
-> {note} Nếu bạn cũng muốn sử dụng tùy chọn `passthrough` khi chỉ định các tùy chọn tùy chỉnh, thì bạn nên cung cấp một mảng khóa và giá trị làm giá trị của nó. Cashier sẽ tự động xử lý việc chuyển đổi mảng đó thành chuỗi JSON. Ngoài ra, tùy chọn `customer_id` sẽ được dành riêng cho việc sử dụng bên trong Cashier .
+> **Warning**
+> Nếu bạn cũng muốn sử dụng tùy chọn `passthrough` khi chỉ định các tùy chọn tùy chỉnh, thì bạn nên cung cấp một mảng khóa và giá trị làm giá trị của nó. Cashier sẽ tự động xử lý việc chuyển đổi mảng đó thành chuỗi JSON. Ngoài ra, tùy chọn `customer_id` sẽ được dành riêng cho việc sử dụng bên trong Cashier .
 
 <a name="manually-rendering-an-inline-checkout"></a>
 #### Manually Rendering An Inline Checkout
@@ -288,7 +315,7 @@ Bạn cũng có thể hiển thị thanh toán inline theo cách thủ công mà
 
 Tiếp theo, bạn có thể sử dụng Paddle.js để khởi tạo thanh toán. Để đơn giản hóa ví dụ này, chúng ta sẽ minh họa điều này bằng cách sử dụng [Alpine.js](https://github.com/alpinejs/alpine); tuy nhiên, bạn có thể tự do chuyển ví dụ này sang giao diện người dùng của riêng bạn:
 
-```html
+```alpine
 <div class="paddle-checkout" x-data="{}" x-init="
     Paddle.Checkout.open({
         override: {{ $payLink }},
@@ -337,7 +364,7 @@ Paddle cho phép bạn tùy chỉnh giá dựa trên mỗi đơn vị tiền t�
 
 Sau khi lấy ra giá, bạn có thể hiển thị chúng theo cách bạn muốn:
 
-```html
+```blade
 <ul>
     @foreach ($prices as $price)
         <li>{{ $price->product_title }} - {{ $price->price()->gross() }}</li>
@@ -347,7 +374,7 @@ Sau khi lấy ra giá, bạn có thể hiển thị chúng theo cách bạn mu�
 
 Bạn cũng có thể hiển thị giá thực (không bao gồm thuế) và hiển thị số tiền thuế một cách riêng biệt:
 
-```html
+```blade
 <ul>
     @foreach ($prices as $price)
         <li>{{ $price->product_title }} - {{ $price->price()->net() }} (+ {{ $price->price()->tax() }} tax)</li>
@@ -357,7 +384,7 @@ Bạn cũng có thể hiển thị giá thực (không bao gồm thuế) và hi�
 
 Nếu bạn muốn lấy ra giá cho các gói subscription, bạn có thể hiển thị giá ban đầu và giá định kỳ của subscription một cách riêng biệt:
 
-```html
+```blade
 <ul>
     @foreach ($prices as $price)
         <li>{{ $price->product_title }} - Initial: {{ $price->initialPrice()->gross() }} - Recurring: {{ $price->recurringPrice()->gross() }}</li>
@@ -391,7 +418,7 @@ Bạn cũng có thể chọn hiển thị giá sau khi đã dùng phiếu giảm
 
 Sau đó, hiển thị giá đã tính bằng phương thức `price`:
 
-```html
+```blade
 <ul>
     @foreach ($prices as $price)
         <li>{{ $price->product_title }} - {{ $price->price()->gross() }}</li>
@@ -401,7 +428,7 @@ Sau đó, hiển thị giá đã tính bằng phương thức `price`:
 
 Bạn có thể hiển thị giá niêm yết ban đầu (không có phiếu giảm giá) bằng phương thức `listPrice`:
 
-```html
+```blade
 <ul>
     @foreach ($prices as $price)
         <li>{{ $price->product_title }} - {{ $price->listPrice()->gross() }}</li>
@@ -409,7 +436,8 @@ Bạn có thể hiển thị giá niêm yết ban đầu (không có phiếu gi�
 </ul>
 ```
 
-> {note} Khi sử dụng API price, Paddle chỉ cho phép áp dụng phiếu giảm giá cho các sản phẩm mua một lần và không cho phép sử dụng cho các gói subscription.
+> **Warning**
+> Khi sử dụng API price, Paddle chỉ cho phép áp dụng phiếu giảm giá cho các sản phẩm mua một lần và không cho phép sử dụng cho các gói subscription.
 
 <a name="customers"></a>
 ## Customers
@@ -463,12 +491,12 @@ Các giá trị mặc định này sẽ được sử dụng cho mọi hành đ�
 <a name="creating-subscriptions"></a>
 ### Tạo Subscription
 
-Để tạo một subscription, trước tiên hãy lấy ra một instance Billable model của bạn, thường là một instance của `App\Models\User`. Khi bạn đã lấy được instance của model, bạn có thể sử dụng phương thức `newSubscription` để tạo ra một link thanh toán subscription cho model của bạn:
+Để tạo một subscription, trước tiên hãy lấy ra một instance billable model trong database của bạn, thường là một instance của `App\Models\User`. Khi bạn đã lấy được instance của model, bạn có thể sử dụng phương thức `newSubscription` để tạo ra một link thanh toán subscription cho model của bạn:
 
     use Illuminate\Http\Request;
 
     Route::get('/user/subscribe', function (Request $request) {
-        $payLink = $user->newSubscription('default', $premium = 12345)
+        $payLink = $request->user()->newSubscription('default', $premium = 12345)
             ->returnTo(route('home'))
             ->create();
 
@@ -479,7 +507,7 @@ Tham số đầu tiên được truyền cho phương thức `newSubscription` p
 
 Phương thức `create` sẽ tạo ra một link thanh toán mà bạn có thể sử dụng để tạo ra nút thanh toán. Nút thanh toán có thể được tạo bằng cách sử dụng [Blade component](/docs/{{version}}/blade#components) `paddle-button` đã được đi kèm với Cashier Paddle:
 
-```html
+```blade
 <x-paddle-button :url="$payLink" class="px-8 py-4">
     Subscribe
 </x-paddle-button>
@@ -518,7 +546,8 @@ Bạn cũng có thể truyền một mảng dữ liệu bằng phương thức `
         ->withMetadata(['key' => 'value'])
         ->create();
 
-> {note} Khi cung cấp mảng dữ liệu này, vui lòng tránh sử dụng `subscription_name` làm khóa của mảng dữ liệu đó. Khóa này sẽ được sử dụng bên trong Cashier.
+> **Warning**
+> Khi cung cấp mảng dữ liệu này, vui lòng tránh sử dụng `subscription_name` làm khóa của mảng dữ liệu đó. Khóa này sẽ được sử dụng bên trong Cashier.
 
 <a name="checking-subscription-status"></a>
 ### Kiểm tra trạng thái Subscription
@@ -627,7 +656,8 @@ Nếu bạn muốn các subscription vẫn được coi là hoạt động khi c
         Cashier::keepPastDueSubscriptionsActive();
     }
 
-> {note} Khi một subscription ở trạng thái `past_due`, thì bạn không thể thay đổi subscription cho đến khi thông tin thanh toán được cập nhật. Do đó, các phương thức `swap` và `updateQuantity` sẽ tạo ra một exception khi subscription ở trạng thái `past_due`.
+> **Warning**
+> Khi một subscription ở trạng thái `past_due`, thì bạn không thể thay đổi subscription cho đến khi thông tin thanh toán được cập nhật. Do đó, các phương thức `swap` và `updateQuantity` sẽ tạo ra một exception khi subscription ở trạng thái `past_due`.
 
 <a name="subscription-scopes"></a>
 #### Subscription Scopes
@@ -704,12 +734,13 @@ Nếu bạn muốn thay đổi gói và lập hóa đơn ngay cho người dùng
 
     $user->subscription('default')->swapAndInvoice($premium = 34567);
 
-> {note} Các gói có thể không được hoán đổi khi bản dùng thử đang được active. Để biết thêm thông tin về hạn chế này, vui lòng xem [tài liệu Paddle](https://developer.paddle.com/api-reference/subscription-api/users/updateuser#usage-notes).
+> **Warning**
+> Các gói có thể không được hoán đổi khi bản dùng thử đang được active. Để biết thêm thông tin về hạn chế này, vui lòng xem [tài liệu Paddle](https://developer.paddle.com/api-reference/subscription-api/users/updateuser#usage-notes).
 
 <a name="prorations"></a>
 #### Prorations
 
-Mặc định, Paddle sẽ tính phí khi hoán đổi giữa các gói. Phương thức `noProrate` có thể được sử dụng để cập nhật subscription mà không bị tính phí:
+Mặc định, Paddle sẽ tính phí khi hoán đổi giữa các gói. Phương thức `noProrate` có thể được sử dụng để cập nhật nhiều subscription mà không bị tính phí:
 
     $user->subscription('default')->noProrate()->swap($premium = 34567);
 
@@ -781,6 +812,31 @@ Modifier có thể bị xóa bằng cách gọi phương thức `delete` trên i
 
     $modifier->delete();
 
+<a name="multiple-subscriptions"></a>
+### Nhiều Subscriptions
+
+Paddle cho phép khách hàng của bạn có thể subscription nhiều loại cùng một lúc. Ví dụ: bạn có thể đang điều hành một phòng gym cung cấp các gói đăng ký bơi và các gói đăng ký tập thể dục và mỗi gói đăng ký lại có thể có các mức giá khác nhau. Tất nhiên, khách hàng có thể đăng ký một hoặc cả hai gói.
+
+Khi ứng dụng của bạn tạo các đăng ký, bạn có thể cung cấp tên của đăng ký cho phương thức `newSubscription`. Tên có thể là bất kỳ chuỗi nào mà đại diện cho loại đăng ký mà người dùng đang muốn sử dụng:
+
+    use Illuminate\Http\Request;
+
+    Route::post('/swimming/subscribe', function (Request $request) {
+        $request->user()
+            ->newSubscription('swimming', $swimmingMonthly = 12345)
+            ->create($request->paymentMethodId);
+
+        // ...
+    });
+
+Trong ví dụ trên, chúng ta đã đăng ký bơi hàng tháng cho khách hàng. Nhưng, sau này có thể họ muốn chuyển sang đăng ký theo dạng hàng năm. Khi điều chỉnh đăng ký của khách hàng, chúng ta có thể chỉ cần hoán đổi giá của đăng ký `swimming`:
+
+    $user->subscription('swimming')->swap($swimmingYearly = 34567);
+
+Tất nhiên, bạn cũng có thể hủy đăng ký:
+
+    $user->subscription('swimming')->cancel();
+
 <a name="pausing-subscriptions"></a>
 ### Tạm dừng Subscriptions
 
@@ -800,7 +856,8 @@ Bạn có thể xác định xem người dùng đã tạm dừng subscription c
 
     $user->subscription('default')->unpause();
 
-> {note} Không thể sửa subscription khi nó đang bị tạm dừng. Nếu bạn muốn chuyển sang một gói khác hoặc cập nhật số lượng subscription, trước tiên bạn phải resume lại subscription.
+> **Warning**
+> Không thể sửa subscription khi nó đang bị tạm dừng. Nếu bạn muốn chuyển sang một gói khác hoặc cập nhật số lượng subscription, trước tiên bạn phải resume lại subscription.
 
 <a name="cancelling-subscriptions"></a>
 ### Huỷ Subscriptions
@@ -821,7 +878,8 @@ Nếu bạn muốn hủy subscription ngay lập tức, hãy gọi phương th�
 
     $user->subscription('default')->cancelNow();
 
-> {note} Subscription của Paddle sẽ không thể resume sau khi nó bị hủy. Nếu khách hàng của bạn muốn resume lại subscription của họ, họ sẽ phải đăng ký lại một subscription mới.
+> **Warning**
+> Subscription của Paddle sẽ không thể resume sau khi nó bị hủy. Nếu khách hàng của bạn muốn resume lại subscription của họ, họ sẽ phải đăng ký lại một subscription mới.
 
 <a name="subscription-trials"></a>
 ## Subscription dành cho dùng thử
@@ -829,7 +887,8 @@ Nếu bạn muốn hủy subscription ngay lập tức, hãy gọi phương th�
 <a name="with-payment-method-up-front"></a>
 ### Khai báo trước phương thức thanh toán
 
-> {note} Trong khi dùng thử và thu thập thông tin về phương thức thanh toán, Paddle sẽ chặn bất kỳ thay đổi nào liên quan đến subscription, chẳng hạn như chuyển đổi gói hoặc cập nhật số lượng subscription. Nếu bạn muốn cho phép khách hàng chuyển đổi gói trong thời gian dùng thử, subscription phải được hủy và tạo lại từ đầu.
+> **Warning**
+> Trong khi dùng thử và thu thập thông tin về phương thức thanh toán, Paddle sẽ chặn bất kỳ thay đổi nào liên quan đến subscription, chẳng hạn như chuyển đổi gói hoặc cập nhật số lượng subscription. Nếu bạn muốn cho phép khách hàng chuyển đổi gói trong thời gian dùng thử, subscription phải được hủy và tạo lại từ đầu.
 
 Nếu bạn muốn cung cấp thời gian dùng thử cho khách hàng của bạn trong khi vẫn muốn thu thập thông tin thanh toán của khách hàng, bạn nên sử dụng phương thức `trialDays` khi tạo link thanh toán cho subscription của bạn:
 
@@ -846,7 +905,8 @@ Nếu bạn muốn cung cấp thời gian dùng thử cho khách hàng của b�
 
 Phương thức này sẽ set ngày kết thúc của thời gian dùng thử vào trong bản ghi subscription trong cơ sở dữ liệu của application của bạn, và sẽ bảo với Paddle là sẽ không tính phí khách hàng cho đến khi hết ngày dùng thử.
 
-> {note} Nếu subscription của khách hàng không bị hủy trước ngày kết thúc dùng thử, họ sẽ bị tính phí ngay khi hết hạn dùng thử, vì vậy bạn nên chắc chắn là đã thông báo cho khách hàng biết về ngày kết thúc dùng thử của họ.
+> **Warning**
+> Nếu subscription của khách hàng không bị hủy trước ngày kết thúc dùng thử, họ sẽ bị tính phí ngay khi hết hạn dùng thử, vì vậy bạn nên chắc chắn là đã thông báo cho khách hàng biết về ngày kết thúc dùng thử của họ.
 
 Bạn có thể xác định xem người dùng hiện tại có đang trong thời gian dùng thử hay không bằng cách sử dụng phương thức `onTrial` trên instance người dùng hoặc phương thức `onTrial` trên instance subscription. Hai ví dụ dưới đây là giống nhau:
 
@@ -855,6 +915,16 @@ Bạn có thể xác định xem người dùng hiện tại có đang trong th�
     }
 
     if ($user->subscription('default')->onTrial()) {
+        //
+    }
+
+Để xác định xem bản dùng thử hiện tại đã hết hạn hay chưa, bạn có thể sử dụng phương thức `hasExpiredTrial`:
+
+    if ($user->hasExpiredTrial('default')) {
+        //
+    }
+
+    if ($user->subscription('default')->hasExpiredTrial()) {
         //
     }
 
@@ -908,14 +978,15 @@ Bạn có thể sử dụng phương thức `onGenericTrial` nếu bạn muốn 
         // User is within their "generic" trial period...
     }
 
-> {note} Không có cách nào để gia hạn hoặc sửa thời gian dùng thử trên một subscription Paddle sau khi đã được tạo.
+> **Warning**
+> Không có cách nào để gia hạn hoặc sửa thời gian dùng thử trên một subscription Paddle sau khi đã được tạo.
 
 <a name="handling-paddle-webhooks"></a>
 ## Xử lý Paddle Webhooks
 
 Paddle có thể thông báo cho ứng dụng của bạn về nhiều event thông qua webhook. Mặc định, một route sẽ trỏ đến một controller webhook của Cashier được đăng ký bởi service provider của Cashier. Controller này sẽ xử lý tất cả các request webhook gửi đến.
 
-Mặc định, controller này sẽ tự động xử lý việc hủy đăng ký khi có quá nhiều khoản phí không thành công ([như được định nghĩa bởi cài đặt đăng ký Paddle của bạn](https://vendors.paddle.com/subscription-settings)), cập nhật đăng ký và thay đổi phương thức thanh toán ; tuy nhiên, như bạn sẽ sớm khám phá ra rằng bạn có thể mở rộng controller này để xử lý bất kỳ sự kiện webhook nào của Paddle mà bạn muốn.
+Mặc định, controller này sẽ tự động xử lý việc hủy đăng ký khi có quá nhiều khoản phí không thành công ([như được định nghĩa bởi cài đặt dunning Paddle của bạn](https://vendors.paddle.com/recover-settings#dunning-form-id)), cập nhật đăng ký và thay đổi phương thức thanh toán ; tuy nhiên, như bạn sẽ sớm khám phá ra rằng bạn có thể mở rộng controller này để xử lý bất kỳ sự kiện webhook nào của Paddle mà bạn muốn.
 
 Để đảm bảo ứng dụng của bạn có thể xử lý Paddle webhook, hãy nhớ [cấu hình URL webhook trong bảng điều khiển Paddle](https://vendors.paddle.com/alerts-webhooks). Mặc định, webhook controller của Cashier sẽ response trên đường dẫn URL là `/paddle/webhook`. Danh sách đầy đủ của tất cả các webhook mà bạn nên bật trong bảng điều khiển Paddle sẽ là:
 
@@ -925,7 +996,8 @@ Mặc định, controller này sẽ tự động xử lý việc hủy đăng k�
 - Payment Succeeded
 - Subscription Payment Succeeded
 
-> {note} Hãy đảm bảo là bạn đã bảo vệ các request bằng các middleware [kiểm tra định dạng webhook](/docs/{{version}}/cashier-paddle#verifying-webhook-signatures) của Cashier.
+> **Warning**
+> Hãy đảm bảo là bạn đã bảo vệ các request bằng các middleware [kiểm tra định dạng webhook](/docs/{{version}}/cashier-paddle#verifying-webhook-signatures) của Cashier.
 
 <a name="webhooks-csrf-protection"></a>
 #### Webhooks & CSRF Protection
@@ -1006,7 +1078,7 @@ Cashier cũng phát ra các event dành riêng cho các loại webhook đã nh�
 
 Bạn cũng có thể ghi đè route webhook mặc định bằng cách định nghĩa biến môi trường `CASHIER_WEBHOOK` trong file `.env` của application của bạn. Giá trị này phải là một URL đầy đủ cho route webhook của bạn và cần giống với URL mà được set trong bảng điều khiển Paddle của bạn:
 
-```bash
+```ini
 CASHIER_WEBHOOK=https://example.com/my-paddle-webhook-url
 ```
 
@@ -1035,7 +1107,7 @@ Nếu bạn muốn thực hiện một khoản tính phí một lần đối v�
 
 Sau khi đã tạo link thanh toán, bạn có thể sử dụng Blade component `paddle-button` do Cashier cung cấp để cho phép người dùng khởi chạy giao diện Paddle và hoàn thành khoản phí đó:
 
-```html
+```blade
 <x-paddle-button :url="$payLink" class="px-8 py-4">
     Buy
 </x-paddle-button>
@@ -1049,7 +1121,7 @@ Phương thức `charge` sẽ chấp nhận thêm một mảng làm tham số th
 
 Các khoản phí sẽ được tính theo đơn vị tiền tệ được chỉ định trong tùy chọn cấu hình `cashier.currency`. Mặc định, giá trị này được set thành USD. Bạn có thể ghi đè đơn vị tiền tệ mặc định này bằng cách định nghĩa biến môi trường `CASHIER_CURRENCY` trong file `.env` application của của bạn:
 
-```bash
+```ini
 CASHIER_CURRENCY=EUR
 ```
 
@@ -1075,7 +1147,7 @@ Nếu bạn muốn tính phí một lần cho một sản phẩm cụ thể đư
 
 Sau đó, bạn có thể cung cấp link thanh toán đó đến component `paddle-button` để cho phép người dùng khởi chạy giao diện Paddle:
 
-```html
+```blade
 <x-paddle-button :url="$payLink" class="px-8 py-4">
     Buy
 </x-paddle-button>
@@ -1108,7 +1180,8 @@ Bạn có thể tùy ý chỉ định một số tiền cụ thể để hoàn t
         $receipt->order_id, 5.00, 'Unused product time'
     );
 
-> {tip} Bạn có thể sử dụng `$refundRequestId` làm tham chiếu cho khoản tiền đã hoàn lại khi liên hệ với bộ phận hỗ trợ của Paddle.
+> **Note**
+> Bạn có thể sử dụng `$refundRequestId` làm tham chiếu cho khoản tiền đã hoàn lại khi liên hệ với bộ phận hỗ trợ của Paddle.
 
 <a name="receipts"></a>
 ## Biên lai
@@ -1151,33 +1224,56 @@ Bạn có thể sử dụng phương thức `lastPayment` và `nextPayment` đ�
 
 Cả hai phương thức này sẽ trả về một instance của `Laravel\Paddle\Payment`; tuy nhiên, `nextPayment` sẽ trả về `null` nếu chu kỳ thanh toán đã kết thúc (chẳng hạn như khi subscription bị hủy):
 
-    Next payment: {{ $nextPayment->amount() }} due on {{ $nextPayment->date()->format('d/m/Y') }}
+```blade
+Next payment: {{ $nextPayment->amount() }} due on {{ $nextPayment->date()->format('d/m/Y') }}
+```
 
 <a name="handling-failed-payments"></a>
 ## Xử lý các khoản thanh toán không thành công
 
 Thỉnh thoảng nhiều khi thanh toán subscription có thể không thành công vì nhiều lý do khác nhau, chẳng hạn như thẻ hết hạn hoặc thẻ không có đủ tiền. Khi điều này xảy ra, chúng tôi khuyên bạn nên để Paddle xử lý các lỗi thanh toán cho bạn. Cụ thể, bạn có thể [thiết lập email thanh toán tự động của Paddle](https://vendors.paddle.com/subscription-settings) trong trang tổng quan của Paddle.
 
-Ngoài ra, bạn cũng có thể thực hiện những tùy chỉnh chính xác hơn bằng cách catch webhook [`subscription_payment_failed`](https://developer.paddle.com/webhook-reference/subscription-alerts/subscription-payment-failed) và bật "thanh toán subscription không thành công" trong cài đặt Webhook trong trang tổng quan Paddle của bạn:
+Ngoài ra, bạn cũng có thể thực hiện những tùy chỉnh chính xác hơn bằng cách [lắng nghe](/docs/{{version}}/events) event [`subscription_payment_failed`] của Paddle thông qua event `WebhookReceived` được Cashier gửi đi. Bạn cũng nên đảm bảo "thanh toán subscription không thành công" đã được bật trong cài đặt Webhook trong trang tổng quan Paddle của bạn:
 
     <?php
 
-    namespace App\Http\Controllers;
+    namespace App\Listeners;
 
-    use Laravel\Paddle\Http\Controllers\WebhookController as CashierController;
+    use Laravel\Paddle\Events\WebhookReceived;
 
-    class WebhookController extends CashierController
+    class PaddleEventListener
     {
         /**
-         * Handle subscription payment failed.
+         * Handle received Paddle webhooks.
          *
-         * @param  array  $payload
+         * @param  \Laravel\Paddle\Events\WebhookReceived  $event
          * @return void
          */
-        public function handleSubscriptionPaymentFailed($payload)
+        public function handle(WebhookReceived $event)
         {
-            // Handle the failed subscription payment...
+            if ($event->payload['alert_name'] === 'subscription_payment_failed') {
+                // Handle the failed subscription payment...
+            }
         }
+    }
+
+Khi listener của bạn đã được định nghĩa, bạn nên đăng ký nó trong `EventServiceProvider` của ứng dụng:
+
+    <?php
+
+    namespace App\Providers;
+
+    use App\Listeners\PaddleEventListener;
+    use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
+    use Laravel\Paddle\Events\WebhookReceived;
+
+    class EventServiceProvider extends ServiceProvider
+    {
+        protected $listen = [
+            WebhookReceived::class => [
+                PaddleEventListener::class,
+            ],
+        ];
     }
 
 <a name="testing"></a>

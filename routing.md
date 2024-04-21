@@ -3,6 +3,7 @@
 - [Routing cở bản](#basic-routing)
     - [Chuyển hướng Route](#redirect-routes)
     - [View Routes](#view-routes)
+    - [Danh sách Route](#the-route-list)
 - [Route Parameters](#route-parameters)
     - [Required Parameters](#required-parameters)
     - [Optional Parameters](#parameters-optional-parameters)
@@ -16,6 +17,7 @@
     - [Tiền tố cho tên Route](#route-group-name-prefixes)
 - [Liên kết Route Model](#route-model-binding)
     - [Liên kết ngầm](#implicit-binding)
+    - [Liên kết ngầm Enum](#implicit-enum-binding)
     - [Liên kết rõ ràng](#explicit-binding)
 - [Route dự phòng](#fallback-routes)
 - [Rate Limiting](#rate-limiting)
@@ -72,7 +74,8 @@ Thỉnh thoảng, bạn có thể cần phải đăng ký một route với nhi�
         //
     });
 
-> {tip} Khi định nghĩa nhiều route có chung một URI, các route sử dụng các phương thức `get`, `post`, `put`, `patch`, `delete` và `options` phải được định nghĩa trước các route `any`, `match` và `redirect`. Điều này giúp đảm bảo request sẽ được khớp với route chính xác.
+> **Note**
+> Khi định nghĩa nhiều route có chung một URI, các route sử dụng các phương thức `get`, `post`, `put`, `patch`, `delete` và `options` phải được định nghĩa trước các route `any`, `match` và `redirect`. Điều này giúp đảm bảo request sẽ được khớp với route chính xác.
 
 <a name="dependency-injection"></a>
 #### Dependency Injection
@@ -110,7 +113,8 @@ Hoặc, bạn có thể sử dụng phương thức `Route::permanentRedirect` �
 
     Route::permanentRedirect('/here', '/there');
 
-> {note} Khi sử dụng tham số route trong route chuyển hướng, các tham số sau sẽ được Laravel dùng sẵn và không thể sử dụng: `destination` và `status`.
+> **Warning**
+> Khi sử dụng tham số route trong route chuyển hướng, các tham số sau sẽ được Laravel dùng sẵn và không thể sử dụng: `destination` và `status`.
 
 <a name="view-routes"></a>
 ### View Routes
@@ -121,7 +125,41 @@ Nếu route của bạn chỉ cần trả về một [view](/docs/{{version}}/vi
 
     Route::view('/welcome', 'welcome', ['name' => 'Taylor']);
 
-> {note} Khi sử dụng tham số route trong view route, các tham số sau sẽ được Laravel dùng sẵn và không thể sử dụng: `view`, `data`, `status`, và `headers`.
+> **Warning**
+> Khi sử dụng tham số route trong view route, các tham số sau sẽ được Laravel dùng sẵn và không thể sử dụng: `view`, `data`, `status`, và `headers`.
+
+<a name="the-route-list"></a>
+### Danh sách Route
+
+Lệnh Artisan `route:list` có thể dễ dàng cung cấp một cách tổng quan về tất cả các route được ứng dụng của bạn định nghĩa:
+
+```shell
+php artisan route:list
+```
+
+Mặc định, route middleware mà được gán cho mỗi route sẽ không được hiển thị trong output của lệnh Artisan `route:list`; tuy nhiên, bạn có thể bảo Laravel hiển thị route middleware bằng cách thêm tùy chọn `-v` vào lệnh:
+
+```shell
+php artisan route:list -v
+```
+
+Bạn cũng có thể bảo Laravel chỉ hiển thị các route bắt đầu bằng một URI nhất định:
+
+```shell
+php artisan route:list --path=api
+```
+
+Ngoài ra, bạn có thể bảo Laravel ẩn bất kỳ route nào mà được định nghĩa bởi các package của bên thứ ba bằng cách cung cấp tùy chọn `--except-vendor` khi chạy lệnh `route:list`:
+
+```shell
+php artisan route:list --except-vendor
+```
+
+Tương tự như vậy, bạn cũng có thể bảo Laravel chỉ hiển thị các route mà được định nghĩa bởi các package của bên thứ ba bằng cách cung cấp tùy chọn `--only-vendor` khi chạy lệnh `route:list`:
+
+```shell
+php artisan route:list --only-vendor
+```
 
 <a name="route-parameters"></a>
 ## Route Parameters
@@ -198,6 +236,14 @@ Bạn có thể hạn chế định dạng của các tham số route của bạ
         //
     })->whereUuid('id');
 
+    Route::get('/user/{id}', function ($id) {
+        //
+    })->whereUlid('id');
+
+    Route::get('/category/{category}', function ($category) {
+        //
+    })->whereIn('category', ['movie', 'song', 'painting']);
+
 Nếu request đến không khớp với các ràng buộc pattern của route, thì response HTTP 404 sẽ được trả về.
 
 <a name="parameters-global-constraints"></a>
@@ -230,7 +276,8 @@ Component route của Laravel cho phép tất cả các ký tự được đi qu
         return $search;
     })->where('search', '.*');
 
-> {note} Encoded forward slashes chỉ hỗ trợ tham số cuối cùng của route.
+> **Warning**
+> Encoded forward slashes chỉ hỗ trợ tham số cuối cùng của route.
 
 <a name="named-routes"></a>
 ## Tên của Route
@@ -248,7 +295,8 @@ Bạn cũng có thể đặt tên route cho các hành động của controller:
         [UserProfileController::class, 'show']
     )->name('profile');
 
-> {note} Tên route phải luôn là duy nhất.
+> **Warning**
+> Tên route phải luôn là duy nhất.
 
 <a name="generating-urls-to-named-routes"></a>
 #### Tạo URLs từ tên route
@@ -260,6 +308,8 @@ Khi bạn đã gán tên cho một route, bạn có thể sử dụng tên của
 
     // Generating Redirects...
     return redirect()->route('profile');
+
+    return to_route('profile');
 
 Nếu tên route của bạn có định nghĩa tham số, bạn có thể chuyển các tham số đó làm tham số thứ hai trong hàm `route`. Các tham số đó sẽ tự động được chèn vào URL được tạo và ở vị trí chính xác của chúng:
 
@@ -279,7 +329,8 @@ Nếu bạn truyền thêm các tham số vào mảng, thì các cặp khóa và
 
     // /user/1/profile?photos=yes
 
-> {tip} Thỉnh thoảng, bạn có thể muốn chỉ định các giá trị mặc định cho các tham số URL trên toàn bộ request, chẳng hạn như ngôn ngữ hiện tại. Để thực hiện điều này, bạn có thể sử dụng phương thức [`URL::defaults` method](/docs/{{version}}/urls#default-values).
+> **Note**
+> Thỉnh thoảng, bạn có thể muốn chỉ định các giá trị mặc định cho các tham số URL trên toàn bộ request, chẳng hạn như ngôn ngữ hiện tại. Để thực hiện điều này, bạn có thể sử dụng phương thức [`URL::defaults` method](/docs/{{version}}/urls#default-values).
 
 <a name="inspecting-the-current-route"></a>
 #### Kiểm tra Route hiện tại
@@ -347,7 +398,8 @@ Nhóm route cũng có thể được sử dụng để xử lý các route dành
         });
     });
 
-> {note} Để đảm bảo có thể truy cập được vào các route tên miền phụ của bạn, bạn nên đăng ký các route tên miền phụ của bạn trước khi đăng ký các route tên miền gốc. Điều này sẽ ngăn các route miền gốc ghi đè vào các route tên miền phụ có cùng đường dẫn URI.
+> **Warning**
+> Để đảm bảo có thể truy cập được vào các route tên miền phụ của bạn, bạn nên đăng ký các route tên miền phụ của bạn trước khi đăng ký các route tên miền gốc. Điều này sẽ ngăn các route miền gốc ghi đè vào các route tên miền phụ có cùng đường dẫn URI.
 
 <a name="route-group-prefixes"></a>
 ### Tiền tố cho Route
@@ -414,6 +466,7 @@ Thông thường, liên kết model ngầm sẽ không lấy ra các model đã 
         return $user->email;
     })->withTrashed();
 
+<a name="customizing-the-key"></a>
 <a name="customizing-the-default-key-name"></a>
 #### Customizing The Key
 
@@ -468,6 +521,12 @@ Hoặc, bạn có thể hướng dẫn nhóm route sử dụng các liên kết 
         });
     });
 
+Tương tự như vậy, bạn có thể hướng dẫn Laravel không giới hạn phạm vi ràng buộc bằng cách gọi phương thức `withoutScopedBindings`:
+
+    Route::get('/users/{user}/posts/{post:slug}', function (User $user, Post $post) {
+        return $post;
+    })->withoutScopedBindings();
+
 <a name="customizing-missing-model-behavior"></a>
 #### Customizing Missing Model Behavior
 
@@ -482,6 +541,34 @@ Thông thường, response HTTP 404 sẽ được tạo nếu không tìm thấy
             ->missing(function (Request $request) {
                 return Redirect::route('locations.index');
             });
+
+<a name="implicit-enum-binding"></a>
+### Liên kết ngầm Enum
+
+PHP 8.1 đã giới thiệu và hỗ trợ [Enums](https://www.php.net/manual/en/language.enumerations.backed.php). Để bổ sung thêm cho tính năng này, Laravel cho phép bạn khai báo một [string-backed Enum](https://www.php.net/manual/en/language.enumerations.backed.php) trên một định nghĩa route của bạn và Laravel sẽ chỉ gọi route nếu phân đoạn route đó tương ứng với giá trị Enum hợp lệ. Nếu không trường hợp đó, thì một HTTP response 404 sẽ được trả về. Ví dụ, với Enum sau:
+
+```php
+<?php
+
+namespace App\Enums;
+
+enum Category: string
+{
+    case Fruits = 'fruits';
+    case People = 'people';
+}
+```
+
+Bạn có thể định nghĩa một route chỉ được gọi nếu phân đoạn route `{category}` là `fruits` hoặc `people`. Nếu không, thì Laravel sẽ trả về một HTTP response 404:
+
+```php
+use App\Enums\Category;
+use Illuminate\Support\Facades\Route;
+
+Route::get('/categories/{category}', function (Category $category) {
+    return $category->value;
+});
+```
 
 <a name="explicit-binding"></a>
 ### Liên kết rõ ràng
@@ -575,7 +662,8 @@ Sử dụng phương thức `Route::fallback`, bạn có thể định nghĩa m�
         //
     });
 
-> {note} Route dự phòng phải luôn là route cuối cùng được đăng ký bởi application của bạn.
+> **Warning**
+> Route dự phòng phải luôn là route cuối cùng được đăng ký bởi application của bạn.
 
 <a name="rate-limiting"></a>
 ## Rate Limiting
@@ -583,11 +671,28 @@ Sử dụng phương thức `Route::fallback`, bạn có thể định nghĩa m�
 <a name="defining-rate-limiters"></a>
 ### Định nghĩa giới hạn tỷ lệ
 
-Laravel có chứa các service giới hạn tỷ lệ mạnh mẽ và có thể tùy chỉnh mà bạn có thể sử dụng để hạn chế lưu lượng truy cập cho một route hoặc một nhóm route nhất định. Để bắt đầu, bạn nên định nghĩa cấu hình giới hạn tỷ lệ đáp ứng nhu cầu của ứng dụng. Thông thường, việc này phải được thực hiện trong phương thức `configureRateLimiting` của class `App\Providers\RouteServiceProvider` trong ứng dụng của bạn.
+Laravel có chứa các service giới hạn tỷ lệ mạnh mẽ và có thể tùy chỉnh mà bạn có thể sử dụng để hạn chế lưu lượng truy cập cho một route hoặc một nhóm route nhất định. Để bắt đầu, bạn nên định nghĩa cấu hình giới hạn tỷ lệ đáp ứng nhu cầu của ứng dụng. Thông thường, việc này phải được thực hiện trong phương thức `configureRateLimiting` của class `App\Providers\RouteServiceProvider` trong ứng dụng của bạn, trong class đó đã chứa sẵn một định nghĩa giới hạn tỷ lệ đã được áp dụng cho các route trong file `routes/api.php` trong ứng dụng của bạn:
+
+```php
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\RateLimiter;
+
+/**
+ * Configure the rate limiters for the application.
+ */
+protected function configureRateLimiting(): void
+{
+    RateLimiter::for('api', function (Request $request) {
+        return Limit::perMinute(60)->by($request->user()?->id ?: $request->ip());
+    });
+}
+```
 
 Giới hạn tỷ lệ được định nghĩa bằng phương thức `for` của facade `RateLimiter`. Phương thức `for` chấp nhận tên giới hạn tỷ lệ và một closure trả về cấu hình giới hạn sẽ được áp dụng cho các route mà được gán cho giới hạn tỷ lệ đó. Cấu hình giới hạn là các instance của class `Illuminate\Cache\RateLimiting\Limit`. Class này chứa các phương thức "builder" hữu ích để bạn có thể nhanh chóng định nghĩa giới hạn của bạn. Tên giới hạn tỷ lệ có thể là bất kỳ chuỗi nào bạn muốn:
 
     use Illuminate\Cache\RateLimiting\Limit;
+    use Illuminate\Http\Request;
     use Illuminate\Support\Facades\RateLimiter;
 
     /**
@@ -605,8 +710,8 @@ Giới hạn tỷ lệ được định nghĩa bằng phương thức `for` củ
 Nếu request gửi đến vượt quá giới hạn tỷ lệ đã chỉ định, Laravel sẽ tự động trả về response có mã trạng thái HTTP 429. Nếu bạn muốn định nghĩa một response khác của riêng bạn sẽ được trả về theo giới hạn tỷ lệ, bạn có thể sử dụng phương thức `response`:
 
     RateLimiter::for('global', function (Request $request) {
-        return Limit::perMinute(1000)->response(function () {
-            return response('Custom response...', 429);
+        return Limit::perMinute(1000)->response(function (Request $request, array $headers) {
+            return response('Custom response...', 429, $headers);
         });
     });
 
@@ -706,17 +811,22 @@ Bạn có thể tham khảo tài liệu API cho [class facade Route](https://lar
 
 Laravel có thể tự động respond các CORS `OPTIONS` HTTP request với các giá trị mà bạn đã cấu hình. Tất cả các cài đặt CORS có thể được cấu hình trong file cấu hình `config/cors.php` của application. Mặc định, các `OPTIONS` request sẽ được tự động xử lý bởi [middleware](/docs/{{version}}/middleware) `HandleCors` nằm theo trong stack global middleware của bạn. Stack global middleware của bạn nằm trong file HTTP kernel của ứng dụng (`App\Http\Kernel`).
 
-> {tip} Để biết thêm thông tin về CORS và header CORS, vui lòng tham khảo [tài liệu web MDN về CORS](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS#The_HTTP_response_headers).
+> **Note**
+> Để biết thêm thông tin về CORS và header CORS, vui lòng tham khảo [tài liệu web MDN về CORS](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS#The_HTTP_response_headers).
 
 <a name="route-caching"></a>
 ## Route Caching
 
 Khi deploy ứng dụng của bạn vào production, bạn nên tận dụng cache route của Laravel. Việc sử dụng cache route sẽ giảm đáng kể thời gian cần thiết để đăng ký tất cả các route vào trong ứng dụng của bạn. Để tạo cache route, hãy chạy lệnh Artisan `route:cache`:
 
-    php artisan route:cache
+```shell
+php artisan route:cache
+```
 
 Sau khi chạy lệnh này, file cache route của bạn sẽ được load theo mọi request. Hãy nhớ rằng, nếu bạn thêm bất kỳ route mới nào vào, thì bạn sẽ cần tạo lại một cache route mới. Vì lý do này, bạn chỉ nên chạy lệnh `route:cache` trong quá trình deploy dự án của bạn.
 
 Bạn có thể sử dụng lệnh `route:clear` để xóa cache route:
 
-    php artisan route:clear
+```shell
+php artisan route:clear
+```

@@ -33,20 +33,21 @@
 
 Octane có thể được cài đặt thông qua Composer package manager:
 
-```bash
+```shell
 composer require laravel/octane
 ```
 
 Sau khi cài đặt Octane xong, bạn có thể chạy lệnh Artisan `octane:install`, để cài đặt file cấu hình của Octane vào ứng dụng của bạn:
 
-```bash
+```shell
 php artisan octane:install
 ```
 
 <a name="server-prerequisites"></a>
 ## Yêu cầu Server
 
-> {note} Laravel Octane yêu cầu [PHP 8.0+](https://php.net/releases/).
+> **Warning**
+> Laravel Octane yêu cầu [PHP 8.0+](https://php.net/releases/).
 
 <a name="roadrunner"></a>
 ### RoadRunner
@@ -58,7 +59,7 @@ php artisan octane:install
 
 Nếu bạn có kế hoạch phát triển ứng dụng của bạn bằng [Laravel Sail](/docs/{{version}}/sail), bạn nên chạy các lệnh sau để cài đặt Octane và RoadRunner:
 
-```bash
+```shell
 ./vendor/bin/sail up
 
 ./vendor/bin/sail composer require laravel/octane spiral/roadrunner
@@ -66,7 +67,7 @@ Nếu bạn có kế hoạch phát triển ứng dụng của bạn bằng [Lara
 
 Tiếp theo, bạn nên start một shell của Sail và sử dụng `rr` để lấy ra bản build cho Linux mới nhất của Roadrunner Binary:
 
-```bash
+```shell
 ./vendor/bin/sail shell
 
 # Within the Sail shell...
@@ -75,19 +76,19 @@ Tiếp theo, bạn nên start một shell của Sail và sử dụng `rr` để 
 
 Sau khi cài đặt xong RoadRunner binary, bạn có thể thoát khỏi session Sail shell của bạn. Bây giờ bạn sẽ cần điều chỉnh file `supervisor.conf` được Sail sử dụng để giữ cho ứng dụng của bạn chạy. Để bắt đầu, hãy thực hiện lệnh Artisan `sail:publish`:
 
-```bash
+```shell
 ./vendor/bin/sail artisan sail:publish
 ```
 
 Tiếp theo, hãy cập nhật lệnh `command` trong file `docker/supervisord.conf` của ứng dụng của bạn để Sail chạy ứng dụng của bạn bằng octane thay vì máy chủ phát triển của PHP:
 
 ```ini
-command=/usr/bin/php -d variables_order=EGPCS /var/www/html/artisan octane:start --server=roadrunner --host=0.0.0.0 --rpc-port=6001 --port=8000
+command=/usr/bin/php -d variables_order=EGPCS /var/www/html/artisan octane:start --server=roadrunner --host=0.0.0.0 --rpc-port=6001 --port=80
 ```
 
 Cuối cùng, hãy đảm bảo rằng file binary `rr` có quyền chạy và build image Sail của bạn:
 
-```bash
+```shell
 chmod +x ./rr
 
 ./vendor/bin/sail build --no-cache
@@ -98,18 +99,19 @@ chmod +x ./rr
 
 Nếu bạn có kế hoạch sử dụng máy chủ ứng dụng Swoole để chạy ứng dụng Laravel Octane của bạn, bạn phải cài đặt extension Swoole PHP. Thông thường, điều này có thể được thực hiện thông qua PECL:
 
-```bash
+```shell
 pecl install swoole
 ```
 
 <a name="swoole-via-laravel-sail"></a>
 #### Swoole Via Laravel Sail
 
-> {note} Trước khi chạy một ứng dụng Octane thông qua Sail, bạn hãy đảm bảo là bạn đã có phiên bản mới nhất của Laravel Sail và chạy `./vendor/bin/sail build --no-cache` trong thư mục gốc ứng dụng của bạn.
+> **Warning**
+> Trước khi chạy một ứng dụng Octane thông qua Sail, bạn hãy đảm bảo là bạn đã có phiên bản mới nhất của Laravel Sail và chạy `./vendor/bin/sail build --no-cache` trong thư mục gốc ứng dụng của bạn.
 
 Ngoài ra, bạn có thể phát triển ứng dụng Octane dựa trên swoole của bạn bằng [Laravel Sail](/docs/{{version}}/sail), một môi trường phát triển dựa trên Docker chính thức cho Laravel. Mặc định, Laravel Sail có chứa nhiều extension swoole. Tuy nhiên, bạn vẫn sẽ cần điều chỉnh file `supervisor.conf` được Sail sử dụng để giữ cho ứng dụng của bạn chạy. Để bắt đầu, hãy chạy lệnh Artisan `sail:publish`:
 
-```bash
+```shell
 ./vendor/bin/sail artisan sail:publish
 ```
 
@@ -121,7 +123,7 @@ command=/usr/bin/php -d variables_order=EGPCS /var/www/html/artisan octane:start
 
 Cuối cùng, build image Sail của bạn:
 
-```bash
+```shell
 ./vendor/bin/sail build --no-cache
 ```
 
@@ -136,7 +138,7 @@ Swoole có hỗ trợ thêm một vài tùy chọn cấu hình bổ sung mà b�
         'log_file' => storage_path('logs/swoole_http.log'),
         'package_max_length' => 10 * 1024 * 1024,
     ],
-];
+],
 ```
 
 <a name="serving-your-application"></a>
@@ -144,7 +146,7 @@ Swoole có hỗ trợ thêm một vài tùy chọn cấu hình bổ sung mà b�
 
 Máy chủ octane có thể được khởi động thông qua lệnh Artisan `octane:start`. Mặc định, lệnh này sẽ sử dụng máy chủ được chỉ định trong tùy chọn cấu hình `server` của file cấu hình `octane` của ứng dụng:
 
-```bash
+```shell
 php artisan octane:start
 ```
 
@@ -162,13 +164,14 @@ Mặc định, các ứng dụng chạy qua octane sẽ tạo link với tiền 
 <a name="serving-your-application-via-nginx"></a>
 ### Chạy application của bạn thông qua Nginx
 
-> {tip} Nếu bạn chưa sẵn sàng quản lý cấu hình máy chủ của bạn hoặc không thoải mái khi cấu hình tất cả các dịch vụ khác nhau cần thiết để chạy ứng dụng Laravel Octane mạnh mẽ, hãy xem [Laravel Forge](https://forge.laravel.com).
+> **Note**
+> Nếu bạn chưa sẵn sàng quản lý cấu hình máy chủ của bạn hoặc không thoải mái khi cấu hình tất cả các dịch vụ khác nhau cần thiết để chạy ứng dụng Laravel Octane mạnh mẽ, hãy xem [Laravel Forge](https://forge.laravel.com).
 
 Trong môi trường production, bạn nên chạy ứng dụng Octane của bạn đằng sau một máy chủ web truyền thống như Nginx hoặc Apache. Làm như vậy sẽ cho phép máy chủ web phân phối các nội dung tĩnh như hình ảnh và stylesheet cũng như quản lý chứng chỉ SSL của bạn.
 
 Trong ví dụ về cấu hình Nginx ở bên dưới, Nginx sẽ phân phối các request và nội dung tĩnh của trang web tới máy chủ Octane đang chạy trên cổng 8000:
 
-```conf
+```nginx
 map $http_upgrade $connection_upgrade {
     default upgrade;
     ''      close;
@@ -227,13 +230,13 @@ server {
 
 Vì ứng dụng của bạn đã được load vào memory khi máy chủ Octane khởi động nên mọi thay đổi đối với các file trong ứng dụng của bạn sẽ không được phản ánh khi bạn refresh trình duyệt của bạn. Ví dụ: các định nghĩa route được thêm vào trong file `routes/web.php` của bạn sẽ không được phản ánh cho đến khi máy chủ được khởi động lại. Để thuận tiện, bạn có thể sử dụng flag `--watch` để bảo Octane tự động khởi động lại máy chủ khi có bất kỳ thay đổi mới nào trong file ứng dụng của bạn:
 
-```bash
+```shell
 php artisan octane:start --watch
 ```
 
 Trước khi sử dụng tính năng này, bạn phải đảm bảo là [Node](https://nodejs.org) đã được cài đặt vào trong môi trường phát triển local của bạn. Ngoài ra, bạn nên cài đặt thư viện theo dõi file [Chokidar](https://github.com/paulmillr/chokidar) vào trong library dự án của bạn:
 
-```bash
+```shell
 npm install --save-dev chokidar
 ```
 
@@ -244,22 +247,22 @@ Bạn có thể cấu hình các thư mục và file cần theo dõi bằng tùy
 
 Mặc định, Octane sẽ khởi động số lượng worker theo mỗi lõi CPU do máy của bạn cung cấp. Sau đó, những worker này sẽ được sử dụng để xử lý các request HTTP đến khi nó vào ứng dụng của bạn. Bạn có thể chỉ định số lượng worker mà bạn mong muốn bằng cách sử dụng tùy chọn `--workers` khi gọi lệnh `octane:start`:
 
-```bash
+```shell
 php artisan octane:start --workers=4
 ```
 
 Nếu bạn đang sử dụng máy chủ Swoole, bạn cũng có thể chỉ định số lượng ["worker"](#concurrent-tasks) mà bạn muốn bắt đầu:
 
-```bash
+```shell
 php artisan octane:start --workers=4 --task-workers=6
 ```
 
 <a name="specifying-the-max-request-count"></a>
 ### Chỉ định số lượng request
 
-Để giúp ngăn chặn tràn bộ nhớ, Octane có thể khởi động lại một cách nhẹ nhàng một worker sau khi nó xử lý xong một số request nhất định. Để bảo Octane thực hiện điều này, bạn có thể sử dụng tùy chọn `--max-requests`:
+Để giúp ngăn chặn tràn bộ nhớ, Octane sẽ khởi động lại một cách nhẹ nhàng bất kỳ worker sau khi nó xử lý xong 500 request. Để điều chỉnh số lượng này, bạn có thể sử dụng tùy chọn `--max-requests`:
 
-```bash
+```shell
 php artisan octane:start --max-requests=250
 ```
 
@@ -268,7 +271,7 @@ php artisan octane:start --max-requests=250
 
 Bạn có thể khởi động lại các worker của máy chủ Octane một cách dễ dàng bằng cách sử dụng lệnh `octane:reload`. Thông thường, việc này nên được thực hiện sau khi deploy một code mới lên server để code mới của bạn có thể được load lại vào trong bộ nhớ và được sử dụng để chạy cho các request tiếp theo:
 
-```bash
+```shell
 php artisan octane:reload
 ```
 
@@ -277,7 +280,7 @@ php artisan octane:reload
 
 Bạn có thể dừng máy chủ Octane bằng lệnh Artisan `octane:stop`:
 
-```bash
+```shell
 php artisan octane:stop
 ```
 
@@ -286,7 +289,7 @@ php artisan octane:stop
 
 Bạn có thể kiểm tra trạng thái hiện tại của máy chủ Octane bằng lệnh Artisan `octane:status`:
 
-```bash
+```shell
 php artisan octane:status
 ```
 
@@ -382,7 +385,8 @@ $service->method($request->input('name'));
 
 Helper global `request` sẽ luôn trả về request mà ứng dụng hiện đang xử lý và do đó sẽ an toàn khi sử dụng trong ứng dụng của bạn.
 
-> {note} Bạn có thể khai báo instance `Illuminate\Http\Request` trên các phương thức controller và route closure của bạn.
+> **Warning**
+> Bạn có thể khai báo instance `Illuminate\Http\Request` trên các phương thức controller và route closure của bạn.
 
 <a name="configuration-repository-injection"></a>
 ### Tích hợp Configuration Repository
@@ -453,9 +457,10 @@ Trong khi xây dựng ứng dụng của bạn, bạn nên đặc biệt cẩn t
 <a name="concurrent-tasks"></a>
 ## Đồng bộ Task
 
-> {note} Tính năng này yêu cầu [Swoole](#swoole).
+> **Warning**
+> Tính năng này yêu cầu [Swoole](#swoole).
 
-Khi sử dụng Swoole, bạn có thể thực hiện các thao tác đồng bộ thông qua các tác vụ background có dung lượng nhẹ. Bạn có thể thực hiện việc này bằng phương thức `concurrently` của Octane. Bạn có thể kết hợp phương thức này với việc gán mảng PHP để lấy ra kết quả của từng thao tác:
+Khi sử dụng Swoole, bạn có thể thực hiện các thao tác đồng bộ thông qua các task background có dung lượng nhẹ. Bạn có thể thực hiện việc này bằng phương thức `concurrently` của Octane. Bạn có thể kết hợp phương thức này với việc gán mảng PHP để lấy ra kết quả của từng thao tác:
 
 ```php
 use App\Models\User;
@@ -468,16 +473,19 @@ use Laravel\Octane\Facades\Octane;
 ]);
 ```
 
-Các tác vụ đồng bộ do Octane xử lý sẽ sử dụng các "task worker" của Swoole và chạy trong một process hoàn toàn khác với request đến. Số lượng worker có sẵn để xử lý các tác vụ đồng bộ sẽ được xác định bởi lệnh `--task-workers` trong lệnh `octane:start`:
+Các task đồng bộ do Octane xử lý sẽ sử dụng các "task worker" của Swoole và chạy trong một process hoàn toàn khác với request đến. Số lượng worker có sẵn để xử lý các task đồng bộ sẽ được xác định bởi lệnh `--task-workers` trong lệnh `octane:start`:
 
-```bash
+```shell
 php artisan octane:start --workers=4 --task-workers=6
 ```
+
+Do những hạn chế của hệ thống task của Swoole, khi gọi phương thức `concurrently`, bạn không nên cung cấp hơn 1024 task.
 
 <a name="ticks-and-intervals"></a>
 ## Ticks và Intervals
 
-> {note} Tính năng này yêu cầu [Swoole](#swoole).
+> **Warning**
+> Tính năng này yêu cầu [Swoole](#swoole).
 
 Khi sử dụng Swoole, bạn có thể đăng ký các thao tác "tick" sẽ được chạy sau mỗi số giây được chỉ định. Bạn có thể đăng ký callback "tick" thông qua phương thức `tick`. Tham số đầu tiên được cung cấp cho phương thức `tick` phải là một chuỗi đại diện cho tên của tick. Tham số thứ hai phải là một callable và sẽ được gọi trong khoảng thời gian đã chỉ định.
 
@@ -499,7 +507,8 @@ Octane::tick('simple-ticker', fn () => ray('Ticking...'))
 <a name="the-octane-cache"></a>
 ## Octane Cache
 
-> {note} Tính năng này yêu cầu [Swoole](#swoole).
+> **Warning**
+> Tính năng này yêu cầu [Swoole](#swoole).
 
 Khi sử dụng Swoole, bạn có thể tận dụng driver Octane cache, driver này cung cấp tốc độ đọc và ghi lên tới 2 triệu thao tác mỗi giây. Do đó, driver cache này là sự lựa chọn tuyệt vời cho các ứng dụng cần tốc độ đọc/ghi cực cao từ layer cache của chúng.
 
@@ -509,7 +518,8 @@ Driver cache này được hỗ trợ bởi [Swoole tables](https://www.swoole.c
 Cache::store('octane')->put('framework', 'Laravel', 30);
 ```
 
-> {tip} Số lượng item tối đa được phép có trong cache Octane có thể được định nghĩa trong file cấu hình `octane` của ứng dụng của bạn.
+> **Note**
+> Số lượng item tối đa được phép có trong cache Octane có thể được định nghĩa trong file cấu hình `octane` của ứng dụng của bạn.
 
 <a name="cache-intervals"></a>
 ### Cache Intervals
@@ -521,13 +531,14 @@ use Illuminate\Support\Str;
 
 Cache::store('octane')->interval('random', function () {
     return Str::random(10);
-}, seconds: 5)
+}, seconds: 5);
 ```
 
 <a name="tables"></a>
 ## Tables
 
-> {note} Tính năng này yêu cầu [Swoole](#swoole).
+> **Warning**
+> Tính năng này yêu cầu [Swoole](#swoole).
 
 Khi sử dụng Swoole, bạn có thể định nghĩa và tương tác với [Swoole tables](https://www.swoole.co.uk/docs/modules/swoole-table). Các Swoole table cung cấp hiệu suất cực cao và tất cả các worker trên máy chủ có thể truy cập vào dữ liệu trong các table này. Tuy nhiên, dữ liệu bên trong chúng sẽ bị mất khi máy chủ khởi động lại.
 
@@ -555,4 +566,5 @@ Octane::table('example')->set('uuid', [
 return Octane::table('example')->get('uuid');
 ```
 
-> {note} Các loại cột được Swoole table hỗ trợ là: `string`, `int` và `float`.
+> **Warning**
+> Các loại cột được Swoole table hỗ trợ là: `string`, `int` và `float`.

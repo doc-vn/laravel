@@ -6,8 +6,11 @@
 - [Chạy SQL Query](#running-queries)
     - [Dùng Multiple Database Connection](#using-multiple-database-connections)
     - [Listen cho Query Event](#listening-for-query-events)
+    - [Giám sát thời gian truy vấn](#monitoring-cumulative-query-time)
 - [Database Transaction](#database-transactions)
 - [Kết nối đến database cli](#connecting-to-the-database-cli)
+- [Kiểm tra cơ sở dữ liệu của bạn](#inspecting-your-databases)
+- [Giám sát cơ sở dữ liệu của bạn](#monitoring-your-databases)
 
 <a name="introduction"></a>
 ## Giới thiệu
@@ -16,9 +19,9 @@ Hầu hết các ứng dụng web hiện đại đều tương tác với cơ s�
 
 <div class="content-list" markdown="1">
 
-- MariaDB 10.2+ ([Version Policy](https://mariadb.org/about/#maintenance-policy))
+- MariaDB 10.3+ ([Version Policy](https://mariadb.org/about/#maintenance-policy))
 - MySQL 5.7+ ([Version Policy](https://en.wikipedia.org/wiki/MySQL#Release_history))
-- PostgreSQL 9.6+ ([Version Policy](https://www.postgresql.org/support/versioning/))
+- PostgreSQL 10.0+ ([Version Policy](https://www.postgresql.org/support/versioning/))
 - SQLite 3.8.8+
 - SQL Server 2017+ ([Version Policy](https://docs.microsoft.com/en-us/lifecycle/products/?products=sql-server))
 
@@ -29,7 +32,6 @@ Hầu hết các ứng dụng web hiện đại đều tương tác với cơ s�
 
 Cấu hình cho các service cơ sở dữ liệu của Laravel nằm trong file cấu hình `config/database.php` của ứng dụng của bạn. Trong file này, bạn có thể định nghĩa tất cả các kết nối cơ sở dữ liệu của bạn, cũng như chỉ định các kết nối nào sẽ được sử dụng mặc định. Hầu hết các tùy chọn cấu hình trong file này đều được điều khiển bởi các giá trị của các biến môi trường trong ứng dụng của bạn. Các ví dụ cho hầu hết các hệ thống cơ sở dữ liệu được hỗ trợ của Laravel đã được cung cấp trong file này.
 
-By default, Laravel's sample [environment con
 Mặc định, [cấu hình môi trường](/docs/{{version}}/configuration#environment-configuration) mẫu của Laravel đã sẵn sàng để sử dụng với [Laravel Sail](/docs/{{version}}/sail), đây là một cấu hình Docker để phát triển các ứng dụng Laravel trên máy local của bạn. Tuy nhiên, bạn có thể tự do sửa đổi cấu hình cơ sở dữ liệu nếu cần cho cơ sở dữ liệu local riêng của bạn.
 
 <a name="sqlite-configuration"></a>
@@ -37,12 +39,16 @@ Mặc định, [cấu hình môi trường](/docs/{{version}}/configuration#envi
 
 Cơ sở dữ liệu SQLite được chứa trong một file duy nhất trên filesystem của bạn. Bạn có thể tạo cơ sở dữ liệu SQLite mới bằng cách sử dụng lệnh `touch` trong terminal của bạn: `touch database/database.sqlite`. Sau khi cơ sở dữ liệu đã được tạo, bạn có thể dễ dàng cấu hình các biến môi trường của bạn để trỏ đến cơ sở dữ liệu này bằng cách set đường dẫn tuyệt đối tới file cơ sở dữ liệu trong biến môi trường `DB_DATABASE`:
 
-    DB_CONNECTION=sqlite
-    DB_DATABASE=/absolute/path/to/database.sqlite
+```ini
+DB_CONNECTION=sqlite
+DB_DATABASE=/absolute/path/to/database.sqlite
+```
 
 Để enable các ràng buộc khóa ngoại cho các kết nối SQLite, bạn nên set biến môi trường `DB_FOREIGN_KEYS` thành `true`:
 
-    DB_FOREIGN_KEYS=true
+```ini
+DB_FOREIGN_KEYS=true
+```
 
 <a name="mssql-configuration"></a>
 #### Microsoft SQL Server Configuration
@@ -150,6 +156,15 @@ Phương thức `select` sẽ luôn trả về một kết quả là một `arra
         echo $user->name;
     }
 
+<a name="selecting-scalar-values"></a>
+#### Selecting Scalar Values
+
+Thỉnh thoảng truy vấn cơ sở dữ liệu của bạn có thể dẫn đến một giá trị duy nhất. Thay vì được yêu cầu lấy ra kết quả của truy vấn từ một record object, Laravel cho phép bạn lấy ra trực tiếp giá trị này bằng phương thức `scalar`:
+
+    $burgers = DB::scalar(
+        "select count(case when food = 'burger' then 1 end) as burgers from menu"
+    );
+
 <a name="using-named-bindings"></a>
 #### Using Named Bindings
 
@@ -201,7 +216,8 @@ Thỉnh thoảng bạn có thể muốn thực hiện một câu lệnh SQL mà 
 
     DB::unprepared('update users set votes = 100 where name = "Dries"');
 
-> {note} Vì các câu lệnh unprepared không liên kết với bất kỳ tham số nên chúng có thể dễ bị tấn công bởi SQL injection. Bạn đừng bao giờ cho phép các giá trị do người dùng kiểm soát thực hiện trong câu lệnh unprepared .
+> **Warning**
+> Vì các câu lệnh unprepared không liên kết với bất kỳ tham số nên chúng có thể dễ bị tấn công bởi SQL injection. Bạn đừng bao giờ cho phép các giá trị do người dùng kiểm soát thực hiện trong câu lệnh unprepared .
 
 <a name="implicit-commits-in-transactions"></a>
 #### Implicit Commits
@@ -219,7 +235,7 @@ Nếu ứng dụng của bạn định nghĩa nhiều kết nối trong file c�
 
     use Illuminate\Support\Facades\DB;
 
-    $users = DB::connection('sqlite')->select(...);
+    $users = DB::connection('sqlite')->select(/* ... */);
 
 Bạn có thể truy cập vào instance PDO raw, cơ bản của kết nối bằng cách sử dụng phương thức `getPdo` trên instance kết nối:
 
@@ -260,6 +276,45 @@ Nếu bạn muốn chỉ định một closure được gọi cho mỗi truy v�
                 // $query->sql;
                 // $query->bindings;
                 // $query->time;
+            });
+        }
+    }
+
+<a name="monitoring-cumulative-query-time"></a>
+### Giám sát thời gian truy vấn
+
+Lỗi hiệu suất phổ biến của các ứng dụng web hiện đại là lượng thời gian chúng dành để truy vấn cơ sở dữ liệu. Rất may, Laravel có thể gọi một closure hoặc một callback theo lựa chọn của bạn khi nó dành quá nhiều thời gian để truy vấn cơ sở dữ liệu trong một single request. Để bắt đầu, hãy cung cấp ngưỡng thời gian truy vấn (tính bằng mili giây) và closure cho phương thức `whenQueryingForLongerThan`. Bạn có thể gọi phương thức này trong phương thức `boot` của một [service provider](/docs/{{version}}/providers):
+
+    <?php
+
+    namespace App\Providers;
+
+    use Illuminate\Database\Connection;
+    use Illuminate\Support\Facades\DB;
+    use Illuminate\Support\ServiceProvider;
+    use Illuminate\Database\Events\QueryExecuted;
+
+    class AppServiceProvider extends ServiceProvider
+    {
+        /**
+         * Register any application services.
+         *
+         * @return void
+         */
+        public function register()
+        {
+            //
+        }
+
+        /**
+         * Bootstrap any application services.
+         *
+         * @return void
+         */
+        public function boot()
+        {
+            DB::whenQueryingForLongerThan(500, function (Connection $connection, QueryExecuted $event) {
+                // Notify development team...
             });
         }
     }
@@ -307,15 +362,86 @@ Cuối cùng, bạn có thể commit một transaction thông qua phương thứ
 
     DB::commit();
 
-> {tip} Các phương thức transaction của facade `DB` sẽ kiểm soát các transaction cho cả [query builder](/docs/{{version}}/queries) và [Eloquent ORM](/docs/{{version}}/eloquent).
+> **Note**
+> Các phương thức transaction của facade `DB` sẽ kiểm soát các transaction cho cả [query builder](/docs/{{version}}/queries) và [Eloquent ORM](/docs/{{version}}/eloquent).
 
 <a name="connecting-to-the-database-cli"></a>
 ## Kết nối đến database cli
 
 Nếu bạn muốn kết nối đến CLI của cơ sở dữ liệu của bạn, bạn có thể sử dụng lệnh Artisan `db`:
 
-    php artisan db
+```shell
+php artisan db
+```
 
 Nếu cần, bạn có thể chỉ định tên kết nối để kết nối đến cơ sở dữ liệu mà không phải là kết nối mặc định:
 
-    php artisan db mysql
+```shell
+php artisan db mysql
+```
+
+<a name="inspecting-your-databases"></a>
+## Kiểm tra cơ sở dữ liệu của bạn
+
+Bằng cách sử dụng các lệnh Artisan `db:show` và `db:table`, bạn sẽ có thể có được thông tin chi tiết về cơ sở dữ liệu của bạn và các bảng liên kết. Để xem tổng quan về cơ sở dữ liệu của bạn, bao gồm cả kích thước, loại, số lượng connection đang kết nối và bản tổng quan các table, bạn có thể sử dụng lệnh `db:show`:
+
+```shell
+php artisan db:show
+```
+
+Bạn có thể chỉ định kết nối cơ sở dữ liệu nào sẽ được kiểm tra bằng cách cung cấp tên kết nối cơ sở dữ liệu cho lệnh thông qua tùy chọn `--database`:
+
+```shell
+php artisan db:show --database=pgsql
+```
+
+Nếu bạn muốn chứa thêm số lượng record và view của cơ sở dữ liệu trong output của command, bạn có thể cung cấp các tùy chọn `--counts` và `--views` tương ứng. Trên những cơ sở dữ liệu lớn, việc lấy ra số lượng record và view có thể bị chậm:
+
+```shell
+php artisan db:show --counts --views
+```
+
+<a name="table-overview"></a>
+#### Table Overview
+
+Nếu bạn muốn có cái nhìn tổng quan về một bảng riêng lẻ trong cơ sở dữ liệu của bạn, bạn có thể thực thi lệnh Artisan `db:table`. Lệnh này cung cấp cái nhìn tổng quan chung về bảng cơ sở dữ liệu, bao gồm các cột, loại, thuộc tính, khóa và các index của nó:
+
+```shell
+php artisan db:table users
+```
+
+<a name="monitoring-your-databases"></a>
+## Giám sát cơ sở dữ liệu của bạn
+
+Sử dụng lệnh `db:monitor` Artisan, bạn có thể hướng dẫn Laravel gửi một event `Illuminate\Database\Events\DatabaseBusy` nếu cơ sở dữ liệu của bạn đang làm việc nhiều hơn số kết nối được cài đặt.
+
+Để bắt đầu, bạn nên tạo schedule cho lệnh `db:monitor` để [chạy mỗi phút](/docs/{{version}}/scheduling). Lệnh này chấp nhận một tên kết nối cơ sở dữ liệu đã được cấu hình mà bạn muốn theo dõi cũng như số lượng kết nối tối đa cần được chấp nhận trước khi gửi event:
+
+```shell
+php artisan db:monitor --databases=mysql,pgsql --max=100
+```
+
+Schedule cho lệnh này là không đủ để kích hoạt một thông báo cảnh báo bạn về số lượng kết nối đang được mở bị vượt quá. Khi lệnh gặp cơ sở dữ liệu có số lượng kết nối mở vượt quá ngưỡng của bạn, sự kiện `DatabaseBusy` sẽ được gửi đi. Bạn nên lắng nghe sự kiện này trong `EventServiceProvider` của ứng dụng để gửi thông báo cho bạn hoặc nhóm phát triển của bạn:
+
+```php
+use App\Notifications\DatabaseApproachingMaxConnections;
+use Illuminate\Database\Events\DatabaseBusy;
+use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Notification;
+
+/**
+ * Register any other events for your application.
+ *
+ * @return void
+ */
+public function boot()
+{
+    Event::listen(function (DatabaseBusy $event) {
+        Notification::route('mail', 'dev@example.com')
+                ->notify(new DatabaseApproachingMaxConnections(
+                    $event->connectionName,
+                    $event->connections
+                ));
+    });
+}
+```
