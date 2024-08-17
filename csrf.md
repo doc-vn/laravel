@@ -18,13 +18,15 @@ Trong trường hợp bạn không quen với việc giả mạo request trên n
 
 Nếu không có bảo vệ CSRF, một trang web độc hại có thể tạo ra một form HTML trỏ đến route `/user/email` của ứng dụng của bạn và gửi địa chỉ email của chính kẻ tấn công:
 
-    <form action="https://your-application.com/user/email" method="POST">
-        <input type="email" value="malicious-email@example.com">
-    </form>
+```blade
+<form action="https://your-application.com/user/email" method="POST">
+    <input type="email" value="malicious-email@example.com">
+</form>
 
-    <script>
-        document.forms[0].submit();
-    </script>
+<script>
+    document.forms[0].submit();
+</script>
+```
 
  Nếu trang web độc hại này tự động gửi form đó mỗi khi trang được load, thì kẻ tấn công chỉ cần thu hút người dùng ứng dụng của bạn truy cập vào trang web của kẻ đó và địa chỉ email của người dùng của bạn sẽ được thay đổi ngay trong chính ứng dụng của bạn.
 
@@ -49,12 +51,14 @@ Token CSRF của session hiện tại có thể được truy cập thông qua s
 
 Bất cứ khi nào bạn định nghĩa một HTML form "POST", "PUT", "PATCH", hoặc "DELETE" nào trong ứng dụng của bạn, bạn nên tạo một field hidden chứa mã CSRF `_token` để middleware protection CSRF có thể kiểm tra request đó. Để thuận tiện, Bạn có thể sử dụng lệnh `@csrf` của Blade để tạo field hidden chứa mã token đó:
 
-    <form method="POST" action="/profile">
-        @csrf
+```blade
+<form method="POST" action="/profile">
+    @csrf
 
-        <!-- Equivalent to... -->
-        <input type="hidden" name="_token" value="{{ csrf_token() }}" />
-    </form>
+    <!-- Equivalent to... -->
+    <input type="hidden" name="_token" value="{{ csrf_token() }}" />
+</form>
+```
 
 Mặc định, `App\Http\Middleware\VerifyCsrfToken` [middleware](/docs/{{version}}/middleware), đã được khai báo sẵn trong group middleware `web`, và sẽ tự động kiểm tra mã token trong input của request có khớp với mã token được lưu trữ trong session trên server hay không. Khi hai token này khớp với nhau, chúng ta biết rằng người dùng đang được xác thực chính là người request.
 
@@ -90,22 +94,27 @@ Thông thường, bạn nên đặt các loại route này ra ngoài group middl
         ];
     }
 
-> {tip} Để thuận tiện, CSRF middleware sẽ tự động bị disable cho tất cả các route khi [đang chạy test](/docs/{{version}}/testing).
+> **Note**
+> Để thuận tiện, CSRF middleware sẽ tự động bị disable cho tất cả các route khi [đang chạy test](/docs/{{version}}/testing).
 
 <a name="csrf-x-csrf-token"></a>
 ## X-CSRF-TOKEN
 
 Ngoài việc kiểm tra mã token CSRF dưới dạng là một tham số của một POST, middleware `App\Http\Middleware\VerifyCsrfToken` cũng sẽ kiểm tra request header `X-CSRF-TOKEN`. Ví dụ, bạn có thể lưu trữ mã token vào trong một thẻ `meta` HTML:
 
-    <meta name="csrf-token" content="{{ csrf_token() }}">
+```blade
+<meta name="csrf-token" content="{{ csrf_token() }}">
+```
 
 Sau đó bạn có thể cài đặt một thư viện như jQuery tự động thêm mã token đó vào tất cả các request header. Điều này sẽ giúp việc thực CSRF Protection sẽ đơn giản và thuận tiện cho những application mà dựa trên AJAX sử dụng công nghệ JavaScript legacy:
 
-    $.ajaxSetup({
-        headers: {
-            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-        }
-    });
+```js
+$.ajaxSetup({
+    headers: {
+        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+    }
+});
+```
 
 <a name="csrf-x-xsrf-token"></a>
 ## X-XSRF-TOKEN
@@ -114,4 +123,5 @@ Laravel lưu trữ mã token CSRF trong cookie mã hoá `XSRF-TOKEN` được ch
 
 Cookie này được gửi về chủ yếu là tạo sự thuận tiện cho nhà phát triển vì một số framework và thư viện JavaScript, như Angular và Axios, sẽ tự động set giá trị của nó vào trong header `X-XSRF-TOKEN` cho các request có cùng origin.
 
-> {tip} Mặc định, file `resources/js/bootstrap.js` đã chứa thư viện Axios HTTP và sẽ tự động gửi header `X-XSRF-TOKEN` cho bạn.
+> **Note**
+> Mặc định, file `resources/js/bootstrap.js` đã chứa thư viện Axios HTTP và sẽ tự động gửi header `X-XSRF-TOKEN` cho bạn.

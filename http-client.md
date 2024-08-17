@@ -8,12 +8,14 @@
     - [Timeout](#timeout)
     - [Retries](#retries)
     - [Xử lý lỗi](#error-handling)
+    - [Guzzle Middleware](#guzzle-middleware)
     - [Guzzle Options](#guzzle-options)
 - [Request đồng thời](#concurrent-requests)
 - [Macros](#macros)
 - [Testing](#testing)
     - [Faking Responses](#faking-responses)
     - [Kiểm tra Requests](#inspecting-requests)
+    - [Chặn request đi lạc](#preventing-stray-requests)
 - [Events](#events)
 
 <a name="introduction"></a>
@@ -23,7 +25,9 @@ Laravel cung cấp một API nhỏ, rõ ràng dựa trên thư viện [Guzzle HT
 
 Trước khi bắt đầu, bạn nên đảm bảo là bạn đã cài đặt package Guzzle vào trong ứng dụng của bạn. Mặc định, Laravel đã chứa thư viện này. Tuy nhiên, nếu trước đó bạn đã gỡ package này ra rồi, thì bạn có thể cài đặt lại package này qua Composer:
 
-    composer require guzzlehttp/guzzle
+```shell
+composer require guzzlehttp/guzzle
+```
 
 <a name="making-requests"></a>
 ## Tạo Request
@@ -37,15 +41,13 @@ Trước khi bắt đầu, bạn nên đảm bảo là bạn đã cài đặt pa
 Phương thức `get` sẽ trả về một instance của `Illuminate\Http\Client\Response` và cung cấp nhiều phương thức có thể được sử dụng để kiểm tra response:
 
     $response->body() : string;
-    $response->json($key = null) : array|mixed;
+    $response->json($key = null, $default = null) : array|mixed;
     $response->object() : object;
     $response->collect($key = null) : Illuminate\Support\Collection;
     $response->status() : int;
-    $response->ok() : bool;
     $response->successful() : bool;
     $response->redirect(): bool;
     $response->failed() : bool;
-    $response->serverError() : bool;
     $response->clientError() : bool;
     $response->header($header) : string;
     $response->headers() : array;
@@ -53,6 +55,39 @@ Phương thức `get` sẽ trả về một instance của `Illuminate\Http\Clie
 Đối tượng `Illuminate\Http\Client\Response` cũng được implement từ interface `ArrayAccess` của PHP, cho phép bạn truy cập trực tiếp vào dữ liệu JSON trong response:
 
     return Http::get('http://example.com/users/1')['name'];
+
+Ngoài các phương thức response được liệt kê ở trên, các phương thức sau có thể được sử dụng để xác định xem response có mã status code nhất định hay không:
+
+    $response->ok() : bool;                  // 200 OK
+    $response->created() : bool;             // 201 Created
+    $response->accepted() : bool;            // 202 Accepted
+    $response->noContent() : bool;           // 204 No Content
+    $response->movedPermanently() : bool;    // 301 Moved Permanently
+    $response->found() : bool;               // 302 Found
+    $response->badRequest() : bool;          // 400 Bad Request
+    $response->unauthorized() : bool;        // 401 Unauthorized
+    $response->paymentRequired() : bool;     // 402 Payment Required
+    $response->forbidden() : bool;           // 403 Forbidden
+    $response->notFound() : bool;            // 404 Not Found
+    $response->requestTimeout() : bool;      // 408 Request Timeout
+    $response->conflict() : bool;            // 409 Conflict
+    $response->unprocessableEntity() : bool; // 422 Unprocessable Entity
+    $response->tooManyRequests() : bool;     // 429 Too Many Requests
+    $response->serverError() : bool;         // 500 Internal Server Error
+
+<a name="uri-templates"></a>
+#### URI Templates
+
+HTTP client cũng cho phép bạn khởi tạo các URL request bằng cách sử dụng [URI template](https://www.rfc-editor.org/rfc/rfc6570). Để định nghĩa thêm các tham số URL bằng URI template, bạn có thể sử dụng phương thức `withUrlParameters`:
+
+```php
+Http::withUrlParameters([
+    'endpoint' => 'https://laravel.com',
+    'page' => 'docs',
+    'version' => '9.x',
+    'topic' => 'validation',
+])->get('{+endpoint}/{page}/{version}/{topic}');
+```
 
 <a name="dumping-requests"></a>
 #### Dumping Requests
@@ -145,41 +180,62 @@ Bạn có thể sử dụng phương thức `accept` để chỉ định content
 Bạn có thể chỉ định thông tin xác thực là basic authentication hay digest authentication bằng cách sử dụng các phương thức `withBasicAuth` và `withDigestAuth`:
 
     // Basic authentication...
-    $response = Http::withBasicAuth('taylor@laravel.com', 'secret')->post(...);
+    $response = Http::withBasicAuth('taylor@laravel.com', 'secret')->post(/* ... */);
 
     // Digest authentication...
-    $response = Http::withDigestAuth('taylor@laravel.com', 'secret')->post(...);
+    $response = Http::withDigestAuth('taylor@laravel.com', 'secret')->post(/* ... */);
 
 <a name="bearer-tokens"></a>
 #### Bearer Tokens
 
 Nếu bạn muốn thêm nhanh header `Authorization` bearer token vào trong header `Authorization` của request, bạn có thể sử dụng phương thức `withToken`:
 
-    $response = Http::withToken('token')->post(...);
+    $response = Http::withToken('token')->post(/* ... */);
 
 <a name="timeout"></a>
 ### Timeout
 
 Phương thức `timeout` có thể được sử dụng để chỉ định số giây tối đa có thể chờ một response:
 
-    $response = Http::timeout(3)->get(...);
+    $response = Http::timeout(3)->get(/* ... */);
 
 Nếu thời gian chờ bị vượt quá, một instance của `Illuminate\Http\Client\ConnectionException` sẽ được đưa ra.
+
+Bạn có thể chỉ định thời gian timeout trong khi kết nối với server bằng phương thức `connectTimeout`:
+
+    $response = Http::connectTimeout(3)->get(/* ... */);
 
 <a name="retries"></a>
 ### Retries
 
 Nếu bạn muốn HTTP client tự động thử lại request nếu xảy ra lỗi ở phía client hoặc ở phía server, bạn có thể sử dụng phương thức `retry`. Phương thức `retry` sẽ chấp nhận hai tham số: một là số lần request tối đa có thể được thử lại và hai là số mili giây mà Laravel sẽ đợi giữa các lần thử:
 
-    $response = Http::retry(3, 100)->post(...);
+    $response = Http::retry(3, 100)->post(/* ... */);
 
 Nếu cần, bạn có thể truyền tham số thứ ba cho phương thức `retry`. Tham số thứ ba phải là một tham số callable để xác định xem có thực sự nên thử lại hay không. Ví dụ: bạn có thể chỉ muốn thử lại request nếu request ban đầu gặp phải lỗi `ConnectionException`:
 
-    $response = Http::retry(3, 100, function ($exception) {
+    $response = Http::retry(3, 100, function ($exception, $request) {
         return $exception instanceof ConnectionException;
-    })->post(...);
+    })->post(/* ... */);
 
-Nếu tất cả các request đều thất bại, thì một instance của `Illuminate\Http\Client\RequestException` sẽ được đưa ra.
+Nếu lần thử của request bị thất bại, bạn có thể muốn thực hiện một thay đổi đối với request trước khi nó được thực hiện lại. Bạn có thể đạt được điều này bằng cách sửa tham số request được cung cấp cho lệnh callable mà bạn đã cung cấp cho phương thức `retry`. Ví dụ: bạn có thể muốn thử lại request bằng một mã authorization token mới nếu lần thử đầu tiên trả về lỗi authentication:
+
+    $response = Http::withToken($this->getToken())->retry(2, 0, function ($exception, $request) {
+        if (! $exception instanceof RequestException || $exception->response->status() !== 401) {
+            return false;
+        }
+
+        $request->withToken($this->getNewToken());
+
+        return true;
+    })->post(/* ... */);
+
+Nếu tất cả các request đều thất bại, thì một instance của `Illuminate\Http\Client\RequestException` sẽ được đưa ra. Nếu bạn muốn disable hành động này, bạn có thể cung cấp tham số `throw` với giá trị `false`. Khi bị disable, response cuối cùng mà client nhận được sẽ được trả về sau khi tất cả các lần thử lại được thực hiện:
+
+    $response = Http::retry(3, 100, throw: false)->post(/* ... */);
+
+> **Warning**
+> Nếu tất cả các request đều không thành công do một sự cố kết nối, thì `Illuminate\Http\Client\ConnectionException` vẫn sẽ được đưa ra ngay cả khi tham số `throw` được set thành `false`.
 
 <a name="error-handling"></a>
 ### Xử lý lỗi
@@ -206,7 +262,7 @@ Không giống như hành vi mặc định của thư viện Guzzle, HTTP client
 
 Nếu bạn có một instance response và muốn đưa ra một instance `Illuminate\Http\Client\RequestException` nếu response status code trả về là một lỗi của client hoặc là của server, bạn có thể sử dụng phương thức `throw` hoặc `throwIf`:
 
-    $response = Http::post(...);
+    $response = Http::post(/* ... */);
 
     // Throw an exception if a client or server error occurred...
     $response->throw();
@@ -214,19 +270,67 @@ Nếu bạn có một instance response và muốn đưa ra một instance `Illu
     // Throw an exception if an error occurred and the given condition is true...
     $response->throwIf($condition);
 
+    // Throw an exception if an error occurred and the given closure resolves to true...
+    $response->throwIf(fn ($response) => true);
+
+    // Throw an exception if an error occurred and the given condition is false...
+    $response->throwUnless($condition);
+
+    // Throw an exception if an error occurred and the given closure resolves to false...
+    $response->throwUnless(fn ($response) => false);
+
+    // Throw an exception if the response has a specific status code...
+    $response->throwIfStatus(403);
+
+    // Throw an exception unless the response has a specific status code...
+    $response->throwUnlessStatus(200);
+
     return $response['user']['id'];
 
 Instance `Illuminate\Http\Client\RequestException` có một thuộc tính public là `$response` sẽ cho phép bạn kiểm tra response được trả về.
 
 Phương thức `throw` sẽ trả về một instance response nếu như không có lỗi xảy ra, cho phép bạn kết hợp các thao tác khác nhau vào phương thức `throw`:
 
-    return Http::post(...)->throw()->json();
+    return Http::post(/* ... */)->throw()->json();
 
 Nếu bạn muốn thực hiện một số logic bổ sung trước khi đưa ra exception, bạn có thể truyền một closure cho phương thức `throw`. Exception này sẽ được đưa ra tự động sau khi closure được gọi, do đó bạn không cần phải đưa lại exception này từ bên trong closure:
 
-    return Http::post(...)->throw(function ($response, $e) {
+    return Http::post(/* ... */)->throw(function ($response, $e) {
         //
     })->json();
+
+<a name="guzzle-middleware"></a>
+### Guzzle Middleware
+
+Vì HTTP client của Laravel được cung cấp bởi Guzzle, nên bạn có thể tận dụng [Guzzle Middleware](https://docs.guzzlephp.org/en/stable/handlers-and-middleware.html) để thao tác với các request gửi đi hoặc kiểm tra response gửi đến. Để xử lý request gửi đi, hãy đăng ký một Guzzle middleware thông qua phương thức `withMiddleware` kết hợp với phương thức `mapRequest` của middleware factory của Guzzle:
+
+    use GuzzleHttp\Middleware;
+    use Illuminate\Support\Facades\Http;
+    use Psr\Http\Message\RequestInterface;
+
+    $response = Http::withMiddleware(
+        Middleware::mapRequest(function (RequestInterface $request) {
+            $request = $request->withHeader('X-Example', 'Value');
+
+            return $request;
+        })
+    )->get('http://example.com');
+
+Tương tự, bạn có thể kiểm tra response HTTP phản hồi bằng cách đăng ký một middleware thông qua phương thức `withMiddleware` kết hợp với phương thức `mapResponse` của middleware factory của Guzzle:
+
+    use GuzzleHttp\Middleware;
+    use Illuminate\Support\Facades\Http;
+    use Psr\Http\Message\ResponseInterface;
+
+    $response = Http::withMiddleware(
+        Middleware::mapResponse(function (ResponseInterface $response) {
+            $header = $response->getHeader('X-Example');
+
+            // ...
+
+            return $response;
+        })
+    )->get('http://example.com');
 
 <a name="guzzle-options"></a>
 ### Guzzle Options
@@ -302,7 +406,7 @@ $response = Http::github()->get('/');
 <a name="testing"></a>
 ## Testing
 
-Nhiều service của Laravel cung cấp các chức năng giúp bạn viết các bài test một cách dễ dàng và rõ ràng, và HTTP client wrapper của Laravel cũng không phải là một ngoại lệ. Phương thức `fake` của facade `Http` cho phép bạn hướng dẫn HTTP client trả về một response stubbed / dummy khi một request được tạo.
+Nhiều service của Laravel cung cấp các chức năng giúp bạn viết các bài test một cách dễ dàng và rõ ràng, và HTTP client của Laravel cũng không phải là một ngoại lệ. Phương thức `fake` của facade `Http` cho phép bạn hướng dẫn HTTP client trả về một response stubbed / dummy khi một request được tạo.
 
 <a name="faking-responses"></a>
 ### Faking Responses
@@ -313,9 +417,7 @@ Ví dụ: để hướng dẫn HTTP client trả về một response trống và
 
     Http::fake();
 
-    $response = Http::post(...);
-
-> {note} Khi fake một request, HTTP client middleware sẽ không được chạy. Bạn nên định nghĩa các kỳ vọng của bạn đối với các fake request như thể là các middleware này đã được chạy chính xác.
+    $response = Http::post(/* ... */);
 
 <a name="faking-specific-urls"></a>
 #### Faking Specific URLs
@@ -374,9 +476,30 @@ Nếu bạn muốn fake một trình tự response nhưng không muốn chỉ đ
 
 Nếu bạn yêu cầu một logic phức tạp hơn để xác định response nào sẽ trả về cho một số endpoint nhất định, bạn có thể truyền voà một lệnh closure cho phương thức `fake`. Lệnh closure này sẽ nhận vào một instance của `Illuminate\Http\Client\Request` và sẽ trả về một instance response. Trong closure của bạn, bạn có thể thực hiện bất kỳ logic nào cần thiết để xác định loại response nào sẽ trả về:
 
-    Http::fake(function ($request) {
+    use Illuminate\Http\Client\Request;
+
+    Http::fake(function (Request $request) {
         return Http::response('Hello World', 200);
     });
+
+<a name="preventing-stray-requests"></a>
+### Chặn request đi lạc
+
+Nếu bạn muốn đảm bảo rằng tất cả các request được gửi qua  HTTP client sẽ bị fake trong suốt quá trình test, bạn có thể gọi phương thức `preventStrayRequests`. Sau khi gọi phương thức này, mọi request không có một fake response thì nó sẽ đưa ra một ngoại lệ thay vì thực hiện một request HTTP thực tế:
+
+    use Illuminate\Support\Facades\Http;
+
+    Http::preventStrayRequests();
+
+    Http::fake([
+        'github.com/*' => Http::response('ok'),
+    ]);
+
+    // An "ok" response is returned...
+    Http::get('https://github.com/laravel/framework');
+
+    // An exception is thrown...
+    Http::get('https://laravel.com');
 
 <a name="inspecting-requests"></a>
 ### Kiểm tra Requests
@@ -431,6 +554,45 @@ Hoặc, bạn có thể sử dụng phương thức `assertNothingSent` để ki
     Http::fake();
 
     Http::assertNothingSent();
+
+<a name="recording-requests-and-responses"></a>
+#### Recording Requests / Responses
+
+Bạn có thể sử dụng phương thức `recorded` để thu nhận tất cả các request và các response tương ứng của chúng. Phương thức `recorded` sẽ trả về một collection các mảng chứa các instance của `Illuminate\Http\Client\Request` và `Illuminate\Http\Client\Response`:
+
+```php
+Http::fake([
+    'https://laravel.com' => Http::response(status: 500),
+    'https://nova.laravel.com/' => Http::response(),
+]);
+
+Http::get('https://laravel.com');
+Http::get('https://nova.laravel.com/');
+
+$recorded = Http::recorded();
+
+[$request, $response] = $recorded[0];
+```
+
+Ngoài ra, phương thức `recorded` sẽ cũng chấp nhận một closure sẽ nhận vào một instance của `Illuminate\Http\Client\Request` và `Illuminate\Http\Client\Response` và có thể được sử dụng để lọc các cặp request / response dựa trên mong đợi của bạn:
+
+```php
+use Illuminate\Http\Client\Request;
+use Illuminate\Http\Client\Response;
+
+Http::fake([
+    'https://laravel.com' => Http::response(status: 500),
+    'https://nova.laravel.com/' => Http::response(),
+]);
+
+Http::get('https://laravel.com');
+Http::get('https://nova.laravel.com/');
+
+$recorded = Http::recorded(function (Request $request, Response $response) {
+    return $request->url() !== 'https://laravel.com' &&
+           $response->successful();
+});
+```
 
 <a name="events"></a>
 ## Events

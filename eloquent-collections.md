@@ -40,13 +40,15 @@ Tất cả các Eloquent collection sẽ được extend từ một đối tư�
 Ngoài ra, class `Illuminate\Database\Eloquent\Collection` cũng sẽ cung cấp một tập hợp các phương thức để hỗ trợ việc quản lý các model collection của bạn. Hầu hết các phương thức này đều trả về các instance `Illuminate\Database\Eloquent\Collection`; tuy nhiên, có một số phương thức, giống như `modelKeys`, sẽ trả về một instance `Illuminate\Support\Collection` cơ sở.
 
 <style>
-    #collection-method-list > p {
-        column-count: 1; -moz-column-count: 1; -webkit-column-count: 1;
-        column-gap: 2em; -moz-column-gap: 2em; -webkit-column-gap: 2em;
+    .collection-method-list > p {
+        columns: 14.4em 1; -moz-columns: 14.4em 1; -webkit-columns: 14.4em 1;
     }
 
-    #collection-method-list a {
+    .collection-method-list a {
         display: block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
     }
 
     .collection-method code {
@@ -58,8 +60,9 @@ Ngoài ra, class `Illuminate\Database\Eloquent\Collection` cũng sẽ cung cấp
     }
 </style>
 
-<div id="collection-method-list" markdown="1">
+<div class="collection-method-list" markdown="1">
 
+[append](#method-append)
 [contains](#method-contains)
 [diff](#method-diff)
 [except](#method-except)
@@ -72,13 +75,24 @@ Ngoài ra, class `Illuminate\Database\Eloquent\Collection` cũng sẽ cung cấp
 [makeVisible](#method-makeVisible)
 [makeHidden](#method-makeHidden)
 [only](#method-only)
+[setVisible](#method-setVisible)
+[setHidden](#method-setHidden)
 [toQuery](#method-toquery)
 [unique](#method-unique)
 
 </div>
 
+<a name="method-append"></a>
+#### `append($attributes)` {.collection-method .first-collection-method}
+
+Phương thức `append` có thể được dùng để chỉ ra rằng một thuộc tính sẽ phải [được thêm](/docs/{{version}}/eloquent-serialization#appending-values-to-json) vào trong mọi model trong collection. Phương thức này sẽ chấp nhận một mảng các thuộc tính hoặc một thuộc tính duy nhất:
+
+    $users->append('team');
+
+    $users->append(['team', 'is_admin']);
+
 <a name="method-contains"></a>
-#### `contains($key, $operator = null, $value = null)` {.collection-method .first-collection-method}
+#### `contains($key, $operator = null, $value = null)` {.collection-method}
 
 Phương thức `contains` có thể được sử dụng để xác định xem một instance model có trong một collection hay không. Phương thức này chấp nhận một khóa chính hoặc một instance model:
 
@@ -138,6 +152,8 @@ Phương thức `load` sẽ eager loading tất cả các quan hệ đã cho, ch
 
     $users->load('comments.author');
 
+    $users->load(['comments', 'posts' => fn ($query) => $query->where('active', 1)]);
+
 <a name="method-loadMissing"></a>
 #### `loadMissing($relations)` {.collection-method}
 
@@ -146,6 +162,8 @@ Phương thức `loadMissing`sẽ eager loading tất cả các quan hệ đã c
     $users->loadMissing(['comments', 'posts']);
 
     $users->loadMissing('comments.author');
+
+    $users->loadMissing(['comments', 'posts' => fn ($query) => $query->where('active', 1)]);
 
 <a name="method-modelKeys"></a>
 #### `modelKeys()` {.collection-method}
@@ -176,6 +194,20 @@ Phương thức `makeHidden` sẽ [làm cho các thuộc tính](/docs/{{version}
 Phương thức `only` sẽ trả về tất cả các model có khóa chính đã cho:
 
     $users = $users->only([1, 2, 3]);
+
+<a name="method-setVisible"></a>
+#### `setVisible($attributes)` {.collection-method}
+
+Phương thức `setVisible` sẽ [tạm thời ghi đè](/docs/{{version}}/eloquent-serialization#temporarily-modifying-attribute-visibility) tất cả các thuộc tính visible có trong các model trong collection:
+
+    $users = $users->setVisible(['id', 'name']);
+
+<a name="method-setHidden"></a>
+#### `setHidden($attributes)` {.collection-method}
+
+Phương thức `setHidden` sẽ [tạm thời ghi đè](/docs/{{version}}/eloquent-serialization#temporarily-modifying-attribute-visibility) tất cả các thuộc tính ẩn có trong các model trong collection:
+
+    $users = $users->setHidden(['email', 'password', 'remember_token']);
 
 <a name="method-toquery"></a>
 #### `toQuery()` {.collection-method}

@@ -15,6 +15,7 @@
     - [Các loại Column có sẵn](#available-column-types)
     - [Column Modifiers](#column-modifiers)
     - [Sửa Column](#modifying-columns)
+    - [Sửa tên Column](#renaming-columns)
     - [Xoá Column](#dropping-columns)
 - [Index](#indexes)
     - [Tạo Index](#creating-indexes)
@@ -35,29 +36,42 @@ Laravel [facade](/docs/{{version}}/facades) `Schema` cung cấp một cách đ�
 
 Bạn có thể sử dụng [lệnh Artisan](/docs/{{version}}/artisan) `make:migration` để tạo ra một file migration cơ sở dữ liệu mới. Migration mới này sẽ được lưu trong thư mục `database/migrations` của bạn. Mỗi tên file migration sẽ chứa một timestamp cho phép Laravel xác định thứ tự chạy migration:
 
-    php artisan make:migration create_flights_table
+```shell
+php artisan make:migration create_flights_table
+```
 
 Laravel sẽ sử dụng tên của migration để cố gắng đoán ra tên của bảng và liệu migration đó có tạo ra bảng mới hay không. Nếu Laravel xác định được tên bảng từ tên migration, thì Laravel sẽ khai báo trước tên bảng vào file migration đã tạo. Nếu như không xác định được, bạn có thể phải chỉ định tên bảng vào trong file migration.
 
 Nếu bạn muốn chỉ định một path riêng cho migration được tạo ra, bạn có thể sử dụng tùy chọn `--path` khi chạy lệnh `make:migration`. Path được chỉ định phải bắt đầu từ path base của ứng dụng của bạn tạo ra.
 
-> {tip} Các stub của migration có thể được tùy chỉnh bằng cách sử dụng [export stub](/docs/{{version}}/artisan#stub-customization)
+> **Note**
+> Các stub của migration có thể được tùy chỉnh bằng cách sử dụng [export stub](/docs/{{version}}/artisan#stub-customization)
 
 <a name="squashing-migrations"></a>
 ### Dồn Migration
 
 Khi bạn xây dựng ứng dụng của bạn, bạn có thể bị tích tụ ngày càng nhiều file migration theo thời gian. Điều này có thể khiến thư mục `database/migrations` của bạn trở nên quá tải với hàng trăm file migration. Nếu muốn, bạn có thể "dồn" migration của bạn vào một file SQL. Để bắt đầu, hãy chạy lệnh `schema:dump`:
 
-    php artisan schema:dump
+```shell
+php artisan schema:dump
 
-    // Dump the current database schema and prune all existing migrations...
-    php artisan schema:dump --prune
+# Dump the current database schema and prune all existing migrations...
+php artisan schema:dump --prune
+```
 
-Khi bạn chạy lệnh này, Laravel sẽ ghi ra một file "schema" vào thư mục `database/schema` trong ứng dụng của bạn. Bây giờ, khi bạn chạy migrate cơ sở dữ liệu của bạn mà chưa chạy file migration nào khác, thì Laravel sẽ chạy các câu lệnh SQL trong file schema trước tiên. Sau khi chạy xong các câu lệnh của file schema, Laravel sẽ chạy tiếp các file migrate còn lại mà không có trong schema dump.
+Khi bạn chạy lệnh này, Laravel sẽ ghi ra một file "schema" vào thư mục `database/schema` trong ứng dụng của bạn. Tên file schema sẽ tương ứng với kết nối cơ sở dữ liệu. Bây giờ, khi bạn chạy migrate cơ sở dữ liệu của bạn mà chưa chạy file migration nào khác, thì Laravel sẽ chạy đầu tiên là các câu lệnh SQL của file schema kết nối cơ sở dữ liệu mà bạn đang sử dụng. Sau khi chạy xong các câu lệnh của file schema, Laravel sẽ chạy tiếp các file migrate còn lại mà không có trong schema dump.
+
+Nếu các bài kiểm tra của ứng dụng của bạn sử dụng kết nối cơ sở dữ liệu nào khác, khác với kết nối mà bạn thường sử dụng trong quá trình phát triển ở local, bạn nên đảm bảo là bạn đã dump một file schema bằng kết nối cơ sở dữ liệu đó để các bài kiểm tra của bạn có thể build cơ sở dữ liệu của bạn. Bạn có thể muốn thực hiện việc này sau khi dump kết nối cơ sở dữ liệu mà bạn thường sử dụng trong quá trình phát triển ở local:
+
+```shell
+php artisan schema:dump
+php artisan schema:dump --database=testing --prune
+```
 
 Bạn nên commit file schema của cơ sở dữ liệu của bạn vào trong source control để các nhà phát triển mới khác ở trong team của bạn có thể nhanh chóng tạo ra cơ sở dữ liệu cho ứng dụng của bạn.
 
-> {note} Tính năng dồn migration này, hiện tại sẽ chỉ có khả dụng cho cơ sở dữ liệu MySQL, PostgreSQL và SQLite, sử dụng command-line của các cơ sở dữ liệu này. File schema dump này có thể không restore lại được cho cơ sở dữ liệu in-memory SQLite.
+> **Warning**
+> Tính năng dồn migration này, hiện tại sẽ chỉ có khả dụng cho cơ sở dữ liệu MySQL, PostgreSQL và SQLite, sử dụng command-line của các cơ sở dữ liệu này. File schema dump này có thể không restore lại được cho cơ sở dữ liệu in-memory SQLite.
 
 <a name="migration-structure"></a>
 ## Cấu trúc Migration
@@ -72,7 +86,7 @@ Trong cả hai phương thức này, bạn đều có thể sử dụng schema b
     use Illuminate\Database\Schema\Blueprint;
     use Illuminate\Support\Facades\Schema;
 
-    class CreateFlightsTable extends Migration
+    return new class extends Migration
     {
         /**
          * Run the migrations.
@@ -98,20 +112,6 @@ Trong cả hai phương thức này, bạn đều có thể sử dụng schema b
         {
             Schema::drop('flights');
         }
-    }
-
-<a name="anonymous-migrations"></a>
-#### Anonymous Migrations
-
-Như bạn có thể thấy trong ví dụ trên, Laravel sẽ tự động gán tên class cho tất cả các migration mà bạn tạo ra bằng lệnh `make:migration`. Tuy nhiên, nếu muốn, bạn cũng có thể trả về một class ẩn danh từ file migration của bạn. Điều này sẽ hữu ích nếu ứng dụng của bạn có quá nhiều file migration và hai trong số đó có tên class trùng nhau:
-
-    <?php
-
-    use Illuminate\Database\Migrations\Migration;
-
-    return new class extends Migration
-    {
-        //
     };
 
 <a name="setting-the-migration-connection"></a>
@@ -141,58 +141,96 @@ Nếu migration của bạn tương tác với một kết nối cơ sở dữ l
 
 Để chạy tất cả các migration của bạn, hãy chạy lệnh Artisan `migrate`:
 
-    php artisan migrate
+```shell
+php artisan migrate
+```
 
 Nếu bạn muốn xem những file migration nào đã được chạy từ trước cho đến nay, bạn có thể sử dụng lệnh Artisan `migrate:status`:
 
-    php artisan migrate:status
+```shell
+php artisan migrate:status
+```
+
+Nếu bạn muốn xem các câu lệnh SQL sẽ được chạy bởi lệnh migration trước khi thực sự chạy chúng, bạn có thể cung cấp flag `--pretend` cho lệnh `migrate`:
+
+```shell
+php artisan migrate --pretend
+```
+
+#### Isolating Migration Execution
+
+Nếu bạn đang deploy ứng dụng của bạn trên nhiều máy chủ và chạy migration như một phần của quy trình deploy, bạn có thể không muốn hai máy chủ cùng chạy migration cơ sở dữ liệu cùng một lúc. Để tránh điều này, bạn có thể sử dụng tùy chọn `isolated` khi gọi lệnh `migrate`.
+
+Khi tùy chọn `isolated` được cung cấp, Laravel sẽ lấy khóa atomic bằng driver bộ nhớ cache của ứng dụng trước khi thử chạy lệnh migration của bạn. Mọi nỗ lực khác để chạy lệnh `migrate` trong khi khóa đó đang được giữ sẽ không thành công; tuy nhiên, lệnh vẫn sẽ hiển thị với mã trạng thái thành công:
+
+```shell
+php artisan migrate --isolated
+```
+
+> **Warning**
+> Để sử dụng tính năng này, ứng dụng của bạn phải sử dụng driver cache `memcached`, `redis`, `dynamodb`, `database`, `file` hoặc `array` làm driver cache mặc định cho ứng dụng của bạn. Ngoài ra, tất cả các server phải giao tiếp cùng với một server cache trung tâm.
 
 <a name="forcing-migrations-to-run-in-production"></a>
 #### Forcing Migrations To Run In Production
 
 Một số hành động migration có thể là nguy hiểm, có nghĩa là chúng có thể khiến bạn mất dữ liệu. Để bảo vệ bạn khỏi việc chạy các lệnh này đối với cơ sở dữ liệu production, bạn sẽ được nhắc xác nhận trước khi chạy các lệnh được này. Để bắt các lệnh này chạy mà không nhắc xác nhận, hãy sử dụng cờ `--force`:
 
-    php artisan migrate --force
+```shell
+php artisan migrate --force
+```
 
 <a name="rolling-back-migrations"></a>
 ### Rollback Migration
 
 Để rollback về migration mới nhất, bạn có thể sử dụng lệnh Artisan `rollback`. Lệnh này sẽ rollback lại "batch" migration cuối cùng mà bạn dùng, nó có thể có chứa nhiều file migration:
 
-    php artisan migrate:rollback
+```shell
+php artisan migrate:rollback
+```
 
 Bạn có thể muốn rollback lại một số migration cần thiết bằng cách cung cấp thêm tùy chọn `step` cho lệnh `rollback`. Ví dụ: lệnh sau sẽ rollback lại năm lần trước khi đến batch cuối cùng:
 
-    php artisan migrate:rollback --step=5
+```shell
+php artisan migrate:rollback --step=5
+```
 
 Lệnh `migrate:reset` sẽ rollback lại tất cả các migration của application của bạn:
 
-    php artisan migrate:reset
+```shell
+php artisan migrate:reset
+```
 
 <a name="roll-back-migrate-using-a-single-command"></a>
 #### Roll Back & Migrate Using A Single Command
 
 Lệnh `migrate:refresh` sẽ rollback lại tất cả các migration của bạn và sau đó thực hiện lại lệnh `migrate`. Lệnh này sẽ tạo lại toàn bộ cơ sở dữ liệu của bạn:
 
-    php artisan migrate:refresh
+```shell
+php artisan migrate:refresh
 
-    // Refresh the database and run all database seeds...
-    php artisan migrate:refresh --seed
+# Refresh the database and run all database seeds...
+php artisan migrate:refresh --seed
+```
 
 Bạn có thể rollback và migrate lại một số migration cần thiết bằng cách cung cấp tùy chọn `step` cho lệnh `refresh`. Ví dụ: lệnh sau sẽ rollback và migrate lại năm lần trước so với migration gần nhất:
 
-    php artisan migrate:refresh --step=5
+```shell
+php artisan migrate:refresh --step=5
+```
 
 <a name="drop-all-tables-migrate"></a>
 #### Drop All Tables & Migrate
 
 Lệnh `migrate:fresh` sẽ xóa tất cả các bảng ra khỏi cơ sở dữ liệu và sau đó thực thi lại lệnh `migrate`:
 
-    php artisan migrate:fresh
+```shell
+php artisan migrate:fresh
 
-    php artisan migrate:fresh --seed
+php artisan migrate:fresh --seed
+```
 
-> {note} Lệnh `migrate:fresh` sẽ xoá tất cả các bảng cơ sở dữ liệu bất kể prefix của chúng là gì. Lệnh này nên được sử dụng thận trọng khi đang phát triển trên những cơ sở dữ liệu mà nó được chia sẻ với các ứng dụng khác.
+> **Warning**
+> Lệnh `migrate:fresh` sẽ xoá tất cả các bảng cơ sở dữ liệu bất kể prefix của chúng là gì. Lệnh này nên được sử dụng thận trọng khi đang phát triển trên những cơ sở dữ liệu mà nó được chia sẻ với các ứng dụng khác.
 
 <a name="tables"></a>
 ## Table
@@ -261,6 +299,14 @@ Phương thức `temporary` có thể được sử dụng để chỉ ra rằng
         // ...
     });
 
+Nếu bạn muốn thêm một "comment" vào bảng cơ sở dữ liệu, bạn có thể gọi phương thức `comment` trên instance table. Comment trên table hiện chỉ được hỗ trợ trong MySQL và Postgres:
+
+    Schema::create('calculations', function (Blueprint $table) {
+        $table->comment('Business calculations');
+
+        // ...
+    });
+
 <a name="updating-tables"></a>
 ### Cập nhật Tables
 
@@ -314,13 +360,15 @@ Phương thức `table` trên facade `Schema` có thể được sử dụng đ�
 Schema builder blueprint cung cấp nhiều phương thức tương ứng với các loại cột khác nhau mà bạn có thể thêm vào bảng cơ sở dữ liệu của bạn. Các phương thức có sẵn sẽ được liệt kê trong bảng dưới đây:
 
 <style>
-    #collection-method-list > p {
-        column-count: 3; -moz-column-count: 3; -webkit-column-count: 3;
-        column-gap: 2em; -moz-column-gap: 2em; -webkit-column-gap: 2em;
+    .collection-method-list > p {
+        columns: 10.8em 3; -moz-columns: 10.8em 3; -webkit-columns: 10.8em 3;
     }
 
-    #collection-method-list a {
+    .collection-method-list a {
         display: block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
     }
 
     .collection-method code {
@@ -332,7 +380,7 @@ Schema builder blueprint cung cấp nhiều phương thức tương ứng với 
     }
 </style>
 
-<div id="collection-method-list" markdown="1">
+<div class="collection-method-list" markdown="1">
 
 [bigIncrements](#column-method-bigIncrements)
 [bigInteger](#column-method-bigInteger)
@@ -348,6 +396,7 @@ Schema builder blueprint cung cấp nhiều phương thức tương ứng với 
 [float](#column-method-float)
 [foreignId](#column-method-foreignId)
 [foreignIdFor](#column-method-foreignIdFor)
+[foreignUlid](#column-method-foreignUlid)
 [foreignUuid](#column-method-foreignUuid)
 [geometryCollection](#column-method-geometryCollection)
 [geometry](#column-method-geometry)
@@ -369,6 +418,7 @@ Schema builder blueprint cung cấp nhiều phương thức tương ứng với 
 [multiPolygon](#column-method-multiPolygon)
 [nullableMorphs](#column-method-nullableMorphs)
 [nullableTimestamps](#column-method-nullableTimestamps)
+[nullableUlidMorphs](#column-method-nullableUlidMorphs)
 [nullableUuidMorphs](#column-method-nullableUuidMorphs)
 [point](#column-method-point)
 [polygon](#column-method-polygon)
@@ -395,7 +445,9 @@ Schema builder blueprint cung cấp nhiều phương thức tương ứng với 
 [unsignedMediumInteger](#column-method-unsignedMediumInteger)
 [unsignedSmallInteger](#column-method-unsignedSmallInteger)
 [unsignedTinyInteger](#column-method-unsignedTinyInteger)
+[ulidMorphs](#column-method-ulidMorphs)
 [uuidMorphs](#column-method-uuidMorphs)
+[ulid](#column-method-ulid)
 [uuid](#column-method-uuid)
 [year](#column-method-year)
 
@@ -498,6 +550,13 @@ Phương thức `foreignId` sẽ tạo một cột tương ứng với `UNSIGNED
 Phương thức `foreignIdFor` sẽ thêm một cột tương ứng với `{column}_id UNSIGNED BIGINT` cho một model class:
 
     $table->foreignIdFor(User::class);
+
+<a name="column-method-foreignUlid"></a>
+#### `foreignUlid()` {.collection-method}
+
+Phương thức `foreignUlid` sẽ tạo ra một cột tương ứng với `ULID`:
+
+    $table->foreignUlid('user_id');
 
 <a name="column-method-foreignUuid"></a>
 #### `foreignUuid()` {.collection-method}
@@ -647,6 +706,13 @@ Phương thức `nullableTimestamps` là lối tắt của phương thức [time
 Phương thức này tương tự như phương thức [morphs](#column-method-morphs); tuy nhiên, các cột được tạo sẽ có giá trị "nullable":
 
     $table->nullableMorphs('taggable');
+
+<a name="column-method-nullableUlidMorphs"></a>
+#### `nullableUlidMorphs()` {.collection-method}
+
+Phương thức này tương tự như phương thức [ulidMorphs](#column-method-ulidMorphs); tuy nhiên, các cột được tạo sẽ có giá trị "nullable":
+
+    $table->nullableUlidMorphs('taggable');
 
 <a name="column-method-nullableUuidMorphs"></a>
 #### `nullableUuidMorphs()` {.collection-method}
@@ -830,6 +896,15 @@ Phương thức `unsignedTinyInteger` sẽ tạo một cột tương ứng với
 
     $table->unsignedTinyInteger('votes');
 
+<a name="column-method-ulidMorphs"></a>
+#### `ulidMorphs()` {.collection-method}
+
+Phương thức `ulidMorphs` là một phương thức rất tiện lợi, nó sẽ thêm một cột tương ứng với `{column}_id` `CHAR(26)` và một cột khác là `{column}_type` `VARCHAR`.
+
+Mục đích phương thức này là nhằm sử dụng khi định nghĩa các cột cần thiết cho [quan hệ đa hình](/docs/{{version}}/eloquent-relationships). Trong ví dụ dưới, các cột `taggable_id` và `taggable_type` sẽ được tạo:
+
+    $table->ulidMorphs('taggable');
+
 <a name="column-method-uuidMorphs"></a>
 #### `uuidMorphs()` {.collection-method}
 
@@ -838,6 +913,13 @@ Phương thức `uuidMorphs` là một phương thức rất tiện lợi, nó s
 Mục đích phương thức này là nhằm sử dụng khi định nghĩa các cột cần thiết cho [quan hệ đa hình](/docs/{{version}}/eloquent-relationships). Trong ví dụ dưới, các cột `taggable_id` và `taggable_type` sẽ được tạo:
 
     $table->uuidMorphs('taggable');
+
+<a name="column-method-ulid"></a>
+#### `ulid()` {.collection-method}
+
+Phương thức `ulid` sẽ tạo một cột tương ứng với `ULID`:
+
+    $table->ulid('id');
 
 <a name="column-method-uuid"></a>
 #### `uuid()` {.collection-method}
@@ -900,7 +982,7 @@ Modifier `default` sẽ chấp nhận một giá trị hoặc một instance `Il
     use Illuminate\Database\Query\Expression;
     use Illuminate\Database\Migrations\Migration;
 
-    class CreateFlightsTable extends Migration
+    return new class extends Migration
     {
         /**
          * Run the migrations.
@@ -915,9 +997,10 @@ Modifier `default` sẽ chấp nhận một giá trị hoặc một instance `Il
                 $table->timestamps();
             });
         }
-    }
+    };
 
-> {note} Hỗ trợ các default expression cũng tùy thuộc vào driver cơ sở dữ liệu, phiên bản cơ sở dữ liệu và loại field của bạn. Vui lòng tham khảo tài liệu database của bạn.
+> **Warning**
+> Hỗ trợ các default expression cũng tùy thuộc vào driver cơ sở dữ liệu, phiên bản cơ sở dữ liệu và loại field của bạn. Vui lòng tham khảo thêm tài liệu database của bạn. Ngoài ra, không thể kết hợp các raw `default` expression (sử dụng `DB::raw`) với các thay đổi cột thông qua phương thức `change`.
 
 <a name="column-order"></a>
 #### Column Order
@@ -951,7 +1034,9 @@ use Illuminate\Database\DBAL\TimestampType;
     ],
 ],
 ```
-> {note} Nếu ứng dụng của bạn đang sử dụng Microsoft SQL Server, hãy đảm bảo rằng bạn đã cài đặt `doctrine/dbal:^3.0`.
+
+> **Warning**
+> Nếu ứng dụng của bạn đang sử dụng Microsoft SQL Server, hãy đảm bảo rằng bạn đã cài đặt `doctrine/dbal:^3.0`.
 
 <a name="updating-column-attributes"></a>
 #### Updating Column Attributes
@@ -968,23 +1053,35 @@ Chúng ta cũng có thể sửa một cột thành nullable:
         $table->string('name', 50)->nullable()->change();
     });
 
-> {note} Các loại cột sau mới có thể thay đổi: `bigInteger`, `binary`, `boolean`, `date`, `dateTime`, `dateTimeTz`, `decimal`, `integer`, `json`, `longText`, `mediumText`, `smallInteger`, `string`, `text`, `time`, `unsignedBigInteger`, `unsignedInteger`, `unsignedSmallInteger`, và `uuid`.  Để sửa cột `timestamp`, bạn phải [đăng ký Doctrine type](#prerequisites).
+> **Warning**
+> Các loại cột sau mới có thể thay đổi: `bigInteger`, `binary`, `boolean`, `char`, `date`, `dateTime`, `dateTimeTz`, `decimal`, `double`, `integer`, `json`, `longText`, `mediumText`, `smallInteger`, `string`, `text`, `time`, `tinyText`, `unsignedBigInteger`, `unsignedInteger`, `unsignedSmallInteger`, và `uuid`.  Để sửa cột `timestamp`, bạn phải [đăng ký Doctrine type](#prerequisites).
 
 <a name="renaming-columns"></a>
-#### Renaming Columns
+### Sửa tên Column
 
-Để đổi tên một cột, bạn có thể sử dụng phương thức `renameColumn` được cung cấp bởi schema builder blueprint. Trước khi đổi tên một cột, đảm bảo rằng bạn đã cài đặt thư viện `doctrine/dbal` thông qua Composer package manager:
+Để đổi tên một cột, bạn có thể sử dụng phương thức `renameColumn` được cung cấp bởi schema builder:
 
     Schema::table('users', function (Blueprint $table) {
         $table->renameColumn('from', 'to');
     });
 
-> {note} Việc đổi tên của cột loại `enum` hiện tại không được hỗ trợ.
+<a name="renaming-columns-on-legacy-databases"></a>
+#### Sửa tên Column On Legacy Databases
+
+Nếu bạn đang chạy cơ sở dữ liệu mà cũ hơn một trong những bản phát hành sau, bạn sẽ phải đảm bảo là bạn đã cài đặt thư viện `doctrine/dbal` thông qua trình quản lý package Composer trước khi đổi tên cột:
+
+<div class="content-list" markdown="1">
+
+- MySQL < `8.0.3`
+- MariaDB < `10.5.2`
+- SQLite < `3.25.0`
+
+</div>
 
 <a name="dropping-columns"></a>
 ### Xoá Column
 
-Để xóa một cột, bạn có thể sử dụng phương thức `dropColumn` trong schema builder blueprint. Nếu ứng dụng của bạn đang sử dụng cơ sở dữ liệu SQLite, bạn phải cài đặt thư viện `doctrine/dbal` thông qua Composer package manager trước khi có thể sử dụng phương thức `dropColumn`:
+Để xóa một cột, bạn có thể sử dụng phương thức `dropColumn` trong schema builder:
 
     Schema::table('users', function (Blueprint $table) {
         $table->dropColumn('votes');
@@ -996,7 +1093,11 @@ Bạn có thể xóa nhiều cột từ một bảng bằng cách truyền một
         $table->dropColumn(['votes', 'avatar', 'location']);
     });
 
-> {note} Nếu bạn đang sử dụng cơ sở dữ liệu SQLite thì việc xóa hoặc sửa nhiều cột trong một file migration sẽ không được hỗ trợ.
+
+<a name="dropping-columns-on-legacy-databases"></a>
+#### Dropping Columns On Legacy Databases
+
+Nếu bạn đang chạy phiên bản SQLite cũ hơn phiên bản `3.35.0`, thì bạn phải cài đặt package `doctrine/dbal` thông qua trình quản lý package Composer trước khi có thể sử dụng phương thức `dropColumn`. Việc xóa hoặc sửa nhiều cột trong một lần migration khi sử dụng package này sẽ không được hỗ trợ.
 
 <a name="available-command-aliases"></a>
 #### Available Command Aliases
@@ -1050,8 +1151,8 @@ Command  |  Description
 `$table->primary(['id', 'parent_id']);`  |  Thêm key hỗn hợp.
 `$table->unique('email');`  |  Thêm một unique index.
 `$table->index('state');`  |  Thêm một index.
-`$table->fulltext('body');`  |  Thêm một fulltext index (MySQL/PostgreSQL).
-`$table->fulltext('body')->language('english');`  |  Thêm một fulltext index của một ngôn ngữ cụ thể (PostgreSQL).
+`$table->fullText('body');`  |  Thêm một full text index (MySQL/PostgreSQL).
+`$table->fullText('body')->language('english');`  |  Thêm một full text index của một ngôn ngữ cụ thể (PostgreSQL).
 `$table->spatialIndex('location');`  |  Thêm một spatial index. (trừ SQLite).
 
 <a name="index-lengths-mysql-mariadb"></a>
@@ -1080,6 +1181,9 @@ Ngoài ra, bạn có thể kích hoạt tùy chọn `innodb_large_prefix` cho c�
 
     $table->renameIndex('from', 'to')
 
+> **Warning**
+> Nếu ứng dụng của bạn sử dụng cơ sở dữ liệu SQLite, bạn phải cài đặt package `doctrine/dbal` thông qua trình quản lý package Composer trước khi có thể sử dụng phương thức `renameIndex`.
+
 <a name="dropping-indexes"></a>
 ### Xoá Index
 
@@ -1090,6 +1194,7 @@ Command  |  Description
 `$table->dropPrimary('users_id_primary');`  |  Xoá một primary key từ bảng "users".
 `$table->dropUnique('users_email_unique');`  |  Xoá một unique index từ bảng "users".
 `$table->dropIndex('geo_state_index');`  |  Xoá một index từ bảng "geo" table.
+`$table->dropFullText('posts_body_fulltext');`  |  Drop a full text index from the "posts" table.
 `$table->dropSpatialIndex('geo_location_spatialindex');`  |  Xoá một spatial index từ bảng "geo" (trừ SQLite).
 
 Nếu bạn truyền một mảng gồm các cột vào trong một phương thức xoá index, thì quy ước tên index sẽ được tạo dựa trên tên bảng, tên cột, và loại index:
@@ -1167,7 +1272,12 @@ Bạn có thể bật hoặc tắt các ràng buộc khóa ngoại trong migrati
 
     Schema::disableForeignKeyConstraints();
 
-> {note} Mặc định, SQLite sẽ vô hiệu hóa các ràng buộc khóa ngoại. Khi sử dụng SQLite, bạn hãy chắc chắn rằng là [đã bật hỗ trợ khóa ngoại](/docs/{{version}}/database#configuration) trong cấu hình cơ sở dữ liệu của bạn trước khi tạo chúng trong quá trình migration của bạn. Ngoài ra, SQLite chỉ hỗ trợ khóa ngoại khi tạo bảng và [không hỗ trợ khi bảng bị thay đổi](https://www.sqlite.org/omitted.html).
+    Schema::withoutForeignKeyConstraints(function () {
+        // Constraints disabled within this closure...
+    });
+
+> **Warning**
+> Mặc định, SQLite sẽ vô hiệu hóa các ràng buộc khóa ngoại. Khi sử dụng SQLite, bạn hãy chắc chắn rằng là [đã bật hỗ trợ khóa ngoại](/docs/{{version}}/database#configuration) trong cấu hình cơ sở dữ liệu của bạn trước khi tạo chúng trong quá trình migration của bạn. Ngoài ra, SQLite chỉ hỗ trợ khóa ngoại khi tạo bảng và [không hỗ trợ khi bảng bị thay đổi](https://www.sqlite.org/omitted.html).
 
 <a name="events"></a>
 ## Events
@@ -1180,3 +1290,5 @@ Bạn có thể bật hoặc tắt các ràng buộc khóa ngoại trong migrati
 | `Illuminate\Database\Events\MigrationsEnded` | Một tập hợp các file migration đã thực hiện xong. |
 | `Illuminate\Database\Events\MigrationStarted` | Một file migration sắp được thực hiện. |
 | `Illuminate\Database\Events\MigrationEnded` | Một file migration đã thực hiện xong. |
+| `Illuminate\Database\Events\SchemaDumped` | A database schema dump has completed. |
+| `Illuminate\Database\Events\SchemaLoaded` | An existing database schema dump has loaded. |

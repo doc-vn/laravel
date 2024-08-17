@@ -24,7 +24,9 @@ Tất nhiên, bạn cũng có thể chuyển đổi các model hoặc collection
 
 Để tạo một class resource, bạn có thể sử dụng lệnh Artisan `make:resource`. Mặc định, resource sẽ được lưu vào trong thư mục `app/Http/Resources` của application của bạn. Các resource sẽ được extend từ class `Illuminate\Http\Resources\Json\JsonResource`:
 
-    php artisan make:resource UserResource
+```shell
+php artisan make:resource UserResource
+```
 
 <a name="generating-resource-collections"></a>
 #### Resource Collections
@@ -33,14 +35,17 @@ Ngoài việc tạo các resource dùng để chuyển đổi cho các model ri�
 
 Để tạo một resource collection, bạn hãy sử dụng cờ `--collection` khi tạo resource. Hoặc có từ `Collection` trong tên của resource cũng cho Laravel biết rằng nó cần tạo ra một resource collection. Resource collection được extend từ class `Illuminate\Http\Resources\Json\ResourceCollection`:
 
-    php artisan make:resource User --collection
+```shell
+php artisan make:resource User --collection
 
-    php artisan make:resource UserCollection
+php artisan make:resource UserCollection
+```
 
 <a name="concept-overview"></a>
 ## Khái niệm tổng quan
 
-> {tip} Đây là tổng quan về resource và resource collection. Bạn được khuyến khích đọc các phần khác của tài liệu này để hiểu sâu hơn về khả năng tùy biến và sức mạnh của các resource có thể cung cấp cho bạn.
+> **Note**
+> Đây là tổng quan về resource và resource collection. Bạn được khuyến khích đọc các phần khác của tài liệu này để hiểu sâu hơn về khả năng tùy biến và sức mạnh của các resource có thể cung cấp cho bạn.
 
 Trước khi đi sâu vào tất cả các tùy chọn có sẵn cho bạn khi bạn viết resource, trước tiên chúng ta hãy xem về cách sử dụng resource trong Laravel. Một class resource sẽ đại diện cho một model cần chuyển đổi thành dạng JSON. Ví dụ, đây là một resource class `UserResource` đơn giản:
 
@@ -95,7 +100,9 @@ Nếu bạn đang trả về một resource collection hoặc một response đa
 
 Chú ý rằng điều này sẽ không cho phép bạn thêm bất kỳ dữ liệu meta tuỳ chỉnh nào để có thể được trả về cùng với collection của bạn. Nếu bạn muốn tùy chỉnh response của resource collection, bạn có thể tạo một resource chuyên dụng để tạo collection:
 
-    php artisan make:resource UserCollection
+```shell
+php artisan make:resource UserCollection
+```
 
 Khi class resource collection đã được tạo, bạn có thể dễ dàng định nghĩa bất kỳ dữ liệu meta nào cần có trong response:
 
@@ -189,7 +196,8 @@ Ví dụ: `UserCollection` sẽ thử ánh xạ các instance user vào một re
 <a name="writing-resources"></a>
 ## Viết Resources
 
-> {tip} Nếu bạn chưa đọc phần [khái niệm tổng quan](#concept-overview), bạn được khuyến khích đọc nó trước khi tiếp tục với phần này.
+> **Note**
+> Nếu bạn chưa đọc phần [khái niệm tổng quan](#concept-overview), bạn được khuyến khích đọc nó trước khi tiếp tục với phần này.
 
 Về bản chất, resource rất đơn giản. Nó chỉ cần chuyển đổi một model thành một mảng. Vì vậy, mỗi resource chứa một phương thức `toArray` để giúp chuyển các thuộc tính của model của bạn thành một mảng thân thiện với API để có thể được trả về từ các route hoặc controller của ứng dụng của bạn:
 
@@ -253,7 +261,8 @@ Nếu bạn muốn thêm các quan hệ vào trong một response của bạn, b
         ];
     }
 
-> {tip} Nếu bạn chỉ thêm các quan hệ chỉ khi chúng đã được load, hãy xem tài liệu về [điều kiện cho quan hệ](#conditional-relationships).
+> **Note**
+> Nếu bạn chỉ thêm các quan hệ chỉ khi chúng đã được load, hãy xem tài liệu về [điều kiện cho quan hệ](#conditional-relationships).
 
 <a name="writing-resource-collections"></a>
 #### Resource Collections
@@ -308,20 +317,22 @@ Giống như resource, resource collection có thể được trả về trực 
 
 Mặc định, resource ngoài cùng của bạn sẽ được bao bọc bởi một key `data` khi chúng được chuyển đổi thành JSON. Vì thế, một response resource collection có thể trông như sau:
 
-    {
-        "data": [
-            {
-                "id": 1,
-                "name": "Eladio Schroeder Sr.",
-                "email": "therese28@example.com",
-            },
-            {
-                "id": 2,
-                "name": "Liliana Mayert",
-                "email": "evandervort@example.com",
-            }
-        ]
-    }
+```json
+{
+    "data": [
+        {
+            "id": 1,
+            "name": "Eladio Schroeder Sr.",
+            "email": "therese28@example.com"
+        },
+        {
+            "id": 2,
+            "name": "Liliana Mayert",
+            "email": "evandervort@example.com"
+        }
+    ]
+}
+```
 
 Nếu bạn muốn sử dụng một khóa tùy biến thay vì `data`, bạn có thể định nghĩa một thuộc tính `$wrap` trên resource class:
 
@@ -336,7 +347,7 @@ Nếu bạn muốn sử dụng một khóa tùy biến thay vì `data`, bạn c�
         /**
          * The "data" wrapper that should be applied.
          *
-         * @var string
+         * @var string|null
          */
         public static $wrap = 'user';
     }
@@ -373,7 +384,8 @@ Nếu bạn muốn vô hiệu hóa việc bao bọc resource này, bạn nên g�
         }
     }
 
-> {note} Phương thức `withoutWrapping` chỉ ảnh hưởng đến response ở ngoài cùng và sẽ không xóa các key `data` mà bạn đã thêm vào bên trong resource collection.
+> **Warning**
+> Phương thức `withoutWrapping` chỉ ảnh hưởng đến response ở ngoài cùng và sẽ không xóa các key `data` mà bạn đã thêm vào bên trong resource collection.
 
 <a name="wrapping-nested-resources"></a>
 #### Wrapping Nested Resources
@@ -407,35 +419,37 @@ Bạn có thể tự hỏi liệu rằng điều này có khiến resource ngoà
 
 Khi trả về một collection được phân trang thông qua một response resource, Laravel sẽ bao bọc dữ liệu resource của bạn trong một key `data` ngay cả khi phương thức `withoutWrapping` đã được gọi. Điều này là do trong response được phân trang luôn chứa các key `meta` và `links` cùng với các thông tin về trạng thái của phân trang:
 
-    {
-        "data": [
-            {
-                "id": 1,
-                "name": "Eladio Schroeder Sr.",
-                "email": "therese28@example.com",
-            },
-            {
-                "id": 2,
-                "name": "Liliana Mayert",
-                "email": "evandervort@example.com",
-            }
-        ],
-        "links":{
-            "first": "http://example.com/pagination?page=1",
-            "last": "http://example.com/pagination?page=1",
-            "prev": null,
-            "next": null
+```json
+{
+    "data": [
+        {
+            "id": 1,
+            "name": "Eladio Schroeder Sr.",
+            "email": "therese28@example.com"
         },
-        "meta":{
-            "current_page": 1,
-            "from": 1,
-            "last_page": 1,
-            "path": "http://example.com/pagination",
-            "per_page": 15,
-            "to": 10,
-            "total": 10
+        {
+            "id": 2,
+            "name": "Liliana Mayert",
+            "email": "evandervort@example.com"
         }
+    ],
+    "links":{
+        "first": "http://example.com/pagination?page=1",
+        "last": "http://example.com/pagination?page=1",
+        "prev": null,
+        "next": null
+    },
+    "meta":{
+        "current_page": 1,
+        "from": 1,
+        "last_page": 1,
+        "path": "http://example.com/pagination",
+        "per_page": 15,
+        "to": 10,
+        "total": 10
     }
+}
+```
 
 <a name="pagination"></a>
 ### Phân trang
@@ -451,42 +465,42 @@ Bạn có thể truyền một instance phân trang của Laravel cho phương t
 
 Các response được phân trang luôn chứa các key `meta` và `links` cùng với các thông tin về trạng thái của phân trang:
 
-    {
-        "data": [
-            {
-                "id": 1,
-                "name": "Eladio Schroeder Sr.",
-                "email": "therese28@example.com",
-            },
-            {
-                "id": 2,
-                "name": "Liliana Mayert",
-                "email": "evandervort@example.com",
-            }
-        ],
-        "links":{
-            "first": "http://example.com/pagination?page=1",
-            "last": "http://example.com/pagination?page=1",
-            "prev": null,
-            "next": null
+```json
+{
+    "data": [
+        {
+            "id": 1,
+            "name": "Eladio Schroeder Sr.",
+            "email": "therese28@example.com"
         },
-        "meta":{
-            "current_page": 1,
-            "from": 1,
-            "last_page": 1,
-            "path": "http://example.com/pagination",
-            "per_page": 15,
-            "to": 10,
-            "total": 10
+        {
+            "id": 2,
+            "name": "Liliana Mayert",
+            "email": "evandervort@example.com"
         }
+    ],
+    "links":{
+        "first": "http://example.com/pagination?page=1",
+        "last": "http://example.com/pagination?page=1",
+        "prev": null,
+        "next": null
+    },
+    "meta":{
+        "current_page": 1,
+        "from": 1,
+        "last_page": 1,
+        "path": "http://example.com/pagination",
+        "per_page": 15,
+        "to": 10,
+        "total": 10
     }
+}
+```
 
 <a name="conditional-attributes"></a>
 ### Điều kiện cho thuộc tính
 
 Đôi khi bạn có thể chỉ muốn thêm một số thuộc tính vào trong một response resource nếu một điều kiện được đáp ứng. Ví dụ: bạn có thể chỉ muốn thêm một giá trị nếu người dùng hiện tại đang là "quản trị viên". Laravel cung cấp nhiều phương thức helper để hỗ trợ cho bạn trong những tình huống này. Phương thức `when` có thể được sử dụng để thêm một điều kiện cho một thuộc tính vào response resource:
-
-    use Illuminate\Support\Facades\Auth;
 
     /**
      * Transform the resource into an array.
@@ -500,7 +514,7 @@ Các response được phân trang luôn chứa các key `meta` và `links` cùn
             'id' => $this->id,
             'name' => $this->name,
             'email' => $this->email,
-            'secret' => $this->when(Auth::user()->isAdmin(), 'secret-value'),
+            'secret' => $this->when($request->user()->isAdmin(), 'secret-value'),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];
@@ -510,9 +524,17 @@ Trong ví dụ này, khóa `secret` sẽ chỉ được trả về trong respons
 
 Phương thức `when` cũng chấp nhận một closure là tham số thứ hai của nó, cho phép bạn tính toán giá trị trả về nếu điều kiện đã cho là `true`:
 
-    'secret' => $this->when(Auth::user()->isAdmin(), function () {
+    'secret' => $this->when($request->user()->isAdmin(), function () {
         return 'secret-value';
     }),
+
+Phương thức `whenHas` có thể được sử dụng để chứa một thuộc tính nếu nó thực sự có trên model:
+
+    'name' => $this->whenHas('name'),
+
+Ngoài ra, phương thức `whenNotNull` có thể được sử dụng để đưa một thuộc tính vào resource response nếu thuộc tính đó không rỗng:
+
+    'name' => $this->whenNotNull($this->name),
 
 <a name="merging-conditional-attributes"></a>
 #### Merging Điều kiện cho thuộc tính
@@ -531,7 +553,7 @@ Thỉnh thoảng bạn có thể có một số thuộc tính chỉ được đ�
             'id' => $this->id,
             'name' => $this->name,
             'email' => $this->email,
-            $this->mergeWhen(Auth::user()->isAdmin(), [
+            $this->mergeWhen($request->user()->isAdmin(), [
                 'first-secret' => 'value',
                 'second-secret' => 'value',
             ]),
@@ -542,7 +564,8 @@ Thỉnh thoảng bạn có thể có một số thuộc tính chỉ được đ�
 
 Một lần nữa, nếu điều kiện trả về giá trị là `false`, các thuộc tính này sẽ bị xóa ra khỏi response resource trước khi nó được gửi về client.
 
-> {note} Không nên sử dụng phương thức `mergeWhen` trong các mảng mà có sử dụng cả khoá string và khóa numeric. Hơn nữa, nó cũng không nên được sử dụng trong các mảng với các khóa numeric không được sắp xếp theo tuần tự.
+> **Warning**
+> Không nên sử dụng phương thức `mergeWhen` trong các mảng mà có sử dụng cả khoá string và khóa numeric. Hơn nữa, nó cũng không nên được sử dụng trong các mảng với các khóa numeric không được sắp xếp theo tuần tự.
 
 <a name="conditional-relationships"></a>
 ### Điều kiện cho quan hệ
@@ -572,6 +595,35 @@ Phương thức `whenLoaded` có thể được sử dụng để load một qua
     }
 
 Trong ví dụ này, nếu quan hệ chưa được load, thì khóa `posts` sẽ bị xóa bỏ ra khỏi response resource trước khi nó được gửi về client.
+
+<a name="conditional-relationship-counts"></a>
+#### Conditional Relationship Counts
+
+Ngoài điều kiện cho quan hệ, bạn có thể thêm "counts" quan hệ trên các resource response của bạn dựa trên việc count của quan hệ đó đã được load trên model hay chưa:
+
+    new UserResource($user->loadCount('posts'));
+
+Phương thức `whenCounted` có thể được sử dụng để đưa count quan hệ vào resource response của bạn một cách có điều kiện. Phương thức này tránh việc chứa thuộc tính một cách không cần thiết nếu không có count quan hệ đó:
+
+    /**
+     * Transform the resource into an array.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return array
+     */
+    public function toArray($request)
+    {
+        return [
+            'id' => $this->id,
+            'name' => $this->name,
+            'email' => $this->email,
+            'posts_count' => $this->whenCounted('posts'),
+            'created_at' => $this->created_at,
+            'updated_at' => $this->updated_at,
+        ];
+    }
+
+Trong ví dụ này, nếu count quan hệ `posts` chưa được load, khóa `posts_count` sẽ bị xóa khỏi resource response trước khi nó được gửi đến client.
 
 <a name="conditional-pivot-information"></a>
 #### Conditional Pivot Information

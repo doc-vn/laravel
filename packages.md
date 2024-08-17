@@ -11,6 +11,7 @@
     - [Translation](#translations)
     - [View](#views)
     - [View Components](#view-components)
+    - [Lệnh Artisan "About"](#about-artisan-command)
 - [Lệnh](#commands)
 - [Public Assets](#public-assets)
 - [Publishing File Groups](#publishing-file-groups)
@@ -34,16 +35,18 @@ Khi viết một application Laravel, thường không có vấn đề gì nếu
 
 Trong file cấu hình `config/app.php` của application Laravel, tùy chọn `providers` sẽ định nghĩa một danh sách các service provider sẽ được load bởi Laravel. Khi ai đó cài đặt package của bạn, bạn sẽ luôn muốn service provider của bạn được đưa vào trong danh sách này. Thay vì yêu cầu người dùng tự thêm service provider của bạn vào danh sách này, bạn có thể định nghĩa provider trong phần `extra` trong file `composer.json` trong package của bạn. Ngoài các service provider, bạn cũng có thể liệt kê bất kỳ [facades](/docs/{{version}}/facades) nào mà bạn muốn được đăng ký:
 
-    "extra": {
-        "laravel": {
-            "providers": [
-                "Barryvdh\\Debugbar\\ServiceProvider"
-            ],
-            "aliases": {
-                "Debugbar": "Barryvdh\\Debugbar\\Facade"
-            }
+```json
+"extra": {
+    "laravel": {
+        "providers": [
+            "Barryvdh\\Debugbar\\ServiceProvider"
+        ],
+        "aliases": {
+            "Debugbar": "Barryvdh\\Debugbar\\Facade"
         }
-    },
+    }
+},
+```
 
 Khi package của bạn đã được cấu hình để tự động thêm, Laravel sẽ tự động đăng ký các service provider và các facade của package khi được cài đặt, vì thế nó sẽ tạo ra một trải nghiệm cài đặt tốt hơn cho người dùng package của bạn.
 
@@ -52,23 +55,27 @@ Khi package của bạn đã được cấu hình để tự động thêm, Lara
 
 Nếu bạn là người dùng package và muốn tắt chức năng tự động thêm cho một package, bạn có thể liệt kê tên package vào trong phần `extra` của file `composer.json` của application của bạn:
 
-    "extra": {
-        "laravel": {
-            "dont-discover": [
-                "barryvdh/laravel-debugbar"
-            ]
-        }
-    },
+```json
+"extra": {
+    "laravel": {
+        "dont-discover": [
+            "barryvdh/laravel-debugbar"
+        ]
+    }
+},
+```
 
 Bạn có thể vô hiệu hóa chức năng tự động thêm cho tất cả các package bằng cách sử dụng ký tự `*` vào trong lệnh `dont-discover` của application của bạn:
 
-    "extra": {
-        "laravel": {
-            "dont-discover": [
-                "*"
-            ]
-        }
-    },
+```json
+"extra": {
+    "laravel": {
+        "dont-discover": [
+            "*"
+        ]
+    }
+},
+```
 
 <a name="service-providers"></a>
 ## Service Provider
@@ -101,7 +108,8 @@ Bây giờ, khi người dùng chạy lệnh `vendor:publish` của Laravel, th�
 
     $value = config('courier.option');
 
-> {note} Bạn không nên định nghĩa closures trong file cấu hình của bạn. Vì nó sẽ không thể chuyển đổi chính xác khi người dùng chạy lệnh Artisan `config:cache`.
+> **Warning**
+> Bạn không nên định nghĩa closures trong file cấu hình của bạn. Vì nó sẽ không thể chuyển đổi chính xác khi người dùng chạy lệnh Artisan `config:cache`.
 
 <a name="default-package-configuration"></a>
 #### Default Package Configuration
@@ -122,7 +130,8 @@ Phương thức `mergeConfigFrom` sẽ chấp nhận một đường dẫn đế
         );
     }
 
-> {note} Phương thức này chỉ merge ở mức độ đầu tiên của mảng. Nếu người dùng của bạn định nghĩa một mảng cấu hình lồng nhau, thì các tùy chọn bị thiếu sẽ không được merge.
+> **Warning**
+> Phương thức này chỉ merge ở mức độ đầu tiên của mảng. Nếu người dùng của bạn định nghĩa một mảng cấu hình lồng nhau, thì các tùy chọn bị thiếu sẽ không được merge.
 
 <a name="routes"></a>
 ### Route
@@ -168,7 +177,7 @@ Nếu package của bạn chứa các [translation files](/docs/{{version}}/loca
      */
     public function boot()
     {
-        $this->loadTranslationsFrom(__DIR__.'/../resources/lang', 'courier');
+        $this->loadTranslationsFrom(__DIR__.'/../lang', 'courier');
     }
 
 Các bản translation của package của bạn sẽ được tham chiếu bằng cách sử dụng quy ước cú pháp như sau `package::file.line`. Vì vậy, bạn có thể load dòng `welcome` của package `courier` từ file `messages` như sau:
@@ -178,7 +187,7 @@ Các bản translation của package của bạn sẽ được tham chiếu bằ
 <a name="publishing-translations"></a>
 #### Publishing Translations
 
-Nếu bạn muốn export các bản translation của package của bạn sang thư mục `resources/lang/vendor` của application, bạn có thể sử dụng phương thức `publishes` của service provider. Phương thức `publishes` chấp nhận một mảng các đường dẫn đến file translation của package và vị trí export mà bạn mong muốn. Ví dụ, để export các file translation cho package `courier`, bạn có thể làm như sau:
+Nếu bạn muốn export các bản translation của package của bạn sang thư mục `lang/vendor` của application, bạn có thể sử dụng phương thức `publishes` của service provider. Phương thức `publishes` chấp nhận một mảng các đường dẫn đến file translation của package và vị trí export mà bạn mong muốn. Ví dụ, để export các file translation cho package `courier`, bạn có thể làm như sau:
 
     /**
      * Bootstrap any package services.
@@ -187,10 +196,10 @@ Nếu bạn muốn export các bản translation của package của bạn sang 
      */
     public function boot()
     {
-        $this->loadTranslationsFrom(__DIR__.'/../resources/lang', 'courier');
+        $this->loadTranslationsFrom(__DIR__.'/../lang', 'courier');
 
         $this->publishes([
-            __DIR__.'/../resources/lang' => resource_path('lang/vendor/courier'),
+            __DIR__.'/../lang' => $this->app->langPath('vendor/courier'),
         ]);
     }
 
@@ -246,36 +255,78 @@ Bây giờ, nếu người dùng package của bạn chạy lệnh Artisan `vend
 <a name="view-components"></a>
 ### View Components
 
-Nếu package của bạn chứa các [view component](/docs/{{version}}/blade#components), bạn có thể sử dụng phương thức `loadViewComponentsAs` để thông báo cho Laravel về cách load chúng. Phương thức `loadViewComponentsAs` chấp nhận hai tham số: một là tag tiền tố cho các view component của bạn và hai là một mảng gồm tên các class của view component của bạn. Ví dụ: nếu tiền tố package của bạn là `courier` và bạn có hai view component là `Alert` và `Button`, bạn sẽ cần thêm code sau vào phương thức `boot` của service provider:
+Nếu bạn đang xây dựng một package sử dụng các component Blade hoặc lưu các component trong các thư mục mà không theo quy ước sẵn của Laravel, bạn sẽ cần phải tự đăng ký class component của bạn và bí danh tag HTML của nó để Laravel biết nơi tìm component. Bạn nên đăng ký các component của bạn trong phương thức `boot` của service provider trong package:
 
-    use Courier\Components\Alert;
-    use Courier\Components\Button;
+    use Illuminate\Support\Facades\Blade;
+    use VendorPackage\View\Components\AlertComponent;
 
     /**
-     * Bootstrap any package services.
+     * Bootstrap your package's services.
      *
      * @return void
      */
     public function boot()
     {
-        $this->loadViewComponentsAs('courier', [
-            Alert::class,
-            Button::class,
-        ]);
+        Blade::component('package-alert', AlertComponent::class);
     }
 
-Sau khi các view component của bạn được đăng ký xong trong một service provider, bạn có thể tham chiếu đến chúng trong view của bạn như sau:
+Sau khi component của bạn đã được đăng ký, nó có thể được hiển thị bằng cách sử dụng bí danh tag của nó:
 
-    <x-courier-alert />
+```blade
+<x-package-alert/>
+```
 
-    <x-courier-button />
+<a name="autoloading-package-components"></a>
+#### Autoloading Package Components
+
+Ngoài ra, bạn có thể sử dụng phương thức `componentNamespace` để tự động load các class component theo quy ước. Ví dụ: package `Nightshade` có thể có các component `Calendar` và `ColorPicker` nằm trong namespace là `Nightshade\Views\Components`:
+
+    use Illuminate\Support\Facades\Blade;
+
+    /**
+     * Bootstrap your package's services.
+     *
+     * @return void
+     */
+    public function boot()
+    {
+        Blade::componentNamespace('Nightshade\\Views\\Components', 'nightshade');
+    }
+
+Điều này sẽ cho phép sử dụng các package component theo namespace của họ bằng cách sử dụng cú pháp như sau: `package-name::`:
+
+```blade
+<x-nightshade::calendar />
+<x-nightshade::color-picker />
+```
+
+Blade sẽ tự động phát hiện class được liên kết với component này bằng quy ước đặt tên pascal-casing theo tên của component. Các thư mục con cũng được hỗ trợ bằng ký hiệu "dấu chấm".
 
 <a name="anonymous-components"></a>
 #### Anonymous Components
 
-Nếu package của bạn chứa các component ẩn, thì chúng phải được lưu trong thư mục `components` của thư mục "views" trong package của bạn (như được chỉ định bởi `loadViewsFrom`). Sau đó, bạn có thể hiển thị chúng bằng cách thêm tiền tố tên component với namespace view của package:
+Nếu package của bạn chứa các component ẩn, thì chúng phải được lưu trong thư mục `components` của thư mục "views" trong package của bạn (như được chỉ định bởi phương thưc [`loadViewsFrom`](#views)). Sau đó, bạn có thể hiển thị chúng bằng cách thêm tiền tố tên component với namespace view của package:
 
-    <x-courier::alert />
+```blade
+<x-courier::alert />
+```
+
+<a name="about-artisan-command"></a>
+### Lệnh Artisan "About"
+
+Lệnh Artisan `about` có sẵn của Laravel cung cấp tóm tắt về môi trường và cấu hình của ứng dụng. Các package có thể thêm thông tin bổ sung vào output của lệnh này thông qua class `AboutCommand`. Thông thường, thông tin này có thể được thêm vào từ phương thức `boot` của service provider trong package của bạn:
+
+    use Illuminate\Foundation\Console\AboutCommand;
+
+    /**
+     * Bootstrap any application services.
+     *
+     * @return void
+     */
+    public function boot()
+    {
+        AboutCommand::add('My Package', fn () => ['Version' => '1.0.0']);
+    }
 
 <a name="commands"></a>
 ## Lệnh
@@ -319,7 +370,9 @@ Package của bạn có thể có các asset như JavaScript, CSS và hình ản
 
 Bây giờ, khi người dùng package của bạn chạy lệnh `vendor:publish`, asset sẽ được copy vào vị trí export mà bạn đã khai báo. Nhưng thông thường, người dùng sẽ cần ghi đè lên các asset mỗi khi package được cập nhật, nên bạn có thể sử dụng flag `--force`:
 
-    php artisan vendor:publish --tag=public --force
+```shell
+php artisan vendor:publish --tag=public --force
+```
 
 <a name="publishing-file-groups"></a>
 ## Publishing File Groups
@@ -344,4 +397,6 @@ Bạn có thể muốn export riêng rẽ các group asset và các resources c�
 
 Bây giờ người dùng của bạn có thể export các group này một cách riêng rẽ bằng cách tham chiếu tag của chúng khi chạy lệnh `vendor:publish`:
 
-    php artisan vendor:publish --tag=courier-config
+```shell
+php artisan vendor:publish --tag=courier-config
+```

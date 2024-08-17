@@ -11,6 +11,7 @@
 - [Nhiều - Nhiều](#many-to-many)
     - [Lấy cột trong bảng trung gian](#retrieving-intermediate-table-columns)
     - [Lọc bảng trung gian](#filtering-queries-via-intermediate-table-columns)
+    - [Sắp xếp thông qua bảng trung gian](#ordering-queries-via-intermediate-table-columns)
     - [Định nghĩa model trung gian](#defining-custom-intermediate-table-models)
 - [Quan hệ đa hình](#polymorphic-relationships)
     - [Một - Một](#one-to-one-polymorphic-relations)
@@ -292,6 +293,12 @@ Tuy nhiên, bạn có thể cảm thấy thuận tiện hơn khi sử dụng ph�
 
     $posts = Post::whereBelongsTo($user)->get();
 
+Bạn cũng có thể cung cấp một instance [collection](/docs/{{version}}/eloquent-collections) cho phương thức `whereBelongsTo`. Khi làm như vậy, Laravel sẽ lấy ra tất cả các model mà thuộc về bất kỳ model gốc nào có trong collection:
+
+    $users = User::where('vip', true)->get();
+
+    $posts = Post::whereBelongsTo($users)->get();
+
 Mặc định, Laravel sẽ xác định quan hệ được liên kết với model đã cho dựa trên tên class của model; tuy nhiên, bạn có thể chỉ định tên quan hệ bằng cách cung cấp nó làm tham số thứ hai cho phương thức `whereBelongsTo`:
 
     $posts = Post::whereBelongsTo($user, 'author')->get();
@@ -337,7 +344,8 @@ public function largestOrder()
 }
 ```
 
-> {note} Bởi vì PostgreSQL không hỗ trợ thực thi các hàm `MAX` đối với các cột UUID, nên hiện tại không thể sử dụng quan hệ một trong nhiều kết hợp với các cột UUID của PostgreSQL.
+> **Warning**
+> Bởi vì PostgreSQL không hỗ trợ thực thi các hàm `MAX` đối với các cột UUID, nên hiện tại không thể sử dụng quan hệ một trong nhiều kết hợp với các cột UUID của PostgreSQL.
 
 <a name="advanced-has-one-of-many-relationships"></a>
 #### Advanced Has One Of Many Relationships
@@ -403,6 +411,16 @@ Bây giờ chúng ta đã xem qua cấu trúc bảng cho quan hệ, hãy định
 
 Tham số đầu tiên được truyền cho phương thức `hasOneThrough` là tên của model cuối cùng mà chúng ta muốn lấy ra, trong khi tham số thứ hai là tên của model trung gian.
 
+Hoặc, nếu các quan hệ liên quan đã được định nghĩa trong tất cả các model khác, bạn có thể định nghĩa một cách dễ dàng quan hệ "has-one-through" bằng cách gọi phương thức `through` và cung cấp tên các quan hệ đó. Ví dụ: nếu model `Mechanic` có một quan hệ là `cars` và model `Car` có một quan hệ là `owner`, bạn có thể định nghĩa một quan hệ "has-one-through" kết nối model mechanic với owner như sau:
+
+```php
+// String based syntax...
+return $this->through('cars')->has('owner');
+
+// Dynamic syntax...
+return $this->throughCars()->hasOwner();
+```
+
 <a name="has-one-through-key-conventions"></a>
 #### Key Conventions
 
@@ -425,6 +443,16 @@ Các quy ước khóa ngoại mặc định của Eloquent sẽ được sử d�
             );
         }
     }
+
+Hoặc, như đã thảo luận trước đó, nếu các quan hệ liên quan đã được định nghĩa trên tất cả các model khác, bạn có thể định nghĩa một cách dễ dàng quan hệ "has-one-through" bằng cách gọi phương thức `through` và cung cấp tên của những quan hệ đó. Cách tiếp cận này mang lại lợi ích là sử dụng lại các quy ước chính đã được định nghĩa trên các quan hệ hiện có:
+
+```php
+// String based syntax...
+return $this->through('cars')->has('owner');
+
+// Dynamic syntax...
+return $this->throughCars()->hasOwner();
+```
 
 <a name="has-many-through"></a>
 ### Has Many Through
@@ -466,6 +494,16 @@ Bây giờ chúng ta đã xem qua cấu trúc bảng cho quan hệ, hãy định
 
 Tham số đầu tiên được truyền cho phương thức `hasManyThrough` là tên của model cuối cùng mà chúng ta muốn truy cập, trong khi tham số thứ hai là tên của model trung gian.
 
+Hoặc, nếu các quan hệ liên quan đã được định nghĩa trên tất cả các model khác, bạn có thể định nghĩa một cách dễ dàng quan hệ "has-many-through" bằng cách gọi phương thức `through` và cung cấp tên của các quan hệ đó. Ví dụ: nếu model `Project` có một quan hệ `environments` và model `Environment` có một quan hệ `deployments`, bạn có thể định nghĩa một quan hệ "has-many-through" kết nối dự án và các deployment như sau:
+
+```php
+// String based syntax...
+return $this->through('environments')->has('deployments');
+
+// Dynamic syntax...
+return $this->throughEnvironments()->hasDeployments();
+```
+
 Mặc dù bảng của model `Deployment` không chứa cột `project_id`, nhưng quan hệ `hasManyThrough` cung cấp quyền truy cập vào các deployment của dự án thông qua `$project->deployments`. Để lấy ra các model này, Eloquent sẽ kiểm tra cột `project_id` trên bảng của model `Environment` trung gian. Sau khi tìm thấy ID environment có quan hệ, chúng sẽ được sử dụng để truy vấn vào bảng của model `Deployment`.
 
 <a name="has-many-through-key-conventions"></a>
@@ -487,6 +525,16 @@ Các quy ước khóa ngoại mặc định của Eloquent sẽ được sử d�
             );
         }
     }
+
+Hoặc, như đã thảo luận trước đó, nếu các quan hệ liên quan đã được định nghĩa trên tất cả các model khác, bạn có thể định nghĩa một cách dễ dàng quan hệ "has-many-through" bằng cách gọi phương thức `through` và cung cấp tên của những quan hệ đó. Cách tiếp cận này mang lại lợi ích là sử dụng lại các quy ước chính đã được định nghĩa trên các quan hệ hiện có:
+
+```php
+// String based syntax...
+return $this->through('environments')->has('deployments');
+
+// Dynamic syntax...
+return $this->throughEnvironments()->hasDeployments();
+```
 
 <a name="many-to-many"></a>
 ## Nhiều - Nhiều
@@ -603,7 +651,8 @@ Nếu bạn muốn bảng pivot của bạn tự động duy trì các cột tim
 
     return $this->belongsToMany(Role::class)->withTimestamps();
 
-> {note} Các bảng trung gian sử dụng timestamp được duy trì tự động của Eloquent bắt buộc phải có cả hai cột timestamp `created_at` và `updated_at`.
+> **Warning**
+> Các bảng trung gian sử dụng timestamp được duy trì tự động của Eloquent bắt buộc phải có cả hai cột timestamp `created_at` và `updated_at`.
 
 <a name="customizing-the-pivot-attribute-name"></a>
 #### Customizing The `pivot` Attribute Name
@@ -654,10 +703,19 @@ Bạn cũng có thể lọc các kết quả được trả về bởi `belongsT
                     ->as('subscriptions')
                     ->wherePivotNotNull('expired_at');
 
+<a name="ordering-queries-via-intermediate-table-columns"></a>
+### Sắp xếp thông qua bảng trung gian
+
+Bạn có thể sắp xếp các kết quả được trả về bởi quan hệ `belongsToMany` bằng cách sử dụng phương thức `orderByPivot`. Trong ví dụ sau, chúng ta sẽ lấy ra tất cả các huy hiệu mới nhất của người dùng:
+
+    return $this->belongsToMany(Badge::class)
+                    ->where('rank', 'gold')
+                    ->orderByPivot('created_at', 'desc');
+
 <a name="defining-custom-intermediate-table-models"></a>
 ### Định nghĩa model trung gian
 
-Nếu bạn muốn định nghĩa một model tùy biến, để biểu diễn bảng trung gian của quan hệ của bạn, bạn có thể gọi phương thức `using` khi định nghĩa quan hệ. Các model trung gian này cho bạn cơ hội để định nghĩa thêm các phương thức trên model trung gian.
+Nếu bạn muốn định nghĩa một model tùy biến, để biểu diễn bảng trung gian của quan hệ của bạn, bạn có thể gọi phương thức `using` khi định nghĩa quan hệ. Các model trung gian này cho bạn cơ hội để định nghĩa thêm các hành động trên model trung gian, như thêm phương thức và cast.
 
 Để tuỳ biến một model pivot nhiều-nhiều bạn cần extend từ class `Illuminate\Database\Eloquent\Relations\Pivot`, còn nếu bạn muốn tuỳ biến model theo đa hình nhiều-nhiều, thì bạn cần extend từ class `Illuminate\Database\Eloquent\Relations\MorphPivot`. Ví dụ: chúng ta có thể định nghĩa một `Role` sử dụng model pivot `RoleUser` tùy biến như sau:
 
@@ -691,7 +749,8 @@ Khi định nghĩa model `RoleUser`, chúng ta sẽ extend nó từ class `Illum
         //
     }
 
-> {note} Các model pivot có thể không sử dụng trait `SoftDeletes`. Nếu bạn cần soft delete các bản ghi của model pivot, hãy xem xét chuyển đổi model pivot của bạn thành một model Eloquent thực tế.
+> **Warning**
+> Các model pivot có thể không sử dụng trait `SoftDeletes`. Nếu bạn cần soft delete các bản ghi của model pivot, hãy xem xét chuyển đổi model pivot của bạn thành một model Eloquent thực tế.
 
 <a name="custom-pivot-models-and-incrementing-ids"></a>
 #### Custom Pivot Models And Incrementing IDs
@@ -944,7 +1003,8 @@ public function bestImage()
 }
 ```
 
-> {tip} Có thể xây dựng các quan hệ "một trong nhiều" nâng cao. Để biết thêm thông tin, vui lòng tham khảo [tài liệu một trong nhiều](#advanced-has-one-of-many-relationships).
+> **Note**
+> Có thể xây dựng các quan hệ "một trong nhiều" nâng cao. Để biết thêm thông tin, vui lòng tham khảo [tài liệu một trong nhiều](#advanced-has-one-of-many-relationships).
 
 <a name="many-to-many-polymorphic-relations"></a>
 ### Nhiều - Nhiều (đa hình)
@@ -971,7 +1031,8 @@ Quan hệ đa hình nhiều-nhiều phức tạp hơn một chút so với quan 
         taggable_id - integer
         taggable_type - string
 
-> {tip} Trước khi đi sâu hơn vào mối quan hệ nhiều-nhiều đa hình, bạn có thể đọc tài liệu về [quan hệ nhiều-nhiều](#many-to-many).
+> **Note**
+> Trước khi đi sâu hơn vào quan hệ nhiều-nhiều đa hình, bạn có thể đọc tài liệu về [quan hệ nhiều-nhiều](#many-to-many).
 
 <a name="many-to-many-polymorphic-model-structure"></a>
 #### Cấu trúc Model
@@ -1080,7 +1141,8 @@ Bạn có thể xác định bí danh morph của một model trong khi ứng d�
 
     $class = Relation::getMorphedModel($alias);
 
-> {note} Khi thêm một "morph map" vào ứng dụng hiện có của bạn, mọi giá trị của cột morphable `*_type` trong cơ sở dữ liệu của bạn vẫn sẽ chứa tên đầy đủ của class đó và nó sẽ cần được chuyển đổi thành tên "map" của nó.
+> **Warning**
+> Khi thêm một "morph map" vào ứng dụng hiện có của bạn, mọi giá trị của cột morphable `*_type` trong cơ sở dữ liệu của bạn vẫn sẽ chứa tên đầy đủ của class đó và nó sẽ cần được chuyển đổi thành tên "map" của nó.
 
 <a name="dynamic-relationships"></a>
 ### Quan hệ động
@@ -1096,7 +1158,8 @@ Phương thức `resolveRelationUsing` chấp nhận tên quan hệ mong muốn 
         return $orderModel->belongsTo(Customer::class, 'customer_id');
     });
 
-> {note} Khi định nghĩa quan hệ động, hãy luôn đảm bảo là bạn đã cung cấp các tham số tên khóa cho các phương thức quan hệ Eloquent.
+> **Warning**
+> Khi định nghĩa quan hệ động, hãy luôn đảm bảo là bạn đã cung cấp các tham số tên khóa cho các phương thức quan hệ Eloquent.
 
 <a name="querying-relations"></a>
 ## Query theo quan hệ
@@ -1218,12 +1281,13 @@ Nếu bạn cần nhiều hơn thế nữa, bạn có thể sử dụng các ph�
         $query->where('content', 'like', 'code%');
     }, '>=', 10)->get();
 
-> {note} Eloquent hiện không hỗ trợ truy vấn quan hệ có tồn tại trong các cơ sở dữ liệu hay không. Các quan hệ phải tồn tại trong cùng một cơ sở dữ liệu.
+> **Warning**
+> Eloquent hiện không hỗ trợ truy vấn quan hệ có tồn tại trong các cơ sở dữ liệu hay không. Các quan hệ phải tồn tại trong cùng một cơ sở dữ liệu.
 
 <a name="inline-relationship-existence-queries"></a>
 #### Inline Relationship Existence Queries
 
-Nếu bạn muốn truy vấn sự tồn tại của một quan hệ bằng một điều kiện where đơn giản, thì bạn có thể thấy thuận tiện hơn khi sử dụng các phương thức `whereRelation` và `whereMorphRelation`. Ví dụ: chúng ta có thể truy vấn tất cả các post có comment chưa được chấp nhận:
+Nếu bạn muốn truy vấn sự tồn tại của một quan hệ bằng một điều kiện where đơn giản, thì bạn có thể thấy thuận tiện hơn khi sử dụng các phương thức `whereRelation`, `orWhereRelation`, `whereMorphRelation`, và `orWhereMorphRelation`. Ví dụ: chúng ta có thể truy vấn tất cả các post có comment chưa được chấp nhận:
 
     use App\Models\Post;
 
@@ -1506,6 +1570,15 @@ Thỉnh thoảng bạn có thể cần eager load nhiều quan hệ khác nhau. 
 
     $books = App\Book::with('author.contacts')->get();
 
+Ngoài ra, bạn có thể chỉ định các quan hệ sẽ được eager loading lồng nhau bằng cách cung cấp một mảng lồng nhau cho phương thức `with`, điều này có thể thuận tiện khi eager load nhiều quan hệ lồng nhau:
+
+    $books = Book::with([
+        'author' => [
+            'contacts',
+            'publisher',
+        ],
+    ])->get();
+
 <a name="nested-eager-loading-morphto-relationships"></a>
 #### Nested Eager Loading `morphTo` Relationships
 
@@ -1548,7 +1621,8 @@ Bạn có thể không phải lúc nào cũng cần mọi cột của quan hệ 
 
     $books = Book::with('author:id,name,book_id')->get();
 
-> {note} Khi sử dụng tính năng này, bạn phải luôn thêm cột `id` và bất kỳ cột khóa ngoại nào có liên quan trong danh sách các cột mà bạn muốn truy xuất.
+> **Warning**
+> Khi sử dụng tính năng này, bạn phải luôn thêm cột `id` và bất kỳ cột khóa ngoại nào có liên quan trong danh sách các cột mà bạn muốn truy xuất.
 
 <a name="eager-loading-by-default"></a>
 #### Eager Loading By Default
@@ -1612,7 +1686,8 @@ Trong ví dụ này, Eloquent sẽ chỉ eager load các post mà trong đó c�
         $query->orderBy('created_at', 'desc');
     }])->get();
 
-> {note} Phương thức query builder `limit` và `take` có thể không sử dụng được khi bạn đang eager loading.
+> **Warning**
+> Phương thức query builder `limit` và `take` có thể không sử dụng được khi bạn đang eager loading.
 
 <a name="constraining-eager-loading-of-morph-to-relationships"></a>
 #### Constraining Eager Loading Of `morphTo` Relationships
@@ -1633,7 +1708,18 @@ Nếu bạn muốn eager loading một quan hệ `morphTo`, Eloquent sẽ chạy
         ]);
     }])->get();
 
-Trong ví dụ này, Eloquent sẽ chỉ eager load các bài post chưa bị ẩn và video có giá trị `type` là "educational".
+Trong ví dụ này, Eloquent sẽ chỉ eager load các bài post chưa bị ẩn và video mà có giá trị `type` là "educational".
+
+<a name="constraining-eager-loads-with-relationship-existence"></a>
+#### Constraining Eager Loads With Relationship Existence
+
+Thỉnh thoảng bạn có thể thấy mình cần phải kiểm tra sự tồn tại của một quan hệ đồng thời load quan hệ dựa trên các điều kiện giống nhau. Ví dụ: bạn có thể chỉ muốn lấy ra các model `User` mà có các model `Post` phù hợp với một điều kiện truy vấn nhất định trong khi cũng mong muốn eager loading các bài post đó. Bạn có thể thực hiện việc này bằng phương thức `withWhereHas`:
+
+    use App\Models\User;
+
+    $users = User::withWhereHas('posts', function ($query) {
+        $query->where('featured', true);
+    })->get();
 
 <a name="lazy-eager-loading"></a>
 ### Lazy Eager Loading
@@ -1774,6 +1860,10 @@ Nếu bạn muốn `save` model của bạn và tất cả các quan hệ liên 
 
     $post->push();
 
+Phương thức `pushQuietly` có thể được sử dụng để lưu model và các quan hệ liên quan của nó mà không cần đưa ra bất kỳ event nào:
+
+    $post->pushQuietly();
+
 <a name="the-create-method"></a>
 ### Phương thức `create`
 
@@ -1798,7 +1888,8 @@ Bạn có thể sử dụng phương thức `createMany` để tạo nhiều mod
 
 Bạn cũng có thể sử dụng các phương thức `findOrNew`, `firstOrNew`, `firstOrCreate`, và `updateOrCreate` để [tạo và cập nhật model trên các quan hệ](https://laravel.com/docs/{{version}}/eloquent#other-creation-methods).
 
-> {tip} Trước khi sử dụng phương thức `create`, bạn hãy chắc chắn là đã xem qua tài liệu về thuộc tính [mass assignment](/docs/{{version}}/eloquent#mass-assignment).
+> **Note**
+> Trước khi sử dụng phương thức `create`, bạn hãy chắc chắn là đã xem qua tài liệu về thuộc tính [mass assignment](/docs/{{version}}/eloquent#mass-assignment).
 
 <a name="updating-belongs-to-relationships"></a>
 ### Quan hệ thuộc về
@@ -1882,6 +1973,13 @@ Quan hệ nhiều-nhiều cũng cung cấp thêm một phương thức `toggle` 
 
     $user->roles()->toggle([1, 2, 3]);
 
+Bạn cũng có thể chuyển thêm các giá trị cho bảng trung gian bằng ID:
+
+    $user->roles()->toggle([
+        1 => ['expires' => true],
+        2 => ['expires' => true],
+    ]);
+
 <a name="updating-a-record-on-the-intermediate-table"></a>
 #### Updating A Record On The Intermediate Table
 
@@ -1924,4 +2022,5 @@ Ví dụ, khi một model `Comment` được cập nhật, bạn có thể muố
         }
     }
 
-> {note} Timestamp của model gốc sẽ chỉ được cập nhật nếu model con được cập nhật bằng phương thức `save` của Eloquent.
+> **Warning**
+> Timestamp của model gốc sẽ chỉ được cập nhật nếu model con được cập nhật bằng phương thức `save` của Eloquent.

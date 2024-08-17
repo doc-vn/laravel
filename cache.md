@@ -42,7 +42,7 @@ File cấu hình cache cũng chứa nhiều tùy chọn khác, vì vậy hãy ch
 <a name="prerequisites-database"></a>
 #### Database
 
-Khi sử dụng cache driver `database`, bạn sẽ cần thiết lập một bảng để chứa các item cache. Bạn có thể làm như ví dụ ở bên dưới, khai báo một `Schema` cho một bảng:
+Khi sử dụng cache driver `database`, bạn sẽ cần cài đặt một bảng để chứa các item cache. Bạn có thể làm như ví dụ ở bên dưới, khai báo một `Schema` cho một bảng:
 
     Schema::create('cache', function ($table) {
         $table->string('key')->unique();
@@ -50,7 +50,8 @@ Khi sử dụng cache driver `database`, bạn sẽ cần thiết lập một b�
         $table->integer('expiration');
     });
 
-> {tip} Bạn cũng có thể sử dụng lệnh Artisan `php artisan cache:table` để tạo migration với một schema phù hợp.
+> **Note**
+> Bạn cũng có thể sử dụng lệnh Artisan `php artisan cache:table` để tạo migration với một schema phù hợp.
 
 <a name="memcached"></a>
 #### Memcached
@@ -141,7 +142,7 @@ Phương thức `get` của facade `Cache` được sử dụng để lấy các
 Bạn thậm chí có thể truyền vào một closure làm giá trị mặc định. Kết quả của closure sẽ được trả về nếu item cần lấy không tồn tại trong cache. Việc có thể truyền vào một closure cho phép bạn có thể lấy ra giá trị trong cache trước khi phải lấy giá trị đó ra từ một cơ sở dữ liệu hoặc một service bên ngoài:
 
     $value = Cache::get('key', function () {
-        return DB::table(...)->get();
+        return DB::table(/* ... */)->get();
     });
 
 <a name="checking-for-item-existence"></a>
@@ -216,7 +217,8 @@ Phương thức `forever` có thể được sử dụng để lưu trữ một 
 
     Cache::forever('key', 'value');
 
-> {tip} Nếu bạn đang sử dụng driver Memcached, các item được lưu trữ "forever" có thể bị xóa đi khi cache đạt tới một giới hạn kích thước nhất định.
+> **Note**
+> Nếu bạn đang sử dụng driver Memcached, các item được lưu trữ "forever" có thể bị xóa đi khi cache đạt tới một giới hạn kích thước nhất định.
 
 <a name="removing-items-from-the-cache"></a>
 ### Xoá item trong cache
@@ -235,7 +237,8 @@ Bạn có thể xóa toàn bộ cache bằng phương thức `flush`:
 
     Cache::flush();
 
-> {note} Khi xóa toàn bộ cache thì nó sẽ xóa tất cả các item ra khỏi cache đã cấu hình mà không tâm đến cache prefix. Hãy xem xét điều này một cách cẩn thận trước khi xóa, nếu cache đó đang được dùng để chia sẻ cho các application khác.
+> **Warning**
+> Khi xóa toàn bộ cache thì nó sẽ xóa tất cả các item ra khỏi cache đã cấu hình mà không tâm đến cache prefix. Hãy xem xét điều này một cách cẩn thận trước khi xóa, nếu cache đó đang được dùng để chia sẻ cho các application khác.
 
 <a name="the-cache-helper"></a>
 ### The Cache Helper
@@ -256,12 +259,14 @@ Khi hàm `cache` được gọi mà không có bất kỳ tham số nào đượ
         return DB::table('users')->get();
     });
 
-> {tip} Khi testing tới các lệnh gọi hàm global `cache`, bạn có thể sử dụng phương thức `Cache::shouldReceive` giống như bạn đang [testing một facade](/docs/{{version}}/mocking#mocking-facades).
+> **Note**
+> Khi testing tới các lệnh gọi hàm global `cache`, bạn có thể sử dụng phương thức `Cache::shouldReceive` giống như bạn đang [testing một facade](/docs/{{version}}/mocking#mocking-facades).
 
 <a name="cache-tags"></a>
 ## Cache Tags
 
-> {note} Cache tag sẽ không được hỗ trợ khi sử dụng các cache driver `file`, `dynamodb`, hoặc `database`. Hơn nữa, khi sử dụng nhiều tag với các cache mà được lưu trữ "mãi mãi", thì hiệu suất sẽ tốt nhất với một driver như `memcached`, loại tự động xóa các record cũ.
+> **Warning**
+> Cache tag sẽ không được hỗ trợ khi sử dụng các cache driver `file`, `dynamodb`, hoặc `database`. Hơn nữa, khi sử dụng nhiều tag với các cache mà được lưu trữ "mãi mãi", thì hiệu suất sẽ tốt nhất với một driver như `memcached`, loại tự động xóa các record cũ.
 
 <a name="storing-tagged-cache-items"></a>
 ### Storing Tagged Cache Items
@@ -275,7 +280,7 @@ Cache tag cho phép bạn gắn tag cho các item liên quan đến nhau vào tr
 <a name="accessing-tagged-cache-items"></a>
 ### Accessing Tagged Cache Items
 
-Để lấy ra một item mà đã được gắn tag, hãy truyền cùng một danh sách các tag được sắp xếp theo thứ tự cho phương thức `tags` và sau đó gọi phương thức `get` với khóa mà bạn muốn lấy:
+Các item được lưu trữ thông qua tag có thể không truy cập được nếu không cung cấp tag, cái mà được sử dụng để lưu trữ các giá trị đó. Để lấy ra một item mà đã được gắn tag, hãy truyền cùng một danh sách các tag được sắp xếp theo thứ tự cho phương thức `tags` và sau đó gọi phương thức `get` với khóa mà bạn muốn lấy:
 
     $john = Cache::tags(['people', 'artists'])->get('John');
 
@@ -295,7 +300,8 @@ Ngược lại, câu lệnh này sẽ chỉ xóa các cache đã được gắn 
 <a name="atomic-locks"></a>
 ## Atomic Locks
 
-> {note} Để sử dụng tính năng này, ứng dụng của bạn phải sử dụng cache driver `memcached`, `redis`, `dynamodb`, `database`, `file`, hoặc `array` làm cache driver mặc định của ứng dụng của bạn. Ngoài ra, tất cả các server phải được giao tiếp với cùng một server cache trung tâm.
+> **Warning**
+> Để sử dụng tính năng này, ứng dụng của bạn phải sử dụng cache driver `memcached`, `redis`, `dynamodb`, `database`, `file`, hoặc `array` làm cache driver mặc định của ứng dụng của bạn. Ngoài ra, tất cả các server phải được giao tiếp với cùng một server cache trung tâm.
 
 <a name="lock-driver-prerequisites"></a>
 ### Yêu cầu driver
@@ -328,8 +334,8 @@ Atomic lock cho phép thao tác với các khóa phân tán mà không cần lo 
 
 Phương thức `get` cũng chấp nhận một closure. Sau khi thực thi closure xong, Laravel sẽ tự động giải phóng khóa:
 
-    Cache::lock('foo')->get(function () {
-        // Lock acquired indefinitely and automatically released...
+    Cache::lock('foo', 10)->get(function () {
+        // Lock acquired for 10 seconds and automatically released...
     });
 
 Nếu khóa chưa sẵn sàng tại thời điểm bạn yêu cầu, bạn có thể hướng dẫn Laravel đợi trong một số giây cụ thể. Nếu không thể lấy được khóa trong thời hạn đã chỉ định, một lỗi `Illuminate\Contracts\Cache\LockTimeoutException` sẽ được đưa ra:
@@ -411,7 +417,8 @@ Chúng ta chỉ cần implement từng phương thức này bằng một kết n
         return Cache::repository(new MongoStore);
     });
 
-> {tip} Nếu bạn đang tự hỏi nên lưu code tùy biến cache driver ở đâu, thì bạn có thể tạo ra một namespace `Extensions` trong thư mục `app` của bạn. Tuy nhiên, hãy nhớ rằng Laravel không có cấu trúc application theo kiểu cứng nhắc và bạn có thể thoải mái tự tổ chức application của bạn theo sở thích của bạn.
+> **Note**
+> Nếu bạn đang tự hỏi nên lưu code tùy biến cache driver ở đâu, thì bạn có thể tạo ra một namespace `Extensions` trong thư mục `app` của bạn. Tuy nhiên, hãy nhớ rằng Laravel không có cấu trúc application theo kiểu cứng nhắc và bạn có thể thoải mái tự tổ chức application của bạn theo sở thích của bạn.
 
 <a name="registering-the-driver"></a>
 ### Đăng ký driver
@@ -462,25 +469,34 @@ Khi extension của bạn đã được đăng ký, hãy cập nhật option `dr
 
 Để thực thi một đoạn code trên các thao tác cache, bạn có thể listen cho các [event](/docs/{{version}}/events) được kích hoạt bởi cache. Thông thường, bạn nên lưu những event listener này trong class `App\Providers\EventServiceProvider` của application:
 
+    use App\Listeners\LogCacheHit;
+    use App\Listeners\LogCacheMissed;
+    use App\Listeners\LogKeyForgotten;
+    use App\Listeners\LogKeyWritten;
+    use Illuminate\Cache\Events\CacheHit;
+    use Illuminate\Cache\Events\CacheMissed;
+    use Illuminate\Cache\Events\KeyForgotten;
+    use Illuminate\Cache\Events\KeyWritten;
+
     /**
      * The event listener mappings for the application.
      *
      * @var array
      */
     protected $listen = [
-        'Illuminate\Cache\Events\CacheHit' => [
-            'App\Listeners\LogCacheHit',
+        CacheHit::class => [
+            LogCacheHit::class,
         ],
 
-        'Illuminate\Cache\Events\CacheMissed' => [
-            'App\Listeners\LogCacheMissed',
+        CacheMissed::class => [
+            LogCacheMissed::class,
         ],
 
-        'Illuminate\Cache\Events\KeyForgotten' => [
-            'App\Listeners\LogKeyForgotten',
+        KeyForgotten::class => [
+            LogKeyForgotten::class,
         ],
 
-        'Illuminate\Cache\Events\KeyWritten' => [
-            'App\Listeners\LogKeyWritten',
+        KeyWritten::class => [
+            LogKeyWritten::class,
         ],
     ];

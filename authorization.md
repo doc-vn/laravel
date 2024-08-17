@@ -38,7 +38,8 @@ Bạn không cần phải chọn giữa sử dụng gates hoặc sử dụng pol
 <a name="writing-gates"></a>
 ### Viết Gates
 
-> {note} Gate là một cách tuyệt vời để tìm hiểu những điều cơ bản về các tính năng authorization của Laravel; tuy nhiên, khi xây dựng các ứng dụng Laravel mạnh mẽ, bạn nên cân nhắc sử dụng [policies](#creating-policies) để tổ chức các quy tắc authorization của bạn.
+> **Warning**
+> Gate là một cách tuyệt vời để tìm hiểu những điều cơ bản về các tính năng authorization của Laravel; tuy nhiên, khi xây dựng các ứng dụng Laravel mạnh mẽ, bạn nên cân nhắc sử dụng [policies](#creating-policies) để tổ chức các quy tắc authorization của bạn.
 
 Gate chỉ đơn giản là một closure để xác định xem người dùng có được phép thực hiện một hành động nhất định hay không. Thông thường, các gate được định nghĩa trong phương thức `boot` của class `App\Providers\AuthServiceProvider` bằng cách sử dụng facade `Gate`. Gates luôn nhận một instance user làm tham số đầu tiên của nó và có thể tùy chọn nhận thêm các tham số như Eloquent model có liên quan.
 
@@ -195,6 +196,33 @@ Tất nhiên, khi sử dụng phương thức `Gate::authorize`, cái mà đưa 
 
     // The action is authorized...
 
+<a name="customising-gate-response-status"></a>
+#### Customizing The HTTP Response Status
+
+Khi một action bị từ chối bởi một Gate, thì HTTP response `403` sẽ được trả về; tuy nhiên, đôi khi việc trả về một mã trạng thái HTTP khác có thể có ích. Bạn có thể tùy chỉnh mã trạng thái HTTP được trả về khi một kiểm tra authorization thất bại bằng cách sử dụng hàm constructor static `denyWithStatus` trong class `Illuminate\Auth\Access\Response`:
+
+    use App\Models\User;
+    use Illuminate\Auth\Access\Response;
+    use Illuminate\Support\Facades\Gate;
+
+    Gate::define('edit-settings', function (User $user) {
+        return $user->isAdmin
+                    ? Response::allow()
+                    : Response::denyWithStatus(404);
+    });
+
+Bởi vì ẩn resource thông qua response `404` là một hình thức phổ biến có cho các ứng dụng web nên phương thức `denyAsNotFound` cũng đã được cung cấp để giúp thuận tiện hơn:
+
+    use App\Models\User;
+    use Illuminate\Auth\Access\Response;
+    use Illuminate\Support\Facades\Gate;
+
+    Gate::define('edit-settings', function (User $user) {
+        return $user->isAdmin
+                    ? Response::allow()
+                    : Response::denyAsNotFound();
+    });
+
 <a name="intercepting-gate-checks"></a>
 ### Chặn Gate Check
 
@@ -226,7 +254,7 @@ Tương tự như phương thức `before`, nếu closure `after` trả về m�
 Đôi khi, bạn có thể muốn xác định xem người dùng đang được xác thực có được phép thực hiện một hành động nhất định mà không cần viết gate tương ứng với hành động đó hay không. Laravel cho phép bạn thực hiện các loại kiểm tra authorization "inline" này thông qua các phương thức `Gate::allowIf` và `Gate::denyIf`:
 
 ```php
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 
 Gate::allowIf(fn ($user) => $user->isAdministrator());
 
@@ -245,11 +273,15 @@ Các Policy là các class tổng hợp các logic authorization liên quan đ�
 
 Bạn có thể tạo một policy bằng cách sử dụng [lệnh Artisan](/docs/{{version}}/artisan) `make:policy`. Policy được tạo ra sẽ được lưu vào trong thư mục `app/Policies`. Nếu thư mục này không tồn tại trong application của bạn, Laravel sẽ tạo nó cho bạn:
 
-    php artisan make:policy PostPolicy
+```shell
+php artisan make:policy PostPolicy
+```
 
 Lệnh `make:policy` sẽ tạo ra một class policy trống. Nếu bạn muốn tạo ra với một class với các ví dụ về các phương thức policy liên quan đến xem, tạo, cập nhật và xóa resource, bạn có thể cung cấp tùy chọn `--model` khi thực thi lệnh:
 
-    php artisan make:policy PostPolicy --model=Post
+```shell
+php artisan make:policy PostPolicy --model=Post
+```
 
 <a name="registering-policies"></a>
 ### Đăng ký Policies
@@ -304,7 +336,8 @@ Nếu bạn muốn tự định nghĩa logic đăng ký policy theo cách của 
         // Return the name of the policy class for the given model...
     });
 
-> {note} Bất kỳ policy nào được ánh xạ trong `AuthServiceProvider` cũng sẽ được ưu tiên hơn các policy khác được đăng ký tự động.
+> **Warning**
+> Bất kỳ policy nào được ánh xạ trong `AuthServiceProvider` cũng sẽ được ưu tiên hơn các policy khác được đăng ký tự động.
 
 <a name="writing-policies"></a>
 ## Viết Policies
@@ -342,7 +375,8 @@ Bạn có thể tiếp tục định nghĩa thêm các phương thức mà bạn
 
 Nếu bạn đã sử dụng option `--model` khi tạo policy thông qua Artisan console, thì nó sẽ chứa sẵn các phương thức cho các hành động `viewAny`, `view`, `create`, `update`, `delete`, `restore`, và `forceDelete`.
 
-> {tip} Tất cả các policy được gọi thông qua Laravel [service container](/docs/{{version}}/container), cho phép bạn khai báo bất kỳ phụ thuộc cần thiết nào trong hàm constructor của policy để chúng có thể tự động được inject.
+> **Note**
+> Tất cả các policy được gọi thông qua Laravel [service container](/docs/{{version}}/container), cho phép bạn khai báo bất kỳ phụ thuộc cần thiết nào trong hàm constructor của policy để chúng có thể tự động được inject.
 
 <a name="policy-responses"></a>
 ### Policy Responses
@@ -384,6 +418,49 @@ Khi sử dụng phương thức `Gate::authorize`, cái để đưa ra một `Au
     Gate::authorize('update', $post);
 
     // The action is authorized...
+
+<a name="customising-policy-response-status"></a>
+#### Customizing The HTTP Response Status
+
+Khi một action bị từ chối bởi một phương thức policy, thì HTTP response `403` sẽ được trả về; tuy nhiên, đôi khi việc trả về một mã trạng thái HTTP khác có thể có ích. Bạn có thể tùy chỉnh mã trạng thái HTTP được trả về khi một kiểm tra authorization thất bại bằng cách sử dụng hàm constructor static `denyWithStatus` trong class `Illuminate\Auth\Access\Response`:
+
+    use App\Models\Post;
+    use App\Models\User;
+    use Illuminate\Auth\Access\Response;
+
+    /**
+     * Determine if the given post can be updated by the user.
+     *
+     * @param  \App\Models\User  $user
+     * @param  \App\Models\Post  $post
+     * @return \Illuminate\Auth\Access\Response
+     */
+    public function update(User $user, Post $post)
+    {
+        return $user->id === $post->user_id
+                    ? Response::allow()
+                    : Response::denyWithStatus(404);
+    }
+
+Bởi vì ẩn resource thông qua response `404` là một hình thức phổ biến có cho các ứng dụng web nên phương thức `denyAsNotFound` cũng đã được cung cấp để giúp thuận tiện hơn:
+
+    use App\Models\Post;
+    use App\Models\User;
+    use Illuminate\Auth\Access\Response;
+
+    /**
+     * Determine if the given post can be updated by the user.
+     *
+     * @param  \App\Models\User  $user
+     * @param  \App\Models\Post  $post
+     * @return \Illuminate\Auth\Access\Response
+     */
+    public function update(User $user, Post $post)
+    {
+        return $user->id === $post->user_id
+                    ? Response::allow()
+                    : Response::denyAsNotFound();
+    }
 
 <a name="methods-without-models"></a>
 ### Các phương thức không dùng Models
@@ -451,7 +528,8 @@ Mặc định, tất cả các gate và policy sẽ tự động trả về `fal
 
 Nếu bạn muốn từ chối tất cả các kiểm tra authorization cho một loại người dùng cụ thể thì bạn có thể trả về `false` từ phương thức `before`. Nếu `null` được trả về, thì authorization check sẽ chuyển sang phương thức policy.
 
-> {note} Phương thức `before` của policy sẽ không được gọi nếu policy đó không chứa phương thức nào mà có tên khớp với tên của hành động đang được kiểm tra.
+> **Warning**
+> Phương thức `before` của policy sẽ không được gọi nếu policy đó không chứa phương thức nào mà có tên khớp với tên của hành động đang được kiểm tra.
 
 <a name="authorizing-actions-using-policies"></a>
 ## Authorizing Actions dùng Policies
@@ -618,7 +696,8 @@ Các phương thức controller sau sẽ được ánh xạ tới các phương 
 | update | update |
 | destroy | delete |
 
-> {tip} Bạn có thể sử dụng lệnh `make:policy` với tùy chọn `--model` để tạo nhanh một class policy cho một model nhất định: `php artisan make:policy PostPolicy --model=Post`.
+> **Note**
+> Bạn có thể sử dụng lệnh `make:policy` với tùy chọn `--model` để tạo nhanh một class policy cho một model nhất định: `php artisan make:policy PostPolicy --model=Post`.
 
 <a name="via-middleware"></a>
 ### Via Middleware
@@ -663,7 +742,7 @@ Một lần nữa, một số phương thức policy như `create` sẽ không y
 
 Khi viết template Blade, bạn có thể hiển thị một phần của trang web cho những người dùng đã được authorize để thực hiện một số hành động nhất định. Ví dụ: bạn có thể muốn hiển thị một form cập nhật cho một bài đăng chỉ khi người dùng đó thực sự có quyền cập nhật bài đăng. Trong những tình huống như thế này, bạn có thể sử dụng lệnh `@can` và `@cannot`:
 
-```html
+```blade
 @can('update', $post)
     <!-- The current user can update the post... -->
 @elsecan('create', App\Models\Post::class)
@@ -681,7 +760,7 @@ Khi viết template Blade, bạn có thể hiển thị một phần của trang
 
 Các lệnh này là các shortcut thuận tiện để không phải viết các câu lệnh như `@if` và `@unless`. Các câu lệnh `@can` và `@cannot` ở trên cũng tương đương với các câu lệnh if như sau:
 
-```html
+```blade
 @if (Auth::user()->can('update', $post))
     <!-- The current user can update the post... -->
 @endif
@@ -693,7 +772,7 @@ Các lệnh này là các shortcut thuận tiện để không phải viết cá
 
 Bạn cũng có thể kiểm tra xem người dùng có được phép thực hiện bất kỳ hành động nào từ một loạt các hành động nhất định. Để thực hiện việc này, hãy sử dụng lệnh `@canany`:
 
-```html
+```blade
 @canany(['update', 'view', 'delete'], $post)
     <!-- The current user can update, view, or delete the post... -->
 @elsecanany(['create'], \App\Models\Post::class)
@@ -706,7 +785,7 @@ Bạn cũng có thể kiểm tra xem người dùng có được phép thực hi
 
 Giống như hầu hết các phương thức authorization khác, bạn có thể truyền tên class cho các lệnh `@can` và `@cannot` nếu hành động đó không yêu cầu một model:
 
-```html
+```blade
 @can('create', App\Models\Post::class)
     <!-- The current user can create posts... -->
 @endcan

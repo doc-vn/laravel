@@ -34,7 +34,8 @@ Ngoài việc trả về một chuỗi từ route và controller của bạn, b�
         return [1, 2, 3];
     });
 
-> {tip} Bạn có biết rằng bạn cũng có thể trả về [Eloquent collections](/docs/{{version}}/eloquent-collections) từ một route hoặc một controller của bạn không? Chúng sẽ tự động được chuyển đổi thành JSON. Bạn cứ thử đi!
+> **Note**
+> Bạn có biết rằng bạn cũng có thể trả về [Eloquent collections](/docs/{{version}}/eloquent-collections) từ một route hoặc một controller của bạn không? Chúng sẽ tự động được chuyển đổi thành JSON. Bạn cứ thử đi!
 
 <a name="response-objects"></a>
 #### Response Objects
@@ -288,7 +289,8 @@ Phương thức `download` có thể được sử dụng để tạo response b
 
     return response()->download($pathToFile, $name, $headers);
 
-> {note} Quản lý file download Symfony HttpFoundation yêu cầu file download phải có tên file là ASCII.
+> **Warning**
+> Quản lý file download Symfony HttpFoundation yêu cầu file download phải có tên file là ASCII.
 
 <a name="streamed-downloads"></a>
 #### Streamed Downloads

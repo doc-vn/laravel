@@ -35,6 +35,10 @@ Nếu route của bạn có các tham số, thì bạn có thể truyền chúng
 
     return redirect()->route('profile', ['id' => 1]);
 
+Để thuận tiện, Laravel cũng cung cấp một hàm global function `to_route`:
+
+    return to_route('profile', ['id' => 1]);
+
 <a name="populating-parameters-via-eloquent-models"></a>
 #### Populating Parameters Via Eloquent Models
 

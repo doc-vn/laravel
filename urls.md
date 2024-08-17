@@ -108,7 +108,7 @@ Nếu bạn muốn tạo một route URL signed tạm thời sau một khoảng 
 <a name="validating-signed-route-requests"></a>
 #### Validating Signed Route Requests
 
-Để xác minh một request có signed hợp lệ hay không, bạn có thể gọi phương thức `hasValidSignature` trên `Request` đó:
+Để xác minh một request có signed hợp lệ hay không, bạn có thể gọi phương thức `hasValidSignature` trên instance `Illuminate\Http\Request` đó:
 
     use Illuminate\Http\Request;
 
@@ -120,7 +120,13 @@ Nếu bạn muốn tạo một route URL signed tạm thời sau một khoảng 
         // ...
     })->name('unsubscribe');
 
-Ngoài ra, bạn có thể gán một [middleware](/docs/{{version}}/middleware) `Illuminate\Routing\Middleware\ValidateSignature` cho một route. Nếu bạn chưa đăng ký middleware này, bạn nên gán cho middleware đó một khóa trong mảng `routeMiddleware` của file kernel HTTP của bạn:
+Thỉnh thoảng, bạn có thể cần cho phép frontend của ứng dụng thêm dữ liệu vào một signed URL, chẳng hạn như khi thực hiện phân trang ở client-side. Do đó, bạn có thể chỉ định các tham số request cần được bỏ qua khi xác thực signed URL bằng phương thức `hasValidSignatureWhileIgnoring`. Hãy nhớ rằng, việc bỏ qua các tham số này sẽ cho phép bất kỳ ai cũng có thể sửa các tham số đó trong request:
+
+    if (! $request->hasValidSignatureWhileIgnoring(['page', 'order'])) {
+        abort(401);
+    }
+
+Thay vì xác thực các signed URL bằng cách sử dụng instance request, bạn có thể gán một [middleware](/docs/{{version}}/middleware) `Illuminate\Routing\Middleware\ValidateSignature` cho một route. Nếu bạn chưa đăng ký middleware này, bạn nên gán cho middleware đó một khóa trong mảng `routeMiddleware` của file kernel HTTP của bạn:
 
     /**
      * The application's route middleware.

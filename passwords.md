@@ -15,7 +15,8 @@
 
 Hầu hết các ứng dụng web đều cung cấp một cách nào đó để người dùng reset lại mật khẩu của họ. Thay vì buộc bạn phải làm lại việc này cho mọi ứng dụng mà bạn tạo ra, Laravel cung cấp một service thuận tiện để gửi link reset mật khẩu và reset lại mật khẩu một cách an toàn.
 
-> {tip} Bạn muốn bắt đầu nhanh chóng? Hãy cài đặt [starter kit](/docs/{{version}}/starter-kits) của Laravel trong ứng dụng mới của bạn. Bộ khởi đầu của Laravel sẽ đảm nhiệm việc xây dựng toàn bộ hệ thống xác thực cho bạn, bao gồm cả việc reset mật khẩu.
+> **Note**
+> Bạn muốn bắt đầu nhanh chóng? Hãy cài đặt [starter kit](/docs/{{version}}/starter-kits) của Laravel trong ứng dụng mới của bạn. Bộ khởi đầu của Laravel sẽ đảm nhiệm việc xây dựng toàn bộ hệ thống xác thực cho bạn, bao gồm cả việc reset mật khẩu.
 
 <a name="model-preparation"></a>
 ### Chuẩn bị Model
@@ -29,7 +30,9 @@ Tiếp theo, hãy chú ý model `App\Models\User` của bạn phải được im
 
 Một bảng phải được tạo để lưu trữ các mã token reset của application của bạn. Mặc định, việc migration cho bảng này đã có sẵn trong Laravel application, vì vậy bạn chỉ cần migrate cơ sở dữ liệu của bạn để tạo bảng này:
 
-    php artisan migrate
+```shell
+php artisan migrate
+```
 
 <a name="configuring-trusted-hosts"></a>
 ### Cấu hình Trusted Hosts
@@ -81,11 +84,12 @@ Tiếp theo, chúng ta sẽ định nghĩa một route để xử lý request fo
 
 Trước khi tiếp tục, chúng ta hãy xem xét route này chi tiết hơn. Đầu tiên, thuộc tính `email` của request sẽ được validate. Tiếp theo, chúng ta sẽ sử dụng "password broker" có sẵn của Laravel (thông qua facade `Password`) để gửi link set lại mật khẩu cho người dùng. Password broker sẽ đảm nhiệm việc lấy ra người dùng theo một field nhất định (trong trường hợp này là địa chỉ email) và gửi cho người dùng link set lại mật khẩu thông qua [hệ thống notification](/docs/{{version}}/notifications).
 
-Phương thức `sendResetLink` sẽ trả về một biến "trạng thái". Trạng thái này có thể được chuyển sang ngôn ngữ khác bằng cách sử dụng helper [localization](/docs/{{version}}/localization) của Laravel để hiển thị thông báo cho người dùng về trạng thái yêu cầu của họ. Việc chuyển ngôn ngữ này được xác định bởi file ngôn ngữ `resources/lang/{lang}/passwords.php` trong ứng dụng của bạn. Các mục cho các giá trị có thể có của biến trạng thái sẽ nằm sẵn trong file ngôn ngữ `passwords`.
+Phương thức `sendResetLink` sẽ trả về một biến "trạng thái". Trạng thái này có thể được chuyển sang ngôn ngữ khác bằng cách sử dụng helper [localization](/docs/{{version}}/localization) của Laravel để hiển thị thông báo cho người dùng về trạng thái yêu cầu của họ. Việc chuyển ngôn ngữ này được xác định bởi file ngôn ngữ `lang/{lang}/passwords.php` trong ứng dụng của bạn. Các mục cho các giá trị có thể có của biến trạng thái sẽ nằm sẵn trong file ngôn ngữ `passwords`.
 
 Bạn có thể thắc mắc làm thế nào mà Laravel biết cách lấy ra bản ghi người dùng từ cơ sở dữ liệu ứng dụng của bạn khi gọi phương thức `sendResetLink` của facade `Password`. Password broker của Laravel sẽ sử dụng "user providers" của hệ thống authentication của bạn để lấy ra các bản ghi trong cơ sở dữ liệu. User provider mà được password broker sử dụng sẽ được cấu hình trong mảng cấu hình `passwords` của file cấu hình `config/auth.php` của bạn. Để tìm hiểu thêm về cách viết user provider tùy chỉnh, hãy tham khảo [tài liệu authentication](/docs/{{version}}/authentication#adding-custom-user-providers).
 
-> {tip} Khi bạn muốn tự làm chức năng set lại mật khẩu này, thì bạn phải tự định nghĩa nội dung của các view và route của nó. Nếu bạn muốn một bộ gồm tất cả logic về xác minh và xác thực cần thiết, hãy xem [starter kit của Laravel](/docs/{{version}}/starter-kits).
+> **Note**
+> Khi bạn muốn tự làm chức năng set lại mật khẩu này, thì bạn phải tự định nghĩa nội dung của các view và route của nó. Nếu bạn muốn một bộ gồm tất cả logic về xác minh và xác thực cần thiết, hãy xem [starter kit của Laravel](/docs/{{version}}/starter-kits).
 
 <a name="resetting-the-password"></a>
 ### Resetting The Password
@@ -141,7 +145,7 @@ Trước khi tiếp tục, chúng ta hãy xem xét route này một cách chi ti
 
 Nếu token, địa chỉ email và mật khẩu được cung cấp cho password broker là hợp lệ, thì closure mà được truyền cho phương thức `reset` sẽ được gọi. Trong closure này sẽ nhận vào một instance người dùng và mật khẩu được nhập từ form set lại mật khẩu, sau đó chúng ta có thể cập nhật mật khẩu của người dùng trong cơ sở dữ liệu.
 
-Phương thức `reset` sẽ trả về một biến "trạng thái". Trạng thái này có thể được chuyển sang ngôn ngữ khác bằng cách sử dụng helper [localization](/docs/{{version}}/localization) của Laravel để hiển thị thông báo cho người dùng về trạng thái yêu cầu của họ. Việc chuyển ngôn ngữ này được xác định bởi file ngôn ngữ `resources/lang/{lang}/passwords.php` trong ứng dụng của bạn. Các mục cho các giá trị có thể có của biến trạng thái sẽ nằm sẵn trong file ngôn ngữ `passwords`.
+Phương thức `reset` sẽ trả về một biến "trạng thái". Trạng thái này có thể được chuyển sang ngôn ngữ khác bằng cách sử dụng helper [localization](/docs/{{version}}/localization) của Laravel để hiển thị thông báo cho người dùng về trạng thái yêu cầu của họ. Việc chuyển ngôn ngữ này được xác định bởi file ngôn ngữ `lang/{lang}/passwords.php` trong ứng dụng của bạn. Các mục cho các giá trị có thể có của biến trạng thái sẽ nằm sẵn trong file ngôn ngữ `passwords`.
 
 Trước khi tiếp tục, bạn có thể thắc mắc làm thế nào mà Laravel biết cách lấy ra bản ghi người dùng từ cơ sở dữ liệu ứng dụng của bạn khi gọi phương thức `reset` của facade `Password`. Password broker của Laravel sẽ sử dụng "user providers" của hệ thống authentication của bạn để lấy ra các bản ghi trong cơ sở dữ liệu. User provider mà được password broker sử dụng sẽ được cấu hình trong mảng cấu hình `passwords` của file cấu hình `config/auth.php` của bạn. Để tìm hiểu thêm về cách viết user provider tùy chỉnh, hãy tham khảo [tài liệu authentication](/docs/{{version}}/authentication#adding-custom-user-providers).
 
@@ -150,7 +154,9 @@ Trước khi tiếp tục, bạn có thể thắc mắc làm thế nào mà Lara
 
 Token reset password đã hết hạn sẽ vẫn còn nằm trong cơ sở dữ liệu của bạn. Tuy nhiên, bạn có thể dễ dàng xóa các bản ghi này bằng lệnh Artisan `auth:clear-resets`:
 
-    php artisan auth:clear-resets
+```shell
+php artisan auth:clear-resets
+```
 
 Nếu bạn muốn tự động hóa quy trình này, hãy cân nhắc thêm lệnh vào [scheduler](/docs/{{version}}/scheduling) trong ứng dụng của bạn:
 

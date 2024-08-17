@@ -51,7 +51,7 @@ Laravel cho phép bạn dễ dàng "mô phỏng" cách nhập của người dù
         $this->line('Your name is '.$name.' and you program in '.$language.'.');
     });
 
-Bạn có thể kiểm tra lệnh này bằng cách sử dụng bài test dưới đây, bài test này sử dụng các phương thức `expectsQuestion`, `expectsOutput`, `doesntExpectOutput`, và `assertExitCode`:
+Bạn có thể kiểm tra lệnh này bằng cách sử dụng bài test dưới đây, bài test này sử dụng các phương thức `expectsQuestion`, `expectsOutput`, `doesntExpectOutput`, `expectsOutputToContain`, `doesntExpectOutputToContain`, và `assertExitCode`:
 
     /**
      * Test a console command.
@@ -65,6 +65,8 @@ Bạn có thể kiểm tra lệnh này bằng cách sử dụng bài test dướ
              ->expectsQuestion('Which language do you prefer?', 'PHP')
              ->expectsOutput('Your name is Taylor Otwell and you prefer PHP.')
              ->doesntExpectOutput('Your name is Taylor Otwell and you prefer Ruby.')
+             ->expectsOutputToContain('Taylor Otwell')
+             ->doesntExpectOutputToContain('you prefer Ruby')
              ->assertExitCode(0);
     }
 

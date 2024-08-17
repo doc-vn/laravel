@@ -19,7 +19,7 @@ Trước khi sử dụng Redis cho Laravel, chúng tôi khuyến khích bạn c�
 
 Nếu bạn không thể cài đặt extension phpredis, bạn có thể cài đặt package `predis/predis` thông qua Composer. Predis là một client Redis được viết hoàn toàn bằng PHP và nó không yêu cầu cài thêm bất kỳ extension nào:
 
-```bash
+```shell
 composer require predis/predis
 ```
 
@@ -34,14 +34,14 @@ Bạn có thể cấu hình cài đặt Redis của ứng dụng thông qua file
 
         'default' => [
             'host' => env('REDIS_HOST', '127.0.0.1'),
-            'password' => env('REDIS_PASSWORD', null),
+            'password' => env('REDIS_PASSWORD'),
             'port' => env('REDIS_PORT', 6379),
             'database' => env('REDIS_DB', 0),
         ],
 
         'cache' => [
             'host' => env('REDIS_HOST', '127.0.0.1'),
-            'password' => env('REDIS_PASSWORD', null),
+            'password' => env('REDIS_PASSWORD'),
             'port' => env('REDIS_PORT', 6379),
             'database' => env('REDIS_CACHE_DB', 1),
         ],
@@ -76,7 +76,7 @@ Mặc định, các Redis client sẽ sử dụng scheme `tcp` khi kết nối v
         'default' => [
             'scheme' => 'tls',
             'host' => env('REDIS_HOST', '127.0.0.1'),
-            'password' => env('REDIS_PASSWORD', null),
+            'password' => env('REDIS_PASSWORD'),
             'port' => env('REDIS_PORT', 6379),
             'database' => env('REDIS_DB', 0),
         ],
@@ -96,7 +96,7 @@ Nếu application của bạn đang sử dụng một cụm server Redis, bạn 
             'default' => [
                 [
                     'host' => env('REDIS_HOST', 'localhost'),
-                    'password' => env('REDIS_PASSWORD', null),
+                    'password' => env('REDIS_PASSWORD'),
                     'port' => env('REDIS_PORT', 6379),
                     'database' => 0,
                 ],
@@ -139,7 +139,7 @@ Ngoài các tùy chọn cấu hình server mặc định như là `host`, `port`
 
     'default' => [
         'host' => env('REDIS_HOST', 'localhost'),
-        'password' => env('REDIS_PASSWORD', null),
+        'password' => env('REDIS_PASSWORD'),
         'port' => env('REDIS_PORT', 6379),
         'database' => 0,
         'read_write_timeout' => 60,
@@ -148,7 +148,11 @@ Ngoài các tùy chọn cấu hình server mặc định như là `host`, `port`
 <a name="the-redis-facade-alias"></a>
 #### The Redis Facade Alias
 
-File cấu hình `config/app.php` của Laravel chứa một mảng `aliases` định nghĩa tất cả các alias của class sẽ được framework đăng ký. Để thuận tiện, một entry alias đã được chứa cho mỗi [facade](/docs/{{version}}/facades) do Laravel cung cấp; tuy nhiên, alias `Redis` bị vô hiệu hóa vì nó xung đột với class tên `Redis` do extension phpredis cung cấp. Nếu bạn đang sử dụng Predis client và muốn bật alias này, bạn có thể bỏ comment alias đó trong file cấu hình `config/app.php` của ứng dụng của bạn.
+File cấu hình `config/app.php` của Laravel chứa một mảng `aliases` định nghĩa tất cả các alias của class sẽ được framework đăng ký. Mặc định, sẽ không có alias `Redis` vì nó xung đột với class tên `Redis` do extension phpredis cung cấp. Nếu bạn đang sử dụng Predis client và muốn thêm alias `Redis`, bạn có thể thêm alias này vào trong mảng `aliases` trong file cấu hình `config/app.php` của ứng dụng của bạn:
+
+    'aliases' => Facade::defaultAliases()->merge([
+        'Redis' => Illuminate\Support\Facades\Redis::class,
+    ])->toArray(),
 
 <a name="phpredis"></a>
 ### phpredis
@@ -166,7 +170,7 @@ Ngoài các tham số kết nối mặc định `scheme`, `host`, `port`, `datab
 
     'default' => [
         'host' => env('REDIS_HOST', 'localhost'),
-        'password' => env('REDIS_PASSWORD', null),
+        'password' => env('REDIS_PASSWORD'),
         'port' => env('REDIS_PORT', 6379),
         'database' => 0,
         'read_timeout' => 60,
@@ -180,8 +184,6 @@ Ngoài các tham số kết nối mặc định `scheme`, `host`, `port`, `datab
 #### phpredis Serialization & Compression
 
 Extension phpredis cũng có thể được cấu hình để sử dụng nhiều thuật toán nén và serialization khác nhau. Các thuật toán này có thể được cấu hình thông qua mảng `options` trong cấu hình Redis của bạn:
-
-    use Redis;
 
     'redis' => [
 
@@ -262,7 +264,8 @@ Phương thức `transaction` của facade `Redis` cung cấp một wrapper thu�
         $redis->incr('total_visits', 1);
     });
 
-> {note} Khi định nghĩa một transaction Redis, bạn không được lấy bất kỳ giá trị nào từ kết nối Redis. Hãy nhớ rằng, transaction của bạn được thực thi dưới dạng một thao tác duy nhất và thao tác đó không được thực thi cho đến khi toàn bộ closure của bạn thực thi xong các lệnh của nó.
+> **Warning**
+> Khi định nghĩa một transaction Redis, bạn không được lấy bất kỳ giá trị nào từ kết nối Redis. Hãy nhớ rằng, transaction của bạn được thực thi dưới dạng một thao tác duy nhất và thao tác đó không được thực thi cho đến khi toàn bộ closure của bạn thực thi xong các lệnh của nó.
 
 #### Lua Scripts
 
@@ -282,7 +285,8 @@ Trong ví dụ này, chúng ta sẽ tăng counter, kiểm tra giá trị mới c
         return counter
     LUA, 2, 'first-counter', 'second-counter');
 
-> {note} Vui lòng tham khảo [tài liệu về Redis](https://redis.io/commands/eval) để biết thêm thông tin về script Redis.
+> **Warning**
+> Vui lòng tham khảo [tài liệu về Redis](https://redis.io/commands/eval) để biết thêm thông tin về script Redis.
 
 <a name="pipelining-commands"></a>
 ### Lệnh Pipeline

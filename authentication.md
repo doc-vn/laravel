@@ -39,7 +39,8 @@ Provider sẽ định nghĩa cách mà người dùng được lấy ra từ dat
 
 File cấu hình xác thực ứng dụng của bạn được lưu tại `config/auth.php`. File này sẽ chứa một số tùy chọn đã được giải thích trong file để điều chỉnh các hành vi của các service xác thực của Laravel.
 
-> {tip} Guard và provider không nên bị nhầm lẫn với các "role" và các "permission". Để tìm hiểu thêm về các cách authorize hành động của người dùng thông qua permission, vui lòng tham khảo thêm tài liệu [authorization](/docs/{{version}}/authorization).
+> **Note**
+> Guard và provider không nên bị nhầm lẫn với các "role" và các "permission". Để tìm hiểu thêm về các cách authorize hành động của người dùng thông qua permission, vui lòng tham khảo thêm tài liệu [authorization](/docs/{{version}}/authorization).
 
 <a name="starter-kits"></a>
 ### Starter Kits
@@ -79,7 +80,7 @@ _Laravel Breeze_ là một triển khai đơn giản, tối thiểu dành cho t�
 
 _Laravel Fortify_ là phần backend xác thực không chứa giao diện cho Laravel, triển khai nhiều tính năng có trong tài liệu này, bao gồm xác thực dựa trên cookie cũng như các tính năng khác như xác thực hai lớp và xác minh email. Fortify cung cấp backend xác thực cho Laravel Jetstream hoặc có thể được sử dụng độc lập khi kết hợp với [Laravel Sanctum](/docs/{{version}}/sanctum) để cung cấp xác thực cho một SPA (Single Page Application) mà cần chức năng xác thực cùng với Laravel.
 
-_[Laravel Jetstream](https://jetstream.laravel.com)_ là một bộ công cụ khởi động ứng dụng mạnh mẽ sử dụng các service xác thực của Laravel Fortify với giao diện người dùng hiện đại, đẹp mắt được hỗ trợ bởi [Tailwind CSS](https://tailwindcss.com), [Livewire](https://laravel-livewire.com) và [Inertia.js](https://inertiajs.com). Laravel Jetstream hỗ trợ tùy chọn cho xác thực hai lớp, hỗ trợ nhóm, quản lý session trình duyệt, quản lý hồ sơ và tích hợp sẵn [Laravel Sanctum](/docs/{{version}}/sanctum) để cung cấp xác thực token API. Các service xác thực API của Laravel sẽ được thảo luận ở bên dưới.
+_[Laravel Jetstream](https://jetstream.laravel.com)_ là một bộ công cụ khởi động ứng dụng mạnh mẽ sử dụng các service xác thực của Laravel Fortify với giao diện người dùng hiện đại, đẹp mắt được hỗ trợ bởi [Tailwind CSS](https://tailwindcss.com), [Livewire](https://laravel-livewire.com) và [Inertia](https://inertiajs.com). Laravel Jetstream hỗ trợ tùy chọn cho xác thực hai lớp, hỗ trợ nhóm, quản lý session trình duyệt, quản lý hồ sơ và tích hợp sẵn [Laravel Sanctum](/docs/{{version}}/sanctum) để cung cấp xác thực token API. Các service xác thực API của Laravel sẽ được thảo luận ở bên dưới.
 
 <a name="laravels-api-authentication-services"></a>
 #### Laravel's API Authentication Services
@@ -109,12 +110,13 @@ Nếu bạn đang xây dựng một ứng dụng single page (SPA) được hỗ
 
 Passport có thể được lựa chọn khi ứng dụng của bạn thực sự cần tất cả các tính năng do OAuth2 cung cấp.
 
-Và, nếu bạn muốn bắt đầu nhanh, chúng tôi rất vui lòng giới thiệu [Laravel Jetstream](https://jetstream.laravel.com) như một cách nhanh chóng để bắt đầu một ứng dụng Laravel mới, nó sử dụng một loạt các xác thực ưa thích của chúng tôi trong các service Laravel xác thực được tích hợp sẵn và Laravel Sanctum.
+Và, nếu bạn muốn bắt đầu nhanh, chúng tôi rất vui lòng giới thiệu [Laravel Breeze](/docs/{{version}}/starter-kits#laravel-breeze) như một cách nhanh chóng để bắt đầu một ứng dụng Laravel mới, nó sử dụng một loạt các xác thực ưa thích của chúng tôi trong các service Laravel xác thực được tích hợp sẵn và Laravel Sanctum.
 
 <a name="authentication-quickstart"></a>
 ## Authentication Quickstart
 
-> {note} Phần tài liệu này sẽ thảo luận về việc xác thực người dùng thông qua [bộ công cụ khởi động ứng dụng của Laravel](/docs/{{version}}/starter-kits), bao gồm cả giao diện người dùng để giúp bạn bắt đầu nhanh. Nếu bạn muốn tích hợp trực tiếp với các hệ thống xác thực có sẵn của Laravel, hãy xem tài liệu về [xác thực người dùng theo cách thủ công](#authenticating-users).
+> **Warning**
+> Phần tài liệu này sẽ thảo luận về việc xác thực người dùng thông qua [bộ công cụ khởi động ứng dụng của Laravel](/docs/{{version}}/starter-kits), bao gồm cả giao diện người dùng để giúp bạn bắt đầu nhanh. Nếu bạn muốn tích hợp trực tiếp với các hệ thống xác thực có sẵn của Laravel, hãy xem tài liệu về [xác thực người dùng theo cách thủ công](#authenticating-users).
 
 <a name="install-a-starter-kit"></a>
 ### Cài đặt một Starter Kit
@@ -123,7 +125,7 @@ Trước tiên, bạn nên [cài đặt bộ khởi động ứng dụng Laravel
 
 Laravel Breeze là một triển khai tối thiểu, đơn giản cho tất cả các tính năng xác thực của Laravel, bao gồm đăng nhập, đăng ký, đặt lại mật khẩu, xác minh email và xác nhận mật khẩu. Lớp view của Laravel Breeze được tạo từ [Blade templates](/docs/{{version}}/blade) và bằng [Tailwind CSS](https://tailwindcss.com). Breeze cũng cung cấp tùy chọn scaffolding dựa trên [Inertia](https://inertiajs.com) bằng cách sử dụng Vue hoặc React.
 
-[Laravel Jetstream](https://jetstream.laravel.com) là bộ công cụ khởi động ứng dụng mạnh mẽ, bao gồm hỗ trợ tạo nền tảng cho ứng dụng của bạn với [Livewire](https://laravel-livewire.com) hoặc [Inertia.js và Vue](https://inertiajs.com). Ngoài ra, Jetstream cũng có tính năng hỗ trợ tùy chọn cho xác thực hai lớp, nhóm, quản lý hồ sơ, quản lý sesion trình duyệt, hỗ trợ API qua [Laravel Sanctum](/docs/{{version}}/sanctum), xóa tài khoản, v.v.
+[Laravel Jetstream](https://jetstream.laravel.com) là bộ công cụ khởi động ứng dụng mạnh mẽ, bao gồm hỗ trợ tạo nền tảng cho ứng dụng của bạn với [Livewire](https://laravel-livewire.com) hoặc [Inertia và Vue](https://inertiajs.com). Ngoài ra, Jetstream cũng có tính năng hỗ trợ tùy chọn cho xác thực hai lớp, nhóm, quản lý hồ sơ, quản lý sesion trình duyệt, hỗ trợ API qua [Laravel Sanctum](/docs/{{version}}/sanctum), xóa tài khoản, v.v.
 
 <a name="retrieving-the-authenticated-user"></a>
 ### Lấy user đã được authenticate
@@ -171,7 +173,8 @@ Ngoài ra, khi người dùng đã được authenticate, bạn có thể truy c
         // The user is logged in...
     }
 
-> {tip} Mặc dù bạn có thể xác định xem người dùng đã được authenticate hay chưa bằng phương thức `check`, nhưng thông thường bạn nên sử dụng một middleware để yêu cầu người dùng phải được authenticate trước khi truy cập vào một route hoặc một controller cụ thể. Để tìm hiểu thêm về điều này, hãy xem tài liệu về [protecting routes](/docs/{{version}}/authentication#protecting-routes).
+> **Note**
+> Mặc dù bạn có thể xác định xem người dùng đã được authenticate hay chưa bằng phương thức `check`, nhưng thông thường bạn nên sử dụng một middleware để yêu cầu người dùng phải được authenticate trước khi truy cập vào một route hoặc một controller cụ thể. Để tìm hiểu thêm về điều này, hãy xem tài liệu về [protecting routes](/docs/{{version}}/authentication#protecting-routes).
 
 <a name="protecting-routes"></a>
 ### Bảo vệ route
@@ -212,7 +215,8 @@ Khi gắn middleware `auth` vào một route, bạn cũng có thể chỉ địn
 
 Nếu bạn đang sử dụng Laravel Breeze hoặc Laravel Jetstream [starter kits](/docs/{{version}}/starter-kits), giới hạn tốc độ sẽ tự động được áp dụng cho các lần thử đăng nhập. Mặc định, người dùng sẽ không thể đăng nhập trong một phút nếu họ không cung cấp đúng thông tin authenticate sau một vài lần thử. Throttling là một trường duy nhất nó sẽ gắn username hoặc địa chỉ email với địa chỉ IP của họ.
 
-> {tip} Nếu bạn muốn giới hạn các route khác trong ứng dụng của bạn, hãy xem [tài liệu về giới hạn đó](/docs/{{version}}/routing#rate-limiting).
+> **Note**
+> Nếu bạn muốn giới hạn các route khác trong ứng dụng của bạn, hãy xem [tài liệu về giới hạn đó](/docs/{{version}}/routing#rate-limiting).
 
 <a name="authenticating-users"></a>
 ## Authenticate user thủ công
@@ -251,7 +255,7 @@ Chúng ta sẽ truy cập các service authentication của Laravel thông qua [
 
             return back()->withErrors([
                 'email' => 'The provided credentials do not match our records.',
-            ]);
+            ])->onlyInput('email');
         }
     }
 
@@ -272,7 +276,29 @@ Nếu bạn muốn, bạn cũng có thể thêm các điều kiện query vào t
         // Authentication was successful...
     }
 
-> {note} Trong các ví dụ này, `email` không phải là một trường bắt buộc, nó chỉ được sử dụng làm ví dụ. Bạn có thể sử dụng bất kỳ tên cột nào tương ứng với "username" trong bảng cơ sở dữ liệu của bạn.
+Đối với các điều kiện truy vấn phức tạp, bạn có thể cung cấp một closure trong mảng thông tin xác thực của bạn. Closure này sẽ được gọi cùng với instance truy vấn, cho phép bạn tùy chỉnh truy vấn dựa trên nhu cầu của ứng dụng:
+
+    if (Auth::attempt([
+        'email' => $email,
+        'password' => $password,
+        fn ($query) => $query->has('activeSubscription'),
+    ])) {
+        // Authentication was successful...
+    }
+
+> **Warning**
+> Trong các ví dụ này, `email` không phải là một trường bắt buộc, nó chỉ được sử dụng làm ví dụ. Bạn có thể sử dụng bất kỳ tên cột nào tương ứng với "username" trong bảng cơ sở dữ liệu của bạn.
+
+Phương thức `attemptWhen`, nhận vào một closure làm tham số thứ hai, có thể được sử dụng để thực hiện một kiểm tra kỹ hơn đối với người dùng trước khi thực sự xác thực người dùng. Closure này sẽ nhận vào một user và phải trả về `true` hoặc `false` để cho biết user đó có thể được xác thực hay không:
+
+    if (Auth::attemptWhen([
+        'email' => $email,
+        'password' => $password,
+    ], function ($user) {
+        return $user->isNotBanned();
+    })) {
+        // Authentication was successful...
+    }
 
 <a name="accessing-specific-guard-instances"></a>
 #### Truy cập vào instance guard cụ thể
@@ -296,6 +322,14 @@ Khi giá trị này là `true`, Laravel sẽ giữ cho người dùng được a
 
     if (Auth::attempt(['email' => $email, 'password' => $password], $remember)) {
         // The user is being remembered...
+    }
+
+Nếu ứng dụng của bạn cung cấp chức năng "remember me", bạn có thể sử dụng phương thức `viaRemember` để xác định xem người dùng hiện đang được xác thực có được xác thực bằng cookie "remember me" hay không:
+
+    use Illuminate\Support\Facades\Auth;
+
+    if (Auth::viaRemember()) {
+        // ...
     }
 
 <a name="other-authentication-methods"></a>
@@ -354,8 +388,10 @@ Khi middleware đã được gắn vào route, bạn sẽ tự động được 
 
 Nếu bạn đang sử dụng PHP FastCGI và Apache để làm ứng dụng Laravel của bạn, thì xác thực HTTP Basic có thể không hoạt động chính xác. Để khắc phục sự cố này, các dòng sau có thể được thêm vào file `.htaccess` trong ứng dụng của bạn:
 
-    RewriteCond %{HTTP:Authorization} ^(.+)$
-    RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+```apache
+RewriteCond %{HTTP:Authorization} ^(.+)$
+RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+```
 
 <a name="stateless-http-basic-authentication"></a>
 ### Stateless HTTP Basic Authentication
@@ -422,13 +458,13 @@ Ngoài việc gọi phương thức `logout`, bạn nên vô hiệu hóa session
 
 Laravel cũng cung cấp các cơ chế để vô hiệu hoá session và "đăng xuất" người dùng ra khỏi các thiết bị khác của họ mà không vô hiệu hoá session hiện tại của họ. Tính năng này thường được sử dụng khi người dùng đang thay đổi hoặc cập nhật lại mật khẩu của họ và bạn muốn làm mất hiệu lực các session trên các thiết bị khác trong khi vẫn giữ xác thực trên thiết bị hiện tại.
 
-Trước khi bắt đầu, bạn nên đảm bảo là middleware `Illuminate\Session\Middleware\AuthenticateSession` đã được bỏ comment trong group middleware `web` trong class `App\Http\Kernel` của bạn:
+Trước khi bắt đầu, bạn nên đảm bảo là middleware `Illuminate\Session\Middleware\AuthenticateSession` đã được thêm vào các route mà sẽ thực hiện xác thực session. Thông thường, bạn nên để middleware này trên các định nghĩa của các route group để có thể áp dụng nó cho nhiều route trong ứng dụng của bạn. Mặc định, middleware `AuthenticateSession` có thể được gắn vào một route bằng cách sử dụng khóa middleware route `auth.session` như được định nghĩa trong kernel HTTP trong ứng dụng của bạn:
 
-    'web' => [
-        // ...
-        \Illuminate\Session\Middleware\AuthenticateSession::class,
-        // ...
-    ],
+    Route::middleware(['auth', 'auth.session'])->group(function () {
+        Route::get('/', function () {
+            // ...
+        });
+    });
 
 Sau đó, bạn có thể sử dụng phương thức `logoutOtherDevices` được cung cấp bởi facade `Auth`. Phương thức này sẽ yêu cầu người dùng xác nhận mật khẩu hiện tại của họ:
 
@@ -443,7 +479,8 @@ Khi phương thức `logoutOtherDevices` được gọi, thì các session khác
 
 Trong khi xây dựng ứng dụng của bạn, đôi khi bạn có thể có các hành động mà cần yêu cầu người dùng xác nhận lại mật khẩu của họ trước khi hành động đó được thực hiện hoặc trước khi người dùng được chuyển hướng đến một chỗ nhạy cảm của ứng dụng. Laravel có chứa một middleware được tích hợp sẵn để làm cho quá trình này trở nên dễ dàng. Việc triển khai chức năng này sẽ yêu cầu bạn định nghĩa hai route: một route là để hiển thị view yêu cầu người dùng xác nhận lại mật khẩu của họ và một route khác để xác nhận rằng mật khẩu hợp lệ và chuyển hướng người dùng đến đích dự định của họ.
 
-> {tip} Tài liệu sau đây sẽ thảo luận về cách tích hợp trực tiếp với chức năng xác nhận lại mật khẩu của Laravel; tuy nhiên, nếu bạn muốn bắt đầu nhanh hơn, thì [bộ công cụ khởi động ứng dụng Laravel](/docs/{{version}}/starter-kits) đã hỗ trợ nó!
+> **Note**
+>  Tài liệu sau đây sẽ thảo luận về cách tích hợp trực tiếp với chức năng xác nhận lại mật khẩu của Laravel; tuy nhiên, nếu bạn muốn bắt đầu nhanh hơn, thì [bộ công cụ khởi động ứng dụng Laravel](/docs/{{version}}/starter-kits) đã hỗ trợ nó!
 
 <a name="password-confirmation-configuration"></a>
 ### Cấu hình
@@ -562,7 +599,7 @@ Cách đơn giản nhất để làm một hệ thống xác thực tùy biến 
         $this->registerPolicies();
 
         Auth::viaRequest('custom-token', function (Request $request) {
-            return User::where('token', $request->token)->first();
+            return User::where('token', (string) $request->token)->first();
         });
     }
 
@@ -573,6 +610,12 @@ Sau khi authentication driver tùy biến của bạn đã được định ngh�
             'driver' => 'custom-token',
         ],
     ],
+
+Cuối cùng, bạn có thể gọi đến guard đó khi gán middleware xác thực cho một route:
+
+    Route::middleware('auth:api')->group(function () {
+        // ...
+    }
 
 <a name="adding-custom-user-providers"></a>
 ## Thêm tuỳ biến user provider

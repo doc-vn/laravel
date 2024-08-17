@@ -123,7 +123,8 @@ Chúng ta có thể làm giả việc gọi đến facade `Cache` bằng cách s
         }
     }
 
-> {note} Bạn không nên làm giả facade `Request`. Thay vào đó, hãy truyền input mà bạn mong muốn vào [phương thức của HTTP helper](/docs/{{version}}/http-tests), chẳng hạn như `get` và `post` khi chạy test của bạn. Tương tự như vậy, thay vì làm giả facade `Config`, hãy gọi phương thức `Config::set` trong các test của bạn.
+> **Warning**
+> Bạn không nên làm giả facade `Request`. Thay vào đó, hãy truyền input mà bạn mong muốn vào [phương thức của HTTP helper](/docs/{{version}}/http-tests), chẳng hạn như `get` và `post` khi chạy test của bạn. Tương tự như vậy, thay vì làm giả facade `Config`, hãy gọi phương thức `Config::set` trong các test của bạn.
 
 <a name="facade-spies"></a>
 ### Facade Spies
@@ -177,7 +178,7 @@ Bạn có thể sử dụng phương thức `fake` của facade `Bus` để ngă
             // Assert that a job was dispatched synchronously...
             Bus::assertDispatchedSync(AnotherJob::class);
 
-            // Assert that a job was not dipatched synchronously...
+            // Assert that a job was not dispatched synchronously...
             Bus::assertNotDispatchedSync(AnotherJob::class);
 
             // Assert that a job was dispatched after the response was sent...
@@ -196,6 +197,29 @@ Bạn có thể truyền một closure cho các phương thức có sẵn để 
     Bus::assertDispatched(function (ShipOrder $job) use ($order) {
         return $job->order->id === $order->id;
     });
+
+<a name="faking-a-subset-of-jobs"></a>
+#### Faking A Subset Of Jobs
+
+Nếu bạn muốn ngăn gửi đi một số job nhất định, bạn có thể truyền các job giả cho phương thức `fake`:
+
+    /**
+     * Test order process.
+     */
+    public function test_orders_can_be_shipped()
+    {
+        Bus::fake([
+            ShipOrder::class,
+        ]);
+
+        // ...
+    }
+
+Bạn có thể làm giả tất cả các job ngoại trừ một số job được chỉ định trong phương thức `except`:
+
+    Bus::fake()->except([
+        ShipOrder::class,
+    ]);
 
 <a name="bus-job-chains"></a>
 ### Job Chains
@@ -233,6 +257,18 @@ Phương thức `assertBatched` của facade `Bus` có thể được sử dụn
         return $batch->name == 'import-csv' &&
                $batch->jobs->count() === 10;
     });
+
+<a name="testing-job-batch-interaction"></a>
+#### Testing Job / Batch Interaction
+
+Ngoài ra, đôi khi bạn có thể cần kiểm tra tương tác của một job với batch của nó. Ví dụ, bạn có thể cần kiểm tra xem một job có thể huỷ xử lý tiếp theo của batch của nó hay không. Để thực hiện việc này, bạn cần chỉ định một batch giả cho job thông qua phương thức `withFakeBatch`. Phương thức `withFakeBatch` trả về một bộ chứa instance job và batch giả:
+
+    [$job, $batch] = (new ShipOrder)->withFakeBatch();
+
+    $job->handle();
+
+    $this->assertTrue($batch->cancelled());
+    $this->assertEmpty($batch->added);
 
 <a name="event-fake"></a>
 ## Event Fake
@@ -288,7 +324,8 @@ Nếu bạn chỉ muốn yêu cầu event listener đang lắng nghe một event
         SendShipmentNotification::class
     );
 
-> {note} Sau khi bạn gọi `Event::fake()`, thì sẽ không có event listener nào được thực thi. Vì vậy, nếu các bài test của bạn đang sử dụng các model factory mà có dựa vào các event, chẳng hạn như tạo UUID trong event `creating` của một model, thì bạn nên gọi `Event::fake()` **sau khi** sử dụng các factory đó của bạn.
+> **Warning**
+> Sau khi bạn gọi `Event::fake()`, thì sẽ không có event listener nào được thực thi. Vì vậy, nếu các bài test của bạn đang sử dụng các model factory mà có dựa vào các event, chẳng hạn như tạo UUID trong event `creating` của một model, thì bạn nên gọi `Event::fake()` **sau khi** sử dụng các factory đó của bạn.
 
 <a name="faking-a-subset-of-events"></a>
 #### Giả một tập hợp các event
@@ -311,6 +348,12 @@ Nếu bạn chỉ muốn làm giả event listener cho một nhóm event cụ th
         // Other events are dispatched as normal...
         $order->update([...]);
     }
+
+Bạn có thể làm giả tất cả các event ngoại trừ một số event được chỉ định trong phương thức `except`:
+
+    Event::fake()->except([
+        OrderCreated::class,
+    ]);
 
 <a name="scoped-event-fakes"></a>
 ### Scoped Event Fakes
@@ -406,12 +449,39 @@ Bạn có thể truyền một closure cho các phương thức `assertSent`, `a
         return $mail->order->id === $order->id;
     });
 
-Khi gọi các phương thức xác nhận của facade `Mail`, instance mailable được chấp nhận bởi closure sẽ cung cấp các phương thức hữu ích để kiểm tra người nhận mail:
+Khi gọi các phương thức xác nhận của facade `Mail`, instance mailable được chấp nhận bởi closure sẽ cung cấp các phương thức hữu ích để kiểm tra mail:
 
     Mail::assertSent(OrderShipped::class, function ($mail) use ($user) {
         return $mail->hasTo($user->email) &&
                $mail->hasCc('...') &&
-               $mail->hasBcc('...');
+               $mail->hasBcc('...') &&
+               $mail->hasReplyTo('...') &&
+               $mail->hasFrom('...') &&
+               $mail->hasSubject('...');
+    });
+
+Instance mailable cũng chứa một số phương thức hữu ích để bạn có thể kiểm tra file đính kèm trong mail:
+
+    use Illuminate\Mail\Mailables\Attachment;
+
+    Mail::assertSent(OrderShipped::class, function ($mail) {
+        return $mail->hasAttachment(
+            Attachment::fromPath('/path/to/file')
+                    ->as('name.pdf')
+                    ->withMime('application/pdf')
+        );
+    });
+
+    Mail::assertSent(OrderShipped::class, function ($mail) {
+        return $mail->hasAttachment(
+            Attachment::fromStorageDisk('s3', '/path/to/file')
+        );
+    });
+
+    Mail::assertSent(OrderShipped::class, function ($mail) use ($pdfData) {
+        return $mail->hasAttachment(
+            Attachment::fromData(fn () => $pdfData, 'name.pdf')
+        );
     });
 
 Bạn có thể nhận thấy có hai phương thức để xác nhận mail chưa được gửi: `assertNotSent` và `assertNotQueued`. Đôi khi bạn có thể muốn yêu cầu không có mail nào được gửi **hoặc** được queued. Để thực hiện điều này, bạn có thể sử dụng các phương thức `assertNothingOutgoing` và `assertNotOutgoing`:
@@ -421,6 +491,11 @@ Bạn có thể nhận thấy có hai phương thức để xác nhận mail ch�
     Mail::assertNotOutgoing(function (OrderShipped $mail) use ($order) {
         return $mail->order->id === $order->id;
     });
+
+<a name="testing-mailable-content"></a>
+#### Testing Mailable Content
+
+Chúng tôi đề xuất việc kiểm tra nội dung của mailable sẽ riêng biệt với các bài kiểm tra một mailable đã được "gửi" đến một người dùng cụ thể hay chưa. Để tìm hiểu thêm về cách kiểm tra nội dung của mailable, hãy xem tài liệu của chúng tôi về [testing mailables](/docs/{{version}}/mail#testing-mailables).
 
 <a name="notification-fake"></a>
 ## Notification Fake
@@ -459,6 +534,9 @@ Sau khi, bạn gọi phương thức `fake` của facade `Notification`, bạn c
             Notification::assertNotSentTo(
                 [$user], AnotherNotification::class
             );
+
+            // Assert that a given number of notifications were sent...
+            Notification::assertCount(3);
         }
     }
 
@@ -474,18 +552,13 @@ Bạn có thể truyền một closure cho các phương thức `assertSentTo` h
 <a name="on-demand-notifications"></a>
 #### On-Demand Notifications
 
-Nếu code bạn đang kiểm tra cần gửi [thông báo theo yêu cầu](/docs/{{version}}/notifications#on-demand-notifications), bạn sẽ cần phải yêu cầu thông báo đã được gửi đến instance `Illuminate\Notifications\AnonymousNotifiable`:
+Nếu code bạn đang kiểm tra việc gửi một [thông báo theo yêu cầu](/docs/{{version}}/notifications#on-demand-notifications), bạn có thể kiểm tra xem thông báo theo yêu cầu đã được gửi hay chưa qua phương thức `assertSentOnDemand`:
 
-    use Illuminate\Notifications\AnonymousNotifiable;
+    Notification::assertSentOnDemand(OrderShipped::class);
 
-    Notification::assertSentTo(
-        new AnonymousNotifiable, OrderShipped::class
-    );
+Bằng cách truyền vào một closure làm tham số thứ hai cho phương thức `assertSentOnDemand`, bạn có thể xác định xem thông báo theo yêu cầu đó có được gửi đến đúng địa chỉ "route" hay không:
 
-Bằng cách truyền một closure làm tham số thứ ba cho các phương thức kiểm tra thông báo, bạn có thể xác định xem thông báo theo yêu cầu có được gửi đến đúng địa chỉ "route" hay không:
-
-    Notification::assertSentTo(
-        new AnonymousNotifiable,
+    Notification::assertSentOnDemand(
         OrderShipped::class,
         function ($notification, $channels, $notifiable) use ($user) {
             return $notifiable->routes['mail'] === $user->email;
@@ -538,6 +611,20 @@ Bạn có thể truyền một closure cho các phương thức `assertPushed` h
     Queue::assertPushed(function (ShipOrder $job) use ($order) {
         return $job->order->id === $order->id;
     });
+
+Nếu bạn chỉ cần làm giả các job cụ thể trong khi cho phép các job khác được thực hiện bình thường, bạn có thể truyền tên của các class job cần làm giả vào phương thức `fake`:
+
+    public function test_orders_can_be_shipped()
+    {
+        Queue::fake([
+            ShipOrder::class,
+        ]);
+
+        // Perform order shipping...
+
+        // Assert a job was pushed twice...
+        Queue::assertPushed(ShipOrder::class, 2);
+    }
 
 <a name="job-chains"></a>
 ### Job Chains
@@ -598,17 +685,23 @@ Phương thức `fake` của facade `Storage` cho phép bạn dễ dàng tạo m
             // Assert one or more files were not stored...
             Storage::disk('photos')->assertMissing('missing.jpg');
             Storage::disk('photos')->assertMissing(['missing.jpg', 'non-existing.jpg']);
+
+            // Assert that a given directory is empty...
+            Storage::disk('photos')->assertDirectoryEmpty('/wallpapers');
         }
     }
 
-Để biết thêm thông tin về việc kiểm tra file upload, bạn có thể tham khảo [thông tin về file upload của tài liệu kiểm tra HTTP](/docs/{{version}}/http-tests#testing-file-uploads).
+Mặc định, phương thức `fake` sẽ xóa tất cả các file có trong thư mục tạm thời của nó. Nếu bạn muốn giữ lại các file này, bạn có thể sử dụng phương thức "persistentFake" thay cho phương thức `fake`. Để biết thêm thông tin về việc kiểm tra file upload, bạn có thể tham khảo [thông tin về file upload của tài liệu kiểm tra HTTP](/docs/{{version}}/http-tests#testing-file-uploads).
 
-> {tip} Mặc định, phương thức `fake` sẽ xóa tất cả các file trong thư mục temporary của nó. Nếu bạn muốn giữ lại các file này, bạn có thể sử dụng phương thức "persistentFake" thay thế.
+> **Warning**
+> Phương thức `image` sẽ yêu cầu [extension GD](https://www.php.net/manual/en/book.image.php).
 
 <a name="interacting-with-time"></a>
 ## Tương tác với Time
 
 Khi kiểm tra, đôi khi bạn có thể cần sửa thời gian được trả về bởi helper, chẳng hạn như `now` hoặc `Illuminate\Support\Carbon::now()`. Rất may, class kiểm tra cơ bản của Laravel đã chứa các helper cho phép bạn thao tác với thời gian hiện tại:
+
+    use Illuminate\Support\Carbon;
 
     public function testTimeCanBeManipulated()
     {
@@ -620,6 +713,11 @@ Khi kiểm tra, đôi khi bạn có thể cần sửa thời gian được trả
         $this->travel(5)->days();
         $this->travel(5)->weeks();
         $this->travel(5)->years();
+
+        // Freeze time and resume normal time after executing closure...
+        $this->freezeTime(function (Carbon $time) {
+            // ...
+        });
 
         // Travel into the past...
         $this->travel(-5)->hours();

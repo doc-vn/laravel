@@ -126,7 +126,8 @@ Bạn có thể tạo một instance phân trang từ con trỏ thông qua phư�
 
 Khi bạn đã lấy ra được một instance phân trang từ con trỏ, bạn có thể [hiển thị kết quả phân trang](#displaying-pagination-results) như bạn thường làm khi sử dụng các phương thức `paginate` và `simplePaginate`. Để biết thêm thông tin về các phương thức instance do phân trang từ con trỏ cung cấp, vui lòng tham khảo [tài liệu về phương thức instance phân trang từ con trỏ](#cursor-paginator-instance-methods).
 
-> {note} Truy vấn của bạn phải chứa lệnh "order by" để tận dụng khả năng phân trang bằng con trỏ.
+> **Warning**
+> Truy vấn của bạn phải chứa lệnh "order by" để tận dụng khả năng phân trang bằng con trỏ.
 
 <a name="cursor-vs-offset-pagination"></a>
 #### Cursor vs. Offset Pagination
@@ -151,6 +152,8 @@ Tuy nhiên, phân trang con trỏ cũng có những hạn chế sau:
 - Giống như `simplePaginate`, phân trang con trỏ chỉ có thể được sử dụng để hiển thị các link "Next" và "Previous" và không hỗ trợ tạo link với một số trang bất kỳ.
 - Nó yêu cầu order by phải dựa trên ít nhất một cột unique hoặc sự kết hợp của các cột unique. Các cột có giá trị `null` sẽ không được hỗ trợ.
 - Biểu thức truy vấn trong lệnh "order by" chỉ được hỗ trợ nếu chúng được đặt alias và được thêm vào lệnh "select".
+- Biểu thức truy vấn có tham số cũng không được hỗ trợ.
+
 
 <a name="manually-creating-a-paginator"></a>
 ### Tự tạo một phân trang
@@ -161,7 +164,8 @@ Class `Paginator` và class `CursorPaginator` sẽ không cần biết tổng s�
 
 Nói cách khác, `Paginator` tương ứng với phương thức `simplePaginate` trong query builder, `CursorPaginator` tương ứng với phương thức `cursorPaginate`, và `LengthAwarePaginator` tương ứng với phương thức `paginate`.
 
-> {note} Khi tự tạo trình phân trang, bạn nên tự "phân chia" các phần tử có trong mảng kết quả mà bạn truyền nó cho trình phân trang. Nếu bạn không chắc chắn cách thực hiện việc này, hãy xem hàm [array_slice](https://secure.php.net/manual/en/function.array-slice.php).
+> **Warning**
+> Khi tự tạo trình phân trang, bạn nên tự "phân chia" các phần tử có trong mảng kết quả mà bạn truyền nó cho trình phân trang. Nếu bạn không chắc chắn cách thực hiện việc này, hãy xem hàm [array_slice](https://secure.php.net/manual/en/function.array-slice.php).
 
 <a name="customizing-pagination-urls"></a>
 ### Tuỳ biến Pagination URLs
@@ -211,7 +215,7 @@ Khi gọi phương thức `paginate`, bạn sẽ nhận được một instance 
 
 Các đối tượng này cung cấp một số phương thức để hiển thị kết quả. Ngoài các phương thức helper này, các instance của phân trang còn là các vòng lặp và có thể lặp như một mảng. Vì vậy, sau khi lấy ra được kết quả, bạn có thể hiển thị kết quả và hiển thị các link của trang bằng cách sử dụng [Blade](/docs/{{version}}/blade):
 
-```html
+```blade
 <div class="container">
     @foreach ($users as $user)
         {{ $user->name }}
@@ -228,7 +232,9 @@ Phương thức `links` sẽ hiển thị các link đến các trang còn lại
 
 Khi trình phân trang hiển thị các link phân trang, số trang hiện tại cũng được hiển thị cùng với các link cho ba trang trước và sau của trang hiện tại. Sử dụng phương thức `onEachSide`, bạn có thể kiểm soát được số lượng link sẽ được hiển thị cho mỗi bên của trang hiện tại:
 
-    {{ $users->onEachSide(5)->links() }}
+```blade
+{{ $users->onEachSide(5)->links() }}
+```
 
 <a name="converting-results-to-json"></a>
 ### Chuyển kết quả thành JSON
@@ -270,14 +276,18 @@ JSON từ trình phân trang sẽ chứa thông tin meta như `total`, `current_
 
 Mặc định, các view hiển thị các link phân trang tương thích với [Tailwind CSS](https://tailwindcss.com) framework. Tuy nhiên, nếu bạn không sử dụng Tailwind, bạn có thể thoải mái tự định nghĩa các view của riêng bạn để hiển thị các link. Khi gọi phương thức `links` trên một instance phân trang, bạn có thể truyền tên view làm tham số đầu tiên cho phương thức:
 
-    {{ $paginator->links('view.name') }}
+```blade
+{{ $paginator->links('view.name') }}
 
-    // Passing additional data to the view...
-    {{ $paginator->links('view.name', ['foo' => 'bar']) }}
+<!-- Passing additional data to the view... -->
+{{ $paginator->links('view.name', ['foo' => 'bar']) }}
+```
 
 Tuy nhiên, cách dễ nhất để tùy biến các view của phân trang là bằng cách export chúng vào thư mục `resources/views/vendor` của bạn thông qua cách sử dụng lệnh `vendor:publish`:
 
-    php artisan vendor:publish --tag=laravel-pagination
+```shell
+php artisan vendor:publish --tag=laravel-pagination
+```
 
 Lệnh này sẽ lưu các view vào trong thư mục `resources/views/vendor/pasgination` của application của bạn. File `tailwind.blade.php` trong thư mục này tương ứng với view mặc định của phân trang. Bạn có thể sửa file này sẽ sửa đổi HTML của phân trang.
 
@@ -288,7 +298,6 @@ Nếu bạn muốn chỉ định một file khác làm pagination view mặc đ�
     namespace App\Providers;
 
     use Illuminate\Pagination\Paginator;
-    use Illuminate\Support\Facades\Blade;
     use Illuminate\Support\ServiceProvider;
 
     class AppServiceProvider extends ServiceProvider
@@ -309,7 +318,7 @@ Nếu bạn muốn chỉ định một file khác làm pagination view mặc đ�
 <a name="using-bootstrap"></a>
 ### Dùng Bootstrap
 
-Laravel có chứa các view phân trang được xây dựng bằng [Bootstrap CSS](https://getbootstrap.com/). Để sử dụng các view này thay vì các view Tailwind mặc định, bạn có thể gọi phương thức `useBootstrap` của paginator trong phương thức `boot` của class `App\Providers\AppServiceProvider` của bạn:
+Laravel có chứa các view phân trang được xây dựng bằng [Bootstrap CSS](https://getbootstrap.com/). Để sử dụng các view này thay vì các view Tailwind mặc định, bạn có thể gọi phương thức `useBootstrapFour` hoặc `useBootstrapFive` của paginator trong phương thức `boot` của class `App\Providers\AppServiceProvider` của bạn:
 
     use Illuminate\Pagination\Paginator;
 
@@ -320,7 +329,8 @@ Laravel có chứa các view phân trang được xây dựng bằng [Bootstrap 
      */
     public function boot()
     {
-        Paginator::useBootstrap();
+        Paginator::useBootstrapFive();
+        Paginator::useBootstrapFour();
     }
 
 <a name="paginator-instance-methods"></a>
@@ -366,6 +376,7 @@ Method  |  Description
 `$paginator->nextCursor()`  |  Lấy instance con trỏ cho set item tiếp theo.
 `$paginator->nextPageUrl()`  |  Lấy URL cho trang tiếp theo.
 `$paginator->onFirstPage()`  |  Kiểm tra xem paginator có đang ở trang đầu tiên hay không.
+`$paginator->onLastPage()`  |  Kiểm tra xem paginator có ở trang cuối cùng hay không.
 `$paginator->perPage()`  |  Số lượng item được hiển thị trên mỗi trang.
 `$paginator->previousCursor()`  |  Lấy instance con trỏ cho set item trước đó.
 `$paginator->previousPageUrl()`  |  Lấy URL cho trang trước đó.

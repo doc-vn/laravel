@@ -137,7 +137,8 @@ Như đã đề cập, thông thường bạn sẽ tương tác với container 
         // ...
     });
 
-> {tip} Không cần phải liên kết các class vào container nếu chúng không phụ thuộc vào bất kỳ interface nào. Bạn không cần phải hướng dẫn container về cách xây dựng các đối tượng này, vì nó có thể tự động resolve các đối tượng này bằng cách sử dụng tham chiếu.
+> **Note**
+> Không cần phải liên kết các class vào container nếu chúng không phụ thuộc vào bất kỳ interface nào. Bạn không cần phải hướng dẫn container về cách xây dựng các đối tượng này, vì nó có thể tự động resolve các đối tượng này bằng cách sử dụng tham chiếu.
 
 <a name="binding-a-singleton"></a>
 #### Liên kết singleton
@@ -228,7 +229,9 @@ Thỉnh thoảng bạn cũng có thể có hai class sử dụng chung một int
 
 Thỉnh thoảng, bạn có một class nhận vào một số các class tích hợp, nhưng bạn cũng có thể muốn thêm một số các giá trị khác nhau để thêm vào những class đó, ví dụ như là một giá trị integer. Bạn có thể dễ dàng sử dụng liên kết theo ngữ cảnh đó để đưa vào một giá trị mà class của bạn có thể cần:
 
-    $this->app->when('App\Http\Controllers\UserController')
+    use App\Http\Controllers\UserController;
+
+    $this->app->when(UserController::class)
               ->needs('$variableName')
               ->give($value);
 
@@ -339,7 +342,7 @@ Khi các service đã được gắn thẻ, bạn có thể dễ dàng resolve t
 <a name="extending-bindings"></a>
 ### Liên kết mở rộng
 
-Phương thức `extend` cho phép sửa đổi các service đã được resolve. Ví dụ: khi một service đã được resolve, bạn có thể chạy thêm code để bổ sung hoặc cấu hình service đó. Phương thức `extend` chấp nhận một closure, sẽ trả về một service đã được sửa đổi. Closure này sẽ nhận vào một service đang được resolve và một instance container:
+Phương thức `extend` cho phép sửa đổi các service đã được resolve. Ví dụ: khi một service đã được resolve, bạn có thể chạy thêm code để bổ sung hoặc cấu hình service đó. Phương thức `extend` chấp nhận hai tham số, một là cái service mà bạn mở rộng và một closure sẽ trả về một service đã được sửa. Closure này sẽ nhận vào một service đang được resolve và một instance container:
 
     $this->app->extend(Service::class, function ($service, $app) {
         return new DecoratedService($service);
@@ -363,12 +366,14 @@ Nếu một số phụ thuộc trong class của bạn không thể resolve đư
 
     $transistor = $this->app->makeWith(Transistor::class, ['id' => 1]);
 
-Nếu bạn ở ngoài service provider, ở vị trí mà code của bạn không có quyền truy cập vào biến `$app`, thì bạn có thể sử dụng `App` [facade](/docs/{{version}}/facades) để resolve một instance của class từ container:
+Nếu bạn ở ngoài service provider, ở vị trí mà code của bạn không có quyền truy cập vào biến `$app`, thì bạn có thể sử dụng [facade](/docs/{{version}}/facades) `App` hoặc [helper](/docs/{{version}}/helpers#method-app) `app` để resolve một instance của class từ container:
 
     use App\Services\Transistor;
     use Illuminate\Support\Facades\App;
 
     $transistor = App::make(Transistor::class);
+
+    $transistor = app(Transistor::class);
 
 Nếu bạn muốn instance container Laravel cũng được inject vào class mà đang được container resolve, bạn có thể khai báo class `Illuminate\Container\Container` trong hàm khởi tạo class của bạn:
 

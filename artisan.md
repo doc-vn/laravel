@@ -6,6 +6,7 @@
     - [Tạo Command](#generating-commands)
     - [Cấu trúc Command](#command-structure)
     - [Closure Command](#closure-commands)
+    - [Isolatable Commands](#isolatable-commands)
 - [Định nghĩa Input](#defining-input-expectations)
     - [Tham số](#arguments)
     - [Tuỳ chọn](#options)
@@ -27,18 +28,24 @@
 
 Artisan là một giao diện dòng lệnh đi kèm với Laravel. Artisan tồn tại ở gốc của ứng dụng của bạn dưới dạng một tập lệnh `artisan` và cung cấp một số lệnh hữu ích có thể hỗ trợ bạn trong khi bạn xây dựng application. Để xem danh sách tất cả các lệnh Artisan có sẵn, bạn có thể sử dụng lệnh `list`:
 
-    php artisan list
+```shell
+php artisan list
+```
 
 Mỗi lệnh cũng chứa một lệnh "help" để hiển thị và mô tả các tùy chọn và các tham số dành cho lệnh đó. Để xem lệnh help, hãy set `help` vào trước tên của command:
 
-    php artisan help migrate
+```shell
+php artisan help migrate
+```
 
 <a name="laravel-sail"></a>
 #### Laravel Sail
 
 Nếu bạn đang sử dụng [Laravel Sail](/docs/{{version}}/sail) làm môi trường phát triển local của bạn, hãy nhớ sử dụng dòng lệnh `sail` để gọi các lệnh Artisan. Sail sẽ thực hiện các lệnh Artisan của bạn trong các Docker container của ứng dụng của bạn:
 
-    ./sail artisan list
+```shell
+./vendor/bin/sail artisan list
+```
 
 <a name="tinker"></a>
 ### Tinker (REPL)
@@ -50,22 +57,30 @@ Laravel Tinker là một REPL mạnh mẽ cho Laravel framework, cung cấp bở
 
 Mặc định tất cả các ứng dụng Laravel đều chứa Tinker. Tuy nhiên, bạn có thể cài đặt Tinker thông qua Composer nếu trước đó bạn đã xóa nó ra khỏi ứng dụng của bạn:
 
-    composer require laravel/tinker
+```shell
+composer require laravel/tinker
+```
 
-> {tip} Nếu bạn đang tìm một tool giao diện người dùng để tương tác với ứng dụng Laravel của bạn? Hãy xem [Tinkerwell](https://tinkerwell.app)!
+> **Note**
+> Nếu bạn đang tìm một tool giao diện người dùng để tương tác với ứng dụng Laravel của bạn? Hãy xem [Tinkerwell](https://tinkerwell.app)!
 
 <a name="usage"></a>
 #### Usage
 
 Tinker cho phép bạn tương tác trực tiếp với toàn bộ application Laravel của bạn trên command line, bao gồm cả model Eloquent, job, event, vv... Để vào được môi trường Tinker, hãy chạy lệnh Artisan `tinker`:
 
-    php artisan tinker
+```shell
+php artisan tinker
+```
 
 Bạn có thể export file cấu hình của Tinker bằng lệnh `vendor:publish`:
 
-    php artisan vendor:publish --provider="Laravel\Tinker\TinkerServiceProvider"
+```shell
+php artisan vendor:publish --provider="Laravel\Tinker\TinkerServiceProvider"
+```
 
-> {note} Hàm helper `dispatch` và phương thức `dispatch` trên class `Dispatchable` phụ thuộc vào việc thu gom rác để set job vào queue. Do đó, khi sử dụng tinker, bạn nên sử dụng `Bus::dispatch` hoặc `Queue::push` để điều phối job.
+> **Warning**
+>  Hàm helper `dispatch` và phương thức `dispatch` trên class `Dispatchable` phụ thuộc vào việc thu gom rác để set job vào queue. Do đó, khi sử dụng tinker, bạn nên sử dụng `Bus::dispatch` hoặc `Queue::push` để điều phối job.
 
 <a name="command-allow-list"></a>
 #### Command Allow List
@@ -95,7 +110,9 @@ Ngoài các lệnh được cung cấp với Artisan, bạn có thể tự xây 
 
 Để tạo một lệnh mới, bạn có thể sử dụng lệnh Artisan `make:command`. Lệnh này sẽ tạo một class command mới trong thư mục `app/Console/Commands`. Đừng lo lắng nếu thư mục này không tồn tại trong application của bạn, vì nó sẽ được tạo vào lần đầu tiên bạn chạy lệnh Artisan `make:command`:
 
-    php artisan make:command SendEmails
+```shell
+php artisan make:command SendEmails
+```
 
 <a name="command-structure"></a>
 ### Cấu trúc Command
@@ -129,16 +146,6 @@ Chúng ta hãy xem một ví dụ về command. Lưu ý rằng chúng ta có th�
         protected $description = 'Send a marketing email to a user';
 
         /**
-         * Create a new command instance.
-         *
-         * @return void
-         */
-        public function __construct()
-        {
-            parent::__construct();
-        }
-
-        /**
          * Execute the console command.
          *
          * @param  \App\Support\DripEmailer  $drip
@@ -150,7 +157,8 @@ Chúng ta hãy xem một ví dụ về command. Lưu ý rằng chúng ta có th�
         }
     }
 
-> {tip} Để code của bạn có thể tái sử dụng tốt hơn, thì cách tốt nhất là giữ cho các command của bạn được "nhẹ" và hãy để các application service hoàn thành nhiệm vụ đó cho bạn. Trong ví dụ dưới trên, hãy chú ý rằng chúng ta sẽ inject một service class để thực hiện một "công việc nặng" như việc gửi e-mail.
+> **Note**
+> Để code của bạn có thể tái sử dụng tốt hơn, thì cách tốt nhất là giữ cho các command của bạn được "nhẹ" và hãy để các application service hoàn thành nhiệm vụ đó cho bạn. Trong ví dụ dưới trên, hãy chú ý rằng chúng ta sẽ inject một service class để thực hiện một "công việc nặng" như việc gửi e-mail.
 
 <a name="closure-commands"></a>
 ### Closure Command
@@ -196,6 +204,55 @@ Khi định nghĩa một command dựa trên closure, bạn có thể sử dụn
         // ...
     })->purpose('Send a marketing email to a user');
 
+<a name="isolatable-commands"></a>
+### Isolatable Commands
+
+> **Warning**
+> Để sử dụng tính năng này, ứng dụng của bạn phải sử dụng driver cache `memcached`, `redis`, `dynamodb`, `database`, `file` hoặc `array` làm driver cache mặc định cho ứng dụng của bạn. Ngoài ra, tất cả các server phải giao tiếp cùng với một server cache trung tâm.
+
+Thỉnh thoảng bạn có thể muốn đảm bảo rằng một instance của một command chỉ được chạy trong một thời điểm. Để thực hiện điều này, bạn có thể implement interface `Illuminate\Contracts\Console\Isolatable` trên class command của bạn:
+
+    <?php
+
+    namespace App\Console\Commands;
+
+    use Illuminate\Console\Command;
+    use Illuminate\Contracts\Console\Isolatable;
+
+    class SendEmails extends Command implements Isolatable
+    {
+        // ...
+    }
+
+Khi một command được đánh dấu là `Isolatable`, Laravel sẽ tự động thêm tùy chọn `--isolat` vào command. Khi command được gọi với tùy chọn đó, Laravel sẽ đảm bảo là sẽ không có instance nào khác của command đó được đang chạy. Laravel thực hiện điều này bằng cách thử lấy khóa atomic bằng driver cache mặc định của ứng dụng của bạn. Nếu một instance khác của command này đang chạy, thì command này sẽ không thực hiện; tuy nhiên, command vẫn sẽ được exit với một mã trạng thái thành công:
+
+```shell
+php artisan mail:send 1 --isolated
+```
+
+Nếu bạn muốn chỉ định một mã trạng thái cụ thể mà command sẽ trả về nếu nó không thể thực hiện, thì bạn có thể cung cấp mã trạng thái đó thông qua tùy chọn `isolated`:
+
+```shell
+php artisan mail:send 1 --isolated=12
+```
+
+<a name="lock-expiration-time"></a>
+#### Lock Expiration Time
+
+Mặc định, khóa isolation sẽ hết hạn sau khi command kết thúc. Hoặc nếu command bị lỗi và không thể hoàn thành, thì khóa đó sẽ hết hạn sau một giờ. Tuy nhiên, bạn có thể điều chỉnh thời gian hết hạn của khóa này bằng cách định nghĩa phương thức `isolationLockExpiresAt` trên command của bạn:
+
+```php
+/**
+ * Determine when an isolation lock expires for the command.
+ *
+ * @return \DateTimeInterface|\DateInterval
+ */
+public function isolationLockExpiresAt()
+{
+    return now()->addMinutes(5);
+}
+```
+
 <a name="defining-input-expectations"></a>
 ## Định nghĩa Input
 
@@ -216,10 +273,10 @@ Tất cả các tham số và các tùy chọn do người dùng cung cấp đư
 Bạn cũng có thể tạo ra tham số tùy chọn hoặc định nghĩa giá trị mặc định cho các tham số đó:
 
     // Optional argument...
-    mail:send {user?}
+    'mail:send {user?}'
 
     // Optional argument with default value...
-    mail:send {user=foo}
+    'mail:send {user=foo}'
 
 <a name="options"></a>
 ### Tuỳ chọn
@@ -235,7 +292,9 @@ Tùy chọn, giống như một tham số, là một dạng khác của input us
 
 Trong ví dụ này, switch `--queue` có thể được chỉ định khi gọi lệnh Artisan. Nếu switch `--queue` được thông qua, giá trị của tùy chọn sẽ là `true`. Nếu không, giá trị sẽ là `false`:
 
-    php artisan mail:send 1 --queue
+```shell
+php artisan mail:send 1 --queue
+```
 
 <a name="options-with-values"></a>
 #### Tuỳ chọn với giá trị
@@ -251,46 +310,56 @@ Tiếp theo, chúng ta hãy xem một tùy chọn nhận một giá trị. Nếu
 
 Trong ví dụ này, người dùng có thể truyền một giá trị cho tùy chọn đó như sau. Nếu tùy chọn không được truyền vào khi chạy command, thì giá trị của nó sẽ là `null`:
 
-    php artisan mail:send 1 --queue=default
+```shell
+php artisan mail:send 1 --queue=default
+```
 
 Bạn cũng có thể gán một giá trị mặc định cho các tùy chọn này bằng cách chỉ định giá trị mặc định sau tên mỗi tùy chọn. Nếu không có giá trị tùy chọn nào được người dùng truyền vào, thì giá trị mặc định sẽ được sử dụng:
 
-    mail:send {user} {--queue=default}
+    'mail:send {user} {--queue=default}'
 
 <a name="option-shortcuts"></a>
 #### Option Shortcuts
 
 Để gán một shortcut khi định nghĩa một tùy chọn, bạn có thể chỉ định nó vào phía trước tên của một tùy chọn và sử dụng ký tự `|` như một dấu để phân tách shortcut khỏi toàn bộ tên tùy chọn:
 
-    mail:send {user} {--Q|queue}
+    'mail:send {user} {--Q|queue}'
 
 Khi gọi command trên terminal của bạn, các shortcut tùy chọn phải được set bằng một dấu gạch ngang ở đằng trước:
 
-    php artisan mail:send 1 -Q
+```shell
+php artisan mail:send 1 -Q
+```
 
 <a name="input-arrays"></a>
 ### Input cho một mảng
 
 Nếu bạn muốn định nghĩa các tham số hoặc tùy chọn để nhận vào nhiều giá trị, bạn có thể sử dụng ký tự `*`. Đầu tiên, chúng ta hãy xem một ví dụ định nghĩa một tham số như sau:
 
-    mail:send {user*}
+    'mail:send {user*}'
 
 Khi gọi phương thức này, các tham số `user` có thể được truyền theo dòng lệnh. Ví dụ: lệnh sau sẽ set giá trị của `user` thành một mảng với `foo` và `bar` là các giá trị của nó:
 
-    php artisan mail:send foo bar
+```shell
+php artisan mail:send 1 2
+```
 
 Ký tự `*` này có thể được kết hợp với một định nghĩa tùy chọn tham số để cho phép nhập từ không đến nhiều instance tham số:
 
-    mail:send {user?*}
+    'mail:send {user?*}'
 
 <a name="option-arrays"></a>
 #### Option Arrays
 
 Khi định nghĩa một tùy chọn yêu cầu nhiều giá trị input, mỗi giá trị tùy chọn đó được truyền đến command phải được đặt tên tùy chọn đó ở đằng trước:
 
-    mail:send {user} {--id=*}
+    'mail:send {--id=*}'
 
-    php artisan mail:send --id=1 --id=2
+Một command như vậy có thể được gọi bằng cách truyền nhiều tham số `--id`:
+
+```shell
+php artisan mail:send --id=1 --id=2
+```
 
 <a name="input-descriptions"></a>
 ### Thêm mô tả cho Input
@@ -479,7 +548,8 @@ Thỉnh thoảng, bạn có thể cần kiểm soát nhiều hơn đối với c
 
     $bar->finish();
 
-> {tip} Để biết các tùy chọn nâng cao, hãy xem [tài liệu component Symfony Progress Bar](https://symfony.com/doc/current/components/console/helpers/progressbar.html).
+> **Note**
+> Để biết các tùy chọn nâng cao, hãy xem [tài liệu component Symfony Progress Bar](https://symfony.com/doc/current/components/console/helpers/progressbar.html).
 
 <a name="registering-commands"></a>
 ## Đăng ký Command
@@ -595,47 +665,29 @@ Nếu bạn muốn gọi một command khác và xoá đi tất cả các output
 <a name="signal-handling"></a>
 ## Xử lý tín hiệu
 
-Component symfony console, cái mà hỗ trợ cho Artisan console, cho phép bạn chỉ định các tín hiệu (nếu có) mà command của bạn cần xử lý. Ví dụ: bạn có thể chỉ định là command của bạn cần xử lý các tín hiệu `SIGINT` và` SIGTERM`.
-
-Để bắt đầu, bạn nên implement interface `Symfony\Component\Console\Command\SignalableCommandInterface` trong class command Artisan của bạn. Interface này sẽ yêu cầu bạn định nghĩa hai phương thức: `getSubscribedSignals` và `handleSignal`:
-
-```php
-<?php
-
-use Symfony\Component\Console\Command\SignalableCommandInterface;
-
-class StartServer extends Command implements SignalableCommandInterface
-{
-    // ...
+Như bạn có thể biết, hệ điều hành cho phép gửi tín hiệu đến các process đang chạy. Ví dụ: tín hiệu `SIGTERM` là cách hệ điều hành yêu cầu một chương trình kết thúc. Nếu bạn muốn listen các tín hiệu này trong lệnh Artisan console và chạy code khi chúng xảy ra, bạn có thể sử dụng phương thức `trap`:
 
     /**
-     * Get the list of signals handled by the command.
+     * Execute the console command.
      *
-     * @return array
+     * @return mixed
      */
-    public function getSubscribedSignals(): array
+    public function handle()
     {
-        return [SIGINT, SIGTERM];
-    }
+        $this->trap(SIGTERM, fn () => $this->shouldKeepRunning = false);
 
-    /**
-     * Handle an incoming signal.
-     *
-     * @param  int  $signal
-     * @return void
-     */
-    public function handleSignal(int $signal): void
-    {
-        if ($signal === SIGINT) {
-            $this->stopServer();
-
-            return;
+        while ($this->shouldKeepRunning) {
+            // ...
         }
     }
-}
-```
 
-Như bạn có thể thấy, phương thức `getSubscribedSignals` sẽ trả về một mảng các tín hiệu mà lệnh của bạn có thể xử lý, trong khi phương thức `handleSignal` sẽ nhận tín hiệu và có thể phản hồi tương ứng.
+Để listen nhiều tín hiệu cùng một lúc, bạn có thể cung cấp một mảng tín hiệu cho phương thức `trap`:
+
+    $this->trap([SIGTERM, SIGQUIT], function ($signal) {
+        $this->shouldKeepRunning = false;
+
+        dump($signal); // SIGTERM / SIGQUIT
+    });
 
 <a name="stub-customization"></a>
 ## Stub Customization

@@ -4,10 +4,10 @@
 - [Cấu hình](#configuration)
 - [Xử lý exception](#the-exception-handler)
     - [Reporting Exceptions](#reporting-exceptions)
+    - [Mức độ log exceptions](#exception-log-levels)
     - [Chặn exceptions theo loại](#ignoring-exceptions-by-type)
     - [Rendering Exceptions](#rendering-exceptions)
     - [Reportable và Renderable Exceptions](#renderable-exceptions)
-    - [Mapping Exceptions theo loại](#mapping-exceptions-by-type)
 - [HTTP Exceptions](#http-exceptions)
     - [Tuỳ biến page HTTP Error](#custom-http-error-pages)
 
@@ -57,7 +57,8 @@ Khi bạn đăng ký custom exception reporting callback bằng phương thức 
         return false;
     });
 
-> {tip} Để tùy chỉnh exception reporting cho một exception nhất định, bạn cũng có thể sử dụng [reportable exceptions](/docs/{{version}}/errors#renderable-exceptions)
+> **Note**
+> Để tùy chỉnh exception reporting cho một exception nhất định, bạn cũng có thể sử dụng [reportable exceptions](/docs/{{version}}/errors#renderable-exceptions)
 
 <a name="global-log-context"></a>
 #### Global Log Context
@@ -118,6 +119,27 @@ Thỉnh thoảng bạn có thể cần report một ngoại lệ nhưng vẫn ti
         }
     }
 
+<a name="exception-log-levels"></a>
+### Mức độ log exceptions
+
+Khi một message được ghi vào trong [logs](/docs/{{version}}/logging) trong ứng dụng của bạn, một message sẽ được ghi ở một [log level](/docs/{{version}}/logging#log-levels) nhất định, cho biết mức độ nghiêm trọng hoặc tầm quan trọng của message được ghi lại.
+
+Như đã lưu ý ở trên, ngay cả khi bạn đăng ký một callback custom exception report bằng phương thức `reportable`, Laravel vẫn sẽ ghi log exception bằng cấu hình ghi log mặc định trong ứng dụng; tuy nhiên, vì cấp độ log đôi khi có thể ảnh hưởng đến các channel mà các message sẽ được ghi vào đó nên bạn có thể muốn cấu hình cấp độ log mà một số ngoại lệ nhất định được ghi vào.
+
+Để thực hiện điều này, bạn có thể định nghĩa một mảng các loại exception và cấp độ log của chúng trong thuộc tính `$levels` trong exception handler trong ứng dụng của bạn:
+
+    use PDOException;
+    use Psr\Log\LogLevel;
+
+    /**
+     * A list of exception types with their corresponding custom log levels.
+     *
+     * @var array<class-string<\Throwable>, \Psr\Log\LogLevel::*>
+     */
+    protected $levels = [
+        PDOException::class => LogLevel::CRITICAL,
+    ];
+
 <a name="ignoring-exceptions-by-type"></a>
 ### Chặn exceptions theo loại
 
@@ -126,15 +148,16 @@ Khi xây dựng ứng dụng của bạn, sẽ có một số loại ngoại l�
     use App\Exceptions\InvalidOrderException;
 
     /**
-     * A list of the exception types that should not be reported.
+     * A list of the exception types that are not reported.
      *
-     * @var array
+     * @var array<int, class-string<\Throwable>>
      */
     protected $dontReport = [
         InvalidOrderException::class,
     ];
 
-> {tip} Hậu trường, Laravel đã bỏ qua một số loại lỗi cho bạn, chẳng hạn như các trường hợp ngoại lệ do lỗi 404 HTTP "không tìm thấy" hoặc lỗi HTTP response 419 được tạo bởi do CSRF token không hợp lệ.
+> **Note**
+> Hậu trường, Laravel đã bỏ qua một số loại lỗi cho bạn, chẳng hạn như các trường hợp ngoại lệ do lỗi 404 HTTP "không tìm thấy" hoặc lỗi HTTP response 419 được tạo bởi do CSRF token không hợp lệ.
 
 <a name="rendering-exceptions"></a>
 ### Rendering Exceptions
@@ -208,7 +231,7 @@ Thay vì cách kiểm tra các loại của ngoại lệ như trong các phươn
          */
         public function render($request)
         {
-            return response(...);
+            return response(/* ... */);
         }
     }
 
@@ -241,34 +264,8 @@ Nếu ngoại lệ của bạn chứa logic reporting tùy chỉnh mà chỉ c�
         return false;
     }
 
-> {tip} Bạn có thể khai báo bất kỳ phụ thuộc nào bắt buộc của phương thức `report` và chúng sẽ tự động được tích hợp vào trong phương thức bởi [service container](/docs/{{version}}/container).
-
-<a name="mapping-exceptions-by-type"></a>
-### Mapping Exceptions theo loại
-
-Thỉnh thoảng, các thư viện của bên thứ ba mà ứng dụng của bạn sử dụng có thể đưa ra các ngoại lệ mà bạn muốn tạo ra các [renderable](#renderable-exceptions) cho các ngoại lệ đó, nhưng không thể làm được vì bạn không có quyền định nghĩa các ngoại lệ ở trong thư viện của bên thứ ba.
-
-Rất may, Laravel cho phép bạn map từ ngoại lệ này sang ngoại lệ khác một cách thuận tiện mà bạn có thể quản lý trong ứng dụng của bạn. Để thực hiện điều này, hãy gọi phương thức `map` trong phương thức `register` của exception handler của bạn:
-
-    use League\Flysystem\Exception;
-    use App\Exceptions\FilesystemException;
-
-    /**
-     * Register the exception handling callbacks for the application.
-     *
-     * @return void
-     */
-    public function register()
-    {
-        $this->map(Exception::class, FilesystemException::class);
-    }
-
-Nếu bạn muốn kiểm soát nhiều hơn việc tạo ngoại lệ cho ngoại lệ đích, bạn có thể truyền một closure cho phương thức `map`:
-
-    use League\Flysystem\Exception;
-    use App\Exceptions\FilesystemException;
-
-    $this->map(fn (Exception $e) => new FilesystemException($e));
+> **Note**
+> Bạn có thể khai báo bất kỳ phụ thuộc nào bắt buộc của phương thức `report` và chúng sẽ tự động được tích hợp vào trong phương thức bởi [service container](/docs/{{version}}/container).
 
 <a name="http-exceptions"></a>
 ## HTTP Exceptions
@@ -286,4 +283,11 @@ Laravel giúp dễ dàng tuỳ biến các trang error có HTTP status code khá
 
 Bạn có thể export các trang template lỗi mặc định của Laravel bằng lệnh Artisan `vendor:publish`. Khi các template này đã được export, bạn có thể tùy chỉnh chúng theo ý thích của bạn:
 
-    php artisan vendor:publish --tag=laravel-errors
+```shell
+php artisan vendor:publish --tag=laravel-errors
+```
+
+<a name="fallback-http-error-pages"></a>
+#### Fallback HTTP Error Pages
+
+Bạn cũng có thể định nghĩa một trang lỗi "dự phòng" cho một loạt các HTTP status code nhất định. Trang này sẽ được hiển thị nếu không có trang HTTP status code nào tương ứng. Để thực hiện điều này, hãy định nghĩa một template `4xx.blade.php` và một template `5xx.blade.php` trong thư mục `resources/views/errors` của ứng dụng của bạn.

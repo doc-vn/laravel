@@ -5,8 +5,8 @@
     - [Local Driver](#the-local-driver)
     - [Public Disk](#the-public-disk)
     - [Yêu cầu Driver](#driver-prerequisites)
+    - [Scoped và Read-Only Filesystems](#scoped-and-read-only-filesystems)
     - [Filesystem tương thích Amazon S3](#amazon-s3-compatible-filesystems)
-    - [Caching](#caching)
 - [Lấy Disk Instance](#obtaining-disk-instances)
     - [Disk theo yêu cầu](#on-demand-disks)
 - [Lấy File](#retrieving-files)
@@ -14,6 +14,9 @@
     - [File URL](#file-urls)
     - [File Metadata](#file-metadata)
 - [Lưu File](#storing-files)
+    - [Ghi vào đầu hoặc cuối file](#prepending-appending-to-files)
+    - [Copy và di chuyển Files](#copying-moving-files)
+    - [Automatic Streaming](#automatic-streaming)
     - [File Uploads](#file-uploads)
     - [File Visibility](#file-visibility)
 - [Xoá File](#deleting-files)
@@ -32,7 +35,8 @@ File cấu hình filesystem của Laravel được lưu tại `config/filesystem
 
 Driver `local` tương tác với các file được lưu trữ local trên máy chủ đang chạy ứng dụng Laravel trong khi driver `s3` sẽ được sử dụng để write vào dịch vụ lưu trữ đám mây S3 của Amazon.
 
-> {tip} Bạn có thể cấu hình bao nhiêu disk tùy ý của bạn và thậm chí có thể có nhiều disk sử dụng cùng một driver.
+> **Note**
+> Bạn có thể cấu hình bao nhiêu disk tùy ý của bạn và thậm chí có thể có nhiều disk sử dụng cùng một driver.
 
 <a name="the-local-driver"></a>
 ### The Local Driver
@@ -52,7 +56,9 @@ Disk `public` có trong file cấu hình `filesystems` của ứng dụng của 
 
 Để tạo link liên kết ảo, bạn có thể sử dụng lệnh Artisan `storage:link`:
 
-    php artisan storage:link
+```shell
+php artisan storage:link
+```
 
 Một khi một file đã được lưu trữ và link liên kết ảo đã được tạo xong, bạn có thể tạo URL tới các file này bằng cách sử dụng helper `asset`:
 
@@ -68,25 +74,25 @@ Bạn có thể cấu hình thêm các link ảo trong file cấu hình `filesys
 <a name="driver-prerequisites"></a>
 ### Yêu cầu Driver
 
-<a name="composer-packages"></a>
-#### Composer Packages
-
-Trước khi sử dụng driver S3 hoặc SFTP, bạn sẽ cần cài đặt các package thích hợp thông qua Composer package manager:
-
-- Amazon S3: `composer require --with-all-dependencies league/flysystem-aws-s3-v3 "^1.0"`
-- SFTP: `composer require league/flysystem-sftp "~1.0"`
-
-Ngoài ra, bạn có thể chọn cài đặt thêm cached adapter để tăng hiệu suất:
-
-- CachedAdapter: `composer require league/flysystem-cached-adapter "~1.0"`
-
 <a name="s3-driver-configuration"></a>
 #### S3 Driver Configuration
+
+Trước khi sử dụng driver S3, bạn cần cài đặt package Flysystem S3 thông qua trình quản lý package Composer:
+
+```shell
+composer require league/flysystem-aws-s3-v3 "^3.0"
+```
 
 Thông tin cấu hình driver S3 nằm trong file cấu hình `config/filesystems.php` của bạn. File này chứa một mảng cấu hình mẫu cho driver S3. Bạn có thể tự do sửa mảng này với thông tin và cấu hình S3 của riêng bạn. Để thuận tiện, các biến môi trường đã được đặt tên khớp với quy ước đặt tên được sử dụng bởi AWS CLI.
 
 <a name="ftp-driver-configuration"></a>
 #### FTP Driver Configuration
+
+Trước khi sử dụng driver FTP, bạn cần cài đặt package Flysystem FTP thông qua trình quản lý package Composer:
+
+```shell
+composer require league/flysystem-ftp "^3.0"
+```
 
 Flysystem integration của Laravel hoạt động tốt với FTP; tuy nhiên, mặc định, một cấu hình mẫu không được thêm vào trong file cấu hình `filesystems.php` của framework. Nếu bạn cần cấu hình một hệ thống file FTP, bạn có thể sử dụng cấu hình mẫu ở bên dưới:
 
@@ -107,6 +113,12 @@ Flysystem integration của Laravel hoạt động tốt với FTP; tuy nhiên, 
 <a name="sftp-driver-configuration"></a>
 #### SFTP Driver Configuration
 
+Trước khi sử dụng driver SFTP, bạn cần cài đặt package Flysystem SFTP thông qua trình quản lý package Composer:
+
+```shell
+composer require league/flysystem-sftp-v3 "^3.0"
+```
+
 Flysystem tích hợp trong Laravel hoạt động tốt với SFTP; tuy nhiên, mặc định một cấu hình mẫu sẽ không có trong file cấu hình `filesystems.php` của framework. Nếu bạn cần cấu hình một hệ thống filesystem SFTP, bạn có thể sử dụng cấu hình ví dụ ở bên dưới:
 
     'sftp' => [
@@ -119,39 +131,73 @@ Flysystem tích hợp trong Laravel hoạt động tốt với SFTP; tuy nhiên,
 
         // Settings for SSH key based authentication with encryption password...
         'privateKey' => env('SFTP_PRIVATE_KEY'),
-        'password' => env('SFTP_PASSWORD'),
+        'passphrase' => env('SFTP_PASSPHRASE'),
 
         // Optional SFTP Settings...
+        // 'hostFingerprint' => env('SFTP_HOST_FINGERPRINT'),
+        // 'maxTries' => 4,
+        // 'passphrase' => env('SFTP_PASSPHRASE'),
         // 'port' => env('SFTP_PORT', 22),
-        // 'root' => env('SFTP_ROOT'),
+        // 'root' => env('SFTP_ROOT', ''),
         // 'timeout' => 30,
+        // 'useAgent' => true,
     ],
+
+<a name="scoped-and-read-only-filesystems"></a>
+### Scoped và Read-Only Filesystems
+
+Scoped disk cho phép bạn định nghĩa một hệ thống filesystem mà trong đó tất cả các đường dẫn được tự động thêm một tiền tố nhất định. Trước khi tạo một scoped filesystem disk, bạn sẽ cần cài đặt thêm package Flysystem thông qua trình quản lý package Composer:
+
+```shell
+composer require league/flysystem-path-prefixing "^3.0"
+```
+
+Bạn có thể tạo một instance scoped đường dẫn của bất kỳ filesystem disk nào hiện có bằng cách định nghĩa một disk sử dụng driver `scoped`. Ví dụ: bạn có thể tạo một disk scope cho disk `s3` hiện có với một tiền tố đường dẫn cụ thể, sau đó mọi thao tác với file bằng disk scope này sẽ sử dụng tiền tố đã được chỉ định:
+
+```php
+'s3-videos' => [
+    'driver' => 'scoped',
+    'disk' => 's3',
+    'prefix' => 'path/to/videos',
+],
+```
+
+Disk "read-only" cho phép bạn tạo ra các disk filesystem không cho phép quyền ghi. Trước khi sử dụng tùy chọn cấu hình `read-only`, bạn sẽ cần cài đặt thêm package Flysystem thông qua trình quản lý package Composer:
+
+```shell
+composer require league/flysystem-read-only "^3.0"
+```
+
+Tiếp theo, bạn có thể thêm tùy chọn cấu hình `read-only` vào trong một hoặc nhiều mảng cấu hình disk của bạn:
+
+```php
+'s3-videos' => [
+    'driver' => 's3',
+    // ...
+    'read-only' => true,
+],
+```
 
 <a name="amazon-s3-compatible-filesystems"></a>
 ### Filesystem tương thích Amazon S3
 
 Mặc định, file cấu hình `filesystems` của ứng dụng sẽ chứa một cấu hình disk cho disk `s3`. Ngoài việc sử dụng disk này để tương tác với Amazon S3, bạn cũng có thể sử dụng nó để tương tác với bất kỳ dịch vụ lưu trữ file nào tương thích S3 nào, chẳng hạn như [MinIO](https://github.com/minio/minio) hoặc [DigitalOcean Spaces](https://www.digitalocean.com/products/spaces/).
 
-Thông thường, sau khi cập nhật thông tin đăng nhập của disk để khớp với thông tin đăng nhập của dịch vụ mà bạn đang sử dụng, bạn chỉ cần cập nhật giá trị của tùy chọn của cấu hình `url`. Giá trị tùy chọn này thường được định nghĩa thông qua biến môi trường `AWS_ENDPOINT`:
+Thông thường, sau khi cập nhật thông tin đăng nhập của disk để khớp với thông tin đăng nhập của dịch vụ mà bạn đang sử dụng, bạn chỉ cần cập nhật giá trị của tùy chọn của cấu hình `endpoint`. Giá trị tùy chọn này thường được định nghĩa thông qua biến môi trường `AWS_ENDPOINT`:
 
     'endpoint' => env('AWS_ENDPOINT', 'https://minio:9000'),
 
-<a name="caching"></a>
-### Caching
+<a name="minio"></a>
+#### MinIO
 
-Để kích hoạt bộ nhớ cache cho một disk nhất định, bạn có thể thêm tuỳ chọn `cache` vào các tùy chọn cấu hình của disk. Tùy chọn `cache` sẽ phải là một mảng gồm các tùy chọn là tên cache `store`, thời gian hết hạn `expire` tính bằng giây và tiền tố `prefix`:
+Để tích hợp Flysystem của Laravel vào việc tạo các URL khi sử dụng MinIO, bạn nên định nghĩa một biến môi trường là `AWS_URL` sao cho nó khớp với URL local của ứng dụng của bạn và chứa tên bucket trong đường dẫn URL:
 
-    's3' => [
-        'driver' => 's3',
+```ini
+AWS_URL=http://localhost:9000/local
+```
 
-        // Other Disk Options...
-
-        'cache' => [
-            'store' => 'memcached',
-            'expire' => 600,
-            'prefix' => 'cache-prefix',
-        ],
-    ],
+> **Warning**
+> Việc tạo URL tạm thời thông qua phương thức `temporaryUrl` không được hỗ trợ khi sử dụng MinIO.
 
 <a name="obtaining-disk-instances"></a>
 ## Lấy Disk Instance
@@ -221,7 +267,8 @@ Bạn có thể sử dụng phương thức `url` để lấy ra URL đã cho ch
 
 Khi sử dụng driver `local`, tất cả các file mà có thể truy cập ở dạng công khai thì nên được lưu trong thư mục `storage/app/public`. Hơn nữa, bạn nên [tạo một link liên kết ảo](#the-public-disk) ở thư mục `public/storage` để trỏ đến thư mục `storage/app/public`.
 
-> {lưu ý} Khi sử dụng driver `local`, giá trị trả về của `url` không phải là URL đã được encoded. Vì lý do này, mà chúng tôi khuyên bạn nên lưu trữ các file của bạn bằng các tên mà sẽ tạo ra URL hợp lệ.
+> **Warning**
+> Khi sử dụng driver `local`, giá trị trả về của `url` không phải là URL đã được encoded. Vì lý do này, mà chúng tôi khuyên bạn nên lưu trữ các file của bạn bằng các tên mà sẽ tạo ra URL hợp lệ.
 
 <a name="temporary-urls"></a>
 #### Temporary URLs
@@ -299,6 +346,10 @@ Phương thức `lastModified` trả về một UNIX timestamp về lần cuối
 
     $time = Storage::lastModified('file.jpg');
 
+Loại MIME của một file nhất định có thể được lấy thông qua phương thức `mimeType`:
+
+    $mime = Storage::mimeType('file.jpg')
+
 <a name="file-paths"></a>
 #### File Paths
 
@@ -319,8 +370,43 @@ Phương thức `put` có thể được sử dụng để lưu trữ một nộ
 
     Storage::put('file.jpg', $resource);
 
+<a name="failed-writes"></a>
+#### Failed Writes
+
+Nếu phương thức `put` (hoặc các thao tác "ghi" khác) không thể ghi tệp vào disk, thì `false` sẽ được trả về:
+
+    if (! Storage::put('file.jpg', $contents)) {
+        // The file could not be written to disk...
+    }
+
+Nếu muốn, bạn có thể định nghĩa một tùy chọn `throw` trong mảng cấu hình của filesystem disk của bạn. Khi tùy chọn đó đã được định nghĩa là `true`, các phương thức "write" chẳng hạn như `put` sẽ throw ra một instance của `League\Flysystem\UnableToWriteFile` khi thao tác ghi không thành công:
+
+    'public' => [
+        'driver' => 'local',
+        // ...
+        'throw' => true,
+    ],
+
+<a name="prepending-appending-to-files"></a>
+### Ghi vào đầu hoặc cuối file
+
+Các phương thức `prepend` và `append` cho phép bạn ghi vào đầu hoặc cuối file:
+
+    Storage::prepend('file.log', 'Prepended Text');
+
+    Storage::append('file.log', 'Appended Text');
+
+<a name="copying-moving-files"></a>
+### Copy và di chuyển Files
+
+Phương thức `copy` có thể được sử dụng để sao chép một file hiện có sang một vị trí mới trên disk, trong khi phương thức `move` có thể được sử dụng để đổi tên hoặc di chuyển file hiện có sang vị trí mới:
+
+    Storage::copy('old/file.jpg', 'new/file.jpg');
+
+    Storage::move('old/file.jpg', 'new/file.jpg');
+
 <a name="automatic-streaming"></a>
-#### Automatic Streaming
+### Automatic Streaming
 
 Streaming một file đến storage giúp giảm đáng kể mức sử dụng bộ nhớ. Nếu bạn muốn Laravel tự động quản lý việc streaming một file đã cho đến một vị trí lưu trữ của bạn, bạn có thể sử dụng phương thức `putFile` hoặc `putFileAs`. Phương thức này chấp nhận một instance `Illuminate\Http\File` hoặc một `Illuminate\Http\UploadedFile` và sẽ tự động stream file đó đến vị trí mong muốn của bạn:
 
@@ -338,24 +424,6 @@ Có một vài điều quan trọng cần phải lưu ý về phương thức `p
 Các phương thức `putFile` và `putFileAs` cũng chấp nhận một than số để khai báo "visibility" của file được lưu trữ. Điều này đặc biệt hữu ích nếu bạn đang lưu trữ file trên một cloud disk như Amazon S3 và muốn file này có thể truy cập công khai thông qua URL được generate :
 
     Storage::putFile('photos', new File('/path/to/photo'), 'public');
-
-<a name="prepending-appending-to-files"></a>
-#### Prepending & Appending To Files
-
-Các phương thức `prepend` và `append` cho phép bạn ghi vào đầu dòng hoặc cuối dòng của một file:
-
-    Storage::prepend('file.log', 'Prepended Text');
-
-    Storage::append('file.log', 'Appended Text');
-
-<a name="copying-moving-files"></a>
-#### Copying & Moving Files
-
-Phương thức `copy` có thể được sử dụng để sao chép một file hiện có sang một vị trí mới trên disk, trong khi phương thức `move` có thể được sử dụng để đổi tên hoặc di chuyển một file hiện có sang một vị trí mới:
-
-    Storage::copy('old/file.jpg', 'new/file.jpg');
-
-    Storage::move('old/file.jpg', 'new/file.jpg');
 
 <a name="file-uploads"></a>
 ### File Uploads
@@ -406,7 +474,8 @@ Bạn cũng có thể sử dụng phương thức `putFileAs` trên facade `Stor
         'avatars', $request->file('avatar'), $request->user()->id
     );
 
-> {note} Các ký tự unicode không in được hoặc không hợp lệ sẽ bị tự động xóa khỏi đường dẫn đến file. Vì vậy, bạn có thể muốn làm sạch đường dẫn đến file của bạn trước khi truyền chúng đến các phương thức lưu trữ file của Laravel. Đường dẫn đến file có thể được chuẩn hóa bằng phương thức `League\Flysystem\Util::normalizePath`.
+> **Warning**
+> Các ký tự unicode không in được hoặc không hợp lệ sẽ bị tự động xóa khỏi đường dẫn đến file. Vì vậy, bạn có thể muốn làm sạch đường dẫn đến file của bạn trước khi truyền chúng đến các phương thức lưu trữ file của Laravel. Đường dẫn đến file có thể được chuẩn hóa bằng phương thức `League\Flysystem\WhitespacePathNormalizer::normalizePath`.
 
 <a name="specifying-a-disk"></a>
 #### Specifying A Disk
@@ -550,7 +619,9 @@ Flysystem tích hợp của Laravel cung cấp hỗ trợ cho một số "driver
 
 Để định nghĩa một tuỳ biến filesystem, bạn sẽ cần một bộ chuyển đổi Flysystem. Hãy thêm một bộ chuyển đổi Dropbox được cộng đồng phát triển vào trong dự án của bạn:
 
-    composer require spatie/flysystem-dropbox
+```shell
+composer require spatie/flysystem-dropbox
+```
 
 Tiếp theo, bạn có thể đăng ký driver trong phương thức `boot` của một trong những [service providers](/docs/{{version}}/providers) trong ứng dụng của bạn. Để thực hiện điều này, bạn nên sử dụng phương thức `extend` của facade `Storage`:
 
@@ -558,6 +629,7 @@ Tiếp theo, bạn có thể đăng ký driver trong phương thức `boot` củ
 
     namespace App\Providers;
 
+    use Illuminate\Filesystem\FilesystemAdapter;
     use Illuminate\Support\Facades\Storage;
     use Illuminate\Support\ServiceProvider;
     use League\Flysystem\Filesystem;
@@ -584,15 +656,19 @@ Tiếp theo, bạn có thể đăng ký driver trong phương thức `boot` củ
         public function boot()
         {
             Storage::extend('dropbox', function ($app, $config) {
-                $client = new DropboxClient(
+                $adapter = new DropboxAdapter(new DropboxClient(
                     $config['authorization_token']
-                );
+                ));
 
-                return new Filesystem(new DropboxAdapter($client));
+                return new FilesystemAdapter(
+                    new Filesystem($adapter, $config),
+                    $adapter,
+                    $config
+                );
             });
         }
     }
 
-Tham số đầu tiên của phương thức `extend` là tên của driver và tham số thứ hai là một closure nhận các biến `$app` và `$config`. Closure này cần trả về một instance của `League\Flysystem\Filesystem`. Biến `$config` sẽ chứa các giá trị được định nghĩa trong file `config/filesystems.php` cho disk mà bạn đang khai báo.
+Tham số đầu tiên của phương thức `extend` là tên của driver và tham số thứ hai là một closure nhận các biến `$app` và `$config`. Closure này cần trả về một instance của `Illuminate\Filesystem\FilesystemAdapter`. Biến `$config` sẽ chứa các giá trị được định nghĩa trong file `config/filesystems.php` cho disk mà bạn đang khai báo.
 
 Khi bạn đã tạo và đăng ký xong service provider, bạn có thể sử dụng driver `dropbox` trong file cấu hình `config/filesystems.php`.

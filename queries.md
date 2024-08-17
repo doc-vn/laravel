@@ -12,12 +12,14 @@
 - [Lệnh where cơ bản](#basic-where-clauses)
     - [Lệnh where](#where-clauses)
     - [Lệnh where or](#or-where-clauses)
+    - [Lệnh ưhere not](#where-not-clauses)
     - [Lệnh where cho json](#json-where-clauses)
     - [Lệnh where khác](#additional-where-clauses)
     - [Logic nhóm](#logical-grouping)
 - [Lệnh where nâng cao](#advanced-where-clauses)
     - [Lệnh where exist](#where-exists-clauses)
     - [Lệnh where cho truy vấn con](#subquery-where-clauses)
+    - [Lệnh where full text](#full-text-where-clauses)
 - [Ordering, Grouping, Limit và Offset](#ordering-grouping-limit-and-offset)
     - [Ordering](#ordering)
     - [Grouping](#grouping)
@@ -39,7 +41,8 @@ Database query builder của Laravel cung cấp một interface thuận tiện, 
 
 Query builder của Laravel sử dụng tham số PDO để bảo vệ application của bạn khỏi các cuộc tấn công SQL injection. Bạn sẽ không cần phải chuẩn hoá các chuỗi trước khi truyền đến query builder dưới dạng các ràng buộc query.
 
-> {note} PDO không hỗ trợ truyền tên cột dưới dạng biến. Do đó, bạn không nên cho phép người dùng nhập tên cột mà truy vấn của bạn tham chiếu, bao gồm cả cột "order by".
+> **Warning**
+> PDO không hỗ trợ truyền tên cột dưới dạng biến. Do đó, bạn không nên cho phép người dùng nhập tên cột mà truy vấn của bạn tham chiếu, bao gồm cả cột "order by".
 
 <a name="running-database-queries"></a>
 ## Chạy Database Queries
@@ -81,7 +84,8 @@ Phương thức `get` trả về một instance `Illuminate\Support\Collection` 
         echo $user->name;
     }
 
-> {tip} Laravel collection sẽ cung cấp nhiều phương thức cực kỳ mạnh mẽ để kết nối và giảm dữ liệu. Để biết thêm thông tin về Laravel collection, hãy xem [tài liệu về collection](/docs/{{version}}/collections).
+> **Note**
+> Laravel collection sẽ cung cấp nhiều phương thức cực kỳ mạnh mẽ để kết nối và giảm dữ liệu. Để biết thêm thông tin về Laravel collection, hãy xem [tài liệu về collection](/docs/{{version}}/collections).
 
 <a name="retrieving-a-single-row-column-from-a-table"></a>
 #### Retrieving A Single Row / Column From A Table
@@ -153,7 +157,8 @@ Nếu bạn đang cập nhật bản ghi cơ sở dữ liệu trong khi chunking
             }
         });
 
-> {note} Khi cập nhật hoặc xóa các bản ghi bên trong lệnh callback của phương thức chunk, bất kỳ thay đổi nào đối với các khóa chính hoặc khóa ngoại đều có thể ảnh hưởng đến kết quả truy vấn của phương thức chunk. Điều này có thể dẫn đến việc một số bản ghi sẽ không được đưa vào bên trong kết quả chunk.
+> **Warning**
+> Khi cập nhật hoặc xóa các bản ghi bên trong lệnh callback của phương thức chunk, bất kỳ thay đổi nào đối với các khóa chính hoặc khóa ngoại đều có thể ảnh hưởng đến kết quả truy vấn của phương thức chunk. Điều này có thể dẫn đến việc một số bản ghi sẽ không được đưa vào bên trong kết quả chunk.
 
 <a name="streaming-results-lazily"></a>
 ### Streaming Results Lazily
@@ -179,7 +184,8 @@ DB::table('users')->where('active', false)
     });
 ```
 
-> {note} Khi cập nhật hoặc xóa bản ghi trong khi lặp, thì mọi thay đổi đối với khóa chính hoặc khóa ngoại đều có thể ảnh hưởng đến truy vấn chunk. Điều này có thể dẫn đến việc các bản ghi sẽ thiếu trong kết quả.
+> **Warning**
+> Khi cập nhật hoặc xóa bản ghi trong khi lặp, thì mọi thay đổi đối với khóa chính hoặc khóa ngoại đều có thể ảnh hưởng đến truy vấn chunk. Điều này có thể dẫn đến việc các bản ghi sẽ thiếu trong kết quả.
 
 <a name="aggregates"></a>
 ### Thống kê
@@ -246,7 +252,8 @@ Thỉnh thoảng bạn có thể cần chèn một chuỗi tùy ý vào trong m�
                  ->groupBy('status')
                  ->get();
 
-> {note} Các câu lệnh raw sẽ được đưa vào query dưới dạng là một chuỗi, vì vậy bạn cần phải cực kỳ cẩn thận để tránh tạo ra lỗ hổng SQL injection.
+> **Warning**
+> Các câu lệnh raw sẽ được đưa vào query dưới dạng là một chuỗi, vì vậy bạn cần phải cực kỳ cẩn thận để tránh tạo ra lỗ hổng SQL injection.
 
 <a name="raw-methods"></a>
 ### Raw Methods
@@ -256,7 +263,7 @@ Thay vì sử dụng phương thức `raw`, bạn cũng có thể sử dụng c�
 <a name="selectraw"></a>
 #### `selectRaw`
 
-Phương thức `selectRaw` có thể được sử dụng thay cho câu lệnh `addSelect(DB::raw(...))`. Phương thức này chấp nhận một mảng các tùy chọn tham số được truyền vào làm tham số thứ hai của nó:
+Phương thức `selectRaw` có thể được sử dụng thay cho câu lệnh `addSelect(DB::raw(/* ... */))`. Phương thức này chấp nhận một mảng các tùy chọn tham số được truyền vào làm tham số thứ hai của nó:
 
     $orders = DB::table('orders')
                     ->selectRaw('price * ? as price_with_tax', [1.0825])
@@ -346,7 +353,7 @@ Bạn cũng có thể khai báo các lệnh join một cách cụ thể hơn. Đ
 
     DB::table('users')
             ->join('contacts', function ($join) {
-                $join->on('users.id', '=', 'contacts.user_id')->orOn(...);
+                $join->on('users.id', '=', 'contacts.user_id')->orOn(/* ... */);
             })
             ->get();
 
@@ -431,7 +438,8 @@ Bạn cũng có thể truyền một mảng các điều kiện cho phương th�
         ['subscribed', '<>', '1'],
     ])->get();
 
-> {note} PDO không hỗ trợ truyền tên cột dưới dạng biến. Do đó, bạn không nên cho phép người dùng nhập tên cột mà truy vấn của bạn tham chiếu, bao gồm cả cột "order by".
+> **Warning**
+> PDO không hỗ trợ truyền tên cột dưới dạng biến. Do đó, bạn không nên cho phép người dùng nhập tên cột mà truy vấn của bạn tham chiếu, bao gồm cả cột "order by".
 
 <a name="or-where-clauses"></a>
 ### Lệnh where or
@@ -459,18 +467,31 @@ Ví dụ trên sẽ tạo ra một câu lệnh SQL như sau:
 select * from users where votes > 100 or (name = 'Abigail' and votes > 50)
 ```
 
-> {tip} Bạn nên nhóm các lệnh `orWhere` lại với nhau để tránh các hành vi không mong muốn khi sử dụng global scope.
+> **Warning**
+> Bạn nên nhóm các lệnh `orWhere` lại với nhau để tránh các hành vi không mong muốn khi sử dụng global scope.
+
+<a name="where-not-clauses"></a>
+### Lệnh ưhere not
+
+Các phương thức `whereNot` và `orWhereNot` có thể được sử dụng để phủ định một nhóm các lệnh nhất định. Ví dụ, truy vấn sau đây bỏ qua các sản phẩm đang được thanh lý hoặc có giá dưới mười:
+
+    $products = DB::table('products')
+                    ->whereNot(function ($query) {
+                        $query->where('clearance', true)
+                              ->orWhere('price', '<', 10);
+                    })
+                    ->get();
 
 <a name="json-where-clauses"></a>
 ### Lệnh where cho json
 
-Laravel cũng hỗ trợ truy vấn vào các cột loại JSON trên cơ sở dữ liệu. Hiện tại, các cột loại JSON đã được hỗ trợ từ MySQL 5.7+, PostgreSQL, SQL Server 2016, và SQLite 3.9.0 (với [JSON1 extension](https://www.sqlite.org/json1.html)). Để truy vấn vào cột loại JSON, hãy sử dụng toán tử `->`:
+Laravel cũng hỗ trợ truy vấn vào các cột loại JSON trên cơ sở dữ liệu. Hiện tại, các cột loại JSON đã được hỗ trợ từ MySQL 5.7+, PostgreSQL, SQL Server 2016, và SQLite 3.39.0 (với [JSON1 extension](https://www.sqlite.org/json1.html)). Để truy vấn vào cột loại JSON, hãy sử dụng toán tử `->`:
 
     $users = DB::table('users')
                     ->where('preferences->dining->meal', 'salad')
                     ->get();
 
-Bạn có thể sử dụng `whereJsonContains` để truy vấn vào mảng JSON. Tính năng này sẽ không được hỗ trợ bởi cơ sở dữ liệu SQLite:
+Bạn có thể sử dụng `whereJsonContains` để truy vấn vào mảng JSON. Tính năng này sẽ không được hỗ trợ bởi các cơ sở dữ liệu SQLite mà có phiên bản nhỏ hơn 3.38.0:
 
     $users = DB::table('users')
                     ->whereJsonContains('options->languages', 'en')
@@ -511,6 +532,20 @@ Phương thức `whereNotBetween` sẽ kiểm tra giá trị của một cột n
                         ->whereNotBetween('votes', [1, 100])
                         ->get();
 
+**whereBetweenColumns / whereNotBetweenColumns / orWhereBetweenColumns / orWhereNotBetweenColumns**
+
+Phương thức `whereBetweenColumns` sẽ kiểm tra giá trị của một cột nằm giữa hai giá trị của hai cột có trong cùng một hàng của một bảng:
+
+    $patients = DB::table('patients')
+                           ->whereBetweenColumns('weight', ['minimum_allowed_weight', 'maximum_allowed_weight'])
+                           ->get();
+
+Phương thức `whereNotBetweenColumns` sẽ kiểm tra giá trị của một cột nằm ngoài hai giá trị của hai cột có trong cùng một hàng của một bảng:
+
+    $patients = DB::table('patients')
+                           ->whereNotBetweenColumns('weight', ['minimum_allowed_weight', 'maximum_allowed_weight'])
+                           ->get();
+
 **whereIn / whereNotIn / orWhereIn / orWhereNotIn**
 
 Phương thức `whereIn` sẽ kiểm tra giá trị của một cột đã cho có được chứa trong mảng các giá trị đã cho hay không:
@@ -525,7 +560,26 @@ Phương thức `whereNotIn` sẽ kiểm tra giá trị của một cột đã c
                         ->whereNotIn('id', [1, 2, 3])
                         ->get();
 
-> {note} Nếu bạn đang thêm một mảng integer lớn vào truy vấn của bạn, phương thức `whereIntegerInRaw` hoặc `whereIntegerNotInRaw` có thể được sử dụng để giảm đáng kể mức sử dụng bộ nhớ của bạn.
+Bạn cũng có thể cung cấp một đối tượng truy vấn làm tham số thứ hai của phương thức `whereIn`:
+
+    $activeUsers = DB::table('users')->select('id')->where('is_active', 1);
+
+    $users = DB::table('comments')
+                        ->whereIn('user_id', $activeUsers)
+                        ->get();
+
+Ví dụ trên sẽ tạo ra câu lệnh SQL như sau:
+
+```sql
+select * from comments where user_id in (
+    select id
+    from users
+    where is_active = 1
+)
+```
+
+> **Warning**
+> Nếu bạn đang thêm một mảng integer lớn vào truy vấn của bạn, phương thức `whereIntegerInRaw` hoặc `whereIntegerNotInRaw` có thể được sử dụng để giảm đáng kể mức sử dụng bộ nhớ của bạn.
 
 **whereNull / whereNotNull / orWhereNull / orWhereNotNull**
 
@@ -614,7 +668,8 @@ Như bạn có thể thấy, việc truyền một closure vào phương thức 
 select * from users where name = 'John' and (votes > 100 or title = 'Admin')
 ```
 
-> {note} Bạn nên nhóm các lệnh `orWhere` lại với nhau để tránh các hành vi không mong muốn khi sử dụng global scope.
+> **Warning**
+> Bạn nên nhóm các lệnh `orWhere` lại với nhau để tránh các hành vi không mong muốn khi sử dụng global scope.
 
 <a name="advanced-where-clauses"></a>
 ### Lệnh where nâng cao
@@ -665,6 +720,18 @@ Hoặc, bạn có thể cần xây dựng một lệnh "where" để so sánh m�
     $incomes = Income::where('amount', '<', function ($query) {
         $query->selectRaw('avg(i.amount)')->from('incomes as i');
     })->get();
+
+<a name="full-text-where-clauses"></a>
+### Lệnh where full text
+
+> **Warning**
+> Lệnh where full text hiện đang được MySQL và PostgreSQL hỗ trợ.
+
+Các phương thức `whereFullText` và `orWhereFullText` có thể được sử dụng để thêm các lệnh "where" full text vào truy vấn cho các cột có [index full text](/docs/{{version}}/migrations#available-index-types). Các phương thức này sẽ được Laravel chuyển thành các câu SQL phù hợp cho hệ thống cơ sở dữ liệu. Ví dụ, một lệnh `MATCH AGAINST` sẽ được tạo cho các ứng dụng sử dụng cơ sở dữ liệu MySQL:
+
+    $users = DB::table('users')
+               ->whereFullText('bio', 'web developer')
+               ->get();
 
 <a name="ordering-grouping-limit-and-offset"></a>
 ## Ordering, Grouping, Limit và Offset
@@ -777,7 +844,7 @@ Thỉnh thoảng bạn cũng có thể muốn một lệnh truy vấn sẽ đư�
 
     $users = DB::table('users')
                     ->when($role, function ($query, $role) {
-                        return $query->where('role_id', $role);
+                        $query->where('role_id', $role);
                     })
                     ->get();
 
@@ -789,9 +856,9 @@ Bạn có thể truyền một closure khác làm tham số thứ ba cho phươn
 
     $users = DB::table('users')
                     ->when($sortByVotes, function ($query, $sortByVotes) {
-                        return $query->orderBy('votes');
+                        $query->orderBy('votes');
                     }, function ($query) {
-                        return $query->orderBy('name');
+                        $query->orderBy('name');
                     })
                     ->get();
 
@@ -812,14 +879,20 @@ Bạn có thể thêm nhiều bản ghi vào bảng của cơ sở dữ liệu v
         ['email' => 'janeway@example.com', 'votes' => 0],
     ]);
 
-Phương thức `insertOrIgnore` sẽ bỏ qua các lỗi trong khi chèn bản ghi vào cơ sở dữ liệu:
+Phương thức `insertOrIgnore` sẽ bỏ qua các lỗi có trong khi insert bản ghi vào cơ sở dữ liệu. Khi sử dụng phương thức này, bạn nên biết rằng lỗi bản ghi trùng lặp sẽ bị bỏ qua và các loại lỗi khác cũng có thể bị bỏ qua tùy thuộc vào database engine. Ví dụ, `insertOrIgnore` sẽ [bỏ qua chế độ strict của MySQL](https://dev.mysql.com/doc/refman/en/sql-mode.html#ignore-effect-on-execution):
 
     DB::table('users')->insertOrIgnore([
         ['id' => 1, 'email' => 'sisko@example.com'],
         ['id' => 2, 'email' => 'archer@example.com'],
     ]);
 
-> {note} `insertOrIgnore` sẽ bỏ qua các bản ghi trùng lặp và cũng có thể bỏ qua các loại lỗi khác tùy thuộc vào engine của cơ sở dữ liệu. Ví dụ: `insertOrIgnore` sẽ [bỏ qua chế độ strict của MySQL](https://dev.mysql.com/doc/refman/en/sql-mode.html#ignore-effect-on-execution).
+Phương thức `insertUsing` sẽ insert các bản ghi mới vào bảng trong khi vẫn sử dụng truy vấn phụ để xác định dữ liệu cần insert:
+
+    DB::table('pruned_users')->insertUsing([
+        'id', 'name', 'email', 'email_verified_at'
+    ], DB::table('users')->select(
+        'id', 'name', 'email', 'email_verified_at'
+    )->where('updated_at', '<=', now()->subMonth()));
 
 <a name="auto-incrementing-ids"></a>
 #### Auto-Incrementing IDs
@@ -830,21 +903,27 @@ Nếu bảng có set id tự động tăng, hãy sử dụng phương thức `in
         ['email' => 'john@example.com', 'votes' => 0]
     );
 
-> {note} Khi sử dụng PostgreSQL, phương thức `insertGetId` này sẽ giả sử tên của cột tự động tăng là cột `id`. Nếu bạn muốn lấy ID từ một "chuỗi" khác, bạn có thể truyền vào tên cột làm tham số thứ hai cho phương thức `insertGetId`.
+> **Warning**
+> Khi sử dụng PostgreSQL, phương thức `insertGetId` này sẽ giả sử tên của cột tự động tăng là cột `id`. Nếu bạn muốn lấy ID từ một "chuỗi" khác, bạn có thể truyền vào tên cột làm tham số thứ hai cho phương thức `insertGetId`.
 
 <a name="upserts"></a>
 ### Upserts
 
 Phương thức `upsert` sẽ thêm các bản ghi không tồn tại và cập nhật lại các bản ghi đã tồn tại với các giá trị mới mà bạn có thể chỉ định. Tham số đầu tiên của phương thức chứa các giá trị cần thêm hoặc cần cập nhật, trong khi tham số thứ hai liệt kê (các) cột khoá chính duy nhất trong các bản ghi để xác định cập nhật hay thêm bản ghi mới. Tham số thứ ba và cuối cùng của phương thức là một mảng các cột cần được cập nhật nếu bản ghi khớp đã tồn tại trong cơ sở dữ liệu:
 
-    DB::table('flights')->upsert([
-        ['departure' => 'Oakland', 'destination' => 'San Diego', 'price' => 99],
-        ['departure' => 'Chicago', 'destination' => 'New York', 'price' => 150]
-    ], ['departure', 'destination'], ['price']);
+    DB::table('flights')->upsert(
+        [
+            ['departure' => 'Oakland', 'destination' => 'San Diego', 'price' => 99],
+            ['departure' => 'Chicago', 'destination' => 'New York', 'price' => 150]
+        ],
+        ['departure', 'destination'],
+        ['price']
+    );
 
 Trong ví dụ trên, Laravel sẽ cố gắng thêm hai bản ghi. Nếu một bản ghi đã tồn tại với cùng giá trị cột `departure` và `destination`, thì Laravel sẽ cập nhật cột `price` của bản ghi đó.
 
-> {note} Tất cả các cơ sở dữ liệu ngoại trừ SQL Server đều yêu cầu các cột trong tham số thứ hai của phương thức `upsert` phải ở dạng "primary" hoặc "unique". Ngoài ra, driver cơ sở dữ liệu cũng MySQL bỏ qua tham số thứ hai của phương thức `upsert` và luôn sử dụng các "primary" và "unique" của bảng để phát hiện ra các bản ghi hiện có.
+> **Warning**
+> Tất cả các cơ sở dữ liệu ngoại trừ SQL Server đều yêu cầu các cột trong tham số thứ hai của phương thức `upsert` phải ở dạng "primary" hoặc "unique". Ngoài ra, driver cơ sở dữ liệu cũng MySQL bỏ qua tham số thứ hai của phương thức `upsert` và luôn sử dụng các "primary" và "unique" của bảng để phát hiện ra các bản ghi hiện có.
 
 <a name="update-statements"></a>
 ## Update Statements
@@ -890,9 +969,16 @@ Query builder cũng cung cấp các phương thức để tăng hoặc giảm gi
 
     DB::table('users')->decrement('votes', 5);
 
-Bạn cũng có thể khai báo thêm các cột để cập nhật trong quá trình hoạt động:
+Nếu cần, bạn cũng có thể khai báo thêm các cột để cập nhật trong quá trình tăng hoặc giảm:
 
     DB::table('users')->increment('votes', 1, ['name' => 'John']);
+
+Ngoài ra, bạn có thể tăng hoặc giảm nhiều cột cùng lúc bằng cách sử dụng phương thức `incrementEach` và `decrementEach`:
+
+    DB::table('users')->incrementEach([
+        'votes' => 5,
+        'balance' => 100,
+    ]);
 
 <a name="delete-statements"></a>
 ## Delete Statements

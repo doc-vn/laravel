@@ -18,7 +18,8 @@ Nếu bạn mở file `config/app.php` đi cùng với Laravel, bạn sẽ thấ
 
 Trong phần tổng quan này, bạn sẽ học cách viết các service provider của riêng bạn và đăng ký chúng với application Laravel.
 
-> {tip} Nếu bạn muốn tìm hiểu thêm về cách Laravel xử lý các request và hoạt động nội bộ trong Laravel, hãy xem tài liệu của chúng tôi về Laravel [vòng đời request](/docs/{{version}}/lifecycle).
+> **Note**
+> Nếu bạn muốn tìm hiểu thêm về cách Laravel xử lý các request và hoạt động nội bộ trong Laravel, hãy xem tài liệu của chúng tôi về Laravel [vòng đời request](/docs/{{version}}/lifecycle).
 
 <a name="writing-service-providers"></a>
 ## Viết Service Provider
@@ -27,7 +28,9 @@ Tất cả các service provider đều được extend từ class `Illuminate\S
 
 Artisan CLI có thể tạo một provider mới thông qua lệnh `make:provider`:
 
-    php artisan make:provider RiakServiceProvider
+```shell
+php artisan make:provider RiakServiceProvider
+```
 
 <a name="the-register-method"></a>
 ### Phương thức Register

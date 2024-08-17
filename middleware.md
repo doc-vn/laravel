@@ -22,7 +22,9 @@ Bạn có thể muốn viết thêm các middleware khác để thực hiện c�
 
 Để tạo một middleware mới, hãy dùng lệnh Artisan `make:middleware`:
 
-    php artisan make:middleware EnsureTokenIsValid
+```shell
+php artisan make:middleware EnsureTokenIsValid
+```
 
 Lệnh này sẽ lưu một class `EnsureTokenIsValid` mới vào trong thư mục `app/Http/Middleware` của bạn. Trong middleware này, chúng ta sẽ chỉ cho phép truy cập vào route nếu input `token` trùng với một giá trị cụ thể. Và nếu không, chúng ta sẽ chuyển hướng người dùng trở lại URI `home`:
 
@@ -55,7 +57,8 @@ Như bạn có thể thấy, nếu `token` không trùng với một secret toke
 
 Tốt nhất là bạn hãy hình dung middleware như là các "layers" mà các HTTP request phải vượt qua trước khi chúng đến được với ứng dụng của bạn. Mỗi layer có thể kiểm tra request và thậm chí từ chối nó hoàn toàn.
 
-> {tip} Tất cả các middleware đều được resolve thông qua [service container](/docs/{{version}}/container), vì vậy bạn có thể khai báo bất kỳ phụ thuộc nào mà bạn cần trong phương thức khởi tạo của middleware.
+> **Note**
+> Tất cả các middleware đều được resolve thông qua [service container](/docs/{{version}}/container), vì vậy bạn có thể khai báo bất kỳ phụ thuộc nào mà bạn cần trong phương thức khởi tạo của middleware.
 
 <a name="before-after-middleware"></a>
 <a name="middleware-and-responses"></a>
@@ -180,7 +183,7 @@ Phương thức `withoutMiddleware` sẽ chỉ có thể xóa middleware route v
 
 Thỉnh thoảng bạn cũng có thể muốn group nhiều middleware dưới một tên để dễ dàng gán chúng vào route. Bạn có thể hoàn thành điều này bằng cách sử dụng thuộc tính `$middlewareGroups` trong class HTTP kernel của bạn.
 
-Mặc định, Laravel đã có sẵn các group middleware `web` và `api`, chứa các middleware phổ biến mà bạn có thể muốn áp dụng cho các web hoặc route API của bạn. Hãy nhớ rằng, các group middleware này được service provider `App\Providers\RouteServiceProvider` trong ứng dụng của bạn tự động áp dụng cho các route có trong các file route `web` và `api` của bạn:
+Laravel đã định nghĩa trước các group middleware `web` và `api`, chứa các middleware phổ biến mà bạn có thể muốn áp dụng cho các web hoặc route API của bạn. Hãy nhớ rằng, các group middleware này được service provider `App\Providers\RouteServiceProvider` trong ứng dụng của bạn tự động áp dụng cho các route có trong các file route `web` và `api` của bạn:
 
     /**
      * The application's route middleware groups.
@@ -192,7 +195,6 @@ Mặc định, Laravel đã có sẵn các group middleware `web` và `api`, ch�
             \App\Http\Middleware\EncryptCookies::class,
             \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
             \Illuminate\Session\Middleware\StartSession::class,
-            // \Illuminate\Session\Middleware\AuthenticateSession::class,
             \Illuminate\View\Middleware\ShareErrorsFromSession::class,
             \App\Http\Middleware\VerifyCsrfToken::class,
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
@@ -214,7 +216,8 @@ Các group middleware có thể được gán cho một route hoặc một contr
         //
     });
 
-> {tip} Mặc định, group middleware `web` và `api` sẽ được tự động áp dụng cho các file `routes/web.php` và `routes/api.php` tương ứng trong ứng dụng của bạn bởi `App\Providers\RouteServiceProvider`.
+> **Note**
+> Mặc định, group middleware `web` và `api` sẽ được tự động áp dụng cho các file `routes/web.php` và `routes/api.php` tương ứng trong ứng dụng của bạn bởi `App\Providers\RouteServiceProvider`.
 
 <a name="sorting-middleware"></a>
 ### Sắp xếp Middleware
@@ -229,13 +232,14 @@ Hiếm khi, bạn cần middleware của bạn thực thi theo một thứ tự 
      * @var string[]
      */
     protected $middlewarePriority = [
+        \Illuminate\Foundation\Http\Middleware\HandlePrecognitiveRequests::class,
         \Illuminate\Cookie\Middleware\EncryptCookies::class,
         \Illuminate\Session\Middleware\StartSession::class,
         \Illuminate\View\Middleware\ShareErrorsFromSession::class,
         \Illuminate\Contracts\Auth\Middleware\AuthenticatesRequests::class,
         \Illuminate\Routing\Middleware\ThrottleRequests::class,
         \Illuminate\Routing\Middleware\ThrottleRequestsWithRedis::class,
-        \Illuminate\Session\Middleware\AuthenticateSession::class,
+        \Illuminate\Contracts\Session\Middleware\AuthenticatesSessions::class,
         \Illuminate\Routing\Middleware\SubstituteBindings::class,
         \Illuminate\Auth\Middleware\Authorize::class,
     ];

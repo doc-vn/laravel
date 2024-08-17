@@ -6,7 +6,7 @@
     - [Dùng Browser khác](#using-other-browsers)
 - [Bắt đầu](#getting-started)
     - [Tạo Test](#generating-tests)
-    - [Database Migrations](#migrations)
+    - [Reset lại cơ sở dữ liệu sau mỗi lần test](#resetting-the-database-after-each-test)
     - [Chạy Test](#running-tests)
     - [Xử lý file môi trường](#environment-handling)
 - [Browser cơ bản](#browser-basics)
@@ -58,36 +58,45 @@
 
 Để bắt đầu, bạn nên cài đặt [Google Chrome](https://www.google.com/chrome) và thêm library Composer `laravel/dusk` vào project của bạn:
 
-    composer require --dev laravel/dusk
+```shell
+composer require --dev laravel/dusk
+```
 
-> {note} Nếu bạn đang đăng ký thủ công service provider của Dusk, thì bạn **đừng bao giờ** đăng ký nó trong môi trường production của bạn, vì làm như vậy sẽ có thể dẫn đến bất kỳ người dùng nào cũng có thể được authenticate vào application của bạn.
+> **Warning**
+> Nếu bạn đang đăng ký thủ công service provider của Dusk, thì bạn **đừng bao giờ** đăng ký nó trong môi trường production của bạn, vì làm như vậy sẽ có thể dẫn đến bất kỳ người dùng nào cũng có thể được authenticate vào application của bạn.
 
-Sau khi cài đặt package Dusk, hãy chạy lệnh Artisan `dusk:install`. Lệnh `dusk:install` sẽ tạo ra thư mục `tests/Browser` và một example Dusk test:
+Sau khi cài đặt package Dusk, hãy chạy lệnh Artisan `dusk:install`. Lệnh `dusk:install` sẽ tạo ra thư mục `tests/Browser` và một example Dusk test, và cài đặt file binary Chrome Driver cho hệ điều hành của bạn:
 
-    php artisan dusk:install
+```shell
+php artisan dusk:install
+```
 
 Tiếp theo, cài đặt biến môi trường `APP_URL` trong file `.env` của application của bạn. Giá trị này phải giống với giá trị URL mà bạn đang sử dụng để truy cập vào application của bạn trên trình duyệt.
 
-> {tip} Nếu bạn đang sử dụng [Laravel Sail](/docs/{{version}}/sail) để quản lý môi trường phát triển local của bạn, vui lòng tham khảo thêm tài liệu của Sail về [set cấu hình và chạy Dusk test](/docs/{{version}}/sail#laravel-dusk).
+> **Note**
+> Nếu bạn đang sử dụng [Laravel Sail](/docs/{{version}}/sail) để quản lý môi trường phát triển local của bạn, vui lòng tham khảo thêm tài liệu của Sail về [set cấu hình và chạy Dusk test](/docs/{{version}}/sail#laravel-dusk).
 
 <a name="managing-chromedriver-installations"></a>
 ### Quản lý cài đặt ChromeDriver
 
-Nếu bạn muốn cài đặt một phiên bản ChromeDriver khác, khác với phiên bản đi kèm trong Laravel Dusk, bạn có thể sử dụng lệnh `dusk:chrome-driver`:
+Nếu bạn muốn cài đặt một phiên bản ChromeDriver khác, khác với phiên bản được cài đặt bởi Laravel Dusk thông qua câu lệnh `dusk:install`, bạn có thể sử dụng lệnh `dusk:chrome-driver`:
 
-    # Install the latest version of ChromeDriver for your OS...
-    php artisan dusk:chrome-driver
+```shell
+# Install the latest version of ChromeDriver for your OS...
+php artisan dusk:chrome-driver
 
-    # Install a given version of ChromeDriver for your OS...
-    php artisan dusk:chrome-driver 86
+# Install a given version of ChromeDriver for your OS...
+php artisan dusk:chrome-driver 86
 
-    # Install a given version of ChromeDriver for all supported OSs...
-    php artisan dusk:chrome-driver --all
+# Install a given version of ChromeDriver for all supported OSs...
+php artisan dusk:chrome-driver --all
 
-    # Install the version of ChromeDriver that matches the detected version of Chrome / Chromium for your OS...
-    php artisan dusk:chrome-driver --detect
+# Install the version of ChromeDriver that matches the detected version of Chrome / Chromium for your OS...
+php artisan dusk:chrome-driver --detect
+```
 
-> {note} Dusk sẽ yêu cầu file `chromedriver` của nó phải có quyền chạy. Nếu như bạn đang gặp lỗi khi chạy Dusk, thì bạn nên đảm bảo là file đó đã có quyền chạy bằng lệnh sau: `chmod -R 0755 vendor/laravel/dusk/bin/`.
+> **Warning**
+> Dusk sẽ yêu cầu file `chromedriver` của nó phải có quyền chạy. Nếu như bạn đang gặp lỗi khi chạy Dusk, thì bạn nên đảm bảo là file đó đã có quyền chạy bằng lệnh sau: `chmod -R 0755 vendor/laravel/dusk/bin/`.
 
 <a name="using-other-browsers"></a>
 ### Dùng Browser khác
@@ -129,12 +138,19 @@ Tiếp theo, bạn cần phải sửa phương thức `driver` để kết nối
 
 Để tạo một bài test Dusk, hãy sử dụng lệnh Artisan `dusk:make`. Bài test sẽ được tạo và nằm trong thư mục `tests/Browser`:
 
-    php artisan dusk:make LoginTest
+```shell
+php artisan dusk:make LoginTest
+```
 
-<a name="migrations"></a>
-### Database Migrations
+<a name="resetting-the-database-after-each-test"></a>
+### Reset lại cơ sở dữ liệu sau mỗi lần test
 
-Hầu hết các bài test mà bạn viết sẽ tương tác với các trang mà truy xuất dữ liệu từ cơ sở dữ liệu trong ứng dụng của bạn; tuy nhiên, các bài test Dusk của bạn không nên sử dụng trait `RefreshDatabase`. Trait `RefreshDatabase` này sẽ tận dụng các transaction cơ sở dữ liệu và không áp dụng hoặc khả dụng trên các request HTTP. Thay vào đó, hãy sử dụng trait `DatabaseMigrations` để migrate lại cơ sở dữ liệu của bạn cho mỗi lần test:
+Hầu hết các bài test mà bạn viết sẽ tương tác với các trang mà truy xuất dữ liệu từ cơ sở dữ liệu trong ứng dụng của bạn; tuy nhiên, các bài test Dusk của bạn không nên sử dụng trait `RefreshDatabase`. Trait `RefreshDatabase` này sẽ tận dụng các transaction cơ sở dữ liệu và không áp dụng hoặc khả dụng trên các request HTTP. Thay vào đó, bạn có hai tùy chọn thay thế là: trait `DatabaseMigrations` và trait `DatabaseTruncation`.
+
+<a name="reset-migrations"></a>
+#### Using Database Migrations
+
+Trait `DatabaseMigrations` sẽ chạy migration cơ sở dữ liệu của bạn trước mỗi bài test. Tuy nhiên, việc loại bỏ và tạo lại các bảng cơ sở dữ liệu của bạn cho mỗi bài test thường chậm hơn so với việc truncate các bảng:
 
     <?php
 
@@ -150,24 +166,84 @@ Hầu hết các bài test mà bạn viết sẽ tương tác với các trang m
         use DatabaseMigrations;
     }
 
-> {note} Cơ sở dữ liệu SQLite có thể không được sử dụng khi chạy các bài test Dusk. Vì trình duyệt chạy trong một process riêng của nó và nó sẽ không thể truy cập được vào file cơ sở dữ liệu của các process khác.
+> **Warning**
+> Cơ sở dữ liệu SQLite có thể không được sử dụng khi chạy các bài test Dusk. Vì trình duyệt chạy trong một process riêng của nó và nó sẽ không thể truy cập được vào file cơ sở dữ liệu của các process khác.
+
+<a name="reset-truncation"></a>
+#### Using Database Truncation
+
+Trước khi sử dụng trait `DatabaseTruncation`, bạn phải cài đặt package `doctrine/dbal` bằng trình quản lý package Composer:
+
+```shell
+composer require --dev doctrine/dbal
+```
+
+Trait `DatabaseTruncation` sẽ migrate cơ sở dữ liệu của bạn trong lần kiểm tra đầu tiên để đảm bảo các bảng cơ sở dữ liệu của bạn được tạo đúng cách. Tuy nhiên, trong các thử nghiệm tiếp theo, các bảng của cơ sở dữ liệu sẽ bị truncate - giúp tăng tốc độ khi chạy lại tất cả các migration cơ sở dữ liệu của bạn:
+
+    <?php
+
+    namespace Tests\Browser;
+
+    use App\Models\User;
+    use Illuminate\Foundation\Testing\DatabaseTruncation;
+    use Laravel\Dusk\Chrome;
+    use Tests\DuskTestCase;
+
+    class ExampleTest extends DuskTestCase
+    {
+        use DatabaseTruncation;
+    }
+
+Mặc định, trait này sẽ truncate tất cả các bảng ngoại trừ bảng `migrations`. Nếu bạn muốn tùy chỉnh các bảng cần được truncate, bạn có thể định nghĩa thuộc tính `$tablesToTruncate` trên test class của bạn:
+
+    /**
+     * Indicates which tables should be truncated.
+     *
+     * @var array
+     */
+    protected $tablesToTruncate = ['users'];
+
+Ngoài ra, bạn có thể định nghĩa thuộc tính `$exceptTables` trên test class của bạn để chỉ định những bảng nào sẽ được bỏ qua việc truncate:
+
+    /**
+     * Indicates which tables should be excluded from truncation.
+     *
+     * @var array
+     */
+    protected $exceptTables = ['users'];
+
+Để chỉ định kết nối cơ sở dữ liệu nào cần được truncate các bảng của chúng, bạn có thể định nghĩa một thuộc tính `$connectionsToTruncate` trên test class của bạn:
+
+    /**
+     * Indicates which connections should have their tables truncated.
+     *
+     * @var array
+     */
+    protected $connectionsToTruncate = ['mysql'];
 
 <a name="running-tests"></a>
 ### Chạy Test
 
 Để chạy test browser của bạn, hãy chạy lệnh Artisan `dusk`:
 
-    php artisan dusk
+```shell
+php artisan dusk
+```
 
 Khi bạn chạy lệnh `dusk`, nếu bạn gặp lỗi ở chỗ cuối cùng, thì bạn có thể tiết kiệm thời gian bằng cách chạy lại chỗ lỗi cuối cùng đó trước bằng lệnh `dusk:fails`:
 
-    php artisan dusk:fails
+```shell
+php artisan dusk:fails
+```
 
-Lệnh `dusk` chấp nhận tất cả các tham số mà PHPUnit test chấp nhận, chẳng hạn như cho phép bạn chỉ chạy các bài test cho một [group](https://phpunit.de/manual/current/en/appendixes.annotations.html#appendixes.annotations.group) nhất định, vv...:
+Lệnh `dusk` chấp nhận tất cả các tham số mà PHPUnit test chấp nhận, chẳng hạn như cho phép bạn chỉ chạy các bài test cho một [group](https://phpunit.readthedocs.io/en/9.5/annotations.html#group) nhất định, vv...:
 
-    php artisan dusk --group=foo
+```shell
+php artisan dusk --group=foo
+```
 
-> {tip} Nếu bạn đang sử dụng [Laravel Sail](/docs/{{version}}/sail) để quản lý môi trường phát triển local của bạn, vui lòng tham khảo thêm tài liệu của Sail về [set cấu hình và chạy Dusk test](/docs/{{version}}/sail#laravel-dusk).
+> **Note**
+> Nếu bạn đang sử dụng [Laravel Sail](/docs/{{version}}/sail) để quản lý môi trường phát triển local của bạn, vui lòng tham khảo thêm tài liệu của Sail về [set cấu hình và chạy Dusk test](/docs/{{version}}/sail#laravel-dusk).
 
 <a name="manually-starting-chromedriver"></a>
 #### Manually Starting ChromeDriver
@@ -363,7 +439,8 @@ Thông thường, bạn sẽ cần test các trang mà cần được authentica
               ->visit('/home');
     });
 
-> {note} Sau khi sử dụng phương thức `loginAs`, session người dùng sẽ được tạo và duy trì cho tất cả các bài test trong file đó.
+> **Warning**
+> Sau khi sử dụng phương thức `loginAs`, session người dùng sẽ được tạo và duy trì cho tất cả các bài test trong file đó.
 
 <a name="cookies"></a>
 ### Cookies
@@ -404,6 +481,10 @@ Bạn có thể sử dụng phương thức `script` để chạy các câu lệ
 Bạn có thể sử dụng phương thức `screenshot` để chụp một screenshot và lưu nó với một tên file đã cho. Tất cả ảnh chụp screenshot sẽ được lưu trong thư mục `tests/Browser/screenshots`:
 
     $browser->screenshot('filename');
+
+Phương thức `ResponseScreenshots` có thể được sử dụng để chụp lại một loạt ảnh chụp màn hình ở nhiều điểm dừng khác nhau:
+
+    $browser->responsiveScreenshots('filename');
 
 <a name="storing-console-output-to-disk"></a>
 ### Lưu output của console vào disk
@@ -549,12 +630,13 @@ Phương thức `attach` có thể được sử dụng để đính kèm một 
 
     $browser->attach('photo', __DIR__.'/photos/mountains.png');
 
-> {note} Chức năng đính kèm sẽ yêu cầu bạn cài đặt và enable PHP extension `Zip` trong server của bạn.
+> **Warning**
+> Chức năng đính kèm sẽ yêu cầu bạn cài đặt và enable PHP extension `Zip` trong server của bạn.
 
 <a name="pressing-buttons"></a>
 ### Ấn Buttons
 
-Phương thức `press` có thể được sử dụng để nhấp vào một nút trên trang. Tham số đầu tiên được cung cấp cho phương thức `press` có thể là text hiển thị của nút hoặc selector CSS hoặc Dusk:
+Phương thức `press` có thể được sử dụng để nhấp vào một nút trên trang. Tham số được cung cấp cho phương thức `press` có thể là text hiển thị của nút hoặc selector CSS hoặc Dusk:
 
     $browser->press('Login');
 
@@ -579,7 +661,8 @@ Bạn có thể sử dụng phương thức `seeLink` để xác định xem m�
         // ...
     }
 
-> {note} Các phương thức này tương tác với jQuery. Nếu jQuery không có sẵn trên trang của bạn, Dusk sẽ tự động đưa nó vào trang để nó có sẵn trong thời gian chạy test.
+> **Warning**
+> Các phương thức này tương tác với jQuery. Nếu jQuery không có sẵn trên trang của bạn, Dusk sẽ tự động đưa nó vào trang để nó có sẵn trong thời gian chạy test.
 
 <a name="using-the-keyboard"></a>
 ### Dùng Keyboard
@@ -592,7 +675,8 @@ Một trường hợp sử dụng có giá trị khác của phương thức `ke
 
     $browser->keys('.app', ['{command}', 'j']);
 
-> {tip} Tất cả các modifier key chẳng hạn như `{command}` đã được chứa trong các ký tự `{}` đều giống với các hằng số đã được định nghĩa trong class `Facebook\WebDriver\WebDriverKeys`, bạn có thể [tìm thấy nó trên GitHub](https://github.com/php-webdriver/php-webdriver/blob/master/lib/WebDriverKeys.php).
+> **Note**
+> Tất cả các modifier key chẳng hạn như `{command}` đã được chứa trong các ký tự `{}` đều giống với các hằng số đã được định nghĩa trong class `Facebook\WebDriver\WebDriverKeys`, bạn có thể [tìm thấy nó trên GitHub](https://github.com/php-webdriver/php-webdriver/blob/master/lib/WebDriverKeys.php).
 
 <a name="using-the-mouse"></a>
 ### Dùng Mouse
@@ -714,6 +798,14 @@ Nếu bạn chỉ cần pause bài test trong một số mili giây nhất đị
 
     $browser->pause(1000);
 
+Nếu bạn chỉ cần tạm dừng kiểm tra nếu một điều kiện nhất định là `true`, thì hãy sử dụng phương thức `pauseIf`:
+
+    $browser->pauseIf(App::environment('production'), 1000);
+
+Tương tự, nếu bạn cần tạm dừng kiểm tra nếu một điều kiện nhất định là `false`, bạn có thể sử dụng phương thức `pauseUnless`:
+
+    $browser->pauseUnless(App::environment('testing'), 1000);
+
 <a name="waiting-for-selectors"></a>
 #### Waiting For Selectors
 
@@ -795,6 +887,17 @@ Phương thức `waitForLink` có thể được sử dụng để đợi cho đ
     // Wait a maximum of one second for the link...
     $browser->waitForLink('Create', 1);
 
+<a name="waiting-for-inputs"></a>
+#### Waiting For Inputs
+
+Phương thức `waitForInput` có thể được sử dụng để đợi cho đến khi input đã cho hiển thị trên trang:
+
+    // Wait a maximum of five seconds for the input...
+    $browser->waitForInput($field);
+
+    // Wait a maximum of one second for the input...
+    $browser->waitForInput($field, 1);
+
 <a name="waiting-on-the-page-location"></a>
 #### Waiting On The Page Location
 
@@ -811,7 +914,7 @@ Bạn cũng có thể đợi cửa sổ hiện tại thành [tên một của m�
     $browser->waitForRoute($routeName, $parameters);
 
 <a name="waiting-for-page-reloads"></a>
-#### Waiting for Page Reloads
+#### Waiting For Page Reloads
 
 Nếu bạn cần đợi một trang load lại sau khi thực hiện một hành động nào đó, hãy sử dụng phương thức `waitForReload`:
 
@@ -849,6 +952,32 @@ Các phương thức `waitUntilVue` và `waitUntilVueIsNot` có thể được s
     // Wait until the component attribute doesn't contain the given value...
     $browser->waitUntilVueIsNot('user.name', null, '@user');
 
+<a name="waiting-for-javascript-events"></a>
+#### Waiting For JavaScript Events
+
+Phương thức `waitForEvent` có thể được sử dụng để tạm dừng quá trình chạy thử nghiệm cho đến khi xảy ra một sự kiện JavaScript:
+
+    $browser->waitForEvent('load');
+
+Event listener sẽ được gắn vào phạm vi selector hiện tại, mặc định là element `body`. Khi sử dụng một phạm vi selector, event listener sẽ được gắn vào element đó:
+
+    $browser->with('iframe', function ($iframe) {
+        // Wait for the iframe's load event...
+        $iframe->waitForEvent('load');
+    });
+
+Bạn cũng có thể cung cấp một selector làm tham số thứ hai cho phương thức `waitForEvent` để gắn một event listener vào một element cụ thể:
+
+    $browser->waitForEvent('load', '.selector');
+
+Bạn cũng có thể đợi các sự kiện trên các đối tượng `document` và `window`:
+
+    // Wait until the document is scrolled...
+    $browser->waitForEvent('scroll', 'document');
+
+    // Wait a maximum of five seconds until the window is resized...
+    $browser->waitForEvent('resize', 'window', 5);
+
 <a name="waiting-with-a-callback"></a>
 #### Waiting With A Callback
 
@@ -873,12 +1002,14 @@ Dusk cung cấp nhiều yêu cầu kiểm tra mà bạn có thể đưa ra đố
 
 <style>
     .collection-method-list > p {
-        column-count: 3; -moz-column-count: 3; -webkit-column-count: 3;
-        column-gap: 2em; -moz-column-gap: 2em; -webkit-column-gap: 2em;
+        columns: 10.8em 3; -moz-columns: 10.8em 3; -webkit-columns: 10.8em 3;
     }
 
     .collection-method-list a {
         display: block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
     }
 </style>
 
@@ -923,6 +1054,7 @@ Dusk cung cấp nhiều yêu cầu kiểm tra mà bạn có thể đưa ra đố
 [assertInputValueIsNot](#assert-input-value-is-not)
 [assertChecked](#assert-checked)
 [assertNotChecked](#assert-not-checked)
+[assertIndeterminate](#assert-indeterminate)
 [assertRadioSelected](#assert-radio-selected)
 [assertRadioNotSelected](#assert-radio-not-selected)
 [assertSelected](#assert-selected)
@@ -1237,6 +1369,13 @@ Yêu cầu checkbox phải được chọn:
 Yêu cầu checkbox không được chọn:
 
     $browser->assertNotChecked($field);
+
+<a name="assert-indeterminate"></a>
+#### assertIndeterminate
+
+Yêu cầu checkbox ở trạng thái indeterminate:
+
+    $browser->assertIndeterminate($field);
 
 <a name="assert-radio-selected"></a>
 #### assertRadioSelected
@@ -1775,7 +1914,8 @@ Khi component đã được định nghĩa xong, chúng ta có thể dễ dàng 
 <a name="continuous-integration"></a>
 ## Test tích hợp
 
-> {note} Hầu hết các cấu hình continuous integration của Dusk đều yêu cầu ứng dụng Laravel của bạn được khởi tạo bằng cách sử dụng máy chủ được tích hợp sẵn trong PHP trên cổng 8000. Do đó, trước khi tiếp tục, bạn nên đảm bảo rằng môi trường continuous integration của bạn có giá trị biến môi trường `APP_URL` là `http://127.0.0.1:8000`.
+> **Warning**
+> Hầu hết các cấu hình continuous integration của Dusk đều yêu cầu ứng dụng Laravel của bạn được khởi tạo bằng cách sử dụng máy chủ được tích hợp sẵn trong PHP trên cổng 8000. Do đó, trước khi tiếp tục, bạn nên đảm bảo rằng môi trường continuous integration của bạn có giá trị biến môi trường `APP_URL` là `http://127.0.0.1:8000`.
 
 <a name="running-tests-on-heroku-ci"></a>
 ### Heroku CI
@@ -1802,69 +1942,76 @@ Khi component đã được định nghĩa xong, chúng ta có thể dễ dàng 
 
 Để chạy các bài Dusk test của bạn trên [Travis CI](https://travis-ci.org), bạn có thể dùng file cấu hình `.travis.yml` sau. Vì Travis CI không phải là một môi trường đồ họa, nên chúng ta sẽ cần thực hiện thêm một số bước để chạy trình duyệt Chrome. Ngoài ra, chúng ta cũng sẽ sử dụng `php artisan serve` để chạy server web tích hợp sẵn của PHP:
 
-    language: php
+```yaml
+language: php
 
-    php:
-      - 7.3
+php:
+  - 7.3
 
-    addons:
-      chrome: stable
+addons:
+  chrome: stable
 
-    install:
-      - cp .env.testing .env
-      - travis_retry composer install --no-interaction --prefer-dist
-      - php artisan key:generate
-      - php artisan dusk:chrome-driver
+install:
+  - cp .env.testing .env
+  - travis_retry composer install --no-interaction --prefer-dist
+  - php artisan key:generate
+  - php artisan dusk:chrome-driver
 
-    before_script:
-      - google-chrome-stable --headless --disable-gpu --remote-debugging-port=9222 http://localhost &
-      - php artisan serve --no-reload &
+before_script:
+  - google-chrome-stable --headless --disable-gpu --remote-debugging-port=9222 http://localhost &
+  - php artisan serve --no-reload &
 
-    script:
-      - php artisan dusk
+script:
+  - php artisan dusk
+```
 
 <a name="running-tests-on-github-actions"></a>
 ### GitHub Actions
 
-Nếu bạn đang sử dụng [Github Actions](https://github.com/features/actions) để chạy các bài test Laravel Dusk, bạn có thể sử dụng file cấu hình ở dưới để bắt đầu. Giống như TravisCI, chúng ta sẽ sử dụng lệnh `php artisan serve` để khởi chạy một web server được tích hợp sẵn trong PHP:
+Nếu bạn đang sử dụng [GitHub Actions](https://github.com/features/actions) để chạy các bài test Laravel Dusk, bạn có thể sử dụng file cấu hình ở dưới để bắt đầu. Giống như TravisCI, chúng ta sẽ sử dụng lệnh `php artisan serve` để khởi chạy một web server được tích hợp sẵn trong PHP:
 
-    name: CI
-    on: [push]
-    jobs:
+```yaml
+name: CI
+on: [push]
+jobs:
 
-      dusk-php:
-        runs-on: ubuntu-latest
-        steps:
-          - uses: actions/checkout@v2
-          - name: Prepare The Environment
-            run: cp .env.example .env
-          - name: Create Database
-            run: |
-              sudo systemctl start mysql
-              mysql --user="root" --password="root" -e "CREATE DATABASE 'my-database' character set UTF8mb4 collate utf8mb4_bin;"
-          - name: Install Composer Dependencies
-            run: composer install --no-progress --prefer-dist --optimize-autoloader
-          - name: Generate Application Key
-            run: php artisan key:generate
-          - name: Upgrade Chrome Driver
-            run: php artisan dusk:chrome-driver `/opt/google/chrome/chrome --version | cut -d " " -f3 | cut -d "." -f1`
-          - name: Start Chrome Driver
-            run: ./vendor/laravel/dusk/bin/chromedriver-linux &
-          - name: Run Laravel Server
-            un: php artisan serve --no-reload &
-          - name: Run Dusk Tests
-            env:
-              APP_URL: "http://127.0.0.1:8000"
-            run: php artisan dusk
-          - name: Upload Screenshots
-            if: failure()
-            uses: actions/upload-artifact@v2
-            with:
-              name: screenshots
-              path: tests/Browser/screenshots
-          - name: Upload Console Logs
-            if: failure()
-            uses: actions/upload-artifact@v2
-            with:
-              name: console
-              path: tests/Browser/console
+  dusk-php:
+    runs-on: ubuntu-latest
+    env:
+      APP_URL: "http://127.0.0.1:8000"
+      DB_USERNAME: root
+      DB_PASSWORD: root
+      MAIL_MAILER: log
+    steps:
+      - uses: actions/checkout@v3
+      - name: Prepare The Environment
+        run: cp .env.example .env
+      - name: Create Database
+        run: |
+          sudo systemctl start mysql
+          mysql --user="root" --password="root" -e "CREATE DATABASE \`my-database\` character set UTF8mb4 collate utf8mb4_bin;"
+      - name: Install Composer Dependencies
+        run: composer install --no-progress --prefer-dist --optimize-autoloader
+      - name: Generate Application Key
+        run: php artisan key:generate
+      - name: Upgrade Chrome Driver
+        run: php artisan dusk:chrome-driver --detect
+      - name: Start Chrome Driver
+        run: ./vendor/laravel/dusk/bin/chromedriver-linux &
+      - name: Run Laravel Server
+        run: php artisan serve --no-reload &
+      - name: Run Dusk Tests
+        run: php artisan dusk
+      - name: Upload Screenshots
+        if: failure()
+        uses: actions/upload-artifact@v2
+        with:
+          name: screenshots
+          path: tests/Browser/screenshots
+      - name: Upload Console Logs
+        if: failure()
+        uses: actions/upload-artifact@v2
+        with:
+          name: console
+          path: tests/Browser/console
+```

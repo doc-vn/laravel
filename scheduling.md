@@ -59,7 +59,7 @@ Ngoài việc tạo schedule bằng closures, bạn cũng có thể schedule cho
 
 Nếu bạn muốn xem tổng quan về các scheduled task của bạn và lần tiếp theo chúng được chạy, bạn có thể sử dụng lệnh Artisan `schedule:list`:
 
-```nothing
+```bash
 php artisan schedule:list
 ```
 
@@ -117,6 +117,7 @@ Method  | Description
 `->everyThirtyMinutes();`  |   Chạy task ba mươi phút một lần
 `->hourly();`  |   Chạy task một giờ một lần
 `->hourlyAt(17);`  |  Chạy task một giờ một lần vào phút thứ 17
+`->everyOddHour();`  |  Chạy task vào giờ lẻ
 `->everyTwoHours();`  |  Chạy task hai giờ một lần
 `->everyThreeHours();`  |  Chạy task ba giờ một lần
 `->everyFourHours();`  |  Chạy task bốn giờ một lần
@@ -124,6 +125,7 @@ Method  | Description
 `->daily();`  |  Chạy task hàng ngày
 `->dailyAt('13:00');`  |  Chạy task hàng ngày vào lúc 13:00
 `->twiceDaily(1, 13);`  | Chạy task hàng ngày vào lúc 1:00 và 13:00
+`->twiceDailyAt(1, 13, 15);`  | Chạy task hàng ngày vào lúc 1:15 và 13:15
 `->weekly();`  |  Chạy task hàng tuần vào chủ nhật lúc 00:00
 `->weeklyOn(1, '8:00');`  |  Chạy task hàng tuần vào thứ hai lúc 8:00
 `->monthly();`  | Chạy task vào ngày đầu tiên của tháng lúc 00:00
@@ -131,6 +133,7 @@ Method  | Description
 `->twiceMonthly(1, 16, '13:00');`  |  Chạy task hàng tháng vào ngày 1 và ngày 16 lúc 13h00
 `->lastDayOfMonth('15:00');` | Chạy task vào ngày cuối dùng của tháng lúc 15:00
 `->quarterly();` |  Chạy task vào ngày đầu tiên của quý lúc 00:00
+`->quarterlyOn(4, '14:00');` |  Chạy task mỗi quý vào ngày 4 lúc 14:00
 `->yearly();`  | Chạy task vào ngày đầu tiên của năm lúc 00:00
 `->yearlyOn(6, 1, '17:00');`  |  Chạy task hàng năm vào ngày 1 tháng 6 lúc 17:00
 `->timezone('America/New_York');` | Set timezone cho task
@@ -247,7 +250,8 @@ Nếu bạn đang muốn chỉ định liên tục một múi giờ cho tất c�
         return 'America/Chicago';
     }
 
-> {note} Hãy nhớ rằng một số timezone sử dụng quy ước giờ mùa hè. Khi các thay đổi về quy ước giờ mùa hè xảy ra, schedule task của bạn có thể chạy hai lần hoặc thậm chí là hoàn toàn không chạy. Vì lý do này, chúng tôi khuyên bạn nên tránh tạo schedule timezone khi có thể.
+> **Warning**
+> Hãy nhớ rằng một số timezone sử dụng quy ước giờ mùa hè. Khi các thay đổi về quy ước giờ mùa hè xảy ra, schedule task của bạn có thể chạy hai lần hoặc thậm chí là hoàn toàn không chạy. Vì lý do này, chúng tôi khuyên bạn nên tránh tạo schedule timezone khi có thể.
 
 <a name="preventing-task-overlaps"></a>
 ### Ngăn task chồng nhau
@@ -262,10 +266,13 @@ Nếu cần, bạn có thể chỉ định số phút mà sau khi task được 
 
     $schedule->command('emails:send')->withoutOverlapping(10);
 
+Ở hậu trường, phương thức `withoutOverlapping` sẽ sử dụng [cache](/docs/{{version}}/cache) của ứng dụng của bạn để lấy khóa. Nếu cần, bạn có thể xóa các khóa cache này bằng lệnh Artisan `schedule:clear-cache`. Điều này thường chỉ cần thiết nếu một task bị kẹt do sự cố bất ngờ từ máy chủ.
+
 <a name="running-tasks-on-one-server"></a>
 ### Chạy task trên một server
 
-> {note} Để sử dụng tính năng này, ứng dụng của bạn phải sử dụng driver cache `database`, `memcached` `dynamodb`, hoặc `redis` làm driver cache mặc định của ứng dụng của bạn. Ngoài ra, tất cả các server phải được giao tiếp với cùng một server cache trung tâm.
+> **Warning**
+> Để sử dụng tính năng này, ứng dụng của bạn phải sử dụng driver cache `database`, `memcached` `dynamodb`, hoặc `redis` làm driver cache mặc định của ứng dụng của bạn. Ngoài ra, tất cả các server phải được giao tiếp với cùng một server cache trung tâm.
 
 Nếu schedule của ứng dụng của bạn đang chạy trên nhiều server, bạn có thể giới hạn schedule job chỉ được chạy trên một server duy nhất. Ví dụ: giả sử bạn đang có một task schedule là tạo một báo cáo vào mỗi tối thứ Sáu. Nếu schedule của bạn đang chạy trên ba server worker, thì task schedule sẽ được chạy trên cả ba server và tạo báo cáo ba lần. Không tốt!
 
@@ -276,6 +283,33 @@ Nếu schedule của ứng dụng của bạn đang chạy trên nhiều server,
                     ->at('17:00')
                     ->onOneServer();
 
+<a name="naming-unique-jobs"></a>
+#### Naming Single Server Jobs
+
+Thỉnh thoảng bạn có thể cần schedule cùng một job nhưng gửi đi với các tham số khác nhau, trong khi vẫn hướng dẫn Laravel chạy hoán vị từng job trên một máy chủ duy nhất. Để thực hiện điều này, bạn có thể gán cho mỗi định nghĩa schedule một tên duy nhất thông qua phương thức `name`:
+
+```php
+$schedule->job(new CheckUptime('https://laravel.com'))
+            ->name('check_uptime:laravel.com')
+            ->everyFiveMinutes()
+            ->onOneServer();
+
+$schedule->job(new CheckUptime('https://vapor.laravel.com'))
+            ->name('check_uptime:vapor.laravel.com')
+            ->everyFiveMinutes()
+            ->onOneServer();
+```
+
+Tương tự như vậy, các scheduled closure cũng phải được đặt tên nếu chúng có dự định chạy trên một máy chủ:
+
+```php
+$schedule->call(fn () => User::resetApiRequestCount())
+    ->name('reset-api-request-count')
+    ->daily()
+    ->onOneServer();
+```
+
+
 <a name="background-tasks"></a>
 ### Background Tasks
 
@@ -285,7 +319,8 @@ Mặc định, nhiều task được schedule vào cùng một thời gian sẽ 
              ->daily()
              ->runInBackground();
 
-> {note} Phương thức `runInBackground` chỉ có thể được sử dụng khi task được tạo thông qua phương thức `command` và `exec`.
+> **Warning**
+> Phương thức `runInBackground` chỉ có thể được sử dụng khi task được tạo thông qua phương thức `command` và `exec`.
 
 <a name="maintenance-mode"></a>
 ### Chế độ bảo trì
@@ -301,14 +336,18 @@ Hiện tại, chúng ta đã học cách định nghĩa các scheduled task, hã
 
 Vì vậy, khi sử dụng scheduler của Laravel, chúng ta chỉ cần thêm một mục cấu hình cron duy nhất vào máy chủ để chạy lệnh `schedule:run` mỗi phút. Nếu bạn không biết cách thêm các mục cron vào máy chủ của bạn, hãy cân nhắc sử dụng một dịch vụ như [Laravel Forge](https://forge.laravel.com) để có thể quản lý các mục cron cho bạn:
 
-    * * * * * cd /path-to-your-project && php artisan schedule:run >> /dev/null 2>&1
+```shell
+* * * * * cd /path-to-your-project && php artisan schedule:run >> /dev/null 2>&1
+```
 
 <a name="running-the-scheduler-locally"></a>
 ## Chạy Scheduler local
 
 Thông thường, bạn sẽ cần không thêm mục cron của scheduler vào máy phát triển local của bạn. Thay vào đó, bạn có thể sử dụng lệnh Artisan `schedule:work`. Lệnh này sẽ chạy ở trên giao diện và gọi scheduler mỗi phút cho đến khi bạn kết thúc lệnh:
 
-    php artisan schedule:work
+```shell
+php artisan schedule:work
+```
 
 <a name="task-output"></a>
 ## Task Output
@@ -338,7 +377,8 @@ Nếu bạn muốn chỉ gửi email nếu scheduled Artisan hoặc system comma
              ->daily()
              ->emailOutputOnFailure('taylor@example.com');
 
-> {note} Các phương thức `emailOutputTo`, `emailOutputOnFailure`, `sendOutputTo` và `appendOutputTo` sẽ chỉ được dùng với phương thức `command` và phương thức `exec`.
+> **Warning**
+> Các phương thức `emailOutputTo`, `emailOutputOnFailure`, `sendOutputTo` và `appendOutputTo` sẽ chỉ được dùng với phương thức `command` và phương thức `exec`.
 
 <a name="task-hooks"></a>
 ## Task Hook
@@ -404,7 +444,9 @@ Phương thức `pingOnSuccess` và `pingOnFailure` có thể được sử dụ
 
 Tất cả các phương thức ping sẽ đều cần thư viện Guzzle HTTP. Guzzle thường được cài đặt mặc định trong tất cả các dự án Laravel mới, tuy nhiên, bạn có thể cài đặt Guzzle vào dự án của bạn theo cách thủ công bằng cách sử dụng Composer package manager nếu nó vô tình bị xóa:
 
-    composer require guzzlehttp/guzzle
+```shell
+composer require guzzlehttp/guzzle
+```
 
 <a name="events"></a>
 ## Events

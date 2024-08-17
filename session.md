@@ -39,7 +39,8 @@ Tham số `driver` sẽ khai báo nơi mà dữ liệu của session sẽ đư�
 
 </div>
 
-> {tip} Array driver sẽ được sử dụng là driver chính trong các [testing](/docs/{{version}}/testing) để ngăn việc dữ liệu được lưu trữ trong session.
+> **Note**
+> Array driver sẽ được sử dụng là driver chính trong các [testing](/docs/{{version}}/testing) để ngăn việc dữ liệu được lưu trữ trong session.
 
 <a name="driver-prerequisites"></a>
 ### Điều kiện dùng Driver
@@ -60,16 +61,19 @@ Khi sử dụng session driver `database`, bạn sẽ cần tạo một bảng �
 
 Bạn có thể dùng lệnh Artisan `session:table` để tạo file migration đó. Để tìm hiểu thêm về việc migration cơ sở dữ liệu, bạn có thể tham khảo [tài liệu migration](/docs/{{version}}/migrations):
 
-    php artisan session:table
+```shell
+php artisan session:table
 
-    php artisan migrate
+php artisan migrate
+```
 
 <a name="redis"></a>
 #### Redis
 
 Trước khi sử dụng session Redis cùng với Laravel, bạn sẽ cần phải cài đặt extension của PHP thông qua PECL hoặc cài đặt package `predis/predis` (~1.0) thông qua Composer. Để biết thêm thông tin về cách cấu hình Redis, hãy tham khảo [tài liệu Redis](/docs/{{version}}/redis#configuration) của Laravel.
 
-> {tip} Trong file cấu hình `session` sẽ có tùy chọn `connection` để có thể được sử dụng để định nghĩa kết nối Redis nào mà có thể được sử dụng bởi session.
+> **Note**
+> Trong file cấu hình `session` sẽ có tùy chọn `connection` để có thể được sử dụng để định nghĩa kết nối Redis nào mà có thể được sử dụng bởi session.
 
 <a name="interacting-with-the-session"></a>
 ## Tương tác với session
@@ -127,7 +131,8 @@ Bạn cũng có thể sử dụng qua hàm PHP global `session` để lấy và 
         session(['key' => 'value']);
     });
 
-> {tip} Có rất ít sự khác biệt giữa việc sử dụng session thông qua instance request HTTP và sử dụng thông qua global helper `session`. Cả hai phương thức đều có thể [test](/docs/{{version}}/testing) thông qua phương thức `assertSessionHas` có sẵn trong tất cả các test case của bạn.
+> **Note**
+> Có rất ít sự khác biệt giữa việc sử dụng session thông qua instance request HTTP và sử dụng thông qua global helper `session`. Cả hai phương thức đều có thể [test](/docs/{{version}}/testing) thông qua phương thức `assertSessionHas` có sẵn trong tất cả các test case của bạn.
 
 <a name="retrieving-all-session-data"></a>
 #### Lấy tất cả dữ liệu trong session
@@ -151,7 +156,7 @@ Nếu bạn muốn lấy tất cả dữ liệu trong session, bạn có thể s
         //
     }
 
-Để xác định xem một item có tồn tại trong session hay không, bạn có thể sử dụng phương thức `missing`. Phương thức `missing` sẽ trả về `true` nếu item này là `null` hoặc nếu item đó không có tồn tại trong session:
+Để xác định xem một item có tồn tại trong session hay không, bạn có thể sử dụng phương thức `missing`. Phương thức `missing` sẽ trả về `true` nếu item đó không có tồn tại trong session:
 
     if ($request->session()->missing('users')) {
         //
@@ -241,7 +246,8 @@ Nếu bạn cần tạo lại ID session và xóa tất cả các dữ liệu ra
 <a name="session-blocking"></a>
 ## Chặn session
 
-> {note} Để sử dụng tính năng chặn session, ứng dụng của bạn phải sử dụng một driver cache mà hỗ trợ [atomic locks](/docs/{{version}}/cache#atomic-locks). Hiện tại, những driver cache đó là các driver `memcached`, `dynamicodb`, `redis` và `database`. Ngoài ra, bạn không thể sử dụng driver session `cookie`.
+> **Warning**
+> Để sử dụng tính năng chặn session, ứng dụng của bạn phải sử dụng một driver cache mà hỗ trợ [atomic locks](/docs/{{version}}/cache#atomic-locks). Hiện tại, những driver cache đó là các driver `memcached`, `dynamicodb`, `redis` và `database`. Ngoài ra, bạn không thể sử dụng driver session `cookie`.
 
 Mặc định, Laravel cho phép các request sử dụng cùng một session để chạy đồng thời. Vì vậy, ví dụ: nếu bạn sử dụng thư viện JavaScript HTTP để thực hiện hai request HTTP tới ứng dụng của bạn cùng một lúc, thì cả hai sẽ thực thi đồng thời. Đối với nhiều ứng dụng, đây không phải là vấn đề; tuy nhiên, mất dữ liệu session cũng có thể xảy ra trong một phần hiếm các ứng dụng khi thực hiện request đồng thời đến hai điểm khác nhau trong cùng một ứng dụng, mà cả hai điểm đó đều có cùng chức năng ghi dữ liệu vào session.
 
@@ -287,7 +293,8 @@ Nếu không có driver session nào phù hợp với nhu cầu ứng dụng c�
         public function gc($lifetime) {}
     }
 
-> {tip} Laravel sẽ không định nghĩa một thư mục để chứa các extension cho bạn. Bạn có thể tự do lưu extension của bạn vào bất kỳ nơi nào mà bạn thích. Trong ví dụ này, chúng tôi đã tạo một thư mục `Extensions` để chứa `MongoSessionHandler`.
+> **Note**
+> Laravel sẽ không định nghĩa một thư mục để chứa các extension cho bạn. Bạn có thể tự do lưu extension của bạn vào bất kỳ nơi nào mà bạn thích. Trong ví dụ này, chúng tôi đã tạo một thư mục `Extensions` để chứa `MongoSessionHandler`.
 
 Vì mục đích của những phương thức này là không dễ hiểu, chúng ta hãy nhanh chóng xem những gì mà mỗi phương thức làm:
 

@@ -10,6 +10,7 @@
     - [Client Secret Hashing](#client-secret-hashing)
     - [Thời gian sống token](#token-lifetimes)
     - [Ghi đè các model mặc định](#overriding-default-models)
+    - [Ghi đè routes](#overriding-routes)
 - [Phát hành access token](#issuing-access-tokens)
     - [Quản lý client](#managing-clients)
     - [Request token](#requesting-tokens)
@@ -48,7 +49,8 @@
 
 [Laravel Passport](https://github.com/laravel/passport) cung cấp một implementation OAuth2 server đầy đủ cho application Laravel của bạn trong vài phút. Passport được xây dựng trên top của [League OAuth2 server](https://github.com/thephpleague/oauth2-server) được duy trì bởi Andy Millington và Simon Hamp.
 
-> {note} Tài liệu này giả định rằng bạn đã biết OAuth2. Nếu bạn chưa biết về OAuth2, hãy xem xét việc tự học với các [thuật ngữ](https://oauth2.thephpleague.com/terminology/) và tính năng chung của OAuth2 trước khi tiếp tục.
+> **Warning**
+> Tài liệu này giả định rằng bạn đã biết OAuth2. Nếu bạn chưa biết về OAuth2, hãy xem xét việc tự học với các [thuật ngữ](https://oauth2.thephpleague.com/terminology/) và tính năng chung của OAuth2 trước khi tiếp tục.
 
 <a name="passport-or-sanctum"></a>
 ### Passport hay Sanctum?
@@ -62,17 +64,24 @@ Tuy nhiên, nếu bạn đang làm xác thực cho một ứng dụng single-pag
 
 Để bắt đầu, hãy cài đặt Passport thông qua Composer package manager:
 
-    composer require laravel/passport
+```shell
+composer require laravel/passport
+```
 
 [Service provider](/docs/{{version}}/providers) của Passport sẽ đăng ký thư mục database migration của riêng nó với framework, nên vì thế bạn nên migrate cơ sở dữ liệu của bạn sau khi cài đặt xong package. Việc migrate của Passport sẽ tạo ra các table mà application của bạn cần để lưu trữ OAuth2 client và access token:
 
-    php artisan migrate
+```shell
+php artisan migrate
+```
 
 Tiếp theo, bạn nên chạy lệnh Artisan `passport:install`. Lệnh này sẽ tạo các key mã hóa cần thiết để tạo secure access token. Ngoài ra, lệnh này cũng sẽ tạo các "personal access" và các "password grant" client được sử dụng để tạo access token:
 
-    php artisan passport:install
+```shell
+php artisan passport:install
+```
 
-> {tip} Nếu bạn muốn sử dụng UUID làm khóa chính của model Passport `Client` thay vì các integer tự động tăng, vui lòng cài đặt Passport với [tùy chọn `uuids`](#client-uuids).
+> **Note**
+> Nếu bạn muốn sử dụng UUID làm khóa chính của model Passport `Client` thay vì các integer tự động tăng, vui lòng cài đặt Passport với [tùy chọn `uuids`](#client-uuids).
 
 Sau khi chạy lệnh `passport:install`, hãy thêm trait `Laravel\Passport\HasApiTokens` vào model `App\User` của bạn. Trait này sẽ cung cấp một vài phương thức helper cho model của bạn, cho phép bạn kiểm tra token và phạm vi của người dùng đã được authenticate. Nếu model của bạn đã sử dụng trait `Laravel\Sanctum\HasApiTokens`, bạn có thể xóa trait đó đi:
 
@@ -90,43 +99,7 @@ Sau khi chạy lệnh `passport:install`, hãy thêm trait `Laravel\Passport\Has
         use HasApiTokens, HasFactory, Notifiable;
     }
 
-Tiếp theo, bạn nên gọi phương thức `Passport::routes` vào trong phương thức `boot` của `App\Providers\AuthServiceProvider` của bạn. Phương thức này sẽ đăng ký các route cần thiết để phát hành các access token và thu hồi các access token, client và các access token cá nhân:
-
-    <?php
-
-    namespace App\Providers;
-
-    use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
-    use Illuminate\Support\Facades\Gate;
-    use Laravel\Passport\Passport;
-
-    class AuthServiceProvider extends ServiceProvider
-    {
-        /**
-         * The policy mappings for the application.
-         *
-         * @var array
-         */
-        protected $policies = [
-            'App\Models\Model' => 'App\Policies\ModelPolicy',
-        ];
-
-        /**
-         * Register any authentication / authorization services.
-         *
-         * @return void
-         */
-        public function boot()
-        {
-            $this->registerPolicies();
-
-            if (! $this->app->routesAreCached()) {
-                Passport::routes();
-            }
-        }
-    }
-
-Cuối cùng, trong file cấu hình `config/auth.php` của application của bạn, bạn nên set tùy chọn `driver` của `api` authentication guard thành `passport`. Điều này sẽ hướng dẫn application của bạn sử dụng `TokenGuard` của Passport khi authenticate các request API:
+Cuối cùng, trong file cấu hình `config/auth.php` của application của bạn, bạn nên định nghĩa một guard xác thực `api` và thiết lập tùy chọn `driver` thành `passport`. Điều này sẽ hướng dẫn application của bạn sử dụng `TokenGuard` của Passport khi authenticate các request API:
 
     'guards' => [
         'web' => [
@@ -145,14 +118,18 @@ Cuối cùng, trong file cấu hình `config/auth.php` của application của b
 
 Bạn cũng có thể chạy lệnh `passport:install` với tùy chọn `--uuids`. Tuỳ chọn này sẽ hướng dẫn Passport là bạn muốn sử dụng UUID làm giá trị khóa chính của model Passport `Client` thay vì một integer tự động tăng. Sau khi chạy lệnh `passport:install` với tùy chọn `--uuids`, bạn cũng sẽ được nhận được các hướng dẫn bổ sung về cách tắt tính năng migration mặc định của Passport:
 
-    php artisan passport:install --uuids
+```shell
+php artisan passport:install --uuids
+```
 
 <a name="deploying-passport"></a>
 ### Deploying Passport
 
 Khi deploy Passport lần đầu đến server application của bạn, bạn có thể sẽ cần chạy lệnh `passport:keys`. Lệnh này sẽ tạo các key mã hóa Passport cần, để tạo access token. Các key được tạo thường không nên được lưu trữ trong source code control:
 
-    php artisan passport:keys
+```shell
+php artisan passport:keys
+```
 
 Nếu cần, bạn có thể định nghĩa đường dẫn nơi mà các khóa của Passport sẽ được load từ đó. Bạn có thể sử dụng phương thức `Passport::loadKeysFrom` để thực hiện việc này. Thông thường, phương thức này phải được gọi từ phương thức `boot` của class `App\Providers\AuthServiceProvider` trong ứng dụng của bạn:
 
@@ -165,8 +142,6 @@ Nếu cần, bạn có thể định nghĩa đường dẫn nơi mà các khóa 
     {
         $this->registerPolicies();
 
-        Passport::routes();
-
         Passport::loadKeysFrom(__DIR__.'/../secrets/oauth');
     }
 
@@ -175,11 +150,13 @@ Nếu cần, bạn có thể định nghĩa đường dẫn nơi mà các khóa 
 
 Ngoài ra, bạn có thể export file cấu hình của Passport bằng lệnh Artisan `vendor:publish`:
 
-    php artisan vendor:publish --tag=passport-config
+```shell
+php artisan vendor:publish --tag=passport-config
+```
 
 Sau khi file cấu hình được export, bạn có thể load khóa mã hóa của ứng dụng bằng cách định nghĩa chúng dưới dạng biến môi trường:
 
-```bash
+```ini
 PASSPORT_PRIVATE_KEY="-----BEGIN RSA PRIVATE KEY-----
 <private key here>
 -----END RSA PRIVATE KEY-----"
@@ -194,7 +171,9 @@ PASSPORT_PUBLIC_KEY="-----BEGIN PUBLIC KEY-----
 
 Nếu bạn không muốn sử dụng migration mặc định của Passport, bạn nên gọi phương thức `Passport::ignoreMigrations` trong phương thức `register` của class `App\Providers\AppServiceProvider` của bạn. Bạn có thể export các migration mặc định này bằng cách sử dụng lệnh Artisan `vendor:publish`:
 
-    php artisan vendor:publish --tag=passport-migrations
+```shell
+php artisan vendor:publish --tag=passport-migrations
+```
 
 <a name="upgrading-passport"></a>
 ### Cập nhật Passport
@@ -229,14 +208,13 @@ Mặc định, Passport phát hành các access token tồn tại lâu dài có 
     {
         $this->registerPolicies();
 
-        Passport::routes();
-
         Passport::tokensExpireIn(now()->addDays(15));
         Passport::refreshTokensExpireIn(now()->addDays(30));
         Passport::personalAccessTokensExpireIn(now()->addMonths(6));
     }
 
-> {note} Các cột `expires_at` trong bảng cơ sở dữ liệu Passport sẽ ở chế độ chỉ-đọc và chỉ dành cho mục đích hiển thị. Khi phát hành token, Passport sẽ lưu trữ thông tin hết hạn vào trong các token đó và mã hóa chúng. Nếu bạn muốn làm mất hiệu lực token, bạn nên [thu hồi nó](#revoking-tokens).
+> **Warning**
+> Các cột `expires_at` trong bảng cơ sở dữ liệu Passport sẽ ở chế độ chỉ-đọc và chỉ dành cho mục đích hiển thị. Khi phát hành token, Passport sẽ lưu trữ thông tin hết hạn vào trong các token đó và mã hóa chúng. Nếu bạn muốn làm mất hiệu lực token, bạn nên [thu hồi nó](#revoking-tokens).
 
 <a name="overriding-default-models"></a>
 ### Ghi đè các model mặc định
@@ -255,6 +233,7 @@ Sau khi định nghĩa xong model của bạn, bạn có thể hướng dẫn Pa
     use App\Models\Passport\AuthCode;
     use App\Models\Passport\Client;
     use App\Models\Passport\PersonalAccessClient;
+    use App\Models\Passport\RefreshToken;
     use App\Models\Passport\Token;
 
     /**
@@ -266,13 +245,39 @@ Sau khi định nghĩa xong model của bạn, bạn có thể hướng dẫn Pa
     {
         $this->registerPolicies();
 
-        Passport::routes();
-
         Passport::useTokenModel(Token::class);
-        Passport::useClientModel(Client::class);
+        Passport::useRefreshTokenModel(RefreshToken::class);
         Passport::useAuthCodeModel(AuthCode::class);
+        Passport::useClientModel(Client::class);
         Passport::usePersonalAccessClientModel(PersonalAccessClient::class);
     }
+
+<a name="overriding-routes"></a>
+### Ghi đè routes
+
+Thỉnh thoảng bạn có thể muốn tùy chỉnh các route được định nghĩa bởi Passport. Để thực hiện điều này, trước tiên bạn cần bỏ qua các route được Passport đăng ký bằng cách thêm `Passport::ignoreRoutes` vào phương thức `register` của `AppServiceProvider` của ứng dụng:
+
+    use Laravel\Passport\Passport;
+
+    /**
+     * Register any application services.
+     *
+     * @return void
+     */
+    public function register()
+    {
+        Passport::ignoreRoutes();
+    }
+
+Sau đó, bạn có thể copy các route được Passport định nghĩa trong [file route](https://github.com/laravel/passport/blob/11.x/routes/web.php) vào file `routes/web.php` của ứng dụng và sửa chúng theo ý thích của bạn:
+
+    Route::group([
+        'as' => 'passport.',
+        'prefix' => config('passport.path', 'oauth'),
+        'namespace' => 'Laravel\Passport\Http\Controllers',
+    ], function () {
+        // Passport routes...
+    });
 
 <a name="issuing-access-tokens"></a>
 ## Phát hành token truy cập
@@ -289,13 +294,15 @@ Sử dụng OAuth2 thông qua authorization code là cách mà hầu hết các 
 
 Cách đơn giản nhất để tạo một client là sử dụng lệnh Artisan `passport:client`. Lệnh này có thể được sử dụng để tạo các client của riêng bạn để test các chức năng OAuth2. Khi bạn chạy lệnh `client`, Passport sẽ hỏi bạn cho biết thêm thông tin về client của bạn và trả về cho bạn một client ID và một secret:
 
-    php artisan passport:client
+```shell
+php artisan passport:client
+```
 
 **Redirect URLs**
 
 Nếu bạn muốn lập một danh sách cho phép nhiều URL chuyển hướng cho client của bạn, bạn có thể chỉ định chúng bằng cách sử dụng một danh sách được phân cách bằng dấu phẩy khi nhập URL bằng lệnh `passport:client`. Bất kỳ URL nào chứa dấu phẩy đều phải được encode URL:
 
-```bash
+```shell
 http://example.com/callback,http://examplefoo.com/callback
 ```
 
@@ -313,10 +320,12 @@ JSON API được bảo vệ bởi middleware `web` và `auth`; do đó, nó ch�
 
 Route này sẽ trả về tất cả các client cho người dùng đã được authenticate. Điều này chủ yếu hữu ích để liệt kê tất cả các client của người dùng để họ có thể chỉnh sửa hoặc xóa chúng:
 
-    axios.get('/oauth/clients')
-        .then(response => {
-            console.log(response.data);
-        });
+```js
+axios.get('/oauth/clients')
+    .then(response => {
+        console.log(response.data);
+    });
+```
 
 <a name="post-oauthclients"></a>
 #### `POST /oauth/clients`
@@ -325,46 +334,52 @@ Route này được sử dụng để tạo client mới. Nó đòi hỏi hai ph
 
 Sau Khi một client đã được tạo, nó sẽ được cũng cấp cho một client ID và một client secret. Các giá trị này sẽ được sử dụng khi yêu cầu access token từ application của bạn. Route tạo client sẽ trả về instance client mới:
 
-    const data = {
-        name: 'Client Name',
-        redirect: 'http://example.com/callback'
-    };
+```js
+const data = {
+    name: 'Client Name',
+    redirect: 'http://example.com/callback'
+};
 
-    axios.post('/oauth/clients', data)
-        .then(response => {
-            console.log(response.data);
-        })
-        .catch (response => {
-            // List errors on response...
-        });
+axios.post('/oauth/clients', data)
+    .then(response => {
+        console.log(response.data);
+    })
+    .catch (response => {
+        // List errors on response...
+    });
+```
 
 <a name="put-oauthclientsclient-id"></a>
 #### `PUT /oauth/clients/{client-id}`
 
 Route này được sử dụng để cập nhật client. Nó đòi hỏi hai phần dữ liệu: một là `name` của client và một URL `redirect`. URL `redirect` là nơi người dùng sẽ được chuyển hướng đến sau khi chấp nhận hoặc từ chối một request cho authorization. Route sẽ trả về instance client đã được cập nhật:
 
-    const data = {
-        name: 'New Client Name',
-        redirect: 'http://example.com/callback'
-    };
+```js
+const data = {
+    name: 'New Client Name',
+    redirect: 'http://example.com/callback'
+};
 
-    axios.put('/oauth/clients/' + clientId, data)
-        .then(response => {
-            console.log(response.data);
-        })
-        .catch (response => {
-            // List errors on response...
-        });
+axios.put('/oauth/clients/' + clientId, data)
+    .then(response => {
+        console.log(response.data);
+    })
+    .catch (response => {
+        // List errors on response...
+    });
+```
 
 <a name="delete-oauthclientsclient-id"></a>
 #### `DELETE /oauth/clients/{client-id}`
 
 Route này được sử dụng để xóa client:
 
-    axios.delete('/oauth/clients/' + clientId)
-        .then(response => {
-            //
-        });
+```js
+axios.delete('/oauth/clients/' + clientId)
+    .then(response => {
+        //
+    });
+```
 
 <a name="requesting-tokens"></a>
 ### Request token
@@ -386,23 +401,33 @@ Khi một client đã được tạo, các developer có thể sử dụng clien
             'response_type' => 'code',
             'scope' => '',
             'state' => $state,
+            // 'prompt' => '', // "none", "consent", or "login"
         ]);
 
         return redirect('http://passport-app.test/oauth/authorize?'.$query);
     });
 
-> {tip} Hãy nhớ rằng, route `/oauth/authorize` đã được định nghĩa bởi phương thức `Passport::routes`. Bạn không cần phải tự định nghĩa route này.
+Tham số `prompt` có thể được sử dụng để chỉ định loại xác thực của ứng dụng Passport.
+
+Nếu giá trị `prompt` là `none`, Passport sẽ luôn đưa ra lỗi xác thực nếu người dùng chưa được xác thực với ứng dụng Passport. Nếu giá trị là `consent`, Passport sẽ luôn hiển thị màn hình chấp nhận authorization, ngay cả khi tất cả các scope đã được cấp quyền trước đó cho ứng dụng sử dụng. Khi giá trị là `login`, ứng dụng Passport sẽ luôn nhắc người dùng phải đăng nhập lại vào ứng dụng, ngay cả khi họ đã tồn tại trong session.
+
+Nếu không cung cấp giá trị `prompt`, người dùng sẽ chỉ được nhắc là cấp quyền nếu trước đó họ chưa cấp quyền truy cập cho ứng dụng đang sử dụng với các scope được yêu cầu.
+
+> **Note**
+> Hãy nhớ rằng route `/oauth/authorize` đã được Passport định nghĩa. Bạn không cần phải tự định nghĩa route này nữa.
 
 <a name="approving-the-request"></a>
 #### Approving The Request
 
-Khi nhận được authorization request, Passport sẽ tự động hiển thị một template cho người dùng để họ có thể chấp nhận hoặc từ chối authorization request. Nếu họ chấp nhận request, họ sẽ được chuyển hướng trở lại `redirect_uri` sẽ được chỉ định bởi application của bên thứ ba. `redirect_uri` phải khớp với URL `redirect` được chỉ định khi client được tạo.
+Khi nhận được authorization request, Passport sẽ tự động phản hồi dựa trên giá trị của tham số `prompt` (nếu có) và có thể hiển thị một template cho người dùng để họ có thể chấp nhận hoặc từ chối authorization request. Nếu họ chấp nhận request, họ sẽ được chuyển hướng trở lại `redirect_uri` sẽ được chỉ định bởi application của bên thứ ba. `redirect_uri` phải khớp với URL `redirect` được chỉ định khi client được tạo.
 
 Nếu bạn muốn tùy chỉnh màn hình phê duyệt authorization, bạn có thể publish các view của Passport bằng cách sử dụng lệnh Artisan `vendor:publish`. Các view được publish sẽ được lưu trong thư mục `resources/views/vendor/passport`:
 
-    php artisan vendor:publish --tag=passport-views
+```shell
+php artisan vendor:publish --tag=passport-views
+```
 
-Thỉnh thoảng bạn có thể muốn bỏ qua các lời nhắc cấp quyền, chẳng hạn như khi cấp quyền cho client bên thứ nhất. Bạn có thể thực hiện điều này bằng cách [extending the `Client` model](#overriding-default-models) và định nghĩa phương thức `skipsAuthorization`. Nếu `skipsAuthorization` trả về `true` thì ứng dụng client sẽ được chấp thuận và người dùng sẽ được chuyển hướng trở lại về `redirect_uri` ngay lập tức:
+Thỉnh thoảng bạn có thể muốn bỏ qua các lời nhắc cấp quyền, chẳng hạn như khi cấp quyền cho client bên thứ nhất. Bạn có thể thực hiện điều này bằng cách [extend model `Client`](#overriding-default-models) và định nghĩa phương thức `skipsAuthorization`. Nếu `skipsAuthorization` trả về `true` thì ứng dụng client sẽ được chấp thuận và người dùng sẽ được chuyển hướng trở lại về `redirect_uri` ngay lập tức, trừ khi ứng dụng đang sử dụng đó đã thiết lập tham số `prompt` khi chuyển hướng để xác thực:
 
     <?php
 
@@ -452,7 +477,8 @@ Nếu người dùng chấp nhận authorization request, họ sẽ được chu
 
 Route `/oauth/token` này sẽ trả về một JSON response có chứa các thuộc tính `access_token`, `refresh_token` và `expires_in`. Thuộc tính `expires_in` sẽ chứa số giây cho đến khi access token hết hạn.
 
-> {tip} Giống như route `/oauth/authorize`, route `/oauth/token` đã được định nghĩa cho bạn bằng phương thức `Passport::routes`. Bạn không cần phải tự định nghĩa route này.
+> **Note**
+> Giống như route `/oauth/authorize`, route `/oauth/token` đã được định nghĩa cho bạn bằng Passport. Bạn không cần phải tự định nghĩa route này.
 
 <a name="tokens-json-api"></a>
 #### JSON API
@@ -464,17 +490,21 @@ Passport cũng chứa một JSON API để quản lý các access token đã đ�
 
 Route này sẽ trả về tất cả các access token đã được ủy quyền mà người dùng đã tạo. Điều này chủ yếu hữu ích cho việc hiển thị tất cả các token của người dùng để họ có thể thu hồi chúng:
 
-    axios.get('/oauth/tokens')
-        .then(response => {
-            console.log(response.data);
-        });
+```js
+axios.get('/oauth/tokens')
+    .then(response => {
+        console.log(response.data);
+    });
+```
 
 <a name="delete-oauthtokenstoken-id"></a>
 #### `DELETE /oauth/tokens/{token-id}`
 
 Route này có thể được sử dụng để thu hồi một access token đã được ủy quyền và các refresh token liên quan của chúng:
 
-    axios.delete('/oauth/tokens/' + tokenId);
+```js
+axios.delete('/oauth/tokens/' + tokenId);
+```
 
 <a name="refreshing-tokens"></a>
 ### Refresh token
@@ -517,14 +547,19 @@ Bạn có thể thu hồi một token cách sử dụng phương thức `revokeA
 
 Khi token bị thu hồi hoặc bị hết hạn, bạn có thể muốn xóa chúng ra khỏi cơ sở dữ liệu. Passport có kèm theo một lệnh Artisan `passport:purge` có thể thực hiện việc này cho bạn:
 
-    # Purge revoked and expired tokens and auth codes...
-    php artisan passport:purge
+```shell
+# Purge revoked and expired tokens and auth codes...
+php artisan passport:purge
 
-    # Only purge revoked tokens and auth codes...
-    php artisan passport:purge --revoked
+# Only purge tokens expired for more than 6 hours...
+php artisan passport:purge --hours=6
 
-    # Only purge expired tokens and auth codes...
-    php artisan passport:purge --expired
+# Only purge revoked tokens and auth codes...
+php artisan passport:purge --revoked
+
+# Only purge expired tokens and auth codes...
+php artisan passport:purge --expired
+```
 
 Bạn cũng có thể cấu hình một [scheduled job](/docs/{{version}}/scheduling) trong class `App\Console\Kernel` của application của bạn để tự động lọc token của bạn theo một schedule:
 
@@ -549,7 +584,9 @@ Việc Authorization Code grant với "Proof Key for Code Exchange" (PKCE) là m
 
 Trước khi ứng dụng của bạn có thể phát hành token thông qua authorization code grant với PKCE, bạn sẽ cần tạo một ứng dụng client hỗ trợ PKCE. Bạn có thể thực hiện việc này bằng lệnh Artisan `passport:client` với tùy chọn `--public`:
 
-    php artisan passport:client --public
+```shell
+php artisan passport:client --public
+```
 
 <a name="requesting-auth-pkce-grant-tokens"></a>
 ### Request token
@@ -594,6 +631,7 @@ Sau khi một ứng dụng client đã được tạo xong, bạn có thể sử
             'state' => $state,
             'code_challenge' => $codeChallenge,
             'code_challenge_method' => 'S256',
+            // 'prompt' => '', // "none", "consent", or "login"
         ]);
 
         return redirect('http://passport-app.test/oauth/authorize?'.$query);
@@ -633,7 +671,8 @@ Nếu thông số state khớp, Người dùng api của bạn nên đưa ra m�
 <a name="password-grant-tokens"></a>
 ## Token password grant
 
-> {note} Chúng tôi khuyên bạn không nên sử dụng password grant token nữa. Thay vào đó, bạn nên chọn [loại grant mà được OAuth2 Server đề xuất](https://oauth2.thephpleague.com/authorization-server/which-grant/).
+> **Warning**
+> Chúng tôi khuyên bạn không nên sử dụng password grant token nữa. Thay vào đó, bạn nên chọn [loại grant mà được OAuth2 Server đề xuất](https://oauth2.thephpleague.com/authorization-server/which-grant/).
 
 OAuth2 password grant cho phép các client bên thứ nhất, chẳng hạn như một application mobile trong tổ chức của bạn, có được access token bằng địa chỉ email hoặc tên người dùng và mật khẩu của họ. Điều này cho phép bạn phát hành access token một cách an toàn cho client bên thứ nhất mà không yêu cầu người dùng của bạn thực hiện toàn bộ các luồng chuyển hướng OAuth2 authorization code.
 
@@ -642,12 +681,14 @@ OAuth2 password grant cho phép các client bên thứ nhất, chẳng hạn nh�
 
 Trước khi application của bạn có thể phát hành token thông qua password grant, bạn sẽ cần phải tạo một password grant client. Bạn có thể làm điều này bằng cách sử dụng lệnh Artisan `passport:client` với tùy chọn `--password`. **Nếu bạn đã chạy lệnh `passport:install`, thì bạn không cần phải chạy lệnh này:**
 
-    php artisan passport:client --password
+```shell
+php artisan passport:client --password
+```
 
 <a name="requesting-password-grant-tokens"></a>
 ### Request token
 
-Khi bạn đã tạo một password grant client, bạn có thể yêu cầu access token bằng cách đưa ra một request `POST` cho route `/oauth/token` với địa chỉ email và mật khẩu của người dùng. Hãy nhớ rằng, route này đã được đăng ký bằng phương thức `Passport::routes` nên bạn không cần phải định nghĩa lại chúng. Nếu yêu cầu thành công, bạn sẽ nhận được một `access_token` và một `refresh_token` trong JSON response từ server:
+Khi bạn đã tạo một password grant client, bạn có thể yêu cầu access token bằng cách đưa ra một request `POST` cho route `/oauth/token` với địa chỉ email và mật khẩu của người dùng. Hãy nhớ rằng, route này đã được đăng ký bằng Passport nên bạn không cần phải định nghĩa lại chúng. Nếu yêu cầu thành công, bạn sẽ nhận được một `access_token` và một `refresh_token` trong JSON response từ server:
 
     use Illuminate\Support\Facades\Http;
 
@@ -662,7 +703,8 @@ Khi bạn đã tạo một password grant client, bạn có thể yêu cầu acc
 
     return $response->json();
 
-> {tip} Hãy nhớ rằng, access token sẽ mặc định là tồn tại mãi mãi. Tuy nhiên, bạn có thể thoải mái [cấu hình maximum vòng đời access token của bạn](#configuration) nếu cần.
+> **Note**
+> Hãy nhớ rằng, access token sẽ mặc định là tồn tại mãi mãi. Tuy nhiên, bạn có thể thoải mái [cấu hình maximum vòng đời access token của bạn](#configuration) nếu cần.
 
 <a name="requesting-all-scopes"></a>
 ### Yêu cầu tất cả scope
@@ -747,7 +789,8 @@ Khi xác thực bằng password grant, Passport sẽ sử dụng thuộc tính `
 <a name="implicit-grant-tokens"></a>
 ## Token với grant ẩn
 
-> {note} Chúng tôi khuyên bạn không nên sử dụng implicit grant token nữa. Thay vào đó, bạn nên chọn [loại grant mà được OAuth2 Server đề xuất](https://oauth2.thephpleague.com/authorization-server/which-grant/).
+> **Warning**
+> Chúng tôi khuyên bạn không nên sử dụng implicit grant token nữa. Thay vào đó, bạn nên chọn [loại grant mà được OAuth2 Server đề xuất](https://oauth2.thephpleague.com/authorization-server/which-grant/).
 
 Grant ẩn tương tự như authorization code grant; tuy nhiên, token được trả về cho client mà không cần thông qua authorization code. Grant này được sử dụng phổ biến nhất cho các application JavaScript hoặc mobile application nơi mà thông tin đăng nhập của client không thể được lưu trữ an toàn. Để kích hoạt grant, hãy gọi phương thức `enableImplicitGrant` trong the `boot` method of your application's `App\Providers\AuthServiceProvider` class: phương thức `boot` của lớp `App\Providers\AuthServiceProvider` trong ứng dụng của bạn:
 
@@ -759,8 +802,6 @@ Grant ẩn tương tự như authorization code grant; tuy nhiên, token đượ
     public function boot()
     {
         $this->registerPolicies();
-
-        Passport::routes();
 
         Passport::enableImplicitGrant();
     }
@@ -778,12 +819,14 @@ Khi grant này đã được bật, nhà phát triển có thể sử dụng cli
             'response_type' => 'token',
             'scope' => '',
             'state' => $state,
+            // 'prompt' => '', // "none", "consent", or "login"
         ]);
 
         return redirect('http://passport-app.test/oauth/authorize?'.$query);
     });
 
-> {tip} Hãy nhớ rằng, route `/oauth/authorize` đã được định nghĩa bởi phương thức `Passport::routes`. Bạn không cần phải định nghĩa route này.
+> **Note**
+> Hãy nhớ rằng, route `/oauth/authorize` đã được định nghĩa bởi Passport. Bạn không cần phải định nghĩa route này.
 
 <a name="client-credentials-grant-tokens"></a>
 ## Token chứng chỉ client grant
@@ -792,7 +835,9 @@ Chứng chỉ client grant thích hợp cho việc authentication machine-to-mac
 
 Trước khi ứng dụng của bạn có thể phát hành mã token thông qua chứng chỉ client grant, bạn sẽ cần tạo một client chứng chỉ client grant. Bạn có thể thực hiện việc này bằng cách sử dụng tùy chọn `--client` trong lệnh Artisan `passport:client`:
 
-    php artisan passport:client --client
+```shell
+php artisan passport:client --client
+```
 
 Tiếp theo, để sử dụng loại grant này, bạn cần thêm middleware `CheckClientCredentials` vào thuộc tính `$routeMiddleware` trong file `app/Http/Kernel.php` của bạn:
 
@@ -835,18 +880,21 @@ Sau đó gắn middleware này vào một route:
 
 Đôi khi, người dùng của bạn có thể muốn phát hành access token cho chính họ mà không cần thông qua luồng chuyển hướng authorization code thông thường. Việc cho phép người dùng phát hành token cho chính họ thông qua giao diện người dùng của application của bạn có thể hữu ích khi cho phép người dùng thử nghiệm API của bạn hoặc có thể dùng như một cách tiếp cận đơn giản hơn khi phát hành access token nói chung.
 
-> {tip} Nếu ứng dụng của bạn sử dụng Passport chủ yếu là để cấp các mã personal access token, thì hãy cân nhắc sử dụng [Laravel Sanctum](/docs/{{version}}/sanctum), đây là thư viện gọn nhẹ của Laravel để cấp mã API access token.
+> **Note**
+> Nếu ứng dụng của bạn sử dụng Passport chủ yếu là để cấp các mã personal access token, thì hãy cân nhắc sử dụng [Laravel Sanctum](/docs/{{version}}/sanctum), đây là thư viện gọn nhẹ của Laravel để cấp mã API access token.
 
 <a name="creating-a-personal-access-client"></a>
 ### Tạo một Personal Access Client
 
 Trước khi application của bạn có thể phát hành một personal access token, bạn sẽ cần tạo một personal access client. Bạn có thể làm điều này bằng cách chạy lệnh Artisan `passport:client` với tùy chọn `--personal`. Nếu bạn đã chạy lệnh `passport:install`, bạn không cần chạy lệnh này:
 
-    php artisan passport:client --personal
+```shell
+php artisan passport:client --personal
+```
 
 Sau khi tạo personal access client của bạn, hãy set một giá ID của client và một giá trị secret vào trong file `.env` của ứng dụng của bạn:
 
-```bash
+```ini
 PASSPORT_PERSONAL_ACCESS_CLIENT_ID="client-id-value"
 PASSPORT_PERSONAL_ACCESS_CLIENT_SECRET="unhashed-client-secret-value"
 ```
@@ -878,45 +926,53 @@ JSON API được bảo vệ bởi middleware `web` và `auth`; do đó, nó ch�
 
 Route này trả về tất cả [scopes](#token-scopes) được định nghĩa cho application của bạn. Bạn có thể sử dụng route này để liệt kê scope mà người dùng có thể gán cho một personal access token:
 
-    axios.get('/oauth/scopes')
-        .then(response => {
-            console.log(response.data);
-        });
+```js
+axios.get('/oauth/scopes')
+    .then(response => {
+        console.log(response.data);
+    });
+```
 
 <a name="get-oauthpersonal-access-tokens"></a>
 #### `GET /oauth/personal-access-tokens`
 
 Route này trả về tất cả các personal access token mà người dùng hiện tại đã tạo. Điều này sẽ hữu ích khi liệt kê tất cả các token của người dùng để họ có thể chỉnh sửa hoặc huỷ bỏ chúng:
 
-    axios.get('/oauth/personal-access-tokens')
-        .then(response => {
-            console.log(response.data);
-        });
+```js
+axios.get('/oauth/personal-access-tokens')
+    .then(response => {
+        console.log(response.data);
+    });
+```
 
 <a name="post-oauthpersonal-access-tokens"></a>
 #### `POST /oauth/personal-access-tokens`
 
 Route này sẽ tạo personal access token mới. Nó đòi hỏi hai phần dữ liệu: một là `name` của token và một là `scopes` cần được gán cho token:
 
-    const data = {
-        name: 'Token Name',
-        scopes: []
-    };
+```js
+const data = {
+    name: 'Token Name',
+    scopes: []
+};
 
-    axios.post('/oauth/personal-access-tokens', data)
-        .then(response => {
-            console.log(response.data.accessToken);
-        })
-        .catch (response => {
-            // List errors on response...
-        });
+axios.post('/oauth/personal-access-tokens', data)
+    .then(response => {
+        console.log(response.data.accessToken);
+    })
+    .catch (response => {
+        // List errors on response...
+    });
+```
 
 <a name="delete-oauthpersonal-access-tokenstoken-id"></a>
 #### `DELETE /oauth/personal-access-tokens/{token-id}`
 
 Route này có thể được sử dụng để huỷ bỏ personal access token:
 
-    axios.delete('/oauth/personal-access-tokens/' + tokenId);
+```js
+axios.delete('/oauth/personal-access-tokens/' + tokenId);
+```
 
 <a name="protecting-routes"></a>
 ## Bảo vệ route
@@ -930,7 +986,8 @@ Passport có chứa một [authentication guard](/docs/{{version}}/authenticatio
         //
     })->middleware('auth:api');
 
-> {note} Nếu bạn đang sử dụng [client credentials grant](#client-credentials-grant-tokens), bạn nên sử dụng [middleware `client`](#client-credentials-grant-tokens) để bảo vệ các route của bạn thay vì middleware `auth:api`.
+> **Warning**
+> Nếu bạn đang sử dụng [client credentials grant](#client-credentials-grant-tokens), bạn nên sử dụng [middleware `client`](#client-credentials-grant-tokens) để bảo vệ các route của bạn thay vì middleware `auth:api`.
 
 <a name="multiple-authentication-guards"></a>
 #### Multiple Authentication Guards
@@ -953,7 +1010,8 @@ Route sau sẽ sử dụng guard `api-customers`, sử dụng user provider `cus
         //
     })->middleware('auth:api-customers');
 
-> {tip} Để biết thêm thông tin về cách sử dụng nhiều user provider cùng với Passport, vui lòng tham khảo thêm [tài liệu về password grant](#customizing-the-user-provider).
+> **Note**
+> Để biết thêm thông tin về cách sử dụng nhiều user provider cùng với Passport, vui lòng tham khảo thêm [tài liệu về password grant](#customizing-the-user-provider).
 
 <a name="passing-the-access-token"></a>
 ### Pass access token
@@ -988,8 +1046,6 @@ Bạn có thể định nghĩa scope của API bằng phương thức `Passport:
     {
         $this->registerPolicies();
 
-        Passport::routes();
-
         Passport::tokensCan([
             'place-orders' => 'Place orders',
             'check-status' => 'Check order status',
@@ -1012,6 +1068,9 @@ Nếu một client không yêu cầu bất kỳ scope nào, bạn có thể cấ
         'check-status',
         'place-orders',
     ]);
+
+> **Note**
+> Scope mặc định của Passport sẽ không được áp dụng cho personal access token do người dùng tạo ra.
 
 <a name="assigning-scopes-to-tokens"></a>
 ### Gán scope đến token
@@ -1111,7 +1170,8 @@ Thông thường, nếu bạn muốn sử dụng API từ application JavaScript
         \Laravel\Passport\Http\Middleware\CreateFreshApiToken::class,
     ],
 
-> {note} Bạn nên đảm bảo rằng middleware `CreateFreshApiToken` sẽ được khai báo cuối cùng trong stack middleware của bạn.
+> **Warning**
+> Bạn nên đảm bảo rằng middleware `CreateFreshApiToken` sẽ được khai báo cuối cùng trong stack middleware của bạn.
 
 Passport middleware này sẽ gán một cookie `laravel_token` vào các response gửi về cho bạn. Cookie này chứa JWT đã được mã hóa mà Passport sẽ sử dụng để xác thực các API request từ application JavaScript của bạn. JWT có thời gian tồn tại bằng với giá trị cấu hình `session.lifetime` của bạn. Bây giờ, vì trình duyệt sẽ tự động gửi cookie này cho tất cả các request tiếp theo, nên bạn có thể thực hiện các request đối với API của application mà không cần phải truyền một access token:
 
@@ -1134,8 +1194,6 @@ Nếu cần, bạn có thể tùy biến tên cookie `laravel_token` bằng phư
     {
         $this->registerPolicies();
 
-        Passport::routes();
-
         Passport::cookie('custom_name');
     }
 
@@ -1144,7 +1202,8 @@ Nếu cần, bạn có thể tùy biến tên cookie `laravel_token` bằng phư
 
 Khi sử dụng phương thức xác thực này, bạn sẽ cần đảm bảo một header CSRF token hợp lệ đã được chứa trong các request của bạn. Mặc định, Laravel JavaScript scaffolding đã chứa một instance Axios, instance này sẽ tự động sử dụng giá trị cookie `XSRF-TOKEN` được mã hóa để gửi một header `X-XSRF-TOKEN` cho các request có cùng origin.
 
-> {tip} Nếu bạn chọn gửi header `X-CSRF-TOKEN` thay vì `X-XSRF-TOKEN`, bạn sẽ cần sử dụng một token chưa được mã hóa do `csrf_token()` cung cấp.
+> **Note**
+> Nếu bạn chọn gửi header `X-CSRF-TOKEN` thay vì `X-XSRF-TOKEN`, bạn sẽ cần sử dụng một token chưa được mã hóa do `csrf_token()` cung cấp.
 
 <a name="events"></a>
 ## Event

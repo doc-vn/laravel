@@ -2,6 +2,7 @@
 
 - [Giới thiệu](#introduction)
     - [Cấu hình ngôn ngữ](#configuring-the-locale)
+    - [Số nhiều trong ngôn ngữ](#pluralization-language)
 - [Định nghĩa chuỗi translation](#defining-translation-strings)
     - [Sử dụng short key](#using-short-keys)
     - [Sử dụng chuỗi translation như key](#using-translation-strings-as-keys)
@@ -15,21 +16,19 @@
 
 Các tính năng localization của Laravel cung cấp một cách thuận tiện để lấy ra các chuỗi bằng nhiều ngôn ngữ khác nhau, cho phép bạn dễ dàng hỗ trợ nhiều ngôn ngữ trong application của bạn.
 
-Laravel cung cấp hai cách để quản lý chuỗi được dịch. Đầu tiên, các chuỗi ngôn ngữ có thể được lưu trữ trong các file ở thư mục `resources/lang`. Trong thư mục này, có thể có các thư mục con cho mỗi ngôn ngữ được application của bạn hỗ trợ. Đây là cách tiếp cận mà Laravel sử dụng để quản lý các chuỗi dịch cho các tính năng được tích hợp sẵn của Laravel, chẳng hạn như thông báo lỗi validation:
+Laravel cung cấp hai cách để quản lý chuỗi được dịch. Đầu tiên, các chuỗi ngôn ngữ có thể được lưu trữ trong các file ở thư mục `lang`. Trong thư mục này, có thể có các thư mục con cho mỗi ngôn ngữ được application của bạn hỗ trợ. Đây là cách tiếp cận mà Laravel sử dụng để quản lý các chuỗi dịch cho các tính năng được tích hợp sẵn của Laravel, chẳng hạn như thông báo lỗi validation:
 
-    /resources
-        /lang
-            /en
-                messages.php
-            /es
-                messages.php
+    /lang
+        /en
+            messages.php
+        /es
+            messages.php
 
-Hoặc, các chuỗi dịch có thể được định nghĩa trong các file JSON được lưu trong thư mục `resources/lang`. Khi thực hiện cách này, mỗi ngôn ngữ được ứng dụng của bạn hỗ trợ sẽ có một file JSON tương ứng trong thư mục này. Cách tiếp cận này được khuyến cáo cho các ứng dụng có số lượng lớn chuỗi cần phải dịch:
+Hoặc, các chuỗi dịch có thể được định nghĩa trong các file JSON được lưu trong thư mục `lang`. Khi thực hiện cách này, mỗi ngôn ngữ được ứng dụng của bạn hỗ trợ sẽ có một file JSON tương ứng trong thư mục này. Cách tiếp cận này được khuyến cáo cho các ứng dụng có số lượng lớn chuỗi cần phải dịch:
 
-    /resources
-        /lang
-            en.json
-            es.json
+    /lang
+        en.json
+        es.json
 
 Chúng ta sẽ thảo luận về từng cách quản lý chuỗi dịch này trong tài liệu dưới.
 
@@ -69,41 +68,63 @@ Bạn có thể sử dụng các phương thức `currentLocale` và `isLocale` 
         //
     }
 
+<a name="pluralization-language"></a>
+### Số nhiều trong ngôn ngữ
+
+Bạn có thể hướng dẫn quy tắc "số nhiều" trong Laravel, được Eloquent và các thành phần khác trong framework sử dụng để chuyển đổi chuỗi số ít thành chuỗi số nhiều khi bạn sử dụng một ngôn ngữ khác ngoài tiếng Anh. Điều này có thể được thực hiện bằng cách gọi phương thức `useLanguage` trong phương thức `boot` của một trong những service provider trong ứng dụng của bạn. Các ngôn ngữ hiện được hỗ trợ bởi bộ quy tắc số nhiều là: `french`, `norwegian-bokmal` (`tiếng Na Uy`), `portuguese`, `spanish`, và `turkish`:
+
+    use Illuminate\Support\Pluralizer;
+
+    /**
+     * Bootstrap any application services.
+     *
+     * @return void
+     */
+    public function boot()
+    {
+        Pluralizer::useLanguage('spanish');
+
+        // ...
+    }
+
+> **Warning**
+> Nếu bạn tùy chỉnh ngôn ngữ của bộ quy tấc số nhiều, thì bạn cần định nghĩa lại [table names](/docs/{{version}}/eloquent#table-names) trong model Eloquent của bạn.
+
 <a name="defining-translation-strings"></a>
 ## Định nghĩa một chuỗi translation
 
 <a name="using-short-keys"></a>
 ### Sử dụng short key
 
-Thông thường, các chuỗi dịch được lưu trữ trong các file trong thư mục `resources/lang`. Trong thư mục này, cần có thư mục con cho mỗi ngôn ngữ được application của bạn hỗ trợ. Đây là cách tiếp cận mà Laravel sử dụng để quản lý các chuỗi dịch cho các tính năng được tích hợp sẵn của Laravel, chẳng hạn như thông báo lỗi validation:
+Thông thường, các chuỗi dịch được lưu trữ trong các file trong thư mục `lang`. Trong thư mục này, cần có thư mục con cho mỗi ngôn ngữ được application của bạn hỗ trợ. Đây là cách tiếp cận mà Laravel sử dụng để quản lý các chuỗi dịch cho các tính năng được tích hợp sẵn của Laravel, chẳng hạn như thông báo lỗi validation:
 
-    /resources
-        /lang
-            /en
-                messages.php
-            /es
-                messages.php
+    /lang
+        /en
+            messages.php
+        /es
+            messages.php
 
 Tất cả các file ngôn ngữ đều trả về một mảng của các chuỗi đã được đặt key. Ví dụ:
 
     <?php
 
-    // resources/lang/en/messages.php
+    // lang/en/messages.php
 
     return [
         'welcome' => 'Welcome to our application!',
     ];
 
-> {note} Đối với các ngôn ngữ khác nhau theo lãnh thổ, bạn nên set tên thư mục của ngôn ngữ theo tiêu chuẩn ISO 15897. Ví dụ: "en_GB" nên được sử dụng cho tiếng Anh của nước Anh thay vì "en-gb".
+> **Warning**
+> Đối với các ngôn ngữ khác nhau theo lãnh thổ, bạn nên set tên thư mục của ngôn ngữ theo tiêu chuẩn ISO 15897. Ví dụ: "en_GB" nên được sử dụng cho tiếng Anh của nước Anh thay vì "en-gb".
 
 <a name="using-translation-strings-as-keys"></a>
 ### Sử dụng chuỗi translation như key
 
 Đối với các application có một số lượng lớn các chuỗi cần phải dịch, việc định nghĩa mọi chuỗi bằng "short key" có thể nhanh chóng gây nhầm lẫn khi tham chiếu các key đó vào trong các file view của bạn và thật khó khăn khi liên tục phải tạo ra các khóa cho mọi chuỗi được ứng dụng của bạn hỗ trợ.
 
-Vì lý do này, Laravel cũng cung cấp hỗ trợ cho việc định nghĩa chuỗi dịch bằng cách sử dụng bản dịch "mặc định" của chuỗi làm khóa. Các file translation sử dụng chuỗi translation làm khóa được lưu dưới dạng file JSON trong thư mục `resources/lang`. Ví dụ: nếu ứng dụng của bạn có bản translation tiếng Tây Ban Nha, bạn nên tạo file `resources/lang/es.json`:
+Vì lý do này, Laravel cũng cung cấp hỗ trợ cho việc định nghĩa chuỗi dịch bằng cách sử dụng bản dịch "mặc định" của chuỗi làm khóa. Các file translation sử dụng chuỗi translation làm khóa được lưu dưới dạng file JSON trong thư mục `lang`. Ví dụ: nếu ứng dụng của bạn có bản translation tiếng Tây Ban Nha, bạn nên tạo file `lang/es.json`:
 
-```js
+```json
 {
     "I love programming.": "Me encanta programar."
 }
@@ -116,7 +137,7 @@ Bạn không nên định nghĩa các khóa chuỗi dịch xung đột với cá
 <a name="retrieving-translation-strings"></a>
 ## Lấy chuỗi translation
 
-Bạn có thể lấy chuỗi dịch từ các file ngôn ngữ của bạn bằng hàm helper `__`. Nếu bạn đang sử dụng "short keys" để định nghĩa các chuỗi dịch của bạn, bạn nên truyền file chứa khóa và chính khóa của nó cho hàm `__` bằng cú pháp "chấm". Ví dụ: có thể lấy chuỗi đã được dịch `welcome` từ file ngôn ngữ `resources/lang/en/messages.php`:
+Bạn có thể lấy chuỗi dịch từ các file ngôn ngữ của bạn bằng hàm helper `__`. Nếu bạn đang sử dụng "short keys" để định nghĩa các chuỗi dịch của bạn, bạn nên truyền file chứa khóa và chính khóa của nó cho hàm `__` bằng cú pháp "chấm". Ví dụ: có thể lấy chuỗi đã được dịch `welcome` từ file ngôn ngữ `lang/en/messages.php`:
 
     echo __('messages.welcome');
 
@@ -143,10 +164,32 @@ Nếu bạn muốn, bạn có thể định nghĩa một thuộc tính thay th�
 
     echo __('messages.welcome', ['name' => 'dayle']);
 
-Nếu biến thay của bạn đều là chữ in hoa hoặc chỉ viết hoa chữ cái đầu tiên, giá trị translation cũng sẽ được viết hoa tương ứng:
+Nếu biến thay thế của bạn đều là chữ in hoa hoặc chỉ viết hoa chữ cái đầu tiên, giá trị translation cũng sẽ được viết hoa tương ứng:
 
     'welcome' => 'Welcome, :NAME', // Welcome, DAYLE
     'goodbye' => 'Goodbye, :Name', // Goodbye, Dayle
+
+<a name="object-replacement-formatting"></a>
+#### Object Replacement Formatting
+
+Nếu bạn muốn cung cấp một đối tượng làm biến translation thay thế, phương thức `__toString` của đối tượng sẽ được gọi. Phương thức [`__toString`](https://www.php.net/manual/en/language.oop5.magic.php#object.tostring) là một trong những "phương thức magic" được tích hợp sẵn trong PHP. Tuy nhiên, đôi khi bạn có thể không có quyền kiểm soát đối với phương thức `__toString` của một class nhất định, chẳng hạn như khi class mà bạn đang tương tác thuộc về thư viện của third-party.
+
+Trong những trường hợp này, Laravel cho phép bạn đăng ký một trình xử lý định dạng tùy chỉnh cho một loại đối tượng cụ thể. Để thực hiện việc này, bạn nên gọi phương thức `stringable` của translator. Phương thức `stringable` sẽ chấp nhận một closure, phương thức này sẽ khai báo kiểu đối tượng mà nó chịu trách nhiệm định dạng. Thông thường, phương thức `stringable` nên được gọi trong phương thức `boot` của class `AppServiceProvider` trong ứng dụng của bạn:
+
+    use Illuminate\Support\Facades\Lang;
+    use Money\Money;
+
+    /**
+     * Bootstrap any application services.
+     *
+     * @return void
+     */
+    public function boot()
+    {
+        Lang::stringable(function (Money $money) {
+            return $money->formatTo('en_GB');
+        });
+    }
 
 <a name="pluralization"></a>
 ### Số nhiều
@@ -157,7 +200,7 @@ Số nhiều là một vấn đề phức tạp, vì các ngôn ngữ khác nhau
 
 Tất nhiên, số nhiều cũng được hỗ trợ khi sử dụng [chuỗi dịch làm khóa](#using-translation-strings-as-keys):
 
-```js
+```json
 {
     "There is one apple|There are many apples": "Hay una manzana|Hay muchas manzanas"
 }
@@ -184,6 +227,6 @@ Nếu bạn muốn hiển thị giá trị integer đã được truyền vào h
 <a name="overriding-package-language-files"></a>
 ## Ghi đè package file language
 
-Một số package có thể đi cùng với các file ngôn ngữ riêng của họ. Thay vì sửa vào các file core của package để thay đổi các chuổi translation, bạn có thể ghi đè chúng bằng cách lưu các file trong thư mục `resources/lang/vendor/{package}/{locale}`.
+Một số package có thể đi cùng với các file ngôn ngữ riêng của họ. Thay vì sửa vào các file core của package để thay đổi các chuổi translation, bạn có thể ghi đè chúng bằng cách lưu các file trong thư mục `lang/vendor/{package}/{locale}`.
 
-Vậy, ví dụ, nếu bạn cần ghi đè các chuỗi translation tiếng Anh trong file `messages.php` của package có tên là `skyrim/hearthfire`, thì bạn cần lưu một file ngôn ngữ có path như sau: `resources/lang/vendor/hearthfire/en/messages.php`. Trong file này, bạn chỉ cần định nghĩa chuỗi translation mà bạn muốn ghi đè. Bất kỳ chuỗi translation nào mà bạn không muốn ghi đè sẽ vẫn được tải từ các file ngôn ngữ gốc của package.
+Vậy, ví dụ, nếu bạn cần ghi đè các chuỗi translation tiếng Anh trong file `messages.php` của package có tên là `skyrim/hearthfire`, thì bạn cần lưu một file ngôn ngữ có path như sau: `lang/vendor/hearthfire/en/messages.php`. Trong file này, bạn chỉ cần định nghĩa chuỗi translation mà bạn muốn ghi đè. Bất kỳ chuỗi translation nào mà bạn không muốn ghi đè sẽ vẫn được tải từ các file ngôn ngữ gốc của package.
