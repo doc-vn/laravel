@@ -67,14 +67,14 @@ Router cho phép bạn đăng ký route với nhiều phương thức HTTP:
 Thỉnh thoảng, bạn có thể cần phải đăng ký một route với nhiều phương thức từ HTTP. Bạn có thể làm như vậy bằng cách sử dụng phương thức `match`. Hoặc, bạn thậm chí có thể đăng ký một route đáp ứng với tất cả các động từ HTTP bằng cách sử dụng phương thức `any`:
 
     Route::match(['get', 'post'], '/', function () {
-        //
+        // ...
     });
 
     Route::any('/', function () {
-        //
+        // ...
     });
 
-> **Note**
+> [!NOTE]
 > Khi định nghĩa nhiều route có chung một URI, các route sử dụng các phương thức `get`, `post`, `put`, `patch`, `delete` và `options` phải được định nghĩa trước các route `any`, `match` và `redirect`. Điều này giúp đảm bảo request sẽ được khớp với route chính xác.
 
 <a name="dependency-injection"></a>
@@ -113,7 +113,7 @@ Hoặc, bạn có thể sử dụng phương thức `Route::permanentRedirect` �
 
     Route::permanentRedirect('/here', '/there');
 
-> **Warning**
+> [!WARNING]
 > Khi sử dụng tham số route trong route chuyển hướng, các tham số sau sẽ được Laravel dùng sẵn và không thể sử dụng: `destination` và `status`.
 
 <a name="view-routes"></a>
@@ -125,7 +125,7 @@ Nếu route của bạn chỉ cần trả về một [view](/docs/{{version}}/vi
 
     Route::view('/welcome', 'welcome', ['name' => 'Taylor']);
 
-> **Warning**
+> [!WARNING]
 > Khi sử dụng tham số route trong view route, các tham số sau sẽ được Laravel dùng sẵn và không thể sử dụng: `view`, `data`, `status`, và `headers`.
 
 <a name="the-route-list"></a>
@@ -137,10 +137,13 @@ Lệnh Artisan `route:list` có thể dễ dàng cung cấp một cách tổng q
 php artisan route:list
 ```
 
-Mặc định, route middleware mà được gán cho mỗi route sẽ không được hiển thị trong output của lệnh Artisan `route:list`; tuy nhiên, bạn có thể bảo Laravel hiển thị route middleware bằng cách thêm tùy chọn `-v` vào lệnh:
+Mặc định, route middleware mà được gán cho mỗi route sẽ không được hiển thị trong output của lệnh Artisan `route:list`; tuy nhiên, bạn có thể bảo Laravel hiển thị thêm route middleware và tên middleware group bằng cách thêm tùy chọn `-v` vào lệnh:
 
 ```shell
 php artisan route:list -v
+
+# Expand middleware groups...
+php artisan route:list -vv
 ```
 
 Bạn cũng có thể bảo Laravel chỉ hiển thị các route bắt đầu bằng một URI nhất định:
@@ -169,26 +172,26 @@ php artisan route:list --only-vendor
 
 Đôi khi bạn sẽ cần phải lấy các tham số của URI trong route của bạn. Ví dụ: bạn có thể cần lấy ID người dùng từ URL. Bạn có thể làm như vậy bằng cách định nghĩa các route parameter:
 
-    Route::get('/user/{id}', function ($id) {
+    Route::get('/user/{id}', function (string $id) {
         return 'User '.$id;
     });
 
 Bạn có thể định nghĩa nhiều route parameter bắt buộc trong route của bạn:
 
-    Route::get('/posts/{post}/comments/{comment}', function ($postId, $commentId) {
-        //
+    Route::get('/posts/{post}/comments/{comment}', function (string $postId, string $commentId) {
+        // ...
     });
 
 Các tham số route luôn nằm trong các dấu ngoặc `{}` và phải chứa các ký tự chữ cái. Dấu gạch dưới (`_`) cũng được chấp nhận trong tên tham số route. Các tham số route sẽ được inject vào các route callback hoặc controller dựa thoe thứ tự của chúng - tên của các tham số route callback hoặc controller không quan trọng.
 
 <a name="parameters-and-dependency-injection"></a>
-#### Parameters & Dependency Injection
+#### Parameters và Dependency Injection
 
 Nếu route của bạn có các phần phụ thuộc mà bạn muốn service container của Laravel tự động đưa vào lệnh callback của route, bạn nên liệt kê các tham số route nằm sau phần phụ thuộc của bạn:
 
     use Illuminate\Http\Request;
 
-    Route::get('/user/{id}', function (Request $request, $id) {
+    Route::get('/user/{id}', function (Request $request, string $id) {
         return 'User '.$id;
     });
 
@@ -197,11 +200,11 @@ Nếu route của bạn có các phần phụ thuộc mà bạn muốn service c
 
 Đôi khi bạn có thể cần chỉ định một route parameter có thể không phải lúc nào cũng có trong URI. Bạn có thể làm như vậy bằng cách đặt dấu `?` sau tên tham số. Và hãy chắc chắn là biến tương ứng trong route có set một giá trị mặc định:
 
-    Route::get('/user/{name?}', function ($name = null) {
+    Route::get('/user/{name?}', function (?string $name = null) {
         return $name;
     });
 
-    Route::get('/user/{name?}', function ($name = 'John') {
+    Route::get('/user/{name?}', function (?string $name = 'John') {
         return $name;
     });
 
@@ -210,38 +213,38 @@ Nếu route của bạn có các phần phụ thuộc mà bạn muốn service c
 
 Bạn có thể hạn chế định dạng của các tham số route của bạn bằng cách sử dụng phương thức `where` trên một instance route. Phương thức `where` chấp nhận tên của tham số và biểu thức chính quy xác định cách tham số đó bị ràng buộc:
 
-    Route::get('/user/{name}', function ($name) {
-        //
+    Route::get('/user/{name}', function (string $name) {
+        // ...
     })->where('name', '[A-Za-z]+');
 
-    Route::get('/user/{id}', function ($id) {
-        //
+    Route::get('/user/{id}', function (string $id) {
+        // ...
     })->where('id', '[0-9]+');
 
-    Route::get('/user/{id}/{name}', function ($id, $name) {
-        //
+    Route::get('/user/{id}/{name}', function (string $id, string $name) {
+        // ...
     })->where(['id' => '[0-9]+', 'name' => '[a-z]+']);
 
 Để thuận tiện, một số pattern biểu thức chính quy thường được sử dụng sẽ có các phương thức helper tương ứng, cho phép bạn nhanh chóng thêm các ràng buộc pattern vào route của bạn:
 
-    Route::get('/user/{id}/{name}', function ($id, $name) {
-        //
+    Route::get('/user/{id}/{name}', function (string $id, string $name) {
+        // ...
     })->whereNumber('id')->whereAlpha('name');
 
-    Route::get('/user/{name}', function ($name) {
-        //
+    Route::get('/user/{name}', function (string $name) {
+        // ...
     })->whereAlphaNumeric('name');
 
-    Route::get('/user/{id}', function ($id) {
-        //
+    Route::get('/user/{id}', function (string $id) {
+        // ...
     })->whereUuid('id');
 
-    Route::get('/user/{id}', function ($id) {
+    Route::get('/user/{id}', function (string $id) {
         //
     })->whereUlid('id');
 
-    Route::get('/category/{category}', function ($category) {
-        //
+    Route::get('/category/{category}', function (string $category) {
+        // ...
     })->whereIn('category', ['movie', 'song', 'painting']);
 
 Nếu request đến không khớp với các ràng buộc pattern của route, thì response HTTP 404 sẽ được trả về.
@@ -253,17 +256,15 @@ Nếu bạn muốn một tham số route luôn bị ràng buộc bởi một bi�
 
     /**
      * Define your route model bindings, pattern filters, etc.
-     *
-     * @return void
      */
-    public function boot()
+    public function boot(): void
     {
         Route::pattern('id', '[0-9]+');
     }
 
 Sau khi pattern đã được định nghĩa xong, nó sẽ tự động được áp dụng cho tất cả các route sử dụng tên tham số đó:
 
-    Route::get('/user/{id}', function ($id) {
+    Route::get('/user/{id}', function (string $id) {
         // Only executed if {id} is numeric...
     });
 
@@ -272,11 +273,11 @@ Sau khi pattern đã được định nghĩa xong, nó sẽ tự động đượ
 
 Component route của Laravel cho phép tất cả các ký tự được đi qua ngoại trừ ký tự `/` có trong các giá trị tham số route. Đối với ký tự `/` bạn phải cho phép nó là một phần thay thế bằng cách sử dụng một biểu thức chính quy điều kiện `where`:
 
-    Route::get('/search/{search}', function ($search) {
+    Route::get('/search/{search}', function (string $search) {
         return $search;
     })->where('search', '.*');
 
-> **Warning**
+> [!WARNING]
 > Encoded forward slashes chỉ hỗ trợ tham số cuối cùng của route.
 
 <a name="named-routes"></a>
@@ -285,7 +286,7 @@ Component route của Laravel cho phép tất cả các ký tự được đi qu
 Các tên của route cho phép tạo các URL hoặc các chuyển hướng đến các route cụ thể. Bạn có thể đặt tên cho một route bằng cách kết hợp phương thức `name` vào định nghĩa route:
 
     Route::get('/user/profile', function () {
-        //
+        // ...
     })->name('profile');
 
 Bạn cũng có thể đặt tên route cho các hành động của controller:
@@ -295,7 +296,7 @@ Bạn cũng có thể đặt tên route cho các hành động của controller:
         [UserProfileController::class, 'show']
     )->name('profile');
 
-> **Warning**
+> [!WARNING]
 > Tên route phải luôn là duy nhất.
 
 <a name="generating-urls-to-named-routes"></a>
@@ -313,23 +314,23 @@ Khi bạn đã gán tên cho một route, bạn có thể sử dụng tên của
 
 Nếu tên route của bạn có định nghĩa tham số, bạn có thể chuyển các tham số đó làm tham số thứ hai trong hàm `route`. Các tham số đó sẽ tự động được chèn vào URL được tạo và ở vị trí chính xác của chúng:
 
-    Route::get('/user/{id}/profile', function ($id) {
-        //
+    Route::get('/user/{id}/profile', function (string $id) {
+        // ...
     })->name('profile');
 
     $url = route('profile', ['id' => 1]);
 
 Nếu bạn truyền thêm các tham số vào mảng, thì các cặp khóa và giá trị của các tham số đó sẽ được tự động thêm vào chuỗi truy vấn của URL đã tạo:
 
-    Route::get('/user/{id}/profile', function ($id) {
-        //
+    Route::get('/user/{id}/profile', function (string $id) {
+        // ...
     })->name('profile');
 
     $url = route('profile', ['id' => 1, 'photos' => 'yes']);
 
     // /user/1/profile?photos=yes
 
-> **Note**
+> [!NOTE]
 > Thỉnh thoảng, bạn có thể muốn chỉ định các giá trị mặc định cho các tham số URL trên toàn bộ request, chẳng hạn như ngôn ngữ hiện tại. Để thực hiện điều này, bạn có thể sử dụng phương thức [`URL::defaults` method](/docs/{{version}}/urls#default-values).
 
 <a name="inspecting-the-current-route"></a>
@@ -337,17 +338,19 @@ Nếu bạn truyền thêm các tham số vào mảng, thì các cặp khóa và
 
 Nếu bạn muốn xác định xem request hiện tại có đúng với một route đã được đặt tên hay không, bạn có thể sử dụng phương thức `named` trên một instance route. Ví dụ: bạn có thể kiểm tra tên route hiện tại từ một middleware route:
 
+    use Closure;
+    use Illuminate\Http\Request;
+    use Symfony\Component\HttpFoundation\Response;
+
     /**
      * Handle an incoming request.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \Closure  $next
-     * @return mixed
+     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
      */
-    public function handle($request, Closure $next)
+    public function handle(Request $request, Closure $next): Response
     {
         if ($request->route()->named('profile')) {
-            //
+            // ...
         }
 
         return $next($request);
@@ -393,12 +396,12 @@ Nếu một nhóm các route đều sử dụng cùng một [controller](/docs/{
 Nhóm route cũng có thể được sử dụng để xử lý các route dành riêng cho tên miền phụ. Tên miền phụ có thể được định nghĩa thông qua tham số route giống như URI route, cho phép bạn lấy một phần tên miền phụ để sử dụng trong route hoặc trong controller của bạn. Tên miền phụ có thể được chỉ định bằng cách gọi phương thức `domain` ở trước định nghĩa nhóm route:
 
     Route::domain('{account}.example.com')->group(function () {
-        Route::get('user/{id}', function ($account, $id) {
-            //
+        Route::get('user/{id}', function (string $account, string $id) {
+            // ...
         });
     });
 
-> **Warning**
+> [!WARNING]
 > Để đảm bảo có thể truy cập được vào các route tên miền phụ của bạn, bạn nên đăng ký các route tên miền phụ của bạn trước khi đăng ký các route tên miền gốc. Điều này sẽ ngăn các route miền gốc ghi đè vào các route tên miền phụ có cùng đường dẫn URI.
 
 <a name="route-group-prefixes"></a>
@@ -415,7 +418,7 @@ Phương thức `prefix` có thể được sử dụng để làm tiền tố c
 <a name="route-group-name-prefixes"></a>
 ### Tiền tố cho tên Route
 
-Phương thức `name` có thể được sử dụng để đặt tiền tố cho mỗi tên của route trong nhóm với một chuỗi. Ví dụ: bạn có thể muốn đặt tiền tố cho tất cả các tên của route trong một nhóm là `admin`. Chuỗi mà đã được đặt làm tiền tố sẽ được gán vào tên của mỗi route, và vì thế chúng ta nên chắc chắn là đã thêm dấu `.` vào trong tiền tố để dễ phân biệt tiền tố và tên route:
+Phương thức `name` có thể được sử dụng để đặt tiền tố cho mỗi tên của route trong nhóm với một chuỗi. Ví dụ: bạn có thể muốn thêm tiền tố vào tên của tất cả các route trong group `admin`. Chuỗi mà đã được đặt làm tiền tố sẽ được gán vào tên của mỗi route, và vì thế chúng ta nên chắc chắn là đã thêm dấu `.` vào trong tiền tố để dễ phân biệt tiền tố và tên route:
 
     Route::name('admin.')->group(function () {
         Route::get('/users', function () {
@@ -482,16 +485,14 @@ Nếu bạn muốn tuỳ biến một liên kết của một model luôn sử d
 
     /**
      * Get the route key for the model.
-     *
-     * @return string
      */
-    public function getRouteKeyName()
+    public function getRouteKeyName(): string
     {
         return 'slug';
     }
 
 <a name="implicit-model-binding-scoping"></a>
-#### Custom Keys & Scoping
+#### Custom Keys và Scoping
 
 Khi liên kết ngầm nhiều model Eloquent trong một định nghĩa route duy nhất, bạn có thể muốn xác định phạm vi của model Eloquent thứ hai sao cho nó phải là con của model Eloquent trước đó. Ví dụ: hãy xem xét định nghĩa route sau để lấy ra một bài đăng blog bằng slug của một người dùng cụ thể:
 
@@ -580,10 +581,8 @@ Bạn không nhất thiết phải sử dụng liên kết ngầm của laravel,
 
     /**
      * Define your route model bindings, pattern filters, etc.
-     *
-     * @return void
      */
-    public function boot()
+    public function boot(): void
     {
         Route::model('user', User::class);
 
@@ -595,7 +594,7 @@ Tiếp theo, hãy định nghĩa một route chứa tham số `{user}`:
     use App\Models\User;
 
     Route::get('/users/{user}', function (User $user) {
-        //
+        // ...
     });
 
 Vì chúng ta đã liên kết các tham số `{user}` vào trong model `App\Models\User`, nên một instance của class đó sẽ được tự động inject vào trong route của bạn. Vì vậy, ví dụ, nếu một request với uri là `users/1` thì sẽ tự động inject instance `User` có ID là `1` từ cơ sở dữ liệu.
@@ -612,12 +611,10 @@ Nếu bạn muốn định nghĩa một tuỳ chỉnh logic cho liên kết mode
 
     /**
      * Define your route model bindings, pattern filters, etc.
-     *
-     * @return void
      */
-    public function boot()
+    public function boot(): void
     {
-        Route::bind('user', function ($value) {
+        Route::bind('user', function (string $value) {
             return User::where('name', $value)->firstOrFail();
         });
 
@@ -659,10 +656,10 @@ Nếu một route đang sử dụng [phạm vi liên kết ngầm](#implicit-mod
 Sử dụng phương thức `Route::fallback`, bạn có thể định nghĩa một route sẽ được thực thi khi không có một route nào khác phù hợp với request đến. Thông thường, các request chưa được xử lý sẽ tự động hiển thị trang "404" thông qua trình xử lý exception của ứng dụng của bạn. Tuy nhiên, vì bạn hay định nghĩa route `fallback` trong file `routes/web.php` của bạn, nên tất cả midddleware trong nhóm midddleware `web` sẽ được áp dụng cho route này. Tất nhiên, bạn có thể thoải mái thêm midddleware vào trong route này nếu cần:
 
     Route::fallback(function () {
-        //
+        // ...
     });
 
-> **Warning**
+> [!WARNING]
 > Route dự phòng phải luôn là route cuối cùng được đăng ký bởi application của bạn.
 
 <a name="rate-limiting"></a>
@@ -671,7 +668,9 @@ Sử dụng phương thức `Route::fallback`, bạn có thể định nghĩa m�
 <a name="defining-rate-limiters"></a>
 ### Định nghĩa giới hạn tỷ lệ
 
-Laravel có chứa các service giới hạn tỷ lệ mạnh mẽ và có thể tùy chỉnh mà bạn có thể sử dụng để hạn chế lưu lượng truy cập cho một route hoặc một nhóm route nhất định. Để bắt đầu, bạn nên định nghĩa cấu hình giới hạn tỷ lệ đáp ứng nhu cầu của ứng dụng. Thông thường, việc này phải được thực hiện trong phương thức `configureRateLimiting` của class `App\Providers\RouteServiceProvider` trong ứng dụng của bạn, trong class đó đã chứa sẵn một định nghĩa giới hạn tỷ lệ đã được áp dụng cho các route trong file `routes/api.php` trong ứng dụng của bạn:
+Laravel có chứa các service giới hạn tỷ lệ mạnh mẽ và có thể tùy chỉnh mà bạn có thể sử dụng để hạn chế lưu lượng truy cập cho một route hoặc một nhóm route nhất định. Để bắt đầu, bạn nên định nghĩa cấu hình giới hạn tỷ lệ đáp ứng nhu cầu của ứng dụng.
+
+Thông thường, giới hạn tỷ lệ đã được định nghĩa trong phương thức `boot` của class `App\Providers\RouteServiceProvider` trong ứng dụng của bạn. Trên thực tế, class này đã chứa sẵn một định nghĩa giới hạn tỷ lệ đã được áp dụng cho các route trong file `routes/api.php` trong ứng dụng của bạn:
 
 ```php
 use Illuminate\Cache\RateLimiting\Limit;
@@ -679,13 +678,15 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
 
 /**
- * Configure the rate limiters for the application.
+ * Define your route model bindings, pattern filters, and other route configuration.
  */
-protected function configureRateLimiting(): void
+protected function boot(): void
 {
     RateLimiter::for('api', function (Request $request) {
         return Limit::perMinute(60)->by($request->user()?->id ?: $request->ip());
     });
+
+    // ...
 }
 ```
 
@@ -696,15 +697,15 @@ Giới hạn tỷ lệ được định nghĩa bằng phương thức `for` củ
     use Illuminate\Support\Facades\RateLimiter;
 
     /**
-     * Configure the rate limiters for the application.
-     *
-     * @return void
+     * Define your route model bindings, pattern filters, and other route configuration.
      */
-    protected function configureRateLimiting()
+    protected function boot(): void
     {
         RateLimiter::for('global', function (Request $request) {
             return Limit::perMinute(1000);
         });
+
+        // ...
     }
 
 Nếu request gửi đến vượt quá giới hạn tỷ lệ đã chỉ định, Laravel sẽ tự động trả về response có mã trạng thái HTTP 429. Nếu bạn muốn định nghĩa một response khác của riêng bạn sẽ được trả về theo giới hạn tỷ lệ, bạn có thể sử dụng phương thức `response`:
@@ -761,11 +762,11 @@ Giới hạn tỷ lệ có thể được gắn vào các route hoặc một nh�
 
     Route::middleware(['throttle:uploads'])->group(function () {
         Route::post('/audio', function () {
-            //
+            // ...
         });
 
         Route::post('/video', function () {
-            //
+            // ...
         });
     });
 
@@ -811,7 +812,7 @@ Bạn có thể tham khảo tài liệu API cho [class facade Route](https://lar
 
 Laravel có thể tự động respond các CORS `OPTIONS` HTTP request với các giá trị mà bạn đã cấu hình. Tất cả các cài đặt CORS có thể được cấu hình trong file cấu hình `config/cors.php` của application. Mặc định, các `OPTIONS` request sẽ được tự động xử lý bởi [middleware](/docs/{{version}}/middleware) `HandleCors` nằm theo trong stack global middleware của bạn. Stack global middleware của bạn nằm trong file HTTP kernel của ứng dụng (`App\Http\Kernel`).
 
-> **Note**
+> [!NOTE]
 > Để biết thêm thông tin về CORS và header CORS, vui lòng tham khảo [tài liệu web MDN về CORS](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS#The_HTTP_response_headers).
 
 <a name="route-caching"></a>

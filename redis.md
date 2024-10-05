@@ -4,7 +4,7 @@
 - [Cấu hình](#configuration)
     - [Cụm](#clusters)
     - [Predis](#predis)
-    - [phpredis](#phpredis)
+    - [PhpRedis](#phpredis)
 - [Tương tác với Redis](#interacting-with-redis)
     - [Transactions](#transactions)
     - [Lệnh Pipeline](#pipelining-commands)
@@ -13,11 +13,11 @@
 <a name="introduction"></a>
 ## Giới thiệu
 
-[Redis](https://redis.io) là một dự án mã nguồn mở, dùng để lưu trữ các giá trị key-value. Nó thường được coi như là một server cấu trúc dữ liệu vì các key của nó có thể lưu [strings](https://redis.io/topics/data-types#strings), [hashes](https://redis.io/topics/data-types#hashes), [lists](https://redis.io/topics/data-types#lists), [sets](https://redis.io/topics/data-types#sets), và [sorted sets](https://redis.io/topics/data-types#sorted-sets).
+[Redis](https://redis.io) là một dự án mã nguồn mở, dùng để lưu trữ các giá trị key-value. Nó thường được coi như là một server cấu trúc dữ liệu vì các key của nó có thể lưu [strings](https://redis.io/docs/data-types/strings/), [hashes](https://redis.io/docs/data-types/hashes/), [lists](https://redis.io/docs/data-types/lists/), [sets](https://redis.io/docs/data-types/sets/), và [sorted sets](https://redis.io/docs/data-types/sorted-sets/).
 
-Trước khi sử dụng Redis cho Laravel, chúng tôi khuyến khích bạn cài đặt và sử dụng extension [phpredis](https://github.com/phpredis/phpredis) của PHP thông qua PECL. Extension này phức tạp hơn để cài đặt compared to "user-land" PHP packages nhưng có thể mang lại hiệu suất tốt hơn cho các ứng dụng mà sử dụng nhiều Redis. Nếu bạn đang sử dụng [Laravel Sail](/docs/{{version}}/sail), thì extension này đã được cài đặt sẵn trong Docker container của ứng dụng của bạn.
+Trước khi sử dụng Redis cho Laravel, chúng tôi khuyến khích bạn cài đặt và sử dụng extension [PhpRedis](https://github.com/phpredis/phpredis) của PHP thông qua PECL. Extension này phức tạp hơn để cài đặt compared to "user-land" PHP packages nhưng có thể mang lại hiệu suất tốt hơn cho các ứng dụng mà sử dụng nhiều Redis. Nếu bạn đang sử dụng [Laravel Sail](/docs/{{version}}/sail), thì extension này đã được cài đặt sẵn trong Docker container của ứng dụng của bạn.
 
-Nếu bạn không thể cài đặt extension phpredis, bạn có thể cài đặt package `predis/predis` thông qua Composer. Predis là một client Redis được viết hoàn toàn bằng PHP và nó không yêu cầu cài thêm bất kỳ extension nào:
+Nếu bạn không thể cài đặt extension PhpRedis, bạn có thể cài đặt package `predis/predis` thông qua Composer. Predis là một client Redis được viết hoàn toàn bằng PHP và nó không yêu cầu cài thêm bất kỳ extension nào:
 
 ```shell
 composer require predis/predis
@@ -148,16 +148,16 @@ Ngoài các tùy chọn cấu hình server mặc định như là `host`, `port`
 <a name="the-redis-facade-alias"></a>
 #### The Redis Facade Alias
 
-File cấu hình `config/app.php` của Laravel chứa một mảng `aliases` định nghĩa tất cả các alias của class sẽ được framework đăng ký. Mặc định, sẽ không có alias `Redis` vì nó xung đột với class tên `Redis` do extension phpredis cung cấp. Nếu bạn đang sử dụng Predis client và muốn thêm alias `Redis`, bạn có thể thêm alias này vào trong mảng `aliases` trong file cấu hình `config/app.php` của ứng dụng của bạn:
+File cấu hình `config/app.php` của Laravel chứa một mảng `aliases` định nghĩa tất cả các alias của class sẽ được framework đăng ký. Mặc định, sẽ không có alias `Redis` vì nó xung đột với class tên `Redis` do extension PhpRedis cung cấp. Nếu bạn đang sử dụng Predis client và muốn thêm alias `Redis`, bạn có thể thêm alias này vào trong mảng `aliases` trong file cấu hình `config/app.php` của ứng dụng của bạn:
 
     'aliases' => Facade::defaultAliases()->merge([
         'Redis' => Illuminate\Support\Facades\Redis::class,
     ])->toArray(),
 
 <a name="phpredis"></a>
-### phpredis
+### PhpRedis
 
-Mặc định, Laravel sẽ sử dụng extension phpredis để giao tiếp với Redis. Client mà Laravel sẽ sử dụng để giao tiếp với Redis được quyết định bởi giá trị của tùy chọn cấu hình `redis.client`, thường phản ánh bởi giá trị của biến môi trường `REDIS_CLIENT`:
+Mặc định, Laravel sẽ sử dụng extension PhpRedis để giao tiếp với Redis. Client mà Laravel sẽ sử dụng để giao tiếp với Redis được quyết định bởi giá trị của tùy chọn cấu hình `redis.client`, thường phản ánh bởi giá trị của biến môi trường `REDIS_CLIENT`:
 
     'redis' => [
 
@@ -166,7 +166,7 @@ Mặc định, Laravel sẽ sử dụng extension phpredis để giao tiếp v�
         // Rest of Redis configuration...
     ],
 
-Ngoài các tham số kết nối mặc định `scheme`, `host`, `port`, `database`, và `password`, phpredis cũng hỗ trợ thêm các tham số kết nối bổ sung như sau: `name`, `persistent`, `persistent_id`, `prefix`, `read_timeout`, `retry_interval`, `timeout`, và `context`. Bạn có thể thêm bất kỳ tùy chọn nào vào cấu hình server Redis của bạn trong file cấu hình `config/database.php`:
+Ngoài các tham số kết nối mặc định `scheme`, `host`, `port`, `database`, và `password`, PhpRedis cũng hỗ trợ thêm các tham số kết nối bổ sung như sau: `name`, `persistent`, `persistent_id`, `prefix`, `read_timeout`, `retry_interval`, `timeout`, và `context`. Bạn có thể thêm bất kỳ tùy chọn nào vào cấu hình server Redis của bạn trong file cấu hình `config/database.php`:
 
     'default' => [
         'host' => env('REDIS_HOST', 'localhost'),
@@ -181,9 +181,9 @@ Ngoài các tham số kết nối mặc định `scheme`, `host`, `port`, `datab
     ],
 
 <a name="phpredis-serialization"></a>
-#### phpredis Serialization & Compression
+#### PhpRedis Serialization và Compression
 
-Extension phpredis cũng có thể được cấu hình để sử dụng nhiều thuật toán nén và serialization khác nhau. Các thuật toán này có thể được cấu hình thông qua mảng `options` trong cấu hình Redis của bạn:
+Extension PhpRedis cũng có thể được cấu hình để sử dụng nhiều thuật toán nén và serializers khác nhau. Các thuật toán này có thể được cấu hình thông qua mảng `options` trong cấu hình Redis của bạn:
 
     'redis' => [
 
@@ -197,7 +197,7 @@ Extension phpredis cũng có thể được cấu hình để sử dụng nhiề
         // Rest of Redis configuration...
     ],
 
-Các thuật toán serialization được hỗ trợ hiện nay là: `Redis::SERIALIZER_NONE` (mặc định), `Redis::SERIALIZER_PHP`, `Redis::SERIALIZER_JSON`, `Redis::SERIALIZER_IGBINARY` và `Redis::SERIALIZER_MSGPACK`.
+Các serializers được hỗ trợ hiện tại là: `Redis::SERIALIZER_NONE` (mặc định), `Redis::SERIALIZER_PHP`, `Redis::SERIALIZER_JSON`, `Redis::SERIALIZER_IGBINARY` và `Redis::SERIALIZER_MSGPACK`.
 
 Các thuật toán nén được hỗ trợ là: `Redis::COMPRESSION_NONE` (mặc định), `Redis::COMPRESSION_LZF`, `Redis::COMPRESSION_ZSTD` và `Redis::COMPRESSION_LZ4`.
 
@@ -212,16 +212,14 @@ Bạn có thể tương tác với Redis bằng cách gọi các phương thức
 
     use App\Http\Controllers\Controller;
     use Illuminate\Support\Facades\Redis;
+    use Illuminate\View\View;
 
     class UserController extends Controller
     {
         /**
          * Show the profile for the given user.
-         *
-         * @param  int  $id
-         * @return \Illuminate\Http\Response
          */
-        public function show($id)
+        public function show(string $id): View
         {
             return view('user.profile', [
                 'user' => Redis::get('user:profile:'.$id)
@@ -257,14 +255,15 @@ File cấu hình `config/database.php` của ứng dụng của bạn cho phép 
 
 Phương thức `transaction` của facade `Redis` cung cấp một wrapper thuận tiện xung quanh các lệnh `MULTI` và `EXEC` gốc của Redis. Phương thức `transaction` chấp nhận một closure làm tham số duy nhất của nó. Closure này sẽ nhận vào một instance kết nối Redis và bạn có thể đưa vào bất kỳ lệnh nào mà bạn muốn cho instance này. Tất cả các lệnh Redis được đưa vào trong closure sẽ được thực thi trong một transaction nguyên tử duy nhất:
 
-    use Illuminate\Support\Facades\Redis;
+    use Redis;
+    use Illuminate\Support\Facades;
 
-    Redis::transaction(function ($redis) {
+    Facades\Redis::transaction(function (Redis $redis) {
         $redis->incr('user_visits', 1);
         $redis->incr('total_visits', 1);
     });
 
-> **Warning**
+> [!WARNING]
 > Khi định nghĩa một transaction Redis, bạn không được lấy bất kỳ giá trị nào từ kết nối Redis. Hãy nhớ rằng, transaction của bạn được thực thi dưới dạng một thao tác duy nhất và thao tác đó không được thực thi cho đến khi toàn bộ closure của bạn thực thi xong các lệnh của nó.
 
 #### Lua Scripts
@@ -285,7 +284,7 @@ Trong ví dụ này, chúng ta sẽ tăng counter, kiểm tra giá trị mới c
         return counter
     LUA, 2, 'first-counter', 'second-counter');
 
-> **Warning**
+> [!WARNING]
 > Vui lòng tham khảo [tài liệu về Redis](https://redis.io/commands/eval) để biết thêm thông tin về script Redis.
 
 <a name="pipelining-commands"></a>
@@ -293,9 +292,10 @@ Trong ví dụ này, chúng ta sẽ tăng counter, kiểm tra giá trị mới c
 
 Thỉnh thoảng bạn có thể cần thực thi nhiều lệnh Redis. Thay vì thực hiện truy vấn tới server Redis của bạn cho từng lệnh một, bạn có thể sử dụng phương thức `pipeline`. Phương thức `pipeline` chấp nhận một tham số là: một closure nhận vào một instance Redis. Bạn có thể đưa vào tất cả các lệnh của bạn cho instance Redis này và tất cả chúng sẽ được truyền trực tiếp đến server đồng thời để giảm các lượt truy vấn đến server. Các lệnh vẫn sẽ được thực thi theo thứ tự chúng được ghi:
 
-    use Illuminate\Support\Facades\Redis;
+    use Redis;
+    use Illuminate\Support\Facades;
 
-    Redis::pipeline(function ($pipe) {
+    Facades\Redis::pipeline(function (Redis $pipe) {
         for ($i = 0; $i < 1000; $i++) {
             $pipe->set("key:$i", $i);
         }
@@ -333,12 +333,10 @@ Laravel cung cấp một interface thuận tiện cho các lệnh `publish` và 
 
         /**
          * Execute the console command.
-         *
-         * @return mixed
          */
-        public function handle()
+        public function handle(): void
         {
-            Redis::subscribe(['test-channel'], function ($message) {
+            Redis::subscribe(['test-channel'], function (string $message) {
                 echo $message;
             });
         }
@@ -361,10 +359,10 @@ Bây giờ chúng ta có thể publish tin nhắn lên channel bằng phương t
 
 Sử dụng phương thức `psubscribe`, bạn có thể theo dõi một nhóm các channel, nó có thể hữu ích để lấy tất cả các tin nhắn trên tất cả các channel. Tên channel sẽ được truyền làm tham số thứ hai cho closure:
 
-    Redis::psubscribe(['*'], function ($message, $channel) {
+    Redis::psubscribe(['*'], function (string $message, string $channel) {
         echo $message;
     });
 
-    Redis::psubscribe(['users.*'], function ($message, $channel) {
+    Redis::psubscribe(['users.*'], function (string $message, string $channel) {
         echo $message;
     });

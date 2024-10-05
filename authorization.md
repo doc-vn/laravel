@@ -38,7 +38,7 @@ Bạn không cần phải chọn giữa sử dụng gates hoặc sử dụng pol
 <a name="writing-gates"></a>
 ### Viết Gates
 
-> **Warning**
+> [!WARNING]
 > Gate là một cách tuyệt vời để tìm hiểu những điều cơ bản về các tính năng authorization của Laravel; tuy nhiên, khi xây dựng các ứng dụng Laravel mạnh mẽ, bạn nên cân nhắc sử dụng [policies](#creating-policies) để tổ chức các quy tắc authorization của bạn.
 
 Gate chỉ đơn giản là một closure để xác định xem người dùng có được phép thực hiện một hành động nhất định hay không. Thông thường, các gate được định nghĩa trong phương thức `boot` của class `App\Providers\AuthServiceProvider` bằng cách sử dụng facade `Gate`. Gates luôn nhận một instance user làm tham số đầu tiên của nó và có thể tùy chọn nhận thêm các tham số như Eloquent model có liên quan.
@@ -51,13 +51,9 @@ Trong ví dụ này, chúng ta sẽ định nghĩa một gate để xác định
 
     /**
      * Register any authentication / authorization services.
-     *
-     * @return void
      */
-    public function boot()
+    public function boot(): void
     {
-        $this->registerPolicies();
-
         Gate::define('update-post', function (User $user, Post $post) {
             return $user->id === $post->user_id;
         });
@@ -70,13 +66,9 @@ Giống như controller, gate cũng có thể được định nghĩa bằng cá
 
     /**
      * Register any authentication / authorization services.
-     *
-     * @return void
      */
-    public function boot()
+    public function boot(): void
     {
-        $this->registerPolicies();
-
         Gate::define('update-post', [PostPolicy::class, 'update']);
     }
 
@@ -85,12 +77,13 @@ Giống như controller, gate cũng có thể được định nghĩa bằng cá
 
 Để authorize cho một hành động thông qua sử dụng gate, bạn cần sử dụng các phương thức `allows` hoặc `denies` được cũng cấp bởi facade `Gate`. Lưu ý rằng bạn không cần phải truyền user mà đang login cho các phương thức này. Laravel sẽ tự động truyền user đó vào gate closure này. Thông thường, hãy gọi các phương thức gate authorization trong controller của ứng dụng của bạn trước khi thực hiện bất kỳ hành động yêu cầu authorization nào:
 
-     <?php
+    <?php
 
     namespace App\Http\Controllers;
 
     use App\Http\Controllers\Controller;
     use App\Models\Post;
+    use Illuminate\Http\RedirectResponse;
     use Illuminate\Http\Request;
     use Illuminate\Support\Facades\Gate;
 
@@ -98,18 +91,16 @@ Giống như controller, gate cũng có thể được định nghĩa bằng cá
     {
         /**
          * Update the given post.
-         *
-         * @param  \Illuminate\Http\Request  $request
-         * @param  \App\Models\Post  $post
-         * @return \Illuminate\Http\Response
          */
-        public function update(Request $request, Post $post)
+        public function update(Request $request, Post $post): RedirectResponse
         {
             if (! Gate::allows('update-post', $post)) {
                 abort(403);
             }
 
             // Update the post...
+
+            return redirect('/posts');
         }
     }
 
@@ -151,7 +142,7 @@ Các phương thức của gate để authorize các quyền (`allows`, `denies`
     use App\Models\User;
     use Illuminate\Support\Facades\Gate;
 
-    Gate::define('create-post', function (User $user, Category $category, $pinned) {
+    Gate::define('create-post', function (User $user, Category $category, bool $pinned) {
         if (! $user->canPublishToGroup($category->group)) {
             return false;
         } elseif ($pinned && ! $user->canPinPosts()) {
@@ -228,9 +219,10 @@ Bởi vì ẩn resource thông qua response `404` là một hình thức phổ b
 
 Thỉnh thoảng, bạn có thể muốn cho phép tất cả các hành động cho một người dùng cụ thể. Bạn có thể sử dụng phương thức `before` để định nghĩa một closure sẽ được chạy trước khi tất cả các authorization khác được check:
 
+    use App\Models\User;
     use Illuminate\Support\Facades\Gate;
 
-    Gate::before(function ($user, $ability) {
+    Gate::before(function (User $user, string $ability) {
         if ($user->isAdministrator()) {
             return true;
         }
@@ -240,7 +232,9 @@ Nếu closure `before` trả về một kết quả khác null thì kết quả 
 
 Bạn có thể sử dụng phương thức `after` để định nghĩa một closure sẽ được thực thi sau tất cả các lần authorization check.
 
-    Gate::after(function ($user, $ability, $result, $arguments) {
+    use App\Models\User;
+
+    Gate::after(function (User $user, string $ability, bool|null $result, mixed $arguments) {
         if ($user->isAdministrator()) {
             return true;
         }
@@ -251,14 +245,15 @@ Tương tự như phương thức `before`, nếu closure `after` trả về m�
 <a name="inline-authorization"></a>
 ### Inline Authorization
 
-Đôi khi, bạn có thể muốn xác định xem người dùng đang được xác thực có được phép thực hiện một hành động nhất định mà không cần viết gate tương ứng với hành động đó hay không. Laravel cho phép bạn thực hiện các loại kiểm tra authorization "inline" này thông qua các phương thức `Gate::allowIf` và `Gate::denyIf`:
+Đôi khi, bạn có thể muốn xác định xem người dùng đang được xác thực có được phép thực hiện một hành động nhất định mà không cần viết gate tương ứng với hành động đó hay không. Laravel cho phép bạn thực hiện các loại kiểm tra authorization "inline" này thông qua các phương thức `Gate::allowIf` và `Gate::denyIf`. Inline authorization sẽ không chạy bất kỳ [hook "before" hoặc "after" nào đã được định nghĩa](#intercepting-gate-checks):
 
 ```php
+use App\Models\User;
 use Illuminate\Support\Facades\Gate;
 
-Gate::allowIf(fn ($user) => $user->isAdministrator());
+Gate::allowIf(fn (User $user) => $user->isAdministrator());
 
-Gate::denyIf(fn ($user) => $user->banned());
+Gate::denyIf(fn (User $user) => $user->banned());
 ```
 
 Nếu hành động không được phép hoặc nếu không có người dùng nào đang được xác thực, thì Laravel sẽ tự động đưa ra một exception `Illuminate\Auth\Access\AuthorizationException`. Các instance của `AuthorizationException` được exception handler của Laravel tự động chuyển thành HTTP response 403.
@@ -269,7 +264,7 @@ Nếu hành động không được phép hoặc nếu không có người dùng
 <a name="generating-policies"></a>
 ### Tạo Policies
 
-Các Policy là các class tổng hợp các logic authorization liên quan đến một model hoặc resource cụ thể. Ví dụ: nếu application của bạn là một trang blog, bạn có thể có model `App\Models\Post` và `App\Policies\PostPolicy` tương ứng để authorization cho các hành động của người dùng như tạo hoặc cập nhật bài đăng.
+Các Policy là các class tổng hợp các logic authorization liên quan đến một model hoặc resource cụ thể. Ví dụ: nếu application của bạn là một trang blog, bạn có thể có một model `App\Models\Post` và một `App\Policies\PostPolicy` tương ứng để authorization cho các hành động của người dùng như tạo hoặc cập nhật bài đăng.
 
 Bạn có thể tạo một policy bằng cách sử dụng [lệnh Artisan](/docs/{{version}}/artisan) `make:policy`. Policy được tạo ra sẽ được lưu vào trong thư mục `app/Policies`. Nếu thư mục này không tồn tại trong application của bạn, Laravel sẽ tạo nó cho bạn:
 
@@ -312,14 +307,10 @@ Sau khi class policy đã được tạo, nó cần phải được đăng ký. 
 
         /**
          * Register any application authentication / authorization services.
-         *
-         * @return void
          */
-        public function boot()
+        public function boot(): void
         {
-            $this->registerPolicies();
-
-            //
+            // ...
         }
     }
 
@@ -332,11 +323,11 @@ Nếu bạn muốn tự định nghĩa logic đăng ký policy theo cách của 
 
     use Illuminate\Support\Facades\Gate;
 
-    Gate::guessPolicyNamesUsing(function ($modelClass) {
+    Gate::guessPolicyNamesUsing(function (string $modelClass) {
         // Return the name of the policy class for the given model...
     });
 
-> **Warning**
+> [!WARNING]
 > Bất kỳ policy nào được ánh xạ trong `AuthServiceProvider` cũng sẽ được ưu tiên hơn các policy khác được đăng ký tự động.
 
 <a name="writing-policies"></a>
@@ -360,12 +351,8 @@ Phương thức `update` sẽ nhận vào một `User` và một `Post` làm tha
     {
         /**
          * Determine if the given post can be updated by the user.
-         *
-         * @param  \App\Models\User  $user
-         * @param  \App\Models\Post  $post
-         * @return bool
          */
-        public function update(User $user, Post $post)
+        public function update(User $user, Post $post): bool
         {
             return $user->id === $post->user_id;
         }
@@ -375,7 +362,7 @@ Bạn có thể tiếp tục định nghĩa thêm các phương thức mà bạn
 
 Nếu bạn đã sử dụng option `--model` khi tạo policy thông qua Artisan console, thì nó sẽ chứa sẵn các phương thức cho các hành động `viewAny`, `view`, `create`, `update`, `delete`, `restore`, và `forceDelete`.
 
-> **Note**
+> [!NOTE]
 > Tất cả các policy được gọi thông qua Laravel [service container](/docs/{{version}}/container), cho phép bạn khai báo bất kỳ phụ thuộc cần thiết nào trong hàm constructor của policy để chúng có thể tự động được inject.
 
 <a name="policy-responses"></a>
@@ -389,12 +376,8 @@ Hiện tại, chúng ta mới chỉ kiểm tra các phương thức policy trả
 
     /**
      * Determine if the given post can be updated by the user.
-     *
-     * @param  \App\Models\User  $user
-     * @param  \App\Models\Post  $post
-     * @return \Illuminate\Auth\Access\Response
      */
-    public function update(User $user, Post $post)
+    public function update(User $user, Post $post): Response
     {
         return $user->id === $post->user_id
                     ? Response::allow()
@@ -430,12 +413,8 @@ Khi một action bị từ chối bởi một phương thức policy, thì HTTP 
 
     /**
      * Determine if the given post can be updated by the user.
-     *
-     * @param  \App\Models\User  $user
-     * @param  \App\Models\Post  $post
-     * @return \Illuminate\Auth\Access\Response
      */
-    public function update(User $user, Post $post)
+    public function update(User $user, Post $post): Response
     {
         return $user->id === $post->user_id
                     ? Response::allow()
@@ -450,12 +429,8 @@ Bởi vì ẩn resource thông qua response `404` là một hình thức phổ b
 
     /**
      * Determine if the given post can be updated by the user.
-     *
-     * @param  \App\Models\User  $user
-     * @param  \App\Models\Post  $post
-     * @return \Illuminate\Auth\Access\Response
      */
-    public function update(User $user, Post $post)
+    public function update(User $user, Post $post): Response
     {
         return $user->id === $post->user_id
                     ? Response::allow()
@@ -469,11 +444,8 @@ Một số phương thức policy chỉ nhận vào một instance của ngườ
 
     /**
      * Determine if the given user can create posts.
-     *
-     * @param  \App\Models\User  $user
-     * @return bool
      */
-    public function create(User $user)
+    public function create(User $user): bool
     {
         return $user->role == 'writer';
     }
@@ -494,14 +466,10 @@ Mặc định, tất cả các gate và policy sẽ tự động trả về `fal
     {
         /**
          * Determine if the given post can be updated by the user.
-         *
-         * @param  \App\Models\User  $user
-         * @param  \App\Models\Post  $post
-         * @return bool
          */
-        public function update(?User $user, Post $post)
+        public function update(?User $user, Post $post): bool
         {
-            return optional($user)->id === $post->user_id;
+            return $user?->id === $post->user_id;
         }
     }
 
@@ -514,21 +482,19 @@ Mặc định, tất cả các gate và policy sẽ tự động trả về `fal
 
     /**
      * Perform pre-authorization checks.
-     *
-     * @param  \App\Models\User  $user
-     * @param  string  $ability
-     * @return void|bool
      */
-    public function before(User $user, $ability)
+    public function before(User $user, string $ability): bool|null
     {
         if ($user->isAdministrator()) {
             return true;
         }
+
+        return null;
     }
 
 Nếu bạn muốn từ chối tất cả các kiểm tra authorization cho một loại người dùng cụ thể thì bạn có thể trả về `false` từ phương thức `before`. Nếu `null` được trả về, thì authorization check sẽ chuyển sang phương thức policy.
 
-> **Warning**
+> [!WARNING]
 > Phương thức `before` của policy sẽ không được gọi nếu policy đó không chứa phương thức nào mà có tên khớp với tên của hành động đang được kiểm tra.
 
 <a name="authorizing-actions-using-policies"></a>
@@ -545,24 +511,23 @@ Model `App\Models\User` đi kèm trong ứng dụng Laravel của bạn có ch�
 
     use App\Http\Controllers\Controller;
     use App\Models\Post;
+    use Illuminate\Http\RedirectResponse;
     use Illuminate\Http\Request;
 
     class PostController extends Controller
     {
         /**
          * Update the given post.
-         *
-         * @param  \Illuminate\Http\Request  $request
-         * @param  \App\Models\Post  $post
-         * @return \Illuminate\Http\Response
          */
-        public function update(Request $request, Post $post)
+        public function update(Request $request, Post $post): RedirectResponse
         {
             if ($request->user()->cannot('update', $post)) {
                 abort(403);
             }
 
             // Update the post...
+
+            return redirect('/posts');
         }
     }
 
@@ -579,23 +544,23 @@ Hãy nhớ rằng, một số hành động có thể tương ứng với các p
 
     use App\Http\Controllers\Controller;
     use App\Models\Post;
+    use Illuminate\Http\RedirectResponse;
     use Illuminate\Http\Request;
 
     class PostController extends Controller
     {
         /**
          * Create a post.
-         *
-         * @param  \Illuminate\Http\Request  $request
-         * @return \Illuminate\Http\Response
          */
-        public function store(Request $request)
+        public function store(Request $request): RedirectResponse
         {
             if ($request->user()->cannot('create', Post::class)) {
                 abort(403);
             }
 
             // Create the post...
+
+            return redirect('/posts');
         }
     }
 
@@ -612,6 +577,7 @@ Giống như phương thức `can`, phương thức này chấp nhận tên củ
 
     use App\Http\Controllers\Controller;
     use App\Models\Post;
+    use Illuminate\Http\RedirectResponse;
     use Illuminate\Http\Request;
 
     class PostController extends Controller
@@ -619,17 +585,15 @@ Giống như phương thức `can`, phương thức này chấp nhận tên củ
         /**
          * Update the given blog post.
          *
-         * @param  \Illuminate\Http\Request  $request
-         * @param  \App\Models\Post  $post
-         * @return \Illuminate\Http\Response
-         *
          * @throws \Illuminate\Auth\Access\AuthorizationException
          */
-        public function update(Request $request, Post $post)
+        public function update(Request $request, Post $post): RedirectResponse
         {
             $this->authorize('update', $post);
 
             // The current user can update the blog post...
+
+            return redirect('/posts');
         }
     }
 
@@ -639,21 +603,21 @@ Giống như phương thức `can`, phương thức này chấp nhận tên củ
 Như đã thảo luận ở phía trên, một số phương thức policy như `create` sẽ không yêu cầu một model ở tham số thứ hai. Trong những tình huống này, bạn nên truyền vào tên của một class cho phương thức `authorize`. Tên class sẽ được sử dụng để xác định policy nào sẽ được sử dụng khi authorize cho các hành động:
 
     use App\Models\Post;
+    use Illuminate\Http\RedirectResponse;
     use Illuminate\Http\Request;
 
     /**
      * Create a new blog post.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     *
      * @throws \Illuminate\Auth\Access\AuthorizationException
      */
-    public function create(Request $request)
+    public function create(Request $request): RedirectResponse
     {
         $this->authorize('create', Post::class);
 
         // The current user can create blog posts...
+
+        return redirect('/posts');
     }
 
 <a name="authorizing-resource-controllers"></a>
@@ -669,14 +633,11 @@ Phương thức `authorizeResource` sẽ nhận tên class của model làm tham
 
     use App\Http\Controllers\Controller;
     use App\Models\Post;
-    use Illuminate\Http\Request;
 
     class PostController extends Controller
     {
         /**
          * Create the controller instance.
-         *
-         * @return void
          */
         public function __construct()
         {
@@ -685,6 +646,8 @@ Phương thức `authorizeResource` sẽ nhận tên class của model làm tham
     }
 
 Các phương thức controller sau sẽ được ánh xạ tới các phương thức policy tương ứng với chúng. Khi các request được chuyển đến phương thức controller đã cho, phương thức policy tương ứng sẽ tự động được gọi trước khi phương thức controller được thực thi:
+
+<div class="overflow-auto">
 
 | Controller Method | Policy Method |
 | --- | --- |
@@ -696,7 +659,9 @@ Các phương thức controller sau sẽ được ánh xạ tới các phương 
 | update | update |
 | destroy | delete |
 
-> **Note**
+</div>
+
+> [!NOTE]
 > Bạn có thể sử dụng lệnh `make:policy` với tùy chọn `--model` để tạo nhanh một class policy cho một model nhất định: `php artisan make:policy PostPolicy --model=Post`.
 
 <a name="via-middleware"></a>
@@ -802,13 +767,8 @@ Khi authorize các action bằng policy, bạn có thể truyền một mảng l
 
     /**
      * Determine if the given post can be updated by the user.
-     *
-     * @param  \App\Models\User  $user
-     * @param  \App\Models\Post  $post
-     * @param  int  $category
-     * @return bool
      */
-    public function update(User $user, Post $post, int $category)
+    public function update(User $user, Post $post, int $category): bool
     {
         return $user->id === $post->user_id &&
                $user->canUpdateCategory($category);
@@ -819,15 +779,13 @@ Khi thử xác định xem người dùng hiện tại có thể cập nhật m�
     /**
      * Update the given blog post.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Post  $post
-     * @return \Illuminate\Http\Response
-     *
      * @throws \Illuminate\Auth\Access\AuthorizationException
      */
-    public function update(Request $request, Post $post)
+    public function update(Request $request, Post $post): RedirectResponse
     {
         $this->authorize('update', [$post, $request->category]);
 
         // The current user can update the blog post...
+
+        return redirect('/posts');
     }

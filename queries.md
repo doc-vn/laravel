@@ -41,7 +41,7 @@ Database query builder của Laravel cung cấp một interface thuận tiện, 
 
 Query builder của Laravel sử dụng tham số PDO để bảo vệ application của bạn khỏi các cuộc tấn công SQL injection. Bạn sẽ không cần phải chuẩn hoá các chuỗi trước khi truyền đến query builder dưới dạng các ràng buộc query.
 
-> **Warning**
+> [!WARNING]
 > PDO không hỗ trợ truyền tên cột dưới dạng biến. Do đó, bạn không nên cho phép người dùng nhập tên cột mà truy vấn của bạn tham chiếu, bao gồm cả cột "order by".
 
 <a name="running-database-queries"></a>
@@ -56,17 +56,15 @@ Bạn có thể sử dụng phương thức `table` được cung cấp bởi fa
 
     namespace App\Http\Controllers;
 
-    use App\Http\Controllers\Controller;
     use Illuminate\Support\Facades\DB;
+    use Illuminate\View\View;
 
     class UserController extends Controller
     {
         /**
          * Show a list of all of the application's users.
-         *
-         * @return \Illuminate\Http\Response
          */
-        public function index()
+        public function index(): View
         {
             $users = DB::table('users')->get();
 
@@ -84,7 +82,7 @@ Phương thức `get` trả về một instance `Illuminate\Support\Collection` 
         echo $user->name;
     }
 
-> **Note**
+> [!NOTE]
 > Laravel collection sẽ cung cấp nhiều phương thức cực kỳ mạnh mẽ để kết nối và giảm dữ liệu. Để biết thêm thông tin về Laravel collection, hãy xem [tài liệu về collection](/docs/{{version}}/collections).
 
 <a name="retrieving-a-single-row-column-from-a-table"></a>
@@ -130,17 +128,18 @@ Bạn có thể chỉ định cột làm khóa cho column kết quả bằng cá
 
 Nếu bạn cần làm việc với hàng ngàn bản ghi trong cơ sở dữ liệu, hãy xem xét sử dụng phương thức `chunk` được cung cấp facade `DB`. Phương thức này lấy ra một đoạn nhỏ kết quả tại một thời điểm và đưa từng đoạn đó vào một closure để xử lý. Phương thức này rất hữu ích để viết [Lệnh Artisan](/docs/{{version}}/artisan) xử lý hàng ngàn bản ghi. Ví dụ: hãy ra toàn bộ bảng `users` với số lượng khoảng 100 bản ghi cùng một lúc:
 
+    use Illuminate\Support\Collection;
     use Illuminate\Support\Facades\DB;
 
-    DB::table('users')->orderBy('id')->chunk(100, function ($users) {
+    DB::table('users')->orderBy('id')->chunk(100, function (Collection $users) {
         foreach ($users as $user) {
-            //
+            // ...
         }
     });
 
 Bạn có thể dừng xử lý các đoạn tiếp theo bằng cách trả về giá trị `false` từ closure:
 
-    DB::table('users')->orderBy('id')->chunk(100, function ($users) {
+    DB::table('users')->orderBy('id')->chunk(100, function (Collection $users) {
         // Process the records...
 
         return false;
@@ -149,7 +148,7 @@ Bạn có thể dừng xử lý các đoạn tiếp theo bằng cách trả về
 Nếu bạn đang cập nhật bản ghi cơ sở dữ liệu trong khi chunking kết quả, thì kết quả đang được chunking của bạn có thể bị thay đổi theo những cách mà bạn không mong muốn. Nếu bạn định cập nhật bản ghi đã lấy ra trong khi đang chunking, thì tốt nhất bạn nên sử dụng phương thức `chunkById`. Phương thức này sẽ tự động chunking các kết quả dựa theo khóa chính của bản ghi:
 
     DB::table('users')->where('active', false)
-        ->chunkById(100, function ($users) {
+        ->chunkById(100, function (Collection $users) {
             foreach ($users as $user) {
                 DB::table('users')
                     ->where('id', $user->id)
@@ -157,7 +156,7 @@ Nếu bạn đang cập nhật bản ghi cơ sở dữ liệu trong khi chunking
             }
         });
 
-> **Warning**
+> [!WARNING]
 > Khi cập nhật hoặc xóa các bản ghi bên trong lệnh callback của phương thức chunk, bất kỳ thay đổi nào đối với các khóa chính hoặc khóa ngoại đều có thể ảnh hưởng đến kết quả truy vấn của phương thức chunk. Điều này có thể dẫn đến việc một số bản ghi sẽ không được đưa vào bên trong kết quả chunk.
 
 <a name="streaming-results-lazily"></a>
@@ -168,8 +167,8 @@ Phương thức `lazy` hoạt động tương tự như [phương thức `chunk`
 ```php
 use Illuminate\Support\Facades\DB;
 
-DB::table('users')->orderBy('id')->lazy()->each(function ($user) {
-    //
+DB::table('users')->orderBy('id')->lazy()->each(function (object $user) {
+    // ...
 });
 ```
 
@@ -177,14 +176,14 @@ Một lần nữa, nếu bạn dự định cập nhật các bản ghi đã l�
 
 ```php
 DB::table('users')->where('active', false)
-    ->lazyById()->each(function ($user) {
+    ->lazyById()->each(function (object $user) {
         DB::table('users')
             ->where('id', $user->id)
             ->update(['active' => true]);
     });
 ```
 
-> **Warning**
+> [!WARNING]
 > Khi cập nhật hoặc xóa bản ghi trong khi lặp, thì mọi thay đổi đối với khóa chính hoặc khóa ngoại đều có thể ảnh hưởng đến truy vấn chunk. Điều này có thể dẫn đến việc các bản ghi sẽ thiếu trong kết quả.
 
 <a name="aggregates"></a>
@@ -252,7 +251,7 @@ Thỉnh thoảng bạn có thể cần chèn một chuỗi tùy ý vào trong m�
                  ->groupBy('status')
                  ->get();
 
-> **Warning**
+> [!WARNING]
 > Các câu lệnh raw sẽ được đưa vào query dưới dạng là một chuỗi, vì vậy bạn cần phải cực kỳ cẩn thận để tránh tạo ra lỗ hổng SQL injection.
 
 <a name="raw-methods"></a>
@@ -352,7 +351,7 @@ Bạn có thể dùng phương thức `crossJoin` để thực hiện một "cro
 Bạn cũng có thể khai báo các lệnh join một cách cụ thể hơn. Để bắt đầu, hãy truyền một closure làm tham số thứ hai vào phương thức `join`. closure sẽ nhận vào một instance `Illuminate\Database\Query\JoinClause` cho phép bạn khai báo các điều kiện đối với câu lệnh "join":
 
     DB::table('users')
-            ->join('contacts', function ($join) {
+            ->join('contacts', function (JoinClause $join) {
                 $join->on('users.id', '=', 'contacts.user_id')->orOn(/* ... */);
             })
             ->get();
@@ -360,7 +359,7 @@ Bạn cũng có thể khai báo các lệnh join một cách cụ thể hơn. Đ
 Nếu bạn muốn sử dụng lệnh "where" trong các lệnh join của bạn, bạn có thể sử dụng các phương thức `where` và `orWhere` được cung cấp trong instance `JoinClause`. Thay vì so sánh hai cột, các phương thức này sẽ so sánh một cột với một giá trị:
 
     DB::table('users')
-            ->join('contacts', function ($join) {
+            ->join('contacts', function (JoinClause $join) {
                 $join->on('users.id', '=', 'contacts.user_id')
                      ->where('contacts.user_id', '>', 5);
             })
@@ -377,9 +376,29 @@ Bạn có thể sử dụng các phương thức `joinSub`, `leftJoinSub` và `r
                        ->groupBy('user_id');
 
     $users = DB::table('users')
-            ->joinSub($latestPosts, 'latest_posts', function ($join) {
+            ->joinSub($latestPosts, 'latest_posts', function (JoinClause $join) {
                 $join->on('users.id', '=', 'latest_posts.user_id');
             })->get();
+
+<a name="lateral-joins"></a>
+#### Lateral Joins
+
+> [!WARNING]
+> Các lateral join hiện được hỗ trợ bởi PostgreSQL, MySQL >= 8.0.14 và SQL Server.
+
+Bạn có thể sử dụng các phương thức `joinLateral` và `leftJoinLateral` để thực hiện một "lateral join" với một truy vấn con. Mỗi phương thức này nhận vào hai tham số: một là truy vấn con và alias bảng của nó. (Các) điều kiện join phải được chỉ định trong mệnh đề `where` của truy vấn con. Lateral join sẽ được đánh giá cho từng hàng và có thể tham chiếu ra các cột bên ngoài truy vấn con.
+
+Trong ví dụ này, chúng ta sẽ lấy một collection người dùng cũng như ba bài đăng gần đây nhất của họ. Mỗi người dùng có thể tạo tối đa ba hàng trong tập kết quả: một hàng cho mỗi bài đăng blog gần đây của họ. Điều kiện join được chỉ định bằng mệnh đề `whereColumn` trong truy vấn con và tham chiếu đến row người dùng hiện tại:
+
+    $latestPosts = DB::table('posts')
+                       ->select('id as post_id', 'title as post_title', 'created_at as post_created_at')
+                       ->whereColumn('user_id', 'users.id')
+                       ->orderBy('created_at', 'desc')
+                       ->limit(3);
+
+    $users = DB::table('users')
+                ->joinLateral($latestPosts, 'latest_posts')
+                ->get();
 
 <a name="unions"></a>
 ## Union
@@ -438,7 +457,7 @@ Bạn cũng có thể truyền một mảng các điều kiện cho phương th�
         ['subscribed', '<>', '1'],
     ])->get();
 
-> **Warning**
+> [!WARNING]
 > PDO không hỗ trợ truyền tên cột dưới dạng biến. Do đó, bạn không nên cho phép người dùng nhập tên cột mà truy vấn của bạn tham chiếu, bao gồm cả cột "order by".
 
 <a name="or-where-clauses"></a>
@@ -455,7 +474,7 @@ Nếu bạn cần nhóm một điều kiện "hoặc" trong một dấu ngoặc 
 
     $users = DB::table('users')
                 ->where('votes', '>', 100)
-                ->orWhere(function($query) {
+                ->orWhere(function (Builder $query) {
                     $query->where('name', 'Abigail')
                           ->where('votes', '>', 50);
                 })
@@ -467,7 +486,7 @@ Ví dụ trên sẽ tạo ra một câu lệnh SQL như sau:
 select * from users where votes > 100 or (name = 'Abigail' and votes > 50)
 ```
 
-> **Warning**
+> [!WARNING]
 > Bạn nên nhóm các lệnh `orWhere` lại với nhau để tránh các hành vi không mong muốn khi sử dụng global scope.
 
 <a name="where-not-clauses"></a>
@@ -476,7 +495,7 @@ select * from users where votes > 100 or (name = 'Abigail' and votes > 50)
 Các phương thức `whereNot` và `orWhereNot` có thể được sử dụng để phủ định một nhóm các lệnh nhất định. Ví dụ, truy vấn sau đây bỏ qua các sản phẩm đang được thanh lý hoặc có giá dưới mười:
 
     $products = DB::table('products')
-                    ->whereNot(function ($query) {
+                    ->whereNot(function (Builder $query) {
                         $query->where('clearance', true)
                               ->orWhere('price', '<', 10);
                     })
@@ -491,7 +510,7 @@ Laravel cũng hỗ trợ truy vấn vào các cột loại JSON trên cơ sở d
                     ->where('preferences->dining->meal', 'salad')
                     ->get();
 
-Bạn có thể sử dụng `whereJsonContains` để truy vấn vào mảng JSON. Tính năng này sẽ không được hỗ trợ bởi các cơ sở dữ liệu SQLite mà có phiên bản nhỏ hơn 3.38.0:
+Bạn có thể sử dụng `whereJsonContains` để truy vấn vào mảng JSON:
 
     $users = DB::table('users')
                     ->whereJsonContains('options->languages', 'en')
@@ -578,7 +597,7 @@ select * from comments where user_id in (
 )
 ```
 
-> **Warning**
+> [!WARNING]
 > Nếu bạn đang thêm một mảng integer lớn vào truy vấn của bạn, phương thức `whereIntegerInRaw` hoặc `whereIntegerNotInRaw` có thể được sử dụng để giảm đáng kể mức sử dụng bộ nhớ của bạn.
 
 **whereNull / whereNotNull / orWhereNull / orWhereNotNull**
@@ -656,7 +675,7 @@ Thỉnhh thoảng bạn có thể cần nhóm một số lệnh "where" vào tro
 
     $users = DB::table('users')
                ->where('name', '=', 'John')
-               ->where(function ($query) {
+               ->where(function (Builder $query) {
                    $query->where('votes', '>', 100)
                          ->orWhere('title', '=', 'Admin');
                })
@@ -668,7 +687,7 @@ Như bạn có thể thấy, việc truyền một closure vào phương thức 
 select * from users where name = 'John' and (votes > 100 or title = 'Admin')
 ```
 
-> **Warning**
+> [!WARNING]
 > Bạn nên nhóm các lệnh `orWhere` lại với nhau để tránh các hành vi không mong muốn khi sử dụng global scope.
 
 <a name="advanced-where-clauses"></a>
@@ -680,14 +699,24 @@ select * from users where name = 'John' and (votes > 100 or title = 'Admin')
 Phương thức `whereExists` cho phép bạn viết các lệnh SQL "where exists". Phương thức `whereExists` chấp nhận một closure, sẽ nhận vào một instance query builder, cho phép bạn định nghĩa thêm query mà sẽ được set vào bên trong lệnh "exists":
 
     $users = DB::table('users')
-               ->whereExists(function ($query) {
+               ->whereExists(function (Builder $query) {
                    $query->select(DB::raw(1))
                          ->from('orders')
                          ->whereColumn('orders.user_id', 'users.id');
                })
                ->get();
 
-Truy vấn trên sẽ tạo ra lệnh SQL như sau:
+Ngoài ra, bạn có thể cung cấp một đối tượng truy vấn cho phương thức `whereExists` thay vì một closure:
+
+    $orders = DB::table('orders')
+                    ->select(DB::raw(1))
+                    ->whereColumn('orders.user_id', 'users.id');
+
+    $users = DB::table('users')
+                        ->whereExists($orders)
+                        ->get();
+
+Cả hai ví dụ trên sẽ tạo ra lệnh SQL như sau:
 
 ```sql
 select * from users
@@ -704,8 +733,9 @@ where exists (
 Thỉnh thoảng bạn có thể cần phải xây dựng một mệnh đề "where" so sánh kết quả của một truy vấn con với một giá trị nhất định. Bạn có thể thực hiện điều này bằng cách truyền một closure và một giá trị cho phương thức `where`. Ví dụ: truy vấn sau sẽ lấy ra tất cả người dùng gần đây nhất mà có "tư cách thành viên" của một loại nhất định;
 
     use App\Models\User;
+    use Illuminate\Database\Query\Builder;
 
-    $users = User::where(function ($query) {
+    $users = User::where(function (Builder $query) {
         $query->select('type')
             ->from('membership')
             ->whereColumn('membership.user_id', 'users.id')
@@ -716,15 +746,16 @@ Thỉnh thoảng bạn có thể cần phải xây dựng một mệnh đề "wh
 Hoặc, bạn có thể cần xây dựng một lệnh "where" để so sánh một cột với kết quả của một truy vấn con. Bạn có thể thực hiện điều này bằng cách truyền một cột, một toán tử và một closure cho phương thức `where`. Ví dụ: truy vấn sau sẽ lấy ra tất cả các bản ghi mà có thu nhập nhỏ hơn mức trung bình;
 
     use App\Models\Income;
+    use Illuminate\Database\Query\Builder;
 
-    $incomes = Income::where('amount', '<', function ($query) {
+    $incomes = Income::where('amount', '<', function (Builder $query) {
         $query->selectRaw('avg(i.amount)')->from('incomes as i');
     })->get();
 
 <a name="full-text-where-clauses"></a>
 ### Lệnh where full text
 
-> **Warning**
+> [!WARNING]
 > Lệnh where full text hiện đang được MySQL và PostgreSQL hỗ trợ.
 
 Các phương thức `whereFullText` và `orWhereFullText` có thể được sử dụng để thêm các lệnh "where" full text vào truy vấn cho các cột có [index full text](/docs/{{version}}/migrations#available-index-types). Các phương thức này sẽ được Laravel chuyển thành các câu SQL phù hợp cho hệ thống cơ sở dữ liệu. Ví dụ, một lệnh `MATCH AGAINST` sẽ được tạo cho các ứng dụng sử dụng cơ sở dữ liệu MySQL:
@@ -756,7 +787,7 @@ Phương thức `orderBy` cho phép bạn sắp xếp kết quả của truy v�
                     ->get();
 
 <a name="latest-oldest"></a>
-#### The `latest` & `oldest` Methods
+#### The `latest` và `oldest` Methods
 
 Các phương thức `latest` và `oldest` cho phép bạn dễ dàng sắp xếp kết quả theo ngày. Mặc định, kết quả sẽ được sắp xếp theo cột `created_at` của bảng. Hoặc, bạn có thể truyền vào một tên cột mà bạn muốn sắp xếp theo:
 
@@ -792,7 +823,7 @@ Bạn có thể truyền một cột và hướng sắp xếp khi gọi phương
 ### Grouping
 
 <a name="groupby-having"></a>
-#### The `groupBy` & `having` Methods
+#### The `groupBy` và `having` Methods
 
 Như bạn mong đợi, các phương thức `groupBy` và `having` có thể được sử dụng để nhóm các kết quả truy vấn. Tham số của phương thức `having` cũng tương tự như phương thức `where`:
 
@@ -822,7 +853,7 @@ Bạn cũng có thể truyền nhiều tham số vào phương thức `groupBy` 
 ### Limit và Offset
 
 <a name="skip-take"></a>
-#### The `skip` & `take` Methods
+#### The `skip` và `take` Methods
 
 Bạn có thể sử dụng phương thức `skip` và `take` để giới hạn số lượng kết quả được trả về từ một truy vấn hoặc bỏ qua một số kết quả nhất định trong truy vấn, bạn có thể sử dụng các phương thức `skip` và `take`:
 
@@ -840,10 +871,10 @@ Ngoài ra, bạn có thể sử dụng các phương thức `limit` và `offset`
 
 Thỉnh thoảng bạn cũng có thể muốn một lệnh truy vấn sẽ được áp dụng cho một truy vấn dựa trên một điều kiện nhất định. Chẳng hạn, bạn chỉ có thể muốn áp dụng câu lệnh `where` nếu giá trị input này có xuất hiện trong một HTTP request. Bạn có thể thực hiện điều này bằng cách sử dụng phương thức `when` như sau:
 
-    $role = $request->input('role');
+    $role = $request->string('role');
 
     $users = DB::table('users')
-                    ->when($role, function ($query, $role) {
+                    ->when($role, function (Builder $query, string $role) {
                         $query->where('role_id', $role);
                     })
                     ->get();
@@ -852,12 +883,12 @@ Phương thức `when` chỉ chạy closure khi tham số đầu tiên là `true
 
 Bạn có thể truyền một closure khác làm tham số thứ ba cho phương thức `when`. closure này sẽ được chạy nếu tham số đầu tiên trả về giá trị là `false`. Để minh họa cách sử dụng của tính năng này, chúng ta có thể sử dụng nó để set cách sắp xếp mặc định ở trong truy vấn:
 
-    $sortByVotes = $request->input('sort_by_votes');
+    $sortByVotes = $request->boolean('sort_by_votes');
 
     $users = DB::table('users')
-                    ->when($sortByVotes, function ($query, $sortByVotes) {
+                    ->when($sortByVotes, function (Builder $query, bool $sortByVotes) {
                         $query->orderBy('votes');
-                    }, function ($query) {
+                    }, function (Builder $query) {
                         $query->orderBy('name');
                     })
                     ->get();
@@ -903,7 +934,7 @@ Nếu bảng có set id tự động tăng, hãy sử dụng phương thức `in
         ['email' => 'john@example.com', 'votes' => 0]
     );
 
-> **Warning**
+> [!WARNING]
 > Khi sử dụng PostgreSQL, phương thức `insertGetId` này sẽ giả sử tên của cột tự động tăng là cột `id`. Nếu bạn muốn lấy ID từ một "chuỗi" khác, bạn có thể truyền vào tên cột làm tham số thứ hai cho phương thức `insertGetId`.
 
 <a name="upserts"></a>
@@ -922,7 +953,7 @@ Phương thức `upsert` sẽ thêm các bản ghi không tồn tại và cập 
 
 Trong ví dụ trên, Laravel sẽ cố gắng thêm hai bản ghi. Nếu một bản ghi đã tồn tại với cùng giá trị cột `departure` và `destination`, thì Laravel sẽ cập nhật cột `price` của bản ghi đó.
 
-> **Warning**
+> [!WARNING]
 > Tất cả các cơ sở dữ liệu ngoại trừ SQL Server đều yêu cầu các cột trong tham số thứ hai của phương thức `upsert` phải ở dạng "primary" hoặc "unique". Ngoài ra, driver cơ sở dữ liệu cũng MySQL bỏ qua tham số thứ hai của phương thức `upsert` và luôn sử dụng các "primary" và "unique" của bảng để phát hiện ra các bản ghi hiện có.
 
 <a name="update-statements"></a>
@@ -994,7 +1025,7 @@ Nếu bạn muốn truncate toàn bộ bảng, điều này sẽ xóa tất cả
     DB::table('users')->truncate();
 
 <a name="table-truncation-and-postgresql"></a>
-#### Table Truncation & PostgreSQL
+#### Table Truncation và PostgreSQL
 
 Khi truncate cơ sở dữ liệu PostgreSQL, tính năng `CASCADE` sẽ được áp dụng. Điều này có nghĩa là tất cả các bản ghi liên quan đến khóa ngoại có trong các bảng khác cũng sẽ bị xóa.
 
@@ -1023,3 +1054,9 @@ Bạn có thể sử dụng các phương thức `dd` và `dump` trong khi xây 
     DB::table('users')->where('votes', '>', 100)->dd();
 
     DB::table('users')->where('votes', '>', 100)->dump();
+
+Các phương thức `dumpRawSql` và `ddRawSql` có thể được gọi trên một truy vấn để dump ra câu lệnh SQL của truy vấn với tất cả các ràng buộc tham số đã được thay vào:
+
+    DB::table('users')->where('votes', '>', 100)->dumpRawSql();
+
+    DB::table('users')->where('votes', '>', 100)->ddRawSql();

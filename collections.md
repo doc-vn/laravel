@@ -16,9 +16,9 @@
 
 Class `Illuminate\Support\Collection` cung cấp một wrapper dễ dàng, thuận tiện để làm việc với các mảng dữ liệu. Ví dụ, hãy xem code sau đây. Chúng ta sẽ sử dụng helper `collect` để tạo ra một instance collection mới từ một mảng, và chạy hàm `strtoupper` cho mỗi phần tử và xóa đi tất cả các phần tử trống:
 
-    $collection = collect(['taylor', 'abigail', null])->map(function ($name) {
+    $collection = collect(['taylor', 'abigail', null])->map(function (?string $name) {
         return strtoupper($name);
-    })->reject(function ($name) {
+    })->reject(function (string $name) {
         return empty($name);
     });
 
@@ -31,7 +31,7 @@ Như đã đề cập ở trên, helper `collect` sẽ trả về một instance
 
     $collection = collect([1, 2, 3]);
 
-> **Note**
+> [!NOTE]
 > Kết quả của các truy vấn [Eloquent](/docs/{{version}}/eloquent) cũng luôn được trả về dưới dạng các instances `Collection`.
 
 <a name="extending-collections"></a>
@@ -43,7 +43,7 @@ Các collection là các "macroable", nên nó cho phép bạn bổ sung các ph
     use Illuminate\Support\Str;
 
     Collection::macro('toUpper', function () {
-        return $this->map(function ($value) {
+        return $this->map(function (string $value) {
             return Str::upper($value);
         });
     });
@@ -64,8 +64,8 @@ Nếu cần, bạn có thể định nghĩa các macro chấp nhận các thêm 
     use Illuminate\Support\Collection;
     use Illuminate\Support\Facades\Lang;
 
-    Collection::macro('toLocale', function ($locale) {
-        return $this->map(function ($value) use ($locale) {
+    Collection::macro('toLocale', function (string $locale) {
+        return $this->map(function (string $value) use ($locale) {
             return Lang::get($value, [], $locale);
         });
     });
@@ -112,13 +112,16 @@ Trong phần lớn tài liệu collection còn lại này, chúng ta sẽ thảo
 [dd](#method-dd)
 [diff](#method-diff)
 [diffAssoc](#method-diffassoc)
+[diffAssocUsing](#method-diffassocusing)
 [diffKeys](#method-diffkeys)
 [doesntContain](#method-doesntcontain)
+[dot](#method-dot)
 [dump](#method-dump)
 [duplicates](#method-duplicates)
 [duplicatesStrict](#method-duplicatesstrict)
 [each](#method-each)
 [eachSpread](#method-eachspread)
+[ensure](#method-ensure)
 [every](#method-every)
 [except](#method-except)
 [filter](#method-filter)
@@ -136,6 +139,7 @@ Trong phần lớn tài liệu collection còn lại này, chúng ta sẽ thảo
 [hasAny](#method-hasany)
 [implode](#method-implode)
 [intersect](#method-intersect)
+[intersectAssoc](#method-intersectAssoc)
 [intersectByKeys](#method-intersectbykeys)
 [isEmpty](#method-isempty)
 [isNotEmpty](#method-isnotempty)
@@ -161,6 +165,7 @@ Trong phần lớn tài liệu collection còn lại này, chúng ta sẽ thảo
 [only](#method-only)
 [pad](#method-pad)
 [partition](#method-partition)
+[percentage](#method-percentage)
 [pipe](#method-pipe)
 [pipeInto](#method-pipeinto)
 [pipeThrough](#method-pipethrough)
@@ -179,6 +184,7 @@ Trong phần lớn tài liệu collection còn lại này, chúng ta sẽ thảo
 [replaceRecursive](#method-replacerecursive)
 [reverse](#method-reverse)
 [search](#method-search)
+[select](#method-select)
 [shift](#method-shift)
 [shuffle](#method-shuffle)
 [skip](#method-skip)
@@ -207,8 +213,8 @@ Trong phần lớn tài liệu collection còn lại này, chúng ta sẽ thảo
 [toArray](#method-toarray)
 [toJson](#method-tojson)
 [transform](#method-transform)
-[union](#method-union)
 [undot](#method-undot)
+[union](#method-union)
 [unique](#method-unique)
 [uniqueStrict](#method-uniquestrict)
 [unless](#method-unless)
@@ -313,7 +319,7 @@ Phương thức `chunkWhile` sẽ chia collection ra thành nhiều collection n
 
     $collection = collect(str_split('AABBCCCD'));
 
-    $chunks = $collection->chunkWhile(function ($value, $key, $chunk) {
+    $chunks = $collection->chunkWhile(function (string $value, int $key, Collection $chunk) {
         return $value === $chunk->last();
     });
 
@@ -361,7 +367,7 @@ Phương thức `collect` chủ yếu hữu ích để chuyển đổi các [laz
 
     $collection = $lazyCollection->collect();
 
-    get_class($collection);
+    $collection::class;
 
     // 'Illuminate\Support\Collection'
 
@@ -369,7 +375,7 @@ Phương thức `collect` chủ yếu hữu ích để chuyển đổi các [laz
 
     // [1, 2, 3]
 
-> **Note**
+> [!NOTE]
 > Phương thức `collect` đặc biệt hữu ích khi bạn có một instance của `Enumerable` và cần một instance collection non-lazy. Vì `collect()` là một phần của contract `Enumerable` nên bạn có thể sử dụng nó một cách an toàn để lấy ra một instance `Collection`.
 
 <a name="method-combine"></a>
@@ -407,7 +413,7 @@ Phương thức `contains` sẽ xác định xem trong collection đó có chứ
 
     $collection = collect([1, 2, 3, 4, 5]);
 
-    $collection->contains(function ($value, $key) {
+    $collection->contains(function (int $value, int $key) {
         return $value > 5;
     });
 
@@ -462,7 +468,7 @@ Phương thức `containsOneItem` sẽ xác định xem collection có chứa m�
 
 Phương thức này có cùng dạng với phương thức [`contains`](#method-contains); tuy nhiên, tất cả các giá trị được so sánh đều sử dụng phép so sánh "nghiêm ngặt".
 
-> **Note**
+> [!NOTE]
 > Hành vi của phương thức này được thay đổi khi sử dụng [Eloquent Collections](/docs/{{version}}/eloquent-collections#method-contains).
 
 <a name="method-count"></a>
@@ -493,7 +499,7 @@ Nếu bạn truyền vào một closure cho phương thức `countBy`, thì nó 
 
     $collection = collect(['alice@gmail.com', 'bob@yahoo.com', 'carlos@gmail.com']);
 
-    $counted = $collection->countBy(function ($email) {
+    $counted = $collection->countBy(function (string $email) {
         return substr(strrchr($email, "@"), 1);
     });
 
@@ -573,7 +579,7 @@ Phương thức `diff` so sánh collection với một collection khác hoặc m
 
     // [1, 3, 5]
 
-> **Note**
+> [!NOTE]
 > Hành vi của phương thức này được thay đổi khi sử dụng [Eloquent Collections](/docs/{{version}}/eloquent-collections#method-diff).
 
 <a name="method-diffassoc"></a>
@@ -597,6 +603,29 @@ Phương thức `diffAssoc` so sánh collection với một collection khác ho�
     $diff->all();
 
     // ['color' => 'orange', 'remain' => 6]
+
+<a name="method-diffassocusing"></a>
+#### `diffAssocUsing()` {.collection-method}
+
+Không giống phương thức `diffAssoc`, phương thức `diffAssocUsing` sẽ chấp nhận một hàm callback do người dùng cung cấp để so sánh các chỉ số:
+
+    $collection = collect([
+        'color' => 'orange',
+        'type' => 'fruit',
+        'remain' => 6,
+    ]);
+
+    $diff = $collection->diffAssocUsing([
+        'Color' => 'yellow',
+        'Type' => 'fruit',
+        'Remain' => 3,
+    ], 'strnatcasecmp');
+
+    $diff->all();
+
+    // ['color' => 'orange', 'remain' => 6]
+
+Hàm callback phải là một hàm so sánh sẽ trả về một số nguyên nhỏ hơn, bằng, hoặc lớn hơn 0. Để biết thêm thông tin, hãy xem tài liệu PHP về phương thức [`array_diff_uassoc`](https://www.php.net/array_diff_uassoc#refsect1-function.array-diff-uassoc-parameters), đây là phương thức PHP mà phương thức `diffAssocUsing` dùng ở bên trong.
 
 <a name="method-diffkeys"></a>
 #### `diffKeys()` {.collection-method}
@@ -629,7 +658,7 @@ Phương thức `doesntContain` sẽ xác định xem collection sẽ không ch�
 
     $collection = collect([1, 2, 3, 4, 5]);
 
-    $collection->doesntContain(function ($value, $key) {
+    $collection->doesntContain(function (int $value, int $key) {
         return $value < 5;
     });
 
@@ -659,6 +688,19 @@ Bạn cũng có thể truyền một cặp key và giá trị cho phương thứ
     // true
 
 Phương thức `doesntContain` sử dụng phép so sánh "lỏng lẻo", nghĩa là một chuỗi có giá trị integer sẽ được coi là bằng với một số integer có cùng giá trị.
+
+<a name="method-dot"></a>
+#### `dot()` {.collection-method}
+
+Phương thức `dot` sẽ làm ngang hàng một collection nhiều chiều thành một collection một chiều sử dụng ký hiệu "dot" để biểu thị độ sâu:
+
+    $collection = collect(['products' => ['desk' => ['price' => 100]]]);
+
+    $flattened = $collection->dot();
+
+    $flattened->all();
+
+    // ['products.desk.price' => 100]
 
 <a name="method-dump"></a>
 #### `dump()` {.collection-method}
@@ -713,13 +755,15 @@ Phương thức này có cùng chức năng với phương thức [`duplicates`]
 
 Phương thức `each` sẽ lặp lại các item trong collection và truyền vào từng item đó một closure:
 
-    $collection->each(function ($item, $key) {
-        //
+    $collection = collect([1, 2, 3, 4]);
+
+    $collection->each(function (int $item, int $key) {
+        // ...
     });
 
 Nếu bạn muốn dừng lặp qua các item, bạn có thể trả về `false` từ closure của bạn:
 
-    $collection->each(function ($item, $key) {
+    $collection->each(function (int $item, int $key) {
         if (/* condition */) {
             return false;
         }
@@ -732,22 +776,39 @@ Phương thức `eachSpread` sẽ lặp lại các item của collection, và tr
 
     $collection = collect([['John Doe', 35], ['Jane Doe', 33]]);
 
-    $collection->eachSpread(function ($name, $age) {
-        //
+    $collection->eachSpread(function (string $name, int $age) {
+        // ...
     });
 
 Nếu bạn muốn dừng lặp qua các item còn lại, bạn có thể trả về `false` từ callback của bạn:
 
-    $collection->eachSpread(function ($name, $age) {
+    $collection->eachSpread(function (string $name, int $age) {
         return false;
     });
+
+<a name="method-ensure"></a>
+#### `ensure()` {.collection-method}
+
+Phương thức `ensure` có thể được dùng để xác nhận tất cả các element nằm trong một collection là thuộc một kiểu đã cho hoặc là nằm trong một danh sách các kiểu. Ngược lại, một `UnexpectedValueException` sẽ được đưa ra:
+
+    return $collection->ensure(User::class);
+
+    return $collection->ensure([User::class, Customer::class]);
+
+Các kiểu nguyên thuỷ như `string`, `int`, `float`, `bool`, và `array` có thể được chỉ định:
+
+
+    return $collection->ensure('int');
+
+> [!WARNING]
+> Phương thức `ensure` sẽ không xác nhận các element của các loại khác nhau mà được thêm vào collection sau đó.
 
 <a name="method-every"></a>
 #### `every()` {.collection-method}
 
 Phương thức `every` có thể được sử dụng để xác minh rằng tất cả các element của một collection có pass qua một số điều kiện đã cho hay không:
 
-    collect([1, 2, 3, 4])->every(function ($value, $key) {
+    collect([1, 2, 3, 4])->every(function (int $value, int $key) {
         return $value > 2;
     });
 
@@ -757,7 +818,7 @@ Nếu một collection là trống, thì phương thức `every` sẽ trả về
 
     $collection = collect([]);
 
-    $collection->every(function ($value, $key) {
+    $collection->every(function (int $value, int $key) {
         return $value > 2;
     });
 
@@ -778,7 +839,7 @@ Phương thức `except` trả về tất cả các item trong collection ngoạ
 
 Đối ngược với phương thức `except`, hãy xem phương thức [only](#method-only).
 
-> **Note**
+> [!NOTE]
 > Hành vi của phương thức này được thay đổi khi sử dụng [Eloquent Collections](/docs/{{version}}/eloquent-collections#method-except).
 
 <a name="method-filter"></a>
@@ -788,7 +849,7 @@ Phương thức `filter` sẽ lọc các collection bằng cách dùng một cal
 
     $collection = collect([1, 2, 3, 4]);
 
-    $filtered = $collection->filter(function ($value, $key) {
+    $filtered = $collection->filter(function (int $value, int $key) {
         return $value > 2;
     });
 
@@ -811,7 +872,7 @@ Nếu không có callback nào được cung cấp, tất cả các item trong c
 
 Phương thức `first` sẽ trả về phần tử đầu tiên có trong collection mà đã pass qua một số điều kiện đã cho:
 
-    collect([1, 2, 3, 4])->first(function ($value, $key) {
+    collect([1, 2, 3, 4])->first(function (int $value, int $key) {
         return $value > 2;
     });
 
@@ -828,7 +889,7 @@ Bạn cũng có thể gọi phương thức `first` mà không có tham số đ�
 
 Phương thức `firstOrFail` giống hệt với phương thức `first`; tuy nhiên, nếu không tìm thấy kết quả nào thì một exception `Illuminate\Support\ItemNotFoundException` sẽ được đưa ra:
 
-    collect([1, 2, 3, 4])->firstOrFail(function ($value, $key) {
+    collect([1, 2, 3, 4])->firstOrFail(function (int $value, int $key) {
         return $value > 5;
     });
 
@@ -879,7 +940,7 @@ Phương thức `flatMap` lặp qua collection và truyền từng value vào tr
         ['age' => 28]
     ]);
 
-    $flattened = $collection->flatMap(function ($values) {
+    $flattened = $collection->flatMap(function (array $values) {
         return array_map('strtoupper', $values);
     });
 
@@ -961,7 +1022,7 @@ Phương thức `forget` sẽ xóa một item ra khỏi collection bằng key c�
 
     // ['framework' => 'laravel']
 
-> **Warning**
+> [!WARNING]
 > Không giống như hầu hết các phương thức collection khác, `forget` không trả về một collection mới; mà nó sẽ sửa trực tiếp lên collection mà nó được gọi.
 
 <a name="method-forpage"></a>
@@ -1033,7 +1094,7 @@ Phương thức `groupBy` sẽ nhóm các item của collection theo một key �
 
 Thay vì truyền vào một chuỗi `key`, bạn có thể truyền vào một callback. Callback sẽ trả về giá trị key mà bạn muốn nhóm bằng cách như sau:
 
-    $grouped = $collection->groupBy(function ($item, $key) {
+    $grouped = $collection->groupBy(function (array $item, int $key) {
         return substr($item['account_id'], -3);
     });
 
@@ -1060,7 +1121,7 @@ Nếu bạn có nhiều tiêu chí nhóm, bạn có thể truyền vào dưới 
         40 => ['user' => 4, 'skill' => 2, 'roles' => ['Role_2']],
     ]);
 
-    $result = $data->groupBy(['skill', function ($item) {
+    $result = $data->groupBy(['skill', function (array $item) {
         return $item['roles'];
     }], preserveKeys: true);
 
@@ -1145,7 +1206,7 @@ Nếu collection chứa nhiều chuỗi hoặc các số đơn giản, bạn nê
 
 Bạn có thể truyền một closure cho phương thức `implode` nếu bạn muốn định dạng các giá trị được xuất ra:
 
-    $collection->implode(function ($item, $key) {
+    $collection->implode(function (array $item, int $key) {
         return strtoupper($item['product']);
     }, ', ');
 
@@ -1164,8 +1225,29 @@ Phương thức `intersect` sẽ loại bỏ bất kỳ value nào ra khỏi col
 
     // [0 => 'Desk', 2 => 'Chair']
 
-> **Note**
+> [!NOTE]
 > Hành vi của phương thức này được thay đổi khi sử dụng [Eloquent Collections](/docs/{{version}}/eloquent-collections#method-intersect).
+
+<a name="method-intersectAssoc"></a>
+#### `intersectAssoc()` {.collection-method}
+
+Phương thức `intersectAssoc` sẽ so sánh collection với một collection khác hoặc một `mảng` khác và sẽ trả về các cặp khóa và giá trị có trong tất cả các collection đã cho:
+
+    $collection = collect([
+        'color' => 'red',
+        'size' => 'M',
+        'material' => 'cotton'
+    ]);
+
+    $intersect = $collection->intersectAssoc([
+        'color' => 'blue',
+        'size' => 'M',
+        'material' => 'polyester'
+    ]);
+
+    $intersect->all();
+
+    // ['size' => 'M']
 
 <a name="method-intersectbykeys"></a>
 #### `intersectByKeys()` {.collection-method}
@@ -1236,7 +1318,7 @@ Phương thức `keyBy` sẽ key hoá collection bằng key đã cho. Nếu nhi�
 
 Bạn cũng có thể truyền vào một callback cho phương thức. Callback sẽ trả về giá trị cho key collection bằng cách như sau:
 
-    $keyed = $collection->keyBy(function ($item, $key) {
+    $keyed = $collection->keyBy(function (array $item, int $key) {
         return strtoupper($item['product_id']);
     });
 
@@ -1270,7 +1352,7 @@ Phương thức `keys` sẽ trả về tất cả các key của collection:
 
 Phương thức `last` sẽ trả về phần tử cuối cùng có trong collection nếu pass qua một số điều kiện đã cho:
 
-    collect([1, 2, 3, 4])->last(function ($value, $key) {
+    collect([1, 2, 3, 4])->last(function (int $value, int $key) {
         return $value < 3;
     });
 
@@ -1289,7 +1371,7 @@ Phương thức `lazy` sẽ trả về một instance [`LazyCollection`](#lazy-c
 
     $lazyCollection = collect([1, 2, 3, 4])->lazy();
 
-    get_class($lazyCollection);
+    $lazyCollection::class;
 
     // Illuminate\Support\LazyCollection
 
@@ -1324,7 +1406,7 @@ Phương thức `map` sẽ lặp qua collection và truyền từng item trong c
 
     $collection = collect([1, 2, 3, 4, 5]);
 
-    $multiplied = $collection->map(function ($item, $key) {
+    $multiplied = $collection->map(function (int $item, int $key) {
         return $item * 2;
     });
 
@@ -1332,7 +1414,7 @@ Phương thức `map` sẽ lặp qua collection và truyền từng item trong c
 
     // [2, 4, 6, 8, 10]
 
-> **Warning**
+> [!WARNING]
 > Giống như hầu hết các phương thức collection khác, `map` trả về một instance collection mới; nó không sửa trực tiếp vào collection mà nó được gọi. Nếu bạn muốn sửa đổi trực tiếp vào collection gốc, hãy sử dụng phương thức [`transform`](#method-transform).
 
 <a name="method-mapinto"></a>
@@ -1344,14 +1426,10 @@ Phương thức `mapInto()` sẽ lặp qua collectionp, và tạo một instance
     {
         /**
          * Create a new currency instance.
-         *
-         * @param  string  $code
-         * @return void
          */
-        function __construct(string $code)
-        {
-            $this->code = $code;
-        }
+        function __construct(
+            public string $code
+        ) {}
     }
 
     $collection = collect(['USD', 'EUR', 'GBP']);
@@ -1371,7 +1449,7 @@ Phương thức `mapSpread` sẽ lặp qua các item của collection, và truy�
 
     $chunks = $collection->chunk(2);
 
-    $sequence = $chunks->mapSpread(function ($even, $odd) {
+    $sequence = $chunks->mapSpread(function (int $even, int $odd) {
         return $even + $odd;
     });
 
@@ -1399,7 +1477,7 @@ Phương thức `mapToGroups` sẽ nhóm các item của collection theo hàm cl
         ]
     ]);
 
-    $grouped = $collection->mapToGroups(function ($item, $key) {
+    $grouped = $collection->mapToGroups(function (array $item, int $key) {
         return [$item['department'] => $item['name']];
     });
 
@@ -1434,7 +1512,7 @@ Phương thức `mapWithKeys` sẽ lặp qua collection và truyền từng item
         ]
     ]);
 
-    $keyed = $collection->mapWithKeys(function ($item, $key) {
+    $keyed = $collection->mapWithKeys(function (array $item, int $key) {
         return [$item['email'] => $item['name']];
     });
 
@@ -1593,7 +1671,7 @@ Phương thức `only` trả về các item có trong collection với một key
 
 Đối ngược với phương thức `only`, hãy xem phương thức [except](#method-except).
 
-> **Note**
+> [!NOTE]
 > Hành vi của phương thức này được thay đổi khi sử dụng [Eloquent Collections](/docs/{{version}}/eloquent-collections#method-only).
 
 <a name="method-pad"></a>
@@ -1624,7 +1702,7 @@ Phương thức `partition` có thể được kết hợp với mảng của PH
 
     $collection = collect([1, 2, 3, 4, 5, 6]);
 
-    [$underThree, $equalOrAboveThree] = $collection->partition(function ($i) {
+    [$underThree, $equalOrAboveThree] = $collection->partition(function (int $i) {
         return $i < 3;
     });
 
@@ -1636,6 +1714,27 @@ Phương thức `partition` có thể được kết hợp với mảng của PH
 
     // [3, 4, 5, 6]
 
+<a name="method-percentage"></a>
+#### `percentage()` {.collection-method}
+
+Phương thức `percentage` có thể được sử dụng để nhanh chóng xác định tỷ lệ phần trăm của các item có trong một collection mà pass qua một bài kiểm tra nhất định:
+
+```php
+$collection = collect([1, 1, 2, 2, 2, 3]);
+
+$percentage = $collection->percentage(fn ($value) => $value === 1);
+
+// 33.33
+```
+
+Mặc định, tỷ lệ phần trăm sẽ được làm tròn đến vị trí thứ hai sau phần thập phân. Tuy nhiên, bạn có thể tùy chỉnh hành vi này bằng cách cung cấp tham số thứ hai cho phương thức:
+
+```php
+$percentage = $collection->percentage(fn ($value) => $value === 1, precision: 3);
+
+// 33.333
+```
+
 <a name="method-pipe"></a>
 #### `pipe()` {.collection-method}
 
@@ -1643,7 +1742,7 @@ Phương thức `pipe` sẽ truyền collection đến một closure đã cho v�
 
     $collection = collect([1, 2, 3]);
 
-    $piped = $collection->pipe(function ($collection) {
+    $piped = $collection->pipe(function (Collection $collection) {
         return $collection->sum();
     });
 
@@ -1657,20 +1756,11 @@ Phương thức `pipeInto` sẽ tạo một instance mới của class đã cho 
     class ResourceCollection
     {
         /**
-         * The Collection instance.
-         */
-        public $collection;
-
-        /**
          * Create a new ResourceCollection instance.
-         *
-         * @param  Collection  $collection
-         * @return void
          */
-        public function __construct(Collection $collection)
-        {
-            $this->collection = $collection;
-        }
+        public function __construct(
+          public Collection $collection,
+        ) {}
     }
 
     $collection = collect([1, 2, 3]);
@@ -1686,13 +1776,15 @@ Phương thức `pipeInto` sẽ tạo một instance mới của class đã cho 
 
 Phương thức `pipeThrough` sẽ truyền toàn collection tới một mảng các closure đã cho và trả về kết quả cuối cùng sau khi thông qua các closure đó:
 
+    use Illuminate\Support\Collection;
+
     $collection = collect([1, 2, 3]);
 
     $result = $collection->pipeThrough([
-        function ($collection) {
+        function (Collection $collection) {
             return $collection->merge([4, 5]);
         },
-        function ($collection) {
+        function (Collection $collection) {
             return $collection->sum();
         },
     ]);
@@ -1875,7 +1967,9 @@ Nếu instance collection có ít item hơn yêu cầu, thì phương thức `ra
 
 Phương thức `random` cũng chấp nhận một closure, sẽ nhận vào instance collection hiện tại:
 
-    $random = $collection->random(fn ($items) => min(10, count($items)));
+    use Illuminate\Support\Collection;
+
+    $random = $collection->random(fn (Collection $items) => min(10, count($items)));
 
     $random->all();
 
@@ -1899,7 +1993,7 @@ Phương thức `reduce` sẽ biến một collection thành một giá trị du
 
     $collection = collect([1, 2, 3]);
 
-    $total = $collection->reduce(function ($carry, $item) {
+    $total = $collection->reduce(function (?int $carry, int $item) {
         return $carry + $item;
     });
 
@@ -1907,7 +2001,7 @@ Phương thức `reduce` sẽ biến một collection thành một giá trị du
 
 Giá trị cho `$carry` trong lần lặp đầu tiên là `null`; tuy nhiên, bạn có thể khai báo giá trị ban đầu của nó bằng cách truyền vào một tham số thứ hai cho `reduce`:
 
-    $collection->reduce(function ($carry, $item) {
+    $collection->reduce(function (int $carry, int $item) {
         return $carry + $item;
     }, 4);
 
@@ -1927,7 +2021,7 @@ Phương thức `reduce` cũng sẽ truyền một mảng khoá trong collection
         'eur' => 1.22,
     ];
 
-    $collection->reduce(function ($carry, $value, $key) use ($ratio) {
+    $collection->reduce(function (int $carry, int $value, int $key) use ($ratio) {
         return $carry + ($value * $ratio[$key]);
     });
 
@@ -1940,7 +2034,7 @@ Phương thức `reduceSpread` sẽ rút gọn collection thành một mảng c�
 
     [$creditsRemaining, $batch] = Image::where('status', 'unprocessed')
         ->get()
-        ->reduceSpread(function ($creditsRemaining, $batch, $image) {
+        ->reduceSpread(function (int $creditsRemaining, Collection $batch, Image $image) {
             if ($creditsRemaining >= $image->creditsRequired()) {
                 $batch->push($image);
 
@@ -1957,7 +2051,7 @@ Phương thức `reject` sẽ lọc một collection bằng cách sử dụng h�
 
     $collection = collect([1, 2, 3, 4]);
 
-    $filtered = $collection->reject(function ($value, $key) {
+    $filtered = $collection->reject(function (int $value, int $key) {
         return $value > 2;
     });
 
@@ -2044,11 +2138,32 @@ Việc tìm kiếm được thực hiện bằng cách sử dụng so sánh "l�
 
 Ngoài ra, bạn có thể cung cấp một closure của chính bạn để tìm kiếm item đầu tiên mà thoả mãn một điều kiện cụ thể:
 
-    collect([2, 4, 6, 8])->search(function ($item, $key) {
+    collect([2, 4, 6, 8])->search(function (int $item, int $key) {
         return $item > 5;
     });
 
     // 2
+
+<a name="method-select"></a>
+#### `select()` {.collection-method}
+
+Phương thức `select` sẽ lấy ra các khóa đã cho từ collection, tương tự như câu lệnh SQL `SELECT`:
+
+```php
+$users = collect([
+    ['name' => 'Taylor Otwell', 'role' => 'Developer', 'status' => 'active'],
+    ['name' => 'Victoria Faith', 'role' => 'Researcher', 'status' => 'active'],
+]);
+
+$users->select(['name', 'role']);
+
+/*
+    [
+        ['name' => 'Taylor Otwell', 'role' => 'Developer'],
+        ['name' => 'Victoria Faith', 'role' => 'Researcher'],
+    ],
+*/
+```
 
 <a name="method-shift"></a>
 #### `shift()` {.collection-method}
@@ -2110,7 +2225,7 @@ Phương thức `skipUntil` sẽ bỏ qua các item từ collection cho đến k
 
     $collection = collect([1, 2, 3, 4]);
 
-    $subset = $collection->skipUntil(function ($item) {
+    $subset = $collection->skipUntil(function (int $item) {
         return $item >= 3;
     });
 
@@ -2128,7 +2243,7 @@ Bạn cũng có thể truyền một giá trị đơn giản cho phương thức
 
     // [3, 4]
 
-> **Warning**
+> [!WARNING]
 > Nếu giá trị đã cho không được tìm thấy hoặc lệnh callback không trả về giá trị `true`, thì phương thức `skipUntil` sẽ trả về một collection trống.
 
 <a name="method-skipwhile"></a>
@@ -2138,7 +2253,7 @@ Phương thức `skipWhile` sẽ bỏ qua các item từ collection cho đến k
 
     $collection = collect([1, 2, 3, 4]);
 
-    $subset = $collection->skipWhile(function ($item) {
+    $subset = $collection->skipWhile(function (int $item) {
         return $item <= 3;
     });
 
@@ -2146,7 +2261,7 @@ Phương thức `skipWhile` sẽ bỏ qua các item từ collection cho đến k
 
     // [4]
 
-> **Warning**
+> [!WARNING]
 > Nếu lệnh callback của bạn không trả về giá trị `false`, thì phương thức `skipWhile` sẽ trả về một collection trống.
 
 <a name="method-slice"></a>
@@ -2187,7 +2302,7 @@ Phương thức `sliding` sẽ trả về một collection với các đoạn m�
 
 Điều này đặc biệt hữu ích khi kết hợp với phương thức [`eachSpread`](#method-eachspread):
 
-    $transactions->sliding(2)->eachSpread(function ($previous, $current) {
+    $transactions->sliding(2)->eachSpread(function (Collection $previous, Collection $current) {
         $current->total = $previous->total + $current->amount;
     });
 
@@ -2206,7 +2321,7 @@ Bạn có thể tùy chọn truyền một giá trị "step" thứ hai vào phư
 
 Phương thức `sole` sẽ trả về phần tử đầu tiên trong collection mà đã pass qua một kiểm tra giá trị nhất định, nhưng chỉ khi kiểm tra giá trị đó đúng hoàn toàn với một phần tử đã cho:
 
-    collect([1, 2, 3, 4])->sole(function ($value, $key) {
+    collect([1, 2, 3, 4])->sole(function (int $value, int $key) {
         return $value === 2;
     });
 
@@ -2255,7 +2370,7 @@ Phương thức `sort` sẽ giúp sắp xếp collection. Collection được s�
 
 Nếu bạn cần xắp sếp nâng cao hơn, bạn có thể truyền vào một callback tới `sort` bằng một thuật toán của riêng bạn. Tham khảo tài liệu PHP về [`uasort`](https://secure.php.net/manual/en/function.uasort.php#refsect1-function.uasort-parameters), chi tiết hơn thì đây là phương thức mà phương thức `sort` của collection sẽ gọi tới trong nội bộ.
 
-> **Note**
+> [!NOTE]
 > Nếu bạn cần sắp xếp một collection là các mảng hoặc các object lồng nhau, hãy xem thêm các phương thức [`sortBy`](#method-sortby) và [`sortByDesc`](#method-sortbydesc).
 
 <a name="method-sortby"></a>
@@ -2309,7 +2424,7 @@ Ngoài ra, bạn có thể truyền vào một closure của bạn để xác đ
         ['name' => 'Bookcase', 'colors' => ['Red', 'Beige', 'Brown']],
     ]);
 
-    $sorted = $collection->sortBy(function ($product, $key) {
+    $sorted = $collection->sortBy(function (array $product, int $key) {
         return count($product['colors']);
     });
 
@@ -2358,8 +2473,8 @@ Khi sắp xếp một collection theo nhiều thuộc tính, bạn cũng có th�
     ]);
 
     $sorted = $collection->sortBy([
-        fn ($a, $b) => $a['name'] <=> $b['name'],
-        fn ($a, $b) => $b['age'] <=> $a['age'],
+        fn (array $a, array $b) => $a['name'] <=> $b['name'],
+        fn (array $a, array $b) => $b['age'] <=> $a['age'],
     ]);
 
     $sorted->values()->all();
@@ -2545,7 +2660,7 @@ Ngoài ra, bạn có thể truyền vào một closure của chính bạn để 
         ['name' => 'Bookcase', 'colors' => ['Red', 'Beige', 'Brown']],
     ]);
 
-    $collection->sum(function ($product) {
+    $collection->sum(function (array $product) {
         return count($product['colors']);
     });
 
@@ -2581,7 +2696,7 @@ Phương thức `takeUntil` sẽ trả về các item có trong collection cho �
 
     $collection = collect([1, 2, 3, 4]);
 
-    $subset = $collection->takeUntil(function ($item) {
+    $subset = $collection->takeUntil(function (int $item) {
         return $item >= 3;
     });
 
@@ -2599,7 +2714,7 @@ Bạn cũng có thể truyền vào một giá trị đơn giản cho phương t
 
     // [1, 2]
 
-> **Warning**
+> [!WARNING]
 > Nếu giá trị đã cho không được tìm thấy hoặc lệnh callback không trả về giá trị `true`, thì phương thức `takeUntil` sẽ trả về một collection trống.
 
 <a name="method-takewhile"></a>
@@ -2609,7 +2724,7 @@ Phương thức `takeWhile` sẽ trả về các item có trong collection cho �
 
     $collection = collect([1, 2, 3, 4]);
 
-    $subset = $collection->takeWhile(function ($item) {
+    $subset = $collection->takeWhile(function (int $item) {
         return $item < 3;
     });
 
@@ -2617,7 +2732,7 @@ Phương thức `takeWhile` sẽ trả về các item có trong collection cho �
 
     // [1, 2]
 
-> **Warning**
+> [!WARNING]
 > Nếu lệnh callback của bạn không trả về `false`, thì phương thức `takeWhile` sẽ trả về tất cả các item có trong collection đó.
 
 <a name="method-tap"></a>
@@ -2627,7 +2742,7 @@ Phương thức `tap` sẽ truyền collection đến một callback đã cho, c
 
     collect([2, 4, 3, 1, 5])
         ->sort()
-        ->tap(function ($collection) {
+        ->tap(function (Collection $collection) {
             Log::debug('Values after sorting', $collection->values()->all());
         })
         ->shift();
@@ -2639,7 +2754,7 @@ Phương thức `tap` sẽ truyền collection đến một callback đã cho, c
 
 Phương thức tĩnh `times` sẽ tạo ra một collection mới bằng cách gọi hàm closure đã cho với một số lần đã được chỉ định:
 
-    $collection = Collection::times(10, function ($number) {
+    $collection = Collection::times(10, function (int $number) {
         return $number * 9;
     });
 
@@ -2662,7 +2777,7 @@ Phương thức `toArray` sẽ chuyển đổi collection thành một PHP `arra
         ]
     */
 
-> **Warning**
+> [!WARNING]
 > `toArray` cũng sẽ chuyển đổi tất cả các đối tượng `Arrayable` có trong collection thành một mảng kể cả các đối tượng nằm sâu bên trong mảng. Nếu bạn muốn lấy một mảng thô của collection, bạn có thể sử dụng phương thức [`all`](#method-all).
 
 <a name="method-tojson"></a>
@@ -2683,7 +2798,7 @@ Phương thức `Transform` sẽ lặp collection và gọi hàm callback đã c
 
     $collection = collect([1, 2, 3, 4, 5]);
 
-    $collection->transform(function ($item, $key) {
+    $collection->transform(function (int $item, int $key) {
         return $item * 2;
     });
 
@@ -2691,7 +2806,7 @@ Phương thức `Transform` sẽ lặp collection và gọi hàm callback đã c
 
     // [2, 4, 6, 8, 10]
 
-> **Warning**
+> [!WARNING]
 > Không giống như hầu hết các phương thức collection khác, `transform` sẽ trực tiếp sửa vào collection. Nếu bạn muốn tạo một collection mới, hãy sử dụng phương thức [`map`](#method-map).
 
 <a name="method-undot"></a>
@@ -2778,7 +2893,7 @@ Khi xử lý các mảng hoặc các đối tượng lồng nhau, bạn có th�
 
 Cuối cùng, bạn cũng có thể truyền một closure của bạn cho phương thức `unique` để chỉ định xem giá trị nào sẽ được định nghĩa là tính duy nhất của một item:
 
-    $unique = $collection->unique(function ($item) {
+    $unique = $collection->unique(function (array $item) {
         return $item['brand'].$item['type'];
     });
 
@@ -2795,7 +2910,7 @@ Cuối cùng, bạn cũng có thể truyền một closure của bạn cho phư�
 
 Phương thức `unique` sử dụng các phép so sánh "lỏng lẻo" khi kiểm tra các giá trị item, nghĩa là một chuỗi có giá trị integer sẽ được coi là bằng với một số integer có cùng giá trị. Sử dụng phương thức [`uniqueStrict`](#method-uniquestrict) để lọc bằng các so sánh "nghiêm ngặt".
 
-> **Note**
+> [!NOTE]
 > Hành vi của phương thức này được thay đổi khi sử dụng [Eloquent Collections](/docs/{{version}}/eloquent-collections#method-unique).
 
 <a name="method-uniquestrict"></a>
@@ -2810,11 +2925,11 @@ Phương thức `unless` sẽ chạy hàm callback đã cho nếu như tham số
 
     $collection = collect([1, 2, 3]);
 
-    $collection->unless(true, function ($collection) {
+    $collection->unless(true, function (Collection $collection) {
         return $collection->push(4);
     });
 
-    $collection->unless(false, function ($collection) {
+    $collection->unless(false, function (Collection $collection) {
         return $collection->push(5);
     });
 
@@ -2826,9 +2941,9 @@ Callback thứ hai có thể được truyền đến phương thức `unless`. 
 
     $collection = collect([1, 2, 3]);
 
-    $collection->unless(true, function ($collection) {
+    $collection->unless(true, function (Collection $collection) {
         return $collection->push(4);
-    }, function ($collection) {
+    }, function (Collection $collection) {
         return $collection->push(5);
     });
 
@@ -2907,11 +3022,11 @@ Phương thức `when` sẽ chạy callback đã cho khi mà tham số đầu ti
 
     $collection = collect([1, 2, 3]);
 
-    $collection->when(true, function ($collection, $value) {
+    $collection->when(true, function (Collection $collection, int $value) {
         return $collection->push(4);
     });
 
-    $collection->when(false, function ($collection, $value) {
+    $collection->when(false, function (Collection $collection, int $value) {
         return $collection->push(5);
     });
 
@@ -2923,9 +3038,9 @@ Callback thứ hai có thể được truyền đến phương thức `when`. Ca
 
     $collection = collect([1, 2, 3]);
 
-    $collection->when(false, function ($collection, $value) {
+    $collection->when(false, function (Collection $collection, int $value) {
         return $collection->push(4);
-    }, function ($collection) {
+    }, function (Collection $collection) {
         return $collection->push(5);
     });
 
@@ -2942,7 +3057,7 @@ Phương thức `whenEmpty` sẽ thực hiện lệnh callback đã cho khi coll
 
     $collection = collect(['Michael', 'Tom']);
 
-    $collection->whenEmpty(function ($collection) {
+    $collection->whenEmpty(function (Collection $collection) {
         return $collection->push('Adam');
     });
 
@@ -2953,7 +3068,7 @@ Phương thức `whenEmpty` sẽ thực hiện lệnh callback đã cho khi coll
 
     $collection = collect();
 
-    $collection->whenEmpty(function ($collection) {
+    $collection->whenEmpty(function (Collection $collection) {
         return $collection->push('Adam');
     });
 
@@ -2965,9 +3080,9 @@ Closure thứ hai có thể được truyền đến phương thức `whenEmpty`
 
     $collection = collect(['Michael', 'Tom']);
 
-    $collection->whenEmpty(function ($collection) {
+    $collection->whenEmpty(function (Collection $collection) {
         return $collection->push('Adam');
-    }, function ($collection) {
+    }, function (Collection $collection) {
         return $collection->push('Taylor');
     });
 
@@ -2984,7 +3099,7 @@ Phương thức `whenNotEmpty` sẽ thực hiện lệnh callback đã cho khi c
 
     $collection = collect(['michael', 'tom']);
 
-    $collection->whenNotEmpty(function ($collection) {
+    $collection->whenNotEmpty(function (Collection $collection) {
         return $collection->push('adam');
     });
 
@@ -2995,7 +3110,7 @@ Phương thức `whenNotEmpty` sẽ thực hiện lệnh callback đã cho khi c
 
     $collection = collect();
 
-    $collection->whenNotEmpty(function ($collection) {
+    $collection->whenNotEmpty(function (Collection $collection) {
         return $collection->push('adam');
     });
 
@@ -3007,9 +3122,9 @@ Closure thứ hai có thể được truyền đến phương thức `whenNotEmp
 
     $collection = collect();
 
-    $collection->whenNotEmpty(function ($collection) {
+    $collection->whenNotEmpty(function (Collection $collection) {
         return $collection->push('adam');
-    }, function ($collection) {
+    }, function (Collection $collection) {
         return $collection->push('taylor');
     });
 
@@ -3304,7 +3419,7 @@ Tương tự, chúng ta có thể sử dụng higher order message `sum` để t
 <a name="lazy-collection-introduction"></a>
 ### Giới thiệu
 
-> **Warning**
+> [!WARNING]
 > Trước khi tìm hiểu thêm về lazy collection của Laravel, hãy dành chút thời gian để làm quen với [PHP generators](https://www.php.net/manual/en/language.generators.overview.php).
 
 Để bổ sung cho class `Collection` vốn đã mạnh mẽ, class `LazyCollection` sử dụng [generators](https://www.php.net/manual/en/language.generators.overview.php) của PHP để cho phép bạn làm việc với bộ dữ liệu rất lớn trong khi vẫn giữ mức sử dụng bộ nhớ thấp.
@@ -3320,7 +3435,7 @@ Ví dụ: hãy tưởng tượng ứng dụng của bạn cần xử lý file lo
         while (($line = fgets($handle)) !== false) {
             yield $line;
         }
-    })->chunk(4)->map(function ($lines) {
+    })->chunk(4)->map(function (array $lines) {
         return LogEntry::fromLines($lines);
     })->each(function (LogEntry $logEntry) {
         // Process the log entry...
@@ -3330,7 +3445,7 @@ Hoặc, hãy tưởng tượng bạn cần lặp 10.000 model Eloquent. Khi sử
 
     use App\Models\User;
 
-    $users = User::all()->filter(function ($user) {
+    $users = User::all()->filter(function (User $user) {
         return $user->id > 500;
     });
 
@@ -3338,7 +3453,7 @@ Tuy nhiên, phương thức `cursor` của query builder sẽ trả về một i
 
     use App\Models\User;
 
-    $users = User::cursor()->filter(function ($user) {
+    $users = User::cursor()->filter(function (User $user) {
         return $user->id > 500;
     });
 
@@ -3419,6 +3534,7 @@ Hầu như tất cả các phương thức có sẵn trên class `Collection` c�
 [has](#method-has)
 [implode](#method-implode)
 [intersect](#method-intersect)
+[intersectAssoc](#method-intersectAssoc)
 [intersectByKeys](#method-intersectbykeys)
 [isEmpty](#method-isempty)
 [isNotEmpty](#method-isnotempty)
@@ -3494,7 +3610,7 @@ Hầu như tất cả các phương thức có sẵn trên class `Collection` c�
 
 </div>
 
-> **Warning**
+> [!WARNING]
 > Các phương thức làm thay đổi collection (chẳng hạn như `shift`,` pop`, `prepend`, vv.) **không** có sẵn trên class `LazyCollection`.
 
 <a name="lazy-collection-methods"></a>
@@ -3510,7 +3626,7 @@ Phương thức `takeUntilTimeout` sẽ trả về một lazy collection mới v
     $lazyCollection = LazyCollection::times(INF)
         ->takeUntilTimeout(now()->addMinute());
 
-    $lazyCollection->each(function ($number) {
+    $lazyCollection->each(function (int $number) {
         dump($number);
 
         sleep(1);
@@ -3531,7 +3647,7 @@ Phương thức `takeUntilTimeout` sẽ trả về một lazy collection mới v
         ->takeUntilTimeout(
             Carbon::createFromTimestamp(LARAVEL_START)->add(14, 'minutes')
         )
-        ->each(fn ($invoice) => $invoice->submit());
+        ->each(fn (Invoice $invoice) => $invoice->submit());
 
 <a name="method-tapEach"></a>
 #### `tapEach()` {.collection-method}
@@ -3539,7 +3655,7 @@ Phương thức `takeUntilTimeout` sẽ trả về một lazy collection mới v
 Trong khi phương thức `each` gọi lệnh callback đã cho cho từng item có trong collection ngay lập tức, thì phương thức` tapEach` chỉ gọi lệnh callback đã cho cho một item được lấy ra khỏi danh sách:
 
     // Nothing has been dumped so far...
-    $lazyCollection = LazyCollection::times(INF)->tapEach(function ($value) {
+    $lazyCollection = LazyCollection::times(INF)->tapEach(function (int $value) {
         dump($value);
     });
 

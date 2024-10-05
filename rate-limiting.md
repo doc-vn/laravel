@@ -11,7 +11,7 @@
 
 Laravel có chứa một abstraction giới hạn tỷ lệ dễ sử dụng, kết hợp với [cache](cache) của ứng dụng của bạn, cung cấp một cách dễ dàng để giới hạn bất kỳ hành động nào trong một khoảng thời gian nhất định.
 
-> **Note**
+> [!NOTE]
 > Nếu bạn quan tâm đến việc giới hạn tỷ lệ các request HTTP, vui lòng tham khảo [tài liệu về middleware giới hạn tỷ lệ](routing#rate-limiting).
 
 <a name="cache-configuration"></a>
@@ -44,6 +44,17 @@ Phương thức `attempt` sẽ trả về `false` khi lệnh callback không cò
       return 'Too many messages sent!';
     }
 
+Nếu cần, bạn có thể cung cấp thêm tham số thứ tư cho phương thức `attempt`, đó là "thời gian reset", hoặc là số giây mà các lần thử sẽ được reset lại khi chúng thử xong. Ví dụ, chúng ta có thể sửa ví dụ trên để cho phép chạy năm lần thử sau mỗi hai phút:
+
+    $executed = RateLimiter::attempt(
+        'send-message:'.$user->id,
+        $perTwoMinutes = 5,
+        function() {
+            // Send message...
+        },
+        $decayRate = 120,
+    );
+
 <a name="manually-incrementing-attempts"></a>
 ### Tự tăng số lần thử
 
@@ -55,15 +66,23 @@ Nếu bạn muốn tương tác thủ công với bộ giới hạn tỷ lệ, t
         return 'Too many attempts!';
     }
 
-Ngoài ra, bạn có thể sử dụng phương thức `remaining` để lấy ra số lần thử còn lại cho một khóa nhất định. Nếu một khóa nhất định còn số lần thử lại, bạn có thể gọi phương thức `hit` để tăng tổng số lần thử:
+    RateLimiter::increment('send-message:'.$user->id);
+
+    // Send message...
+
+Ngoài ra, bạn có thể sử dụng phương thức `remaining` để lấy ra số lần thử còn lại cho một khóa nhất định. Nếu một khóa nhất định còn số lần thử lại, bạn có thể gọi phương thức `increment` để tăng tổng số lần thử:
 
     use Illuminate\Support\Facades\RateLimiter;
 
     if (RateLimiter::remaining('send-message:'.$user->id, $perMinute = 5)) {
-        RateLimiter::hit('send-message:'.$user->id);
+        RateLimiter::increment('send-message:'.$user->id);
 
         // Send message...
     }
+
+If you would like to increment the value for a given rate limiter key by more than one, you may provide the desired amount to the `increment` method:
+
+    RateLimiter::increment('send-message:'.$user->id, amount: 5);
 
 <a name="determining-limiter-availability"></a>
 #### Determining Limiter Availability
@@ -78,6 +97,10 @@ Khi một khóa không còn lần thử nào nữa, phương thức `availableIn
         return 'You may try again in '.$seconds.' seconds.';
     }
 
+    RateLimiter::increment('send-message:'.$user->id);
+
+    // Send message...
+
 <a name="clearing-attempts"></a>
 ### Xoá số lần thử
 
@@ -88,11 +111,8 @@ Bạn có thể set lại số lần thử cho một khóa giới hạn tỷ l�
 
     /**
      * Mark the message as read.
-     *
-     * @param  \App\Models\Message  $message
-     * @return \App\Models\Message
      */
-    public function read(Message $message)
+    public function read(Message $message): Message
     {
         $message->markAsRead();
 

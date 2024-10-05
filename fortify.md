@@ -32,7 +32,7 @@
 
 Vì Fortify không cung cấp fontend, nên bạn cần nối giao diện người dùng của bạn với các route mà Fortify đã đăng ký. Chúng ta sẽ thảo luận chính xác cách thực hiện các request cho các route này trong phần còn lại của tài liệu này.
 
-> **Note**
+> [!NOTE]
 > Hãy nhớ rằng, Fortify là một package giúp bạn triển khai các chức năng xác thực của Laravel. **Bạn không bắt buộc phải sử dụng nó.** Bạn có thể tương tác với các service xác thực của Laravel bằng cách làm theo tài liệu có sẵn trong [authentication](/docs/{{version}}/authentication), [reset password](/docs/{{version}}/passwords), và [xác minh email](/docs/{{version}}/verification).
 
 <a name="what-is-fortify"></a>
@@ -58,7 +58,7 @@ Nếu bạn chọn cài đặt Fortify, thì giao diện người dùng của b�
 Nếu bạn chọn làm thủ công với các service xác thực của Laravel thay vì sử dụng Fortify, bạn có thể làm như vậy bằng cách làm theo tài liệu có sẵn trong [authentication](/docs/{{version}}/authentication), [reset password](/docs/{{version}}/passwords), và [xác minh email](/docs/{{version}}/verification).
 
 <a name="laravel-fortify-and-laravel-sanctum"></a>
-#### Laravel Fortify & Laravel Sanctum
+#### Laravel Fortify và Laravel Sanctum
 
 Có một số nhà phát triển trở nên bối rối về sự khác biệt giữa [Laravel Sanctum](/docs/{{version}}/sanctum) và Laravel Fortify. Vì hai package này giải quyết hai vấn đề khác nhau nhưng có liên quan với nhau nên Laravel Fortify và Laravel Sanctum không phải là các package cạnh tranh hoặc loại trừ lẫn nhau.
 
@@ -119,7 +119,7 @@ Mặc định, Fortify sẽ định nghĩa các route nhằm return về view, c
 ```
 
 <a name="disabling-views-and-password-reset"></a>
-#### Disabling Views & Password Reset
+#### Disabling Views và Password Reset
 
 Nếu bạn chọn tắt view của Fortify và bạn muốn làm tính năng set lại mật khẩu cho ứng dụng của bạn, thì bạn vẫn nên định nghĩa route có tên là `password.reset` chịu trách nhiệm hiển thị view "set lại mật khẩu" của ứng dụng. Điều này là cần thiết vì notification `Illuminate\Auth\Notifications\ResetPassword` của Laravel sẽ tạo ra URL set lại mật khẩu thông qua route có tên `password.reset`.
 
@@ -134,10 +134,8 @@ Tất cả logic rendering của view xác thực có thể được tùy chỉn
 
     /**
      * Bootstrap any application services.
-     *
-     * @return void
      */
-    public function boot()
+    public function boot(): void
     {
         Fortify::loginView(function () {
             return view('auth.login');
@@ -167,10 +165,8 @@ use Laravel\Fortify\Fortify;
 
 /**
  * Bootstrap any application services.
- *
- * @return void
  */
-public function boot()
+public function boot(): void
 {
     Fortify::authenticateUsing(function (Request $request) {
         $user = User::where('email', $request->email)->first();
@@ -229,10 +225,8 @@ use Laravel\Fortify\Contracts\LogoutResponse;
 
 /**
  * Register any application services.
- *
- * @return void
  */
-public function register()
+public function register(): void
 {
     $this->app->instance(LogoutResponse::class, new class implements LogoutResponse {
         public function toResponse($request)
@@ -334,10 +328,8 @@ use Laravel\Fortify\Fortify;
 
 /**
  * Bootstrap any application services.
- *
- * @return void
  */
-public function boot()
+public function boot(): void
 {
     Fortify::twoFactorChallengeView(function () {
         return view('auth.two-factor-challenge');
@@ -370,10 +362,8 @@ use Laravel\Fortify\Fortify;
 
 /**
  * Bootstrap any application services.
- *
- * @return void
  */
-public function boot()
+public function boot(): void
 {
     Fortify::registerView(function () {
         return view('auth.register');
@@ -411,10 +401,8 @@ use Laravel\Fortify\Fortify;
 
 /**
  * Bootstrap any application services.
- *
- * @return void
  */
-public function boot()
+public function boot(): void
 {
     Fortify::requestPasswordResetLinkView(function () {
         return view('auth.forgot-password');
@@ -433,7 +421,9 @@ URI `/forgot-password` yêu cầu một trường chuỗi `email`. Tên của tr
 
 Nếu request set lại mật khẩu thành công, Fortify sẽ chuyển hướng người dùng quay trở lại URI `/forgot-password` và gửi email cho người dùng bằng link an toàn mà người dùng có thể sử dụng nó để set lại mật khẩu của họ. Nếu request là request XHR, thì phản hồi 200 HTTP sẽ được trả về.
 
-Sau khi được chuyển hướng trở lại URI `/forgot-password` sau khi request thành công, biến session `status` có thể được sử dụng để hiển thị trạng thái của quá trình request set lại mật khẩu này. Giá trị của biến session này sẽ khớp với một trong các chuỗi được translation được định nghĩa trong [file ngôn ngữ](/docs/{{version}}/localization) `password` của ứng dụng của bạn:
+Sau khi được chuyển hướng trở lại URI `/forgot-password` sau khi request thành công, biến session `status` có thể được sử dụng để hiển thị trạng thái của quá trình request set lại mật khẩu này.
+
+Giá trị của biến session `$status` sẽ giống với một trong các chuỗi được translation được định nghĩa trong [file ngôn ngữ](/docs/{{version}}/localization) `password` của ứng dụng của bạn. Nếu bạn muốn tùy chỉnh giá trị này và không muốn publish các file ngôn ngữ của Laravel, bạn có thể thực hiện thông qua lệnh Artisan `lang:publish`:
 
 ```html
 @if (session('status'))
@@ -454,15 +444,14 @@ Tất cả logic tạo view của Fortify có thể được tùy chỉnh bằng
 
 ```php
 use Laravel\Fortify\Fortify;
+use Illuminate\Http\Request;
 
 /**
  * Bootstrap any application services.
- *
- * @return void
  */
-public function boot()
+public function boot(): void
 {
-    Fortify::resetPasswordView(function ($request) {
+    Fortify::resetPasswordView(function (Request $request) {
         return view('auth.reset-password', ['request' => $request]);
     });
 
@@ -510,10 +499,8 @@ use Laravel\Fortify\Fortify;
 
 /**
  * Bootstrap any application services.
- *
- * @return void
  */
-public function boot()
+public function boot(): void
 {
     Fortify::verifyEmailView(function () {
         return view('auth.verify-email');
@@ -567,10 +554,8 @@ use Laravel\Fortify\Fortify;
 
 /**
  * Bootstrap any application services.
- *
- * @return void
  */
-public function boot()
+public function boot(): void
 {
     Fortify::confirmPasswordView(function () {
         return view('auth.confirm-password');

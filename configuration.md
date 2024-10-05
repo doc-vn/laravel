@@ -33,6 +33,12 @@ Nếu bạn chỉ quan tâm đến một phần của kết quả tổng quan tr
 php artisan about --only=environment
 ```
 
+Hoặc, để xem chi tiết hơn các giá trị của file cấu hình, bạn có thể sử dụng lệnh Artisan `config:show`:
+
+```shell
+php artisan config:show database
+```
+
 <a name="environment-configuration"></a>
 ## Biến môi trường
 
@@ -44,7 +50,7 @@ File `.env` mặc định của Laravel có chứa một số giá trị cấu h
 
 Nếu bạn đang phát triển cùng với một team, bạn nên thêm file `.env.example` vào trong project của bạn, sau đó, thêm cái giá trị ví dụ vào trong file `.env.example`, các nhà phát triển tiếp theo sẽ hiểu rõ ràng hơn về các biến môi trường cần được cài đặt để chạy application của bạn.
 
-> **Note**
+> [!NOTE]
 > Tất cả các biến trong file `.env` có thể bị ghi đè bởi biến môi trường bên ngoài như là biến môi trường server hoặc system.
 
 <a name="environment-file-security"></a>
@@ -109,7 +115,7 @@ Bạn cũng có thể truyền vào hàm `environment` tên của một môi tr�
         // Môi trường hiện tại có thể là local hoặc staging
     }
 
-> **Note**
+> [!NOTE]
 > Môi trường hiện tại của application có thể bị ghi đè bởi một biến môi trường `APP_ENV` khác ở mức độ server.
 
 <a name="encrypting-environment-files"></a>
@@ -132,7 +138,7 @@ Việc chạy lệnh `env:encrypt` sẽ mã hóa file `.env` của bạn và lư
 php artisan env:encrypt --key=3UVsEgGVK36XN82KKeyLFMhvosbZN1aF
 ```
 
-> **Note**
+> [!NOTE]
 > Độ dài của khóa được cung cấp phải giống với độ dài khóa mà cipher mã hóa đang được sử dụng yêu cầu. Mặc định, Laravel sẽ sử dụng cipher `AES-256-CBC` yêu cầu khóa gồm 32 ký tự. Bạn có thể tự do sử dụng bất kỳ cipher nào được hỗ trợ bởi [encrypter](/docs/{{version}}/encryption) của Laravel bằng cách truyền tùy chọn `--cipher` khi gọi lệnh.
 
 Nếu ứng dụng của bạn có nhiều file môi trường, chẳng hạn như `.env` và `.env.staging`, bạn có thể chỉ định file môi trường cần được mã hóa bằng cách cung cấp tên môi trường thông qua tùy chọn `--env`:
@@ -179,16 +185,30 @@ php artisan env:decrypt --force
 <a name="accessing-configuration-values"></a>
 ## Nhận về biến config
 
-Bạn có thể dễ dàng gọi biến mà bạn đã cấu hình bằng hàm `config` từ mọi nơi trong application của bạn. Giá trị config có thể được gọi thông qua dấu "chấm", nó sẽ chứa tên file config và tên biến mà bạn muốn nhận về. Và bạn cũng có thể tạo một giá trị mặc định, nếu giá trị config đó không tồn tại:
+Bạn có thể dễ dàng gọi biến mà bạn đã cấu hình bằng facade `Config` hoặc hàm `config` từ mọi nơi trong application của bạn. Giá trị config có thể được gọi thông qua dấu "chấm", nó sẽ chứa tên file config và tên biến mà bạn muốn nhận về. Và bạn cũng có thể tạo một giá trị mặc định, nếu giá trị config đó không tồn tại:
+
+    use Illuminate\Support\Facades\Config;
+
+    $value = Config::get('app.timezone');
 
     $value = config('app.timezone');
 
     // Retrieve a default value if the configuration value does not exist...
     $value = config('app.timezone', 'Asia/Seoul');
 
-Để tạo một giá trị config khi đang chạy, bạn có thể truyền một array vào hàm `config`:
+Để tạo một giá trị config khi đang chạy, bạn có thể gọi phương thức set của facade `Config` hoặc truyền một array vào hàm `config`:
+
+    Config::set('app.timezone', 'America/Chicago');
 
     config(['app.timezone' => 'America/Chicago']);
+
+Để hỗ trợ phân tích dữ liệu static, facade `Config` cũng cung cấp các phương thức lấy ra cấu hình theo loại. Nếu giá trị cấu hình được lấy ra không khớp với loại được chỉ định, một ngoại lệ sẽ được đưa ra:
+
+    Config::string('config-key');
+    Config::integer('config-key');
+    Config::float('config-key');
+    Config::boolean('config-key');
+    Config::array('config-key');
 
 <a name="configuration-caching"></a>
 ## Caching các biến config
@@ -197,13 +217,17 @@ Bạn có thể dễ dàng gọi biến mà bạn đã cấu hình bằng hàm `
 
 Thông thường, bạn nên chạy lệnh `php artisan config:cache` như một phần của quy trình deploy production. Không nên chạy lệnh này trong quá trình phát triển local vì các tùy chọn cấu hình này sẽ thường xuyên phải thay đổi trong quá trình phát triển ứng dụng của bạn.
 
+Sau khi cấu hình đã được lưu vào bộ nhớ cache, file `.env` của ứng dụng của bạn sẽ không được framework load vào trong các request hoặc lệnh Artisan; do đó, hàm `env` sẽ chỉ trả về các biến môi trường ở cấp độ hệ thống hoặc bên ngoài.
+
+Vì lý do này, bạn nên đảm bảo rằng bạn chỉ nên gọi hàm `env` từ bên trong các file cấu hình (`config`) của ứng dụng. Bạn có thể xem nhiều ví dụ về điều này bằng cách kiểm tra các file cấu hình mặc định của Laravel. Các giá trị cấu hình có thể được truy cập từ mọi nơi trong ứng dụng của bạn bằng cách sử dụng hàm `config` [được mô tả ở trên](#accessing-configuration-values).
+
 Lệnh `config:clear` có thể được sử dụng để xóa cấu hình được lưu trong bộ nhớ cache:
 
 ```shell
 php artisan config:clear
 ```
 
-> **Warning**
+> [!WARNING]
 > Nếu bạn chạy lệnh `config:cache` trong quá trình phát triển của bạn, bạn nên đảm bảo là bạn chỉ gọi hàm `env` ở trong các file cấu hình của bạn. Sau khi cấu hình đã được lưu vào bộ nhớ cache, file `.env` sẽ không được load; và do đó, hàm `env` sẽ chỉ trả về các biến môi trường ở cấp độ hệ thống hoặc bên ngoài.
 
 <a name="debug-mode"></a>
@@ -211,7 +235,8 @@ php artisan config:clear
 
 Tùy chọn `debug` trong file cấu hình `config/app.php` của bạn sẽ xác định lượng thông tin sẽ được hiển thị cho người dùng. Mặc định, tùy chọn này được set trong giá trị của biến môi trường `APP_DEBUG`, và được lưu trong file `.env` của bạn.
 
-Để phát triển local, bạn nên set biến môi trường `APP_DEBUG` thành `true`. **Trong môi trường production của bạn, giá trị này phải luôn là `false`. Nếu biến này được set thành `true`, thì bạn có nguy cơ để lộ các giá trị cấu hình nhạy cảm cho người dùng của ứng dụng của bạn biết.**
+> [!WARNING]
+> Để phát triển local, bạn nên set biến môi trường `APP_DEBUG` thành `true`. **Trong môi trường production của bạn, giá trị này phải luôn là `false`. Nếu biến này được set thành `true`, thì bạn có nguy cơ để lộ các giá trị cấu hình nhạy cảm cho người dùng của ứng dụng của bạn biết.**
 
 <a name="maintenance-mode"></a>
 ## Chế độ bảo trì
@@ -251,13 +276,19 @@ Sau khi set ứng dụng ở chế độ bảo trì, bạn có thể điều hư
 https://example.com/1630542a-246b-4b66-afa1-dd72a4c43515
 ```
 
+Nếu bạn muốn Laravel tạo ra một mã secret token cho bạn, bạn có thể sử dụng tùy chọn `with-secret`. Secret sẽ được hiển thị cho bạn khi ứng dụng vào chế độ bảo trì:
+
+```shell
+php artisan down --with-secret
+```
+
 Khi truy cập vào route ẩn này, bạn sẽ được chuyển hướng đến route `/` của ứng dụng. Khi cookie đã được cấp cho trình duyệt của bạn, bạn sẽ có thể xem ứng dụng bình thường như thể nó không đang ở trong chế độ bảo trì.
 
-> **Note**
+> [!NOTE]
 > Secret trong chế độ bảo trì của bạn sẽ thường phải chứa các ký tự chữ và số và các dấu gạch ngang. Bạn nên tránh sử dụng các ký tự có ý nghĩa đặc biệt trong URL, chẳng hạn như `?` hoặc `&`.
 
 <a name="pre-rendering-the-maintenance-mode-view"></a>
-#### Pre-Rendering The Maintenance Mode View
+#### Pre-Rendering the Maintenance Mode View
 
 Nếu bạn sử dụng lệnh `php artisan down` trong khi deploy, người dùng của bạn đôi khi vẫn có thể gặp lỗi nếu họ truy cập ứng dụng trong khi các library của Composer hoặc các thành phần cơ sở hạ tầng khác của bạn đang cập nhật. Điều này xảy ra vì một phần quan trọng của Laravel framework phải khởi động để xác định ứng dụng của bạn có đang ở trong chế độ bảo trì hay không và hiển thị view chế độ bảo trì bằng cách sử dụng công cụ tạo template.
 
@@ -285,7 +316,7 @@ php artisan down --redirect=/
 php artisan up
 ```
 
-> **Note**
+> [!NOTE]
 > Bạn cũng có sửa đổi màn hình bảo trì mặc định của Laravel bằng cách tạo thêm màn hình tuỳ biến của bạn vào thư mục có đường dẫn như sau: `resources/views/errors/503.blade.php`.
 
 <a name="maintenance-mode-queues"></a>

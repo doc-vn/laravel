@@ -33,17 +33,17 @@ Lệnh này sẽ lưu một class `EnsureTokenIsValid` mới vào trong thư m�
     namespace App\Http\Middleware;
 
     use Closure;
+    use Illuminate\Http\Request;
+    use Symfony\Component\HttpFoundation\Response;
 
     class EnsureTokenIsValid
     {
         /**
          * Handle an incoming request.
          *
-         * @param  \Illuminate\Http\Request  $request
-         * @param  \Closure  $next
-         * @return mixed
+         * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
          */
-        public function handle($request, Closure $next)
+        public function handle(Request $request, Closure $next): Response
         {
             if ($request->input('token') !== 'my-secret-token') {
                 return redirect('home');
@@ -57,7 +57,7 @@ Như bạn có thể thấy, nếu `token` không trùng với một secret toke
 
 Tốt nhất là bạn hãy hình dung middleware như là các "layers" mà các HTTP request phải vượt qua trước khi chúng đến được với ứng dụng của bạn. Mỗi layer có thể kiểm tra request và thậm chí từ chối nó hoàn toàn.
 
-> **Note**
+> [!NOTE]
 > Tất cả các middleware đều được resolve thông qua [service container](/docs/{{version}}/container), vì vậy bạn có thể khai báo bất kỳ phụ thuộc nào mà bạn cần trong phương thức khởi tạo của middleware.
 
 <a name="before-after-middleware"></a>
@@ -71,10 +71,12 @@ Tất nhiên, middleware có thể thực hiện các tác vụ trước hoặc 
     namespace App\Http\Middleware;
 
     use Closure;
+    use Illuminate\Http\Request;
+    use Symfony\Component\HttpFoundation\Response;
 
     class BeforeMiddleware
     {
-        public function handle($request, Closure $next)
+        public function handle(Request $request, Closure $next): Response
         {
             // Perform action
 
@@ -89,10 +91,12 @@ Tuy nhiên, middleware này sẽ thực hiện nhiệm vụ của mình **sau** 
     namespace App\Http\Middleware;
 
     use Closure;
+    use Illuminate\Http\Request;
+    use Symfony\Component\HttpFoundation\Response;
 
     class AfterMiddleware
     {
-        public function handle($request, Closure $next)
+        public function handle(Request $request, Closure $next): Response
         {
             $response = $next($request);
 
@@ -113,11 +117,25 @@ Nếu bạn muốn một middleware chạy trong mỗi request HTTP đến appli
 <a name="assigning-middleware-to-routes"></a>
 ### Gán Middleware với Routes
 
-Nếu bạn muốn gán một middleware cho một route cụ thể, trước tiên bạn nên gán middleware đó với một khoá trong file `app/Http/Kernel.php` trong application của bạn. Mặc định, thuộc tính `$routeMiddleware` của class này sẽ chứa sẵn một danh sách middleware đi kèm với Laravel. Bạn có thể thêm middleware của bạn vào danh sách này và gán cho nó một khóa mà bạn chọn:
+Nếu bạn muốn gán một middleware cho một route cụ thể, bạn có thể gọi phương thức `middleware` khi định nghĩa route:
+
+    use App\Http\Middleware\Authenticate;
+
+    Route::get('/profile', function () {
+        // ...
+    })->middleware(Authenticate::class);
+
+Bạn có thể gán nhiều middleware cho một route bằng cách truyền một mảng tên middleware cho phương thức `middleware`:
+
+    Route::get('/', function () {
+        // ...
+    })->middleware([First::class, Second::class]);
+
+Để thuận tiện, bạn có thể alias danh cho middleware trong file `app/Http/Kernel.php` của application của bạn. Mặc định, thuộc tính `$middlewareAliases` của class này sẽ chứa sẵn một danh sách middleware đi kèm với Laravel. Bạn có thể thêm middleware của bạn vào danh sách này và gán cho nó một alias mà bạn chọn:
 
     // Within App\Http\Kernel class...
 
-    protected $routeMiddleware = [
+    protected $middlewareAliases = [
         'auth' => \App\Http\Middleware\Authenticate::class,
         'auth.basic' => \Illuminate\Auth\Middleware\AuthenticateWithBasicAuth::class,
         'bindings' => \Illuminate\Routing\Middleware\SubstituteBindings::class,
@@ -129,25 +147,11 @@ Nếu bạn muốn gán một middleware cho một route cụ thể, trước ti
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
     ];
 
-Khi middleware đã được định nghĩa trong HTTP kernel, bạn có thể sử dụng phương thức `middleware` để gán middleware đó cho một route:
+Khi alias của middleware đã được định nghĩa trong HTTP kernel, bạn có thể sử dụng alias đó khi gán một middleware cho một route:
 
     Route::get('/profile', function () {
-        //
+        // ...
     })->middleware('auth');
-
-Bạn có thể gán nhiều middleware cho một route bằng cách truyền một mảng gồm các tên của middleware cho phương thức `middleware`:
-
-    Route::get('/', function () {
-        //
-    })->middleware(['first', 'second']);
-
-Khi gán middleware, bạn cũng có thể truyền tên class của middleware:
-
-    use App\Http\Middleware\EnsureTokenIsValid;
-
-    Route::get('/profile', function () {
-        //
-    })->middleware(EnsureTokenIsValid::class);
 
 <a name="excluding-middleware"></a>
 #### Excluding Middleware
@@ -158,11 +162,11 @@ Khi gán một middleware cho một nhóm các route, đôi khi bạn có thể 
 
     Route::middleware([EnsureTokenIsValid::class])->group(function () {
         Route::get('/', function () {
-            //
+            // ...
         });
 
         Route::get('/profile', function () {
-            //
+            // ...
         })->withoutMiddleware([EnsureTokenIsValid::class]);
     });
 
@@ -172,7 +176,7 @@ You may also exclude a given set of middleware from an entire [group](/docs/{{ve
 
     Route::withoutMiddleware([EnsureTokenIsValid::class])->group(function () {
         Route::get('/profile', function () {
-            //
+            // ...
         });
     });
 
@@ -201,7 +205,7 @@ Laravel đã định nghĩa trước các group middleware `web` và `api`, ch�
         ],
 
         'api' => [
-            'throttle:api',
+            \Illuminate\Routing\Middleware\ThrottleRequests::class.':api',
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
         ],
     ];
@@ -209,14 +213,14 @@ Laravel đã định nghĩa trước các group middleware `web` và `api`, ch�
 Các group middleware có thể được gán cho một route hoặc một controller action bằng cách sử dụng cùng một cú pháp như middleware riêng lẻ. Một lần nữa, các group middleware giúp thuận tiện hơn khi gán nhiều middleware cho một route cùng một lúc:
 
     Route::get('/', function () {
-        //
+        // ...
     })->middleware('web');
 
     Route::middleware(['web'])->group(function () {
-        //
+        // ...
     });
 
-> **Note**
+> [!NOTE]
 > Mặc định, group middleware `web` và `api` sẽ được tự động áp dụng cho các file `routes/web.php` và `routes/api.php` tương ứng trong ứng dụng của bạn bởi `App\Providers\RouteServiceProvider`.
 
 <a name="sorting-middleware"></a>
@@ -256,18 +260,17 @@ Các tham số middleware bổ sung sẽ được truyền đến middleware sau
     namespace App\Http\Middleware;
 
     use Closure;
+    use Illuminate\Http\Request;
+    use Symfony\Component\HttpFoundation\Response;
 
     class EnsureUserHasRole
     {
         /**
-         * Handle the incoming request.
+         * Handle an incoming request.
          *
-         * @param  \Illuminate\Http\Request  $request
-         * @param  \Closure  $next
-         * @param  string  $role
-         * @return mixed
+         * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
          */
-        public function handle($request, Closure $next, $role)
+        public function handle(Request $request, Closure $next, string $role): Response
         {
             if (! $request->user()->hasRole($role)) {
                 // Redirect...
@@ -278,11 +281,17 @@ Các tham số middleware bổ sung sẽ được truyền đến middleware sau
 
     }
 
-Các tham số middleware có thể được định nghĩa khi tạo route bằng cách tách tên của middleware và tham số với một dấu `:`. Nếu có nhiều tham số thì nên được phân cách bằng dấu phẩy:
+Các tham số middleware có thể được định nghĩa khi tạo route bằng cách tách tên của middleware và tham số với một dấu `:`:
 
-    Route::put('/post/{id}', function ($id) {
-        //
+   Route::put('/post/{id}', function (string $id) {
+        // ...
     })->middleware('role:editor');
+
+Nhiều tham số có thể được phân tách bằng dấu phẩy:
+
+    Route::put('/post/{id}', function (string $id) {
+        // ...
+    })->middleware('role:editor,publisher');
 
 <a name="terminable-middleware"></a>
 ## Middleware kết thúc
@@ -294,29 +303,25 @@ Các tham số middleware có thể được định nghĩa khi tạo route bằ
     namespace Illuminate\Session\Middleware;
 
     use Closure;
+    use Illuminate\Http\Request;
+    use Symfony\Component\HttpFoundation\Response;
 
     class TerminatingMiddleware
     {
         /**
          * Handle an incoming request.
          *
-         * @param  \Illuminate\Http\Request  $request
-         * @param  \Closure  $next
-         * @return mixed
+         * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
          */
-        public function handle($request, Closure $next)
+        public function handle(Request $request, Closure $next): Response
         {
             return $next($request);
         }
 
         /**
          * Handle tasks after the response has been sent to the browser.
-         *
-         * @param  \Illuminate\Http\Request  $request
-         * @param  \Illuminate\Http\Response  $response
-         * @return void
          */
-        public function terminate($request, $response)
+        public function terminate(Request $request, Response $response): void
         {
             // ...
         }
@@ -330,10 +335,8 @@ Khi gọi phương thức `terminate` trong middleware của bạn, Laravel sẽ
 
     /**
      * Register any application services.
-     *
-     * @return void
      */
-    public function register()
+    public function register(): void
     {
         $this->app->singleton(TerminatingMiddleware::class);
     }

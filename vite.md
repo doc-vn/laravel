@@ -36,7 +36,7 @@
 
 Laravel tích hợp liền mạch với Vite bằng cách cung cấp plugin chính thức và lệnh Blade để load các asset của bạn cho mục đích development và production.
 
-> **Note**
+> [!NOTE]
 > Bạn có đang chạy Laravel Mix không? Vite đã thay thế Laravel Mix trong các cài đặt Laravel mới. Để biết thêm tài liệu về Mix, vui lòng truy cập vào trang web [Laravel Mix](https://laravel-mix.com/). Nếu bạn muốn chuyển sang Vite, vui lòng xem [hướng dẫn migration](https://github.com/laravel/vite-plugin/blob/main/UPGRADE.md#migrating-from-laravel-mix-to-vite) của chúng tôi.
 
 <a name="vite-or-mix"></a>
@@ -44,7 +44,7 @@ Laravel tích hợp liền mạch với Vite bằng cách cung cấp plugin chí
 
 Trước khi chuyển sang Vite, các ứng dụng Laravel mới sử dụng [Mix](https://laravel-mix.com/), được hỗ trợ bởi [webpack](https://webpack.js.org/), khi đóng gói asset. Vite tập trung vào việc cung cấp trải nghiệm nhanh hơn và hiệu quả hơn khi xây dựng các ứng dụng JavaScript đa dạng. Nếu bạn đang phát triển một Single Page Application (SPA), chứa cả những ứng dụng được phát triển bằng các công cụ như [Inertia](https://inertiajs.com), Vite sẽ là lựa chọn hoàn hảo.
 
-Vite cũng hoạt động tốt với các ứng dụng được render từ server-side có JavaScript "sprinkles", chứa cả những ứng dụng sử dụng [Livewire](https://laravel-livewire.com). Tuy nhiên, nó thiếu một số tính năng mà Laravel Mix hỗ trợ, chẳng hạn như khả năng sao chép các asset vào các bản build mà không được tham chiếu trực tiếp trong ứng dụng JavaScript của bạn.
+Vite cũng hoạt động tốt với các ứng dụng được render từ server-side có JavaScript "sprinkles", chứa cả những ứng dụng sử dụng [Livewire](https://livewire.laravel.com). Tuy nhiên, nó thiếu một số tính năng mà Laravel Mix hỗ trợ, chẳng hạn như khả năng sao chép các asset vào các bản build mà không được tham chiếu trực tiếp trong ứng dụng JavaScript của bạn.
 
 <a name="migrating-back-to-mix"></a>
 #### Migrating Back To Mix
@@ -54,7 +54,7 @@ Bạn đã bắt đầu một ứng dụng Laravel mới bằng cách sử dụn
 <a name="installation"></a>
 ## Installation và Setup
 
-> **Note**
+> [!NOTE]
 > Tài liệu sau đây sẽ thảo luận về cách cài đặt và cấu hình plugin Laravel Vite. Tuy nhiên, [bộ khởi tạo](/docs/{{version}}/starter-kits) của Laravel đã chứa tất cả các scaffolding này và là cách nhanh nhất để bắt đầu với Laravel và Vite.
 
 <a name="installing-node"></a>
@@ -134,7 +134,9 @@ Plugin Laravel cũng hỗ trợ nhiều đầu vào và các tùy chọn cấu h
 
 Nếu máy chủ web phát triển local của bạn đang chạy ứng dụng của bạn dưới giao thức HTTPS, thì bạn có thể gặp lỗi khi kết nối với máy chủ phát triển Vite.
 
-Nếu bạn đang sử dụng [Laravel Valet](/docs/{{version}}/valet) để phát triển local và đã chạy [lệnh secure](/docs/{{version}}/valet#securing-sites) trên ứng dụng của bạn, bạn có thể cấu hình máy chủ phát triển Vite để tự động sử dụng chứng chỉ TLS do Valet tạo:
+Nếu bạn đang sử dụng [Laravel Herd](https://herd.laravel.com) và cần bảo vệ một trang web hoặc bạn đang sử dụng [Laravel Valet](/docs/{{version}}/valet) và đã chạy [lệnh secure](/docs/{{version}}/valet#securing-sites) trên ứng dụng của bạn, plugin Laravel Vite sẽ tự động phát hiện và sử dụng chứng chỉ TLS đã tạo cho bạn.
+
+Nếu bạn đang muốn bảo vệ một trang web mà tên host của trang web đó không khớp với tên thư mục của ứng dụng, bạn có thể chỉ định tên host đó vào trong file `vite.config.js` của ứng dụng:
 
 ```js
 import { defineConfig } from 'vite';
@@ -144,7 +146,7 @@ export default defineConfig({
     plugins: [
         laravel({
             // ...
-            valetTls: 'my-app.test', // [tl! add]
+            detectTls: 'my-app.test', // [tl! add]
         }),
     ],
 });
@@ -173,10 +175,30 @@ export default defineConfig({
 
 Nếu bạn không thể tạo chứng chỉ cho hệ thống của bạn, bạn có thể cài đặt và cấu hình [plugin `@vitejs/plugin-basic-ssl`](https://github.com/vitejs/vite-plugin-basic-ssl). Khi sử dụng chứng chỉ này, bạn sẽ cần chấp nhận cảnh báo chứng chỉ cho máy chủ phát triển của Vite trong trình duyệt của bạn và link "Local" trong console khi chạy lệnh `npm run dev`.
 
+<a name="configuring-hmr-in-sail-on-wsl2"></a>
+#### Running the Development Server in Sail on WSL2
+
+Khi chạy máy chủ phát triển Vite trong [Laravel Sail](/docs/{{version}}/sail) trên Windows Subsystem cho Linux 2 (WSL2), bạn nên thêm cấu hình sau vào file `vite.config.js` để đảm bảo rằng trình duyệt có thể giao tiếp với máy chủ phát triển:
+
+```js
+// ...
+
+export default defineConfig({
+    // ...
+    server: { // [tl! add:start]
+        hmr: {
+            host: 'localhost',
+        },
+    }, // [tl! add:end]
+});
+```
+
+Nếu những thay đổi trong file của bạn không được phản ánh trong trình duyệt khi máy chủ phát triển đang chạy, bạn cũng có thể cần cấu hình tùy chọn [`server.watch.usePolling`](https://vitejs.dev/config/server-options.html#server-watch) của Vite.
+
 <a name="loading-your-scripts-and-styles"></a>
 ### Loading script và style của bạn
 
-Khi đã cấu hình các đầu vào Vite, bạn chỉ cần tham chiếu chúng trong lệnh Blade `@vite()` mà bạn đã thêm vào `<head>` của template gốc của ứng dụng:
+Khi đã cấu hình các đầu vào Vite, bạn có thể tham chiếu chúng trong lệnh Blade `@vite()` mà bạn đã thêm vào `<head>` của template gốc của ứng dụng:
 
 ```blade
 <!doctype html>
@@ -211,6 +233,29 @@ Nếu cần, bạn cũng có thể chỉ định đường dẫn build các asse
 </head>
 ```
 
+<a name="inline-assets"></a>
+#### Inline Assets
+
+Thỉnh thoảng bạn có thể cần phải thêm một nội dung raw của asset thay vì link đến một URL version của asset. Ví dụ: bạn có thể cần thêm nội dung asset trực tiếp vào trong trang HTML của bạn khi truyền nội dung HTML đến PDF generator. Bạn có thể xuất nội dung của asset Vite bằng phương thức `content` do facade `Vite` cung cấp:
+
+```blade
+@php
+use Illuminate\Support\Facades\Vite;
+@endphp
+
+<!doctype html>
+<head>
+    {{-- ... --}}
+
+    <style>
+        {!! Vite::content('resources/css/app.css') !!}
+    </style>
+    <script>
+        {!! Vite::content('resources/js/app.js') !!}
+    </script>
+</head>
+```
+
 <a name="running-vite"></a>
 ## Chạy Vite
 
@@ -225,6 +270,8 @@ npm run dev
 # Build and version the assets for production...
 npm run build
 ```
+
+Nếu bạn đang chạy server phát triển ở [Sail](/docs/{{version}}/sail) trên WSL2, bạn có thể cần một số tùy chọn [cấu hình bổ sung](#configuring-hmr-in-sail-on-wsl2).
 
 <a name="working-with-scripts"></a>
 ## Working với JavaScript
@@ -299,7 +346,7 @@ export default defineConfig({
 });
 ```
 
-> **Note**
+> [!NOTE]
 > [Bộ công cụ khởi tạo](/docs/{{version}}/starter-kits) của Laravel đã chứa cấu hình Laravel, Vue và Vite phù hợp. Hãy xem [Laravel Breeze](/docs/{{version}}/starter-kits#breeze-and-inertia) để biết cách nhanh nhất để bắt đầu với Laravel, Vue và Vite.
 
 <a name="react"></a>
@@ -337,7 +384,7 @@ Bạn cũng sẽ cần phải thêm lệnh Blade `@viteReactRefresh` cùng với
 
 Lệnh `@viteReactRefresh` phải được gọi trước lệnh `@vite`.
 
-> **Note**
+> [!NOTE]
 > [Bộ khởi tạo](/docs/{{version}}/starter-kits) của Laravel đã chứa cấu hình Laravel, React và Vite phù hợp. Hãy xem [Laravel Breeze](/docs/{{version}}/starter-kits#breeze-and-inertia) để biết cách nhanh nhất để bắt đầu với Laravel, React và Vite.
 
 <a name="inertia"></a>
@@ -360,7 +407,7 @@ createInertiaApp({
 });
 ```
 
-> **Note**
+> [!NOTE]
 > [Bộ công cụ khởi tạo](/docs/{{version}}/starter-kits) của Laravel đã chứa cấu hình Laravel, Inertia và Vite phù hợp. Hãy xem [Laravel Breeze](/docs/{{version}}/starter-kits#breeze-and-inertia) để biết cách nhanh nhất để bắt đầu với Laravel, Inertia và Vite.
 
 <a name="url-processing"></a>
@@ -399,13 +446,16 @@ Ví dụ sau đây minh họa cách Vite xử lý URL tương đối và tuyệt
 Bạn có thể tìm hiểu thêm về hỗ trợ CSS của Vite trong [tài liệu Vite](https://vitejs.dev/guide/features.html#css). Nếu bạn đang sử dụng các plugin PostCSS như [Tailwind](https://tailwindcss.com), bạn có thể tạo file `postcss.config.js` trong thư mục root của dự án và Vite sẽ tự động áp dụng file đó:
 
 ```js
-module.exports = {
+export default {
     plugins: {
         tailwindcss: {},
         autoprefixer: {},
     },
 };
 ```
+
+> [!NOTE]
+> [Bộ khởi tạo](/docs/{{version}}/starter-kits) của Laravel đã chứa sẵn cấu hình Tailwind, PostCSS và Vite phù hợp. Hoặc, nếu bạn muốn sử dụng Tailwind và Laravel mà không cần sử dụng một trong các bộ khởi tạo của chúng tôi, hãy xem [hướng dẫn cài đặt Tailwind cho Laravel](https://tailwindcss.com/docs/guides/laravel).
 
 <a name="working-with-blade-and-routes"></a>
 ## Working với Blade và Routes
@@ -501,12 +551,10 @@ Trong các ứng dụng JavaScript, việc [tạo bí danh](#aliases) cho các t
 
     /**
      * Bootstrap any application services.
-     *
-     * @return void
      */
-    public function boot()
+    public function boot(): void
     {
-        Vite::macro('image', fn ($asset) => $this->asset("resources/images/{$asset}"));
+        Vite::macro('image', fn (string $asset) => $this->asset("resources/images/{$asset}"));
     }
 
 Sau khi macro đã được định nghĩa xong, nó có thể được gọi nó trong các template của bạn. Ví dụ, chúng ta có thể sử dụng macro `image` được định nghĩa ở trên để tham chiếu đến một asset nằm tại `resources/images/logo.png`:
@@ -623,10 +671,16 @@ Sau đó, để build và khởi động máy chủ SSR, bạn có thể chạy 
 
 ```sh
 npm run build
-node bootstrap/ssr/ssr.mjs
+node bootstrap/ssr/ssr.js
 ```
 
-> **Note**
+Nếu bạn đang sử dụng [SSR với Inertia](https://inertiajs.com/server-side-rendering), bạn có thể sử dụng lệnh Artisan `inertia:start-ssr` để khởi động máy chủ SSR:
+
+```sh
+php artisan inertia:start-ssr
+```
+
+> [!NOTE]
 > [Bộ công cụ khởi tạo](/docs/{{version}}/starter-kits) của Laravel đã chứa cấu hình Laravel, Inertia SSR và Vite phù hợp. Hãy xem [Laravel Breeze](/docs/{{version}}/starter-kits#breeze-and-inertia) để biết cách nhanh nhất để bắt đầu với Laravel, Inertia SSR và Vite.
 
 <a name="script-and-style-attributes"></a>
@@ -643,18 +697,18 @@ Nếu bạn muốn đưa một [thuộc tính `nonce`](https://developer.mozilla
 namespace App\Http\Middleware;
 
 use Closure;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Vite;
+use Symfony\Component\HttpFoundation\Response;
 
 class AddContentSecurityPolicyHeaders
 {
     /**
      * Handle an incoming request.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \Closure  $next
-     * @return mixed
+     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
      */
-    public function handle($request, Closure $next)
+    public function handle(Request $request, Closure $next): Response
     {
         Vite::useCspNonce();
 
@@ -752,7 +806,7 @@ Vite::useStyleTagAttributes(fn (string $src, string $url, array|null $chunk, arr
 ]);
 ```
 
-> **Warning**
+> [!WARNING]
 > Các tham số `$chunk` và `$manifest` sẽ là `null` khi máy chủ phát triển Vite đang chạy.
 
 <a name="advanced-customization"></a>
@@ -770,6 +824,9 @@ Mặc định, plugin Vite của Laravel sẽ sử dụng các quy ước hợp 
             ->useBuildDirectory('bundle') // Customize the build directory...
             ->useManifestFilename('assets.json') // Customize the manifest filename...
             ->withEntryPoints(['resources/js/app.js']) // Specify the entry points...
+            ->createAssetPathsUsing(function (string $path, ?bool $secure) { // Customize the backend path generation for built assets...
+                return "https://cdn.example.com/{$path}";
+            })
     }}
 </head>
 ```
@@ -807,7 +864,7 @@ Ví dụ, plugin `vite-imagetools` sẽ xuất ra các URL như sau khi Vite đa
 
 Plugin `vite-imagetools` đang cho là các URL output sẽ bị Vite chặn lại và sau đó plugin có thể xử lý tất cả các URL bắt đầu bằng `/@imagetools`. Nếu bạn đang sử dụng các plugin mà theo hành vi này, bạn sẽ cần phải sửa thủ công các URL. Bạn có thể thực hiện việc này trong file `vite.config.js` của bạn bằng cách sử dụng tùy chọn `transformOnServe`.
 
-Trong ví dụ cụ thể này, chúng ta sẽ thêm URL máy chủ dev vào tất cả các lần xuất hiện của `/@imagetools` có trong code được tạo:
+Trong ví dụ cụ thể này, chúng ta sẽ thêm URL máy chủ dev vào trước tất cả các lần xuất hiện của `/@imagetools` có trong code được tạo:
 
 ```js
 import { defineConfig } from 'vite';
@@ -831,4 +888,3 @@ Bây giờ, khi Vite đang chạy Assets, nó sẽ xuất ra các URL trỏ đ�
 - <img src="/@imagetools/f0b2f404b13f052c604e632f2fb60381bf61a520"><!-- [tl! remove] -->
 + <img src="http://[::1]:5173/@imagetools/f0b2f404b13f052c604e632f2fb60381bf61a520"><!-- [tl! add] -->
 ```
-

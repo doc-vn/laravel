@@ -39,7 +39,7 @@ Provider sẽ định nghĩa cách mà người dùng được lấy ra từ dat
 
 File cấu hình xác thực ứng dụng của bạn được lưu tại `config/auth.php`. File này sẽ chứa một số tùy chọn đã được giải thích trong file để điều chỉnh các hành vi của các service xác thực của Laravel.
 
-> **Note**
+> [!NOTE]
 > Guard và provider không nên bị nhầm lẫn với các "role" và các "permission". Để tìm hiểu thêm về các cách authorize hành động của người dùng thông qua permission, vui lòng tham khảo thêm tài liệu [authorization](/docs/{{version}}/authorization).
 
 <a name="starter-kits"></a>
@@ -80,7 +80,7 @@ _Laravel Breeze_ là một triển khai đơn giản, tối thiểu dành cho t�
 
 _Laravel Fortify_ là phần backend xác thực không chứa giao diện cho Laravel, triển khai nhiều tính năng có trong tài liệu này, bao gồm xác thực dựa trên cookie cũng như các tính năng khác như xác thực hai lớp và xác minh email. Fortify cung cấp backend xác thực cho Laravel Jetstream hoặc có thể được sử dụng độc lập khi kết hợp với [Laravel Sanctum](/docs/{{version}}/sanctum) để cung cấp xác thực cho một SPA (Single Page Application) mà cần chức năng xác thực cùng với Laravel.
 
-_[Laravel Jetstream](https://jetstream.laravel.com)_ là một bộ công cụ khởi động ứng dụng mạnh mẽ sử dụng các service xác thực của Laravel Fortify với giao diện người dùng hiện đại, đẹp mắt được hỗ trợ bởi [Tailwind CSS](https://tailwindcss.com), [Livewire](https://laravel-livewire.com) và [Inertia](https://inertiajs.com). Laravel Jetstream hỗ trợ tùy chọn cho xác thực hai lớp, hỗ trợ nhóm, quản lý session trình duyệt, quản lý hồ sơ và tích hợp sẵn [Laravel Sanctum](/docs/{{version}}/sanctum) để cung cấp xác thực token API. Các service xác thực API của Laravel sẽ được thảo luận ở bên dưới.
+_[Laravel Jetstream](https://jetstream.laravel.com)_ là một bộ công cụ khởi động ứng dụng mạnh mẽ sử dụng các service xác thực của Laravel Fortify với giao diện người dùng hiện đại, đẹp mắt được hỗ trợ bởi [Tailwind CSS](https://tailwindcss.com), [Livewire](https://livewire.laravel.com) và [Inertia](https://inertiajs.com). Laravel Jetstream hỗ trợ tùy chọn cho xác thực hai lớp, hỗ trợ nhóm, quản lý session trình duyệt, quản lý hồ sơ và tích hợp sẵn [Laravel Sanctum](/docs/{{version}}/sanctum) để cung cấp xác thực token API. Các service xác thực API của Laravel sẽ được thảo luận ở bên dưới.
 
 <a name="laravels-api-authentication-services"></a>
 #### Laravel's API Authentication Services
@@ -100,7 +100,7 @@ Laravel Sanctum là package xác thực cho cả web và API, nó có thể qu�
 Laravel Sanctum là một package API mà chúng tôi đã chọn để đưa vào bộ khởi động ứng dụng [Laravel Jetstream](https://jetstream.laravel.com) vì chúng tôi tin rằng package này phù hợp nhất với phần lớn nhu cầu xác thực của ứng dụng web.
 
 <a name="summary-choosing-your-stack"></a>
-#### Summary & Choosing Your Stack
+#### Summary và Choosing Your Stack
 
 Tóm lại, nếu ứng dụng của bạn mà được truy cập thông qua trình duyệt và bạn đang xây dựng một ứng dụng Laravel monolithic, thì ứng dụng của bạn sẽ sử dụng các dịch vụ xác thực được tích hợp sẵn của Laravel.
 
@@ -115,7 +115,7 @@ Và, nếu bạn muốn bắt đầu nhanh, chúng tôi rất vui lòng giới t
 <a name="authentication-quickstart"></a>
 ## Authentication Quickstart
 
-> **Warning**
+> [!WARNING]
 > Phần tài liệu này sẽ thảo luận về việc xác thực người dùng thông qua [bộ công cụ khởi động ứng dụng của Laravel](/docs/{{version}}/starter-kits), bao gồm cả giao diện người dùng để giúp bạn bắt đầu nhanh. Nếu bạn muốn tích hợp trực tiếp với các hệ thống xác thực có sẵn của Laravel, hãy xem tài liệu về [xác thực người dùng theo cách thủ công](#authenticating-users).
 
 <a name="install-a-starter-kit"></a>
@@ -123,9 +123,9 @@ Và, nếu bạn muốn bắt đầu nhanh, chúng tôi rất vui lòng giới t
 
 Trước tiên, bạn nên [cài đặt bộ khởi động ứng dụng Laravel](/docs/{{version}}/starter-kits). Bộ công cụ khởi động hiện tại của chúng tôi gồm có Laravel Breeze và Laravel Jetstream sẽ cung cấp các điểm khởi đầu được tốt, đẹp mắt để kết hợp phần xác thực này vào trong ứng dụng Laravel mới của bạn.
 
-Laravel Breeze là một triển khai tối thiểu, đơn giản cho tất cả các tính năng xác thực của Laravel, bao gồm đăng nhập, đăng ký, đặt lại mật khẩu, xác minh email và xác nhận mật khẩu. Lớp view của Laravel Breeze được tạo từ [Blade templates](/docs/{{version}}/blade) và bằng [Tailwind CSS](https://tailwindcss.com). Breeze cũng cung cấp tùy chọn scaffolding dựa trên [Inertia](https://inertiajs.com) bằng cách sử dụng Vue hoặc React.
+Laravel Breeze là một triển khai tối thiểu, đơn giản cho tất cả các tính năng xác thực của Laravel, bao gồm đăng nhập, đăng ký, đặt lại mật khẩu, xác minh email và xác nhận mật khẩu. Lớp view của Laravel Breeze được tạo từ [Blade templates](/docs/{{version}}/blade) và bằng [Tailwind CSS](https://tailwindcss.com). Ngoài ra, Breeze cũng cung cấp các tùy chọn dựa trên [Livewire](https://livewire.laravel.com) hoặc [Inertia](https://inertiajs.com) với lựa chọn sử dụng Vue hoặc React.
 
-[Laravel Jetstream](https://jetstream.laravel.com) là bộ công cụ khởi động ứng dụng mạnh mẽ, bao gồm hỗ trợ tạo nền tảng cho ứng dụng của bạn với [Livewire](https://laravel-livewire.com) hoặc [Inertia và Vue](https://inertiajs.com). Ngoài ra, Jetstream cũng có tính năng hỗ trợ tùy chọn cho xác thực hai lớp, nhóm, quản lý hồ sơ, quản lý sesion trình duyệt, hỗ trợ API qua [Laravel Sanctum](/docs/{{version}}/sanctum), xóa tài khoản, v.v.
+[Laravel Jetstream](https://jetstream.laravel.com) là bộ công cụ khởi động ứng dụng mạnh mẽ, bao gồm hỗ trợ tạo nền tảng cho ứng dụng của bạn với [Livewire](https://livewire.laravel.com) hoặc [Inertia và Vue](https://inertiajs.com). Ngoài ra, Jetstream cũng có tính năng hỗ trợ tùy chọn cho xác thực hai lớp, nhóm, quản lý hồ sơ, quản lý sesion trình duyệt, hỗ trợ API qua [Laravel Sanctum](/docs/{{version}}/sanctum), xóa tài khoản, v.v.
 
 <a name="retrieving-the-authenticated-user"></a>
 ### Lấy user đã được authenticate
@@ -146,19 +146,21 @@ Ngoài ra, khi người dùng đã được authenticate, bạn có thể truy c
 
     namespace App\Http\Controllers;
 
+    use Illuminate\Http\RedirectResponse;
     use Illuminate\Http\Request;
 
     class FlightController extends Controller
     {
         /**
          * Update the flight information for an existing flight.
-         *
-         * @param  \Illuminate\Http\Request  $request
-         * @return \Illuminate\Http\Response
          */
-        public function update(Request $request)
+        public function update(Request $request): RedirectResponse
         {
-            // $request->user()
+            $user = $request->user();
+
+            // ...
+
+            return redirect('/flights');
         }
     }
 
@@ -173,7 +175,7 @@ Ngoài ra, khi người dùng đã được authenticate, bạn có thể truy c
         // The user is logged in...
     }
 
-> **Note**
+> [!NOTE]
 > Mặc dù bạn có thể xác định xem người dùng đã được authenticate hay chưa bằng phương thức `check`, nhưng thông thường bạn nên sử dụng một middleware để yêu cầu người dùng phải được authenticate trước khi truy cập vào một route hoặc một controller cụ thể. Để tìm hiểu thêm về điều này, hãy xem tài liệu về [protecting routes](/docs/{{version}}/authentication#protecting-routes).
 
 <a name="protecting-routes"></a>
@@ -190,13 +192,12 @@ Ngoài ra, khi người dùng đã được authenticate, bạn có thể truy c
 
 Khi middleware `auth` phát hiện người dùng chưa được xác thực, nó sẽ gửi về response JSON `401` hoặc, nếu request không phải là request AJAX, thì nó sẽ chuyển hướng người dùng tới [route mà đã được đặt tên là](/docs/{{version}}/routing#named-routes) `login`. Bạn có thể sửa hành động này bằng cách cập nhật phương thức `redirectTo` trong file `app/Http/Middleware/Authenticate.php` của ứng dụng của bạn:
 
+    use Illuminate\Http\Request;
+
     /**
      * Get the path the user should be redirected to.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return string
      */
-    protected function redirectTo($request)
+    protected function redirectTo(Request $request): string
     {
         return route('login');
     }
@@ -215,7 +216,7 @@ Khi gắn middleware `auth` vào một route, bạn cũng có thể chỉ địn
 
 Nếu bạn đang sử dụng Laravel Breeze hoặc Laravel Jetstream [starter kits](/docs/{{version}}/starter-kits), giới hạn tốc độ sẽ tự động được áp dụng cho các lần thử đăng nhập. Mặc định, người dùng sẽ không thể đăng nhập trong một phút nếu họ không cung cấp đúng thông tin authenticate sau một vài lần thử. Throttling là một trường duy nhất nó sẽ gắn username hoặc địa chỉ email với địa chỉ IP của họ.
 
-> **Note**
+> [!NOTE]
 > Nếu bạn muốn giới hạn các route khác trong ứng dụng của bạn, hãy xem [tài liệu về giới hạn đó](/docs/{{version}}/routing#rate-limiting).
 
 <a name="authenticating-users"></a>
@@ -230,17 +231,15 @@ Chúng ta sẽ truy cập các service authentication của Laravel thông qua [
     namespace App\Http\Controllers;
 
     use Illuminate\Http\Request;
+    use Illuminate\Http\RedirectResponse;
     use Illuminate\Support\Facades\Auth;
 
     class LoginController extends Controller
     {
         /**
          * Handle an authentication attempt.
-         *
-         * @param  \Illuminate\Http\Request  $request
-         * @return \Illuminate\Http\Response
          */
-        public function authenticate(Request $request)
+        public function authenticate(Request $request): RedirectResponse
         {
             $credentials = $request->validate([
                 'email' => ['required', 'email'],
@@ -278,15 +277,17 @@ Nếu bạn muốn, bạn cũng có thể thêm các điều kiện query vào t
 
 Đối với các điều kiện truy vấn phức tạp, bạn có thể cung cấp một closure trong mảng thông tin xác thực của bạn. Closure này sẽ được gọi cùng với instance truy vấn, cho phép bạn tùy chỉnh truy vấn dựa trên nhu cầu của ứng dụng:
 
+    use Illuminate\Database\Eloquent\Builder;
+
     if (Auth::attempt([
         'email' => $email,
         'password' => $password,
-        fn ($query) => $query->has('activeSubscription'),
+        fn (Builder $query) => $query->has('activeSubscription'),
     ])) {
         // Authentication was successful...
     }
 
-> **Warning**
+> [!WARNING]
 > Trong các ví dụ này, `email` không phải là một trường bắt buộc, nó chỉ được sử dụng làm ví dụ. Bạn có thể sử dụng bất kỳ tên cột nào tương ứng với "username" trong bảng cơ sở dữ liệu của bạn.
 
 Phương thức `attemptWhen`, nhận vào một closure làm tham số thứ hai, có thể được sử dụng để thực hiện một kiểm tra kỹ hơn đối với người dùng trước khi thực sự xác thực người dùng. Closure này sẽ nhận vào một user và phải trả về `true` hoặc `false` để cho biết user đó có thể được xác thực hay không:
@@ -294,7 +295,7 @@ Phương thức `attemptWhen`, nhận vào một closure làm tham số thứ ha
     if (Auth::attemptWhen([
         'email' => $email,
         'password' => $password,
-    ], function ($user) {
+    ], function (User $user) {
         return $user->isNotBanned();
     })) {
         // Authentication was successful...
@@ -369,7 +370,7 @@ Bạn có thể truyền một giá trị boolean làm tham số thứ hai cho p
 Bạn có thể sử dụng phương thức `once` để xác thực người dùng vào application cho một request. Không có session hoặc cookie nào được sử dụng khi gọi phương thức này:
 
     if (Auth::once($credentials)) {
-        //
+        // ...
     }
 
 <a name="http-basic-authentication"></a>
@@ -402,29 +403,30 @@ Bạn cũng có thể sử dụng HTTP Basic Authentication mà không cần ph�
 
     namespace App\Http\Middleware;
 
+    use Closure;
+    use Illuminate\Http\Request;
     use Illuminate\Support\Facades\Auth;
+    use Symfony\Component\HttpFoundation\Response;
 
     class AuthenticateOnceWithBasicAuth
     {
         /**
          * Handle an incoming request.
          *
-         * @param  \Illuminate\Http\Request  $request
-         * @param  \Closure  $next
-         * @return mixed
+         * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
          */
-        public function handle($request, $next)
+        public function handle(Request $request, Closure $next): Response
         {
             return Auth::onceBasic() ?: $next($request);
         }
 
     }
 
-Tiếp theo, [đăng ký route middleware](/docs/{{version}}/middleware#registering-middleware) đó và gắn nó vào một route:
+Tiếp theo, gắn middleware vào một route:
 
     Route::get('/api/user', function () {
         // Only authenticated users may access this route...
-    })->middleware('auth.basic.once');
+    })->middleware(AuthenticateOnceWithBasicAuth::class);
 
 <a name="logging-out"></a>
 ## Logging Out
@@ -434,15 +436,13 @@ Tiếp theo, [đăng ký route middleware](/docs/{{version}}/middleware#register
 Ngoài việc gọi phương thức `logout`, bạn nên vô hiệu hóa session hiện tại của người dùng và tạo lại một [token CSRF](/docs/{{version}}/csrf) cho họ. Sau khi đăng xuất người dùng, thông thường bạn sẽ chuyển hướng người dùng đến url gốc của ứng dụng:
 
     use Illuminate\Http\Request;
+    use Illuminate\Http\RedirectResponse;
     use Illuminate\Support\Facades\Auth;
 
     /**
      * Log the user out of the application.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
      */
-    public function logout(Request $request)
+    public function logout(Request $request): RedirectResponse
     {
         Auth::logout();
 
@@ -458,7 +458,7 @@ Ngoài việc gọi phương thức `logout`, bạn nên vô hiệu hóa session
 
 Laravel cũng cung cấp các cơ chế để vô hiệu hoá session và "đăng xuất" người dùng ra khỏi các thiết bị khác của họ mà không vô hiệu hoá session hiện tại của họ. Tính năng này thường được sử dụng khi người dùng đang thay đổi hoặc cập nhật lại mật khẩu của họ và bạn muốn làm mất hiệu lực các session trên các thiết bị khác trong khi vẫn giữ xác thực trên thiết bị hiện tại.
 
-Trước khi bắt đầu, bạn nên đảm bảo là middleware `Illuminate\Session\Middleware\AuthenticateSession` đã được thêm vào các route mà sẽ thực hiện xác thực session. Thông thường, bạn nên để middleware này trên các định nghĩa của các route group để có thể áp dụng nó cho nhiều route trong ứng dụng của bạn. Mặc định, middleware `AuthenticateSession` có thể được gắn vào một route bằng cách sử dụng khóa middleware route `auth.session` như được định nghĩa trong kernel HTTP trong ứng dụng của bạn:
+Trước khi bắt đầu, bạn nên đảm bảo là middleware `Illuminate\Session\Middleware\AuthenticateSession` đã được thêm vào các route mà sẽ thực hiện xác thực session. Thông thường, bạn nên để middleware này trên các định nghĩa của các route group để có thể áp dụng nó cho nhiều route trong ứng dụng của bạn. Mặc định, middleware `AuthenticateSession` có thể được gắn vào một route bằng cách sử dụng bí danh middleware route `auth.session` như được định nghĩa trong kernel HTTP trong ứng dụng của bạn:
 
     Route::middleware(['auth', 'auth.session'])->group(function () {
         Route::get('/', function () {
@@ -479,7 +479,7 @@ Khi phương thức `logoutOtherDevices` được gọi, thì các session khác
 
 Trong khi xây dựng ứng dụng của bạn, đôi khi bạn có thể có các hành động mà cần yêu cầu người dùng xác nhận lại mật khẩu của họ trước khi hành động đó được thực hiện hoặc trước khi người dùng được chuyển hướng đến một chỗ nhạy cảm của ứng dụng. Laravel có chứa một middleware được tích hợp sẵn để làm cho quá trình này trở nên dễ dàng. Việc triển khai chức năng này sẽ yêu cầu bạn định nghĩa hai route: một route là để hiển thị view yêu cầu người dùng xác nhận lại mật khẩu của họ và một route khác để xác nhận rằng mật khẩu hợp lệ và chuyển hướng người dùng đến đích dự định của họ.
 
-> **Note**
+> [!NOTE]
 >  Tài liệu sau đây sẽ thảo luận về cách tích hợp trực tiếp với chức năng xác nhận lại mật khẩu của Laravel; tuy nhiên, nếu bạn muốn bắt đầu nhanh hơn, thì [bộ công cụ khởi động ứng dụng Laravel](/docs/{{version}}/starter-kits) đã hỗ trợ nó!
 
 <a name="password-confirmation-configuration"></a>
@@ -547,6 +547,7 @@ Bạn có thể định nghĩa các guard authentication của riêng bạn bằ
     namespace App\Providers;
 
     use App\Services\Auth\JwtGuard;
+    use Illuminate\Contracts\Foundation\Application;
     use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
     use Illuminate\Support\Facades\Auth;
 
@@ -554,14 +555,10 @@ Bạn có thể định nghĩa các guard authentication của riêng bạn bằ
     {
         /**
          * Register any application authentication / authorization services.
-         *
-         * @return void
          */
-        public function boot()
+        public function boot(): void
         {
-            $this->registerPolicies();
-
-            Auth::extend('jwt', function ($app, $name, array $config) {
+            Auth::extend('jwt', function (Application $app, string $name, array $config) {
                 // Return an instance of Illuminate\Contracts\Auth\Guard...
 
                 return new JwtGuard(Auth::createUserProvider($config['provider']));
@@ -591,13 +588,9 @@ Cách đơn giản nhất để làm một hệ thống xác thực tùy biến 
 
     /**
      * Register any application authentication / authorization services.
-     *
-     * @return void
      */
-    public function boot()
+    public function boot(): void
     {
-        $this->registerPolicies();
-
         Auth::viaRequest('custom-token', function (Request $request) {
             return User::where('token', (string) $request->token)->first();
         });
@@ -615,7 +608,7 @@ Cuối cùng, bạn có thể gọi đến guard đó khi gán middleware xác t
 
     Route::middleware('auth:api')->group(function () {
         // ...
-    }
+    });
 
 <a name="adding-custom-user-providers"></a>
 ## Thêm tuỳ biến user provider
@@ -627,6 +620,7 @@ Nếu bạn không sử dụng cơ sở dữ liệu quan hệ để lưu trữ t
     namespace App\Providers;
 
     use App\Extensions\MongoUserProvider;
+    use Illuminate\Contracts\Foundation\Application;
     use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
     use Illuminate\Support\Facades\Auth;
 
@@ -634,14 +628,10 @@ Nếu bạn không sử dụng cơ sở dữ liệu quan hệ để lưu trữ t
     {
         /**
          * Register any application authentication / authorization services.
-         *
-         * @return void
          */
-        public function boot()
+        public function boot(): void
         {
-            $this->registerPolicies();
-
-            Auth::provider('mongo', function ($app, array $config) {
+            Auth::provider('mongo', function (Application $app, array $config) {
                 // Return an instance of Illuminate\Contracts\Auth\UserProvider...
 
                 return new MongoUserProvider($app->make('mongo.connection'));

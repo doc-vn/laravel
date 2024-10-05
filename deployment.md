@@ -6,11 +6,12 @@
     - [Nginx](#nginx)
 - [Tối ưu](#optimization)
     - [Tối ưu autoloader](#autoloader-optimization)
-    - [Tối ưu load config](#optimizing-configuration-loading)
-    - [Tối ưu load route](#optimizing-route-loading)
-    - [Tối ưu View Loading](#optimizing-view-loading)
+    - [Lưu cache file config](#optimizing-configuration-loading)
+    - [Lưu cache event](#caching-events)
+    - [Lưu cache route](#optimizing-route-loading)
+    - [Lưu cache view](#optimizing-view-loading)
 - [Chế độ debug](#debug-mode)
-- [Deploy cùng Forge và Vapor](#deploying-with-forge-or-vapor)
+- [Easy Deployment With Forge / Vapor](#deploying-with-forge-or-vapor)
 
 <a name="introduction"></a>
 ## Giới thiệu
@@ -24,7 +25,7 @@ Laravel framework có một số yêu cầu về hệ thống. Bạn nên đảm
 
 <div class="content-list" markdown="1">
 
-- PHP >= 8.0
+- PHP >= 8.1
 - Ctype PHP Extension
 - cURL PHP Extension
 - DOM PHP Extension
@@ -75,7 +76,7 @@ server {
     error_page 404 /index.php;
 
     location ~ \.php$ {
-        fastcgi_pass unix:/var/run/php/php8.0-fpm.sock;
+        fastcgi_pass unix:/var/run/php/php8.2-fpm.sock;
         fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
         include fastcgi_params;
     }
@@ -98,11 +99,11 @@ Khi deploy application vào production, hãy chắc chắn là bạn đã tối 
 composer install --optimize-autoloader --no-dev
 ```
 
-> **Note**
+> [!NOTE]
 >  Ngoài việc tối ưu autoloader, bạn cũng nên chắc chắn là luôn có file `composer.lock` trong project source code của bạn. Các library trong project của bạn có thể cài đặt nhanh hơn khi mà có file `composer.lock` này.
 
 <a name="optimizing-configuration-loading"></a>
-### Tối ưu load config
+### Lưu cache file config
 
 Khi deploy application vào production, bạn cũng nên đảm bảo là bạn đã chạy lệnh Artisan `config:cache` trong quá trình deploy:
 
@@ -112,11 +113,20 @@ php artisan config:cache
 
 Lệnh này sẽ nối tất cả các file config của Laravel thành một file và được lưu vào trong bộ nhớ cache, giúp giảm đáng kể số lượng trao đổi giữa framework với filesystem khi tải các value config của bạn.
 
-> **Warning**
+> [!WARNING]
 > Nếu bạn chạy lệnh `config:cache` trong quá trình deploy, bạn nên đảm bảo là bạn chỉ gọi hàm `env` từ trong các file cấu hình của bạn. Khi các file cấu hình đã được lưu vào trong bộ nhớ cache, thì file `.env` sẽ không được load và tất cả các code gọi đến hàm `env` để lấy biến trong file `.env` ra sẽ đều trả về `null`.
 
+<a name="caching-events"></a>
+### Lưu cache event
+
+Nếu ứng dụng của bạn đang sử dụng [event discovery](/docs/{{version}}/events#event-discovery), bạn nên lưu cache event của ứng dụng vào các mapping listener trong quá trình deploy. Điều này có thể thực hiện được bằng cách gọi lệnh Artisan `event:cache` trong quá trình deploy:
+
+```shell
+php artisan event:cache
+```
+
 <a name="optimizing-route-loading"></a>
-### Tối ưu load route
+### Lưu cache route
 
 Nếu bạn đang build một application lớn với nhiều route, bạn nên đảm bảo rằng bạn đã chạy lệnh Artisan `route:cache` trong quá trình deploy của bạn:
 
@@ -127,7 +137,7 @@ php artisan route:cache
 Lệnh này sẽ giảm tất cả các đăng ký route của bạn vào trong một phương thức duy nhất và lưu trong một file ở cache, nó giúp cải thiện hiệu suất của việc đăng ký route khi đăng ký hàng trăm route.
 
 <a name="optimizing-view-loading"></a>
-### Tối ưu View Loading
+### Lưu cache view
 
 Khi deploy ứng dụng của bạn vào production, bạn nên đảm bảo rằng bạn đã chạy lệnh Artisan `view:cache` trong quá trình deploy của bạn:
 
@@ -142,10 +152,11 @@ Lệnh này biên dịch tất cả các view Blade của bạn để chúng kh�
 
 Tùy chọn debug trong file cấu hình config/app.php của bạn sẽ xác định lượng thông tin lỗi sẽ thực sự được hiển thị cho người dùng. Mặc định, tùy chọn này được set để ưu tiên giá trị của biến môi trường `APP_DEBUG`, được lưu trong file .env trong application của bạn.
 
-**Trong môi trường production của bạn, giá trị này phải luôn là `false`. Nếu biến `APP_DEBUG` được set thành `true` trong quá trình production, bạn có nguy cơ bị lộ các giá trị cấu hình nhạy cảm cho người dùng ứng dụng của bạn.**
+> [!WARNING]
+> **Trong môi trường production của bạn, giá trị này phải luôn là `false`. Nếu biến `APP_DEBUG` được set thành `true` trong quá trình production, bạn có nguy cơ bị lộ các giá trị cấu hình nhạy cảm cho người dùng ứng dụng của bạn.**
 
 <a name="deploying-with-forge-or-vapor"></a>
-## Deploy cùng Forge và Vapor
+## Easy Deployment With Forge / Vapor
 
 <a name="laravel-forge"></a>
 #### Laravel Forge
@@ -154,7 +165,7 @@ Nếu bạn chưa sẵn sàng để quản lý cấu hình server của bạn ho
 
 Laravel Forge có thể tạo server trên các nhà cung cấp khác nhau như DigitalOcean, Linode, AWS, v.v. Ngoài ra, Forge có thể cài đặt và quản lý tất cả các công cụ cần thiết để xây dựng các ứng dụng Laravel, như Nginx, MySQL, Redis, Memcached, Beanstalk,...
 
-> **Note**
+> [!NOTE]
 > Bạn muốn có hướng dẫn đầy đủ về cách deploy với Laravel Forge? Hãy xem [Laravel Bootcamp](https://bootcamp.laravel.com/deploying) và [loạt video về Forge có trên Laracasts](https://laracasts.com/series/learn-laravel-forge-2022-edition).
 
 <a name="laravel-vapor"></a>

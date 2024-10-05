@@ -21,9 +21,9 @@ Tất cả các collection này cũng có vai trò như là một vòng lặp, c
 
 Tuy nhiên, như đã nói ở trên, collection mạnh mẽ hơn nhiều so với mảng và có thêm nhiều phương thức như map hoặc reduce, có thể được kết hợp lại với nhau qua một giao diện trực quan. Ví dụ: hãy xóa tất cả những người dùng không hoạt động và lấy ra tên của những người dùng còn lại:
 
-    $names = User::all()->reject(function ($user) {
+    $names = User::all()->reject(function (User $user) {
         return $user->active === false;
-    })->map(function ($user) {
+    })->map(function (User $user) {
         return $user->name;
     });
 
@@ -239,6 +239,7 @@ Nếu bạn muốn sử dụng một đối tượng `Collection` tùy biến kh
     namespace App\Models;
 
     use App\Support\UserCollection;
+    use Illuminate\Database\Eloquent\Collection;
     use Illuminate\Database\Eloquent\Model;
 
     class User extends Model
@@ -246,10 +247,10 @@ Nếu bạn muốn sử dụng một đối tượng `Collection` tùy biến kh
         /**
          * Create a new Eloquent Collection instance.
          *
-         * @param  array  $models
-         * @return \Illuminate\Database\Eloquent\Collection
+         * @param  array<int, \Illuminate\Database\Eloquent\Model>  $models
+         * @return \Illuminate\Database\Eloquent\Collection<int, \Illuminate\Database\Eloquent\Model>
          */
-        public function newCollection(array $models = [])
+        public function newCollection(array $models = []): Collection
         {
             return new UserCollection($models);
         }

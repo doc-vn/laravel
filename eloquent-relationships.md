@@ -77,13 +77,14 @@ Một quan hệ một-một là một type of database relationship rất cơ b�
     namespace App\Models;
 
     use Illuminate\Database\Eloquent\Model;
+    use Illuminate\Database\Eloquent\Relations\HasOne;
 
     class User extends Model
     {
         /**
          * Get the phone associated with the user.
          */
-        public function phone()
+        public function phone(): HasOne
         {
             return $this->hasOne(Phone::class);
         }
@@ -111,13 +112,14 @@ Vì vậy, chúng ta có thể truy cập vào model `Phone` từ model `User`. 
     namespace App\Models;
 
     use Illuminate\Database\Eloquent\Model;
+    use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
     class Phone extends Model
     {
         /**
          * Get the user that owns the phone.
          */
-        public function user()
+        public function user(): BelongsTo
         {
             return $this->belongsTo(User::class);
         }
@@ -130,7 +132,7 @@ Eloquent sẽ xác định tên mặc định của khóa ngoại bằng cách l
     /**
      * Get the user that owns the phone.
      */
-    public function user()
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'foreign_key');
     }
@@ -140,7 +142,7 @@ Nếu model cha không sử dụng cột `id` làm khóa chính hoặc bạn mu�
     /**
      * Get the user that owns the phone.
      */
-    public function user()
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'foreign_key', 'owner_key');
     }
@@ -155,13 +157,14 @@ Quan hệ một-nhiều có thể được sử dụng để định nghĩa các
     namespace App\Models;
 
     use Illuminate\Database\Eloquent\Model;
+    use Illuminate\Database\Eloquent\Relations\HasMany;
 
     class Post extends Model
     {
         /**
          * Get the comments for the blog post.
          */
-        public function comments()
+        public function comments(): HasMany
         {
             return $this->hasMany(Comment::class);
         }
@@ -176,7 +179,7 @@ Khi phương thức quan hệ đã được định nghĩa xong, bạn có thể
     $comments = Post::find(1)->comments;
 
     foreach ($comments as $comment) {
-        //
+        // ...
     }
 
 Vì tất cả các quan hệ cũng đóng vai trò như là một query builder, nên bạn có thể thêm các ràng buộc cho the relationship query bằng cách gọi phương thức `comments` và tiếp tục thêm các điều kiện vào trong truy vấn:
@@ -201,13 +204,14 @@ Bây giờ chúng ta có thể truy cập vào tất cả các comment của m�
     namespace App\Models;
 
     use Illuminate\Database\Eloquent\Model;
+    use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
     class Comment extends Model
     {
         /**
          * Get the post that owns the comment.
          */
-        public function post()
+        public function post(): BelongsTo
         {
             return $this->belongsTo(Post::class);
         }
@@ -215,7 +219,7 @@ Bây giờ chúng ta có thể truy cập vào tất cả các comment của m�
 
 Khi quan hệ đã được định nghĩa, chúng ta có thể lấy ra một post từ một comment cha bằng cách truy cập vào "thuộc tính quan hệ động" `post`:
 
-     use App\Models\Comment;
+    use App\Models\Comment;
 
     $comment = Comment::find(1);
 
@@ -230,7 +234,7 @@ Tuy nhiên, nếu khóa ngoại cho quan hệ của bạn không tuân theo các
     /**
      * Get the post that owns the comment.
      */
-    public function post()
+    public function post(): BelongsTo
     {
         return $this->belongsTo(Post::class, 'foreign_key');
     }
@@ -240,7 +244,7 @@ Nếu model cha của bạn không sử dụng `id` làm khóa chính của nó 
     /**
      * Get the post that owns the comment.
      */
-    public function post()
+    public function post(): BelongsTo
     {
         return $this->belongsTo(Post::class, 'foreign_key', 'owner_key');
     }
@@ -253,7 +257,7 @@ Quan hệ `belongsTo`, `hasOne`, `hasOneThrough` và `morphOne` cho phép bạn 
     /**
      * Get the author of the post.
      */
-    public function user()
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class)->withDefault();
     }
@@ -263,7 +267,7 @@ Quan hệ `belongsTo`, `hasOne`, `hasOneThrough` và `morphOne` cho phép bạn 
     /**
      * Get the author of the post.
      */
-    public function user()
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class)->withDefault([
             'name' => 'Guest Author',
@@ -273,9 +277,9 @@ Quan hệ `belongsTo`, `hasOne`, `hasOneThrough` và `morphOne` cho phép bạn 
     /**
      * Get the author of the post.
      */
-    public function user()
+    public function user(): BelongsTo
     {
-        return $this->belongsTo(User::class)->withDefault(function ($user, $post) {
+        return $this->belongsTo(User::class)->withDefault(function (User $user, Post $post) {
             $user->name = 'Guest Author';
         });
     }
@@ -312,7 +316,7 @@ Mặc định, Laravel sẽ xác định quan hệ được liên kết với mo
 /**
  * Get the user's most recent order.
  */
-public function latestOrder()
+public function latestOrder(): HasOne
 {
     return $this->hasOne(Order::class)->latestOfMany();
 }
@@ -324,7 +328,7 @@ Tương tự như vậy, bạn có thể định nghĩa một phương thức đ
 /**
  * Get the user's oldest order.
  */
-public function oldestOrder()
+public function oldestOrder(): HasOne
 {
     return $this->hasOne(Order::class)->oldestOfMany();
 }
@@ -338,14 +342,37 @@ Ví dụ: sử dụng phương thức `ofMany`, bạn có thể lấy ra đơn �
 /**
  * Get the user's largest order.
  */
-public function largestOrder()
+public function largestOrder(): HasOne
 {
     return $this->hasOne(Order::class)->ofMany('price', 'max');
 }
 ```
 
-> **Warning**
+> [!WARNING]
 > Bởi vì PostgreSQL không hỗ trợ thực thi các hàm `MAX` đối với các cột UUID, nên hiện tại không thể sử dụng quan hệ một trong nhiều kết hợp với các cột UUID của PostgreSQL.
+
+<a name="converting-many-relationships-to-has-one-relationships"></a>
+#### Converting "Many" Relationships to Has One Relationships
+
+Thông thường, khi lấy ra một model duy nhất bằng các phương thức `latestOfMany`, `oldestOfMany` hoặc `ofMany`, bạn đã có quan hệ "has many" được định nghĩa cho cùng một model. Để thuận tiện, Laravel cho phép bạn dễ dàng chuyển quan hệ này thành quan hệ "has one" bằng cách gọi phương thức `one` trên quan hệ:
+
+```php
+/**
+ * Get the user's orders.
+ */
+public function orders(): HasMany
+{
+    return $this->hasMany(Order::class);
+}
+
+/**
+ * Get the user's largest order.
+ */
+public function largestOrder(): HasOne
+{
+    return $this->orders()->one()->ofMany('price', 'max');
+}
+```
 
 <a name="advanced-has-one-of-many-relationships"></a>
 #### Advanced Has One Of Many Relationships
@@ -358,12 +385,12 @@ Vì vậy, tóm lại, chúng ta cần lấy ra giá được công bố mới n
 /**
  * Get the current pricing for the product.
  */
-public function currentPricing()
+public function currentPricing(): HasOne
 {
     return $this->hasOne(Price::class)->ofMany([
         'published_at' => 'max',
         'id' => 'max',
-    ], function ($query) {
+    ], function (Builder $query) {
         $query->where('published_at', '<', now());
     });
 }
@@ -397,13 +424,14 @@ Bây giờ chúng ta đã xem qua cấu trúc bảng cho quan hệ, hãy định
     namespace App\Models;
 
     use Illuminate\Database\Eloquent\Model;
+    use Illuminate\Database\Eloquent\Relations\HasOneThrough;
 
     class Mechanic extends Model
     {
         /**
          * Get the car's owner.
          */
-        public function carOwner()
+        public function carOwner(): HasOneThrough
         {
             return $this->hasOneThrough(Owner::class, Car::class);
         }
@@ -431,7 +459,7 @@ Các quy ước khóa ngoại mặc định của Eloquent sẽ được sử d�
         /**
          * Get the car's owner.
          */
-        public function carOwner()
+        public function carOwner(): HasOneThrough
         {
             return $this->hasOneThrough(
                 Owner::class,
@@ -480,13 +508,14 @@ Bây giờ chúng ta đã xem qua cấu trúc bảng cho quan hệ, hãy định
     namespace App\Models;
 
     use Illuminate\Database\Eloquent\Model;
+    use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 
     class Project extends Model
     {
         /**
          * Get all of the deployments for the project.
          */
-        public function deployments()
+        public function deployments(): HasManyThrough
         {
             return $this->hasManyThrough(Deployment::class, Environment::class);
         }
@@ -513,7 +542,7 @@ Các quy ước khóa ngoại mặc định của Eloquent sẽ được sử d�
 
     class Project extends Model
     {
-        public function deployments()
+        public function deployments(): HasManyThrough
         {
             return $this->hasManyThrough(
                 Deployment::class,
@@ -570,13 +599,14 @@ Quan hệ nhiều-nhiều được định nghĩa bằng cách viết một phư
     namespace App\Models;
 
     use Illuminate\Database\Eloquent\Model;
+    use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
     class User extends Model
     {
         /**
          * The roles that belong to the user.
          */
-        public function roles()
+        public function roles(): BelongsToMany
         {
             return $this->belongsToMany(Role::class);
         }
@@ -589,7 +619,7 @@ Khi quan hệ này được định nghĩa xong, bạn có thể truy cập role
     $user = User::find(1);
 
     foreach ($user->roles as $role) {
-        //
+        // ...
     }
 
 Vì tất cả các quan hệ cũng đóng vai trò là một query builder, nên bạn có thể thêm các ràng buộc khác vào truy vấn bằng cách gọi phương thức `roles` và tiếp tục thêm các điều kiện vào truy vấn:
@@ -614,13 +644,14 @@ Ngoài việc tùy chỉnh tên của bảng trung gian, bạn cũng có thể t
     namespace App\Models;
 
     use Illuminate\Database\Eloquent\Model;
+    use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
     class Role extends Model
     {
         /**
          * The users that belong to the role.
          */
-        public function users()
+        public function users(): BelongsToMany
         {
             return $this->belongsToMany(User::class);
         }
@@ -651,7 +682,7 @@ Nếu bạn muốn bảng pivot của bạn tự động duy trì các cột tim
 
     return $this->belongsToMany(Role::class)->withTimestamps();
 
-> **Warning**
+> [!WARNING]
 > Các bảng trung gian sử dụng timestamp được duy trì tự động của Eloquent bắt buộc phải có cả hai cột timestamp `created_at` và `updated_at`.
 
 <a name="customizing-the-pivot-attribute-name"></a>
@@ -724,13 +755,14 @@ Nếu bạn muốn định nghĩa một model tùy biến, để biểu diễn b
     namespace App\Models;
 
     use Illuminate\Database\Eloquent\Model;
+    use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
     class Role extends Model
     {
         /**
          * The users that belong to the role.
          */
-        public function users()
+        public function users(): BelongsToMany
         {
             return $this->belongsToMany(User::class)->using(RoleUser::class);
         }
@@ -746,10 +778,10 @@ Khi định nghĩa model `RoleUser`, chúng ta sẽ extend nó từ class `Illum
 
     class RoleUser extends Pivot
     {
-        //
+        // ...
     }
 
-> **Warning**
+> [!WARNING]
 > Các model pivot có thể không sử dụng trait `SoftDeletes`. Nếu bạn cần soft delete các bản ghi của model pivot, hãy xem xét chuyển đổi model pivot của bạn thành một model Eloquent thực tế.
 
 <a name="custom-pivot-models-and-incrementing-ids"></a>
@@ -803,35 +835,42 @@ Tiếp theo, hãy xem xét đến các định nghĩa model cần thiết để 
     namespace App\Models;
 
     use Illuminate\Database\Eloquent\Model;
+    use Illuminate\Database\Eloquent\Relations\MorphTo;
 
     class Image extends Model
     {
         /**
          * Get the parent imageable model (user or post).
          */
-        public function imageable()
+        public function imageable(): MorphTo
         {
             return $this->morphTo();
         }
     }
+
+    use Illuminate\Database\Eloquent\Model;
+    use Illuminate\Database\Eloquent\Relations\MorphOne;
 
     class Post extends Model
     {
         /**
          * Get the post's image.
          */
-        public function image()
+        public function image(): MorphOne
         {
             return $this->morphOne(Image::class, 'imageable');
         }
     }
+
+    use Illuminate\Database\Eloquent\Model;
+    use Illuminate\Database\Eloquent\Relations\MorphOne;
 
     class User extends Model
     {
         /**
          * Get the user's image.
          */
-        public function image()
+        public function image(): MorphOne
         {
             return $this->morphOne(Image::class, 'imageable');
         }
@@ -866,7 +905,7 @@ Nếu cần, bạn có thể chỉ định tên cho cột "id" và cột "type" 
     /**
      * Get the model that the image belongs to.
      */
-    public function imageable()
+    public function imageable(): MorphTo
     {
         return $this->morphTo(__FUNCTION__, 'imageable_type', 'imageable_id');
     }
@@ -905,35 +944,42 @@ Tiếp theo, hãy xem các định nghĩa model cần thiết để xây dựng 
     namespace App\Models;
 
     use Illuminate\Database\Eloquent\Model;
+    use Illuminate\Database\Eloquent\Relations\MorphTo;
 
     class Comment extends Model
     {
         /**
          * Get the parent commentable model (post or video).
          */
-        public function commentable()
+        public function commentable(): MorphTo
         {
             return $this->morphTo();
         }
     }
+
+    use Illuminate\Database\Eloquent\Model;
+    use Illuminate\Database\Eloquent\Relations\MorphMany;
 
     class Post extends Model
     {
         /**
          * Get all of the post's comments.
          */
-        public function comments()
+        public function comments(): MorphMany
         {
             return $this->morphMany(Comment::class, 'commentable');
         }
     }
+
+    use Illuminate\Database\Eloquent\Model;
+    use Illuminate\Database\Eloquent\Relations\MorphMany;
 
     class Video extends Model
     {
         /**
          * Get all of the video's comments.
          */
-        public function comments()
+        public function comments(): MorphMany
         {
             return $this->morphMany(Comment::class, 'commentable');
         }
@@ -949,7 +995,7 @@ Khi bảng cơ sở dữ liệu và model của bạn đã được định ngh�
     $post = Post::find(1);
 
     foreach ($post->comments as $comment) {
-        //
+        // ...
     }
 
 Bạn cũng có thể lấy ra cha của một quan hệ đa hình từ một model đa hình con bằng cách truy cập vào tên của phương thức mà thực hiện lệnh gọi tới `morphTo`. Trong trường hợp này, đó là phương thức `commentable` trên model `Comment`. Vì vậy, chúng ta sẽ truy cập vào phương thức đó như là một thuộc tính quan hệ động để truy cập model cha của comment:
@@ -971,7 +1017,7 @@ Thỉnh thoảng một model có thể có nhiều model quan hệ, nhưng bạn
 /**
  * Get the user's most recent image.
  */
-public function latestImage()
+public function latestImage(): MorphOne
 {
     return $this->morphOne(Image::class, 'imageable')->latestOfMany();
 }
@@ -983,7 +1029,7 @@ Tương tự như vậy, bạn có thể định nghĩa một phương thức đ
 /**
  * Get the user's oldest image.
  */
-public function oldestImage()
+public function oldestImage(): MorphOne
 {
     return $this->morphOne(Image::class, 'imageable')->oldestOfMany();
 }
@@ -997,13 +1043,13 @@ Ví dụ: sử dụng phương thức `ofMany`, bạn có thể lấy ra hình �
 /**
  * Get the user's most popular image.
  */
-public function bestImage()
+public function bestImage(): MorphOne
 {
     return $this->morphOne(Image::class, 'imageable')->ofMany('likes', 'max');
 }
 ```
 
-> **Note**
+> [!NOTE]
 > Có thể xây dựng các quan hệ "một trong nhiều" nâng cao. Để biết thêm thông tin, vui lòng tham khảo [tài liệu một trong nhiều](#advanced-has-one-of-many-relationships).
 
 <a name="many-to-many-polymorphic-relations"></a>
@@ -1031,7 +1077,7 @@ Quan hệ đa hình nhiều-nhiều phức tạp hơn một chút so với quan 
         taggable_id - integer
         taggable_type - string
 
-> **Note**
+> [!NOTE]
 > Trước khi đi sâu hơn vào quan hệ nhiều-nhiều đa hình, bạn có thể đọc tài liệu về [quan hệ nhiều-nhiều](#many-to-many).
 
 <a name="many-to-many-polymorphic-model-structure"></a>
@@ -1046,13 +1092,14 @@ Phương thức `morphToMany` chấp nhận tên của model quan hệ cũng nh�
     namespace App\Models;
 
     use Illuminate\Database\Eloquent\Model;
+    use Illuminate\Database\Eloquent\Relations\MorphToMany;
 
     class Post extends Model
     {
         /**
          * Get all of the tags for the post.
          */
-        public function tags()
+        public function tags(): MorphToMany
         {
             return $this->morphToMany(Tag::class, 'taggable');
         }
@@ -1070,13 +1117,14 @@ Phương thức `morphedByMany` chấp nhận tên của model quan hệ cũng n
     namespace App\Models;
 
     use Illuminate\Database\Eloquent\Model;
+    use Illuminate\Database\Eloquent\Relations\MorphToMany;
 
     class Tag extends Model
     {
         /**
          * Get all of the posts that are assigned this tag.
          */
-        public function posts()
+        public function posts(): MorphToMany
         {
             return $this->morphedByMany(Post::class, 'taggable');
         }
@@ -1084,7 +1132,7 @@ Phương thức `morphedByMany` chấp nhận tên của model quan hệ cũng n
         /**
          * Get all of the videos that are assigned this tag.
          */
-        public function videos()
+        public function videos(): MorphToMany
         {
             return $this->morphedByMany(Video::class, 'taggable');
         }
@@ -1100,7 +1148,7 @@ Khi các bảng và các model của bạn đã được định nghĩa xong, b�
     $post = Post::find(1);
 
     foreach ($post->tags as $tag) {
-        //
+        // ...
     }
 
 Bạn có thể lấy ra cha của một quan hệ đa hình từ model đa hình con bằng cách truy cập vào tên của phương thức mà thực hiện lệnh gọi tới `morphedByMany`. Trong trường hợp này, đó là các phương thức `posts` hoặc `videos` trên model `Tag`:
@@ -1110,11 +1158,11 @@ Bạn có thể lấy ra cha của một quan hệ đa hình từ model đa hìn
     $tag = Tag::find(1);
 
     foreach ($tag->posts as $post) {
-        //
+        // ...
     }
 
     foreach ($tag->videos as $video) {
-        //
+        // ...
     }
 
 <a name="custom-polymorphic-types"></a>
@@ -1141,7 +1189,7 @@ Bạn có thể xác định bí danh morph của một model trong khi ứng d�
 
     $class = Relation::getMorphedModel($alias);
 
-> **Warning**
+> [!WARNING]
 > Khi thêm một "morph map" vào ứng dụng hiện có của bạn, mọi giá trị của cột morphable `*_type` trong cơ sở dữ liệu của bạn vẫn sẽ chứa tên đầy đủ của class đó và nó sẽ cần được chuyển đổi thành tên "map" của nó.
 
 <a name="dynamic-relationships"></a>
@@ -1154,11 +1202,11 @@ Phương thức `resolveRelationUsing` chấp nhận tên quan hệ mong muốn 
     use App\Models\Order;
     use App\Models\Customer;
 
-    Order::resolveRelationUsing('customer', function ($orderModel) {
+    Order::resolveRelationUsing('customer', function (Order $orderModel) {
         return $orderModel->belongsTo(Customer::class, 'customer_id');
     });
 
-> **Warning**
+> [!WARNING]
 > Khi định nghĩa quan hệ động, hãy luôn đảm bảo là bạn đã cung cấp các tham số tên khóa cho các phương thức quan hệ Eloquent.
 
 <a name="querying-relations"></a>
@@ -1173,13 +1221,14 @@ Ví dụ, hãy tưởng tượng một application blog trong đó có model `Us
     namespace App\Models;
 
     use Illuminate\Database\Eloquent\Model;
+    use Illuminate\Database\Eloquent\Relations\HasMany;
 
     class User extends Model
     {
         /**
          * Get all of the posts for the user.
          */
-        public function posts()
+        public function posts(): HasMany
         {
             return $this->hasMany(Post::class);
         }
@@ -1205,7 +1254,7 @@ Như đã trình bày trong ví dụ trên, bạn có thể thoải mái thêm c
             ->orWhere('votes', '>=', 100)
             ->get();
 
-Ví dụ trên sẽ tạo SQL sau. Như bạn có thể thấy, mệnh đề `or` sẽ hướng dẫn truy vấn trả về _bất kỳ_ user nào có hơn 100 vote. Truy vấn không còn bị ràng buộc với một user cụ thể:
+Ví dụ trên sẽ tạo SQL sau. Như bạn có thể thấy, mệnh đề `or` sẽ hướng dẫn truy vấn trả về _bất kỳ_ post nào có hơn 100 vote. Truy vấn không còn bị ràng buộc với một user cụ thể:
 
 ```sql
 select *
@@ -1242,7 +1291,7 @@ Nếu bạn không cần thêm các ràng buộc cho truy vấn quan hệ Eloque
     $user = User::find(1);
 
     foreach ($user->posts as $post) {
-        //
+        // ...
     }
 
 Thuộc tính quan hệ động thực hiện một "lazy loading", nghĩa là chúng sẽ chỉ load dữ liệu quan hệ khi bạn thực sự truy cập đến chúng. Do đó, các nhà phát triển thường sử dụng [eager loading](#eager-loading) để load trước các quan hệ mà họ biết là sẽ được truy cập vào sau khi một model được load. Eager loading sẽ cung cấp một cách hiệu quả để giảm số lượng truy vấn SQL phải được thực thi để load các quan hệ của một model.
@@ -1281,7 +1330,7 @@ Nếu bạn cần nhiều hơn thế nữa, bạn có thể sử dụng các ph�
         $query->where('content', 'like', 'code%');
     }, '>=', 10)->get();
 
-> **Warning**
+> [!WARNING]
 > Eloquent hiện không hỗ trợ truy vấn quan hệ có tồn tại trong các cơ sở dữ liệu hay không. Các quan hệ phải tồn tại trong cùng một cơ sở dữ liệu.
 
 <a name="inline-relationship-existence-queries"></a>
@@ -1359,7 +1408,7 @@ Bạn có thể sử dụng ký hiệu "dấu chấm" để thực hiện truy v
     $comments = Comment::whereHasMorph(
         'commentable',
         [Post::class, Video::class],
-        function (Builder $query, $type) {
+        function (Builder $query, string $type) {
             $column = $type === Post::class ? 'content' : 'title';
 
             $query->where($column, 'like', 'code%');
@@ -1429,7 +1478,7 @@ Bằng cách sử dụng phương thức `loadCount`, bạn có thể đếm s�
 
 Nếu bạn cần set thêm các ràng buộc truy vấn cho các truy vấn đếm số lượng, bạn có thể truyền một mảng gồm các khóa là các tên của các quan hệ mà bạn muốn đếm. Các giá trị của mảng phải là các instance closure nhận vào một instance query builder:
 
-    $book->loadCount(['reviews' => function ($query) {
+    $book->loadCount(['reviews' => function (Builder $query) {
         $query->where('rating', 5);
     }])
 
@@ -1516,13 +1565,14 @@ Khi truy cập vào các quan hệ Eloquent dưới dạng các thuộc tính, c
     namespace App\Models;
 
     use Illuminate\Database\Eloquent\Model;
+    use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
     class Book extends Model
     {
         /**
          * Get the author that wrote the book.
          */
-        public function author()
+        public function author(): BelongsTo
         {
             return $this->belongsTo(Author::class);
         }
@@ -1587,13 +1637,14 @@ Nếu bạn muốn eager loading một quan hệ `morphTo`, cũng như các quan
     <?php
 
     use Illuminate\Database\Eloquent\Model;
+    use Illuminate\Database\Eloquent\Relations\MorphTo;
 
     class ActivityFeed extends Model
     {
         /**
          * Get the parent of the activity feed record.
          */
-        public function parentable()
+        public function parentable(): MorphTo
         {
             return $this->morphTo();
         }
@@ -1621,7 +1672,7 @@ Bạn có thể không phải lúc nào cũng cần mọi cột của quan hệ 
 
     $books = Book::with('author:id,name,book_id')->get();
 
-> **Warning**
+> [!WARNING]
 > Khi sử dụng tính năng này, bạn phải luôn thêm cột `id` và bất kỳ cột khóa ngoại nào có liên quan trong danh sách các cột mà bạn muốn truy xuất.
 
 <a name="eager-loading-by-default"></a>
@@ -1634,6 +1685,7 @@ Thỉnh thoảng bạn có thể muốn luôn load một số quan hệ khi truy
     namespace App\Models;
 
     use Illuminate\Database\Eloquent\Model;
+    use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
     class Book extends Model
     {
@@ -1647,7 +1699,7 @@ Thỉnh thoảng bạn có thể muốn luôn load một số quan hệ khi truy
         /**
          * Get the author that wrote the book.
          */
-        public function author()
+        public function author(): BelongsTo
         {
             return $this->belongsTo(Author::class);
         }
@@ -1655,7 +1707,7 @@ Thỉnh thoảng bạn có thể muốn luôn load một số quan hệ khi truy
         /**
          * Get the genre of the book.
          */
-        public function genre()
+        public function genre(): BelongsTo
         {
             return $this->belongsTo(Genre::class);
         }
@@ -1675,18 +1727,19 @@ Nếu bạn muốn ghi đè tất cả các item có trong thuộc tính `$with`
 Thỉnh thoảng bạn có thể muốn eager load một quan hệ, nhưng cũng muốn khai báo thêm các điều kiện truy vấn cho quan hệ eager load đó. Bạn có thể thực hiện điều này bằng cách truyền một mảng các quan hệ cho phương thức `with` trong đó khóa mảng là tên quan hệ và giá trị mảng là một closure có thêm các ràng buộc bổ sung cho truy vấn eager loading:
 
     use App\Models\User;
+    use Illuminate\Contracts\Database\Eloquent\Builder;
 
-    $users = User::with(['posts' => function ($query) {
+    $users = User::with(['posts' => function (Builder $query) {
         $query->where('title', 'like', '%code%');
     }])->get();
 
 Trong ví dụ này, Eloquent sẽ chỉ eager load các post mà trong đó cột `title` của post sẽ chứa từ `code`. Bạn có thể gọi các phương thức [query builder](/docs/{{version}}/queries) khác để tùy biến thêm cho thao tác eager loading:
 
-    $users = User::with(['posts' => function ($query) {
+    $users = User::with(['posts' => function (Builder $query) {
         $query->orderBy('created_at', 'desc');
     }])->get();
 
-> **Warning**
+> [!WARNING]
 > Phương thức query builder `limit` và `take` có thể không sử dụng được khi bạn đang eager loading.
 
 <a name="constraining-eager-loading-of-morph-to-relationships"></a>
@@ -1694,15 +1747,14 @@ Trong ví dụ này, Eloquent sẽ chỉ eager load các post mà trong đó c�
 
 Nếu bạn muốn eager loading một quan hệ `morphTo`, Eloquent sẽ chạy nhiều truy vấn để tìm nạp từng loại model quan hệ. Bạn có thể thêm các ràng buộc bổ sung cho từng truy vấn này bằng cách sử dụng phương thức `constrain` của quan hệ `MorphTo`:
 
-    use Illuminate\Database\Eloquent\Builder;
     use Illuminate\Database\Eloquent\Relations\MorphTo;
 
     $comments = Comment::with(['commentable' => function (MorphTo $morphTo) {
         $morphTo->constrain([
-            Post::class => function (Builder $query) {
+            Post::class => function ($query) {
                 $query->whereNull('hidden_at');
             },
-            Video::class => function (Builder $query) {
+            Video::class => function ($query) {
                 $query->where('type', 'educational');
             },
         ]);
@@ -1736,7 +1788,7 @@ Thỉnh thoảng bạn có thể cần eager load một quan hệ sau khi một 
 
 Nếu bạn cần set thêm các ràng buộc truy vấn cho các truy vấn eager loading, bạn có thể truyền vào một mảng có khóa là các quan hệ mà bạn muốn load. Các giá trị mảng phải là các instances closure nhận vào một instances query:
 
-    $author->load(['books' => function ($query) {
+    $author->load(['books' => function (Builder $query) {
         $query->orderBy('published_date', 'asc');
     }]);
 
@@ -1745,7 +1797,7 @@ Nếu bạn cần set thêm các ràng buộc truy vấn cho các truy vấn eag
     $book->loadMissing('author');
 
 <a name="nested-lazy-eager-loading-morphto"></a>
-#### Nested Lazy Eager Loading & `morphTo`
+#### Nested Lazy Eager Loading và `morphTo`
 
 Nếu bạn muốn eager loading một quan hệ `morphTo`, cũng như các quan hệ lồng nhau trên các thực thể khác nhau có thể được trả về bởi quan hệ đó, bạn có thể sử dụng phương thức `loadMorph`.
 
@@ -1754,13 +1806,14 @@ Phương thức này chấp nhận tên của quan hệ `morphTo` làm tham số
     <?php
 
     use Illuminate\Database\Eloquent\Model;
+    use Illuminate\Database\Eloquent\Relations\MorphTo;
 
     class ActivityFeed extends Model
     {
         /**
          * Get the parent of the activity feed record.
          */
-        public function parentable()
+        public function parentable(): MorphTo
         {
             return $this->morphTo();
         }
@@ -1790,10 +1843,8 @@ use Illuminate\Database\Eloquent\Model;
 
 /**
  * Bootstrap any application services.
- *
- * @return void
  */
-public function boot()
+public function boot(): void
 {
     Model::preventLazyLoading(! $this->app->isProduction());
 }
@@ -1804,8 +1855,8 @@ Sau khi chặn lazy loading, Eloquent sẽ đưa ra một exception `Illuminate\
 Bạn có thể tùy chỉnh hành vi lazy loading bằng phương thức `handleLazyLoadingViolationsUsing`. Ví dụ: sử dụng phương thức này, bạn có thể hướng dẫn các lazy loading chỉ được ghi log thay vì làm gián đoạn quá trình thực thi của ứng dụng với các exceptions:
 
 ```php
-Model::handleLazyLoadingViolationUsing(function ($model, $relation) {
-    $class = get_class($model);
+Model::handleLazyLoadingViolationUsing(function (Model $model, string $relation) {
+    $class = $model::class;
 
     info("Attempted to lazy load [{$relation}] on model [{$class}].");
 });
@@ -1886,9 +1937,22 @@ Bạn có thể sử dụng phương thức `createMany` để tạo nhiều mod
         ['message' => 'Another new comment.'],
     ]);
 
+Các phương thức `createQuietly` và `createManyQuietly` có thể được sử dụng để tạo một hoặc là nhiều model mà không gửi bất kỳ event nào:
+
+    $user = User::find(1);
+
+    $user->posts()->createQuietly([
+        'title' => 'Post title.',
+    ]);
+
+    $user->posts()->createManyQuietly([
+        ['title' => 'First post.'],
+        ['title' => 'Second post.'],
+    ]);
+
 Bạn cũng có thể sử dụng các phương thức `findOrNew`, `firstOrNew`, `firstOrCreate`, và `updateOrCreate` để [tạo và cập nhật model trên các quan hệ](https://laravel.com/docs/{{version}}/eloquent#other-creation-methods).
 
-> **Note**
+> [!NOTE]
 > Trước khi sử dụng phương thức `create`, bạn hãy chắc chắn là đã xem qua tài liệu về thuộc tính [mass assignment](/docs/{{version}}/eloquent#mass-assignment).
 
 <a name="updating-belongs-to-relationships"></a>
@@ -2003,6 +2067,7 @@ Ví dụ, khi một model `Comment` được cập nhật, bạn có thể muố
     namespace App\Models;
 
     use Illuminate\Database\Eloquent\Model;
+    use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
     class Comment extends Model
     {
@@ -2016,11 +2081,11 @@ Ví dụ, khi một model `Comment` được cập nhật, bạn có thể muố
         /**
          * Get the post that the comment belongs to.
          */
-        public function post()
+        public function post(): BelongsTo
         {
             return $this->belongsTo(Post::class);
         }
     }
 
-> **Warning**
+> [!WARNING]
 > Timestamp của model gốc sẽ chỉ được cập nhật nếu model con được cập nhật bằng phương thức `save` của Eloquent.

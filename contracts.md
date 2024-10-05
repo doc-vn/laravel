@@ -38,7 +38,7 @@ Có nhiều loại class trong Laravel được resolve thông qua [service cont
 
 Ví dụ, hãy xem event listener này:
 
-     <?php
+    <?php
 
     namespace App\Listeners;
 
@@ -49,32 +49,18 @@ Ví dụ, hãy xem event listener này:
     class CacheOrderInformation
     {
         /**
-         * The Redis factory implementation.
-         *
-         * @var \Illuminate\Contracts\Redis\Factory
-         */
-        protected $redis;
-
-        /**
          * Create a new event handler instance.
-         *
-         * @param  \Illuminate\Contracts\Redis\Factory  $redis
-         * @return void
          */
-        public function __construct(Factory $redis)
-        {
-            $this->redis = $redis;
-        }
+        public function __construct(
+            protected Factory $redis,
+        ) {}
 
         /**
          * Handle the event.
-         *
-         * @param  \App\Events\OrderWasPlaced  $event
-         * @return void
          */
-        public function handle(OrderWasPlaced $event)
+        public function handle(OrderWasPlaced $event): void
         {
-            //
+            // ...
         }
     }
 
@@ -133,7 +119,7 @@ Bảng này cung cấp một tài liệu tham khảo nhanh cho tất cả các c
 | [Illuminate\Contracts\Pagination\LengthAwarePaginator](https://github.com/illuminate/contracts/blob/{{version}}/Pagination/LengthAwarePaginator.php)   | &nbsp;                    |
 | [Illuminate\Contracts\Pagination\Paginator](https://github.com/illuminate/contracts/blob/{{version}}/Pagination/Paginator.php)                         | &nbsp;                    |
 | [Illuminate\Contracts\Pipeline\Hub](https://github.com/illuminate/contracts/blob/{{version}}/Pipeline/Hub.php)                                         | &nbsp;                    |
-| [Illuminate\Contracts\Pipeline\Pipeline](https://github.com/illuminate/contracts/blob/{{version}}/Pipeline/Pipeline.php)                               | &nbsp;                    |
+| [Illuminate\Contracts\Pipeline\Pipeline](https://github.com/illuminate/contracts/blob/{{version}}/Pipeline/Pipeline.php)                               | `Pipeline`;                    |
 | [Illuminate\Contracts\Queue\EntityResolver](https://github.com/illuminate/contracts/blob/{{version}}/Queue/EntityResolver.php)                         | &nbsp;                    |
 | [Illuminate\Contracts\Queue\Factory](https://github.com/illuminate/contracts/blob/{{version}}/Queue/Factory.php)                                       | `Queue`                   |
 | [Illuminate\Contracts\Queue\Job](https://github.com/illuminate/contracts/blob/{{version}}/Queue/Job.php)                                               | &nbsp;                    |

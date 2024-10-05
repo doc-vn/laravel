@@ -23,13 +23,14 @@
 - [Tương tác với Element](#interacting-with-elements)
     - [Dusk Selector](#dusk-selectors)
     - [Text, Values, và Attributes](#text-values-and-attributes)
-    - [Interacting With Forms](#interacting-with-forms)
+    - [Tương tác với forms](#interacting-with-forms)
     - [Đính kèm Files](#attaching-files)
     - [Ấn Buttons](#pressing-buttons)
     - [Nhấn Links](#clicking-links)
     - [Dùng Keyboard](#using-the-keyboard)
-    - [JavaScript Dialogs](#javascript-dialogs)
     - [Dùng Mouse](#using-the-mouse)
+    - [JavaScript Dialogs](#javascript-dialogs)
+    - [Tương tác với inline frames](#interacting-with-iframes)
     - [Scoping Selectors](#scoping-selectors)
     - [Chờ Elements](#waiting-for-elements)
     - [Scrolling một phần tử vào view](#scrolling-an-element-into-view)
@@ -47,6 +48,7 @@
     - [Heroku CI](#running-tests-on-heroku-ci)
     - [Travis CI](#running-tests-on-travis-ci)
     - [GitHub Actions](#running-tests-on-github-actions)
+    - [Chipper CI](#running-tests-on-chipper-ci)
 
 <a name="introduction"></a>
 ## Giới thiệu
@@ -59,10 +61,10 @@
 Để bắt đầu, bạn nên cài đặt [Google Chrome](https://www.google.com/chrome) và thêm library Composer `laravel/dusk` vào project của bạn:
 
 ```shell
-composer require --dev laravel/dusk
+composer require laravel/dusk --dev
 ```
 
-> **Warning**
+> [!WARNING]
 > Nếu bạn đang đăng ký thủ công service provider của Dusk, thì bạn **đừng bao giờ** đăng ký nó trong môi trường production của bạn, vì làm như vậy sẽ có thể dẫn đến bất kỳ người dùng nào cũng có thể được authenticate vào application của bạn.
 
 Sau khi cài đặt package Dusk, hãy chạy lệnh Artisan `dusk:install`. Lệnh `dusk:install` sẽ tạo ra thư mục `tests/Browser` và một example Dusk test, và cài đặt file binary Chrome Driver cho hệ điều hành của bạn:
@@ -73,7 +75,7 @@ php artisan dusk:install
 
 Tiếp theo, cài đặt biến môi trường `APP_URL` trong file `.env` của application của bạn. Giá trị này phải giống với giá trị URL mà bạn đang sử dụng để truy cập vào application của bạn trên trình duyệt.
 
-> **Note**
+> [!NOTE]
 > Nếu bạn đang sử dụng [Laravel Sail](/docs/{{version}}/sail) để quản lý môi trường phát triển local của bạn, vui lòng tham khảo thêm tài liệu của Sail về [set cấu hình và chạy Dusk test](/docs/{{version}}/sail#laravel-dusk).
 
 <a name="managing-chromedriver-installations"></a>
@@ -95,7 +97,7 @@ php artisan dusk:chrome-driver --all
 php artisan dusk:chrome-driver --detect
 ```
 
-> **Warning**
+> [!WARNING]
 > Dusk sẽ yêu cầu file `chromedriver` của nó phải có quyền chạy. Nếu như bạn đang gặp lỗi khi chạy Dusk, thì bạn nên đảm bảo là file đó đã có quyền chạy bằng lệnh sau: `chmod -R 0755 vendor/laravel/dusk/bin/`.
 
 <a name="using-other-browsers"></a>
@@ -109,21 +111,20 @@ Mặc định, Dusk sử dụng Google Chrome và cài đặt [ChromeDriver](htt
      * Prepare for Dusk test execution.
      *
      * @beforeClass
-     * @return void
      */
-    public static function prepare()
+    public static function prepare(): void
     {
         // static::startChromeDriver();
     }
 
 Tiếp theo, bạn cần phải sửa phương thức `driver` để kết nối tới URL và cổng mà bạn chọn. Ngoài ra, bạn cũng có thể sửa "các thông số cho trình duyệt" mà bạn muốn truyền đến WebDriver:
 
+    use Facebook\WebDriver\Remote\RemoteWebDriver;
+
     /**
      * Create the RemoteWebDriver instance.
-     *
-     * @return \Facebook\WebDriver\Remote\RemoteWebDriver
      */
-    protected function driver()
+    protected function driver(): RemoteWebDriver
     {
         return RemoteWebDriver::create(
             'http://localhost:4444/wd/hub', DesiredCapabilities::phantomjs()
@@ -166,7 +167,7 @@ Trait `DatabaseMigrations` sẽ chạy migration cơ sở dữ liệu của bạ
         use DatabaseMigrations;
     }
 
-> **Warning**
+> [!WARNING]
 > Cơ sở dữ liệu SQLite có thể không được sử dụng khi chạy các bài test Dusk. Vì trình duyệt chạy trong một process riêng của nó và nó sẽ không thể truy cập được vào file cơ sở dữ liệu của các process khác.
 
 <a name="reset-truncation"></a>
@@ -221,6 +222,24 @@ Ngoài ra, bạn có thể định nghĩa thuộc tính `$exceptTables` trên te
      */
     protected $connectionsToTruncate = ['mysql'];
 
+Nếu bạn muốn chạy code trước hoặc sau, khi thực hiện truncation cơ sở dữ liệu, bạn có thể định nghĩa phương thức `beforeTruncatingDatabase` hoặc `afterTruncatingDatabase` trên class test của bạn:
+
+    /**
+     * Perform any work that should take place before the database has started truncating.
+     */
+    protected function beforeTruncatingDatabase(): void
+    {
+        //
+    }
+
+    /**
+     * Perform any work that should take place after the database has finished truncating.
+     */
+    protected function afterTruncatingDatabase(): void
+    {
+        //
+    }
+
 <a name="running-tests"></a>
 ### Chạy Test
 
@@ -236,13 +255,13 @@ Khi bạn chạy lệnh `dusk`, nếu bạn gặp lỗi ở chỗ cuối cùng, 
 php artisan dusk:fails
 ```
 
-Lệnh `dusk` chấp nhận tất cả các tham số mà PHPUnit test chấp nhận, chẳng hạn như cho phép bạn chỉ chạy các bài test cho một [group](https://phpunit.readthedocs.io/en/9.5/annotations.html#group) nhất định, vv...:
+Lệnh `dusk` chấp nhận tất cả các tham số mà PHPUnit test chấp nhận, chẳng hạn như cho phép bạn chỉ chạy các bài test cho một [group](https://phpunit.readthedocs.io/en/10.1/annotations.html#group) nhất định, vv...:
 
 ```shell
 php artisan dusk --group=foo
 ```
 
-> **Note**
+> [!NOTE]
 > Nếu bạn đang sử dụng [Laravel Sail](/docs/{{version}}/sail) để quản lý môi trường phát triển local của bạn, vui lòng tham khảo thêm tài liệu của Sail về [set cấu hình và chạy Dusk test](/docs/{{version}}/sail#laravel-dusk).
 
 <a name="manually-starting-chromedriver"></a>
@@ -254,21 +273,20 @@ Mặc định, Dusk sẽ thử khởi động ChromeDriver. Nếu ChromeDriver k
      * Prepare for Dusk test execution.
      *
      * @beforeClass
-     * @return void
      */
-    public static function prepare()
+    public static function prepare(): void
     {
         // static::startChromeDriver();
     }
 
 Ngoài ra, nếu bạn khởi động ChromeDriver trên một cổng khác, ví dụ như là 9515, bạn nên sửa phương thức `driver` trong một class để phản ánh đúng cổng mà bạn mong muốn:
 
+    use Facebook\WebDriver\Remote\RemoteWebDriver;
+
     /**
      * Create the RemoteWebDriver instance.
-     *
-     * @return \Facebook\WebDriver\Remote\RemoteWebDriver
      */
-    protected function driver()
+    protected function driver(): RemoteWebDriver
     {
         return RemoteWebDriver::create(
             'http://localhost:9515', DesiredCapabilities::chrome()
@@ -296,6 +314,7 @@ Khi chạy test, Dusk sẽ back-up file `.env` gốc của bạn và đổi tên
 
     use App\Models\User;
     use Illuminate\Foundation\Testing\DatabaseMigrations;
+    use Laravel\Dusk\Browser;
     use Laravel\Dusk\Chrome;
     use Tests\DuskTestCase;
 
@@ -305,16 +324,14 @@ Khi chạy test, Dusk sẽ back-up file `.env` gốc của bạn và đổi tên
 
         /**
          * A basic browser test example.
-         *
-         * @return void
          */
-        public function test_basic_example()
+        public function test_basic_example(): void
         {
             $user = User::factory()->create([
                 'email' => 'taylor@laravel.com',
             ]);
 
-            $this->browse(function ($browser) use ($user) {
+            $this->browse(function (Browser $browser) use ($user) {
                 $browser->visit('/login')
                         ->type('email', $user->email)
                         ->type('password', 'password')
@@ -331,7 +348,7 @@ Như bạn có thể thấy trong ví dụ trên, phương thức `browse` chấ
 
 Thỉnh thoảng bạn có thể cần chạy nhiều trình duyệt trong cùng một lúc để thực hiện test. Ví dụ: có thể cần chạy nhiều trình duyệt để kiểm tra một màn hình trò chuyện sử dụng websocket. Để tạo nhiều trình duyệt, chỉ cần thêm nhiều tham số trình duyệt vào parameter của closure được cung cấp cho phương thức `browse`:
 
-    $this->browse(function ($first, $second) {
+    $this->browse(function (Browser $first, Browser $second) {
         $first->loginAs(User::find(1))
               ->visit('/home')
               ->waitForText('Message');
@@ -406,12 +423,10 @@ Nếu bạn muốn định nghĩa một phương thức trình duyệt tùy bi�
     {
         /**
          * Register Dusk's browser macros.
-         *
-         * @return void
          */
-        public function boot()
+        public function boot(): void
         {
-            Browser::macro('scrollToElement', function ($element = null) {
+            Browser::macro('scrollToElement', function (string $element = null) {
                 $this->script("$('html, body').animate({ scrollTop: $('$element').offset().top }, 0);");
 
                 return $this;
@@ -421,7 +436,7 @@ Nếu bạn muốn định nghĩa một phương thức trình duyệt tùy bi�
 
 Phương thức `macro` chấp nhận một tên làm tham số đầu tiên và một closure làm tham số thứ hai của nó. closure của macro sẽ được chạy khi bạn gọi macro dưới dạng một phương thức trên một instance `Browser`:
 
-    $this->browse(function ($browser) use ($user) {
+    $this->browse(function (Browser $browser) use ($user) {
         $browser->visit('/pay')
                 ->scrollToElement('#credit-card-details')
                 ->assertSee('Enter Credit Card Details');
@@ -433,13 +448,14 @@ Phương thức `macro` chấp nhận một tên làm tham số đầu tiên và
 Thông thường, bạn sẽ cần test các trang mà cần được authentication. Bạn có thể sử dụng phương thức `loginAs` của Dusk để tránh phải tương tác với màn hình login trong ứng dụng của bạn trong mỗi lần kiểm tra. Phương thức `loginAs` chấp nhận khóa chính được liên kết với model xác thực của bạn hoặc một instance model xác thực:
 
     use App\Models\User;
+    use Laravel\Dusk\Browser;
 
-    $this->browse(function ($browser) {
+    $this->browse(function (Browser $browser) {
         $browser->loginAs(User::find(1))
               ->visit('/home');
     });
 
-> **Warning**
+> [!WARNING]
 > Sau khi sử dụng phương thức `loginAs`, session người dùng sẽ được tạo và duy trì cho tất cả các bài test trong file đó.
 
 <a name="cookies"></a>
@@ -526,11 +542,17 @@ Dusk selector cho phép bạn tập trung vào viết các bài test hiệu qu�
 
     $browser->click('@login-button');
 
+Nếu muốn, bạn có thể tùy chỉnh thuộc tính HTML mà Dusk selector sử dụng thông qua phương thức `selectorHtmlAttribute`. Thông thường, phương thức này phải được gọi từ phương thức `boot` của `AppServiceProvider` của ứng dụng của bạn:
+
+    use Laravel\Dusk\Dusk;
+
+    Dusk::selectorHtmlAttribute('data-dusk');
+
 <a name="text-values-and-attributes"></a>
 ### Text, Values, và Attributes
 
 <a name="retrieving-setting-values"></a>
-#### Retrieving & Setting Values
+#### Retrieving và Setting Values
 
 Dusk cung cấp một số phương thức để tương tác với các giá trị, text hiển thị và các thuộc tính hiện tại của element ở trên trang. Ví dụ, để lấy một "giá trị" của một CSS hoặc một element giống với selector đã cho, hãy sử dụng phương thức `value`:
 
@@ -559,7 +581,7 @@ Cuối cùng, phương thức `attribute` cũng có thể được sử dụng �
     $attribute = $browser->attribute('selector', 'value');
 
 <a name="interacting-with-forms"></a>
-### Interacting With Forms
+### Tương tác với forms
 
 <a name="typing-values"></a>
 #### Typing Values
@@ -630,7 +652,7 @@ Phương thức `attach` có thể được sử dụng để đính kèm một 
 
     $browser->attach('photo', __DIR__.'/photos/mountains.png');
 
-> **Warning**
+> [!WARNING]
 > Chức năng đính kèm sẽ yêu cầu bạn cài đặt và enable PHP extension `Zip` trong server của bạn.
 
 <a name="pressing-buttons"></a>
@@ -661,7 +683,7 @@ Bạn có thể sử dụng phương thức `seeLink` để xác định xem m�
         // ...
     }
 
-> **Warning**
+> [!WARNING]
 > Các phương thức này tương tác với jQuery. Nếu jQuery không có sẵn trên trang của bạn, Dusk sẽ tự động đưa nó vào trang để nó có sẵn trong thời gian chạy test.
 
 <a name="using-the-keyboard"></a>
@@ -675,8 +697,68 @@ Một trường hợp sử dụng có giá trị khác của phương thức `ke
 
     $browser->keys('.app', ['{command}', 'j']);
 
-> **Note**
+> [!NOTE]
 > Tất cả các modifier key chẳng hạn như `{command}` đã được chứa trong các ký tự `{}` đều giống với các hằng số đã được định nghĩa trong class `Facebook\WebDriver\WebDriverKeys`, bạn có thể [tìm thấy nó trên GitHub](https://github.com/php-webdriver/php-webdriver/blob/master/lib/WebDriverKeys.php).
+
+<a name="fluent-keyboard-interactions"></a>
+#### Fluent Keyboard Interactions
+
+Dusk cũng cung cấp phương thức `withKeyboard`, cho phép bạn thực hiện dễ dàng với các tương tác bàn phím phức tạp thông qua class `Laravel\Dusk\Keyboard`. Class `Keyboard` cung cấp các phương thức `press`, `release`, `type` và `pause`:
+
+    use Laravel\Dusk\Keyboard;
+
+    $browser->withKeyboard(function (Keyboard $keyboard) {
+        $keyboard->press('c')
+            ->pause(1000)
+            ->release('c')
+            ->type(['c', 'e', 'o']);
+    });
+
+<a name="keyboard-macros"></a>
+#### Keyboard Macros
+
+Nếu bạn muốn định nghĩa các tương tác bàn phím để bạn có thể dễ dàng sử dụng lại trong toàn bộ test case của bạn, bạn có thể sử dụng phương thức `macro` do class `Keyboard` cung cấp. Thông thường, bạn nên gọi phương thức này từ phương thức `boot` của [service provider](/docs/{{version}}/providers):
+
+    <?php
+
+    namespace App\Providers;
+
+    use Facebook\WebDriver\WebDriverKeys;
+    use Illuminate\Support\ServiceProvider;
+    use Laravel\Dusk\Keyboard;
+    use Laravel\Dusk\OperatingSystem;
+
+    class DuskServiceProvider extends ServiceProvider
+    {
+        /**
+         * Register Dusk's browser macros.
+         */
+        public function boot(): void
+        {
+            Keyboard::macro('copy', function (string $element = null) {
+                $this->type([
+                    OperatingSystem::onMac() ? WebDriverKeys::META : WebDriverKeys::CONTROL, 'c',
+                ]);
+
+                return $this;
+            });
+
+            Keyboard::macro('paste', function (string $element = null) {
+                $this->type([
+                    OperatingSystem::onMac() ? WebDriverKeys::META : WebDriverKeys::CONTROL, 'v',
+                ]);
+
+                return $this;
+            });
+        }
+    }
+
+Phương thức `macro` chấp nhận tên của macro làm tham số đầu tiên và một closure làm tham số thứ hai. Closure của macro sẽ được chạy khi tên macro đó được gọi từ instanse `Keyboard`:
+
+    $browser->click('@textarea')
+        ->withKeyboard(fn (Keyboard $keyboard) => $keyboard->copy())
+        ->click('@another-textarea')
+        ->withKeyboard(fn (Keyboard $keyboard) => $keyboard->paste());
 
 <a name="using-the-mouse"></a>
 ### Dùng Mouse
@@ -700,6 +782,8 @@ Phương thức `doubleClick` có thể được sử dụng để mô phỏng h
 
     $browser->doubleClick();
 
+    $browser->doubleClick('.selector');
+
 Phương thức `rightClick` có thể được sử dụng để mô phỏng hành động nhấp chuột phải của chuột:
 
     $browser->rightClick();
@@ -708,9 +792,17 @@ Phương thức `rightClick` có thể được sử dụng để mô phỏng h�
 
 Phương thức `clickAndHold` có thể được sử dụng để mô phỏng một hành động nhấp và giữ chuột. Một lệnh gọi tiếp theo đến phương thức `releaseMouse` sẽ hoàn trả lại hành động này và thả nút giữ chuột ra:
 
+    $browser->clickAndHold('.selector');
+
     $browser->clickAndHold()
             ->pause(1000)
             ->releaseMouse();
+
+Phương thức `controlClick` có thể được sử dụng để mô phỏng một sự kiện `ctrl+click` trên trình duyệt:
+
+    $browser->controlClick();
+
+    $browser->controlClick('.selector');
 
 <a name="mouseover"></a>
 #### Mouseover
@@ -720,7 +812,7 @@ Phương thức `mouseover` có thể được sử dụng khi bạn cần di ch
     $browser->mouseover('.selector');
 
 <a name="drag-drop"></a>
-#### Drag & Drop
+#### Drag và Drop
 
 Phương thức `drag` có thể được sử dụng để kéo một element giống với một selector đã cho sang element khác:
 
@@ -760,31 +852,43 @@ Nếu một dialog JavaScript chứa một input, bạn có thể sử dụng ph
 
     $browser->dismissDialog();
 
+<a name="interacting-with-iframes"></a>
+### Tương tác với inline frames
+
+Nếu bạn cần tương tác với một element trong một iframe, bạn có thể dùng phương thức `withinFrame`. Tất cả các tương tác element sẽ được diễn ra trong một closure và được cung cấp cho phương thức `withinFrame`, nó sẽ bị giới hạn trong iframe đã được chỉ định:
+
+    $browser->withinFrame('#credit-card-details', function ($browser) {
+        $browser->type('input[name="cardnumber"]', '4242424242424242')
+            ->type('input[name="exp-date"]', '12/24')
+            ->type('input[name="cvc"]', '123');
+        })->press('Pay');
+    });
+
 <a name="scoping-selectors"></a>
 ### Scoping Selectors
 
 Đôi khi bạn có thể muốn thực hiện một số thao tác trong một phạm vi selector đã cho. Ví dụ: bạn có thể muốn kiểm tra rằng có một số text chỉ được hiển thị trong một bảng và sau đó click vào một button trong bảng đó. Bạn có thể sử dụng phương thức `with` để thực hiện điều này. Tất cả các hoạt động được thực hiện trong hàm closure được đưa vào trong phương thức `with` và sẽ được thực hiện test trong phạm vi của selector đã chọn:
 
-    $browser->with('.table', function ($table) {
+    $browser->with('.table', function (Browser $table) {
         $table->assertSee('Hello World')
               ->clickLink('Delete');
     });
 
 Đôi khi bạn có thể cần chạy các kiểm tra bên ngoài phạm vi selector hiện tại. Bạn có thể sử dụng phương thức `elsewhere` và phương thức `elsewhereWhenAvailable` để thực hiện điều này:
 
-    $browser->with('.table', function ($table) {
+    $browser->with('.table', function (Browser $table) {
         // Current scope is `body .table`...
 
-        $browser->elsewhere('.page-title', function ($title) {
+        $browser->elsewhere('.page-title', function (Browser $title) {
             // Current scope is `body .page-title`...
             $title->assertSee('Hello World');
         });
 
-        $browser->elsewhereWhenAvailable('.page-title', function ($title) {
+        $browser->elsewhereWhenAvailable('.page-title', function (Browser $title) {
             // Current scope is `body .page-title`...
             $title->assertSee('Hello World');
         });
-    });
+     });
 
 <a name="waiting-for-elements"></a>
 ### Chờ Elements
@@ -852,7 +956,7 @@ Hoặc, bạn có thể đợi cho đến khi một element khớp với một s
 
 Đôi khi, bạn có thể muốn đợi một element xuất hiện khớp với một selector nhất định và sau đó tương tác với element đó. Ví dụ, bạn có thể đợi cho đến khi một modal window được hiển thị và sau đó nhấn nút "OK" trong modal đó. Phương thức `whenAvailable` có thể được sử dụng để hoàn thành việc này. Tất cả các hoạt động của element được thực hiện trong closure sẽ nằm trong phạm vi của selector ban đầu:
 
-    $browser->whenAvailable('.modal', function ($modal) {
+    $browser->whenAvailable('.modal', function (Browser $modal) {
         $modal->assertSee('Hello World')
               ->press('OK');
     });
@@ -961,7 +1065,7 @@ Phương thức `waitForEvent` có thể được sử dụng để tạm dừng
 
 Event listener sẽ được gắn vào phạm vi selector hiện tại, mặc định là element `body`. Khi sử dụng một phạm vi selector, event listener sẽ được gắn vào element đó:
 
-    $browser->with('iframe', function ($iframe) {
+    $browser->with('iframe', function (Browser $iframe) {
         // Wait for the iframe's load event...
         $iframe->waitForEvent('load');
     });
@@ -1067,6 +1171,7 @@ Dusk cung cấp nhiều yêu cầu kiểm tra mà bạn có thể đưa ra đố
 [assertValueIsNot](#assert-value-is-not)
 [assertAttribute](#assert-attribute)
 [assertAttributeContains](#assert-attribute-contains)
+[assertAttributeDoesntContain](#assert-attribute-doesnt-contain)
 [assertAriaAttribute](#assert-aria-attribute)
 [assertDataAttribute](#assert-data-attribute)
 [assertVisible](#assert-visible)
@@ -1088,7 +1193,7 @@ Dusk cung cấp nhiều yêu cầu kiểm tra mà bạn có thể đưa ra đố
 [assertVue](#assert-vue)
 [assertVueIsNot](#assert-vue-is-not)
 [assertVueContains](#assert-vue-contains)
-[assertVueDoesNotContain](#assert-vue-does-not-contain)
+[assertVueDoesntContain](#assert-vue-doesnt-contain)
 
 </div>
 
@@ -1461,6 +1566,13 @@ Yêu cầu element giống với selector đã cho chứa giá trị trong thu�
 
     $browser->assertAttributeContains($selector, $attribute, $value);
 
+<a name="assert-attribute-doesnt-contain"></a>
+#### assertAttributeDoesntContain
+
+Yêu cầu element giống với selector đã cho không chứa giá trị trong thuộc tính được cung cấp:
+
+    $browser->assertAttributeDoesntContain($selector, $attribute, $value);
+
 <a name="assert-aria-attribute"></a>
 #### assertAriaAttribute
 
@@ -1622,10 +1734,8 @@ Bạn có thể assert trạng thái của component Vue như sau:
 
     /**
      * A basic Vue test example.
-     *
-     * @return void
      */
-    public function testVue()
+    public function test_vue(): void
     {
         $this->browse(function (Browser $browser) {
             $browser->visit('/')
@@ -1647,12 +1757,12 @@ Yêu cầu một thuộc tính dữ liệu của Vue component là một mảng 
 
     $browser->assertVueContains($property, $value, $componentSelector = null);
 
-<a name="assert-vue-does-not-contain"></a>
-#### assertVueDoesNotContain
+<a name="assert-vue-doesnt-contain"></a>
+#### assertVueDoesntContain
 
 Yêu cầu một thuộc tính dữ liệu của Vue component là một mảng và không chứa giá trị đã cho:
 
-    $browser->assertVueDoesNotContain($property, $value, $componentSelector = null);
+    $browser->assertVueDoesntContain($property, $value, $componentSelector = null);
 
 <a name="pages"></a>
 ## Page
@@ -1678,10 +1788,8 @@ Phương thức `url` sẽ trả về đường dẫn của URL đến một tra
 
     /**
      * Get the URL for the page.
-     *
-     * @return string
      */
-    public function url()
+    public function url(): string
     {
         return '/login';
     }
@@ -1693,10 +1801,8 @@ Phương thức `assert` có thể đưa ra bất kỳ yêu cầu nào cần thi
 
     /**
      * Assert that the browser is on the page.
-     *
-     * @return void
      */
-    public function assert(Browser $browser)
+    public function assert(Browser $browser): void
     {
         $browser->assertPathIs($this->url());
     }
@@ -1727,9 +1833,9 @@ Phương thức `elements` trong class page cho phép bạn định nghĩa các 
     /**
      * Get the element shortcuts for the page.
      *
-     * @return array
+     * @return array<string, string>
      */
-    public function elements()
+    public function elements(): array
     {
         return [
             '@email' => 'input[name=email]',
@@ -1748,9 +1854,9 @@ Sau khi cài đặt Dusk, một class `Page` sẽ được lưu vào trong thư 
     /**
      * Get the global element shortcuts for the site.
      *
-     * @return array
+     * @return array<string, string>
      */
-    public static function siteElements()
+    public static function siteElements(): array
     {
         return [
             '@element' => '#selector',
@@ -1774,12 +1880,8 @@ Ngoài các phương thức mặc định được định nghĩa trên các tra
 
         /**
          * Create a new playlist.
-         *
-         * @param  \Laravel\Dusk\Browser  $browser
-         * @param  string  $name
-         * @return void
          */
-        public function createPlaylist(Browser $browser, $name)
+        public function createPlaylist(Browser $browser, string $name): void
         {
             $browser->type('name', $name)
                     ->check('share')
@@ -1820,21 +1922,16 @@ Như câu lệnh ở trên, một "date picker" có thể là một ví dụ m�
     {
         /**
          * Get the root selector for the component.
-         *
-         * @return string
          */
-        public function selector()
+        public function selector(): string
         {
             return '.date-picker';
         }
 
         /**
          * Assert that the browser page contains the component.
-         *
-         * @param  Browser  $browser
-         * @return void
          */
-        public function assert(Browser $browser)
+        public function assert(Browser $browser): void
         {
             $browser->assertVisible($this->selector());
         }
@@ -1842,9 +1939,9 @@ Như câu lệnh ở trên, một "date picker" có thể là một ví dụ m�
         /**
          * Get the element shortcuts for the component.
          *
-         * @return array
+         * @return array<string, string>
          */
-        public function elements()
+        public function elements(): array
         {
             return [
                 '@date-field' => 'input.datepicker-input',
@@ -1856,23 +1953,17 @@ Như câu lệnh ở trên, một "date picker" có thể là một ví dụ m�
 
         /**
          * Select the given date.
-         *
-         * @param  \Laravel\Dusk\Browser  $browser
-         * @param  int  $year
-         * @param  int  $month
-         * @param  int  $day
-         * @return void
          */
-        public function selectDate(Browser $browser, $year, $month, $day)
+        public function selectDate(Browser $browser, int $year, int $month, int $day): void
         {
             $browser->click('@date-field')
-                    ->within('@year-list', function ($browser) use ($year) {
+                    ->within('@year-list', function (Browser $browser) use ($year) {
                         $browser->click($year);
                     })
-                    ->within('@month-list', function ($browser) use ($month) {
+                    ->within('@month-list', function (Browser $browser) use ($month) {
                         $browser->click($month);
                     })
-                    ->within('@day-list', function ($browser) use ($day) {
+                    ->within('@day-list', function (Browser $browser) use ($day) {
                         $browser->click($day);
                     });
         }
@@ -1896,14 +1987,12 @@ Khi component đã được định nghĩa xong, chúng ta có thể dễ dàng 
     {
         /**
          * A basic component test example.
-         *
-         * @return void
          */
-        public function testBasicExample()
+        public function test_basic_example(): void
         {
             $this->browse(function (Browser $browser) {
                 $browser->visit('/')
-                        ->within(new DatePicker, function ($browser) {
+                        ->within(new DatePicker, function (Browser $browser) {
                             $browser->selectDate(2019, 1, 30);
                         })
                         ->assertSee('January');
@@ -1914,7 +2003,7 @@ Khi component đã được định nghĩa xong, chúng ta có thể dễ dàng 
 <a name="continuous-integration"></a>
 ## Test tích hợp
 
-> **Warning**
+> [!WARNING]
 > Hầu hết các cấu hình continuous integration của Dusk đều yêu cầu ứng dụng Laravel của bạn được khởi tạo bằng cách sử dụng máy chủ được tích hợp sẵn trong PHP trên cổng 8000. Do đó, trước khi tiếp tục, bạn nên đảm bảo rằng môi trường continuous integration của bạn có giá trị biến môi trường `APP_URL` là `http://127.0.0.1:8000`.
 
 <a name="running-tests-on-heroku-ci"></a>
@@ -1983,7 +2072,7 @@ jobs:
       DB_PASSWORD: root
       MAIL_MAILER: log
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Prepare The Environment
         run: cp .env.example .env
       - name: Create Database
@@ -2015,3 +2104,51 @@ jobs:
           name: console
           path: tests/Browser/console
 ```
+
+<a name="running-tests-on-chipper-ci"></a>
+### Chipper CI
+
+Nếu bạn dùng [Chipper CI](https://chipperci.com) để chạy Dusk test của bạn, bạn có thể dùng file cấu hình dưới đây để bắt đầu. Chúng ta sẽ sử dụng một server có sẵn của PHP để chạy Laravel, vì vậy bạn có thể listen cho request:
+
+```yaml
+# file .chipperci.yml
+version: 1
+
+environment:
+  php: 8.2
+  node: 16
+
+# Include Chrome in the build environment
+services:
+  - dusk
+
+# Build all commits
+on:
+   push:
+      branches: .*
+
+pipeline:
+  - name: Setup
+    cmd: |
+      cp -v .env.example .env
+      composer install --no-interaction --prefer-dist --optimize-autoloader
+      php artisan key:generate
+
+      # Create a dusk env file, ensuring APP_URL uses BUILD_HOST
+      cp -v .env .env.dusk.ci
+      sed -i "s@APP_URL=.*@APP_URL=http://$BUILD_HOST:8000@g" .env.dusk.ci
+
+  - name: Compile Assets
+    cmd: |
+      npm ci --no-audit
+      npm run build
+
+  - name: Browser Tests
+    cmd: |
+      php -S [::0]:8000 -t public 2>server.log &
+      sleep 2
+      php artisan dusk:chrome-driver $CHROME_DRIVER
+      php artisan dusk --env=ci
+```
+
+Để biết thêm về chạy Dusk test trên Chipper CI, bao gồm cả việc làm sao để dùng cơ sở dữ liệu, bạn hãy xem [tài liệu Chipper CI chính thức](https://chipperci.com/docs/testing/laravel-dusk-new/).

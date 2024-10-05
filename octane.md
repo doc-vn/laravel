@@ -3,6 +3,7 @@
 - [Giới thiệu](#introduction)
 - [Cài đặt](#installation)
 - [Yêu cầu Server](#server-prerequisites)
+    - [FrankenPHP](#frankenphp)
     - [RoadRunner](#roadrunner)
     - [Swoole](#swoole)
 - [Chạy application của bạn](#serving-your-application)
@@ -26,7 +27,7 @@
 <a name="introduction"></a>
 ## Giới thiệu
 
-[Laravel Octane](https://github.com/laravel/octane) sẽ tăng cường hiệu suất ứng dụng của bạn bằng cách chạy ứng dụng của bạn bằng các máy chủ ứng dụng hiệu suất cao, bao gồm [Open Swoole](https://swoole.co.uk), [Swoole](https://github.com/swoole/swoole-src) và [RoadRunner](https://roadrunner.dev). Octane khởi động ứng dụng của bạn một lần, và lưu nó vào trong memory và sau đó trả lời các request với tốc độ siêu nhanh.
+[Laravel Octane](https://github.com/laravel/octane) sẽ tăng cường hiệu suất ứng dụng của bạn bằng cách chạy ứng dụng của bạn bằng các máy chủ ứng dụng hiệu suất cao, bao gồm [FrankenPHP](https://frankenphp.dev/), [Open Swoole](https://openswoole.com/), [Swoole](https://github.com/swoole/swoole-src) và [RoadRunner](https://roadrunner.dev). Octane khởi động ứng dụng của bạn một lần, và lưu nó vào trong memory và sau đó trả lời các request với tốc độ siêu nhanh.
 
 <a name="installation"></a>
 ## Cài đặt
@@ -46,8 +47,42 @@ php artisan octane:install
 <a name="server-prerequisites"></a>
 ## Yêu cầu Server
 
-> **Warning**
+> [!WARNING]
 > Laravel Octane yêu cầu [PHP 8.0+](https://php.net/releases/).
+
+<a name="frankenphp"></a>
+### FrankenPHP
+
+> [!WARNING]
+> Tích hợp Octane của FrankenPHP hiện đang trong giai đoạn thử nghiệm nên bạn cần thận trong việc sử dụng nó trong trong môi trường production.
+
+[FrankenPHP](https://frankenphp.dev) là một máy chủ ứng dụng PHP, được viết bằng GO, hỗ trợ các tính năng web hiện đại như early hint và Zstandard compression. Khi bạn cài đặt Octane và chọn FrankenPHP làm máy chủ của bạn, Octane sẽ tự động download và cài đặt FrankenPHP cho bạn.
+
+<a name="frankenphp-via-laravel-sail"></a>
+#### FrankenPHP via Laravel Sail
+
+Nếu bạn có kế hoạch phát triển ứng dụng của bạn bằng [Laravel Sail](/docs/{{version}}/sail), bạn nên chạy các lệnh sau để cài đặt Octane và FrankenPHP:
+
+```shell
+./vendor/bin/sail up
+
+./vendor/bin/sail composer require laravel/octane
+```
+
+Tiếp theo, bạn nên sử dụng lệnh Artisan `octane:install` để cài đặt FrankenPHP:
+
+```shell
+./vendor/bin/sail artisan octane:install --server=frankenphp
+```
+
+Cuối cùng, hãy thêm một biến môi trường `SUPERVISOR_PHP_COMMAND` vào định nghĩa service `laravel.test` trong file `docker-compose.yml` của ứng dụng của bạn. Biến môi trường này sẽ chứa lệnh mà Sail sẽ sử dụng để chạy ứng dụng của bạn bằng Octane thay vì sử dụng máy chủ phát triển PHP mặc định:
+
+```yaml
+services:
+  laravel.test:
+    environment:
+      SUPERVISOR_PHP_COMMAND: "/usr/bin/php -d variables_order=EGPCS /var/www/html/artisan octane:start --server=frankenphp --host=0.0.0.0 --admin-port=2019 --port=80" # [tl! add]
+```
 
 <a name="roadrunner"></a>
 ### RoadRunner
@@ -62,7 +97,7 @@ Nếu bạn có kế hoạch phát triển ứng dụng của bạn bằng [Lara
 ```shell
 ./vendor/bin/sail up
 
-./vendor/bin/sail composer require laravel/octane spiral/roadrunner
+./vendor/bin/sail composer require laravel/octane spiral/roadrunner-cli spiral/roadrunner-http
 ```
 
 Tiếp theo, bạn nên start một shell của Sail và sử dụng `rr` để lấy ra bản build cho Linux mới nhất của Roadrunner Binary:
@@ -74,16 +109,13 @@ Tiếp theo, bạn nên start một shell của Sail và sử dụng `rr` để 
 ./vendor/bin/rr get-binary
 ```
 
-Sau khi cài đặt xong RoadRunner binary, bạn có thể thoát khỏi session Sail shell của bạn. Bây giờ bạn sẽ cần điều chỉnh file `supervisor.conf` được Sail sử dụng để giữ cho ứng dụng của bạn chạy. Để bắt đầu, hãy thực hiện lệnh Artisan `sail:publish`:
+Sau đó, hãy thêm một biến môi trường `SUPERVISOR_PHP_COMMAND` vào định nghĩa service `laravel.test` trong file `docker-compose.yml` của ứng dụng của bạn. Biến môi trường này sẽ chứa lệnh mà Sail sẽ sử dụng để chạy ứng dụng của bạn bằng Octane thay vì sử dụng máy chủ phát triển PHP mặc định:
 
-```shell
-./vendor/bin/sail artisan sail:publish
-```
-
-Tiếp theo, hãy cập nhật lệnh `command` trong file `docker/supervisord.conf` của ứng dụng của bạn để Sail chạy ứng dụng của bạn bằng octane thay vì máy chủ phát triển của PHP:
-
-```ini
-command=/usr/bin/php -d variables_order=EGPCS /var/www/html/artisan octane:start --server=roadrunner --host=0.0.0.0 --rpc-port=6001 --port=80
+```yaml
+services:
+  laravel.test:
+    environment:
+      SUPERVISOR_PHP_COMMAND: "/usr/bin/php -d variables_order=EGPCS /var/www/html/artisan octane:start --server=roadrunner --host=0.0.0.0 --rpc-port=6001 --port=80" # [tl! add]
 ```
 
 Cuối cùng, hãy đảm bảo rằng file binary `rr` có quyền chạy và build image Sail của bạn:
@@ -103,22 +135,32 @@ Nếu bạn có kế hoạch sử dụng máy chủ ứng dụng Swoole để ch
 pecl install swoole
 ```
 
+<a name="openswoole"></a>
+#### Open Swoole
+
+Nếu bạn muốn sử dụng máy chủ ứng dụng Open Swoole để chạy ứng dụng Laravel Octane của bạn, bạn phải cài đặt extension Open Swoole PHP. Thông thường, điều này có thể được thực hiện thông qua PECL:
+
+```shell
+pecl install openswoole
+```
+
+Sử dụng Laravel Octane với Open Swoole có chức năng tương tự như Swoole, chẳng hạn như các nhiệm vụ chạy song song, ticks và intervals.
+
 <a name="swoole-via-laravel-sail"></a>
 #### Swoole Via Laravel Sail
 
-> **Warning**
+> [!WARNING]
 > Trước khi chạy một ứng dụng Octane thông qua Sail, bạn hãy đảm bảo là bạn đã có phiên bản mới nhất của Laravel Sail và chạy `./vendor/bin/sail build --no-cache` trong thư mục gốc ứng dụng của bạn.
 
-Ngoài ra, bạn có thể phát triển ứng dụng Octane dựa trên swoole của bạn bằng [Laravel Sail](/docs/{{version}}/sail), một môi trường phát triển dựa trên Docker chính thức cho Laravel. Mặc định, Laravel Sail có chứa nhiều extension swoole. Tuy nhiên, bạn vẫn sẽ cần điều chỉnh file `supervisor.conf` được Sail sử dụng để giữ cho ứng dụng của bạn chạy. Để bắt đầu, hãy chạy lệnh Artisan `sail:publish`:
+Ngoài ra, bạn có thể phát triển ứng dụng Octane dựa trên Swoole của bạn bằng [Laravel Sail](/docs/{{version}}/sail), một môi trường phát triển dựa trên Docker chính thức cho Laravel. Mặc định, Laravel Sail có chứa nhiều extension Swoole. Tuy nhiên, bạn vẫn sẽ cần điều chỉnh file `docker-compose.yml` được sử dụng bởi Sail.
 
-```shell
-./vendor/bin/sail artisan sail:publish
-```
+Để bắt đầu, hãy thêm một biến môi trường `SUPERVISOR_PHP_COMMAND` vào định nghĩa service `laravel.test` trong file `docker-compose.yml` của ứng dụng của bạn. Biến môi trường này sẽ chứa lệnh mà Sail sẽ sử dụng để chạy ứng dụng của bạn bằng Octane thay vì sử dụng máy chủ phát triển PHP mặc định:
 
-Tiếp theo, hãy cập nhật lệnh `command` trong file `docker/supervisord.conf` của ứng dụng của bạn để Sail chạy ứng dụng của bạn bằng octane thay vì máy chủ phát triển của PHP:
-
-```ini
-command=/usr/bin/php -d variables_order=EGPCS /var/www/html/artisan octane:start --server=swoole --host=0.0.0.0 --port=80
+```yaml
+services:
+  laravel.test:
+    environment:
+      SUPERVISOR_PHP_COMMAND: "/usr/bin/php -d variables_order=EGPCS /var/www/html/artisan octane:start --server=swoole --host=0.0.0.0 --port=80" # [tl! add]
 ```
 
 Cuối cùng, build image Sail của bạn:
@@ -164,7 +206,7 @@ Mặc định, các ứng dụng chạy qua octane sẽ tạo link với tiền 
 <a name="serving-your-application-via-nginx"></a>
 ### Chạy application của bạn thông qua Nginx
 
-> **Note**
+> [!NOTE]
 > Nếu bạn chưa sẵn sàng quản lý cấu hình máy chủ của bạn hoặc không thoải mái khi cấu hình tất cả các dịch vụ khác nhau cần thiết để chạy ứng dụng Laravel Octane mạnh mẽ, hãy xem [Laravel Forge](https://forge.laravel.com).
 
 Trong môi trường production, bạn nên chạy ứng dụng Octane của bạn đằng sau một máy chủ web truyền thống như Nginx hoặc Apache. Làm như vậy sẽ cho phép máy chủ web phân phối các nội dung tĩnh như hình ảnh và stylesheet cũng như quản lý chứng chỉ SSL của bạn.
@@ -309,15 +351,14 @@ Nói chung, bạn nên tránh tích hợp service container hoặc instance HTTP
 
 ```php
 use App\Service;
+use Illuminate\Contracts\Foundation\Application;
 
 /**
  * Register any application services.
- *
- * @return void
  */
-public function register()
+public function register(): void
 {
-    $this->app->singleton(Service::class, function ($app) {
+    $this->app->singleton(Service::class, function (Application $app) {
         return new Service($app);
     });
 }
@@ -330,8 +371,9 @@ Trong ví dụ này, nếu instance `Service` được resolve trong quá trình
 ```php
 use App\Service;
 use Illuminate\Container\Container;
+use Illuminate\Contracts\Foundation\Application;
 
-$this->app->bind(Service::class, function ($app) {
+$this->app->bind(Service::class, function (Application $app) {
     return new Service($app);
 });
 
@@ -349,15 +391,14 @@ Nói chung, bạn nên tránh tích hợp service container hoặc instance HTTP
 
 ```php
 use App\Service;
+use Illuminate\Contracts\Foundation\Application;
 
 /**
  * Register any application services.
- *
- * @return void
  */
-public function register()
+public function register(): void
 {
-    $this->app->singleton(Service::class, function ($app) {
+    $this->app->singleton(Service::class, function (Application $app) {
         return new Service($app['request']);
     });
 }
@@ -369,12 +410,13 @@ Trong ví dụ này, nếu instance `Service` được resolve trong quá trình
 
 ```php
 use App\Service;
+use Illuminate\Contracts\Foundation\Application;
 
-$this->app->bind(Service::class, function ($app) {
+$this->app->bind(Service::class, function (Application $app) {
     return new Service($app['request']);
 });
 
-$this->app->singleton(Service::class, function ($app) {
+$this->app->singleton(Service::class, function (Application $app) {
     return new Service(fn () => $app['request']);
 });
 
@@ -385,7 +427,7 @@ $service->method($request->input('name'));
 
 Helper global `request` sẽ luôn trả về request mà ứng dụng hiện đang xử lý và do đó sẽ an toàn khi sử dụng trong ứng dụng của bạn.
 
-> **Warning**
+> [!WARNING]
 > Bạn có thể khai báo instance `Illuminate\Http\Request` trên các phương thức controller và route closure của bạn.
 
 <a name="configuration-repository-injection"></a>
@@ -395,15 +437,14 @@ Nói chung, bạn nên tránh tích hợp instance repository vào hàm khởi t
 
 ```php
 use App\Service;
+use Illuminate\Contracts\Foundation\Application;
 
 /**
  * Register any application services.
- *
- * @return void
  */
-public function register()
+public function register(): void
 {
-    $this->app->singleton(Service::class, function ($app) {
+    $this->app->singleton(Service::class, function (Application $app) {
         return new Service($app->make('config'));
     });
 }
@@ -416,8 +457,9 @@ Trong ví dụ này, nếu giá trị cấu hình bị thay đổi giữa các r
 ```php
 use App\Service;
 use Illuminate\Container\Container;
+use Illuminate\Contracts\Foundation\Application;
 
-$this->app->bind(Service::class, function ($app) {
+$this->app->bind(Service::class, function (Application $app) {
     return new Service($app->make('config'));
 });
 
@@ -440,15 +482,14 @@ use Illuminate\Support\Str;
 
 /**
  * Handle an incoming request.
- *
- * @param  \Illuminate\Http\Request  $request
- * @return void
  */
-public function index(Request $request)
+public function index(Request $request): array
 {
     Service::$data[] = Str::random(10);
 
-    // ...
+    return [
+        // ...
+    ];
 }
 ```
 
@@ -457,7 +498,7 @@ Trong khi xây dựng ứng dụng của bạn, bạn nên đặc biệt cẩn t
 <a name="concurrent-tasks"></a>
 ## Đồng bộ Task
 
-> **Warning**
+> [!WARNING]
 > Tính năng này yêu cầu [Swoole](#swoole).
 
 Khi sử dụng Swoole, bạn có thể thực hiện các thao tác đồng bộ thông qua các task background có dung lượng nhẹ. Bạn có thể thực hiện việc này bằng phương thức `concurrently` của Octane. Bạn có thể kết hợp phương thức này với việc gán mảng PHP để lấy ra kết quả của từng thao tác:
@@ -484,7 +525,7 @@ Do những hạn chế của hệ thống task của Swoole, khi gọi phương 
 <a name="ticks-and-intervals"></a>
 ## Ticks và Intervals
 
-> **Warning**
+> [!WARNING]
 > Tính năng này yêu cầu [Swoole](#swoole).
 
 Khi sử dụng Swoole, bạn có thể đăng ký các thao tác "tick" sẽ được chạy sau mỗi số giây được chỉ định. Bạn có thể đăng ký callback "tick" thông qua phương thức `tick`. Tham số đầu tiên được cung cấp cho phương thức `tick` phải là một chuỗi đại diện cho tên của tick. Tham số thứ hai phải là một callable và sẽ được gọi trong khoảng thời gian đã chỉ định.
@@ -507,7 +548,7 @@ Octane::tick('simple-ticker', fn () => ray('Ticking...'))
 <a name="the-octane-cache"></a>
 ## Octane Cache
 
-> **Warning**
+> [!WARNING]
 > Tính năng này yêu cầu [Swoole](#swoole).
 
 Khi sử dụng Swoole, bạn có thể tận dụng driver Octane cache, driver này cung cấp tốc độ đọc và ghi lên tới 2 triệu thao tác mỗi giây. Do đó, driver cache này là sự lựa chọn tuyệt vời cho các ứng dụng cần tốc độ đọc/ghi cực cao từ layer cache của chúng.
@@ -518,7 +559,7 @@ Driver cache này được hỗ trợ bởi [Swoole tables](https://www.swoole.c
 Cache::store('octane')->put('framework', 'Laravel', 30);
 ```
 
-> **Note**
+> [!NOTE]
 > Số lượng item tối đa được phép có trong cache Octane có thể được định nghĩa trong file cấu hình `octane` của ứng dụng của bạn.
 
 <a name="cache-intervals"></a>
@@ -537,7 +578,7 @@ Cache::store('octane')->interval('random', function () {
 <a name="tables"></a>
 ## Tables
 
-> **Warning**
+> [!WARNING]
 > Tính năng này yêu cầu [Swoole](#swoole).
 
 Khi sử dụng Swoole, bạn có thể định nghĩa và tương tác với [Swoole tables](https://www.swoole.co.uk/docs/modules/swoole-table). Các Swoole table cung cấp hiệu suất cực cao và tất cả các worker trên máy chủ có thể truy cập vào dữ liệu trong các table này. Tuy nhiên, dữ liệu bên trong chúng sẽ bị mất khi máy chủ khởi động lại.
@@ -566,5 +607,5 @@ Octane::table('example')->set('uuid', [
 return Octane::table('example')->get('uuid');
 ```
 
-> **Warning**
+> [!WARNING]
 > Các loại cột được Swoole table hỗ trợ là: `string`, `int` và `float`.

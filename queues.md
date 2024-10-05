@@ -7,6 +7,7 @@
     - [Tạo class Job](#generating-job-classes)
     - [Cấu trúc class](#class-structure)
     - [Unique Jobs](#unique-jobs)
+    - [Encrypted Jobs](#encrypted-jobs)
 - [Job Middleware](#job-middleware)
     - [Giới hạn tỷ lệ](#rate-limiting)
     - [Chặn Job chồng nhau](#preventing-job-overlaps)
@@ -22,11 +23,13 @@
 - [Job Batching](#job-batching)
     - [Định nghĩa Batchable Jobs](#defining-batchable-jobs)
     - [Gửi Batches](#dispatching-batches)
+    - [Chains và Batches](#chains-and-batches)
     - [Thêm Jobs vào Batches](#adding-jobs-to-batches)
     - [Kiểm tra Batches](#inspecting-batches)
     - [Huỷ Batches](#cancelling-batches)
     - [Batch Failures](#batch-failures)
     - [Xoá Batches](#pruning-batches)
+    - [Lưu batches trong DynamoDB](#storing-batches-in-dynamodb)
 - [Queueing Closures](#queueing-closures)
 - [Chạy Queue Worker](#running-the-queue-worker)
     - [Lệnh `queue:work`](#the-queue-work-command)
@@ -44,6 +47,10 @@
     - [Failed Job Events](#failed-job-events)
 - [Xoá job từ queue](#clearing-jobs-from-queues)
 - [Giám sát queue](#monitoring-your-queues)
+- [Testing](#testing)
+    - [Fake một tập hợp Jobs](#faking-a-subset-of-jobs)
+    - [Testing Job Chains](#testing-job-chains)
+    - [Testing Job Batches](#testing-job-batches)
 - [Job Event](#job-events)
 
 <a name="introduction"></a>
@@ -55,7 +62,7 @@ Queue của Laravel cung cấp một queueing API hợp nhất trên nhiều lo�
 
 Các tùy chọn cấu hình queue của Laravel được lưu trong file cấu hình `config/queue.php` trong ứng dụng của bạn. Trong file này, bạn sẽ tìm thấy các cấu hình connection cho từng loại driver queue có trong framework, gồm có database, [Amazon SQS](https://aws.amazon.com/sqs/), [Redis](https://redis.io), và [Beanstalkd](https://beanstalkd.github.io/), cũng như một driver chạy đồng bộ job (để sử dụng trong quá trình phát triển). Driver queue `null` cũng đã được khai báo để loại bỏ các job đã được queue.
 
-> **Note**
+> [!NOTE]
 > Laravel hiện cung cấp Horizon là một hệ thống cấu hình và điều khiển cho các queue mà được tạo bởi Redis của bạn. Hãy xem toàn bộ [tài liệu Horizon](/docs/{{version}}/horizon) để biết thêm thông tin chi tiết.
 
 <a name="connections-vs-queues"></a>
@@ -102,6 +109,9 @@ Cuối cùng, đừng quên bảo ứng dụng của bạn sử dụng driver `d
 
 Để sử dụng driver `redis` queue, bạn nên cấu hình connection tới Redis database trong file cấu hình `config/database.php` của bạn.
 
+> [!WARNING]
+> Các tùy chọn `serializer` và `compression` của Redis sẽ không được driver `redis` queue hỗ trợ.
+
 **Redis Cluster**
 
 Nếu connection Redis của bạn sử dụng một Cluster Redis, thì tên queue của bạn phải chứa một [key hash tag](https://redis.io/docs/reference/cluster-spec/#hash-tags). Điều này là bắt buộc để đảm bảo rằng tất cả các key Redis cho queue sẽ được set vào cùng một vị trí hash:
@@ -127,7 +137,7 @@ Khi sử dụng queue Redis, bạn có thể sử dụng tùy chọn cấu hình
         'block_for' => 5,
     ],
 
-> **Warning**
+> [!WARNING]
 > Việc set `block_for` thành `0` sẽ khiến các queue worker chặn vô thời hạn cho đến khi có job. Điều này cũng sẽ chặn các tín hiệu như `SIGTERM` được xử lý cho đến khi job tiếp theo được xử lý.
 
 <a name="other-driver-prerequisites"></a>
@@ -157,7 +167,7 @@ php artisan make:job ProcessPodcast
 
 Class được tạo ra sẽ implement interface `Illuminate\Contracts\Queue\ShouldQueue`, và cho Laravel biết là job này sẽ được đưa vào queue để chạy không đồng bộ.
 
-> **Note**
+> [!NOTE]
 > Các stub của Job có thể được tùy chỉnh bằng cách sử dụng [export stub](/docs/{{version}}/artisan#stub-customization).
 
 <a name="class-structure"></a>
@@ -182,30 +192,16 @@ Các class của job rất đơn giản, thông thường chỉ chứa một ph�
         use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
         /**
-         * The podcast instance.
-         *
-         * @var \App\Models\Podcast
-         */
-        public $podcast;
-
-        /**
          * Create a new job instance.
-         *
-         * @param  App\Models\Podcast  $podcast
-         * @return void
          */
-        public function __construct(Podcast $podcast)
-        {
-            $this->podcast = $podcast;
-        }
+        public function __construct(
+            public Podcast $podcast,
+        ) {}
 
         /**
          * Execute the job.
-         *
-         * @param  App\Services\AudioProcessor  $processor
-         * @return void
          */
-        public function handle(AudioProcessor $processor)
+        public function handle(AudioProcessor $processor): void
         {
             // Process uploaded podcast...
         }
@@ -224,36 +220,49 @@ Nếu bạn muốn toàn quyền kiểm soát cách container đưa các phụ t
 
     use App\Jobs\ProcessPodcast;
     use App\Services\AudioProcessor;
+    use Illuminate\Contracts\Foundation\Application;
 
-    $this->app->bindMethod([ProcessPodcast::class, 'handle'], function ($job, $app) {
+    $this->app->bindMethod([ProcessPodcast::class, 'handle'], function (ProcessPodcast $job, Application $app) {
         return $job->handle($app->make(AudioProcessor::class));
     });
 
-> **Warning**
+> [!WARNING]
 > Dữ liệu nhị phân, chẳng hạn như một nội dung ảnh thô, phải được truyền qua hàm `base64_encode` trước khi được truyền đến một queued job. Nếu không làm điều này, thì job đó có thể serialize thành chuỗi JSON không đúng khi được đặt lên queue.
 
 <a name="handling-relationships"></a>
 #### Queued Relationships
 
-Bởi vì các quan hệ cũng được serialize, nên thỉnh thoảng job có thể trở nên khá lớn. Để ngăn việc các quan hệ bị serialize, bạn có thể gọi phương thức `withoutRelations` trên model khi set giá trị thuộc tính. Phương thức này sẽ trả về một instance của model mà không có quan hệ được load:
+Bởi vì tất cả các quan hệ của Eloquent model cũng sẽ được serialize trong khi một job được đưa vào queue, nên thỉnh thoảng job có thể trở nên khá lớn. Hơn thế nữa, khi một job được deserialize lại thì các quan hệ model sẽ được lấy lại toàn bộ từ cơ sở dữ liệu. Bất kỳ các ràng buộc quan hệ nào đã được thay đổi trước khi model được serialize trong quá trình queue job thì sẽ không lưu lại những thay đổi đó khi job được deserialize lại. Do đó, nếu bạn muốn làm việc với một tập hợp của một quan hệ nhất định, bạn nên ràng buộc lại quan hệ đó trong queued job của bạn.
+
+Hoặc, để ngăn việc các quan hệ bị serialize, bạn có thể gọi phương thức `withoutRelations` trên model khi set giá trị thuộc tính. Phương thức này sẽ trả về một instance của model mà không có quan hệ được load:
 
     /**
      * Create a new job instance.
-     *
-     * @param  \App\Models\Podcast  $podcast
-     * @return void
      */
     public function __construct(Podcast $podcast)
     {
         $this->podcast = $podcast->withoutRelations();
     }
 
-Hơn nữa, khi một job deserialize và các relationship của model được lấy lại từ cơ sở dữ liệu, chúng sẽ được lấy ra toàn bộ. Mọi ràng buộc relationship trước đó đã được áp dụng cho model trước khi model đó được serialize trong quá trình queue job sẽ không được áp dụng khi job được deserialize. Do đó, nếu bạn muốn làm việc với một tập con của một relationship nhất định, bạn nên ràng buộc lại các relationship đó trong job queue của bạn.
+Nếu bạn đang sử dụng chức năng thuộc tính của hàm constructor property promotion PHP và muốn rằng model Eloquent sẽ không serialize các quan hệ của nó, bạn có thể sử dụng thuộc tính `WithoutRelations`:
+
+    use Illuminate\Queue\Attributes\WithoutRelations;
+
+    /**
+     * Create a new job instance.
+     */
+    public function __construct(
+        #[WithoutRelations]
+        public Podcast $podcast
+    ) {
+    }
+
+Nếu một job nhận vào một collection hoặc một mảng các model Eloquent thay vì một model duy nhất, các model trong collection đó sẽ không thể khôi phục được quan hệ của chúng khi job được deserialize và được thực thi. Điều này nhằm ngăn chặn việc sử dụng tài nguyên quá mức trên các job xử lý số lượng lớn các model.
 
 <a name="unique-jobs"></a>
 ### Unique Jobs
 
-> **Warning**
+> [!WARNING]
 > Unique Job sẽ yêu cầu một cache driver hỗ trợ [locks](/docs/{{version}}/cache#atomic-locks). Hiện tại, cache driver `memcached`, `redis`, `dynamodb`, `database`, `file` và `array` đều hỗ trợ atomic lock. Ngoài ra, các ràng buộc unique job không áp dụng cho các job có trong batch.
 
 Thỉnh thoảng, bạn có thể muốn đảm bảo rằng chỉ có một instance của một job cụ thể có trong queue tại bất kỳ thời điểm nào. Bạn có thể làm như vậy bằng cách implement interface `ShouldBeUnique` trên class job của bạn. Interface này không yêu cầu bạn định nghĩa thêm bất kỳ phương thức nào trên class của bạn:
@@ -295,11 +304,9 @@ Trong một số trường hợp nhất định, bạn có thể muốn định 
         public $uniqueFor = 3600;
 
         /**
-         * The unique ID of the job.
-         *
-         * @return string
+         * Get the unique ID for the job.
          */
-        public function uniqueId()
+        public function uniqueId(): string
         {
             return $this->product->id;
         }
@@ -307,7 +314,7 @@ Trong một số trường hợp nhất định, bạn có thể muốn định 
 
 Trong ví dụ trên, job `UpdateSearchIndex` là unique theo ID product. Vì vậy, mọi job mới được gửi mà có cùng ID product sẽ bị bỏ qua cho đến khi job hiện tại hoàn tất xử lý. Ngoài ra, nếu job hiện tại không được xử lý trong vòng một giờ, khóa unique sẽ được giải phóng và một job khác có cùng khóa unique có thể được gửi đến queue.
 
-> **Warning**
+> [!WARNING]
 > Nếu ứng dụng của bạn phân phối các job từ nhiều máy chủ web hoặc container, bạn nên đảm bảo là tất cả các máy chủ của bạn đang giao tiếp với cùng một máy chủ cache trung tâm để Laravel có thể xác định chính xác xem job có duy nhất hay không.
 
 <a name="keeping-jobs-unique-until-processing-begins"></a>
@@ -331,6 +338,7 @@ Mặc định, các job unique sẽ được "mở khóa" sau khi một job hoà
 
 Ở hậu trường, khi một job `ShouldBeUnique` được gửi đi, Laravel sẽ cố gắng lấy [lock](/docs/{{version}}/cache#atomic-locks) bằng khóa `uniqueId`. Nếu không lấy được khóa, job đó sẽ không được gửi đi. Khóa này sẽ được giải phóng khi một job hoàn tất quá trình xử lý hoặc thất bại trong tất cả các lần thử lại. Mặc định, Laravel sẽ sử dụng cache driver mặc định để lấy khóa này. Tuy nhiên, nếu bạn muốn sử dụng một driver khác để lấy khóa, bạn có thể định nghĩa một phương thức `uniqueVia` để trả về cache driver sẽ được sử dụng:
 
+    use Illuminate\Contracts\Cache\Repository;
     use Illuminate\Support\Facades\Cache;
 
     class UpdateSearchIndex implements ShouldQueue, ShouldBeUnique
@@ -339,17 +347,30 @@ Mặc định, các job unique sẽ được "mở khóa" sau khi một job hoà
 
         /**
          * Get the cache driver for the unique job lock.
-         *
-         * @return \Illuminate\Contracts\Cache\Repository
          */
-        public function uniqueVia()
+        public function uniqueVia(): Repository
         {
             return Cache::driver('redis');
         }
     }
 
-> **Note**
+> [!NOTE]
 > Nếu bạn chỉ cần giới hạn quá trình xử lý đồng thời của một job, bạn hãy sử dụng middleware job [`WithoutOverlapping`](/docs/{{version}}/queues#preventing-job-overlaps) thay thế.
+
+<a name="encrypted-jobs"></a>
+### Encrypted Jobs
+
+Laravel cho phép bạn đảm bảo tính riêng tư và tính toàn vẹn dữ liệu của job thông qua [encryption](/docs/{{version}}/encryption). Để bắt đầu, bạn chỉ cần thêm interface `ShouldBeEncrypted` vào class của job. Sau khi interface này được thêm vào class, Laravel sẽ tự động mã hóa job của bạn trước khi đẩy nó vào queue:
+
+    <?php
+
+    use Illuminate\Contracts\Queue\ShouldBeEncrypted;
+    use Illuminate\Contracts\Queue\ShouldQueue;
+
+    class UpdateSearchIndex implements ShouldQueue, ShouldBeEncrypted
+    {
+        // ...
+    }
 
 <a name="job-middleware"></a>
 ## Job Middleware
@@ -360,10 +381,8 @@ Job middleware cho phép bạn custom logic của toàn bộ việc chạy các 
 
     /**
      * Execute the job.
-     *
-     * @return void
      */
-    public function handle()
+    public function handle(): void
     {
         Redis::throttle('key')->block(0)->allow(1)->every(5)->then(function () {
             info('Lock obtained...');
@@ -384,6 +403,7 @@ Thay vì giới hạn tốc độ trong phương thức handle, chúng ta có th
 
     namespace App\Jobs\Middleware;
 
+    use Closure;
     use Illuminate\Support\Facades\Redis;
 
     class RateLimited
@@ -391,11 +411,9 @@ Thay vì giới hạn tốc độ trong phương thức handle, chúng ta có th
         /**
          * Process the queued job.
          *
-         * @param  mixed  $job
-         * @param  callable  $next
-         * @return mixed
+         * @param  \Closure(object): void  $next
          */
-        public function handle($job, $next)
+        public function handle(object $job, Closure $next): void
         {
             Redis::throttle('key')
                     ->block(0)->allow(1)->every(5)
@@ -420,14 +438,14 @@ Sau khi tạo xong job middleware, chúng ta có thể được gắn chúng và
     /**
      * Get the middleware the job should pass through.
      *
-     * @return array
+     * @return array<int, object>
      */
-    public function middleware()
+    public function middleware(): array
     {
         return [new RateLimited];
     }
 
-> **Note**
+> [!NOTE]
 > Middleware job cũng có thể được chỉ định cho các queueable event listeners, mailables, và notifications.
 
 <a name="rate-limiting"></a>
@@ -442,12 +460,10 @@ Ví dụ: bạn có thể muốn cho phép người dùng backup lại dữ li�
 
     /**
      * Bootstrap any application services.
-     *
-     * @return void
      */
-    public function boot()
+    public function boot(): void
     {
-        RateLimiter::for('backups', function ($job) {
+        RateLimiter::for('backups', function (object $job) {
             return $job->user->vipCustomer()
                         ? Limit::none()
                         : Limit::perHour(1)->by($job->user->id);
@@ -458,16 +474,16 @@ Trong ví dụ trên, chúng ta đã định nghĩa giới hạn tỷ lệ theo 
 
     return Limit::perMinute(50)->by($job->user->id);
 
-Khi bạn đã định nghĩa xong giới hạn tỷ lệ của bạn, bạn có thể gán giới hạn tỷ lệ này vào job backup của bạn bằng cách sử dụng middleware `Illuminate\Queue\Middleware\RateLimited`. Mỗi khi job mà vượt quá giới hạn tỷ lệ, middleware này sẽ giải phóng job trở lại về queue với một độ trễ thích hợp dựa trên khoảng thời gian giới hạn tỷ lệ mà bạn đã truyền vào.
+Khi bạn đã định nghĩa xong giới hạn tỷ lệ của bạn, bạn có thể gán giới hạn tỷ lệ này vào job của bạn bằng cách sử dụng middleware `Illuminate\Queue\Middleware\RateLimited`. Mỗi khi job mà vượt quá giới hạn tỷ lệ, middleware này sẽ giải phóng job trở lại về queue với một độ trễ thích hợp dựa trên khoảng thời gian giới hạn tỷ lệ mà bạn đã truyền vào.
 
     use Illuminate\Queue\Middleware\RateLimited;
 
     /**
      * Get the middleware the job should pass through.
      *
-     * @return array
+     * @return array<int, object>
      */
-    public function middleware()
+    public function middleware(): array
     {
         return [new RateLimited('backups')];
     }
@@ -479,14 +495,14 @@ Nếu bạn không muốn thử lại một job khi nó bị giới hạn tỷ l
     /**
      * Get the middleware the job should pass through.
      *
-     * @return array
+     * @return array<int, object>
      */
-    public function middleware()
+    public function middleware(): array
     {
         return [(new RateLimited('backups'))->dontRelease()];
     }
 
-> **Note**
+> [!NOTE]
 > Nếu đang sử dụng Redis, bạn có thể sử dụng middleware `Illuminate\Queue\Middleware\RateLimitedWithRedis`, middleware này được tinh chỉnh cho Redis và hiệu quả hơn middleware giới hạn tỷ lệ cơ bản.
 
 <a name="preventing-job-overlaps"></a>
@@ -501,9 +517,9 @@ Ví dụ: hãy tưởng tượng bạn có một queued job cập nhật điểm
     /**
      * Get the middleware the job should pass through.
      *
-     * @return array
+     * @return array<int, object>
      */
-    public function middleware()
+    public function middleware(): array
     {
         return [new WithoutOverlapping($this->user->id)];
     }
@@ -513,9 +529,9 @@ Bất kỳ job nào mà cùng loại chồng nhau sẽ được giải phóng tr
     /**
      * Get the middleware the job should pass through.
      *
-     * @return array
+     * @return array<int, object>
      */
-    public function middleware()
+    public function middleware(): array
     {
         return [(new WithoutOverlapping($this->order->id))->releaseAfter(60)];
     }
@@ -525,9 +541,9 @@ Nếu bạn muốn xóa ngay lập tức bất kỳ job nào chồng nhau để 
     /**
      * Get the middleware the job should pass through.
      *
-     * @return array
+     * @return array<int, object>
      */
-    public function middleware()
+    public function middleware(): array
     {
         return [(new WithoutOverlapping($this->order->id))->dontRelease()];
     }
@@ -537,14 +553,14 @@ Middleware `WithoutOverlapping` được thực hiện dựa trên tính năng a
     /**
      * Get the middleware the job should pass through.
      *
-     * @return array
+     * @return array<int, object>
      */
-    public function middleware()
+    public function middleware(): array
     {
         return [(new WithoutOverlapping($this->order->id))->expireAfter(180)];
     }
 
-> **Warning**
+> [!WARNING]
 > Middleware `WithoutOverlapping` yêu cầu một cache driver hỗ trợ [locks](/docs/{{version}}/cache#atomic-locks). Hiện tại, cache driver `memcached`, `redis`, `dynamodb`, `database`, `file` và `array` dã hỗ trợ atomic lock.
 
 <a name="sharing-lock-keys"></a>
@@ -560,7 +576,7 @@ class ProviderIsDown
     // ...
 
 
-    public function middleware()
+    public function middleware(): array
     {
         return [
             (new WithoutOverlapping("status:{$this->provider}"))->shared(),
@@ -573,7 +589,7 @@ class ProviderIsUp
     // ...
 
 
-    public function middleware()
+    public function middleware(): array
     {
         return [
             (new WithoutOverlapping("status:{$this->provider}"))->shared(),
@@ -589,24 +605,23 @@ Laravel có chứa một middleware `Illuminate\Queue\Middleware\ThrottlesExcept
 
 Ví dụ: hãy tưởng tượng một queued job tương tác với một API của bên thứ ba bắt đầu đưa ra các ngoại lệ. Để điều tiết các ngoại lệ này, bạn có thể trả về middleware `ThrottlesExceptions` từ phương thức `middleware` trong job của bạn. Thông thường, middleware này phải được nối với một job mà implement phương thức [lần thử dựa trên thời gian](#time-based-attempts):
 
+    use DateTime;
     use Illuminate\Queue\Middleware\ThrottlesExceptions;
 
     /**
      * Get the middleware the job should pass through.
      *
-     * @return array
+     * @return array<int, object>
      */
-    public function middleware()
+    public function middleware(): array
     {
         return [new ThrottlesExceptions(10, 5)];
     }
 
     /**
      * Determine the time at which the job should timeout.
-     *
-     * @return \DateTime
      */
-    public function retryUntil()
+    public function retryUntil(): DateTime
     {
         return now()->addMinutes(5);
     }
@@ -620,9 +635,9 @@ Khi một job đưa ra một ngoại lệ nhưng vẫn chưa đạt đến ngư�
     /**
      * Get the middleware the job should pass through.
      *
-     * @return array
+     * @return array<int, object>
      */
-    public function middleware()
+    public function middleware(): array
     {
         return [(new ThrottlesExceptions(10, 5))->backoff(5)];
     }
@@ -634,14 +649,14 @@ Khi một job đưa ra một ngoại lệ nhưng vẫn chưa đạt đến ngư�
     /**
      * Get the middleware the job should pass through.
      *
-     * @return array
+     * @return array<int, object>
      */
-    public function middleware()
+    public function middleware(): array
     {
         return [(new ThrottlesExceptions(10, 10))->by('key')];
     }
 
-> **Note**
+> [!NOTE]
 > Nếu bạn đang sử dụng Redis, bạn có thể sử dụng middleware `Illuminate\Queue\Middleware\ThrottlesExceptionsWithRedis`, middleware này được tinh chỉnh cho Redis và hiệu quả hơn middleware bình thường.
 
 <a name="dispatching-jobs"></a>
@@ -656,23 +671,23 @@ Khi bạn đã viết xong các class job của bạn, bạn có thể dispatch 
     use App\Http\Controllers\Controller;
     use App\Jobs\ProcessPodcast;
     use App\Models\Podcast;
+    use Illuminate\Http\RedirectResponse;
     use Illuminate\Http\Request;
 
     class PodcastController extends Controller
     {
         /**
          * Store a new podcast.
-         *
-         * @param  \Illuminate\Http\Request  $request
-         * @return \Illuminate\Http\Response
          */
-        public function store(Request $request)
+        public function store(Request $request): RedirectResponse
         {
             $podcast = Podcast::create(/* ... */);
 
             // ...
 
             ProcessPodcast::dispatch($podcast);
+
+            return redirect('/podcasts');
         }
     }
 
@@ -696,17 +711,15 @@ Nếu bạn muốn chỉ định rằng một job sẽ không được xử lý 
     use App\Http\Controllers\Controller;
     use App\Jobs\ProcessPodcast;
     use App\Models\Podcast;
+    use Illuminate\Http\RedirectResponse;
     use Illuminate\Http\Request;
 
     class PodcastController extends Controller
     {
         /**
          * Store a new podcast.
-         *
-         * @param  \Illuminate\Http\Request  $request
-         * @return \Illuminate\Http\Response
          */
-        public function store(Request $request)
+        public function store(Request $request): RedirectResponse
         {
             $podcast = Podcast::create(/* ... */);
 
@@ -714,10 +727,12 @@ Nếu bạn muốn chỉ định rằng một job sẽ không được xử lý 
 
             ProcessPodcast::dispatch($podcast)
                         ->delay(now()->addMinutes(10));
+
+            return redirect('/podcasts');
         }
     }
 
-> **Warning**
+> [!WARNING]
 > service SQS queue của Amazon có thời gian delay tối đa là 15 phút.
 
 <a name="dispatching-after-the-response-is-sent-to-browser"></a>
@@ -750,23 +765,23 @@ Nếu bạn muốn gửi một job được chạy ngay lập tức (một cách
     use App\Http\Controllers\Controller;
     use App\Jobs\ProcessPodcast;
     use App\Models\Podcast;
+    use Illuminate\Http\RedirectResponse;
     use Illuminate\Http\Request;
 
     class PodcastController extends Controller
     {
         /**
          * Store a new podcast.
-         *
-         * @param  \Illuminate\Http\Request  $request
-         * @return \Illuminate\Http\Response
          */
-        public function store(Request $request)
+        public function store(Request $request): RedirectResponse
         {
             $podcast = Podcast::create(/* ... */);
 
             // Create podcast...
 
             ProcessPodcast::dispatchSync($podcast);
+
+            return redirect('/podcasts');
         }
     }
 
@@ -787,7 +802,7 @@ Khi tùy chọn `after_commit` được set là `true`, bạn có thể gửi jo
 
 Nếu một transaction bị roll back lại do một ngoại lệ xảy ra trong quá trình transaction, thì các job đã được gửi trong transaction đó sẽ bị loại bỏ.
 
-> **Note**
+> [!NOTE]
 > Việc set tùy chọn cấu hình `after_commit` thành `true` cũng sẽ khiến mọi event listener, mailable, notification và các broadcast event mà đã được queue lại sẽ được gửi đi sau khi tất cả các transaction cơ sở dữ liệu được thực hiện xong.
 
 <a name="specifying-commit-dispatch-behavior-inline"></a>
@@ -829,11 +844,11 @@ Ngoài việc kết hợp các instance của job class, bạn cũng có thể k
         },
     ])->dispatch();
 
-> **Warning**
+> [!WARNING]
 > Việc xóa nhiều job bằng phương thức `$this->delete()` trong một job cụ thể sẽ không ngăn một chuỗi job ngừng xử lý. Chuỗi job sẽ chỉ bị ngừng xử lý nếu một job trong chuỗi job đó bị thất bại.
 
 <a name="chain-connection-queue"></a>
-#### Chain Connection & Queue
+#### Chain Connection và Queue
 
 Nếu bạn muốn chỉ định kết nối và queue sẽ được sử dụng cho một chuỗi job, bạn có thể sử dụng phương thức `onConnection` và `onQueue`. Các phương thức này sẽ chỉ định kết nối queue và tên queue sẽ được sử dụng trừ khi queue job của bạn được chỉ định trong một kết nối hoặc một queue khác:
 
@@ -859,7 +874,7 @@ Khi kết hợp các job, bạn có thể sử dụng phương thức `catch` đ
         // A job within the chain has failed...
     })->dispatch();
 
-> **Warning**
+> [!WARNING]
 > Vì các chuỗi callback sẽ được chuyển đổi và thực thi sau đó bởi Laravel queue, nên bạn không nên sử dụng biến `$this` trong các chuỗi callback.
 
 <a name="customizing-the-queue-and-connection"></a>
@@ -877,23 +892,23 @@ Bằng cách tạo các job đến các queue khác nhau, bạn có thể "phân
     use App\Http\Controllers\Controller;
     use App\Jobs\ProcessPodcast;
     use App\Models\Podcast;
+    use Illuminate\Http\RedirectResponse;
     use Illuminate\Http\Request;
 
     class PodcastController extends Controller
     {
         /**
          * Store a new podcast.
-         *
-         * @param  \Illuminate\Http\Request  $request
-         * @return \Illuminate\Http\Response
          */
-        public function store(Request $request)
+        public function store(Request $request): RedirectResponse
         {
             $podcast = Podcast::create(/* ... */);
 
             // Create podcast...
 
             ProcessPodcast::dispatch($podcast)->onQueue('processing');
+
+            return redirect('/podcasts');
         }
     }
 
@@ -915,8 +930,6 @@ Ngoài ra, bạn có thể chỉ định queue của job bằng cách gọi phư
 
         /**
          * Create a new job instance.
-         *
-         * @return void
          */
         public function __construct()
         {
@@ -936,23 +949,23 @@ Nếu application của bạn đang làm việc với nhiều queue connection, 
     use App\Http\Controllers\Controller;
     use App\Jobs\ProcessPodcast;
     use App\Models\Podcast;
+    use Illuminate\Http\RedirectResponse;
     use Illuminate\Http\Request;
 
     class PodcastController extends Controller
     {
         /**
          * Store a new podcast.
-         *
-         * @param  \Illuminate\Http\Request  $request
-         * @return \Illuminate\Http\Response
          */
-        public function store(Request $request)
+        public function store(Request $request): RedirectResponse
         {
             $podcast = Podcast::create(/* ... */);
 
             // Create podcast...
 
             ProcessPodcast::dispatch($podcast)->onConnection('sqs');
+
+            return redirect('/podcasts');
         }
     }
 
@@ -980,8 +993,6 @@ Ngoài ra, bạn có thể chỉ định kết nối của job bằng cách gọ
 
         /**
          * Create a new job instance.
-         *
-         * @return void
          */
         public function __construct()
         {
@@ -1021,22 +1032,32 @@ Bạn có thể thực hiện một cách tiếp cận chi tiết hơn bằng c�
         public $tries = 5;
     }
 
+Nếu bạn cần kiểm số lần thử tối đa của một job cụ thể, bạn có thể định nghĩa phương thức `tries` trên job đó:
+
+    /**
+     * Determine number of times the job may be attempted.
+     */
+    public function tries(): int
+    {
+        return 5;
+    }
+
 <a name="time-based-attempts"></a>
 #### Time Based Attempts
 
 Thay thế cho việc định nghĩa số lần một job có thể được chạy trước khi nó thất bại, bạn có thể định nghĩa thời gian mà job đó sẽ không còn được thử lại. Điều này cho phép một job có thể được chạy thoải mái trong một khoảng thời gian nhất định. Để định nghĩa thời gian mà một job sẽ không còn được thử lại, hãy thêm phương thức `retryUntil` vào class job của bạn. Phương thức này sẽ trả về một instance `DateTime`:
 
+    use DateTime;
+
     /**
      * Determine the time at which the job should timeout.
-     *
-     * @return \DateTime
      */
-    public function retryUntil()
+    public function retryUntil(): DateTime
     {
         return now()->addMinutes(10);
     }
 
-> **Note**
+> [!NOTE]
 > Bạn cũng có thể định nghĩa một thuộc tính `tries` hoặc phương thức `retryUntil` trên các [queued event listener](/docs/{{version}}/events#queued-event-listeners) của bạn.
 
 <a name="max-exceptions"></a>
@@ -1068,10 +1089,8 @@ Thỉnh thoảng bạn có thể muốn chỉ định một job có thể đư�
 
         /**
          * Execute the job.
-         *
-         * @return void
          */
-        public function handle()
+        public function handle(): void
         {
             Redis::throttle('key')->allow(10)->every(60)->then(function () {
                 // Lock obtained, process the podcast...
@@ -1086,9 +1105,6 @@ Trong ví dụ này, job sẽ được giải phóng trong 10 giây nếu ứng 
 
 <a name="timeout"></a>
 #### Timeout
-
-> **Warning**
-> PHP extension `pcntl` phải được cài đặt để chỉ định thời gian hết hạn cho job.
 
 Thông thường, bạn có thể ước lượng queued job của bạn sẽ mất bao lâu thời gian để chạy. Vì lý do này, Laravel cho phép bạn chỉ định giá trị "timeout". Mặc định, giá trị timeout này là 60 giây. Nếu một job đang xử lý lâu hơn số giây được chỉ định bởi giá trị timeout, thì worker đang xử lý job đó sẽ bị thoát ra với một lỗi. Thông thường, worker sẽ được khởi động lại tự động bởi [trình quản lý process được cấu hình trên máy chủ của bạn](#supervisor-configuration).
 
@@ -1118,6 +1134,9 @@ Bạn cũng có thể định nghĩa thời gian hết hạn của một job tr�
 
 Thỉnh thoảng, các process IO blocking như socket hoặc outgoing HTTP connection có thể không tuân theo thời gian hết hạn đã được chỉ định của bạn. Do đó, khi sử dụng các tính năng này, bạn cũng nên cố gắng chỉ định một thời gian hết hạn bằng cách sử dụng các API của chúng. Ví dụ: khi sử dụng Guzzle, bạn phải luôn chỉ định một connection và một giá trị mà request sẽ hết hạn.
 
+> [!WARNING]
+> PHP extension `pcntl` phải được cài đặt để chỉ định thời gian timeout của job. Ngoài ra, giá trị "timeout" của job phải luôn nhỏ hơn giá trị ["retry after"](#job-expiration) của nó. Nếu không, job có thể bị thử lại trước khi hoàn tất công việc hoặc hết thời gian timeout.
+
 <a name="failing-on-timeout"></a>
 #### Failing On Timeout
 
@@ -1144,19 +1163,19 @@ Thỉnh thoảng bạn có thể muốn đưa một job trở lại về queue t
 
     /**
      * Execute the job.
-     *
-     * @return void
      */
-    public function handle()
+    public function handle(): void
     {
         // ...
 
         $this->release();
     }
 
-Mặc định, phương thức `release` sẽ giải phóng job trở lại queue ngay lập tức. Tuy nhiên, bằng cách truyền một số integer cho phương thức `release`, bạn có thể ra lệnh cho queue sẽ không xử lý job cho đến khi hết một số giây nhất định:
+Mặc định, phương thức `release` sẽ giải phóng job trở lại queue ngay lập tức. Tuy nhiên, bạn có thể ra lệnh cho queue sẽ không xử lý job cho đến khi hết một số giây nhất định bằng cách truyền một số nguyên hoặc một date vào phương thức `release`:
 
     $this->release(10);
+
+    $this->release(now()->addSeconds(10));
 
 <a name="manually-failing-a-job"></a>
 #### Manually Failing A Job
@@ -1165,10 +1184,8 @@ Mặc định, phương thức `release` sẽ giải phóng job trở lại queu
 
     /**
      * Execute the job.
-     *
-     * @return void
      */
-    public function handle()
+    public function handle(): void
     {
         // ...
 
@@ -1181,13 +1198,13 @@ Nếu bạn muốn đánh dấu job của bạn là thất bại vì một ngo�
 
     $this->fail('Something went wrong.');
 
-> **Note**
+> [!NOTE]
 > Để biết thêm thông tin về các job thất bại, hãy xem [tài liệu về cách xử lý cho các job thất bại](#dealing-with-failed-jobs).
 
 <a name="job-batching"></a>
 ## Job Batching
 
-Job batching của Laravel cho phép bạn dễ dàng thực hiện một loạt job và sau đó thực hiện một số hành động khi một loạt job đó đã hoàn thành việc thực thi. Trước khi bắt đầu, bạn nên tạo một migration cơ sở dữ liệu để tạo một bảng chứa các thông tin meta về các batch job của bạn, chẳng hạn như tỷ lệ hoàn thành của chúng. Migration này có thể được tạo bằng lệnh Artisan `queue:batches-table`:
+Job batching của Laravel cho phép bạn dễ dàng thực hiện một loạt job và sau đó thực hiện một số hành động khi một loạt job đó đã hoàn thành việc thực thi. Trước khi bắt đầu, bạn nên tạo một migration cơ sở dữ liệu để tạo một bảng mà sẽ chứa các thông tin meta về các batch job của bạn, chẳng hạn như tỷ lệ hoàn thành của chúng. Migration này có thể được tạo bằng lệnh Artisan `queue:batches-table`:
 
 ```shell
 php artisan queue:batches-table
@@ -1217,10 +1234,8 @@ php artisan migrate
 
         /**
          * Execute the job.
-         *
-         * @return void
          */
-        public function handle()
+        public function handle(): void
         {
             if ($this->batch()->cancelled()) {
                 // Determine if the batch has been cancelled...
@@ -1248,7 +1263,11 @@ php artisan migrate
         new ImportCsv(201, 300),
         new ImportCsv(301, 400),
         new ImportCsv(401, 500),
-    ])->then(function (Batch $batch) {
+    ])->before(function (Batch $batch) {
+        // The batch has been created but no jobs have been added...
+    })->progress(function (Batch $batch) {
+        // A single job has completed successfully...
+    })->then(function (Batch $batch) {
         // All jobs completed successfully...
     })->catch(function (Batch $batch, Throwable $e) {
         // First batch job failure detected...
@@ -1260,7 +1279,7 @@ php artisan migrate
 
 ID của batch có thể được lấy ra thông qua thuộc tính `$batch->id`, nó có thể được sử dụng để [truy vấn lệnh bus của Laravel](#inspecting-batches) để biết thêm thông tin về batch sau khi nó được gửi đi.
 
-> **Warning**
+> [!WARNING]
 > Vì các lệnh callback batch được serialize và thực thi sau đó bởi Laravel queue, nên bạn không nên sử dụng biến `$this` trong các lệnh callback.
 
 <a name="naming-batches"></a>
@@ -1275,7 +1294,7 @@ Một số công cụ như Laravel Horizon và Laravel Telescope có thể cung 
     })->name('Import CSV')->dispatch();
 
 <a name="batch-connection-queue"></a>
-#### Batch Connection & Queue
+#### Batch Connection và Queue
 
 Nếu bạn muốn chỉ định kết nối và queue nào sẽ được sử dụng cho các batch job, bạn có thể sử dụng các phương thức `onConnection` và `onQueue`. Tất cả các batch job sẽ phải chạy trong cùng một kết nối và queue:
 
@@ -1285,8 +1304,8 @@ Nếu bạn muốn chỉ định kết nối và queue nào sẽ được sử d
         // All jobs completed successfully...
     })->onConnection('redis')->onQueue('imports')->dispatch();
 
-<a name="chains-within-batches"></a>
-#### Chains Within Batches
+<a name="chains-and-batches"></a>
+### Chains and Batches
 
 Bạn có thể định nghĩa một tập hợp gồm các [chuỗi job](#job-chaining) trong một batch bằng cách set các chuỗi job đó vào trong một mảng. Ví dụ: chúng ta có thể thực hiện song song hai chuỗi job và thực hiện lệnh callback khi cả hai chuỗi job đã được xử lý xong:
 
@@ -1308,6 +1327,25 @@ Bạn có thể định nghĩa một tập hợp gồm các [chuỗi job](#job-c
         // ...
     })->dispatch();
 
+Ngược lại, bạn có thể chạy nhiều batch job trong một [chuỗi job](#job-chaining) bằng cách định nghĩa các batch này trong một chuỗi. Ví dụ, trước tiên bạn có thể chạy một batch job để phát hành nhiều podcast sau đó là một batch job khác để gửi thông báo phát hành:
+
+    use App\Jobs\FlushPodcastCache;
+    use App\Jobs\ReleasePodcast;
+    use App\Jobs\SendPodcastReleaseNotification;
+    use Illuminate\Support\Facades\Bus;
+
+    Bus::chain([
+        new FlushPodcastCache,
+        Bus::batch([
+            new ReleasePodcast(1),
+            new ReleasePodcast(2),
+        ]),
+        Bus::batch([
+            new SendPodcastReleaseNotification(1),
+            new SendPodcastReleaseNotification(2),
+        ]),
+    ])->dispatch();
+
 <a name="adding-jobs-to-batches"></a>
 ### Thêm Jobs vào Batches
 
@@ -1328,10 +1366,8 @@ Trong ví dụ này, chúng ta sẽ sử dụng job `LoadImportBatch` để tái
 
     /**
      * Execute the job.
-     *
-     * @return void
      */
-    public function handle()
+    public function handle(): void
     {
         if ($this->batch()->cancelled()) {
             return;
@@ -1342,7 +1378,7 @@ Trong ví dụ này, chúng ta sẽ sử dụng job `LoadImportBatch` để tái
         }));
     }
 
-> **Warning**
+> [!WARNING]
 > Bạn chỉ có thể thêm job vào một batch từ bên trong job thuộc cùng một batch.
 
 <a name="inspecting-batches"></a>
@@ -1401,10 +1437,8 @@ Thỉnh thoảng bạn có thể cần hủy việc thực thi của một batch
 
     /**
      * Execute the job.
-     *
-     * @return void
      */
-    public function handle()
+    public function handle(): void
     {
         if ($this->user->exceedsImportLimit()) {
             return $this->batch()->cancel();
@@ -1421,10 +1455,8 @@ Như bạn có thể thấy trong ví dụ trước, các batch job thường ph
 
     /**
      * Get the middleware the job should pass through.
-     *
-     * @return array
      */
-    public function middleware()
+    public function middleware(): array
     {
         return [new SkipIfBatchCancelled];
     }
@@ -1473,6 +1505,60 @@ Tương tự như vậy, bảng `jobs_batches` của bạn cũng có thể tích
 
     $schedule->command('queue:prune-batches --hours=48 --cancelled=72')->daily();
 
+<a name="storing-batches-in-dynamodb"></a>
+### Lưu batches trong DynamoDB
+
+Laravel cũng cung cấp hỗ trợ lưu thông tin meta của batch trong [DynamoDB](https://aws.amazon.com/dynamodb) thay cho cơ sở dữ liệu quan hệ. Tuy nhiên, bạn sẽ cần phải tạo thủ công một bảng DynamoDB để lưu trữ tất cả các bản ghi batch.
+
+Thông thường, bảng này sẽ được đặt tên là `job_batches`, nhưng bạn nên đặt tên bảng này dựa theo giá trị cấu hình `queue.batching.table` trong file cấu hình `queue` của ứng dụng.
+
+<a name="dynamodb-batch-table-configuration"></a>
+#### DynamoDB Batch Table Configuration
+
+Bảng `job_batches` phải có một khóa chính dạng string có tên là `application` và một khóa chính khác cũng là ở dạng string và có tên là `id`. Phần `application` của khóa sẽ chứa tên ứng dụng của bạn như được định nghĩa bởi giá trị cấu hình `name` trong file cấu hình `app` của ứng dụng. Vì tên ứng dụng là một phần của khóa trong bảng DynamoDB, nên bạn có thể sử dụng cùng một bảng để lưu trữ các batch job cho nhiều ứng dụng Laravel khác nhau.
+
+Ngoài ra, bạn có thể định nghĩa thuộc tính `ttl` cho bảng của bạn nếu bạn muốn tận dụng tính năng [loại bỏ batch tự động](#pruning-batches-in-dynamodb).
+
+<a name="dynamodb-configuration"></a>
+#### DynamoDB Configuration
+
+Tiếp theo, hãy cài đặt AWS SDK để ứng dụng Laravel của bạn có thể giao tiếp với Amazon DynamoDB:
+
+```shell
+composer require aws/aws-sdk-php
+```
+
+Sau đó, set giá trị của tùy chọn cấu hình `queue.batching.driver` thành `dynamodb`. Ngoài ra, bạn nên định nghĩa các tùy chọn cấu hình `key`, `secret` và `region` trong mảng cấu hình `batching`. Các tùy chọn này sẽ được sử dụng để xác thực với AWS. Khi sử dụng driver `dynamodb`, tùy chọn cấu hình `queue.batching.database` sẽ không cần thiết nữa:
+
+```php
+'batching' => [
+    'driver' => env('QUEUE_FAILED_DRIVER', 'dynamodb'),
+    'key' => env('AWS_ACCESS_KEY_ID'),
+    'secret' => env('AWS_SECRET_ACCESS_KEY'),
+    'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
+    'table' => 'job_batches',
+],
+```
+
+<a name="pruning-batches-in-dynamodb"></a>
+#### Pruning Batches in DynamoDB
+
+Khi sử dụng [DynamoDB](https://aws.amazon.com/dynamodb) để lưu trữ thông tin batch job, các lệnh xoá thông thường được sử dụng để xoá các batch được lưu trữ trong cơ sở dữ liệu quan hệ sẽ không còn hoạt động được nữa. Thay vào đó, bạn có thể sử dụng [chức năng TTL native của DynamoDB](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/TTL.html) để tự động xóa các bản ghi cho các batch cũ.
+
+Nếu bạn định nghĩa bảng DynamoDB của bạn bằng thuộc tính `ttl`, bạn có thể định nghĩa thêm các tham số cấu hình để hướng dẫn Laravel về cách loại bỏ các bản ghi batch cũ. Giá trị cấu hình `queue.batching.ttl_attribute` sẽ định nghĩa tên của thuộc tính TTL, trong khi giá trị cấu hình `queue.batching.ttl` định nghĩa số giây mà sau đó một bản ghi batch có thể bị xóa ra khỏi bảng DynamoDB, so với lần cuối cùng mà bản ghi đó được cập nhật:
+
+```php
+'batching' => [
+    'driver' => env('QUEUE_FAILED_DRIVER', 'dynamodb'),
+    'key' => env('AWS_ACCESS_KEY_ID'),
+    'secret' => env('AWS_SECRET_ACCESS_KEY'),
+    'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
+    'table' => 'job_batches',
+    'ttl_attribute' => 'ttl',
+    'ttl' => 60 * 60 * 24 * 7, // 7 days...
+],
+```
+
 <a name="queueing-closures"></a>
 ## Queueing Closures
 
@@ -1494,7 +1580,7 @@ Bằng cách sử dụng phương thức `catch`, bạn có thể cung cấp m�
         // This job has failed...
     });
 
-> **Warning**
+> [!WARNING]
 > Vì lệnh callback `catch` sẽ được chuyển đổi và thực thi sau đó bởi Laravel queue, nên bạn không nên sử dụng biến `$this` trong lệnh callback `catch`.
 
 <a name="running-the-queue-worker"></a>
@@ -1509,7 +1595,7 @@ Laravel có chứa một lệnh Artisan sẽ chạy một queue worker và thự
 php artisan queue:work
 ```
 
-> **Note**
+> [!NOTE]
 > Để giữ cho process `queue:work` luôn hoạt động trong background, bạn nên sử dụng một trình giám sát process, chẳng hạn như [Supervisor](#supervisor-configuration) để đảm bảo rằng queue worker không bị dừng giữa chừng.
 
 Bạn có thể thêm flag `-v` khi gọi lệnh `queue:work` nếu bạn muốn ID của job đã xử lý được thêm vào output của command này:
@@ -1562,7 +1648,7 @@ php artisan queue:work --max-jobs=1000
 ```
 
 <a name="processing-all-queued-jobs-then-exiting"></a>
-#### Processing All Queued Jobs & Then Exiting
+#### Processing All Queued Jobs và Then Exiting
 
 Tùy chọn `--stop-when-empty` có thể được sử dụng để hướng dẫn worker xử lý tất cả các job và sau đó sẽ thoát nếu không còn job nữa. Tùy chọn này có thể hữu ích khi đang thực hiện các queue Laravel trong một Docker container nếu bạn muốn tắt container đó sau khi queue được trống:
 
@@ -1587,6 +1673,17 @@ Khi các job có sẵn trên queue, worker sẽ tiếp tục xử lý các job m
 
 ```shell
 php artisan queue:work --sleep=3
+```
+
+<a name="maintenance-mode-queues"></a>
+#### Maintenance Mode and Queues
+
+Trong khi ứng dụng của bạn đang ở trong [chế độ bảo trì](/docs/{{version}}/configuration#maintenance-mode), thì sẽ không có một queued job được xử lý. Các job sẽ tiếp tục sẽ được xử lý bình thường khi ứng dụng ra khỏi chế độ bảo trì.
+
+Để bắt những queue worker của bạn xử lý tiếp job ngay cả khi chế độ bảo trì được bật, bạn có thể sử dụng tùy chọn `--force`:
+
+```shell
+php artisan queue:work --force
 ```
 
 <a name="resource-considerations"></a>
@@ -1618,7 +1715,7 @@ php artisan queue:restart
 
 Để không làm job đó bị mất, lệnh này sẽ thoát tất cả các queue workers sau khi chúng xử lý xong các job hiện tại. Vì các queue worker sẽ thoát khi lệnh `queue:restart` được chạy, vì thế bạn nên chạy một process quản lý, chẳng hạn như [Supervisor](#supervisor-configuration) để tự động khởi động lại các queue worker đó.
 
-> **Note**
+> [!NOTE]
 > Queue sẽ sử dụng [cache](/docs/{{version}}/cache) để lưu trữ tín hiệu khởi động lại, vì vậy bạn nên kiểm tra driver cache đã được cấu hình cho application của bạn đúng chưa trước khi sử dụng tính năng này.
 
 <a name="job-expirations-and-timeouts"></a>
@@ -1629,7 +1726,7 @@ php artisan queue:restart
 
 Trong file cấu hình `config/queue.php` của bạn, mỗi queue connection sẽ định nghĩa một tùy chọn `retry_after`. Tùy chọn này sẽ khai báo cho queue connection biết sẽ phải đợi bao nhiêu giây trước khi chạy lại một job đang được xử lý. Ví dụ: nếu giá trị của `retry_after` được set là `90`, thì job đó sẽ được giải phóng trở lại vào queue nếu nó đã được xử lý quá 90 giây mà không bị giải phóng hoặc xóa. Thông thường, bạn nên set giá trị `retry_after` là số giây tối đa mà một job của bạn có thể sẽ mất để hoàn thành tất cả xử lý.
 
-> **Warning**
+> [!WARNING]
 > Chỉ có queue connection của Amazon SQS sẽ không chứa giá trị `retry_after`. SQS sẽ retry một job dựa trên [Default Visibility Timeout](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/AboutVT.html) được quản lý trong AWS console.
 
 <a name="worker-timeouts"></a>
@@ -1643,7 +1740,7 @@ php artisan queue:work --timeout=60
 
 Tùy chọn cấu hình `retry_after` và tùy chọn CLI `--timeout` tuy khác nhau, nhưng nếu phối hợp với nhau thì sẽ giúp bạn đảm bảo rằng các job sẽ không bị mất và các job chỉ được xử lý thành công trong một lần.
 
-> **Warning**
+> [!WARNING]
 > Giá trị `--timeout` phải luôn luôn có thời gian ngắn hoặc ít hơn vài giây so với giá trị cấu hình `retry_after`. Điều này sẽ đảm bảo là một worker đang xử lý một job bị đơ luôn được kết thúc trước khi job đó được chạy lại. Nếu tùy chọn `--timeout` của bạn dài hơn giá trị cấu hình `retry_after`, thì job đó của bạn có thể bị xử lý hai lần.
 
 <a name="supervisor-configuration"></a>
@@ -1662,7 +1759,7 @@ Supervisor là trình giám sát process cho hệ điều hành Linux và sẽ t
 sudo apt-get install supervisor
 ```
 
-> **Note**
+> [!NOTE]
 > Nếu bạn không muốn cấu hình và quản lý Supervisor, hãy xem xét việc sử dụng [Laravel Forge](https://forge.laravel.com), nó sẽ tự động cài đặt và cấu hình Supervisor cho các dự án production Laravel của bạn.
 
 <a name="configuring-supervisor"></a>
@@ -1687,7 +1784,7 @@ stopwaitsecs=3600
 
 Trong ví dụ trên, lệnh `numprocs` sẽ hướng dẫn Supervisor chạy tám process `queue:work` và giám sát tất cả chúng, tự động khởi động lại nếu chúng thất bại. Bạn nên thay đổi lệnh `command` của cấu hình để phản ánh queue connection và tuỳ chọn worker mà bạn mong muốn.
 
-> **Warning**
+> [!WARNING]
 > Bạn nên chắc chắn rằng giá trị của `stopwaitsecs` sẽ luôn lớn hơn số giây lâu nhất mà job của bạn đang chạy. Nếu không, Supervisor có thể kết thúc job đó trước khi nó được xử lý xong.
 
 <a name="starting-supervisor"></a>
@@ -1700,7 +1797,7 @@ sudo supervisorctl reread
 
 sudo supervisorctl update
 
-sudo supervisorctl start laravel-worker:*
+sudo supervisorctl start "laravel-worker:*"
 ```
 
 Để biết thêm thông tin về Supervisor, hãy tham khảo [tài liệu Supervisor](http://supervisord.org/index.html).
@@ -1743,22 +1840,20 @@ Nếu bạn yêu cầu các logic phức tạp hơn để xác định thời gi
 
     /**
     * Calculate the number of seconds to wait before retrying the job.
-    *
-    * @return int
     */
-    public function backoff()
+    public function backoff(): int
     {
         return 3;
     }
 
-Bạn có thể dễ dàng cấu hình thời gian thử lại "theo cấp số nhân" bằng cách trả về một mảng các giá trị thời gian thử lại từ phương thức `backoff`. Trong ví dụ này, độ trễ thử lại sẽ là 1 giây cho lần thử đầu tiên, và 5 giây cho lần thử lại thứ hai và 10 giây cho lần thử lại thứ ba:
+Bạn có thể dễ dàng cấu hình thời gian thử lại "theo cấp số nhân" bằng cách trả về một mảng các giá trị thời gian thử lại từ phương thức `backoff`. Trong ví dụ này, độ trễ thử lại sẽ là 1 giây cho lần thử đầu tiên, và 5 giây cho lần thử lại thứ hai, 10 giây cho lần thử lại thứ ba, và 10 giây cho mỗi lần thử lại tiếp theo nếu còn nhiều lần thử tiếp theo hơn:
 
     /**
     * Calculate the number of seconds to wait before retrying the job.
     *
-    * @return array
+    * @return array<int, int>
     */
-    public function backoff()
+    public function backoff(): array
     {
         return [1, 5, 10];
     }
@@ -1785,47 +1880,30 @@ Khi một job bị thất bại, bạn có thể muốn gửi thông báo cho ng
         use InteractsWithQueue, Queueable, SerializesModels;
 
         /**
-         * The podcast instance.
-         *
-         * @var \App\Podcast
-         */
-        public $podcast;
-
-        /**
          * Create a new job instance.
-         *
-         * @param  \App\Models\Podcast  $podcast
-         * @return void
          */
-        public function __construct(Podcast $podcast)
-        {
-            $this->podcast = $podcast;
-        }
+        public function __construct(
+            public Podcast $podcast,
+        ) {}
 
         /**
          * Execute the job.
-         *
-         * @param  \App\Services\AudioProcessor  $processor
-         * @return void
          */
-        public function handle(AudioProcessor $processor)
+        public function handle(AudioProcessor $processor): void
         {
             // Process uploaded podcast...
         }
 
         /**
          * Handle a job failure.
-         *
-         * @param  \Throwable  $exception
-         * @return void
          */
-        public function failed(Throwable $exception)
+        public function failed(Throwable $exception): void
         {
             // Send user notification of failure, etc...
         }
     }
 
-> **Warning**
+> [!WARNING]
 > Một instance mới của job sẽ được khởi tạo trước khi gọi phương thức `failed`; do đó, mọi thay đổi thuộc tính class có trong phương thức `handle` sẽ bị mất.
 
 <a name="retrying-failed-jobs"></a>
@@ -1867,7 +1945,7 @@ Nếu bạn muốn xóa một job thất bại, bạn có thể sử dụng lệ
 php artisan queue:forget 91401d2c-0784-4f43-824c-34f94a33c24d
 ```
 
-> **Note**
+> [!NOTE]
 > Khi sử dụng [Horizon](/docs/{{version}}/horizon), bạn nên sử dụng lệnh `horizon:forget` để xóa các job không thành công thay vì lệnh `queue:forget`.
 
 Để xóa tất cả các job thất bại ra khỏi bảng `failed_jobs`, bạn có thể sử dụng lệnh `queue:flush`:
@@ -1908,7 +1986,7 @@ php artisan queue:prune-failed --hours=48
 <a name="storing-failed-jobs-in-dynamodb"></a>
 ### Lưu job failed vào trong DynamoDB
 
-Laravel cũng cung cấp hỗ trợ lưu trữ các record của job thất bại của bạn vào trong [DynamoDB](https://aws.amazon.com/dynamodb) thay vì phải lưu vào bảng cơ sở dữ liệu quan hệ. Tuy nhiên, bạn phải tạo bảng DynamoDB để lưu trữ tất cả record của job thất bại. Thông thường, bảng này phải được đặt tên là `failed_jobs`, nhưng bạn nên đặt tên bảng dựa trên giá trị của giá trị cấu hình `queue.failed.table` trong file cấu hình `queue` trong ứng dụng của bạn.
+Laravel cũng cung cấp hỗ trợ lưu trữ các record của job thất bại của bạn vào trong [DynamoDB](https://aws.amazon.com/dynamodb) thay vì phải lưu vào bảng cơ sở dữ liệu quan hệ. Tuy nhiên, bạn phải tự tạo bảng DynamoDB để lưu trữ tất cả record của job thất bại. Thông thường, bảng này phải được đặt tên là `failed_jobs`, nhưng bạn nên đặt tên bảng dựa trên giá trị của giá trị cấu hình `queue.failed.table` trong file cấu hình `queue` trong ứng dụng của bạn.
 
 Bảng `failed_jobs` phải có khóa chính phân vùng tên là `application` và khóa chính sắp xếp có tên là `uuid`. Phần `application` của khóa sẽ chứa tên ứng dụng của bạn được định nghĩa bởi giá trị cấu hình `name` trong file cấu hình `app` của ứng dụng của bạn. Vì tên ứng dụng là một phần khóa của bảng DynamoDB nên bạn có thể sử dụng cùng một bảng để lưu các job thất bại cho nhiều ứng dụng Laravel.
 
@@ -1956,20 +2034,16 @@ Nếu bạn muốn đăng ký một listener event sẽ được gọi khi một
     {
         /**
          * Register any application services.
-         *
-         * @return void
          */
-        public function register()
+        public function register(): void
         {
-            //
+            // ...
         }
 
         /**
          * Bootstrap any application services.
-         *
-         * @return void
          */
-        public function boot()
+        public function boot(): void
         {
             Queue::failing(function (JobFailed $event) {
                 // $event->connectionName
@@ -1982,7 +2056,7 @@ Nếu bạn muốn đăng ký một listener event sẽ được gọi khi một
 <a name="clearing-jobs-from-queues"></a>
 ## Xoá job từ queue
 
-> **Note**
+> [!NOTE]
 > Khi sử dụng [Horizon](/docs/{{version}}/horizon), bạn nên sử dụng lệnh `horizon:clear` để xóa các job ra khỏi queue thay vì lệnh `queue:clear`.
 
 Nếu bạn muốn xóa tất cả job ra khỏi queue mặc định của kết nối mặc định, bạn có thể làm như vậy bằng cách sử dụng lệnh Artisan `queue:clear`:
@@ -1997,7 +2071,7 @@ Bạn cũng có thể cung cấp tham số `connection` và tùy chọn `queue` 
 php artisan queue:clear redis --queue=emails
 ```
 
-> **Warning**
+> [!WARNING]
 > Việc xóa job ra khỏi queue chỉ có cho các driver queue cơ sở dữ liệu, Redis và SQS. Ngoài ra, quá trình xóa message SQS có thể mất tới 60 giây, do đó, các job được gửi đến queue SQS sau 60 giây sau khi bạn xóa queue cũng có thể bị xóa.
 
 <a name="monitoring-your-queues"></a>
@@ -2021,10 +2095,8 @@ use Illuminate\Support\Facades\Notification;
 
 /**
  * Register any other events for your application.
- *
- * @return void
  */
-public function boot()
+public function boot(): void
 {
     Event::listen(function (QueueBusy $event) {
         Notification::route('mail', 'dev@example.com')
@@ -2036,6 +2108,167 @@ public function boot()
     });
 }
 ```
+
+<a name="testing"></a>
+## Testing
+
+Khi kiểm tra code gửi job, bạn có thể muốn hướng dẫn Laravel là không cần thiết phải chạy job đó, vì code của job có thể được kiểm tra trực tiếp và riêng biệt với code gửi job đó. Tất nhiên, để kiểm tra job, bạn có thể khởi tạo một instance job và gọi phương thức `handle` trực tiếp trong bài kiểm tra của bạn.
+
+Bạn có thể sử dụng phương thức `fake` của facade `Queue` để chặn các queued job thực sự được đưa vào queue. Sau khi gọi phương thức `fake` của facade `Queue`, sau đó bạn có thể kiểm tra ứng dụng đã đưa các job vào queue chưa:
+
+    <?php
+
+    namespace Tests\Feature;
+
+    use App\Jobs\AnotherJob;
+    use App\Jobs\FinalJob;
+    use App\Jobs\ShipOrder;
+    use Illuminate\Support\Facades\Queue;
+    use Tests\TestCase;
+
+    class ExampleTest extends TestCase
+    {
+        public function test_orders_can_be_shipped(): void
+        {
+            Queue::fake();
+
+            // Perform order shipping...
+
+            // Assert that no jobs were pushed...
+            Queue::assertNothingPushed();
+
+            // Assert a job was pushed to a given queue...
+            Queue::assertPushedOn('queue-name', ShipOrder::class);
+
+            // Assert a job was pushed twice...
+            Queue::assertPushed(ShipOrder::class, 2);
+
+            // Assert a job was not pushed...
+            Queue::assertNotPushed(AnotherJob::class);
+
+            // Assert that a Closure was pushed to the queue...
+            Queue::assertClosurePushed();
+
+            // Assert the total number of jobs that were pushed...
+            Queue::assertCount(3);
+        }
+    }
+
+Bạn có thể truyền một closure cho các phương thức `assertPushed` hoặc `assertNotPushed` để kiểm tra một job đã được đẩy vào queue và pass qua được "truth test" đã cho. Nếu có ít nhất một job đã được đẩy vào và pass qua truth test đã cho thì kiểm tra sẽ thành công:
+
+    Queue::assertPushed(function (ShipOrder $job) use ($order) {
+        return $job->order->id === $order->id;
+    });
+
+<a name="faking-a-subset-of-jobs"></a>
+### Fake một tập hợp Jobs
+
+Nếu bạn chỉ cần fake các job cụ thể trong khi cho phép các job khác được chạy bình thường, bạn có thể truyền tên class của các job cần fake vào phương thức `fake`:
+
+    public function test_orders_can_be_shipped(): void
+    {
+        Queue::fake([
+            ShipOrder::class,
+        ]);
+
+        // Perform order shipping...
+
+        // Assert a job was pushed twice...
+        Queue::assertPushed(ShipOrder::class, 2);
+    }
+
+Bạn có thể fake tất cả các job ngoại trừ một tập hợp các job được chỉ định bằng phương thức `except`:
+
+    Queue::fake()->except([
+        ShipOrder::class,
+    ]);
+
+<a name="testing-job-chains"></a>
+### Testing Job Chains
+
+Để kiểm tra một chuỗi job, bạn sẽ cần sử dụng khả năng fake của facade `Bus`. Phương thức `assertChained` của facade `Bus` có thể được sử dụng để kiểm tra một [chuỗi job](/docs/{{version}}/queues#job-chaining) đã được gửi hay chưa. Phương thức `assertChained` sẽ chấp nhận một mảng các job trong một chuỗi làm tham số đầu tiên của nó:
+
+    use App\Jobs\RecordShipment;
+    use App\Jobs\ShipOrder;
+    use App\Jobs\UpdateInventory;
+    use Illuminate\Support\Facades\Bus;
+
+    Bus::fake();
+
+    // ...
+
+    Bus::assertChained([
+        ShipOrder::class,
+        RecordShipment::class,
+        UpdateInventory::class
+    ]);
+
+Như bạn có thể thấy trong ví dụ trên, mảng job trong một chuỗi có thể là một mảng gồm các tên class của job. Tuy nhiên, bạn cũng có thể cung cấp một mảng các instance job thực tế. Khi làm như vậy, Laravel sẽ đảm bảo là các instance job đó sẽ thuộc cùng một class và cùng giá trị thuộc tính khi được gửi đi bởi ứng dụng của bạn:
+
+    Bus::assertChained([
+        new ShipOrder,
+        new RecordShipment,
+        new UpdateInventory,
+    ]);
+
+Bạn có thể sử dụng phương thức `assertDispatchedWithoutChain` để kiểm tra một job đã được đẩy đi mà không nằm trong bất kỳ chuỗi job nào:
+
+    Bus::assertDispatchedWithoutChain(ShipOrder::class);
+
+<a name="testing-chained-batches"></a>
+#### Testing Chained Batches
+
+Nếu chuỗi job của bạn [có chứa một batch job](#chains-and-batches), bạn có thể kiểm tra batch job được nối đó phù hợp với kỳ vọng của bạn bằng cách chèn thêm một định nghĩa `Bus::chainedBatch` vào kiểm tra chuỗi job của bạn:
+
+    use App\Jobs\ShipOrder;
+    use App\Jobs\UpdateInventory;
+    use Illuminate\Bus\PendingBatch;
+    use Illuminate\Support\Facades\Bus;
+
+    Bus::assertChained([
+        new ShipOrder,
+        Bus::chainedBatch(function (PendingBatch $batch) {
+            return $batch->jobs->count() === 3;
+        }),
+        new UpdateInventory,
+    ]);
+
+<a name="testing-job-batches"></a>
+### Testing Job Batches
+
+Phương thức `assertBatched` của facade `Bus` có thể được sử dụng để kiểm tra một [batch job](/docs/{{version}}/queues#job-batching) đã được gửi hay chưa. Closure được cung cấp cho phương thức `assertBatched` sẽ nhận vào một instance của `Illuminate\Bus\PendingBatch`, có thể được sử dụng để kiểm tra các job có trong batch:
+
+    use Illuminate\Bus\PendingBatch;
+    use Illuminate\Support\Facades\Bus;
+
+    Bus::fake();
+
+    // ...
+
+    Bus::assertBatched(function (PendingBatch $batch) {
+        return $batch->name == 'import-csv' &&
+               $batch->jobs->count() === 10;
+    });
+
+Bạn có thể sử dụng phương thức `assertBatchCount` để kiểm tra số lượng batch đã được gửi đi:
+
+    Bus::assertBatchCount(3);
+
+Bạn có thể sử dụng `assertNothingBatched` để kiểm tra không có batch nào được gửi đi:
+
+    Bus::assertNothingBatched();
+
+<a name="testing-job-batch-interaction"></a>
+#### Testing Job / Batch Interaction
+
+Ngoài ra, đôi khi bạn có thể cần kiểm tra tương tác của một job với batch của nó. Ví dụ, bạn có thể cần kiểm tra xem một job có hủy xử lý tiếp theo của batch của nó hay không. Để thực hiện việc này, bạn cần chỉ định một batch fake cho job đó thông qua phương thức `withFakeBatch`. Phương thức `withFakeBatch` này sẽ trả về một mảng chứa instance job và batch fake:
+
+    [$job, $batch] = (new ShipOrder)->withFakeBatch();
+
+    $job->handle();
+
+    $this->assertTrue($batch->cancelled());
+    $this->assertEmpty($batch->added);
 
 <a name="job-events"></a>
 ## Job Event
@@ -2055,20 +2288,16 @@ Sử dụng các phương thức `before` và `after` trong [facade](/docs/{{ver
     {
         /**
          * Register any application services.
-         *
-         * @return void
          */
-        public function register()
+        public function register(): void
         {
-            //
+            // ...
         }
 
         /**
          * Bootstrap any application services.
-         *
-         * @return void
          */
-        public function boot()
+        public function boot(): void
         {
             Queue::before(function (JobProcessing $event) {
                 // $event->connectionName

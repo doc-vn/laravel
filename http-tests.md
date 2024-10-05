@@ -11,7 +11,7 @@
     - [Fluent JSON Testing](#fluent-json-testing)
 - [Testing File Uploads](#testing-file-uploads)
 - [Testing Views](#testing-views)
-    - [Rendering Blade & Components](#rendering-blade-and-components)
+    - [Rendering Blade và Components](#rendering-blade-and-components)
 - [Available Assertions](#available-assertions)
     - [Response Assertions](#response-assertions)
     - [Authentication Assertions](#authentication-assertions)
@@ -22,28 +22,26 @@
 
 Laravel cung cấp một API rất dễ hiểu để thực hiện các HTTP request đến application của bạn và kiểm tra response. Ví dụ, hãy xem một bài test chức năng mẫu được định nghĩa ở dưới đây:
 
-    <?php
+```php
+<?php
 
-    namespace Tests\Feature;
+namespace Tests\Feature;
 
-    use Illuminate\Foundation\Testing\RefreshDatabase;
-    use Illuminate\Foundation\Testing\WithoutMiddleware;
-    use Tests\TestCase;
+use Tests\TestCase;
 
-    class ExampleTest extends TestCase
+class ExampleTest extends TestCase
+{
+    /**
+     * A basic test example.
+     */
+    public function test_the_application_returns_a_successful_response(): void
     {
-        /**
-         * A basic test example.
-         *
-         * @return void
-         */
-        public function test_a_basic_request()
-        {
-            $response = $this->get('/');
+        $response = $this->get('/');
 
-            $response->assertStatus(200);
-        }
+        $response->assertStatus(200);
     }
+}
+```
 
 Phương thức `get` tạo một request `GET` vào application, trong khi phương thức `assertStatus` xác nhận rằng response được trả về có phải có mã trạng thái HTTP đã cho hay không. Ngoài assertion đơn giản này, Laravel còn chứa nhiều assertion khác nhau để kiểm tra các header response, nội dung, cấu trúc JSON, vv...
 
@@ -58,18 +56,14 @@ Thay vì trả về một instance `Illuminate\Http\Response`, các phương th�
 
     namespace Tests\Feature;
 
-    use Illuminate\Foundation\Testing\RefreshDatabase;
-    use Illuminate\Foundation\Testing\WithoutMiddleware;
     use Tests\TestCase;
 
     class ExampleTest extends TestCase
     {
         /**
          * A basic test example.
-         *
-         * @return void
          */
-        public function test_a_basic_request()
+        public function test_a_basic_request(): void
         {
             $response = $this->get('/');
 
@@ -79,7 +73,7 @@ Thay vì trả về một instance `Illuminate\Http\Response`, các phương th�
 
 Nói chung, mỗi bài test của bạn chỉ nên đưa ra một yêu cầu kiểm tra cho ứng dụng của bạn. Hành vi không mong muốn có thể xảy ra nếu cho nhiều yêu cầu kiểm tra cho một bài test.
 
-> **Note**
+> [!NOTE]
 > Để thuận tiện, CSRF middleware sẽ tự động bị tắt khi chạy test.
 
 <a name="customizing-request-headers"></a>
@@ -97,10 +91,8 @@ Bạn có thể sử dụng phương thức `withHeaders` để tùy biến các
     {
         /**
          * A basic functional test example.
-         *
-         * @return void
          */
-        public function test_interacting_with_headers()
+        public function test_interacting_with_headers(): void
         {
             $response = $this->withHeaders([
                 'X-Header' => 'Value',
@@ -123,7 +115,7 @@ Bạn có thể sử dụng phương thức `withCookie` hoặc `withCookies` đ
 
     class ExampleTest extends TestCase
     {
-        public function test_interacting_with_cookies()
+        public function test_interacting_with_cookies(): void
         {
             $response = $this->withCookie('color', 'blue')->get('/');
 
@@ -147,7 +139,7 @@ Laravel cũng cung cấp một số helper để làm việc với session trong
 
     class ExampleTest extends TestCase
     {
-        public function test_interacting_with_the_session()
+        public function test_interacting_with_the_session(): void
         {
             $response = $this->withSession(['banned' => false])->get('/');
         }
@@ -164,7 +156,7 @@ Cách dùng chủ yếu của session là để duy trì trạng thái người 
 
     class ExampleTest extends TestCase
     {
-        public function test_an_action_that_requires_authentication()
+        public function test_an_action_that_requires_authentication(): void
         {
             $user = User::factory()->create();
 
@@ -193,10 +185,8 @@ Sau khi tạo ra một bài test request cho ứng dụng của bạn, các phư
     {
         /**
          * A basic test example.
-         *
-         * @return void
          */
-        public function test_basic_test()
+        public function test_basic_test(): void
         {
             $response = $this->get('/');
 
@@ -220,10 +210,8 @@ Ngoài ra, bạn có thể sử dụng các phương thức `dd`, `ddHeaders` v�
     {
         /**
          * A basic test example.
-         *
-         * @return void
          */
-        public function test_basic_test()
+        public function test_basic_test(): void
         {
             $response = $this->get('/');
 
@@ -246,6 +234,15 @@ Ngoài ra, nếu bạn muốn đảm bảo rằng ứng dụng của bạn khôn
 
     $response = $this->withoutDeprecationHandling()->get('/');
 
+Phương thức `assertThrows` có thể được sử dụng để kiểm tra rằng code trong một closure sẽ đưa một ngoại lệ theo đúng ngoại lệ đã được chỉ định:
+
+```php
+$this->assertThrows(
+    fn () => (new ProcessOrder)->execute(),
+    OrderInvalid::class
+);
+```
+
 <a name="testing-json-apis"></a>
 ## Test JSON API
 
@@ -261,10 +258,8 @@ Laravel cũng cung cấp một số helper để kiểm tra API JSON và respons
     {
         /**
          * A basic functional test example.
-         *
-         * @return void
          */
-        public function test_making_an_api_request()
+        public function test_making_an_api_request(): void
         {
             $response = $this->postJson('/api/user', ['name' => 'Sally']);
 
@@ -280,7 +275,7 @@ Ngoài ra, dữ liệu JSON response có thể được truy cập dưới dạn
 
     $this->assertTrue($response['created']);
 
-> **Note**
+> [!NOTE]
 > Phương thức `assertJson` sẽ chuyển response thành một mảng và sử dụng `PHPUnit::assertArraySubset` để kiểm tra mảng đó có tồn tại trong response JSON mà được application trả về hay không. Vì vậy, nếu có các thuộc tính khác trong response JSON, bài test này vẫn sẽ được pass miễn là có đoạn đã cho.
 
 <a name="verifying-exact-match"></a>
@@ -298,10 +293,8 @@ Như đã đề cập trước đó, phương thức `assertJson` có thể đư
     {
         /**
          * A basic functional test example.
-         *
-         * @return void
          */
-        public function test_asserting_an_exact_json_match()
+        public function test_asserting_an_exact_json_match(): void
         {
             $response = $this->postJson('/user', ['name' => 'Sally']);
 
@@ -328,10 +321,8 @@ Nếu bạn muốn kiểm tra rằng response JSON phải chứa một dữ li�
     {
         /**
          * A basic functional test example.
-         *
-         * @return void
          */
-        public function test_asserting_a_json_paths_value()
+        public function test_asserting_a_json_paths_value(): void
         {
             $response = $this->postJson('/user', ['name' => 'Sally']);
 
@@ -343,7 +334,7 @@ Nếu bạn muốn kiểm tra rằng response JSON phải chứa một dữ li�
 
 Phương thức `assertJsonPath` cũng sẽ chấp nhận một closure, có thể được sử dụng để xác định xem bài kiểm tra này có pass hay không:
 
-    $response->assertJsonPath('team.owner.name', fn ($name) => strlen($name) >= 3);
+    $response->assertJsonPath('team.owner.name', fn (string $name) => strlen($name) >= 3);
 
 <a name="fluent-json-testing"></a>
 ### Fluent JSON Testing
@@ -354,10 +345,8 @@ Laravel cũng cung cấp một cách hay để kiểm tra dễ dàng các JSON r
 
     /**
      * A basic functional test example.
-     *
-     * @return void
      */
-    public function test_fluent_json()
+    public function test_fluent_json(): void
     {
         $response = $this->getJson('/users/1');
 
@@ -365,7 +354,7 @@ Laravel cũng cung cấp một cách hay để kiểm tra dễ dàng các JSON r
             ->assertJson(fn (AssertableJson $json) =>
                 $json->where('id', 1)
                      ->where('name', 'Victoria Faith')
-                     ->where('email', fn ($email) => str($email)->is('victoria@gmail.com'))
+                     ->where('email', fn (string $email) => str($email)->is('victoria@gmail.com'))
                      ->whereNot('status', 'pending')
                      ->missing('password')
                      ->etc()
@@ -418,10 +407,10 @@ Trong những trường hợp như thế này, chúng ta có thể sử dụng p
     $response
         ->assertJson(fn (AssertableJson $json) =>
             $json->has(3)
-                 ->first(fn ($json) =>
+                 ->first(fn (AssertableJson $json) =>
                     $json->where('id', 1)
                          ->where('name', 'Victoria Faith')
-                         ->where('email', fn ($email) => str($email)->is('victoria@gmail.com'))
+                         ->where('email', fn (string $email) => str($email)->is('victoria@gmail.com'))
                          ->missing('password')
                          ->etc()
                  )
@@ -445,10 +434,10 @@ Khi kiểm tra các route này, bạn có thể sử dụng phương thức `has
         ->assertJson(fn (AssertableJson $json) =>
             $json->has('meta')
                  ->has('users', 3)
-                 ->has('users.0', fn ($json) =>
+                 ->has('users.0', fn (AssertableJson $json) =>
                     $json->where('id', 1)
                          ->where('name', 'Victoria Faith')
-                         ->where('email', fn ($email) => str($email)->is('victoria@gmail.com'))
+                         ->where('email', fn (string $email) => str($email)->is('victoria@gmail.com'))
                          ->missing('password')
                          ->etc()
                  )
@@ -459,10 +448,10 @@ Tuy nhiên, thay vì thực hiện hai lệnh gọi riêng biệt đến phươn
     $response
         ->assertJson(fn (AssertableJson $json) =>
             $json->has('meta')
-                 ->has('users', 3, fn ($json) =>
+                 ->has('users', 3, fn (AssertableJson $json) =>
                     $json->where('id', 1)
                          ->where('name', 'Victoria Faith')
-                         ->where('email', fn ($email) => str($email)->is('victoria@gmail.com'))
+                         ->where('email', fn (string $email) => str($email)->is('victoria@gmail.com'))
                          ->missing('password')
                          ->etc()
                  )
@@ -499,15 +488,13 @@ Class `Illuminate\Http\UploadedFile` cung cấp một phương thức `fake` có
 
     namespace Tests\Feature;
 
-    use Illuminate\Foundation\Testing\RefreshDatabase;
-    use Illuminate\Foundation\Testing\WithoutMiddleware;
     use Illuminate\Http\UploadedFile;
     use Illuminate\Support\Facades\Storage;
     use Tests\TestCase;
 
     class ExampleTest extends TestCase
     {
-        public function test_avatars_can_be_uploaded()
+        public function test_avatars_can_be_uploaded(): void
         {
             Storage::fake('avatars');
 
@@ -559,7 +546,7 @@ Laravel cũng cho phép bạn render ra một view mà không cần thực hiệ
 
     class ExampleTest extends TestCase
     {
-        public function test_a_welcome_view_can_be_rendered()
+        public function test_a_welcome_view_can_be_rendered(): void
         {
             $view = $this->view('welcome', ['name' => 'Taylor']);
 
@@ -585,7 +572,7 @@ Có một số view có thể phụ thuộc vào các lỗi được chia sẻ t
     $view->assertSee('Please provide a valid name.');
 
 <a name="rendering-blade-and-components"></a>
-### Rendering Blade & Components
+### Rendering Blade và Components
 
 Nếu cần, bạn có thể sử dụng phương thức `blade` để so sánh và hiển thị chuỗi raw [Blade](/docs/{{version}}/blade). Giống như phương thức `view`, phương thức `blade` trả về một instance của `Illuminate\Testing\TestView`:
 
@@ -625,6 +612,9 @@ Class `Illuminate\Testing\TestResponse` của Laravel cung cấp nhiều phươn
 
 <div class="collection-method-list" markdown="1">
 
+[assertAccepted](#assert-accepted)
+[assertBadRequest](#assert-bad-request)
+[assertConflict](#assert-conflict)
 [assertCookie](#assert-cookie)
 [assertCookieExpired](#assert-cookie-expired)
 [assertCookieNotExpired](#assert-cookie-not-expired)
@@ -635,8 +625,11 @@ Class `Illuminate\Testing\TestResponse` của Laravel cung cấp nhiều phươn
 [assertDownload](#assert-download)
 [assertExactJson](#assert-exact-json)
 [assertForbidden](#assert-forbidden)
+[assertFound](#assert-found)
+[assertGone](#assert-gone)
 [assertHeader](#assert-header)
 [assertHeaderMissing](#assert-header-missing)
+[assertInternalServerError](#assert-internal-server-error)
 [assertJson](#assert-json)
 [assertJsonCount](#assert-json-count)
 [assertJsonFragment](#assert-json-fragment)
@@ -651,20 +644,26 @@ Class `Illuminate\Testing\TestResponse` của Laravel cung cấp nhiều phươn
 [assertJsonValidationErrors](#assert-json-validation-errors)
 [assertJsonValidationErrorFor](#assert-json-validation-error-for)
 [assertLocation](#assert-location)
+[assertMethodNotAllowed](#assert-method-not-allowed)
+[assertMovedPermanently](#assert-moved-permanently)
 [assertContent](#assert-content)
 [assertNoContent](#assert-no-content)
 [assertStreamedContent](#assert-streamed-content)
 [assertNotFound](#assert-not-found)
 [assertOk](#assert-ok)
+[assertPaymentRequired](#assert-payment-required)
 [assertPlainCookie](#assert-plain-cookie)
 [assertRedirect](#assert-redirect)
 [assertRedirectContains](#assert-redirect-contains)
 [assertRedirectToRoute](#assert-redirect-to-route)
 [assertRedirectToSignedRoute](#assert-redirect-to-signed-route)
+[assertRequestTimeout](#assert-request-timeout)
 [assertSee](#assert-see)
 [assertSeeInOrder](#assert-see-in-order)
 [assertSeeText](#assert-see-text)
 [assertSeeTextInOrder](#assert-see-text-in-order)
+[assertServerError](#assert-server-error)
+[assertServiceUnavailable](#assert-server-unavailable)
 [assertSessionHas](#assert-session-has)
 [assertSessionHasInput](#assert-session-has-input)
 [assertSessionHasAll](#assert-session-has-all)
@@ -675,8 +674,10 @@ Class `Illuminate\Testing\TestResponse` của Laravel cung cấp nhiều phươn
 [assertSessionMissing](#assert-session-missing)
 [assertStatus](#assert-status)
 [assertSuccessful](#assert-successful)
+[assertTooManyRequests](#assert-too-many-requests)
 [assertUnauthorized](#assert-unauthorized)
 [assertUnprocessable](#assert-unprocessable)
+[assertUnsupportedMediaType](#assert-unsupported-media-type)
 [assertValid](#assert-valid)
 [assertInvalid](#assert-invalid)
 [assertViewHas](#assert-view-has)
@@ -685,6 +686,27 @@ Class `Illuminate\Testing\TestResponse` của Laravel cung cấp nhiều phươn
 [assertViewMissing](#assert-view-missing)
 
 </div>
+
+<a name="assert-bad-request"></a>
+#### assertBadRequest
+
+Yêu cầu response phải chứa một HTTP status code bad request (400):
+
+    $response->assertBadRequest();
+
+<a name="assert-accepted"></a>
+#### assertAccepted
+
+Yêu cầu response phải chứa một HTTP status code accepted request (202):
+
+    $response->assertAccepted();
+
+<a name="assert-conflict"></a>
+#### assertConflict
+
+Yêu cầu response phải chứa một HTTP status code conflict request (409):
+
+    $response->assertConflict();
 
 <a name="assert-cookie"></a>
 #### assertCookie
@@ -760,6 +782,20 @@ Yêu cầu response phải chứa một HTTP status code forbidden (403):
 
     $response->assertForbidden();
 
+<a name="assert-found"></a>
+#### assertFound
+
+Yêu cầu response phải chứa một HTTP status code found (302):
+
+    $response->assertFound();
+
+<a name="assert-gone"></a>
+#### assertGone
+
+Yêu cầu response phải chứa một HTTP status code gone (410):
+
+    $response->assertGone();
+
 <a name="assert-header"></a>
 #### assertHeader
 
@@ -773,6 +809,13 @@ Yêu cầu header và giá trị đã cho phải có trong response:
 Yêu cầu header đã cho không có trong response:
 
     $response->assertHeaderMissing($headerName);
+
+<a name="assert-internal-server-error"></a>
+#### assertInternalServerError
+
+Yêu cầu response phải chứa một HTTP status code "Internal Server Error" (500):
+
+    $response->assertInternalServerError();
 
 <a name="assert-json"></a>
 #### assertJson
@@ -842,7 +885,7 @@ Yêu cầu response không chứa các lỗi JSON validation cho các khóa đã
 
     $response->assertJsonMissingValidationErrors($keys);
 
-> **Note**
+> [!NOTE]
 > Phương thức [assertValid](#assert-valid) có thể được sử dụng để xác nhận các response được trả về dưới dạng JSON không có lỗi validation **và** không có lỗi nào được load vào bộ nhớ session.
 
 <a name="assert-json-path"></a>
@@ -950,7 +993,7 @@ Yêu cầu JSON response phải trả về lỗi validation cho key đã cho. N�
 
     $response->assertJsonValidationErrors(array $data, $responseKey = 'errors');
 
-> **Note**
+> [!NOTE]
 > Phương thức [assertInvalid](#assert-invalid) có thể được sử dụng để yêu cầu một response được trả về dưới dạng JSON có lỗi validation **hoặc** các lỗi đó đã được load vào bộ lưu trữ session.
 
 <a name="assert-json-validation-error-for"></a>
@@ -959,6 +1002,20 @@ Yêu cầu JSON response phải trả về lỗi validation cho key đã cho. N�
 Yêu cầu response phải chứa bất kỳ lỗi JSON validation nào đối với key đã cho:
 
     $response->assertJsonValidationErrorFor(string $key, $responseKey = 'errors');
+
+<a name="assert-method-not-allowed"></a>
+#### assertMethodNotAllowed
+
+Yêu cầu response phải chứa một HTTP status code method not allowed (405):
+
+    $response->assertMethodNotAllowed();
+
+<a name="assert-moved-permanently"></a>
+#### assertMovedPermanently
+
+Yêu cầu response phải chứa một HTTP status code moved permanently (301):
+
+    $response->assertMovedPermanently();
 
 <a name="assert-location"></a>
 #### assertLocation
@@ -1002,6 +1059,13 @@ Yêu cầu response có một HTTP status code 200:
 
     $response->assertOk();
 
+<a name="assert-payment-required"></a>
+#### assertPaymentRequired
+
+Yêu cầu response phải chứa một HTTP status code payment required (402):
+
+    $response->assertPaymentRequired();
+
 <a name="assert-plain-cookie"></a>
 #### assertPlainCookie
 
@@ -1014,7 +1078,7 @@ Yêu cầu response phải chứa một cookie không được mã hóa đã cho
 
 Yêu cầu response là một redirect đến một URI đã cho:
 
-    $response->assertRedirect($uri);
+    $response->assertRedirect($uri = null);
 
 <a name="assert-redirect-contains"></a>
 #### assertRedirectContains
@@ -1028,7 +1092,7 @@ Yêu cầu response có đang chuyển hướng đế một URI có chứa chu�
 
 Yêu cầu response là một chuyển hướng đến một [route đã được đặt tên](/docs/{{version}}/routing#named-routes):
 
-    $response->assertRedirectToRoute($name = null, $parameters = []);
+    $response->assertRedirectToRoute($name, $parameters = []);
 
 <a name="assert-redirect-to-signed-route"></a>
 #### assertRedirectToSignedRoute
@@ -1036,6 +1100,13 @@ Yêu cầu response là một chuyển hướng đến một [route đã đượ
 Yêu cầu response là một chuyển hướng đến một [signed route](/docs/{{version}}/urls#signed-urls):
 
     $response->assertRedirectToSignedRoute($name = null, $parameters = []);
+
+<a name="assert-request-timeout"></a>
+#### assertRequestTimeout
+
+Yêu cầu response phải chứa một HTTP status code request timeout (408):
+
+    $response->assertRequestTimeout();
 
 <a name="assert-see"></a>
 #### assertSee
@@ -1065,6 +1136,20 @@ Yêu cầu các chuỗi đã cho được chứa theo thứ tự trong response 
 
     $response->assertSeeTextInOrder(array $values, $escaped = true);
 
+<a name="assert-server-error"></a>
+#### assertServerError
+
+Yêu cầu response phải chứa một HTTP status code server error (>= 500 , < 600):
+
+    $response->assertServerError();
+
+<a name="assert-server-unavailable"></a>
+#### assertServiceUnavailable
+
+Yêu cầu response phải chứa một HTTP status code "Service Unavailable" (503):
+
+    $response->assertServiceUnavailable();
+
 <a name="assert-session-has"></a>
 #### assertSessionHas
 
@@ -1074,7 +1159,7 @@ Yêu cầu session có chứa một phần dữ liệu đã cho:
 
 Nếu cần, một closure có thể được cung cấp làm tham số thứ hai cho phương thức `assertSessionHas`. Yêu cầu sẽ được pass nếu closure trả về `true`:
 
-    $response->assertSessionHas($key, function ($value) {
+    $response->assertSessionHas($key, function (User $value) {
         return $value->name === 'Taylor Otwell';
     });
 
@@ -1087,7 +1172,9 @@ Yêu cầu session có chứa một giá trị trong [flashed input array](/docs
 
 Nếu cần, một closure có thể được cung cấp làm tham số thứ hai cho phương thức `assertSessionHasInput`. Yêu cầu sẽ được pass nếu closure trả về `true`:
 
-    $response->assertSessionHasInput($key, function ($value) {
+    use Illuminate\Support\Facades\Crypt;
+
+    $response->assertSessionHasInput($key, function (string $value) {
         return Crypt::decryptString($value) === 'secret';
     });
 
@@ -1111,7 +1198,7 @@ Ví dụ: nếu session trong ứng dụng của bạn có chứa khóa `name` v
 Yêu cầu session có chứa lỗi của các field `$keys`. Nếu `$keys` là một mảng associative, thì sẽ yêu cầu là session sẽ chứa một message error cụ thể (giá trị) cho mỗi field (khóa). Phương thức này nên được sử dụng khi kiểm tra các route mà load các error validation vào session thay vì trả về chúng dưới dạng cấu trúc JSON:
 
     $response->assertSessionHasErrors(
-        array $keys, $format = null, $errorBag = 'default'
+        array $keys = [], $format = null, $errorBag = 'default'
     );
 
 Ví dụ: để yêu cầu các field `name` và `email` có một thông báo lỗi validation đã được load vào session, bạn có thể gọi phương thức `assertSessionHasErrors` như sau:
@@ -1124,7 +1211,7 @@ Hoặc, bạn có thể yêu cầu một field nhất định có thông báo l�
         'name' => 'The given name was invalid.'
     ]);
 
-> **Note**
+> [!NOTE]
 > Phương thức [assertInvalid](#assert-invalid) tổng quát hơn có thể được sử dụng để yêu cầu một response có lỗi xác thực phải được trả về dưới dạng JSON **hoặc** lỗi đó đã được có trong session storage.
 
 <a name="assert-session-has-errors-in"></a>
@@ -1148,7 +1235,7 @@ Yêu cầu session không chứa các validation lỗi cho các khóa đã cho:
 
     $response->assertSessionDoesntHaveErrors($keys = [], $format = null, $errorBag = 'default');
 
-> **Note**
+> [!NOTE]
 > Phương thức [assertValid](#assert-valid) tổng quát hơn có thể được sử dụng để yêu cầu một response không có lỗi xác thực được trả về dưới dạng JSON **hoặc** lỗi đó không có trong session storage.
 
 <a name="assert-session-missing"></a>
@@ -1172,6 +1259,13 @@ Yêu cầu response trả về một HTTP status code thành công (>= 200 và <
 
     $response->assertSuccessful();
 
+<a name="assert-too-many-requests"></a>
+#### assertTooManyRequests
+
+Yêu cầu response phải chứa một HTTP status code too many requests (429):
+
+    $response->assertTooManyRequests();
+
 <a name="assert-unauthorized"></a>
 #### assertUnauthorized
 
@@ -1185,6 +1279,13 @@ Yêu cầu response trả về một HTTP status code lỗi không quyền truy 
 Yêu cầu response trả về một HTTP status code không thể xử lý (422):
 
     $response->assertUnprocessable();
+
+<a name="assert-unsupported-media-type"></a>
+#### assertUnsupportedMediaType
+
+Yêu cầu response phải chứa một HTTP status code unsupported media type (415):
+
+    $response->assertUnsupportedMediaType();
 
 <a name="assert-valid"></a>
 #### assertValid

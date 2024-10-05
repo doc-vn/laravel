@@ -12,6 +12,7 @@
 - [Lấy File](#retrieving-files)
     - [Tải File](#downloading-files)
     - [File URL](#file-urls)
+    - [Temporary URLs](#temporary-urls)
     - [File Metadata](#file-metadata)
 - [Lưu File](#storing-files)
     - [Ghi vào đầu hoặc cuối file](#prepending-appending-to-files)
@@ -21,6 +22,7 @@
     - [File Visibility](#file-visibility)
 - [Xoá File](#deleting-files)
 - [Thư mục](#directories)
+- [Testing](#testing)
 - [Tuỳ chỉnh Filesystem](#custom-filesystems)
 
 <a name="introduction"></a>
@@ -35,7 +37,7 @@ File cấu hình filesystem của Laravel được lưu tại `config/filesystem
 
 Driver `local` tương tác với các file được lưu trữ local trên máy chủ đang chạy ứng dụng Laravel trong khi driver `s3` sẽ được sử dụng để write vào dịch vụ lưu trữ đám mây S3 của Amazon.
 
-> **Note**
+> [!NOTE]
 > Bạn có thể cấu hình bao nhiêu disk tùy ý của bạn và thậm chí có thể có nhiều disk sử dụng cùng một driver.
 
 <a name="the-local-driver"></a>
@@ -71,6 +73,12 @@ Bạn có thể cấu hình thêm các link ảo trong file cấu hình `filesys
         public_path('images') => storage_path('app/images'),
     ],
 
+Lệnh `storage:unlink` có thể được sử dụng để hủy các link liên kết ảo đã cấu hình của bạn:
+
+```shell
+php artisan storage:unlink
+```
+
 <a name="driver-prerequisites"></a>
 ### Yêu cầu Driver
 
@@ -80,7 +88,7 @@ Bạn có thể cấu hình thêm các link ảo trong file cấu hình `filesys
 Trước khi sử dụng driver S3, bạn cần cài đặt package Flysystem S3 thông qua trình quản lý package Composer:
 
 ```shell
-composer require league/flysystem-aws-s3-v3 "^3.0"
+composer require league/flysystem-aws-s3-v3 "^3.0" --with-all-dependencies
 ```
 
 Thông tin cấu hình driver S3 nằm trong file cấu hình `config/filesystems.php` của bạn. File này chứa một mảng cấu hình mẫu cho driver S3. Bạn có thể tự do sửa mảng này với thông tin và cấu hình S3 của riêng bạn. Để thuận tiện, các biến môi trường đã được đặt tên khớp với quy ước đặt tên được sử dụng bởi AWS CLI.
@@ -132,6 +140,10 @@ Flysystem tích hợp trong Laravel hoạt động tốt với SFTP; tuy nhiên,
         // Settings for SSH key based authentication with encryption password...
         'privateKey' => env('SFTP_PRIVATE_KEY'),
         'passphrase' => env('SFTP_PASSPHRASE'),
+
+         // Settings for file / directory permissions...
+        'visibility' => 'private', // `private` = 0600, `public` = 0644
+        'directory_visibility' => 'private', // `private` = 0700, `public` = 0755
 
         // Optional SFTP Settings...
         // 'hostFingerprint' => env('SFTP_HOST_FINGERPRINT'),
@@ -196,7 +208,7 @@ Thông thường, sau khi cập nhật thông tin đăng nhập của disk để
 AWS_URL=http://localhost:9000/local
 ```
 
-> **Warning**
+> [!WARNING]
 > Việc tạo URL tạm thời thông qua phương thức `temporaryUrl` không được hỗ trợ khi sử dụng MinIO.
 
 <a name="obtaining-disk-instances"></a>
@@ -235,6 +247,10 @@ Phương thức `get` có thể được sử dụng để lấy nội dung củ
 
     $contents = Storage::get('file.jpg');
 
+Nếu file bạn đang lấy ra có chứa chuỗi JSON, bạn có thể sử dụng phương thức `json` để lấy ra file đó và giải mã nội dung của file:
+
+    $orders = Storage::json('orders.json');
+
 Phương thức `exists` có thể được sử dụng để xác định xem một file có tồn tại trên disk hay không:
 
     if (Storage::disk('s3')->exists('file.jpg')) {
@@ -267,11 +283,23 @@ Bạn có thể sử dụng phương thức `url` để lấy ra URL đã cho ch
 
 Khi sử dụng driver `local`, tất cả các file mà có thể truy cập ở dạng công khai thì nên được lưu trong thư mục `storage/app/public`. Hơn nữa, bạn nên [tạo một link liên kết ảo](#the-public-disk) ở thư mục `public/storage` để trỏ đến thư mục `storage/app/public`.
 
-> **Warning**
+> [!WARNING]
 > Khi sử dụng driver `local`, giá trị trả về của `url` không phải là URL đã được encoded. Vì lý do này, mà chúng tôi khuyên bạn nên lưu trữ các file của bạn bằng các tên mà sẽ tạo ra URL hợp lệ.
 
+<a name="url-host-customization"></a>
+#### URL Host Customization
+
+Nếu bạn muốn định nghĩa trước host cho các URL được tạo ra bằng cách sử dụng facade `Storage`, bạn có thể thêm tùy chọn `url` vào mảng cấu hình của disk:
+
+    'public' => [
+        'driver' => 'local',
+        'root' => storage_path('app/public'),
+        'url' => env('APP_URL').'/storage',
+        'visibility' => 'public',
+    ],
+
 <a name="temporary-urls"></a>
-#### Temporary URLs
+### Temporary URLs
 
 Sử dụng phương thức `temporaryUrl`, bạn có thể tạo ra các URL tạm cho các file được lưu trữ bằng driver `s3`. Phương thức này chấp nhận một đường dẫn và một instance `DateTime` để định nghĩa khi URL sẽ hết hạn:
 
@@ -298,6 +326,7 @@ Nếu bạn cần tùy chỉnh cách mà các URL tạm được tạo ra cho m�
 
     namespace App\Providers;
 
+    use DateTime;
     use Illuminate\Support\Facades\Storage;
     use Illuminate\Support\Facades\URL;
     use Illuminate\Support\ServiceProvider;
@@ -306,32 +335,36 @@ Nếu bạn cần tùy chỉnh cách mà các URL tạm được tạo ra cho m�
     {
         /**
          * Bootstrap any application services.
-         *
-         * @return void
          */
-        public function boot()
+        public function boot(): void
         {
-            Storage::disk('local')->buildTemporaryUrlsUsing(function ($path, $expiration, $options) {
-                return URL::temporarySignedRoute(
-                    'files.download',
-                    $expiration,
-                    array_merge($options, ['path' => $path])
-                );
-            });
+            Storage::disk('local')->buildTemporaryUrlsUsing(
+                function (string $path, DateTime $expiration, array $options) {
+                    return URL::temporarySignedRoute(
+                        'files.download',
+                        $expiration,
+                        array_merge($options, ['path' => $path])
+                    );
+                }
+            );
         }
     }
 
-<a name="url-host-customization"></a>
-#### URL Host Customization
+<a name="temporary-upload-urls"></a>
+#### Temporary Upload URLs
 
-Nếu như bạn muốn định nghĩa thêm host cho các URL mà được tạo ra khi đang dùng facade `Storage`, bạn có thể thêm tùy chọn `url` vào mảng cấu hình của disk:
+> [!WARNING]
+> Chức năng URL temporary upload chỉ được hỗ trợ bởi driver `s3`.
 
-    'public' => [
-        'driver' => 'local',
-        'root' => storage_path('app/public'),
-        'url' => env('APP_URL').'/storage',
-        'visibility' => 'public',
-    ],
+Nếu bạn cần tạo một URL temporary có thể được sử dụng để upload file trực tiếp từ ứng dụng client-side của bạn, bạn có thể sử dụng phương thức `temporaryUploadUrl`. Phương thức này chấp nhận một đường dẫn và một instance `DateTime` chỉ định thời điểm URL sẽ hết hạn. Phương thức `temporaryUploadUrl` sẽ trả về một mảng có cấu trúc là một URL upload và các header cần được chứa trong upload request:
+
+    use Illuminate\Support\Facades\Storage;
+
+    ['url' => $url, 'headers' => $headers] = Storage::temporaryUploadUrl(
+        'file.jpg', now()->addMinutes(5)
+    );
+
+Phương thức này chủ yếu hữu ích trong môi trường serverless yêu cầu ứng dụng client-side phải trực tiếp upload file lên hệ thống lưu trữ đám mây như Amazon S3.
 
 <a name="file-metadata"></a>
 ### File Metadata
@@ -348,7 +381,7 @@ Phương thức `lastModified` trả về một UNIX timestamp về lần cuối
 
 Loại MIME của một file nhất định có thể được lấy thông qua phương thức `mimeType`:
 
-    $mime = Storage::mimeType('file.jpg')
+    $mime = Storage::mimeType('file.jpg');
 
 <a name="file-paths"></a>
 #### File Paths
@@ -373,7 +406,7 @@ Phương thức `put` có thể được sử dụng để lưu trữ một nộ
 <a name="failed-writes"></a>
 #### Failed Writes
 
-Nếu phương thức `put` (hoặc các thao tác "ghi" khác) không thể ghi tệp vào disk, thì `false` sẽ được trả về:
+Nếu phương thức `put` (hoặc các thao tác "ghi" khác) không thể ghi file vào disk, thì `false` sẽ được trả về:
 
     if (! Storage::put('file.jpg', $contents)) {
         // The file could not be written to disk...
@@ -441,11 +474,8 @@ Trong các application web, một trong những trường hợp hay sử dụng 
     {
         /**
          * Update the avatar for the user.
-         *
-         * @param  \Illuminate\Http\Request  $request
-         * @return \Illuminate\Http\Response
          */
-        public function update(Request $request)
+        public function update(Request $request): string
         {
             $path = $request->file('avatar')->store('avatars');
 
@@ -474,7 +504,7 @@ Bạn cũng có thể sử dụng phương thức `putFileAs` trên facade `Stor
         'avatars', $request->file('avatar'), $request->user()->id
     );
 
-> **Warning**
+> [!WARNING]
 > Các ký tự unicode không in được hoặc không hợp lệ sẽ bị tự động xóa khỏi đường dẫn đến file. Vì vậy, bạn có thể muốn làm sạch đường dẫn đến file của bạn trước khi truyền chúng đến các phương thức lưu trữ file của Laravel. Đường dẫn đến file có thể được chuẩn hóa bằng phương thức `League\Flysystem\WhitespacePathNormalizer::normalizePath`.
 
 <a name="specifying-a-disk"></a>
@@ -539,7 +569,7 @@ Khi tương tác với các file được upload, bạn có thể sử dụng c�
     );
 
 <a name="local-files-and-visibility"></a>
-#### Local Files & Visibility
+#### Local Files và Visibility
 
 Khi sử dụng driver `local`, thư mục `public` [visibility](#file-visibility) sẽ được chuyển thành `0755` cho thư mục và `0644` cho file. Bạn có thể sửa các quyền này trong file cấu hình `filesystems` của bạn:
 
@@ -612,6 +642,48 @@ Cuối cùng, phương thức `deleteDirectory` có thể được sử dụng �
 
     Storage::deleteDirectory($directory);
 
+<a name="testing"></a>
+## Testing
+
+Phương thức `fake` của facade `Storage` cho phép bạn dễ dàng tạo ra một disk giả, kết hợp với các tiện ích tạo file của class `Illuminate\Http\UploadedFile`, giúp bạn đơn giản hóa đáng kể việc kiểm tra các file upload. Ví dụ:
+
+    <?php
+
+    namespace Tests\Feature;
+
+    use Illuminate\Http\UploadedFile;
+    use Illuminate\Support\Facades\Storage;
+    use Tests\TestCase;
+
+    class ExampleTest extends TestCase
+    {
+        public function test_albums_can_be_uploaded(): void
+        {
+            Storage::fake('photos');
+
+            $response = $this->json('POST', '/photos', [
+                UploadedFile::fake()->image('photo1.jpg'),
+                UploadedFile::fake()->image('photo2.jpg')
+            ]);
+
+            // Assert one or more files were stored...
+            Storage::disk('photos')->assertExists('photo1.jpg');
+            Storage::disk('photos')->assertExists(['photo1.jpg', 'photo2.jpg']);
+
+            // Assert one or more files were not stored...
+            Storage::disk('photos')->assertMissing('missing.jpg');
+            Storage::disk('photos')->assertMissing(['missing.jpg', 'non-existing.jpg']);
+
+            // Assert that a given directory is empty...
+            Storage::disk('photos')->assertDirectoryEmpty('/wallpapers');
+        }
+    }
+
+Mặc định, phương thức `fake` sẽ xóa tất cả các file có trong thư mục tạm thời của nó. Nếu bạn muốn giữ lại các file này, bạn có thể sử dụng phương thức "persistentFake" thay thế. Để biết thêm thông tin về việc thử nghiệm file upload, bạn có thể tham khảo [thông tin về file upload của tài liệu HTTP testing](/docs/{{version}}/http-tests#testing-file-uploads).
+
+> [!WARNING]
+> Phương thức `image` yêu cầu [GD extension](https://www.php.net/manual/en/book.image.php).
+
 <a name="custom-filesystems"></a>
 ## Tuỳ chỉnh Filesystem
 
@@ -629,6 +701,7 @@ Tiếp theo, bạn có thể đăng ký driver trong phương thức `boot` củ
 
     namespace App\Providers;
 
+    use Illuminate\Contracts\Foundation\Application;
     use Illuminate\Filesystem\FilesystemAdapter;
     use Illuminate\Support\Facades\Storage;
     use Illuminate\Support\ServiceProvider;
@@ -640,22 +713,18 @@ Tiếp theo, bạn có thể đăng ký driver trong phương thức `boot` củ
     {
         /**
          * Register any application services.
-         *
-         * @return void
          */
-        public function register()
+        public function register(): void
         {
-            //
+            // ...
         }
 
         /**
          * Bootstrap any application services.
-         *
-         * @return void
          */
-        public function boot()
+        public function boot(): void
         {
-            Storage::extend('dropbox', function ($app, $config) {
+            Storage::extend('dropbox', function (Application $app, array $config) {
                 $adapter = new DropboxAdapter(new DropboxClient(
                     $config['authorization_token']
                 ));

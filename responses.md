@@ -34,7 +34,7 @@ Ngoài việc trả về một chuỗi từ route và controller của bạn, b�
         return [1, 2, 3];
     });
 
-> **Note**
+> [!NOTE]
 > Bạn có biết rằng bạn cũng có thể trả về [Eloquent collections](/docs/{{version}}/eloquent-collections) từ một route hoặc một controller của bạn không? Chúng sẽ tự động được chuyển đổi thành JSON. Bạn cứ thử đi!
 
 <a name="response-objects"></a>
@@ -50,7 +50,7 @@ Trả về cả một instance `Response` cho phép bạn tùy biến status cod
     });
 
 <a name="eloquent-models-and-collections"></a>
-#### Eloquent Models & Collections
+#### Eloquent Models và Collections
 
 Bạn cũng có thể trả về các model và collection [Eloquent ORM](/docs/{{version}}/eloquent) trực tiếp từ các route và controller của bạn. Khi bạn làm như vậy, Laravel sẽ tự động chuyển đổi các model và collection thành JSON response trong khi vẫn giữ các [thuộc tính ẩn](/docs/{{version}}/eloquent-serialization#hiding-attributes-from-json):
 
@@ -192,10 +192,8 @@ Nếu bạn muốn tùy biến giá trị được lấy trong tham số route, 
 
     /**
      * Get the value of the model's route key.
-     *
-     * @return mixed
      */
-    public function getRouteKey()
+    public function getRouteKey(): mixed
     {
         return $this->slug;
     }
@@ -289,7 +287,7 @@ Phương thức `download` có thể được sử dụng để tạo response b
 
     return response()->download($pathToFile, $name, $headers);
 
-> **Warning**
+> [!WARNING]
 > Quản lý file download Symfony HttpFoundation yêu cầu file download phải có tên file là ASCII.
 
 <a name="streamed-downloads"></a>
@@ -308,7 +306,7 @@ Thỉnh thoảng bạn có thể muốn biến chuỗi response của một ho�
 <a name="file-responses"></a>
 ### File Responses
 
-Phương thức `file` có thể được sử dụng để hiển thị một file, chẳng hạn như file image hoặc file PDF, cho phép xem trực tiếp ngay tại trình duyệt của người dùng thay vì phải download. Phương thức này chấp nhận đường dẫn đến file làm tham số đầu tiên và một mảng các header làm tham số thứ hai của nó:
+Phương thức `file` có thể được sử dụng để hiển thị một file, chẳng hạn như file image hoặc file PDF, cho phép xem trực tiếp ngay tại trình duyệt của người dùng thay vì phải download. Phương thức này chấp nhận đường dẫn tuyệt đối đến file làm tham số đầu tiên và một mảng các header làm tham số thứ hai của nó:
 
     return response()->file($pathToFile);
 
@@ -330,12 +328,10 @@ Nếu bạn muốn định nghĩa một response tùy biến mà bạn có thể
     {
         /**
          * Bootstrap any application services.
-         *
-         * @return void
          */
-        public function boot()
+        public function boot(): void
         {
-            Response::macro('caps', function ($value) {
+            Response::macro('caps', function (string $value) {
                 return Response::make(strtoupper($value));
             });
         }

@@ -2,7 +2,7 @@
 
 - [Giới thiệu](#introduction)
     - [Injection không cần cấu hình](#zero-configuration-resolution)
-    - [Khi nào nên sử dụng container](#when-to-use-the-container)
+    - [Khi nào sử dụng Container](#when-to-use-the-container)
 - [Liên kết](#binding)
     - [Liên kết cơ bản](#binding-basics)
     - [Liên kết Interfaces tới Implementations](#binding-interfaces-to-implementations)
@@ -32,34 +32,21 @@ Hãy xem một ví dụ đơn giản:
     use App\Http\Controllers\Controller;
     use App\Repositories\UserRepository;
     use App\Models\User;
+    use Illuminate\View\View;
 
     class UserController extends Controller
     {
         /**
-         * The user repository implementation.
-         *
-         * @var UserRepository
-         */
-        protected $users;
-
-        /**
          * Create a new controller instance.
-         *
-         * @param  UserRepository  $users
-         * @return void
          */
-        public function __construct(UserRepository $users)
-        {
-            $this->users = $users;
-        }
+        public function __construct(
+            protected UserRepository $users,
+        ) {}
 
         /**
          * Show the profile for the given user.
-         *
-         * @param  int  $id
-         * @return Response
          */
-        public function show($id)
+        public function show(string $id): View
         {
             $user = $this->users->find($id);
 
@@ -80,11 +67,11 @@ Nếu có một class mà không phụ thuộc hoặc chỉ phụ thuộc vào c
 
     class Service
     {
-        //
+        // ...
     }
 
     Route::get('/', function (Service $service) {
-        die(get_class($service));
+        die($service::class);
     });
 
 Trong ví dụ này, nhấn vào route `/` của ứng dụng sẽ tự động resolve class `Service` và đưa nó vào trong xử lý route của bạn. Đây là điều sẽ thay đổi cuộc chơi. Điều đó có nghĩa là bạn có thể phát triển ứng dụng của bạn và tận dụng tính năng injection mà không phải lo lắng về các file cấu hình sẽ bị cồng kềnh.
@@ -92,7 +79,7 @@ Trong ví dụ này, nhấn vào route `/` của ứng dụng sẽ tự động 
 Rất may, nhiều class bạn sẽ cần phải viết khi xây dựng ứng dụng của mình sẽ được tự động nhận các phụ thuộc của chúng thông qua container, bao gồm [controllers](/docs/{{version}}/controllers), [event listeners](/docs/{{version}}/events), [middleware](/docs/{{version}}/middleware), và nhiều hơn thế. Ngoài ra, bạn có thể khai báo phụ thuộc vào trong phương thức `handle` của [queued jobs](/docs/{{version}}/queues). Một khi bạn đã trải nghiệm sức mạnh của việc injection phụ thuộc tự động mà không cần phải cấu hình, bạn sẽ cảm thấy không thể phát triển nếu thiếu nó.
 
 <a name="when-to-use-the-container"></a>
-### Khi nào nên sử dụng container
+### Khi nào sử dụng Container
 
 Nhờ vào việc injection mà không cần cấu hình, bạn sẽ thường xuyên khai báo các phụ thuộc trên routes, controllers, event listeners, và các nơi khác mà không cần tương tác với container. Ví dụ: bạn có thể khai báo đối tượng `Illuminate\Http\Request` trên định nghĩa route của bạn để bạn có thể dễ dàng truy cập vào request hiện tại. Mặc dù chúng ta không bao giờ phải tương tác với container để viết những code này, nhưng nó đang quản lý việc inject các phụ thuộc này ở trong hậu trường:
 
@@ -121,8 +108,9 @@ Trong một service provider, bạn luôn có quyền truy cập vào container 
 
     use App\Services\Transistor;
     use App\Services\PodcastParser;
+    use Illuminate\Contracts\Foundation\Application;
 
-    $this->app->bind(Transistor::class, function ($app) {
+    $this->app->bind(Transistor::class, function (Application $app) {
         return new Transistor($app->make(PodcastParser::class));
     });
 
@@ -131,13 +119,22 @@ Lưu ý rằng chúng ta nhận container vào như là một tham số resolver
 Như đã đề cập, thông thường bạn sẽ tương tác với container bên trong các service provider; tuy nhiên, nếu bạn muốn tương tác với container bên ngoài service provider, bạn có thể làm như sau thông qua `App` [facade](/docs/{{version}}/facades):
 
     use App\Services\Transistor;
+    use Illuminate\Contracts\Foundation\Application;
     use Illuminate\Support\Facades\App;
 
-    App::bind(Transistor::class, function ($app) {
+    App::bind(Transistor::class, function (Application $app) {
         // ...
     });
 
-> **Note**
+Bạn chỉ có thể sử dụng phương thức `bindIf` để đăng ký một liên kết vào trong container nếu liên kết đó chưa được đăng ký cho loại đã cho:
+
+```php
+$this->app->bindIf(Transistor::class, function (Application $app) {
+    return new Transistor($app->make(PodcastParser::class));
+});
+```
+
+> [!NOTE]
 > Không cần phải liên kết các class vào container nếu chúng không phụ thuộc vào bất kỳ interface nào. Bạn không cần phải hướng dẫn container về cách xây dựng các đối tượng này, vì nó có thể tự động resolve các đối tượng này bằng cách sử dụng tham chiếu.
 
 <a name="binding-a-singleton"></a>
@@ -147,10 +144,19 @@ Phương thức `singleton` sẽ liên kết một class hoặc một interface 
 
     use App\Services\Transistor;
     use App\Services\PodcastParser;
+    use Illuminate\Contracts\Foundation\Application;
 
-    $this->app->singleton(Transistor::class, function ($app) {
+    $this->app->singleton(Transistor::class, function (Application $app) {
         return new Transistor($app->make(PodcastParser::class));
     });
+
+Bạn có thể sử dụng phương thức `singletonIf` để đăng ký một liên kết singleton vào trong container chỉ khi liên kết đó chưa được đăng ký cho loại đã cho:
+
+```php
+$this->app->singletonIf(Transistor::class, function (Application $app) {
+    return new Transistor($app->make(PodcastParser::class));
+});
+```
 
 <a name="binding-scoped"></a>
 #### Binding Scoped Singletons
@@ -159,8 +165,9 @@ Phương thức `scoped` sẽ liên kết một class hoặc một interface và
 
     use App\Services\Transistor;
     use App\Services\PodcastParser;
+    use Illuminate\Contracts\Foundation\Application;
 
-    $this->app->scoped(Transistor::class, function ($app) {
+    $this->app->scoped(Transistor::class, function (Application $app) {
         return new Transistor($app->make(PodcastParser::class));
     });
 
@@ -192,14 +199,10 @@ Câu lệnh trên sẽ nói với container rằng nó cần tích hợp `RedisE
 
     /**
      * Create a new class instance.
-     *
-     * @param  \App\Contracts\EventPusher  $pusher
-     * @return void
      */
-    public function __construct(EventPusher $pusher)
-    {
-        $this->pusher = $pusher;
-    }
+    public function __construct(
+        protected EventPusher $pusher
+    ) {}
 
 <a name="contextual-binding"></a>
 ### Liên kết theo ngữ cảnh
@@ -260,13 +263,6 @@ Nếu bạn cần inject một giá trị từ một trong các file cấu hình
     class Firewall
     {
         /**
-         * The logger instance.
-         *
-         * @var \App\Services\Logger
-         */
-        protected $logger;
-
-        /**
          * The filter instances.
          *
          * @var array
@@ -275,14 +271,11 @@ Nếu bạn cần inject một giá trị từ một trong các file cấu hình
 
         /**
          * Create a new class instance.
-         *
-         * @param  \App\Services\Logger  $logger
-         * @param  array  $filters
-         * @return void
          */
-        public function __construct(Logger $logger, Filter ...$filters)
-        {
-            $this->logger = $logger;
+        public function __construct(
+            protected Logger $logger,
+            Filter ...$filters,
+        ) {
             $this->filters = $filters;
         }
     }
@@ -291,7 +284,7 @@ Sử dụng liên kết theo ngữ cảnh đó, bạn có thể resolve sự ph�
 
     $this->app->when(Firewall::class)
               ->needs(Filter::class)
-              ->give(function ($app) {
+              ->give(function (Application $app) {
                     return [
                         $app->make(NullFilter::class),
                         $app->make(ProfanityFilter::class),
@@ -324,18 +317,18 @@ Thỉnh thoảng một class có thể có nhiều phụ thuộc khác nhau đư
 Đôi khi, bạn có thể cần phải resolve tất cả một "category" liên kết. Ví dụ, giả sử bạn đang xây dựng một report phân tích nhận vào một mảng gồm nhiều implementation khác nhau của interface `Report`. Sau khi đăng ký các implementation của interface `Report`, bạn có thể gán cho chúng vào một thẻ bằng phương thức `tag`:
 
     $this->app->bind(CpuReport::class, function () {
-        //
+        // ...
     });
 
     $this->app->bind(MemoryReport::class, function () {
-        //
+        // ...
     });
 
     $this->app->tag([CpuReport::class, MemoryReport::class], 'reports');
 
 Khi các service đã được gắn thẻ, bạn có thể dễ dàng resolve tất cả chúng thông qua phương thức `tagged` của container:
 
-    $this->app->bind(ReportAnalyzer::class, function ($app) {
+    $this->app->bind(ReportAnalyzer::class, function (Application $app) {
         return new ReportAnalyzer($app->tagged('reports'));
     });
 
@@ -344,7 +337,7 @@ Khi các service đã được gắn thẻ, bạn có thể dễ dàng resolve t
 
 Phương thức `extend` cho phép sửa đổi các service đã được resolve. Ví dụ: khi một service đã được resolve, bạn có thể chạy thêm code để bổ sung hoặc cấu hình service đó. Phương thức `extend` chấp nhận hai tham số, một là cái service mà bạn mở rộng và một closure sẽ trả về một service đã được sửa. Closure này sẽ nhận vào một service đang được resolve và một instance container:
 
-    $this->app->extend(Service::class, function ($service, $app) {
+    $this->app->extend(Service::class, function (Service $service, Application $app) {
         return new DecoratedService($service);
     });
 
@@ -366,6 +359,12 @@ Nếu một số phụ thuộc trong class của bạn không thể resolve đư
 
     $transistor = $this->app->makeWith(Transistor::class, ['id' => 1]);
 
+Phương thức `bound` có thể được sử dụng để xác định xem một class hoặc một interface đã được liên kết vào trong container hay chưa:
+
+    if ($this->app->bound(Transistor::class)) {
+        // ...
+    }
+
 Nếu bạn ở ngoài service provider, ở vị trí mà code của bạn không có quyền truy cập vào biến `$app`, thì bạn có thể sử dụng [facade](/docs/{{version}}/facades) `App` hoặc [helper](/docs/{{version}}/helpers#method-app) `app` để resolve một instance của class từ container:
 
     use App\Services\Transistor;
@@ -375,20 +374,16 @@ Nếu bạn ở ngoài service provider, ở vị trí mà code của bạn khô
 
     $transistor = app(Transistor::class);
 
-Nếu bạn muốn instance container Laravel cũng được inject vào class mà đang được container resolve, bạn có thể khai báo class `Illuminate\Container\Container` trong hàm khởi tạo class của bạn:
+Nếu bạn muốn instance container Laravel cũng được inject vào class mà đang được container resolve, bạn có thể khai báo class `Illuminate\Container\Container` trong hàm khởi tạo của class của bạn:
 
     use Illuminate\Container\Container;
 
     /**
      * Create a new class instance.
-     *
-     * @param  \Illuminate\Container\Container  $container
-     * @return void
      */
-    public function __construct(Container $container)
-    {
-        $this->container = $container;
-    }
+    public function __construct(
+        protected Container $container
+    ) {}
 
 <a name="automatic-injection"></a>
 ### Tự động tích hợp
@@ -402,36 +397,25 @@ Ví dụ: bạn có thể khai báo một repository của bạn trong hàm kh�
     namespace App\Http\Controllers;
 
     use App\Repositories\UserRepository;
+    use App\Models\User;
 
     class UserController extends Controller
     {
         /**
-         * The user repository instance.
-         *
-         * @var \App\Repositories\UserRepository
-         */
-        protected $users;
-
-        /**
          * Create a new controller instance.
-         *
-         * @param  \App\Repositories\UserRepository  $users
-         * @return void
          */
-        public function __construct(UserRepository $users)
-        {
-            $this->users = $users;
-        }
+        public function __construct(
+            protected UserRepository $users,
+        ) {}
 
         /**
          * Show the user with the given ID.
-         *
-         * @param  int  $id
-         * @return \Illuminate\Http\Response
          */
-        public function show($id)
+        public function show(string $id): User
         {
-            //
+            $user = $this->users->findOrFail($id);
+
+            return $user;
         }
     }
 
@@ -450,13 +434,12 @@ Thỉnh thoảng, bạn có thể muốn gọi một phương thức trên một
     {
         /**
          * Generate a new user report.
-         *
-         * @param  \App\Repositories\UserRepository  $repository
-         * @return array
          */
-        public function generate(UserRepository $repository)
+        public function generate(UserRepository $repository): array
         {
-            // ...
+            return [
+                // ...
+            ];
         }
     }
 
@@ -482,12 +465,13 @@ Phương thức `call` sẽ chấp nhận bất kỳ PHP callable nào. Phương
 Service container sẽ kích hoạt một event mỗi khi nó resolve một đối tượng. Bạn có thể listen event này bằng phương thức `resolving`:
 
     use App\Services\Transistor;
+    use Illuminate\Contracts\Foundation\Application;
 
-    $this->app->resolving(Transistor::class, function ($transistor, $app) {
+    $this->app->resolving(Transistor::class, function (Transistor $transistor, Application $app) {
         // Called when container resolves objects of type "Transistor"...
     });
 
-    $this->app->resolving(function ($object, $app) {
+    $this->app->resolving(function (mixed $object, Application $app) {
         // Called when container resolves object of any type...
     });
 
@@ -504,7 +488,7 @@ Service container của Laravel là một implement của một interface [PSR-1
     Route::get('/', function (ContainerInterface $container) {
         $service = $container->get(Transistor::class);
 
-        //
+        // ...
     });
 
 Một ngoại lệ sẽ được đưa ra nếu định dang đã cho không thể resolve được. Ngoại lệ này sẽ là một instance của `Psr\Container\NotFoundExceptionInterface` nếu định dang này không bị ràng buộc. Nếu định dang này bị ràng buộc nhưng không thể resolve được, thì một instance của `Psr\Container\ContainerExceptionInterface` sẽ được đưa ra.

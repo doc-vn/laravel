@@ -73,10 +73,8 @@ Thông thường, không thể giả lập hoặc khai báo một phương thứ
 
     /**
      * A basic functional test example.
-     *
-     * @return void
      */
-    public function testBasicExample()
+    public function test_basic_example(): void
     {
         Cache::shouldReceive('get')
              ->with('key')
@@ -108,10 +106,8 @@ Hàm helper `cache` sẽ gọi phương thức `get` trong class facade `Cache`.
 
     /**
      * A basic functional test example.
-     *
-     * @return void
      */
-    public function testBasicExample()
+    public function test_basic_example(): void
     {
         Cache::shouldReceive('get')
              ->with('key')
@@ -135,16 +131,14 @@ Class `Facade` sử dụng phương thức magic `__callStatic()` để trì ho�
 
     use App\Http\Controllers\Controller;
     use Illuminate\Support\Facades\Cache;
+    use Illuminate\View\View;
 
     class UserController extends Controller
     {
         /**
          * Show the profile for the given user.
-         *
-         * @param  int  $id
-         * @return Response
          */
-        public function showProfile($id)
+        public function showProfile(string $id): View
         {
             $user = Cache::get('user:'.$id);
 
@@ -160,10 +154,11 @@ Nếu chúng ta nhìn vào class `Illuminate\Support\Facades\Cache`, bạn sẽ 
     {
         /**
          * Get the registered name of the component.
-         *
-         * @return string
          */
-        protected static function getFacadeAccessor() { return 'cache'; }
+        protected static function getFacadeAccessor(): string
+        {
+            return 'cache';
+        }
     }
 
 Thay vào đó, facade `Cache` sẽ được extend từ class `Facade` và định nghĩa một phương thức là `getFacadeAccessor()`. Công việc của phương thức này là trả về tên của một liên kết đã có trong service container. Khi người dùng tham chiếu bất kỳ phương thức tĩnh nào trên facade `Cache`, Laravel sẽ resolve một liên kết có tên là `cache` từ trong [service container](/docs/{{version}}/container) và chạy phương thức được gọi (trong trường hợp này là `get`) trên đối tượng đó.
@@ -184,11 +179,8 @@ Sử dụng real-time facade, bạn có thể coi bất kỳ class nào trong �
     {
         /**
          * Publish the podcast.
-         *
-         * @param  Publisher  $publisher
-         * @return void
          */
-        public function publish(Publisher $publisher)
+        public function publish(Publisher $publisher): void
         {
             $this->update(['publishing' => now()]);
 
@@ -202,21 +194,22 @@ Việc khai báo một implementation của publisher vào trong phương thức
 
     namespace App\Models;
 
-    use Facades\App\Contracts\Publisher;
+    use App\Contracts\Publisher; // [tl! remove]
+    use Facades\App\Contracts\Publisher; // [tl! add]
     use Illuminate\Database\Eloquent\Model;
 
     class Podcast extends Model
     {
         /**
          * Publish the podcast.
-         *
-         * @return void
          */
-        public function publish()
+        public function publish(Publisher $publisher): void // [tl! remove]
+        public function publish(): void // [tl! add]
         {
             $this->update(['publishing' => now()]);
 
-            Publisher::publish($this);
+            $publisher->publish($this); // [tl! remove]
+            Publisher::publish($this); // [tl! add]
         }
     }
 
@@ -237,10 +230,8 @@ Khi real-time facade được sử dụng, việc implementation của publisher
 
         /**
          * A test example.
-         *
-         * @return void
          */
-        public function test_podcast_can_be_published()
+        public function test_podcast_can_be_published(): void
         {
             $podcast = Podcast::factory()->create();
 
@@ -254,6 +245,8 @@ Khi real-time facade được sử dụng, việc implementation của publisher
 ## Tham khảo Class Facade
 
 Dưới đây bạn có thể tìm thấy mọi facade và class cơ sở nó. Đây là một công cụ hữu ích để nhanh chóng để đào sâu vào tài liệu API cho một facade gốc. [Service container binding](/docs/{{version}}/container) key cũng được kèm theo nếu trong trường hợp bạn cần dùng.
+
+<div class="overflow-auto">
 
 Facade  |  Class  |  Service Container Binding
 ------------- | ------------- | -------------
@@ -284,9 +277,12 @@ Mail  |  [Illuminate\Mail\Mailer](https://laravel.com/api/{{version}}/Illuminate
 Notification  |  [Illuminate\Notifications\ChannelManager](https://laravel.com/api/{{version}}/Illuminate/Notifications/ChannelManager.html)  |  &nbsp;
 Password  |  [Illuminate\Auth\Passwords\PasswordBrokerManager](https://laravel.com/api/{{version}}/Illuminate/Auth/Passwords/PasswordBrokerManager.html)  |  `auth.password`
 Password (Instance)  |  [Illuminate\Auth\Passwords\PasswordBroker](https://laravel.com/api/{{version}}/Illuminate/Auth/Passwords/PasswordBroker.html)  |  `auth.password.broker`
+Pipeline (Instance)  |  [Illuminate\Pipeline\Pipeline](https://laravel.com/api/{{version}}/Illuminate/Pipeline/Pipeline.html)  |  &nbsp;
+Process  |  [Illuminate\Process\Factory](https://laravel.com/api/{{version}}/Illuminate/Process/Factory.html)  |  &nbsp;
 Queue  |  [Illuminate\Queue\QueueManager](https://laravel.com/api/{{version}}/Illuminate/Queue/QueueManager.html)  |  `queue`
 Queue (Instance)  |  [Illuminate\Contracts\Queue\Queue](https://laravel.com/api/{{version}}/Illuminate/Contracts/Queue/Queue.html)  |  `queue.connection`
 Queue (Base Class)  |  [Illuminate\Queue\Queue](https://laravel.com/api/{{version}}/Illuminate/Queue/Queue.html)  |  &nbsp;
+RateLimiter  |  [Illuminate\Cache\RateLimiter](https://laravel.com/api/{{version}}/Illuminate/Cache/RateLimiter.html)  |  &nbsp;
 Redirect  |  [Illuminate\Routing\Redirector](https://laravel.com/api/{{version}}/Illuminate/Routing/Redirector.html)  |  `redirect`
 Redis  |  [Illuminate\Redis\RedisManager](https://laravel.com/api/{{version}}/Illuminate/Redis/RedisManager.html)  |  `redis`
 Redis (Instance)  |  [Illuminate\Redis\Connections\Connection](https://laravel.com/api/{{version}}/Illuminate/Redis/Connections/Connection.html)  |  `redis.connection`
@@ -304,3 +300,6 @@ Validator  |  [Illuminate\Validation\Factory](https://laravel.com/api/{{version}
 Validator (Instance)  |  [Illuminate\Validation\Validator](https://laravel.com/api/{{version}}/Illuminate/Validation/Validator.html)  |  &nbsp;
 View  |  [Illuminate\View\Factory](https://laravel.com/api/{{version}}/Illuminate/View/Factory.html)  |  `view`
 View (Instance)  |  [Illuminate\View\View](https://laravel.com/api/{{version}}/Illuminate/View/View.html)  |  &nbsp;
+Vite  |  [Illuminate\Foundation\Vite](https://laravel.com/api/{{version}}/Illuminate/Foundation/Vite.html)  |  &nbsp;
+
+</div>

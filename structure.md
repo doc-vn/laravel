@@ -6,7 +6,6 @@
     - [Thư mục `bootstrap`](#the-bootstrap-directory)
     - [Thư mục `config`](#the-config-directory)
     - [Thư mục `database`](#the-database-directory)
-    - [Thư mục `lang`](#the-lang-directory)
     - [Thư mục `public`](#the-public-directory)
     - [Thư mục `resources`](#the-resources-directory)
     - [Thư mục `routes`](#the-routes-directory)
@@ -33,7 +32,7 @@
 
 Cấu trúc thư mục mặc định của Laravel nhằm cung cấp một khởi đầu tốt cho tất cả các application lớn và nhỏ. Nhưng bạn có thể tự tổ chức theo cách mà bạn muốn. Laravel sẽ gần như không áp đặt một hạn chế nào về mặt vị trí cho bất cứ class nào, miễn là Composer có thể load class đó.
 
-> **Note**
+> [!NOTE]
 > Bạn mới sử dụng Laravel? Hãy xem [Laravel Bootcamp](https://bootcamp.laravel.com) để có thể tham quan thực tế về framework và chúng tôi sẽ hướng dẫn bạn về cách xây dựng ứng dụng Laravel đầu tiên của bạn.
 
 <a name="the-root-directory"></a>
@@ -58,11 +57,6 @@ Thư mục `config` mang ý nghĩa rất dễ hiểu, nó dùng để chứa t�
 #### Thư mục Database
 
 Thư mục `database` chứa các file migration cho database, các file factories để tạo fake data cho model, và các file seed. Nếu bạn muốn, bạn cũng có thể dùng thư mục này để chứa các file SQLite database.
-
-<a name="the-lang-directory"></a>
-#### The Lang Directory
-
-Thư mục `lang` chứa tất cả các file ngôn ngữ của ứng dụng.
 
 <a name="the-public-directory"></a>
 #### Thư mục Public
@@ -113,7 +107,7 @@ Thư mục `app` sẽ chứa một số thư mục bổ sung như `Console`, `Ht
 
 Các thư mục khác sẽ được tạo trong thư mục `app` khi bạn dùng lệnh Artisan `make` để tạo các class tương ứng với thư mục đó. Ví dụ, bình thường, thư mục `app/Jobs` sẽ không tồn tại cho đến khi bạn chạy lệnh Artisan `make:job` để tạo class job.
 
-> **Note**
+> [!NOTE]
 > Nhiều class trong thư mục `app` có thể được tạo ra thông qua lệnh Artisan. Để có thể xem các lệnh đó, bạn có chạy lệnh `php artisan list make` trên terminal của bạn.
 
 <a name="the-broadcasting-directory"></a>

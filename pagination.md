@@ -52,15 +52,14 @@ Trong ví dụ này, chỉ có một tham số duy nhất được truyền vào
 
     use App\Http\Controllers\Controller;
     use Illuminate\Support\Facades\DB;
+    use Illuminate\View\View;
 
     class UserController extends Controller
     {
         /**
          * Show all application users.
-         *
-         * @return \Illuminate\Http\Response
          */
-        public function index()
+        public function index(): View
         {
             return view('user.index', [
                 'users' => DB::table('users')->paginate(15)
@@ -126,8 +125,8 @@ Bạn có thể tạo một instance phân trang từ con trỏ thông qua phư�
 
 Khi bạn đã lấy ra được một instance phân trang từ con trỏ, bạn có thể [hiển thị kết quả phân trang](#displaying-pagination-results) như bạn thường làm khi sử dụng các phương thức `paginate` và `simplePaginate`. Để biết thêm thông tin về các phương thức instance do phân trang từ con trỏ cung cấp, vui lòng tham khảo [tài liệu về phương thức instance phân trang từ con trỏ](#cursor-paginator-instance-methods).
 
-> **Warning**
-> Truy vấn của bạn phải chứa lệnh "order by" để tận dụng khả năng phân trang bằng con trỏ.
+> [!WARNING]
+> Truy vấn của bạn phải chứa lệnh "order by" để tận dụng khả năng phân trang bằng con trỏ. Ngoài ra, các cột mà bạn đang order by phải thuộc về bảng mà bạn đang phân trang.
 
 <a name="cursor-vs-offset-pagination"></a>
 #### Cursor vs. Offset Pagination
@@ -154,7 +153,6 @@ Tuy nhiên, phân trang con trỏ cũng có những hạn chế sau:
 - Biểu thức truy vấn trong lệnh "order by" chỉ được hỗ trợ nếu chúng được đặt alias và được thêm vào lệnh "select".
 - Biểu thức truy vấn có tham số cũng không được hỗ trợ.
 
-
 <a name="manually-creating-a-paginator"></a>
 ### Tự tạo một phân trang
 
@@ -164,7 +162,7 @@ Class `Paginator` và class `CursorPaginator` sẽ không cần biết tổng s�
 
 Nói cách khác, `Paginator` tương ứng với phương thức `simplePaginate` trong query builder, `CursorPaginator` tương ứng với phương thức `cursorPaginate`, và `LengthAwarePaginator` tương ứng với phương thức `paginate`.
 
-> **Warning**
+> [!WARNING]
 > Khi tự tạo trình phân trang, bạn nên tự "phân chia" các phần tử có trong mảng kết quả mà bạn truyền nó cho trình phân trang. Nếu bạn không chắc chắn cách thực hiện việc này, hãy xem hàm [array_slice](https://secure.php.net/manual/en/function.array-slice.php).
 
 <a name="customizing-pagination-urls"></a>
@@ -179,7 +177,7 @@ Mặc định, các link do phân trang được tạo ra sẽ giống với URI
 
         $users->withPath('/admin/users');
 
-        //
+        // ...
     });
 
 <a name="appending-query-string-values"></a>
@@ -194,7 +192,7 @@ Bạn có thể nối thêm các tham số vào các link phân trang bằng ph�
 
         $users->appends(['sort' => 'votes']);
 
-        //
+        // ...
     });
 
 Nếu bạn muốn nối tất cả các giá trị query string hiện tại vào các link phân trang, bạn có thể sử dụng phương thức `withQueryString`:
@@ -304,10 +302,8 @@ Nếu bạn muốn chỉ định một file khác làm pagination view mặc đ�
     {
         /**
          * Bootstrap any application services.
-         *
-         * @return void
          */
-        public function boot()
+        public function boot(): void
         {
             Paginator::defaultView('view-name');
 
@@ -324,10 +320,8 @@ Laravel có chứa các view phân trang được xây dựng bằng [Bootstrap 
 
     /**
      * Bootstrap any application services.
-     *
-     * @return void
      */
-    public function boot()
+    public function boot(): void
     {
         Paginator::useBootstrapFive();
         Paginator::useBootstrapFour();
@@ -358,6 +352,7 @@ Method  |  Description
 `$paginator->url($page)`  |  Lấy URL cho một trang nhất định.
 `$paginator->getPageName()`  |  Lấy biến query string được sử dụng để lưu trữ trang.
 `$paginator->setPageName($name)`  |  Set biến query string được sử dụng để lưu trữ trang.
+`$paginator->through($callback)`  |  Sẽ lặp cái item có trong data store với một callback.
 
 <a name="cursor-paginator-instance-methods"></a>
 ## Cursor Paginator Instance Methods

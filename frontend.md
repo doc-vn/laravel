@@ -43,7 +43,6 @@ Trong Laravel, cách hiển thị HTML này vẫn có thể đạt được bằ
 </div>
 ```
 
-When building applications in this fashion, form submissions and other page interacti
 Khi xây dựng ứng dụng theo cách này, các submit form và các tương tác khác ở trên trang HTML thường nhận về một trang HTML document mới từ server và toàn bộ trang HTML sẽ được load lại từ đầu. Ngay cả ngày nay, nhiều ứng dụng vẫn có thể hoàn toàn phù hợp cách xây dựng giao diện người dùng này thông qua các template Blade đơn giản.
 
 <a name="growing-expectations"></a>
@@ -53,12 +52,12 @@ Tuy nhiên, khi kỳ vọng của người dùng về các ứng dụng web ngà
 
 Những người khác, thích gắn bó với những ngôn ngữ backend mà họ cảm thấy quen thuộc, đã phát triển các giải pháp cho phép xây dựng giao diện người dùng ứng dụng web hiện đại trong khi vẫn chủ yếu sử dụng ngôn ngữ backend mà họ lựa chọn. Ví dụ, trong hệ sinh thái [Rails](https://rubyonrails.org/), điều này đã thúc đẩy việc tạo ra các thư viện như [Turbo](https://turbo.hotwired.dev/) [Hotwire](https://hotwired.dev/) và [Stimulus](https://stimulus.hotwired.dev/).
 
-Trong hệ sinh thái Laravel, nhu cầu tạo ra một giao diện người dùng hiện đại, năng động bằng cách sử dụng PHP chủ yếu đã dẫn đến việc tạo ra [Laravel Livewire](https://laravel-livewire.com) và [Alpine.js](https://alpinejs.dev/).
+Trong hệ sinh thái Laravel, nhu cầu tạo ra một giao diện người dùng hiện đại, năng động bằng cách sử dụng PHP chủ yếu đã dẫn đến việc tạo ra [Laravel Livewire](https://livewire.laravel.com) và [Alpine.js](https://alpinejs.dev/).
 
 <a name="livewire"></a>
 ### Livewire
 
-[Laravel Livewire](https://laravel-livewire.com) là một framework xây dựng giao diện người dùng được hỗ trợ bởi Laravel mang lại cảm giác năng động, hiện đại và sống động giống như các giao diện người dùng được xây dựng bằng các framework JavaScript hiện đại như Vue và React.
+[Laravel Livewire](https://livewire.laravel.com) là một framework xây dựng giao diện người dùng được hỗ trợ bởi Laravel mang lại cảm giác năng động, hiện đại và sống động giống như các giao diện người dùng được xây dựng bằng các framework JavaScript hiện đại như Vue và React.
 
 Khi sử dụng Livewire, bạn sẽ tạo ra các "components" Livewire để hiển thị một phần riêng biệt của UI và hiển thị các phương thức và dữ liệu có thể được gọi và tương tác từ giao diện người dùng của ứng dụng. Ví dụ, một component "Counter" đơn giản có thể trông như sau:
 
@@ -98,7 +97,7 @@ Như bạn có thể thấy, Livewire cho phép bạn viết các thuộc tính 
 
 Đối với nhiều người, Livewire đã cách mạng hóa quá trình phát triển front-end với Laravel, cho phép họ duy trì sự thoải mái của Laravel trong khi vẫn xây dựng được các ứng dụng web hiện đại, năng động. Thông thường, các nhà phát triển sử dụng Livewire cũng sẽ sử dụng [Alpine.js](https://alpinejs.dev/) để "rải" code JavaScript lên front-end của họ chỉ khi cần thiết, chẳng hạn như để hiển thị một dialog.
 
-Nếu bạn mới làm quen với Laravel, chúng tôi khuyên bạn nên làm quen với cách sử dụng cơ bản của [views](/docs/{{version}}/views) và [Blade](/docs/{{version}}/blade). Sau đó, hãy tham khảo [tài liệu chính thức của Laravel Livewire](https://laravel-livewire.com/docs) để tìm hiểu cách đưa ứng dụng của bạn lên một tầm cao mới với các tương tác component Livewire.
+Nếu bạn mới làm quen với Laravel, chúng tôi khuyên bạn nên làm quen với cách sử dụng cơ bản của [views](/docs/{{version}}/views) và [Blade](/docs/{{version}}/blade). Sau đó, hãy tham khảo [tài liệu chính thức của Laravel Livewire](https://livewire.laravel.com) để tìm hiểu cách đưa ứng dụng của bạn lên một tầm cao mới với các tương tác component Livewire.
 
 <a name="php-starter-kits"></a>
 ### Starter Kits
@@ -129,16 +128,14 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Inertia\Inertia;
+use Inertia\Response;
 
 class UserController extends Controller
 {
     /**
      * Show the profile for a given user.
-     *
-     * @param  int  $id
-     * @return \Inertia\Response
      */
-    public function show($id)
+    public function show(string $id): Response
     {
         return Inertia::render('Users/Profile', [
             'user' => User::findOrFail($id)
@@ -152,7 +149,7 @@ Trang Inertia tương ứng với một component Vue hoặc React, thường đ
 ```vue
 <script setup>
 import Layout from '@/Layouts/Authenticated.vue';
-import { Head } from '@inertiajs/inertia-vue3';
+import { Head } from '@inertiajs/vue3';
 
 const props = defineProps(['user']);
 </script>
@@ -194,5 +191,5 @@ Mặc định, Laravel sử dụng [Vite](https://vitejs.dev) để đóng gói 
 
 Cách nhanh nhất để bắt đầu với Laravel và Vite là bắt đầu phát triển ứng dụng của bạn bằng [Laravel Breeze](/docs/{{version}}/starter-kits#laravel-breeze), bộ công cụ khởi tạo đơn giản nhất của chúng tôi giúp bạn khởi tạo ứng dụng của mình bằng cách cung cấp nền tảng xác thực bằng cả frontend lẫn cả backend.
 
-> **Note**
+> [!NOTE]
 > Để biết thêm tài liệu chi tiết về việc sử dụng Vite cùng Laravel, vui lòng xem thêm [tài liệu chuyên dụng về cách đóng gói và cách biên dịch asset của bạn](/docs/{{version}}/vite).

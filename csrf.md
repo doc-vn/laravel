@@ -94,7 +94,7 @@ Thông thường, bạn nên đặt các loại route này ra ngoài group middl
         ];
     }
 
-> **Note**
+> [!NOTE]
 > Để thuận tiện, CSRF middleware sẽ tự động bị disable cho tất cả các route khi [đang chạy test](/docs/{{version}}/testing).
 
 <a name="csrf-x-csrf-token"></a>
@@ -123,5 +123,5 @@ Laravel lưu trữ mã token CSRF trong cookie mã hoá `XSRF-TOKEN` được ch
 
 Cookie này được gửi về chủ yếu là tạo sự thuận tiện cho nhà phát triển vì một số framework và thư viện JavaScript, như Angular và Axios, sẽ tự động set giá trị của nó vào trong header `X-XSRF-TOKEN` cho các request có cùng origin.
 
-> **Note**
+> [!NOTE]
 > Mặc định, file `resources/js/bootstrap.js` đã chứa thư viện Axios HTTP và sẽ tự động gửi header `X-XSRF-TOKEN` cho bạn.

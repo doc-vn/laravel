@@ -1,6 +1,7 @@
 # Localization
 
 - [Giới thiệu](#introduction)
+    - [Publish file ngôn ngữ](#publishing-the-language-files)
     - [Cấu hình ngôn ngữ](#configuring-the-locale)
     - [Số nhiều trong ngôn ngữ](#pluralization-language)
 - [Định nghĩa chuỗi translation](#defining-translation-strings)
@@ -14,9 +15,12 @@
 <a name="introduction"></a>
 ## Giới thiệu
 
+> [!NOTE]
+> Mặc định, Laravel application sẽ không chứa thư mục `lang`. Nếu bạn muốn tùy chỉnh các file ngôn ngữ của Laravel, bạn có thể publish chúng thông qua lệnh Artisan `lang:publish`.
+
 Các tính năng localization của Laravel cung cấp một cách thuận tiện để lấy ra các chuỗi bằng nhiều ngôn ngữ khác nhau, cho phép bạn dễ dàng hỗ trợ nhiều ngôn ngữ trong application của bạn.
 
-Laravel cung cấp hai cách để quản lý chuỗi được dịch. Đầu tiên, các chuỗi ngôn ngữ có thể được lưu trữ trong các file ở thư mục `lang`. Trong thư mục này, có thể có các thư mục con cho mỗi ngôn ngữ được application của bạn hỗ trợ. Đây là cách tiếp cận mà Laravel sử dụng để quản lý các chuỗi dịch cho các tính năng được tích hợp sẵn của Laravel, chẳng hạn như thông báo lỗi validation:
+Laravel cung cấp hai cách để quản lý chuỗi được dịch. Đầu tiên, các chuỗi ngôn ngữ có thể được lưu trữ trong các file ở thư mục `lang` trong application. Trong thư mục này, có thể có các thư mục con cho mỗi ngôn ngữ được application của bạn hỗ trợ. Đây là cách tiếp cận mà Laravel sử dụng để quản lý các chuỗi dịch cho các tính năng được tích hợp sẵn của Laravel, chẳng hạn như thông báo lỗi validation:
 
     /lang
         /en
@@ -32,6 +36,15 @@ Hoặc, các chuỗi dịch có thể được định nghĩa trong các file JS
 
 Chúng ta sẽ thảo luận về từng cách quản lý chuỗi dịch này trong tài liệu dưới.
 
+<a name="publishing-the-language-files"></a>
+### Publish file ngôn ngữ
+
+Mặc định, Laravel application sẽ không chứa thư mục `lang`. Nếu bạn muốn tùy chỉnh các file ngôn ngữ của Laravel hoặc tạo mới file ngôn ngữ, bạn nên tạo thư mục `lang` thông qua lệnh Artisan `lang:publish`. Lệnh `lang:publish` sẽ tạo thư mục `lang` trong ứng dụng của bạn và publish một set file ngôn ngữ mặc định mà được Laravel sử dụng:
+
+```shell
+php artisan lang:publish
+```
+
 <a name="configuring-the-locale"></a>
 ### Cấu hình ngôn ngữ
 
@@ -41,14 +54,14 @@ Bạn có thể sửa ngôn ngữ mặc định cho một HTTP request khi đang
 
     use Illuminate\Support\Facades\App;
 
-    Route::get('/greeting/{locale}', function ($locale) {
+    Route::get('/greeting/{locale}', function (string $locale) {
         if (! in_array($locale, ['en', 'es', 'fr'])) {
             abort(400);
         }
 
         App::setLocale($locale);
 
-        //
+        // ...
     });
 
 Bạn có thể cấu hình "fallback language", ngôn ngữ này sẽ được sử dụng khi ngôn ngữ đang hoạt động không chứa chuỗi đang cần dịch. Giống như ngôn ngữ mặc định, fallback language cũng được cấu hình trong file cấu hình `config/app.php`:
@@ -65,7 +78,7 @@ Bạn có thể sử dụng các phương thức `currentLocale` và `isLocale` 
     $locale = App::currentLocale();
 
     if (App::isLocale('en')) {
-        //
+        // ...
     }
 
 <a name="pluralization-language"></a>
@@ -77,17 +90,15 @@ Bạn có thể hướng dẫn quy tắc "số nhiều" trong Laravel, được 
 
     /**
      * Bootstrap any application services.
-     *
-     * @return void
      */
-    public function boot()
+    public function boot(): void
     {
         Pluralizer::useLanguage('spanish');
 
         // ...
     }
 
-> **Warning**
+> [!WARNING]
 > Nếu bạn tùy chỉnh ngôn ngữ của bộ quy tấc số nhiều, thì bạn cần định nghĩa lại [table names](/docs/{{version}}/eloquent#table-names) trong model Eloquent của bạn.
 
 <a name="defining-translation-strings"></a>
@@ -114,7 +125,7 @@ Tất cả các file ngôn ngữ đều trả về một mảng của các chu�
         'welcome' => 'Welcome to our application!',
     ];
 
-> **Warning**
+> [!WARNING]
 > Đối với các ngôn ngữ khác nhau theo lãnh thổ, bạn nên set tên thư mục của ngôn ngữ theo tiêu chuẩn ISO 15897. Ví dụ: "en_GB" nên được sử dụng cho tiếng Anh của nước Anh thay vì "en-gb".
 
 <a name="using-translation-strings-as-keys"></a>
@@ -122,7 +133,7 @@ Tất cả các file ngôn ngữ đều trả về một mảng của các chu�
 
 Đối với các application có một số lượng lớn các chuỗi cần phải dịch, việc định nghĩa mọi chuỗi bằng "short key" có thể nhanh chóng gây nhầm lẫn khi tham chiếu các key đó vào trong các file view của bạn và thật khó khăn khi liên tục phải tạo ra các khóa cho mọi chuỗi được ứng dụng của bạn hỗ trợ.
 
-Vì lý do này, Laravel cũng cung cấp hỗ trợ cho việc định nghĩa chuỗi dịch bằng cách sử dụng bản dịch "mặc định" của chuỗi làm khóa. Các file translation sử dụng chuỗi translation làm khóa được lưu dưới dạng file JSON trong thư mục `lang`. Ví dụ: nếu ứng dụng của bạn có bản translation tiếng Tây Ban Nha, bạn nên tạo file `lang/es.json`:
+Vì lý do này, Laravel cũng cung cấp hỗ trợ cho việc định nghĩa chuỗi dịch bằng cách sử dụng bản dịch "mặc định" của chuỗi làm khóa. Các file ngôn ngữ mà được sử dụng chuỗi translation làm khóa sẽ được lưu dưới dạng file JSON trong thư mục `lang`. Ví dụ: nếu ứng dụng của bạn có bản translation tiếng Tây Ban Nha, bạn nên tạo file `lang/es.json`:
 
 ```json
 {
@@ -181,10 +192,8 @@ Trong những trường hợp này, Laravel cho phép bạn đăng ký một tr�
 
     /**
      * Bootstrap any application services.
-     *
-     * @return void
      */
-    public function boot()
+    public function boot(): void
     {
         Lang::stringable(function (Money $money) {
             return $money->formatTo('en_GB');

@@ -13,6 +13,10 @@
     - [Tuỳ biến Monolog cho Channel](#customizing-monolog-for-channels)
     - [Tạo Monolog xử lý Channel](#creating-monolog-handler-channels)
     - [Tạo một channel tuỳ biến thông qua Factory](#creating-custom-channels-via-factories)
+- [Theo dõi log bằng Pail](#tailing-log-messages-using-pail)
+    - [Cài đặt](#pail-installation)
+    - [Sử dụng](#pail-usage)
+    - [Filter log](#pail-filtering-logs)
 
 <a name="introduction"></a>
 ## Giới thiệu
@@ -26,7 +30,7 @@ Laravel sử dụng thư viện [Monolog](https://github.com/Seldaek/monolog) đ
 <a name="configuration"></a>
 ## Cấu hình
 
-Tất cả các tuỳ chọn cấu hình cho các hành động của hệ thống ghi log của ứng dụng của bạn được lưu trong file cấu hình `config/logging.php`. File này cho phép bạn cấu hình các channel log, vì vậy hãy đảm bảo là bạn đã xem qua các channel hiện có và các tùy chọn của chúng. Chúng ta cũng sẽ xem xét một số tùy chọn phổ biến ở bên dưới.
+Tất cả các tuỳ chọn cấu hình cho các hành động của hệ thống ghi log của ứng dụng của bạn sẽ được lưu trong file cấu hình `config/logging.php`. File này cho phép bạn cấu hình các channel log, vì vậy hãy đảm bảo là bạn đã xem qua các channel hiện có và các tùy chọn của chúng. Chúng ta cũng sẽ xem xét một số tùy chọn phổ biến ở bên dưới.
 
 Mặc định, Laravel sẽ sử dụng channel `stack` để ghi log. Channel `stack` có thể được sử dụng để tổng hợp nhiều channel log thành một channel. Để biết thêm thông tin về cách xây dựng stack, hãy xem [tài liệu ở bên dưới](#building-log-stacks).
 
@@ -46,20 +50,23 @@ Mặc định, Monolog được khởi tạo bởi "tên channel" phù hợp v�
 
 Mỗi log channel được cung cấp bởi một "driver". Driver sẽ xác định xem cách thức và vị trí của log message sẽ được ghi lại. Những Driver log channel sau đây sẽ có sẵn trong mọi ứng dụng Laravel. Một mục dành riêng cho các driver này đã có sẵn trong file cấu hình `config/logging.php` của ứng dụng của bạn, vì vậy hãy nhớ xem lại file này để làm quen với nội dung của nó:
 
+<div class="overflow-auto">
+
 Name | Description
 ------------- | -------------
 `custom` | Một driver gọi một factory cụ thể để tạo ra một channel
 `daily` | Một driver Monolog dựa trên `RotatingFileHandler` xoay vòng theo ngày
 `errorlog` | Một driver Monolog dựa trên `ErrorLogHandler`
 `monolog` | Một driver Monolog factory có thể sử dụng bất kỳ Monolog handler nào được hỗ trợ
-`null` | Một driver sẽ loại bỏ tất cả các message log
 `papertrail` | Một driver Monolog dựa trên `SyslogUdpHandler`
 `single` | Một file hoặc một channel ghi log dựa trên đường dẫn (`StreamHandler`)
 `slack` | Một driver Monolog dựa trên `SlackWebhookHandler`
 `stack` | Một wrapper để tạo điều kiện thuận lợi cho việc tạo một channel với "nhiều channel"
 `syslog` | Một driver Monolog dựa trên `SyslogHandler`
 
-> **Note**
+</div>
+
+> [!NOTE]
 > Xem tài liệu về [tùy chỉnh channel nâng cao](#monolog-channel-customization) để tìm hiểu thêm về driver `monolog` và `custom`.
 
 <a name="channel-prerequisites"></a>
@@ -70,17 +77,25 @@ Name | Description
 
 Các channel `single` và `daily` có thêm ba tùy chọn cấu hình khác: `bubble`, `permission`, và `locking`.
 
+<div class="overflow-auto">
+
 Name | Description | Default
 ------------- | ------------- | -------------
 `bubble` | Cho biết messages đang được xử lý có được gửi sang channel khác sau khi xử lý xong hay không | `true`
 `locking` | Cố gắng khóa file log trước khi ghi vào nó | `false`
 `permission` | Quyền của file log | `0644`
 
+</div>
+
 Ngoài ra, thời hạn lưu giữ file log cho channel `daily` có thể được cấu hình thông qua tùy chọn `days`:
+
+<div class="overflow-auto">
 
 Name | Description                                                       | Default
 ------------- |-------------------------------------------------------------------| -------------
 `days` | Số ngày mà các file daily log phải được lưu giữ | `7`
+
+</div>
 
 <a name="configuring-the-papertrail-channel"></a>
 #### Configuring The Papertrail Channel
@@ -179,18 +194,16 @@ Vì vậy, bạn có thể gọi bất kỳ phương thức nào trong các phư
     use App\Http\Controllers\Controller;
     use App\Models\User;
     use Illuminate\Support\Facades\Log;
+    use Illuminate\View\View;
 
     class UserController extends Controller
     {
         /**
          * Show the profile for the given user.
-         *
-         * @param  int  $id
-         * @return \Illuminate\Http\Response
          */
-        public function show($id)
+        public function show(string $id): View
         {
-            Log::info('Showing the user profile for user: '.$id);
+            Log::info('Showing the user profile for user: {id}', ['id' => $id]);
 
             return view('user.profile', [
                 'user' => User::findOrFail($id)
@@ -205,7 +218,7 @@ Một mảng dữ liệu có thể được truyền vào cho các phương th�
 
     use Illuminate\Support\Facades\Log;
 
-    Log::info('User failed to login.', ['id' => $user->id]);
+    Log::info('User {id} failed to login.', ['id' => $user->id]);
 
 Đôi khi, bạn có thể muốn chỉ định một số thông tin ngữ cảnh cần được đưa vào log. Ví dụ: bạn có thể muốn ghi lại ID request được liên kết với từng request được gửi đến ứng dụng của bạn trong một channel cụ thể. Để thực hiện điều này, bạn có thể gọi phương thức `withContext` của facade `Log`:
 
@@ -214,19 +227,19 @@ Một mảng dữ liệu có thể được truyền vào cho các phương th�
     namespace App\Http\Middleware;
 
     use Closure;
+    use Illuminate\Http\Request;
     use Illuminate\Support\Facades\Log;
     use Illuminate\Support\Str;
+    use Symfony\Component\HttpFoundation\Response;
 
     class AssignRequestId
     {
         /**
          * Handle an incoming request.
          *
-         * @param  \Illuminate\Http\Request  $request
-         * @param  \Closure  $next
-         * @return mixed
+         * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
          */
-        public function handle($request, Closure $next)
+        public function handle(Request $request, Closure $next): Response
         {
             $requestId = (string) Str::uuid();
 
@@ -234,29 +247,47 @@ Một mảng dữ liệu có thể được truyền vào cho các phương th�
                 'request-id' => $requestId
             ]);
 
-            return $next($request)->header('Request-Id', $requestId);
+            $response = $next($request);
+
+            $response->headers->set('Request-Id', $requestId);
+
+            return $response;
         }
     }
 
-Nếu bạn muốn chia sẻ thông tin ngữ cảnh trên _tất cả_ các channel log, bạn có thể gọi phương thức `Log::shareContext()`. Phương thức này sẽ cung cấp thông tin ngữ cảnh cho tất cả các channel đã tạo và bất kỳ channel nào được tạo sau đó. Thông thường, phương thức `shareContext` phải được gọi từ phương thức `boot` của một application service provider:
+Nếu bạn muốn chia sẻ thông tin ngữ cảnh trên _tất cả_ các channel log, bạn có thể gọi phương thức `Log::shareContext()`. Phương thức này sẽ cung cấp thông tin ngữ cảnh cho tất cả các channel đã tạo và bất kỳ channel nào được tạo sau đó:
 
+    <?php
+
+    namespace App\Http\Middleware;
+
+    use Closure;
+    use Illuminate\Http\Request;
     use Illuminate\Support\Facades\Log;
     use Illuminate\Support\Str;
+    use Symfony\Component\HttpFoundation\Response;
 
-    class AppServiceProvider
+    class AssignRequestId
     {
         /**
-         * Bootstrap any application services.
+         * Handle an incoming request.
          *
-         * @return void
+         * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
          */
-        public function boot()
+        public function handle(Request $request, Closure $next): Response
         {
+            $requestId = (string) Str::uuid();
+
             Log::shareContext([
-                'invocation-id' => (string) Str::uuid(),
+                'request-id' => $requestId
             ]);
+
+            // ...
         }
     }
+
+> [!NOTE]
+> Nếu bạn cần chia sẻ log trong khi xử lý các queued job, bạn có thể sử dụng [job middleware](/docs/{{version}}/queues#job-middleware).
 
 <a name="writing-to-specific-channels"></a>
 ### Viết cho một Channel cụ thể
@@ -317,17 +348,15 @@ Sau khi bạn đã cấu hình tùy chọn `tap` trong file cấu hình channel 
 
     namespace App\Logging;
 
+    use Illuminate\Log\Logger;
     use Monolog\Formatter\LineFormatter;
 
     class CustomizeFormatter
     {
         /**
          * Customize the given logger instance.
-         *
-         * @param  \Illuminate\Log\Logger  $logger
-         * @return void
          */
-        public function __invoke($logger)
+        public function __invoke(Logger $logger): void
         {
             foreach ($logger->getHandlers() as $handler) {
                 $handler->setFormatter(new LineFormatter(
@@ -337,7 +366,7 @@ Sau khi bạn đã cấu hình tùy chọn `tap` trong file cấu hình channel 
         }
     }
 
-> **Note**
+> [!NOTE]
 > Tất cả các class "tap" của bạn đều được [service container](/docs/{{version}}/container) resolve, vì vậy mọi phụ thuộc trong hàm constructor sẽ tự động được đưa vào.
 
 <a name="creating-monolog-handler-channels"></a>
@@ -378,6 +407,33 @@ Nếu bạn đang sử dụng xử lý Monolog mà có khả năng cung cấp m�
         'formatter' => 'default',
     ],
 
+
+<a name="monolog-processors"></a>
+ #### Monolog Processors
+
+Monolog cũng có thể xử lý các message trước khi log chúng. Bạn có thể tạo một bộ xử lý của riêng bạn hoặc sử dụng [bộ xử lý hiện có do Monolog cung cấp](https://github.com/Seldaek/monolog/tree/main/src/Monolog/Processor).
+
+Nếu bạn muốn tùy chỉnh bộ xử lý cho driver `monolog`, bạn hãy thêm giá trị cấu hình `processors` vào cấu hình channel của bạn:
+
+     'memory' => [
+         'driver' => 'monolog',
+         'handler' => Monolog\Handler\StreamHandler::class,
+         'with' => [
+             'stream' => 'php://stderr',
+         ],
+         'processors' => [
+             // Simple syntax...
+             Monolog\Processor\MemoryUsageProcessor::class,
+
+             // With options...
+             [
+                'processor' => Monolog\Processor\PsrLogMessageProcessor::class,
+                'with' => ['removeUsedContextFields' => true],
+            ],
+         ],
+     ],
+
+
 <a name="creating-custom-channels-via-factories"></a>
 ### Tạo một channel tuỳ biến thông qua Factory
 
@@ -402,12 +458,92 @@ Sau khi bạn đã cấu hình xong driver channel `custom`, bạn đã sẵn s�
     {
         /**
          * Create a custom Monolog instance.
-         *
-         * @param  array  $config
-         * @return \Monolog\Logger
          */
-        public function __invoke(array $config)
+        public function __invoke(array $config): Logger
         {
             return new Logger(/* ... */);
         }
     }
+
+<a name="tailing-log-messages-using-pail"></a>
+## Theo dõi log bằng Pail
+
+Thông thường, bạn có thể cần theo dõi log ứng dụng của bạn theo thời gian thực. Ví dụ, khi gỡ lỗi một sự cố hoặc khi theo dõi log ứng dụng của bạn để tìm một loại lỗi cụ thể nào đó.
+
+Laravel Pail là một package cho phép bạn dễ dàng truy cập vào các file log của ứng dụng Laravel trực tiếp từ command line. Không giống như lệnh `tail` thuần tuý, Pail được thiết kế để hoạt động với bất kỳ driver log nào, bao gồm cà Sentry hoặc Flare. Ngoài ra, Pail cung cấp một bộ lọc hữu ích để giúp bạn nhanh chóng tìm thấy những gì bạn đang tìm kiếm.
+
+<img src="https://laravel.com/img/docs/pail-example.png">
+
+<a name="pail-installation"></a>
+### Cài đặt
+
+> [!WARNING]
+> Laravel Pail yêu cầu [PHP 8.2+](https://php.net/releases/) và extension [PCNTL](https://www.php.net/manual/en/book.pcntl.php).
+
+Để bắt đầu, hãy cài đặt Pail vào dự án của bạn bằng trình quản lý package Composer:
+
+```bash
+composer require laravel/pail
+```
+
+<a name="pail-usage"></a>
+### Sử dụng
+
+Để bắt đầu theo dõi log, hãy chạy lệnh `pail`:
+
+```bash
+php artisan pail
+```
+
+Để output chi tiết hơn và xoá bớt (…), hãy sử dụng thêm tùy chọn `-v`:
+
+```bash
+php artisan pail -v
+```
+
+Để chi tiết hơn nữa và hiển thị stack trace của ngoại lệ, hãy sử dụng tùy chọn `-vv`:
+
+```bash
+php artisan pail -vv
+```
+
+Để dừng theo dõi log, hãy nhấn `Ctrl+C` bất cứ lúc nào.
+
+<a name="pail-filtering-logs"></a>
+### Filter log
+
+<a name="pail-filtering-logs-filter-option"></a>
+#### `--filter`
+
+Bạn có thể sử dụng tùy chọn `--filter` để lọc bất kỳ log nào theo loại của chúng, file, tin nhắn và nội dung stack trace:
+
+```bash
+php artisan pail --filter="QueryException"
+```
+
+<a name="pail-filtering-logs-message-option"></a>
+#### `--message`
+
+Để lọc log theo message của chúng, bạn có thể sử dụng tùy chọn `--message`:
+
+```bash
+php artisan pail --message="User created"
+```
+
+<a name="pail-filtering-logs-level-option"></a>
+#### `--level`
+
+Tùy chọn `--level` có thể được sử dụng để lọc log theo [log level](#log-levels):
+
+```bash
+php artisan pail --level=error
+```
+
+<a name="pail-filtering-logs-user-option"></a>
+#### `--user`
+
+Để hiển thị các log cho một người dùng nhất định, bạn có thể cung cấp ID của người dùng đó cho tùy chọn `--user`:
+
+```bash
+php artisan pail --user=1
+```

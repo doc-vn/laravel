@@ -12,6 +12,7 @@
     - [Background Tasks](#background-tasks)
     - [Chế độ bảo trì](#maintenance-mode)
 - [Chạy Scheduler](#running-the-scheduler)
+    - [Scheduled Task theo giây](#sub-minute-scheduled-tasks)
     - [Chạy Scheduler local](#running-the-scheduler-locally)
 - [Task Output](#task-output)
 - [Task Hook](#task-hooks)
@@ -41,11 +42,8 @@ Bạn có thể định nghĩa tất cả các task đã được schedule của
     {
         /**
          * Define the application's command schedule.
-         *
-         * @param  \Illuminate\Console\Scheduling\Schedule  $schedule
-         * @return void
          */
-        protected function schedule(Schedule $schedule)
+        protected function schedule(Schedule $schedule): void
         {
             $schedule->call(function () {
                 DB::table('recent_users')->delete();
@@ -104,9 +102,18 @@ Phương thức `exec` có thể được sử dụng để ra lệnh cho hệ �
 
 Chúng ta đã xem một số ví dụ về cách mà bạn có thể cấu hình task để chạy theo các khoảng thời gian nhất định. Tuy nhiên, có nhiều tần suất task schedule khác mà bạn có thể cấu hình cho một task:
 
+<div class="overflow-auto">
+
 Method  | Description
 ------------- | -------------
 `->cron('* * * * *');`  |  Chạy task theo một tùy chỉnh cron schedule
+`->everySecond();`  |   Chạy task mỗi giây
+`->everyTwoSeconds();`  |  Chạy task mỗi hai giây
+`->everyFiveSeconds();`  |  Chạy task mỗi năm giây
+`->everyTenSeconds();`  |  Chạy task mỗi mười giây
+`->everyFifteenSeconds();`  |  Chạy task mỗi 15 giây
+`->everyTwentySeconds();`  |  Chạy task mỗi 20 giây
+`->everyThirtySeconds();`  |  Chạy task mỗi 30 giây
 `->everyMinute();`  |  Chạy task mỗi phút
 `->everyTwoMinutes();`  |  Chạy task hai phút một lần
 `->everyThreeMinutes();`  |  Chạy task ba phút một lần
@@ -117,11 +124,11 @@ Method  | Description
 `->everyThirtyMinutes();`  |   Chạy task ba mươi phút một lần
 `->hourly();`  |   Chạy task một giờ một lần
 `->hourlyAt(17);`  |  Chạy task một giờ một lần vào phút thứ 17
-`->everyOddHour();`  |  Chạy task vào giờ lẻ
-`->everyTwoHours();`  |  Chạy task hai giờ một lần
-`->everyThreeHours();`  |  Chạy task ba giờ một lần
-`->everyFourHours();`  |  Chạy task bốn giờ một lần
-`->everySixHours();`  | Chạy task sáu giờ một lần
+`->everyOddHour($minutes = 0);`  |  Chạy task vào giờ lẻ
+`->everyTwoHours($minutes = 0);`  |  Chạy task hai giờ một lần
+`->everyThreeHours($minutes = 0);`  |  Chạy task ba giờ một lần
+`->everyFourHours($minutes = 0);`  |  Chạy task bốn giờ một lần
+`->everySixHours($minutes = 0);`  | Chạy task sáu giờ một lần
 `->daily();`  |  Chạy task hàng ngày
 `->dailyAt('13:00');`  |  Chạy task hàng ngày vào lúc 13:00
 `->twiceDaily(1, 13);`  | Chạy task hàng ngày vào lúc 1:00 và 13:00
@@ -138,11 +145,13 @@ Method  | Description
 `->yearlyOn(6, 1, '17:00');`  |  Chạy task hàng năm vào ngày 1 tháng 6 lúc 17:00
 `->timezone('America/New_York');` | Set timezone cho task
 
+</div>
+
 Các phương thức này có thể được kết hợp thêm các ràng buộc để tạo ra các schedule có thể được điều chỉnh tốt hơn, ví dụ như chỉ chạy vào một số ngày nhất định trong tuần. Ví dụ, bạn có thể schedule một lệnh chạy vào thứ hai hàng tuần thì bạn có thể làm như sau:
 
     // Run once per week on Monday at 1 PM...
     $schedule->call(function () {
-        //
+        // ...
     })->weekly()->mondays()->at('13:00');
 
     // Run hourly from 8 AM to 5 PM on weekdays...
@@ -153,6 +162,8 @@ Các phương thức này có thể được kết hợp thêm các ràng buộc
               ->between('8:00', '17:00');
 
 Dưới đây là một danh sách các ràng buộc schedule có thể được thêm:
+
+<div class="overflow-auto">
 
 Method  | Description
 ------------- | -------------
@@ -170,6 +181,8 @@ Method  | Description
 `->unlessBetween($startTime, $endTime);`  |  Giới hạn task không chạy vào giữa thời gian start và end
 `->when(Closure);`  |  Giới hạn task chỉ chạy trên một điều kiện đúng
 `->environments($env);`  |  Giới hạn task trong các môi trường cụ thể
+
+</div>
 
 <a name="day-constraints"></a>
 #### Day Constraints
@@ -240,17 +253,17 @@ Sử dụng phương thức `timezone`, bạn có thể chỉ định thời gia
 
 Nếu bạn đang muốn chỉ định liên tục một múi giờ cho tất cả các task schedule của bạn, bạn có thể muốn định nghĩa phương thức `scheduleTimezone` trong class `App\Console\Kernel` của bạn. Phương thức này sẽ trả về múi giờ mặc định sẽ được chỉ định cho tất cả các task schedule:
 
+    use DateTimeZone;
+
     /**
      * Get the timezone that should be used by default for scheduled events.
-     *
-     * @return \DateTimeZone|string|null
      */
-    protected function scheduleTimezone()
+    protected function scheduleTimezone(): DateTimeZone|string|null
     {
         return 'America/Chicago';
     }
 
-> **Warning**
+> [!WARNING]
 > Hãy nhớ rằng một số timezone sử dụng quy ước giờ mùa hè. Khi các thay đổi về quy ước giờ mùa hè xảy ra, schedule task của bạn có thể chạy hai lần hoặc thậm chí là hoàn toàn không chạy. Vì lý do này, chúng tôi khuyên bạn nên tránh tạo schedule timezone khi có thể.
 
 <a name="preventing-task-overlaps"></a>
@@ -271,7 +284,7 @@ Nếu cần, bạn có thể chỉ định số phút mà sau khi task được 
 <a name="running-tasks-on-one-server"></a>
 ### Chạy task trên một server
 
-> **Warning**
+> [!WARNING]
 > Để sử dụng tính năng này, ứng dụng của bạn phải sử dụng driver cache `database`, `memcached` `dynamodb`, hoặc `redis` làm driver cache mặc định của ứng dụng của bạn. Ngoài ra, tất cả các server phải được giao tiếp với cùng một server cache trung tâm.
 
 Nếu schedule của ứng dụng của bạn đang chạy trên nhiều server, bạn có thể giới hạn schedule job chỉ được chạy trên một server duy nhất. Ví dụ: giả sử bạn đang có một task schedule là tạo một báo cáo vào mỗi tối thứ Sáu. Nếu schedule của bạn đang chạy trên ba server worker, thì task schedule sẽ được chạy trên cả ba server và tạo báo cáo ba lần. Không tốt!
@@ -319,7 +332,7 @@ Mặc định, nhiều task được schedule vào cùng một thời gian sẽ 
              ->daily()
              ->runInBackground();
 
-> **Warning**
+> [!WARNING]
 > Phương thức `runInBackground` chỉ có thể được sử dụng khi task được tạo thông qua phương thức `command` và `exec`.
 
 <a name="maintenance-mode"></a>
@@ -338,6 +351,36 @@ Vì vậy, khi sử dụng scheduler của Laravel, chúng ta chỉ cần thêm 
 
 ```shell
 * * * * * cd /path-to-your-project && php artisan schedule:run >> /dev/null 2>&1
+```
+
+<a name="sub-minute-scheduled-tasks"></a>
+### Scheduled Task theo giây
+
+Trên hầu hết các hệ điều hành, cron job bị giới hạn bởi số lần chạy tối đa trong mỗi phút. Tuy nhiên, scheduler của Laravel cho phép bạn schedule các tác vụ chạy trong các khoảng thời gian thường xuyên hơn, thậm chí là một lần mỗi giây:
+
+    $schedule->call(function () {
+        DB::table('recent_users')->delete();
+    })->everySecond();
+
+Khi các tác vụ chạy theo giây được định nghĩa trong ứng dụng của bạn, lệnh `schedule:run` sẽ tiếp tục chạy cho đến khi hết số phút hiện tại thay vì thoát ngay lập tức. Điều này cho phép command gọi tất cả các tác vụ chạy theo giây trong suốt số phút.
+
+Vì các tác vụ chạy theo giây có thể mất nhiều thời gian chạy hơn dự kiến và ​​có thể làm chậm quá trình thực hiện các tác vụ chạy theo giây sau đó, nên chúng tôi khuyến khích tất cả các tác vụ chạy theo giây nên được gửi đến các queued job hoặc background command để xử lý các tác vụ đó:
+
+    use App\Jobs\DeleteRecentUsers;
+
+    $schedule->job(new DeleteRecentUsers)->everyTenSeconds();
+
+    $schedule->command('users:delete')->everyTenSeconds()->runInBackground();
+
+<a name="interrupting-sub-minute-tasks"></a>
+#### Ngắt quãng các tác vụ theo giây
+
+Vì lệnh `schedule:run` sẽ chạy trong toàn bộ phút khi các tác vụ chạy theo giây được định nghĩa, thỉnh thoảng bạn có thể cần ngắt lệnh khi triển khai ứng dụng của bạn. Nếu không, một instance của lệnh `schedule:run` đang chạy sẽ tiếp tục sử dụng code đã triển khai trước đó của ứng dụng cho đến khi số phút hiện tại kết thúc.
+
+Để ngắt các lệnh gọi `schedule:run` đang chạy, bạn có thể thêm lệnh `schedule:interrupt` vào script deploy của ứng dụng. Lệnh này sẽ được gọi sau khi ứng dụng của bạn hoàn tất quá trình deploy:
+
+```shell
+php artisan schedule:interrupt
 ```
 
 <a name="running-the-scheduler-locally"></a>
@@ -377,7 +420,7 @@ Nếu bạn muốn chỉ gửi email nếu scheduled Artisan hoặc system comma
              ->daily()
              ->emailOutputOnFailure('taylor@example.com');
 
-> **Warning**
+> [!WARNING]
 > Các phương thức `emailOutputTo`, `emailOutputOnFailure`, `sendOutputTo` và `appendOutputTo` sẽ chỉ được dùng với phương thức `command` và phương thức `exec`.
 
 <a name="task-hooks"></a>

@@ -20,6 +20,8 @@ Tuy nhiên, nếu bạn muốn tạo một bug, thì bug của bạn nên chứa
 
 Hãy nhớ rằng, báo bug được tạo ra với hy vọng rằng những người khác có cùng vấn đề với bạn có thể cộng tác với nhau để cùng nhau sửa bug. Bạn đừng hy vọng rằng báo bug sẽ làm khởi động một quá trình sửa bug nào đó hoặc người khác sẽ nhảy vào để sửa giúp bạn. Tạo một bug để giúp chính bạn và những người khác, bắt đầu một quá trình sửa bug mà bạn đã báo cáo. Nếu bạn muốn trợ giúp, bạn có thể trợ giúp bằng cách sửa [bất kỳ lỗi nào được liệt kê trong issue tracker của chúng tôi](https://github.com/issues?q=is%3Aopen+is%3Aissue+label%3Abug+user%3Alaravel). Bạn phải được xác thực bằng GitHub để xem tất cả các issue của Laravel.
 
+Nếu bạn nhận được một thông báo không đúng của DocBlock, PHPStan hoặc IDE khi sử dụng Laravel, đừng tạo một issue GitHub mới. Thay vào đó, hãy gửi một pull request để khắc phục issue đó.
+
 Mã nguồn của Laravel được quản lý trên GitHub và có các repository cho từng dự án của Laravel:
 
 <div class="content-list" markdown="1">
@@ -32,13 +34,16 @@ Mã nguồn của Laravel được quản lý trên GitHub và có các reposito
 - [Laravel Cashier Paddle](https://github.com/laravel/cashier-paddle)
 - [Laravel Echo](https://github.com/laravel/echo)
 - [Laravel Envoy](https://github.com/laravel/envoy)
+- [Laravel Folio](https://github.com/laravel/folio)
 - [Laravel Framework](https://github.com/laravel/framework)
 - [Laravel Homestead](https://github.com/laravel/homestead)
 - [Laravel Homestead Build Scripts](https://github.com/laravel/settler)
 - [Laravel Horizon](https://github.com/laravel/horizon)
 - [Laravel Jetstream](https://github.com/laravel/jetstream)
 - [Laravel Passport](https://github.com/laravel/passport)
+- [Laravel Pennant](https://github.com/laravel/pennant)
 - [Laravel Pint](https://github.com/laravel/pint)
+- [Laravel Prompts](https://github.com/laravel/prompts)
 - [Laravel Sail](https://github.com/laravel/sail)
 - [Laravel Sanctum](https://github.com/laravel/sanctum)
 - [Laravel Scout](https://github.com/laravel/scout)
@@ -75,9 +80,9 @@ Kênh `#internals` của [Laravel Discord server](https://discord.gg/laravel) s�
 <a name="which-branch"></a>
 ## Branch nào?
 
-**Tất cả** các bản sửa lỗi phải được gửi đến phiên bản mới nhất được hỗ trợ sửa lỗi (hiện tại là `9.x`). Các bản sửa lỗi sẽ **không** được gửi đến branch `master` trừ khi chúng sửa các tính năng đã tồn tại trong bản phát hành sắp tới.
+**Tất cả** các bản sửa lỗi phải được gửi đến phiên bản mới nhất được hỗ trợ sửa lỗi (hiện tại là `10.x`). Các bản sửa lỗi sẽ **không** được gửi đến branch `master` trừ khi chúng sửa các tính năng đã tồn tại trong bản phát hành sắp tới.
 
-Các tính năng **phụ** có **tương thích** với bản phát hành hiện tại thì có thể được gửi đến branch ổn định mới nhất (hiện tại là `9.x`).
+Các tính năng **phụ** có **tương thích** với bản phát hành hiện tại thì có thể được gửi đến branch ổn định mới nhất (hiện tại là `10.x`).
 
 Các tính năng **chính** mới hoặc các tính năng có những thay đổi nghiêm trọng phải luôn được gửi đến branch `master`, nơi chứa code của các bản phát hành sắp tới.
 
@@ -113,7 +118,31 @@ Dưới đây là một ví dụ mẫu về Laravel documentation hợp lệ. L�
      */
     public function bind($abstract, $concrete = null, $shared = false)
     {
+        // ...
+    }
+
+Các thuộc tính `@param` hoặc `@return` có thể trở nên dư thừa khi bạn đã khai báo các kiểu dữ liệu cụ thể, vì vậy chúng có thể bị xóa:
+
+    /**
+     * Execute the job.
+     */
+    public function handle(AudioProcessor $processor): void
+    {
         //
+    }
+
+Tuy nhiên, khi khai báo kiểu dữ liệu dạng chung, vui lòng chỉ định kiểu dữ liệu chung đó thông qua việc sử dụng thuộc tính `@param` hoặc `@return`:
+
+    /**
+     * Get the attachments for the message.
+     *
+     * @return array<int, \Illuminate\Mail\Mailables\Attachment>
+     */
+    public function attachments(): array
+    {
+        return [
+            Attachment::fromStorage('/path/to/file'),
+        ];
     }
 
 <a name="styleci"></a>

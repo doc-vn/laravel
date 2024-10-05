@@ -8,7 +8,7 @@
     - [Cấu hình](#configuration)
     - [Migration](#migrations)
     - [Route](#routes)
-    - [Translation](#translations)
+    - [Language File](#language-files)
     - [View](#views)
     - [View Components](#view-components)
     - [Lệnh Artisan "About"](#about-artisan-command)
@@ -80,7 +80,7 @@ Bạn có thể vô hiệu hóa chức năng tự động thêm cho tất cả c
 <a name="service-providers"></a>
 ## Service Provider
 
-[Service providers](/docs/{{version}}/providers) là một điểm kết nối giữa package của bạn với Laravel. Service provider sẽ chịu trách nhiệm liên kết mọi thứ vào trong [service container](/docs/{{version}}/container) của Laravel và thông báo cho Laravel biết nơi load các package resources như view, config và file localization.
+[Service providers](/docs/{{version}}/providers) là một điểm kết nối giữa package của bạn với Laravel. Service provider sẽ chịu trách nhiệm liên kết mọi thứ vào trong [service container](/docs/{{version}}/container) của Laravel và thông báo cho Laravel biết nơi load các package resources như view, config và file language.
 
 Một service provider sẽ được extend từ class `Illuminate\Support\ServiceProvider` và chứa hai phương thức: `register` và `boot`. Class `ServiceProvider` sẽ nằm trong package `illuminate/support` của Composer, là nơi mà bạn sẽ thêm các phụ thuộc package của bạn. Để tìm hiểu thêm về cấu trúc và mục đích của các service provider, hãy xem [tài liệu về nó](/docs/{{version}}/providers).
 
@@ -94,10 +94,8 @@ Thông thường, bạn sẽ cần export file cấu hình của package vào th
 
     /**
      * Bootstrap any package services.
-     *
-     * @return void
      */
-    public function boot()
+    public function boot(): void
     {
         $this->publishes([
             __DIR__.'/../config/courier.php' => config_path('courier.php'),
@@ -108,7 +106,7 @@ Bây giờ, khi người dùng chạy lệnh `vendor:publish` của Laravel, th�
 
     $value = config('courier.option');
 
-> **Warning**
+> [!WARNING]
 > Bạn không nên định nghĩa closures trong file cấu hình của bạn. Vì nó sẽ không thể chuyển đổi chính xác khi người dùng chạy lệnh Artisan `config:cache`.
 
 <a name="default-package-configuration"></a>
@@ -120,17 +118,15 @@ Phương thức `mergeConfigFrom` sẽ chấp nhận một đường dẫn đế
 
     /**
      * Register any application services.
-     *
-     * @return void
      */
-    public function register()
+    public function register(): void
     {
         $this->mergeConfigFrom(
             __DIR__.'/../config/courier.php', 'courier'
         );
     }
 
-> **Warning**
+> [!WARNING]
 > Phương thức này chỉ merge ở mức độ đầu tiên của mảng. Nếu người dùng của bạn định nghĩa một mảng cấu hình lồng nhau, thì các tùy chọn bị thiếu sẽ không được merge.
 
 <a name="routes"></a>
@@ -140,10 +136,8 @@ Nếu package của bạn chứa các route, thì bạn có thể load chúng b�
 
     /**
      * Bootstrap any package services.
-     *
-     * @return void
      */
-    public function boot()
+    public function boot(): void
     {
         $this->loadRoutesFrom(__DIR__.'/../routes/web.php');
     }
@@ -155,27 +149,23 @@ Nếu package của bạn chứa [database migrations](/docs/{{version}}/migrati
 
     /**
      * Bootstrap any package services.
-     *
-     * @return void
      */
-    public function boot()
+    public function boot(): void
     {
         $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
     }
 
 Khi file migration package của bạn đã được đăng ký, chúng sẽ được tự động chạy khi lệnh `php artisan migrate` được chạy. Bạn không cần export chúng vào thư mục `database/migrations` của application.
 
-<a name="translations"></a>
-### Translation
+<a name="language-files"></a>
+### Language File
 
-Nếu package của bạn chứa các [translation files](/docs/{{version}}/localization), bạn có thể sử dụng phương thức `loadTranslationsFrom` để thông báo cho Laravel biết cách load chúng. Ví dụ: nếu package của bạn có tên là `courier`, thì bạn nên thêm code sau vào phương thức `boot` của service provider:
+Nếu package của bạn chứa các [language files](/docs/{{version}}/localization), bạn có thể sử dụng phương thức `loadTranslationsFrom` để thông báo cho Laravel biết cách load chúng. Ví dụ: nếu package của bạn có tên là `courier`, thì bạn nên thêm code sau vào phương thức `boot` của service provider:
 
     /**
      * Bootstrap any package services.
-     *
-     * @return void
      */
-    public function boot()
+    public function boot(): void
     {
         $this->loadTranslationsFrom(__DIR__.'/../lang', 'courier');
     }
@@ -184,17 +174,27 @@ Các bản translation của package của bạn sẽ được tham chiếu bằ
 
     echo trans('courier::messages.welcome');
 
-<a name="publishing-translations"></a>
-#### Publishing Translations
+Bạn có thể đăng ký các file JSON translation cho package của bạn bằng phương thức `loadJsonTranslationsFrom`. Phương thức này chấp nhận đường dẫn đến thư mục chứa các file JSON translation cho package của bạn:
 
-Nếu bạn muốn export các bản translation của package của bạn sang thư mục `lang/vendor` của application, bạn có thể sử dụng phương thức `publishes` của service provider. Phương thức `publishes` chấp nhận một mảng các đường dẫn đến file translation của package và vị trí export mà bạn mong muốn. Ví dụ, để export các file translation cho package `courier`, bạn có thể làm như sau:
+```php
+/**
+ * Bootstrap any package services.
+ */
+public function boot(): void
+{
+    $this->loadJsonTranslationsFrom(__DIR__.'/../lang');
+}
+```
+
+<a name="publishing-language-files"></a>
+#### Publishing Language File
+
+Nếu bạn muốn export các file language của package của bạn sang thư mục `lang/vendor` của application, bạn có thể sử dụng phương thức `publishes` của service provider. Phương thức `publishes` chấp nhận một mảng các đường dẫn đến file translation của package và vị trí export mà bạn mong muốn. Ví dụ, để export các file language cho package `courier`, bạn có thể làm như sau:
 
     /**
      * Bootstrap any package services.
-     *
-     * @return void
      */
-    public function boot()
+    public function boot(): void
     {
         $this->loadTranslationsFrom(__DIR__.'/../lang', 'courier');
 
@@ -203,7 +203,7 @@ Nếu bạn muốn export các bản translation của package của bạn sang 
         ]);
     }
 
-Bây giờ, khi người dùng package của bạn chạy lệnh Artisan `vendor:publish` của Laravel, bản translation của package của bạn sẽ được export đến vị trí export đã được khai báo.
+Bây giờ, khi người dùng package của bạn chạy lệnh Artisan `vendor:publish` của Laravel, file language của package của bạn sẽ được export đến vị trí export đã được khai báo.
 
 <a name="views"></a>
 ### View
@@ -212,10 +212,8 @@ Bây giờ, khi người dùng package của bạn chạy lệnh Artisan `vendor
 
     /**
      * Bootstrap any package services.
-     *
-     * @return void
      */
-    public function boot()
+    public function boot(): void
     {
         $this->loadViewsFrom(__DIR__.'/../resources/views', 'courier');
     }
@@ -238,10 +236,8 @@ Nếu bạn muốn export các view vào thư mục `resources/views/vendor` c�
 
     /**
      * Bootstrap the package services.
-     *
-     * @return void
      */
-    public function boot()
+    public function boot(): void
     {
         $this->loadViewsFrom(__DIR__.'/../resources/views', 'courier');
 
@@ -262,10 +258,8 @@ Nếu bạn đang xây dựng một package sử dụng các component Blade ho�
 
     /**
      * Bootstrap your package's services.
-     *
-     * @return void
      */
-    public function boot()
+    public function boot(): void
     {
         Blade::component('package-alert', AlertComponent::class);
     }
@@ -285,10 +279,8 @@ Ngoài ra, bạn có thể sử dụng phương thức `componentNamespace` đ�
 
     /**
      * Bootstrap your package's services.
-     *
-     * @return void
      */
-    public function boot()
+    public function boot(): void
     {
         Blade::componentNamespace('Nightshade\\Views\\Components', 'nightshade');
     }
@@ -320,10 +312,8 @@ Lệnh Artisan `about` có sẵn của Laravel cung cấp tóm tắt về môi t
 
     /**
      * Bootstrap any application services.
-     *
-     * @return void
      */
-    public function boot()
+    public function boot(): void
     {
         AboutCommand::add('My Package', fn () => ['Version' => '1.0.0']);
     }
@@ -338,10 +328,8 @@ Lệnh Artisan `about` có sẵn của Laravel cung cấp tóm tắt về môi t
 
     /**
      * Bootstrap any package services.
-     *
-     * @return void
      */
-    public function boot()
+    public function boot(): void
     {
         if ($this->app->runningInConsole()) {
             $this->commands([
@@ -358,10 +346,8 @@ Package của bạn có thể có các asset như JavaScript, CSS và hình ản
 
     /**
      * Bootstrap any package services.
-     *
-     * @return void
      */
-    public function boot()
+    public function boot(): void
     {
         $this->publishes([
             __DIR__.'/../public' => public_path('vendor/courier'),
@@ -381,10 +367,8 @@ Bạn có thể muốn export riêng rẽ các group asset và các resources c�
 
     /**
      * Bootstrap any package services.
-     *
-     * @return void
      */
-    public function boot()
+    public function boot(): void
     {
         $this->publishes([
             __DIR__.'/../config/package.php' => config_path('package.php')

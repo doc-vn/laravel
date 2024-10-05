@@ -10,8 +10,6 @@
     - [Chạy một site mặc định](#serving-a-default-site)
     - [Phiên bản PHP cho từng trang web](#per-site-php-versions)
 - [Chia sẻ site](#sharing-sites)
-    - [Chia sẻ site thông qua Ngrok](#sharing-sites-via-ngrok)
-    - [Chia sẻ site thông qua Expose](#sharing-sites-via-expose)
     - [Chia sẻ site trên mạng local](#sharing-sites-on-your-local-network)
 - [Các biến môi trường cho trang web](#site-specific-environment-variables)
 - [Proxying Services](#proxying-services)
@@ -23,6 +21,9 @@
 
 <a name="introduction"></a>
 ## Giới thiệu
+
+> [!NOTE]
+> Bạn đang tìm một cách dễ dàng hơn để phát triển ứng dụng Laravel trên macOS? Hãy xem [Laravel Herd](https://herd.laravel.com). Herd bao gồm mọi thứ bạn cần để bắt đầu phát triển Laravel, bao gồm cả Valet, PHP và Composer.
 
 [Laravel Valet](https://github.com/laravel/valet) là một môi trường phát triển cho người dùng macOS. Laravel Valet sẽ cấu hình máy Mac của bạn chạy [Nginx](https://www.nginx.com/) ở background mỗi khi máy khởi động. Sau đó, dùng [DnsMasq](https://en.wikipedia.org/wiki/Dnsmasq), Valet sẽ chuyển tất cả các request đến domain `*.test` vào site mà bạn đã cài đặt ở local.
 
@@ -68,7 +69,7 @@ Tuy nhiên, bạn có thể mở rộng Valet với [custom drivers](#custom-val
 <a name="installation"></a>
 ## Cài đặt
 
-> **Warning**
+> [!WARNING]
 > Valet yêu cầu macOS và [Homebrew](https://brew.sh/). Trước khi cài đặt, bạn nên đảm bảo rằng không có chương trình nào như Apache hoặc Nginx đang chạy ở cổng 80 trên máy local của bạn.
 
 Để bắt đầu, trước tiên bạn cần đảm bảo là Homebrew đã được cập nhật bằng lệnh `update`:
@@ -83,7 +84,7 @@ Tiếp theo, bạn nên sử dụng Homebrew để cài đặt PHP:
 brew install php
 ```
 
-Sau khi cài đặt PHP xong, bạn đã sẵn sàng cài đặt [Composer package manager](https://getcomposer.org). Ngoài ra, bạn nên đảm bảo là thư mục `~/.composer/vendor/bin` nằm trong "PATH" của hệ thống. Sau khi cài đặt Composer xong, bạn có thể cài đặt Laravel Valet dưới dạng package Composer global:
+Sau khi cài đặt PHP xong, bạn đã sẵn sàng cài đặt [Composer package manager](https://getcomposer.org). Ngoài ra, bạn nên đảm bảo là thư mục `$HOME/.composer/vendor/bin` nằm trong "PATH" của hệ thống. Sau khi cài đặt Composer xong, bạn có thể cài đặt Laravel Valet dưới dạng package Composer global:
 
 ```shell
 composer global require laravel/valet
@@ -102,23 +103,26 @@ Valet sẽ tự động khởi động các service cần thiết mỗi khi máy
 <a name="php-versions"></a>
 #### PHP Versions
 
+> [!NOTE]
+> Thay vì sửa version PHP global, bạn có thể bảo Valet sử dụng các phiên bản PHP cho từng trang web thông qua [lệnh](#per-site-php-versions) `isolate`.
+
 Valet cho phép bạn chuyển đổi các phiên bản PHP khác nhau bằng lệnh `valet use php@version`. Valet sẽ cài đặt phiên bản PHP được chỉ định thông qua Homebrew nếu nó chưa được cài đặt:
 
 ```shell
-valet use php@7.2
+valet use php@8.1
 
 valet use php
 ```
 
-Bạn cũng có thể tạo file `.valetphprc` trong thư mục root của dự án. File `.valetphprc` phải chứa phiên bản PHP mà trang web của bạn sử dụng:
+Bạn cũng có thể tạo file `.valetrc` trong thư mục root của dự án. File `.valetrc` phải chứa phiên bản PHP mà trang web của bạn sử dụng:
 
 ```shell
-php@7.2
+php=php@8.1
 ```
 
 Khi file này đã được tạo, bạn có thể chỉ cần chạy lệnh `valet use` và lệnh này sẽ xác định phiên bản PHP mặc định của trang web bằng cách đọc file trên.
 
-> **Warning**
+> [!WARNING]
 > Valet chỉ cung cấp một phiên bản PHP tại một thời điểm, kể cả khi bạn đã cài đặt nhiều phiên bản PHP.
 
 <a name="database"></a>
@@ -135,6 +139,19 @@ Nếu bạn gặp khó khăn trong việc cài đặt Valet của bạn chạy �
 ### Nâng cấp Valet
 
 Bạn có thể cập nhật cài đặt Valet của bạn bằng cách chạy lệnh `composer global require laravel/valet` trong terminal của bạn. Sau khi cập nhật, bạn nên chạy lệnh `valet install` để Valet có thể nâng cấp bổ sung thêm các file cấu hình nếu cần.
+
+<a name="upgrading-to-valet-4"></a>
+#### Upgrading to Valet 4
+
+Nếu bạn đang nâng cấp từ Valet 3 lên Valet 4, hãy thực hiện các bước sau để nâng cấp cài đặt Valet của bạn đúng cách:
+
+<div class="content-list" markdown="1">
+
+- Nếu bạn đã thêm các file `.valetphprc` vào để tùy chỉnh phiên bản PHP của trang web, thì hãy đổi tên từng file `.valetphprc` thành `.valetrc`. Rồi sau đó, thêm `php=` vào nội dung hiện có của file `.valetrc`.
+- Cập nhật bất kỳ driver tùy chỉnh nào để phù hợp với namespace, extension, khai báo và kiểu trả về của hệ thống driver mới. Bạn có thể tham khảo [SampleValetDriver](https://github.com/laravel/valet/blob/d7787c025e60abc24a5195dc7d4c5c6f2d984339/cli/stubs/SampleValetDriver.php) của Valet làm ví dụ.
+- Nếu bạn sử dụng PHP 7.1 - 7.4 để phục vụ trang web của bạn, hãy đảm bảo là bạn vẫn sử dụng Homebrew để cài đặt phiên bản PHP 8.0 trở lên, vì Valet vẫn sẽ sử dụng phiên bản đó, ngay cả khi đó không phải là phiên bản chính của bạn, để nó có thể chạy một số script của nó.
+
+</div>
 
 <a name="serving-sites"></a>
 ## Tạo Site
@@ -259,10 +276,15 @@ valet unisolate
 
 Valet đã chứa một lệnh để chia sẻ các trang web ở local của bạn với thế giới, cung cấp một cách dễ dàng để kiểm tra trang web của bạn trên các thiết bị di động hoặc chia sẻ nó với các thành viên trong team của bạn hoặc khách hàng.
 
-<a name="sharing-sites-via-ngrok"></a>
-### Chia sẻ site thông qua Ngrok
+Mặc định, Valet hỗ trợ chia sẻ các trang web của bạn thông qua ngrok hoặc Expose. Trước khi chia sẻ một trang web, bạn nên cập nhật cấu hình Valet của bạn bằng lệnh `share-tool` thông qua chỉ định `ngrok` hoặc `expose`:
 
-Để chia sẻ một trang web, hãy trỏ đến thư mục chứa trang web đó trong terminal của bạn và chạy lệnh `share` của Valet. Một URL sẽ được chèn vào clipboard của bạn và sẵn sàng paste bất kỳ đâu, ví dụ như vào trong trình duyệt của bạn hoặc chia sẻ với team của bạn:
+```shell
+valet share-tool ngrok
+```
+
+Nếu bạn chọn một công cụ và nó chưa được cài đặt thông qua Homebrew (cho ngrok) hoặc Composer (cho Expose), Valet vẫn sẽ tự động nhắc bạn cài đặt nó. Tất nhiên, cả hai công cụ đều yêu cầu bạn xác thực tài khoản ngrok hoặc Expose của bạn trước khi bạn có thể bắt đầu chia sẻ các trang web.
+
+Để chia sẻ một trang web, hãy trỏ đến thư mục chứa trang web đó trong terminal của bạn và chạy lệnh `share` của Valet. Một URL sẽ được copy vào clipboard của bạn và sẵn sàng paste vào bất kỳ đâu, ví dụ như vào trong trình duyệt của bạn hoặc là chia sẻ với team của bạn:
 
 ```shell
 cd ~/Sites/laravel
@@ -270,23 +292,29 @@ cd ~/Sites/laravel
 valet share
 ```
 
-Để ngừng chia sẻ trang web của bạn, bạn có thể nhấn `Control + C`. Việc chia sẻ trang web của bạn bằng Ngrok sẽ yêu cầu bạn [tạo tài khoản Ngrok](https://dashboard.ngrok.com/signup) và [thiết lập một authentication token](https://dashboard.ngrok.com/get-started/your-authtoken).
+Để ngừng chia sẻ trang web của bạn, bạn có thể nhấn `Control + C`.
 
-> **Note**
-> Bạn có thể truyền thêm các tham số Ngrok cho lệnh chia sẻ, chẳng hạn như `valet share --region=eu`. Để biết thêm thông tin, hãy tham khảo [tài liệu ngrok](https://ngrok.com/docs).
+> [!WARNING]
+> Nếu bạn đang sử dụng máy chủ đổi DNS (như `1.1.1.1`), chia sẻ ngrok có thể không hoạt động chính xác. Nếu đây là trường hợp trên máy của bạn, hãy mở cài đặt system setting của máy Mac, đi tới Network setting, mở Advanced setting, sau đó đi tới tab DNS và thêm `127.0.0.1` làm máy chủ DNS đầu tiên của bạn.
 
-<a name="sharing-sites-via-expose"></a>
-### Chia sẻ site thông qua Expose
+<a name="sharing-sites-via-ngrok"></a>
+#### Sharing Sites via Ngrok
 
-Nếu bạn đã cài đặt [Expose](https://expose.dev), bạn có thể chia sẻ trang web của bạn bằng cách di chuyển đến thư mục chứa trang web của bạn trong terminal và chạy lệnh `expose`. Tham khảo [tài liệu Expose](https://expose.dev/docs) để biết thêm thông tin về các tham số command-line mà nó hỗ trợ. Sau khi chia sẻ trang web, Expose sẽ hiển thị một sharable URL mà bạn có thể sử dụng trên các thiết bị khác của bạn hoặc giữa các thành viên trong team:
+Việc chia sẻ trang web của bạn thông qua ngrok sẽ yêu cầu bạn phải [một tạo tài khoản ngrok](https://dashboard.ngrok.com/signup) và [cài đặt một mã authentication token](https://dashboard.ngrok.com/get-started/your-authtoken). Sau khi bạn đã có mã authentication token, bạn có thể cập nhật cấu hình Valet của bạn bằng mã token đó:
 
 ```shell
-cd ~/Sites/laravel
-
-expose
+valet set-ngrok-token YOUR_TOKEN_HERE
 ```
 
-Để dừng chia sẻ trang web của bạn, bạn có thể nhấn `Control + C`.
+> [!NOTE]
+> Bạn có thể truyền thêm tham số ngrok cho lệnh share, chẳng hạn như `valet share --region=eu`. Để biết thêm thông tin, hãy tham khảo [tài liệu ngrok](https://ngrok.com/docs).
+
+<a name="sharing-sites-via-expose"></a>
+#### Sharing Sites via Expose
+
+Để chia sẻ trang web của bạn thông qua Expose, bạn phải [tạo một tài khoản Expose](https://expose.dev/register) và [xác thực Expose thông qua mã authentication token của bạn](https://expose.dev/docs/getting-started/getting-your-token).
+
+Bạn có thể tham khảo [tài liệu Expose](https://expose.dev/docs) để biết thêm thông tin về các tham số command-line mà nó có thể hỗ trợ.
 
 <a name="sharing-sites-on-your-local-network"></a>
 ### Chia sẻ site trên mạng local
@@ -365,13 +393,8 @@ Ví dụ: hãy nghĩ rằng, chúng ta đang viết một driver `WordPressValet
 
     /**
      * Determine if the driver serves the request.
-     *
-     * @param  string  $sitePath
-     * @param  string  $siteName
-     * @param  string  $uri
-     * @return bool
      */
-    public function serves($sitePath, $siteName, $uri)
+    public function serves(string $sitePath, string $siteName, string $uri): bool
     {
         return is_dir($sitePath.'/wp-admin');
     }
@@ -384,12 +407,9 @@ Ví dụ: hãy nghĩ rằng, chúng ta đang viết một driver `WordPressValet
     /**
      * Determine if the incoming request is for a static file.
      *
-     * @param  string  $sitePath
-     * @param  string  $siteName
-     * @param  string  $uri
      * @return string|false
      */
-    public function isStaticFile($sitePath, $siteName, $uri)
+    public function isStaticFile(string $sitePath, string $siteName, string $uri)
     {
         if (file_exists($staticFilePath = $sitePath.'/public/'.$uri)) {
             return $staticFilePath;
@@ -398,7 +418,7 @@ Ví dụ: hãy nghĩ rằng, chúng ta đang viết một driver `WordPressValet
         return false;
     }
 
-> **Warning**
+> [!WARNING]
 > phương thức `isStaticFile` sẽ chỉ được gọi nếu phương thức `serves` trả về `true` và request URI không phải là `/`.
 
 <a name="the-frontcontrollerpath-method"></a>
@@ -408,13 +428,8 @@ Phương thức `frontControllPath` sẽ trả về đường dẫn "front contr
 
     /**
      * Get the fully resolved path to the application's front controller.
-     *
-     * @param  string  $sitePath
-     * @param  string  $siteName
-     * @param  string  $uri
-     * @return string
      */
-    public function frontControllerPath($sitePath, $siteName, $uri)
+    public function frontControllerPath(string $sitePath, string $siteName, string $uri): string
     {
         return $sitePath.'/public/index.php';
     }
@@ -430,26 +445,16 @@ Nếu bạn muốn định nghĩa một Valet driver tùy chỉnh cho một appl
     {
         /**
          * Determine if the driver serves the request.
-         *
-         * @param  string  $sitePath
-         * @param  string  $siteName
-         * @param  string  $uri
-         * @return bool
          */
-        public function serves($sitePath, $siteName, $uri)
+        public function serves(string $sitePath, string $siteName, string $uri): bool
         {
             return true;
         }
 
         /**
          * Get the fully resolved path to the application's front controller.
-         *
-         * @param  string  $sitePath
-         * @param  string  $siteName
-         * @param  string  $uri
-         * @return string
          */
-        public function frontControllerPath($sitePath, $siteName, $uri)
+        public function frontControllerPath(string $sitePath, string $siteName, string $uri): string
         {
             return $sitePath.'/public_html/index.php';
         }
@@ -458,9 +463,13 @@ Nếu bạn muốn định nghĩa một Valet driver tùy chỉnh cho một appl
 <a name="other-valet-commands"></a>
 ## Các lệnh Valet khác
 
+<div class="overflow-auto">
+
 Lệnh  | Mô tả
 ------------- | -------------
 `valet list` | Hiển thị danh sách tất cả các lệnh của Valet.
+`valet diagnose` | Sẽ đưa ra thông tin diagnostics để hỗ trợ gỡ lỗi Valet.
+`valet directory-listing` | Dùng để định nghĩa hành vi liệt kê thư mục. Mặc định là "off" và hiển thị ra trang 404 cho các thư mục.
 `valet forget` | Chạy lệnh này từ một thư mục đã được park để xóa thư mục đó ra khỏi danh sách thư mục đã được park.
 `valet log` | Xem danh sách các file log được ghi bởi các service của Valet.
 `valet paths` | Xem tất cả các đường dẫn đã được park.
@@ -469,6 +478,8 @@ Lệnh  | Mô tả
 `valet stop` | Dừng daemon Valet.
 `valet trust` | Thêm quyền sudoer cho Brew và Valet để chạy các lệnh Valet mà không cần hỏi password của bạn.
 `valet uninstall` | Gỡ cài đặt Valet: hiển thị hướng dẫn gỡ cài đặt. Truyền thêm tuỳ chọn `--force` để bắt xóa tất cả các resource của Valet.
+
+</div>
 
 <a name="valet-directories-and-files"></a>
 ## Thư mục và file valet
@@ -486,10 +497,6 @@ Thư mục này chứa cấu hình của DNSMasq.
 #### `~/.config/valet/Drivers/`
 
 Thư mục này chứa driver của Valet. Driver xác định cách chạy của một framework hoặc một CMS cụ thể.
-
-#### `~/.config/valet/Extensions/`
-
-Thư mục này chứa các extension và lệnh Valet tùy chỉnh.
 
 #### `~/.config/valet/Nginx/`
 

@@ -4,6 +4,7 @@
     - [Cấu hình](#configuration)
     - [Yêu cầu driver](#driver-prerequisites)
     - [Cấu hình dự phòng](#failover-configuration)
+    - [Cấu hình quay vòng](#round-robin-configuration)
 - [Tạo Mailables](#generating-mailables)
 - [Viết Mailables](#writing-mailables)
     - [Cấu hình Sender](#configuring-the-sender)
@@ -24,7 +25,9 @@
 - [Hiển thị Mailable](#rendering-mailables)
     - [Xem trước Mailable trên trình duyệt](#previewing-mailables-in-the-browser)
 - [Ngôn ngữ trong Mailable](#localizing-mailables)
-- [Test Mail](#testing-mailables)
+- [Testing](#testing-mailables)
+    - [Test nội dung mail](#testing-mailable-content)
+    - [Test gửi mail](#testing-mailable-sending)
 - [Mail và Local Development](#mail-and-local-development)
 - [Events](#events)
 - [Tuỳ chỉnh transports](#custom-transports)
@@ -33,7 +36,7 @@
 <a name="introduction"></a>
 ## Giới thiệu
 
-Gửi email không cần phải phức tạp. Laravel cung cấp một API đơn giản, gọn gàng dựa trên component [Symfony Mailer](https://symfony.com/doc/6.0/mailer.html). Laravel và Symfony Mailer cung cấp các driver cho việc gửi email như SMTP, Mailgun, Postmark, Amazon SES và `sendmail`, cho phép bạn nhanh chóng bắt đầu gửi mail thông qua dịch vụ trên đám mây hoặc local mà bạn chọn.
+Gửi email không cần phải phức tạp. Laravel cung cấp một API đơn giản, gọn gàng dựa trên component [Symfony Mailer](https://symfony.com/doc/6.2/mailer.html). Laravel và Symfony Mailer cung cấp các driver cho việc gửi email như SMTP, Mailgun, Postmark, Amazon SES và `sendmail`, cho phép bạn nhanh chóng bắt đầu gửi mail thông qua dịch vụ trên đám mây hoặc local mà bạn chọn.
 
 <a name="configuration"></a>
 ### Cấu hình
@@ -45,7 +48,7 @@ Trong file cấu hình `mail`, bạn sẽ tìm thấy mảng cấu hình `mail`.
 <a name="driver-prerequisites"></a>
 ### Yêu cầu driver / transport
 
-Các driver dựa trên API như Mailgun, và Postmark thường đơn giản và nhanh hơn là việc gửi mailthông qua các máy chủ SMTP. Bất cứ khi nào có thể, chúng tôi khuyên bạn nên sử dụng một trong những driver này.
+Các driver dựa trên API như Mailgun, Postmark và MailerSend thường đơn giản và nhanh hơn là việc gửi mailthông qua các máy chủ SMTP. Bất cứ khi nào có thể, chúng tôi khuyên bạn nên sử dụng một trong những driver này.
 
 <a name="mailgun-driver"></a>
 #### Mailgun Driver
@@ -59,6 +62,7 @@ composer require symfony/mailgun-mailer symfony/http-client
 Tiếp theo, set tùy chọn `default` trong file cấu hình `config/mail.php` của bạn thành `mailgun`. Sau khi cấu hình mail mặc định của ứng dụng, hãy kiểm tra file cấu hình `config/services.php` của bạn đã có chứa các tùy chọn sau chưa:
 
     'mailgun' => [
+        'transport' => 'mailgun',
         'domain' => env('MAILGUN_DOMAIN'),
         'secret' => env('MAILGUN_SECRET'),
     ],
@@ -135,12 +139,33 @@ Nếu bạn muốn định nghĩa thêm [các tùy chọn](https://docs.aws.amaz
         ],
     ],
 
+<a name="mailersend-driver"></a>
+#### MailerSend Driver
+
+[MailerSend](https://www.mailersend.com/), một dịch vụ gửi email và SMS, duy trì API của riêng họ dựa trên driver mail cho Laravel. Package chứa driver có thể được cài đặt thông qua trình quản lý package Composer:
+
+```shell
+composer require mailersend/laravel-driver
+```
+
+Sau khi package được cài đặt, hãy thêm biến môi trường `MAILERSEND_API_KEY` vào file `.env` của ứng dụng. Ngoài ra, biến môi trường `MAIL_MAILER` phải được định nghĩa là `mailersend`:
+
+```shell
+MAIL_MAILER=mailersend
+MAIL_FROM_ADDRESS=app@yourdomain.com
+MAIL_FROM_NAME="App Name"
+
+MAILERSEND_API_KEY=your-api-key
+```
+
+Để tìm hiểu thêm về MailerSend, bao gồm cả cách sử dụng các template mà họ cung cấp, hãy tham khảo [tài liệu driver MailerSend](https://github.com/mailersend/mailersend-laravel-driver#usage).
+
 <a name="failover-configuration"></a>
 ### Cấu hình dự phòng
 
 Thỉnh thoảng, một service bên ngoài mà bạn đã cấu hình để gửi mail cho ứng dụng của bạn có thể bị không hoạt động. Trong những trường hợp như thế này, có thể hữu ích nếu bạn định nghĩa thêm một hoặc nhiều cấu hình gửi mail dự phòng và nó sẽ được sử dụng trong trường hợp driver gửi mail chính của bạn không hoạt động.
 
-Để thực hiện điều này, bạn nên định nghĩa thêm một mailer trong file cấu hình `mail` của bạn và sử dụng transport `failover`. Mảng cấu hình cho mailer `failover` của bạn phải chứa một mảng các `mailers` sẽ tham chiếu đến thứ tự mà các driver mail sẽ được lựa chọn để gửi đi:
+Để thực hiện điều này, bạn nên định nghĩa thêm một mailer trong file cấu hình `mail` của bạn và sử dụng transport `failover`. Mảng cấu hình cho mailer `failover` của bạn phải chứa một mảng các `mailers` sẽ được tham chiếu theo thứ tự mà các mailer đã được cấu hình và sẽ được lựa chọn để gửi đi:
 
     'mailers' => [
         'failover' => [
@@ -158,6 +183,29 @@ Thỉnh thoảng, một service bên ngoài mà bạn đã cấu hình để g�
 Khi mailer dự phòng của bạn đã được định nghĩa xong, bạn nên set mailer này làm mailer mặc định cho ứng dụng của bạn và chỉ định tên của nó làm giá trị cho key cấu hình `default` trong file cấu hình `mail` của ứng dụng của bạn:
 
     'default' => env('MAIL_MAILER', 'failover'),
+
+<a name="round-robin-configuration"></a>
+### Cấu hình quay vòng
+
+Transport `roundrobin` cho phép bạn phân phối khối lượng công việc gửi mail của bạn trên nhiều mailer. Để bắt đầu, hãy định nghĩa một mailer trong file cấu hình `mail` của ứng dụng của bạn và sử dụng transport `roundrobin`. Mảng cấu hình cho mailer `roundrobin` của ứng dụng của bạn phải chứa một mảng `mailers` tham chiếu đến mailer được cấu hình nào sẽ được sử dụng để gửi:
+
+    'mailers' => [
+        'roundrobin' => [
+            'transport' => 'roundrobin',
+            'mailers' => [
+                'ses',
+                'postmark',
+            ],
+        ],
+
+        // ...
+    ],
+
+Sau khi mailer quay vòng của bạn đã được định nghĩa, bạn nên set mailer này làm mailer mặc định mà ứng dụng của bạn sử dụng bằng cách chỉ định tên của mailer này làm giá trị của khóa cấu hình `default` trong file cấu hình `mail` của ứng dụng:
+
+    'default' => env('MAIL_MAILER', 'roundrobin'),
+
+Transport quay vòng chọn một mailer ngẫu nhiên từ danh sách các mailer đã cấu hình và sau đó chuyển sang mailer khác khả dụng tiếp theo cho mỗi email kế tiếp. Ngược lại với transport `failover`, giúp đạt được *[tính khả dụng cao](https://en.wikipedia.org/wiki/High_availability)*, transport `roundrobin` cung cấp *[cân bằng](https://en.wikipedia.org/wiki/Load_balancing_(computing))*.
 
 <a name="generating-mailables"></a>
 ## Tạo Mailables
@@ -188,10 +236,8 @@ Trước tiên, hãy xem cấu hình người gửi email. Hay nói cách khác,
 
     /**
      * Get the message envelope.
-     *
-     * @return \Illuminate\Mail\Mailables\Envelope
      */
-    public function envelope()
+    public function envelope(): Envelope
     {
         return new Envelope(
             from: new Address('jeffrey@example.com', 'Jeffrey Way'),
@@ -212,9 +258,12 @@ Nếu bạn muốn, bạn cũng có thể chỉ định địa chỉ `replyTo`:
 <a name="using-a-global-from-address"></a>
 #### Using A Global `from` Address
 
-Tuy nhiên, nếu application của bạn sử dụng cùng một địa chỉ "from" cho tất cả các email, thì nó có thể trở nên cồng kềnh khi gọi phương thức `from` trong mỗi class mailable mà bạn tạo. Thay vào đó, bạn có thể khai báo một địa chỉ "from" global trong file cấu hình `config/mail.php`. Địa chỉ này sẽ được sử dụng nếu không có địa chỉ "from" nào được khai báo trong class mailable:
+Tuy nhiên, nếu application của bạn sử dụng cùng một địa chỉ "from" cho tất cả các email, thì nó có thể trở nên cồng kềnh khi thêm nó vào trong mỗi class mailable mà bạn tạo. Thay vào đó, bạn có thể khai báo một địa chỉ "from" global trong file cấu hình `config/mail.php`. Địa chỉ này sẽ được sử dụng nếu không có địa chỉ "from" nào được khai báo trong class mailable:
 
-    'from' => ['address' => 'example@example.com', 'name' => 'App Name'],
+    'from' => [
+        'address' => env('MAIL_FROM_ADDRESS', 'hello@example.com'),
+        'name' => env('MAIL_FROM_NAME', 'Example'),
+    ],
 
 Ngoài ra, bạn có thể cần định nghĩa một địa chỉ "reply_to" global trong file cấu hình `config/mail.php` của bạn:
 
@@ -227,17 +276,15 @@ Trong phương thức `content` của class mailable, bạn có thể định ng
 
     /**
      * Get the message content definition.
-     *
-     * @return \Illuminate\Mail\Mailables\Content
      */
-    public function content()
+    public function content(): Content
     {
         return new Content(
-            view: 'emails.orders.shipped',
+            view: 'mail.orders.shipped',
         );
     }
 
-> **Note**
+> [!NOTE]
 > Bạn có thể muốn tạo một thư mục `resources/views/emails` để chứa tất cả các template email của bạn; tuy nhiên, bạn có thể thoải mái lưu chúng ở bất cứ nơi nào bạn muốn trong thư mục `resources/views` của bạn.
 
 <a name="plain-text-emails"></a>
@@ -247,22 +294,20 @@ Nếu bạn muốn định nghĩa một văn bản thuần cho email của bạn
 
     /**
      * Get the message content definition.
-     *
-     * @return \Illuminate\Mail\Mailables\Content
      */
-    public function content()
+    public function content(): Content
     {
         return new Content(
-            view: 'emails.orders.shipped',
-            text: 'emails.orders.shipped-text'
+            view: 'mail.orders.shipped',
+            text: 'mail.orders.shipped-text'
         );
     }
 
 Để rõ ràng hơn, tham số `html` có thể được sử dụng làm bí danh của tham số `view`:
 
     return new Content(
-        html: 'emails.orders.shipped',
-        text: 'emails.orders.shipped-text'
+        html: 'mail.orders.shipped',
+        text: 'mail.orders.shipped-text'
     );
 
 <a name="view-data"></a>
@@ -288,32 +333,19 @@ Thông thường, bạn sẽ muốn chuyển một số dữ liệu cho view mà
         use Queueable, SerializesModels;
 
         /**
-         * The order instance.
-         *
-         * @var \App\Models\Order
-         */
-        public $order;
-
-        /**
          * Create a new message instance.
-         *
-         * @param  \App\Models\Order  $order
-         * @return void
          */
-        public function __construct(Order $order)
-        {
-            $this->order = $order;
-        }
+        public function __construct(
+            public Order $order,
+        ) {}
 
         /**
          * Get the message content definition.
-         *
-         * @return \Illuminate\Mail\Mailables\Content
          */
-        public function content()
+        public function content(): Content
         {
             return new Content(
-                view: 'emails.orders.shipped',
+                view: 'mail.orders.shipped',
             );
         }
     }
@@ -344,32 +376,19 @@ Nếu bạn muốn tùy chỉnh định dạng dữ liệu email của bạn tr�
         use Queueable, SerializesModels;
 
         /**
-         * The order instance.
-         *
-         * @var \App\Models\Order
-         */
-        protected $order;
-
-        /**
          * Create a new message instance.
-         *
-         * @param  \App\Models\Order  $order
-         * @return void
          */
-        public function __construct(Order $order)
-        {
-            $this->order = $order;
-        }
+        public function __construct(
+            protected Order $order,
+        ) {}
 
         /**
          * Get the message content definition.
-         *
-         * @return \Illuminate\Mail\Mailables\Content
          */
-        public function content()
+        public function content(): Content
         {
             return new Content(
-                view: 'emails.orders.shipped',
+                view: 'mail.orders.shipped',
                 with: [
                     'orderName' => $this->order->name,
                     'orderPrice' => $this->order->price,
@@ -394,9 +413,9 @@ Khi dữ liệu đã được truyền đến phương thức `with`, nó sẽ t
     /**
      * Get the attachments for the message.
      *
-     * @return \Illuminate\Mail\Mailables\Attachment[]
+     * @return array<int, \Illuminate\Mail\Mailables\Attachment>
      */
-    public function attachments()
+    public function attachments(): array
     {
         return [
             Attachment::fromPath('/path/to/file'),
@@ -408,9 +427,9 @@ Khi đính kèm một file vào một email, bạn cũng có thể khai báo tê
     /**
      * Get the attachments for the message.
      *
-     * @return \Illuminate\Mail\Mailables\Attachment[]
+     * @return array<int, \Illuminate\Mail\Mailables\Attachment>
      */
-    public function attachments()
+    public function attachments(): array
     {
         return [
             Attachment::fromPath('/path/to/file')
@@ -427,9 +446,9 @@ Nếu bạn đã lưu một file trên một trong các [filesystem disk](/docs/
     /**
      * Get the attachments for the message.
      *
-     * @return \Illuminate\Mail\Mailables\Attachment[]
+     * @return array<int, \Illuminate\Mail\Mailables\Attachment>
      */
-    public function attachments()
+    public function attachments(): array
     {
         return [
             Attachment::fromStorage('/path/to/file'),
@@ -441,9 +460,9 @@ Tất nhiên, bạn cũng có thể chỉ định tên file đính kèm và lo�
     /**
      * Get the attachments for the message.
      *
-     * @return \Illuminate\Mail\Mailables\Attachment[]
+     * @return array<int, \Illuminate\Mail\Mailables\Attachment>
      */
-    public function attachments()
+    public function attachments(): array
     {
         return [
             Attachment::fromStorage('/path/to/file')
@@ -457,9 +476,9 @@ Phương thức `fromStorageDisk` có thể được sử dụng nếu bạn mu�
     /**
      * Get the attachments for the message.
      *
-     * @return \Illuminate\Mail\Mailables\Attachment[]
+     * @return array<int, \Illuminate\Mail\Mailables\Attachment>
      */
-    public function attachments()
+    public function attachments(): array
     {
         return [
             Attachment::fromStorageDisk('s3', '/path/to/file')
@@ -476,9 +495,9 @@ Phương thức đính kèm `fromData` có thể được sử dụng để đí
     /**
      * Get the attachments for the message.
      *
-     * @return \Illuminate\Mail\Mailables\Attachment[]
+     * @return array<int, \Illuminate\Mail\Mailables\Attachment>
      */
-    public function attachments()
+    public function attachments(): array
     {
         return [
             Attachment::fromData(fn () => $this->pdf, 'Report.pdf')
@@ -499,7 +518,7 @@ Nhúng hình ảnh vào trong email của bạn thường rất cồng kềnh; t
 </body>
 ```
 
-> **Warning**
+> [!WARNING]
 > Biến `$message` sẽ không có sẵn trong phiên bản văn bản thuần vì phiên bản văn bản thuần không sử dụng file đính kèm nội dung.
 
 <a name="embedding-raw-data-attachments"></a>
@@ -534,10 +553,8 @@ Trong khi việc đính kèm file vào tin nhắn thông qua các đường dẫ
     {
         /**
          * Get the attachable representation of the model.
-         *
-         * @return \Illuminate\Mail\Attachment
          */
-        public function toMailAttachment()
+        public function toMailAttachment(): Attachment
         {
             return Attachment::fromPath('/path/to/file');
         }
@@ -548,9 +565,9 @@ Sau khi bạn đã định nghĩa xong đối tượng đính kèm, bạn có th
     /**
      * Get the attachments for the message.
      *
-     * @return array
+     * @return array<int, \Illuminate\Mail\Mailables\Attachment>
      */
-    public function attachments()
+    public function attachments(): array
     {
         return [$this->photo];
     }
@@ -584,10 +601,8 @@ Thỉnh thoảng bạn có thể cần phải thêm các tiêu đề bổ sung v
 
     /**
      * Get the message headers.
-     *
-     * @return \Illuminate\Mail\Mailables\Headers
      */
-    public function headers()
+    public function headers(): Headers
     {
         return new Headers(
             messageId: 'custom-message-id@example.com',
@@ -610,7 +625,7 @@ Một số nhà cung cấp dịch vụ email của bên thứ ba như Mailgun v�
      *
      * @return \Illuminate\Mail\Mailables\Envelope
      */
-    public function envelope()
+    public function envelope(): Envelope
     {
         return new Envelope(
             subject: 'Order Shipped',
@@ -635,10 +650,8 @@ Khả năng gửi mail của Laravel được hỗ trợ bởi Symfony Mailer. L
 
     /**
      * Get the message envelope.
-     *
-     * @return \Illuminate\Mail\Mailables\Envelope
      */
-    public function envelope()
+    public function envelope(): Envelope
     {
         return new Envelope(
             subject: 'Order Shipped',
@@ -661,7 +674,7 @@ Markdown mailable message cho phép bạn tận dụng lợi thế của các te
 Để tạo một mailable với template Markdown tương ứng, bạn có thể sử dụng tùy chọn `--markdown` trong lệnh Artisan `make:mail`:
 
 ```shell
-php artisan make:mail OrderShipped --markdown=emails.orders.shipped
+php artisan make:mail OrderShipped --markdown=mail.orders.shipped
 ```
 
 Sau đó, khi cấu hình định nghĩa `Content` mailable trong phương thức `content`, hãy dùng tham số `markdown` thay vì tham số `view`.
@@ -670,13 +683,11 @@ Sau đó, khi cấu hình định nghĩa `Content` mailable trong phương thứ
 
     /**
      * Get the message content definition.
-     *
-     * @return \Illuminate\Mail\Mailables\Content
      */
-    public function content()
+    public function content(): Content
     {
         return new Content(
-            markdown: 'emails.orders.shipped',
+            markdown: 'mail.orders.shipped',
             with: [
                 'url' => $this->orderUrl,
             ],
@@ -703,7 +714,7 @@ Thanks,<br>
 </x-mail::message>
 ```
 
-> **Note**
+> [!NOTE]
 > Đừng sử dụng thụt đầu dòng khi viết email bằng Markdown. Vì theo tiêu chuẩn Markdown, trình phân tích cú pháp sẽ hiển thị nội dung thụt đầu dòng dưới dạng một code block.
 
 <a name="button-component"></a>
@@ -774,6 +785,7 @@ Nếu bạn muốn xây dựng một theme mới cho các component Markdown c�
     use App\Http\Controllers\Controller;
     use App\Mail\OrderShipped;
     use App\Models\Order;
+    use Illuminate\Http\RedirectResponse;
     use Illuminate\Http\Request;
     use Illuminate\Support\Facades\Mail;
 
@@ -781,17 +793,16 @@ Nếu bạn muốn xây dựng một theme mới cho các component Markdown c�
     {
         /**
          * Ship the given order.
-         *
-         * @param  \Illuminate\Http\Request  $request
-         * @return \Illuminate\Http\Response
          */
-        public function store(Request $request)
+        public function store(Request $request): RedirectResponse
         {
             $order = Order::findOrFail($request->order_id);
 
             // Ship the order...
 
             Mail::to($request->user())->send(new OrderShipped($order));
+
+            return redirect('/orders');
         }
     }
 
@@ -868,7 +879,7 @@ Nếu bạn có class mailable mà luôn muốn sử dụng queue, bạn có th�
 
     class OrderShipped extends Mailable implements ShouldQueue
     {
-        //
+        // ...
     }
 
 <a name="queued-mailables-and-database-transactions"></a>
@@ -899,8 +910,6 @@ Ngoài ra, bạn có thể gọi phương thức `afterCommit` từ hàm khởi 
 
         /**
          * Create a new message instance.
-         *
-         * @return void
          */
         public function __construct()
         {
@@ -908,7 +917,7 @@ Ngoài ra, bạn có thể gọi phương thức `afterCommit` từ hàm khởi 
         }
     }
 
-> **Note**
+> [!NOTE]
 > Để tìm hiểu thêm về cách giải quyết những vấn đề này, vui lòng xem lại tài liệu về [queued jobs và database transactions](/docs/{{version}}/queues#jobs-and-database-transactions).
 
 <a name="rendering-mailables"></a>
@@ -934,9 +943,6 @@ Khi thiết kế một template của một mailable, sẽ thật thuận tiện
         return new App\Mail\InvoicePaid($invoice);
     });
 
-> **Warning**
-> [Inline attachments](#inline-attachments) sẽ không được render khi preview một mailable trong trình duyệt của bạn. Để preview những mailable như thế này, bạn nên gửi chúng đến một ứng dụng kiểm tra email chẳng hạn như [MailHog](https://github.com/mailhog/MailHog) hoặc [HELO](https://usehelo.com).
-
 <a name="localizing-mailables"></a>
 ## Ngôn ngữ trong Mailable
 
@@ -959,10 +965,8 @@ Thỉnh thoảng, các application sẽ lưu lại ngôn ngữ ưa thích của 
     {
         /**
          * Get the user's preferred locale.
-         *
-         * @return string
          */
-        public function preferredLocale()
+        public function preferredLocale(): string
         {
             return $this->locale;
         }
@@ -973,7 +977,10 @@ Khi bạn đã implement xong interface này, Laravel sẽ tự động sử d�
     Mail::to($request->user())->send(new OrderShipped($order));
 
 <a name="testing-mailables"></a>
-## Test Mail
+## Testing
+
+<a name="testing-mailable-content"></a>
+### Test nội dung mail
 
 Laravel cung cấp nhiều phương thức khác nhau để kiểm tra cấu trúc mailable của bạn. Ngoài ra, Laravel cũng cung cấp một số phương thức thuận tiện để kiểm tra xem mailable của bạn có chứa nội dung mà bạn mong đợi hay không. Các phương thức này là: `assertSeeInHtml`, `assertDontSeeInHtml`, `assertSeeInOrderInHtml`, `assertSeeInText`, `assertDontSeeInText`, `assertSeeInOrderInText`, `assertHasAttachment`, `assertHasAttachedData`, `assertHasAttachmentFromStorage`, và `assertHasAttachmentFromStorageDisk`.
 
@@ -982,7 +989,7 @@ Như bạn có thể mong đợi, các kiểm tra "HTML" sẽ yêu cầu phiên 
     use App\Mail\InvoicePaid;
     use App\Models\User;
 
-    public function test_mailable_content()
+    public function test_mailable_content(): void
     {
         $user = User::factory()->create();
 
@@ -1012,9 +1019,100 @@ Như bạn có thể mong đợi, các kiểm tra "HTML" sẽ yêu cầu phiên 
     }
 
 <a name="testing-mailable-sending"></a>
-#### Testing Mailable Sending
+### Test gửi mail
 
-Chúng tôi khuyên bạn nên kiểm tra nội dung mailable một cách riêng biệt với các kiểm tra một mailable đã được "gửi" đến một người dùng cụ thể hay chưa. Để tìm hiểu thêm về cách kiểm tra xem mailable đã được gửi hay chưa, hãy xem tài liệu của chúng tôi về [Mail fake](/docs/{{version}}/mocking#mail-fake).
+Chúng tôi khuyên bạn nên kiểm tra nội dung mailable một cách riêng biệt với các kiểm tra một mailable đã được "gửi" đến một người dùng cụ thể hay chưa. Thông thường, nội dung của mailable không liên quan gì đến code bạn đang test là kiểm tra Laravel đã gửi một mailable nhất định hay chưa.
+
+Bạn có thể sử dụng phương thức `fake` của facade `Mail` để ngăn không cho mail được gửi đi. Sau khi đã gọi phương thức `fake` của facade `Mail`, bạn có thể kiểm tra các mailables đã được gửi đến người dùng hay chưa hay thậm chí kiểm tra dữ liệu mà các mailables đã nhận được:
+
+    <?php
+
+    namespace Tests\Feature;
+
+    use App\Mail\OrderShipped;
+    use Illuminate\Support\Facades\Mail;
+    use Tests\TestCase;
+
+    class ExampleTest extends TestCase
+    {
+        public function test_orders_can_be_shipped(): void
+        {
+            Mail::fake();
+
+            // Perform order shipping...
+
+            // Assert that no mailables were sent...
+            Mail::assertNothingSent();
+
+            // Assert that a mailable was sent...
+            Mail::assertSent(OrderShipped::class);
+
+            // Assert a mailable was sent twice...
+            Mail::assertSent(OrderShipped::class, 2);
+
+            // Assert a mailable was not sent...
+            Mail::assertNotSent(AnotherMailable::class);
+
+            // Assert 3 total mailables were sent...
+            Mail::assertSentCount(3);
+        }
+    }
+
+Nếu bạn đang queue mail lại để gửi ở background, bạn nên sử dụng phương thức `assertQueued` thay vì `assertSent`:
+
+    Mail::assertQueued(OrderShipped::class);
+    Mail::assertNotQueued(OrderShipped::class);
+    Mail::assertNothingQueued();
+    Mail::assertQueuedCount(3);
+
+Bạn có thể truyền một closure cho các phương thức `assertSent`, `assertNotSent`, `assertQueued` hoặc `assertNotQueued` để kiểm tra một mailable đã được gửi đi và pass qua được "truth test" đã cho. Nếu có ít nhất một mailable đã được gửi đi và pass qua được kiểm tra đã cho thì kiểm tra sẽ thành công:
+
+    Mail::assertSent(function (OrderShipped $mail) use ($order) {
+        return $mail->order->id === $order->id;
+    });
+
+Khi gọi các phương thức kiểm tra của facade `Mail`, instance mailable  được cung cấp bởi closure sẽ hiển thị các phương thức hữu ích để bạn kiểm tra mailable:
+
+    Mail::assertSent(OrderShipped::class, function (OrderShipped $mail) use ($user) {
+        return $mail->hasTo($user->email) &&
+               $mail->hasCc('...') &&
+               $mail->hasBcc('...') &&
+               $mail->hasReplyTo('...') &&
+               $mail->hasFrom('...') &&
+               $mail->hasSubject('...');
+    });
+
+Instance mailable cũng có chứa một số phương thức hữu ích để kiểm tra file đính kèm trên mailable:
+
+    use Illuminate\Mail\Mailables\Attachment;
+
+    Mail::assertSent(OrderShipped::class, function (OrderShipped $mail) {
+        return $mail->hasAttachment(
+            Attachment::fromPath('/path/to/file')
+                    ->as('name.pdf')
+                    ->withMime('application/pdf')
+        );
+    });
+
+    Mail::assertSent(OrderShipped::class, function (OrderShipped $mail) {
+        return $mail->hasAttachment(
+            Attachment::fromStorageDisk('s3', '/path/to/file')
+        );
+    });
+
+    Mail::assertSent(OrderShipped::class, function (OrderShipped $mail) use ($pdfData) {
+        return $mail->hasAttachment(
+            Attachment::fromData(fn () => $pdfData, 'name.pdf')
+        );
+    });
+
+Bạn có thể nhận thấy rằng có hai phương thức để kiểm tra thư không được gửi: `assertNotSent` và `assertNotQueued`. Thỉnh thoảng bạn có thể muốn kiểm tra là sẽ không có thư nào được gửi **hoặc** được queue. Để thực hiện điều này, bạn có thể sử dụng các phương thức `assertNothingOutgoing` và `assertNotOutgoing`:
+
+    Mail::assertNothingOutgoing();
+
+    Mail::assertNotOutgoing(function (OrderShipped $mail) use ($order) {
+        return $mail->order->id === $order->id;
+    });
 
 <a name="mail-and-local-development"></a>
 ## Mail và Local Development
@@ -1042,10 +1140,8 @@ Cuối cùng, bạn có thể chỉ định một địa chỉ "to" global bằn
 
     /**
      * Bootstrap any application services.
-     *
-     * @return void
      */
-    public function boot()
+    public function boot(): void
     {
         if ($this->app->environment('local')) {
             Mail::alwaysTo('taylor@example.com');
@@ -1085,28 +1181,18 @@ Laravel có chứa nhiều mail transport; tuy nhiên, bạn có thể muốn vi
     use MailchimpTransactional\ApiClient;
     use Symfony\Component\Mailer\SentMessage;
     use Symfony\Component\Mailer\Transport\AbstractTransport;
+    use Symfony\Component\Mime\Address;
     use Symfony\Component\Mime\MessageConverter;
 
     class MailchimpTransport extends AbstractTransport
     {
         /**
-         * The Mailchimp API client.
-         *
-         * @var \MailchimpTransactional\ApiClient
-         */
-        protected $client;
-
-        /**
          * Create a new Mailchimp transport instance.
-         *
-         * @param  \MailchimpTransactional\ApiClient  $client
-         * @return void
          */
-        public function __construct(ApiClient $client)
-        {
+        public function __construct(
+            protected ApiClient $client,
+        ) {
             parent::__construct();
-
-            $this->client = $client;
         }
 
         /**
@@ -1118,7 +1204,7 @@ Laravel có chứa nhiều mail transport; tuy nhiên, bạn có thể muốn vi
 
             $this->client->messages->send(['message' => [
                 'from_email' => $email->getFrom(),
-                'to' => collect($email->getTo())->map(function ($email) {
+                'to' => collect($email->getTo())->map(function (Address $email) {
                     return ['email' => $email->getAddress(), 'type' => 'to'];
                 })->all(),
                 'subject' => $email->getSubject(),
@@ -1128,8 +1214,6 @@ Laravel có chứa nhiều mail transport; tuy nhiên, bạn có thể muốn vi
 
         /**
          * Get the string representation of the transport.
-         *
-         * @return string
          */
         public function __toString(): string
         {
@@ -1144,10 +1228,8 @@ Sau khi bạn đã định nghĩa transport tùy chỉnh của bạn, bạn có 
 
     /**
      * Bootstrap any application services.
-     *
-     * @return void
      */
-    public function boot()
+    public function boot(): void
     {
         Mail::extend('mailchimp', function (array $config = []) {
             return new MailchimpTransport(/* ... */);
@@ -1164,37 +1246,35 @@ Sau khi transport tùy chỉnh của bạn đã được định nghĩa và đă
 <a name="additional-symfony-transports"></a>
 ### Thêm Symfony Transports
 
-Laravel có hỗ trợ cho một số mail transport do Symfony bảo trì như Mailgun và Postmark. Tuy nhiên, bạn có thể muốn mở rộng Laravel để hỗ trợ thêm một số mail transport khác do Symfony bảo trì. Bạn có thể thực hiện việc này bằng cách require Symfony mailer thông qua Composer và đăng ký transport đó với Laravel. Ví dụ, bạn có thể cài đặt và đăng ký Symfony mailer "Sendinblue":
+Laravel có hỗ trợ cho một số mail transport do Symfony bảo trì như Mailgun và Postmark. Tuy nhiên, bạn có thể muốn mở rộng Laravel để hỗ trợ thêm một số mail transport khác do Symfony bảo trì. Bạn có thể thực hiện việc này bằng cách require Symfony mailer thông qua Composer và đăng ký transport đó với Laravel. Ví dụ, bạn có thể cài đặt và đăng ký Symfony mailer "Brevo" (trước đây là "Sendinblue"):
 
 ```none
-composer require symfony/sendinblue-mailer symfony/http-client
+composer require symfony/brevo-mailer symfony/http-client
 ```
 
-Sau khi package mailer Sendinblue đã được cài đặt xong, bạn có thể thêm một mục cho thông tin xác thực API Sendinblue của bạn vào file cấu hình `services` của ứng dụng:
+Sau khi package mailer Brevo đã được cài đặt xong, bạn có thể thêm một mục cho thông tin xác thực API Brevo của bạn vào file cấu hình `services` của ứng dụng:
 
-    'sendinblue' => [
+    'brevo' => [
         'key' => 'your-api-key',
     ],
 
 Tiếp theo, bạn có thể sử dụng phương thức `extend` của facade `Mail` để đăng ký transport với Laravel. Thông thường, điều này nên được thực hiện trong phương thức `boot` của một service provider:
 
     use Illuminate\Support\Facades\Mail;
-    use Symfony\Component\Mailer\Bridge\Sendinblue\Transport\SendinblueTransportFactory;
+    use Symfony\Component\Mailer\Bridge\Brevo\Transport\BrevoTransportFactory;
     use Symfony\Component\Mailer\Transport\Dsn;
 
     /**
      * Bootstrap any application services.
-     *
-     * @return void
      */
-    public function boot()
+    public function boot(): void
     {
-        Mail::extend('sendinblue', function () {
-            return (new SendinblueTransportFactory)->create(
+        Mail::extend('brevo', function () {
+            return (new BrevoTransportFactory)->create(
                 new Dsn(
-                    'sendinblue+api',
+                    'brevo+api',
                     'default',
-                    config('services.sendinblue.key')
+                    config('services.brevo.key')
                 )
             );
         });
@@ -1202,7 +1282,7 @@ Tiếp theo, bạn có thể sử dụng phương thức `extend` của facade `
 
 Sau khi transport của bạn đã được đăng ký, bạn có thể tạo một định nghĩa mailer trong file cấu hình config/mail.php của ứng dụng để sử dụng transport mới:
 
-    'sendinblue' => [
-        'transport' => 'sendinblue',
+    'brevo' => [
+        'transport' => 'brevo',
         // ...
     ],

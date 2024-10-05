@@ -26,17 +26,17 @@ Khi kiểm tra ứng dụng hoặc seeding cơ sở dữ liệu, bạn có thể
 
     namespace Database\Factories;
 
-    use Illuminate\Database\Eloquent\Factories\Factory;
     use Illuminate\Support\Str;
+    use Illuminate\Database\Eloquent\Factories\Factory;
 
     class UserFactory extends Factory
     {
         /**
          * Define the model's default state.
          *
-         * @return array
+         * @return array<string, mixed>
          */
-        public function definition()
+        public function definition(): array
         {
             return [
                 'name' => fake()->name(),
@@ -52,7 +52,7 @@ Như bạn có thể thấy, ở dạng cơ bản nhất, các factory là các 
 
 Thông qua helper `fake`, các factory có quyền truy cập vào các thư viện PHP của [Faker](https://github.com/FakerPHP/Faker), cho phép bạn tạo các loại dữ liệu ngẫu nhiên khác nhau để thử nghiệm và seeding một cách thuận tiện.
 
-> **Note**
+> [!NOTE]
 > Bạn có thể cài đặt ngôn ngữ Faker trong application của bạn bằng cách thêm tùy chọn `faker_locale` vào file cấu hình `config/app.php` của bạn.
 
 <a name="defining-model-factories"></a>
@@ -76,19 +76,18 @@ Khi mà bạn đã định nghĩa xong các factory của bạn, bạn có thể
 
 Phương thức `factory` của trait `HasFactory` sẽ sử dụng các quy ước đặt tên để xác định các factory thích hợp cho model mà trait được chỉ định. Cụ thể, phương thức sẽ tìm kiếm một factory trong namespace `Database\Factories` và có tên class khớp với tên có hậu tố là `Factory`. Nếu các quy ước này không được áp dụng cho ứng dụng hoặc factory của bạn, bạn có thể ghi đè lên phương thức `newFactory` này trên model của bạn để trả về trực tiếp một instance của factory tương ứng của model:
 
+    use Illuminate\Database\Eloquent\Factories\Factory;
     use Database\Factories\Administration\FlightFactory;
 
     /**
      * Create a new factory instance for the model.
-     *
-     * @return \Illuminate\Database\Eloquent\Factories\Factory
      */
-    protected static function newFactory()
+    protected static function newFactory(): Factory
     {
         return FlightFactory::new();
     }
 
-Tiếp theo, định nghĩa thuộc tính `model` trên factory tương ứng:
+Sau đó, định nghĩa thuộc tính `model` trên factory tương ứng:
 
     use App\Administration\Flight;
     use Illuminate\Database\Eloquent\Factories\Factory;
@@ -98,7 +97,7 @@ Tiếp theo, định nghĩa thuộc tính `model` trên factory tương ứng:
         /**
          * The name of the factory's corresponding model.
          *
-         * @var string
+         * @var class-string<\Illuminate\Database\Eloquent\Model>
          */
         protected $model = Flight::class;
     }
@@ -110,12 +109,12 @@ Các phương thức state cho phép bạn định nghĩa các thay đổi riên
 
 Các phương thức chuyển đổi trạng thái thường gọi trong phương thức `state` do class base của Laravel cung cấp. Phương thức `state` sẽ chấp nhận một closure và nhận vào một mảng thuộc tính được định nghĩa cho factory và sẽ trả về một mảng thuộc tính để sửa:
 
+    use Illuminate\Database\Eloquent\Factories\Factory;
+
     /**
      * Indicate that the user is suspended.
-     *
-     * @return \Illuminate\Database\Eloquent\Factories\Factory
      */
-    public function suspended()
+    public function suspended(): Factory
     {
         return $this->state(function (array $attributes) {
             return [
@@ -124,6 +123,7 @@ Các phương thức chuyển đổi trạng thái thường gọi trong phươn
         });
     }
 
+<a name="trashed-state"></a>
 #### "Trashed" State
 
 Nếu model Eloquent của bạn có chức năng [soft deleted](/docs/{{version}}/eloquent#soft-deleting), thì bạn có thể gọi phương thức state `trashed` có sẵn để chỉ ra rằng model được tạo sẽ bị "soft deleted". Bạn không cần phải định nghĩa state `trashed` vì nó tự động có sẵn trong tất cả các factory:
@@ -141,25 +141,43 @@ Các lệnh Factory callback sẽ được đăng ký bằng cách sử dụng b
 
     use App\Models\User;
     use Illuminate\Database\Eloquent\Factories\Factory;
-    use Illuminate\Support\Str;
 
     class UserFactory extends Factory
     {
         /**
          * Configure the model factory.
-         *
-         * @return $this
          */
-        public function configure()
+        public function configure(): static
         {
             return $this->afterMaking(function (User $user) {
-                //
+                // ...
             })->afterCreating(function (User $user) {
-                //
+                // ...
             });
         }
 
         // ...
+    }
+
+Bạn cũng có thể đăng ký một factory callback trong phương thức state để thực hiện thêm các công việc cụ thể cho một state:
+
+    use App\Models\User;
+    use Illuminate\Database\Eloquent\Factories\Factory;
+
+    /**
+     * Indicate that the user is suspended.
+     */
+    public function suspended(): Factory
+    {
+        return $this->state(function (array $attributes) {
+            return [
+                'account_status' => 'suspended',
+            ];
+        })->afterMaking(function (User $user) {
+            // ...
+        })->afterCreating(function (User $user) {
+            // ...
+        });
     }
 
 <a name="creating-models-using-factories"></a>
@@ -200,7 +218,7 @@ Ngoài ra, phương thức `state` có thể được gọi trực tiếp trên 
         'name' => 'Abigail Otwell',
     ])->make();
 
-> **Note**
+> [!NOTE]
 [Các bảo vệ mass assignment](/docs/{{version}}/eloquent#mass-assignment) sẽ tự động bị tắt khi tạo model bằng factory.
 
 <a name="persisting-models"></a>
@@ -242,10 +260,12 @@ Trong ví dụ này, năm người dùng sẽ được tạo với giá trị `a
 
 Nếu cần, bạn có thể thêm một closure vào như một giá trị chuỗi. Closure sẽ được gọi mỗi khi chuỗi cần một giá trị mới:
 
+    use Illuminate\Database\Eloquent\Factories\Sequence;
+
     $users = User::factory()
                     ->count(10)
                     ->state(new Sequence(
-                        fn ($sequence) => ['role' => UserRoles::all()->random()],
+                        fn (Sequence $sequence) => ['role' => UserRoles::all()->random()],
                     ))
                     ->create();
 
@@ -253,7 +273,7 @@ Trong một sequence closure, bạn có thể truy cập vào các thuộc tính
 
     $users = User::factory()
                     ->count(10)
-                    ->sequence(fn ($sequence) => ['name' => 'Name '.$sequence->index])
+                    ->sequence(fn (Sequence $sequence) => ['name' => 'Name '.$sequence->index])
                     ->create();
 
 Để thuận tiện, các sequence cũng có thể được áp dụng bằng phương thức `sequence`, phương thức này chỉ đơn giản là gọi phương thức `state` ở bên trong. Phương thức `sequence` sẽ chấp nhận một closure hoặc một mảng các thuộc tính đã được sắp xếp theo trình tự:
@@ -469,9 +489,9 @@ Tất nhiên, phương thức magic `has` cũng có thể được sử dụng �
     /**
      * Define the model's default state.
      *
-     * @return array
+     * @return array<string, mixed>
      */
-    public function definition()
+    public function definition(): array
     {
         return [
             'user_id' => User::factory(),
@@ -485,9 +505,9 @@ Nếu các cột của quan hệ phụ thuộc vào factory định nghĩa nó, 
     /**
      * Define the model's default state.
      *
-     * @return array
+     * @return array<string, mixed>
      */
-    public function definition()
+    public function definition(): array
     {
         return [
             'user_id' => User::factory(),

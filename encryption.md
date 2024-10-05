@@ -22,12 +22,11 @@ Trước khi sử dụng encrypter của Laravel, bạn phải set tùy chọn c
 
 Bạn có thể mã hóa một giá trị bằng cách sử dụng phương thức `encryptString` được cung cấp bởi facade `Crypt`. Tất cả các giá trị mã hóa đều được mã hóa bằng OpenSSL và mật mã `AES-256-CBC`. Hơn nữa, tất cả các giá trị mã hóa mà được ký bằng message authentication code (MAC). MAC được tích hợp sẵn sẽ ngăn chặn việc giải mã bất kỳ giá trị nào đã bị giả mạo bởi người dùng:
 
-    <?php
+     <?php
 
     namespace App\Http\Controllers;
 
-    use App\Http\Controllers\Controller;
-    use App\Models\User;
+    use Illuminate\Http\RedirectResponse;
     use Illuminate\Http\Request;
     use Illuminate\Support\Facades\Crypt;
 
@@ -35,15 +34,14 @@ Bạn có thể mã hóa một giá trị bằng cách sử dụng phương th�
     {
         /**
          * Store a DigitalOcean API token for the user.
-         *
-         * @param  \Illuminate\Http\Request  $request
-         * @return \Illuminate\Http\Response
          */
-        public function storeSecret(Request $request)
+        public function store(Request $request): RedirectResponse
         {
             $request->user()->fill([
                 'token' => Crypt::encryptString($request->token),
             ])->save();
+
+            return redirect('/secrets');
         }
     }
 
@@ -58,5 +56,5 @@ Bạn có thể giải mã các giá trị bằng cách sử dụng phương th�
     try {
         $decrypted = Crypt::decryptString($encryptedValue);
     } catch (DecryptException $e) {
-        //
+        // ...
     }

@@ -13,7 +13,8 @@
 - [Tương tác với Databases](#interacting-with-sail-databases)
     - [MySQL](#mysql)
     - [Redis](#redis)
-    - [MeiliSearch](#meilisearch)
+    - [Meilisearch](#meilisearch)
+    - [Typesense](#typesense)
 - [File Storage](#file-storage)
 - [Running Tests](#running-tests)
     - [Laravel Dusk](#laravel-dusk)
@@ -39,7 +40,7 @@ Laravel Sail được hỗ trợ trên macOS, Linux và Windows (thông qua [WSL
 <a name="installation"></a>
 ## Cài đặt và setup
 
-Laravel Sail được cài đặt tự động cùng với tất cả các ứng dụng Laravel mới nên bạn có thể bắt đầu sử dụng nó ngay lập tức. Để tìm hiểu cách tạo ra một ứng dụng Laravel mới, vui lòng tham khảo [tài liệu cài đặt](/docs/{{version}}/installation) của Laravel cho hệ điều hành của bạn. Trong quá trình cài đặt, bạn sẽ được yêu cầu chọn những service được Sail hỗ trợ mà ứng dụng của bạn sẽ tương tác cùng.
+Laravel Sail được cài đặt tự động cùng với tất cả các ứng dụng Laravel mới nên bạn có thể bắt đầu sử dụng nó ngay lập tức. Để tìm hiểu cách tạo ra một ứng dụng Laravel mới, vui lòng tham khảo [tài liệu cài đặt](/docs/{{version}}/installation#docker-installation-using-sail) của Laravel cho hệ điều hành của bạn. Trong quá trình cài đặt, bạn sẽ được yêu cầu chọn những service được Sail hỗ trợ mà ứng dụng của bạn sẽ tương tác cùng.
 
 <a name="installing-sail-into-existing-applications"></a>
 ### Cài đặt Sail vào trong application hiện tại
@@ -50,7 +51,7 @@ Nếu bạn quan tâm đến việc sử dụng Sail với ứng dụng Laravel 
 composer require laravel/sail --dev
 ```
 
-Sau khi Sail đã được cài đặt, bạn có thể chạy lệnh Artisan `sail:install`. Lệnh này sẽ export file `docker-compose.yml` của Sail vào thư mục root của ứng dụng của bạn:
+Sau khi Sail đã được cài đặt, bạn có thể chạy lệnh Artisan `sail:install`. Lệnh này sẽ export file `docker-compose.yml` của Sail vào thư mục root của ứng dụng của bạn và bạn có thể sửa file `.env` của bạn bằng các biến môi trường cần thiết để kết nối với các service của Docker:
 
 ```shell
 php artisan sail:install
@@ -61,6 +62,9 @@ Cuối cùng, bạn có thể bắt đầu Sail. Để tiếp tục tìm hiểu 
 ```shell
 ./vendor/bin/sail up
 ```
+
+> [!WARNING]
+> Nếu bạn đang sử dụng Docker Desktop cho Linux, bạn nên sử dụng Docker context `default` bằng cách chạy lệnh sau: `docker context use default`.
 
 <a name="adding-additional-services"></a>
 #### Adding Additional Services
@@ -92,7 +96,7 @@ Mặc định, các lệnh Sail được gọi bằng cách sử dụng tập l�
 Tuy nhiên, thay vì gõ liên tục `vendor/bin/sail` để chạy các lệnh Sail, bạn có thể muốn cấu hình một shell alias cho phép bạn chạy các lệnh của Sail một cách dễ dàng hơn:
 
 ```shell
-alias sail='[ -f sail ] && bash sail || bash vendor/bin/sail'
+alias sail='sh $([ -f sail ] && echo sail || echo vendor/bin/sail)'
 ```
 
 Để đảm bảo tính năng này luôn sẵn sàng, bạn có thể thêm lệnh này vào file cấu hình shell trong thư mục root của bạn, chẳng hạn như `~/.zshrc` hoặc `~/.bashrc`, sau đó khởi động lại shell.
@@ -175,11 +179,11 @@ docker run --rm \
     -u "$(id -u):$(id -g)" \
     -v "$(pwd):/var/www/html" \
     -w /var/www/html \
-    laravelsail/php82-composer:latest \
+    laravelsail/php83-composer:latest \
     composer install --ignore-platform-reqs
 ```
 
-Khi sử dụng image `laravelsail/phpXX-composer`, bạn nên sử dụng cùng một phiên bản PHP mà bạn đang định sử dụng cho ứng dụng của bạn (`74`, `80`, `81`, hoặc `82`).
+Khi sử dụng image `laravelsail/phpXX-composer`, bạn nên sử dụng cùng một phiên bản PHP mà bạn đang định sử dụng cho ứng dụng của bạn (`80`, `81`, `82`, hoặc `83`).
 
 <a name="executing-artisan-commands"></a>
 ### Chạy Artisan Commands
@@ -229,11 +233,25 @@ File `docker-compose.yml` của ứng dụng của bạn cũng chứa một mụ
 Để kết nối đến cơ sở dữ liệu Redis của ứng dụng từ máy local, bạn có thể sử dụng ứng dụng quản lý cơ sở dữ liệu như [TablePlus](https://tableplus.com). Mặc định, cơ sở dữ liệu Redis có thể truy cập được tại `localhost` cổng 6379.
 
 <a name="meilisearch"></a>
-### MeiliSearch
+### Meilisearch
 
-Nếu bạn chọn cài đặt service [MeiliSearch](https://www.meilisearch.com) khi cài đặt Sail, file `docker-compose.yml` của ứng dụng của bạn sẽ chứa một mục cho công cụ tìm kiếm mạnh mẽ này [tương thích](https://github.com/meilisearch/meilisearch-laravel-scout) với [Laravel Scout](/docs/{{version}}/scout). Sau khi khởi động container, bạn có thể kết nối đến instance MeiliSearch trong ứng dụng của bạn bằng cách set biến môi trường `MEILISEARCH_HOST` thành `http://meilisearch:7700`.
+Nếu bạn chọn cài đặt service [Meilisearch](https://www.meilisearch.com) khi cài đặt Sail, file `docker-compose.yml` của ứng dụng của bạn sẽ chứa một mục cho công cụ tìm kiếm mạnh mẽ này [tương thích](https://github.com/meilisearch/meilisearch-laravel-scout) với [Laravel Scout](/docs/{{version}}/scout). Sau khi khởi động container, bạn có thể kết nối đến instance Meilisearch trong ứng dụng của bạn bằng cách set biến môi trường `MEILISEARCH_HOST` thành `http://meilisearch:7700`.
 
-Từ máy local của bạn, bạn có thể truy cập vào trang admin dựa trên web của MeiliSearch bằng cách vào `http://localhost:7700` trong trình duyệt web của bạn.
+Từ máy local của bạn, bạn có thể truy cập vào trang admin dựa trên web của Meilisearch bằng cách vào `http://localhost:7700` trong trình duyệt web của bạn.
+
+<a name="typesense"></a>
+### Typesense
+
+Nếu bạn chọn cài đặt service [Typesense](https://typesense.org) khi cài đặt Sail, file `docker-compose.yml` của ứng dụng sẽ chứa một mục cho công cụ tìm kiếm mã nguồn mở này và được tích hợp sẵn với [Laravel Scout](/docs/{{version}}/scout#typesense). Sau khi khởi động container, bạn có thể kết nối với phiên bản Typesense trong ứng dụng của bạn bằng cách set các biến môi trường sau:
+
+```ini
+TYPESENSE_HOST=typesense
+TYPESENSE_PORT=8108
+TYPESENSE_PROTOCOL=http
+TYPESENSE_API_KEY=xyz
+```
+
+Từ máy local của bạn, bạn có thể truy cập API của Typesense qua `http://localhost:8108`.
 
 <a name="file-storage"></a>
 ## File Storage
@@ -260,7 +278,7 @@ AWS_URL=http://localhost:9000/local
 
 Bạn có thể tạo bucket thông qua bảng điều khiển của MinIO tại `http://localhost:8900`. Tên người dùng mặc định cho bảng điều khiển MinIO là `sail` và mật khẩu mặc định là `password`.
 
-> **Warning**
+> [!WARNING]
 > Việc tạo URL tạm thời thông qua phương thức `temporaryUrl` sẽ không được hỗ trợ khi sử dụng MinIO.
 
 <a name="running-tests"></a>
@@ -294,6 +312,8 @@ Mặc định, Sail sẽ tạo một cơ sở dữ liệu `testing` chuyên dụ
 ```yaml
 selenium:
     image: 'selenium/standalone-chrome'
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
     volumes:
         - '/dev/shm:/dev/shm'
     networks:
@@ -323,6 +343,8 @@ Nếu máy local của bạn dùng chip Apple Silicon, service `selenium` của 
 ```yaml
 selenium:
     image: 'seleniarm/standalone-chromium'
+    extra_hosts:
+        - 'host.docker.internal:host-gateway'
     volumes:
         - '/dev/shm:/dev/shm'
     networks:
@@ -362,9 +384,12 @@ sail tinker
 <a name="sail-php-versions"></a>
 ## PHP Versions
 
-Sail hiện hỗ trợ chạy ứng dụng của bạn thông qua PHP 8.2, 8.1, PHP 8.0 hoặc PHP 7.4. Phiên bản PHP mặc định được Sail sử dụng hiện tại là PHP 8.1. Để thay đổi phiên bản PHP được sử dụng để chạy ứng dụng của bạn, bạn nên cập nhật định nghĩa `build` của container `laravel.test` trong file `docker-compose.yml` của ứng dụng:
+Sail hiện hỗ trợ chạy ứng dụng của bạn thông qua PHP 8.3, 8.2, 8.1, hoặc PHP 8.0. Phiên bản PHP mặc định được Sail sử dụng hiện tại là PHP 8.3. Để thay đổi phiên bản PHP được sử dụng để chạy ứng dụng của bạn, bạn nên cập nhật định nghĩa `build` của container `laravel.test` trong file `docker-compose.yml` của ứng dụng:
 
 ```yaml
+# PHP 8.3
+context: ./vendor/laravel/sail/runtimes/8.3
+
 # PHP 8.2
 context: ./vendor/laravel/sail/runtimes/8.2
 
@@ -373,9 +398,6 @@ context: ./vendor/laravel/sail/runtimes/8.1
 
 # PHP 8.0
 context: ./vendor/laravel/sail/runtimes/8.0
-
-# PHP 7.4
-context: ./vendor/laravel/sail/runtimes/7.4
 ```
 
 Ngoài ra, bạn có thể muốn cập nhật tên `image` của bạn để phản ánh phiên bản PHP đang được ứng dụng của bạn sử dụng. Tùy chọn này cũng được định nghĩa trong file `docker-compose.yml` trong ứng dụng của bạn:
@@ -395,13 +417,13 @@ sail up
 <a name="sail-node-versions"></a>
 ## Node Versions
 
-Mặc định, Sail cài đặt Node 18. Để thay đổi phiên bản Node được cài đặt khi build image của bạn, bạn có thể cập nhật định nghĩa `build.args` của service `laravel.test` trong file `docker-compose.yml` của ứng dụng của bạn:
+Mặc định, Sail cài đặt Node 20. Để thay đổi phiên bản Node được cài đặt khi build image của bạn, bạn có thể cập nhật định nghĩa `build.args` của service `laravel.test` trong file `docker-compose.yml` của ứng dụng của bạn:
 
 ```yaml
 build:
     args:
         WWWGROUP: '${WWWGROUP}'
-        NODE_VERSION: '14'
+        NODE_VERSION: '18'
 ```
 
 Sau khi cập nhật file `docker-compose.yml` của ứng dụng, bạn nên build lại image container của bạn:
@@ -436,7 +458,7 @@ Nếu bạn muốn chọn subdomain cho trang web được chia sẻ của bạn
 sail share --subdomain=my-sail-site
 ```
 
-> **Note**
+> [!NOTE]
 > Lệnh `share` được hỗ trợ bởi [Expose](https://github.com/beyondcode/expose), một service nguồn mở của [BeyondCode](https://beyondco.de).
 
 <a name="debugging-with-xdebug"></a>
@@ -484,7 +506,7 @@ sail debug migrate
 
 Nếu bạn đang sử dụng PhpStorm, thì vui lòng xem lại tài liệu của JetBrain về [debug không cần cấu hình](https://www.jetbrains.com/help/phpstorm/zero-configuration-debugging.html).
 
-> **Warning**
+> [!WARNING]
 > Laravel Sail dựa vào `artisan Serve` để chạy ứng dụng của bạn. Lệnh `artisan Serve` chỉ chấp nhận các biến `XDEBUG_CONFIG` và `XDEBUG_MODE` kể từ phiên bản Laravel 8.53.0. Các phiên bản cũ hơn của Laravel (8.52.0 trở xuống) sẽ không hỗ trợ các biến này và sẽ không chấp nhận khi kết nối debug.
 
 <a name="sail-customization"></a>

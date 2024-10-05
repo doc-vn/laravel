@@ -6,6 +6,7 @@
 - [Chạy testcase](#running-tests)
     - [Chạy testcase đồng thời](#running-tests-in-parallel)
     - [Báo cáo phạm vi chạy testcase](#reporting-test-coverage)
+    - [Profiling Tests](#profiling-tests)
 
 <a name="introduction"></a>
 ## Giới thiệu
@@ -21,7 +22,7 @@ Một file `exampleTest.php` mẫu cũng đã được cung cấp sẵn ở tron
 <a name="environment"></a>
 ## Environment
 
-Khi chạy test, Laravel sẽ tự động set [cấu hình môi trường](/docs/{{version}}/configuration#environment-configuration) là `testing` bởi vì các biến môi trường đã được định nghĩa trong file `phpunit.xml`. Laravel cũng tự động cấu hình session và cache là driver `array` trong khi test, điều này nghĩa là không có session hoặc cache nào được duy trì trong khi bạn test.
+Khi chạy test, Laravel sẽ tự động set [cấu hình môi trường](/docs/{{version}}/configuration#environment-configuration) là `testing` bởi vì các biến môi trường đã được định nghĩa trong file `phpunit.xml`. Laravel cũng tự động cấu hình session và cache là driver `array` để không có session hoặc cache nào được duy trì trong khi bạn test.
 
 Bạn có thể tự do định nghĩa các giá trị cấu hình khác cho môi trường test nếu cần thiết. Các biến môi trường `testing` có thể được cấu hình trong file `phpunit.xml` của application của bạn, nhưng hãy đảm bảo là bạn đã xóa cấu hình cache của bạn bằng cách sử dụng lệnh Artisan `config:clear` trước khi chạy bài test của bạn!
 
@@ -57,7 +58,7 @@ php artisan make:test UserTest --pest
 php artisan make:test UserTest --unit --pest
 ```
 
-> **Note**
+> [!NOTE]
 > Các stub của test có thể được tùy chỉnh bằng cách sử dụng [export stub](/docs/{{version}}/artisan#stub-customization).
 
 Khi file test đã được tạo xong, bạn có thể định nghĩa các phương thức test như khi sử dụng với [PHPUnit](https://phpunit.de). Để chạy test của bạn, hãy chạy lệnh `vendor/bin/phpunit` hoặc lệnh `php artisan test` từ terminal của bạn:
@@ -72,17 +73,15 @@ Khi file test đã được tạo xong, bạn có thể định nghĩa các phư
     {
         /**
          * A basic test example.
-         *
-         * @return void
          */
-        public function test_basic_test()
+        public function test_basic_test(): void
         {
             $this->assertTrue(true);
         }
     }
 
-> **Warning**
-> Nếu bạn định nghĩa một phương thức `setUp` / `tearDown` của riêng bạn trong một test class, hãy nhớ gọi các phương thức `parent::setUp()` / `parent::tearDown()` tương ứng ở trong class parent.
+> [!WARNING]
+> Nếu bạn định nghĩa một phương thức `setUp` / `tearDown` của riêng bạn trong một test class, hãy nhớ gọi các phương thức `parent::setUp()` / `parent::tearDown()` tương ứng ở trong class parent. Thông thường, bạn nên gọi `parent::setUp()` khi bắt đầu phương thức `setUp` của riêng bạn và phương thức `parent::tearDown()` khi kết thúc phương thức `tearDown`.
 
 <a name="running-tests"></a>
 ## Chạy testcase
@@ -108,9 +107,11 @@ php artisan test --testsuite=Feature --stop-on-failure
 <a name="running-tests-in-parallel"></a>
 ### Chạy testcase đồng thời
 
-Mặc định, Laravel và PHPUnit thực hiện các bài test của bạn theo thứ tự trong một process duy nhất. Tuy nhiên, bạn có thể giảm đáng kể lượng thời gian cần thiết để chạy các bài test bằng cách chạy các bài test đó đồng thời trên nhiều process. Để bắt đầu, hãy đảm bảo ứng dụng của bạn sử dụng library phiên bản `^5.3` trở lên của package `nunomaduro/collision`. Sau đó, thêm tùy chọn `--parallel` khi chạy lệnh Artisan `test`:
+Mặc định, Laravel và PHPUnit thực hiện các bài test của bạn theo thứ tự trong một process duy nhất. Tuy nhiên, bạn có thể giảm đáng kể lượng thời gian cần thiết để chạy các bài test bằng cách chạy các bài test đó đồng thời trên nhiều process. Để bắt đầu, bạn nên cài đặt package Composer `brianium/paratest` dưới dạng library của "dev". Sau đó, thêm tùy chọn `--parallel` khi chạy lệnh Artisan `test`:
 
 ```shell
+composer require brianium/paratest --dev
+
 php artisan test --parallel
 ```
 
@@ -120,7 +121,7 @@ Mặc định, Laravel sẽ tạo số process bằng với số lõi CPU có s�
 php artisan test --parallel --processes=4
 ```
 
-> **Warning**
+> [!WARNING]
 > Khi chạy test đồng thời, một số tùy chọn PHPUnit (chẳng hạn như `--do-not-cache-result`) có thể không khả dụng.
 
 <a name="parallel-testing-and-databases"></a>
@@ -148,34 +149,33 @@ Bằng cách sử dụng facade `ParallelTesting`, bạn có thể chỉ định
     use Illuminate\Support\Facades\Artisan;
     use Illuminate\Support\Facades\ParallelTesting;
     use Illuminate\Support\ServiceProvider;
+    use PHPUnit\Framework\TestCase;
 
     class AppServiceProvider extends ServiceProvider
     {
         /**
          * Bootstrap any application services.
-         *
-         * @return void
          */
-        public function boot()
+        public function boot(): void
         {
-            ParallelTesting::setUpProcess(function ($token) {
+            ParallelTesting::setUpProcess(function (int $token) {
                 // ...
             });
 
-            ParallelTesting::setUpTestCase(function ($token, $testCase) {
+            ParallelTesting::setUpTestCase(function (int $token, TestCase $testCase) {
                 // ...
             });
 
             // Executed when a test database is created...
-            ParallelTesting::setUpTestDatabase(function ($database, $token) {
+            ParallelTesting::setUpTestDatabase(function (string $database, int $token) {
                 Artisan::call('db:seed');
             });
 
-            ParallelTesting::tearDownTestCase(function ($token, $testCase) {
+            ParallelTesting::tearDownTestCase(function (int $token, TestCase $testCase) {
                 // ...
             });
 
-            ParallelTesting::tearDownProcess(function ($token) {
+            ParallelTesting::tearDownProcess(function (int $token) {
                 // ...
             });
         }
@@ -191,7 +191,7 @@ Nếu bạn muốn truy cập vào "token" process song song hiện tại từ b
 <a name="reporting-test-coverage"></a>
 ### Báo cáo phạm vi chạy testcase
 
-> **Warning**
+> [!WARNING]
 > Tính năng này yêu cầu [Xdebug](https://xdebug.org) hoặc [PCOV](https://pecl.php.net/package/pcov).
 
 Khi chạy test ứng dụng, bạn có thể muốn xác định xem các test case của bạn có thực sự bao phủ code ứng dụng của bạn hay không và có bao nhiêu code trong ứng dụng của bạn được sử dụng khi chạy test. Để thực hiện điều này, bạn có thể cung cấp tùy chọn `--coverage` khi gọi lệnh `test`:
@@ -207,4 +207,13 @@ Bạn có thể sử dụng tùy chọn `--min` để định nghĩa ngưỡng p
 
 ```shell
 php artisan test --coverage --min=80.3
+```
+
+<a name="profiling-tests"></a>
+### Profiling Tests
+
+Artisan test runner cũng chứa một cơ chế tiện lợi để liệt kê các bài test chậm nhất trong ứng dụng của bạn. Gọi lệnh `test` với tùy chọn `--profile` để nó cung cấp danh sách mười bài test chậm nhất của bạn, cho phép bạn dễ dàng điều tra những bài test nào có thể được cải tiến để tăng tốc bài kiểm tra của bạn:
+
+```shell
+php artisan test --profile
 ```

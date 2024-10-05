@@ -31,7 +31,7 @@ Bạn có thể hash một mật khẩu bằng cách gọi phương thức `make
 
     namespace App\Http\Controllers;
 
-    use App\Http\Controllers\Controller;
+    use Illuminate\Http\RedirectResponse;
     use Illuminate\Http\Request;
     use Illuminate\Support\Facades\Hash;
 
@@ -39,17 +39,16 @@ Bạn có thể hash một mật khẩu bằng cách gọi phương thức `make
     {
         /**
          * Update the password for the user.
-         *
-         * @param  \Illuminate\Http\Request  $request
-         * @return \Illuminate\Http\Response
          */
-        public function update(Request $request)
+        public function update(Request $request): RedirectResponse
         {
             // Validate the new password length...
 
             $request->user()->fill([
                 'password' => Hash::make($request->newPassword)
             ])->save();
+
+            return redirect('/profile');
         }
     }
 
@@ -73,7 +72,7 @@ Nếu bạn đang sử dụng thuật toán Argon2, phương thức `make` cho p
         'threads' => 2,
     ]);
 
-> **Note**
+> [!NOTE]
 > Để biết thêm thông tin về các tùy chọn này, xin vui lòng tham khảo [tài liệu chính thức của PHP về Argon hashing](https://secure.php.net/manual/en/function.password-hash.php).
 
 <a name="verifying-that-a-password-matches-a-hash"></a>
