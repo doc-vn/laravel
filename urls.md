@@ -54,7 +54,7 @@ Các phương thức này cũng có thể được truy cập thông qua [facade
 Helper `route` có thể được sử dụng để tạo URL tới một [route đã được đặt tên](/docs/{{version}}/routing#named-routes). Các route đã được đặt tên cho phép bạn tạo URL mà không cần phải biết URL thực tế đang được định nghĩa như thế nào. Do đó, nếu URL của route có thay đổi, thì bạn cũng không cần phải thực hiện thay đổi gì cho các lệnh gọi hàm `route` của bạn. Ví dụ: hãy tưởng tượng application của bạn chứa một route đang được định nghĩa như sau:
 
     Route::get('/post/{post}', function (Post $post) {
-        //
+        // ...
     })->name('post.show');
 
 Để tạo URL tới route này, bạn có thể sử dụng helper `route` như sau:
@@ -66,7 +66,7 @@ Helper `route` có thể được sử dụng để tạo URL tới một [route
 Dĩ nhiên, helper `route` cũng có thể được sử dụng để tạo URL cho các route có nhiều tham số:
 
     Route::get('/post/{post}/comment/{comment}', function () {
-        //
+        // ...
     })->name('comment.show');
 
     echo route('comment.show', ['post' => 1, 'comment' => 3]);
@@ -97,6 +97,10 @@ Ví dụ: bạn có thể sử dụng các signed URL để tạo link "hủy đ
 
     return URL::signedRoute('unsubscribe', ['user' => 1]);
 
+Bạn có thể bỏ tên miền ra khỏi signed URL hash bằng cách cung cấp tham số `absolute` cho phương thức `signedRoute`:
+
+    return URL::signedRoute('unsubscribe', ['user' => 1], absolute: false);
+
 Nếu bạn muốn tạo một route URL signed tạm thời sau một khoảng thời gian xác định, bạn có thể sử dụng phương thức `temporarySignedRoute`. Khi Laravel xác thực một route URL signed tạm thời, nó sẽ đảm bảo rằng giá trị timestamp hết hạn được mã hóa vào trong URL signed sẽ chưa hết hạn:
 
     use Illuminate\Support\Facades\URL;
@@ -126,24 +130,30 @@ Thỉnh thoảng, bạn có thể cần cho phép frontend của ứng dụng th
         abort(401);
     }
 
-Thay vì xác thực các signed URL bằng cách sử dụng instance request, bạn có thể gán một [middleware](/docs/{{version}}/middleware) `Illuminate\Routing\Middleware\ValidateSignature` cho một route. Nếu bạn chưa đăng ký middleware này, bạn nên gán cho middleware đó một khóa trong mảng `routeMiddleware` của file kernel HTTP của bạn:
+Thay vì xác thực các signed URL bằng cách sử dụng instance request, bạn có thể gán một [middleware](/docs/{{version}}/middleware) `Illuminate\Routing\Middleware\ValidateSignature` cho một route. Nếu bạn chưa đăng ký middleware này, bạn có thể gán cho middleware đó cho một alias trong mảng `middlewareAliases` của file kernel HTTP của bạn:
 
     /**
-     * The application's route middleware.
+     * The application's middleware aliases.
      *
-     * These middleware may be assigned to groups or used individually.
+     * Aliases may be used to conveniently assign middleware to routes and groups.
      *
-     * @var array
+     * @var array<string, class-string|string>
      */
-    protected $routeMiddleware = [
+    protected $middlewareAliases = [
         'signed' => \Illuminate\Routing\Middleware\ValidateSignature::class,
     ];
 
-Sau khi bạn đã đăng ký xong middleware trong file kernel của bạn, bạn có thể gán nó vào một route. Nếu have không có chữ ký hợp lệ, middleware sẽ tự động trả về HTTP response `403`:
+Sau khi bạn đã đăng ký xong middleware trong file kernel của bạn, bạn có thể gán nó vào một route. Nếu request đến không có chữ ký hợp lệ, middleware sẽ tự động trả về HTTP response `403`:
 
     Route::post('/unsubscribe/{user}', function (Request $request) {
         // ...
     })->name('unsubscribe')->middleware('signed');
+
+Nếu trong signed URL của bạn không chứa tên miền trong URL hash, bạn nên cung cấp tham số `relative` cho middleware:
+
+    Route::post('/unsubscribe/{user}', function (Request $request) {
+        // ...
+    })->name('unsubscribe')->middleware('signed:relative');
 
 <a name="responding-to-invalid-signed-routes"></a>
 #### Responding To Invalid Signed Routes
@@ -154,10 +164,8 @@ Khi ai đó truy cập một URL signed đã hết hạn, họ sẽ nhận đư�
 
     /**
      * Register the exception handling callbacks for the application.
-     *
-     * @return void
      */
-    public function register()
+    public function register(): void
     {
         $this->renderable(function (InvalidSignatureException $e) {
             return response()->view('error.link-expired', [], 403);
@@ -183,7 +191,7 @@ Nếu phương thức controller yêu cầu truyền một route parameter, bạ
 Đối với một số application, bạn có thể muốn định nghĩa các giá trị mặc định cho các tham số URL trong toàn bộ request. Ví dụ: hãy tưởng tượng nhiều route của bạn định nghĩa tham số `{locale}`:
 
     Route::get('/{locale}/posts', function () {
-        //
+        // ...
     })->name('post.index');
 
 Sẽ thật là cồng kềnh khi luôn luôn phải truyền một tham số `locale` mỗi khi bạn gọi helper `route`. Vì vậy, bạn có thể sử dụng phương thức `URL::defaults` để định nghĩa một giá trị mặc định cho tham số này và lúc nào cũng được áp dụng trong request hiện tại. Bạn có thể muốn gọi phương thức này từ [route middleware](/docs/{{version}}/middleware#assigning-middleware-to-routes) để bạn có quyền truy cập vào request hiện tại:
@@ -193,18 +201,18 @@ Sẽ thật là cồng kềnh khi luôn luôn phải truyền một tham số `l
     namespace App\Http\Middleware;
 
     use Closure;
+    use Illuminate\Http\Request;
     use Illuminate\Support\Facades\URL;
+    use Symfony\Component\HttpFoundation\Response;
 
     class SetDefaultLocaleForUrls
     {
         /**
-         * Handle the incoming request.
+         * Handle an incoming request.
          *
-         * @param  \Illuminate\Http\Request  $request
-         * @param  \Closure  $next
-         * @return \Illuminate\Http\Response
+         * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
          */
-        public function handle($request, Closure $next)
+        public function handle(Request $request, Closure $next): Response
         {
             URL::defaults(['locale' => $request->user()->locale]);
 
@@ -215,7 +223,7 @@ Sẽ thật là cồng kềnh khi luôn luôn phải truyền một tham số `l
 Khi giá trị mặc định cho tham số `locale` đã được cài đặt, bạn sẽ không cần phải truyền giá trị của nó khi tạo URL thông qua helper `route`.
 
 <a name="url-defaults-middleware-priority"></a>
-#### URL Defaults & Middleware Priority
+#### URL Defaults và Middleware Priority
 
 Việc set giá trị mặc định của URL có thể cản trở việc xử lý các liên kết ngầm model của Laravel. Do đó, bạn nên [ưu tiên middleware của bạn](/docs/{{version}}/middleware#sorting-middleware) về set mặc định URL được chạy trước middleware `SubstituteBindings` của Laravel. Bạn có thể thực hiện điều này bằng cách đưa middleware của bạn lên trước middleware `SubstituteBindings` trong thuộc tính `$middlewarePriority` của HTTP kernel của ứng dụng của bạn.
 

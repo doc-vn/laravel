@@ -8,15 +8,16 @@
     - [Routing](#routing)
     - [Xác thực và lưu trữ](#authentication-and-storage)
     - [Truy cập đến Scope](#access-scopes)
+    - [Slack Bot Scopes](#slack-bot-scopes)
     - [Tham số tuỳ chọn](#optional-parameters)
 - [Lấy ra thông tin User](#retrieving-user-details)
 
 <a name="introduction"></a>
 ## Giới thiệu
 
-Ngoài những cách authentication thông thường dựa trên form, Laravel cũng cung cấp thêm một số cách đơn giản, thuận tiện để authentication với các provider OAuth khác bằng cách sử dụng [Laravel Socialite](https://github.com/laravel/socialite). Socialite hiện hỗ trợ authentication thông qua Facebook, Twitter, LinkedIn, Google, GitHub, GitLab, và Bitbucket.
+Ngoài những cách authentication thông thường dựa trên form, Laravel cũng cung cấp thêm một số cách đơn giản, thuận tiện để authentication với các provider OAuth khác bằng cách sử dụng [Laravel Socialite](https://github.com/laravel/socialite). Socialite hiện hỗ trợ authentication thông qua Facebook, Twitter, LinkedIn, Google, GitHub, GitLab, Bitbucket, và Slack.
 
-> **Note**
+> [!NOTE]
 > Bộ chuyển đổi cho các nền tảng này có sẵn thông qua trang web [Socialite Providers](https://socialiteproviders.com/) do cộng đồng phát triển.
 
 <a name="installation"></a>
@@ -38,7 +39,7 @@ Khi nâng cấp lên phiên bản mới của Socialite, điều quan trọng l�
 
 Trước khi sử dụng Socialite, bạn sẽ cần phải thêm thông tin các OAuth provider mà application của bạn đang muốn sử dụng. Thông thường, những thông tin xác thực này có thể được lấy ra bằng cách tạo "ứng dụng dành cho nhà phát triển" trong bảng điều khiển của dịch vụ mà bạn sẽ xác thực.
 
-Các thông tin này phải được set trong file cấu hình `config/services.php` của application của bạn và sử dụng các key `facebook`, `twitter` (OAuth 1.0), `twitter-oauth-2` (OAuth 2.0), `linkedin`, `google`, `github`, `gitlab`, hoặc `bitbucket`, tùy thuộc vào provider application của bạn yêu cầu. Ví dụ:
+Các thông tin này phải được set trong file cấu hình `config/services.php` của application của bạn và sử dụng các key `facebook`, `twitter` (OAuth 1.0), `twitter-oauth-2` (OAuth 2.0), `linkedin-openid`, `google`, `github`, `gitlab`, `bitbucket`, hoặc `slack`, tùy thuộc vào provider application của bạn yêu cầu. Ví dụ:
 
     'github' => [
         'client_id' => env('GITHUB_CLIENT_ID'),
@@ -46,7 +47,7 @@ Các thông tin này phải được set trong file cấu hình `config/services
         'redirect' => 'http://example.com/callback-url',
     ],
 
-> **Note**
+> [!NOTE]
 > Nếu tùy chọn `redirect` chứa một relative path, nó sẽ tự động được resolve thành một absolute path.
 
 <a name="authentication"></a>
@@ -97,7 +98,7 @@ Sau khi người dùng được lấy ra từ OAuth provider, bạn có thể x�
         return redirect('/dashboard');
     });
 
-> **Note**
+> [!NOTE]
 > Để biết thêm chi tiết về những thông tin người dùng mà có sẵn từ các OAuth provider, vui lòng tham khảo tài liệu về [lấy ra chi tiết người dùng](#retrieving-user-details).
 
 <a name="access-scopes"></a>
@@ -117,6 +118,33 @@ Bạn có thể ghi đè tất cả các scope đã có trong authentication req
         ->setScopes(['read:user', 'public_repo'])
         ->redirect();
 
+<a name="slack-bot-scopes"></a>
+### Slack Bot Scopes
+
+API của Slack cung cấp [các loại token truy cập khác nhau](https://api.slack.com/authentication/token-types), mỗi loại lại có một bộ [phạm vi quyền](https://api.slack.com/scopes) riêng. Socialite tương thích với các loại token truy cập Slack sau:
+
+<div class="content-list" markdown="1">
+
+- Bot (prefixed with `xoxb-`)
+- User (prefixed with `xoxp-`)
+
+</div>
+
+Mặc định, driver `slack` sẽ tạo token `user` và việc gọi phương thức `user` của driver sẽ trả về thông tin chi tiết của người dùng.
+
+Bot token chủ yếu hữu ích nếu ứng dụng của bạn phải gửi một thông báo đến một external Slack workspace do người dùng ứng dụng của bạn sở hữu. Để tạo một bot token, hãy gọi phương thức `asBotUser` trước khi chuyển hướng người dùng đến Slack để xác thực:
+
+    return Socialite::driver('slack')
+        ->asBotUser()
+        ->setScopes(['chat:write', 'chat:write.public', 'chat:write.customize'])
+        ->redirect();
+
+Ngoài ra, bạn phải gọi phương thức `asBotUser` trước khi gọi phương thức `user` để sau khi Slack chuyển hướng người dùng trở lại ứng dụng của bạn sau khi người dùng đó xác thực xong:
+
+    $user = Socialite::driver('slack')->asBotUser()->user();
+
+Khi tạo một bot token, phương thức `user` vẫn sẽ trả về một instance `Laravel\Socialite\Two\User`; tuy nhiên, chỉ có thuộc tính `token` được cung cấp. Token này có thể được lưu lại để [gửi thông báo đến Slack workspace của người dùng đã xác thực](/docs/{{version}}/notifications#notifying-external-slack-workspaces).
+
 <a name="optional-parameters"></a>
 ### Tham số tuỳ chọn
 
@@ -128,7 +156,7 @@ Một số OAuth provider hỗ trợ các tham số tùy chọn khác trong requ
         ->with(['hd' => 'example.com'])
         ->redirect();
 
-> **Warning**
+> [!WARNING]
 > Khi sử dụng phương thức `with`, bạn nên cẩn thận để không truyền bất kỳ từ khóa nào đã được dùng như `state` hoặc `response_type`.
 
 <a name="retrieving-user-details"></a>
@@ -187,5 +215,5 @@ Phương thức `stateless` có thể được sử dụng để vô hiệu hóa
 
     return Socialite::driver('google')->stateless()->user();
 
-> **Warning**
+> [!WARNING]
 > Xác thực không trạng thái sẽ không khả dụng cho driver Twitter OAuth 1.0.

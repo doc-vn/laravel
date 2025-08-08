@@ -43,7 +43,7 @@
 
 Trong nhiều application hoặc web hiện đại, WebSockets được sử dụng để thực hiện cập nhật trực tiếp lên giao diện người dùng theo thời gian thực. Sau khi dữ liệu được cập nhật lên máy chủ, thì một thông báo cũng sẽ được gửi qua kết nối WebSocket để được phía client xử lý. WebSockets cung cấp một sự thay thế mạnh mẽ và hiệu quả hơn để liên tục đồng bộ máy chủ của ứng dụng của bạn cho các thay đổi dữ liệu sẽ được phản ánh lên giao diện người dùng.
 
-Ví dụ: hãy tưởng tượng ứng dụng của bạn có thể export dữ liệu của người dùng sang file CSV và gửi email cho họ. Tuy nhiên, việc tạo file CSV này mất vài phút nên bạn chọn cách tạo và gửi file CSV qua mail trong một [queued job](/docs/{{version}}/queues). Khi CSV đã được tạo và gửi qua mail cho người dùng, chúng ta có thể sử dụng broadcasting để gửi event `App\Events\UserDataExported` mà JavaScript của ứng dụng của chúng ta nhận được. Sau khi nhận được event, chúng ta có thể hiển thị thông báo cho người dùng là file CSV của họ đã được gửi qua email và họ không cần phải refresh lại trang.
+Ví dụ: hãy tưởng tượng ứng dụng của bạn có thể export dữ liệu của người dùng sang file CSV và gửi email cho họ. Tuy nhiên, việc tạo file CSV này mất vài phút nên bạn chọn cách tạo và gửi file CSV qua mail trong một [queued job](/docs/{{version}}/queues). Khi CSV đã được tạo và gửi qua mail cho người dùng, chúng ta có thể sử dụng broadcasting để gửi một event `App\Events\UserDataExported` mà JavaScript của ứng dụng của chúng ta nhận được. Sau khi nhận được event, chúng ta có thể hiển thị thông báo cho người dùng là file CSV của họ đã được gửi qua email và họ không cần phải refresh lại trang.
 
 Để hỗ trợ bạn trong việc xây dựng các loại chức năng này, Laravel giúp bạn dễ dàng "broadcast" Laravel [events](/docs/{{version}}/events) phía máy chủ của bạn qua kết nối WebSocket. Broadcasting các event Laravel của bạn cho phép bạn chia sẻ cùng tên event và dữ liệu giữa ứng dụng Laravel bên server và ứng dụng JavaScript phía client của bạn.
 
@@ -52,9 +52,9 @@ Các khái niệm cốt lõi đằng sau việc broadcasting rất đơn giản:
 <a name="supported-drivers"></a>
 #### Supported Drivers
 
-Mặc định, Laravel có chứa driver broadcasting cho server-side để bạn lựa chọn: [Pusher Channels](https://pusher.com/channels) và [Ably](https://ably.com). Tuy nhiên, các package hướng trên cộng đồng như [laravel-websockets](https://beyondco.de/docs/laravel-websockets/getting-started/introduction) và [soketi](https://docs.soketi.app/) cũng cung cấp thêm các driver broadcasting và không yêu cầu một giấy phép broadcasting thương mại.
+Mặc định, Laravel có chứa driver broadcasting cho server-side để bạn lựa chọn: [Pusher Channels](https://pusher.com/channels) và [Ably](https://ably.com). Tuy nhiên, các package do cộng đồng phát triển như [soketi](https://docs.soketi.app/) cũng cung cấp thêm các driver broadcasting và không yêu cầu một giấy phép broadcasting thương mại.
 
-> **Note**
+> [!NOTE]
 > Trước khi đi sâu vào broadcasting event, hãy đảm bảo là bạn đã đọc tài liệu của Laravel về [event và listener](/docs/{{version}}/events).
 
 <a name="server-side-installation"></a>
@@ -110,10 +110,13 @@ Cuối cùng, bạn đã sẵn sàng để cài đặt và cấu hình [Laravel 
 <a name="pusher-compatible-open-source-alternatives"></a>
 #### Open Source Pusher Alternatives
 
-Các package [laravel-websockets](https://github.com/beyondcode/laravel-websockets) và [soketi](https://docs.soketi.app/) sẽ cung cấp các server WebSocket tương thích với Pusher cho Laravel. Các package này cho phép bạn tận dụng toàn bộ sức mạnh của Laravel Broadcasting mà không cần các nhà cung cấp WebSocket thương mại. Để biết thêm thông tin về cách cài đặt và hướng dẫn sử dụng các package này, vui lòng tham khảo tài liệu của chúng tôi về [các lựa chọn thay thế nguồn mở](#open-source-alternatives).
+[soketi](https://docs.soketi.app/) cung cấp một server WebSocket tương thích với Pusher cho Laravel, cho phép bạn tận dụng toàn bộ sức mạnh của Laravel Broadcasting mà không cần các nhà cung cấp WebSocket thương mại. Để biết thêm thông tin về cách cài đặt và hướng dẫn sử dụng package mã nguồn mở cho broadcasting, vui lòng tham khảo tài liệu của chúng tôi về [các lựa chọn thay thế mã nguồn mở](#open-source-alternatives).
 
 <a name="ably"></a>
 ### Ably
+
+> [!NOTE]
+> Tài liệu dưới đây sẽ thảo luận về cách dùng Ably trong chế độ "tương thích với Pusher". Tuy nhiên, Ably team rất khuyến khích bạn và duy trì một broadcaster, một Echo client có thể tận dụng tối đa các khả năng độc đáo do Ably cung cấp. Để biết thêm thông tin về cách sử dụng các driver được Ably cung cấp, vui lòng [tham khảo tài liệu về broadcaster Laravel của Ably](https://github.com/ably/laravel-broadcaster).
 
 Nếu bạn định broadcast các event của bạn bằng [Ably](https://ably.com), thì bạn nên cài đặt Ably PHP SDK bằng trình quản lý package Composer:
 
@@ -137,11 +140,6 @@ Cuối cùng, bạn đã sẵn sàng để cài đặt và cấu hình [Laravel 
 
 <a name="open-source-alternatives"></a>
 ### Open Source Alternatives
-
-<a name="open-source-alternatives-php"></a>
-#### PHP
-
-Package [laravel-websockets](https://github.com/beyondcode/laravel-websockets) là một package WebSocket tương thích với PHP thuần dành cho Laravel. Package này cho phép bạn tận dụng toàn bộ sức mạnh của Laravel Broadcasting mà không cần phải nhà cung cấp WebSocket thương mại. Để biết thêm thông tin về cách cài đặt và sử dụng package này, vui lòng tham khảo [tài liệu chính thức](https://beyondco.de/docs/laravel-websockets) của nó.
 
 <a name="open-source-alternatives-node"></a>
 #### Node
@@ -179,10 +177,10 @@ window.Echo = new Echo({
 Khi bạn đã bỏ comment và điều chỉnh cấu hình Echo theo nhu cầu của bạn, bạn có thể biên dịch các asset của ứng dụng:
 
 ```shell
-npm run dev
+npm run build
 ```
 
-> **Note**
+> [!NOTE]
 > Để tìm hiểu thêm về cách biên dịch asset JavaScript cho ứng dụng của bạn, vui lòng tham khảo tài liệu về [Vite](/docs/{{version}}/vite).
 
 <a name="using-an-existing-client-instance"></a>
@@ -207,6 +205,9 @@ window.Echo = new Echo({
 
 <a name="client-ably"></a>
 ### Ably
+
+> [!NOTE]
+> Tài liệu dưới đây sẽ thảo luận về cách dùng Ably trong chế độ "tương thích với Pusher". Tuy nhiên, Ably team rất khuyến khích bạn và duy trì một broadcaster, một Echo client có thể tận dụng tối đa các khả năng độc đáo do Ably cung cấp. Để biết thêm thông tin về cách sử dụng các driver được Ably cung cấp, vui lòng [tham khảo tài liệu về broadcaster Laravel của Ably](https://github.com/ably/laravel-broadcaster).
 
 [Laravel Echo](https://github.com/laravel/echo) là một thư viện JavaScript giúp bạn dễ dàng đăng ký channel và lắng nghe các event do các driver broadcasting server-side của bạn. Bạn có thể cài đặt Echo thông qua trình quản lý package NPM. Trong ví dụ này, chúng ta cũng sẽ cài đặt package `pusher-js`.
 
@@ -244,7 +245,7 @@ Khi bạn đã bỏ comment và điều chỉnh cấu hình Echo theo nhu cầu 
 npm run dev
 ```
 
-> **Note**
+> [!NOTE]
 > Để tìm hiểu thêm về cách biên dịch asset JavaScript cho ứng dụng của bạn, vui lòng tham khảo tài liệu về [Vite](/docs/{{version}}/vite).
 
 <a name="concept-overview"></a>
@@ -254,7 +255,7 @@ Broadcasting event của Laravel cho phép bạn broadcast các event Laravel �
 
 Các event được broadcast qua các "channels", có thể chỉ định là công khai hoặc là riêng tư. Bất kỳ client nào truy cập vào application của bạn đều có thể đăng ký channel công khai mà không cần bất kỳ authentication hoặc authorization nào; tuy nhiên, để đăng ký channel private, người dùng phải được authentication và authorization để listen trên channel đó.
 
-> **Note**
+> [!NOTE]
 > Nếu bạn muốn sử dụng một open source để thay thế cho Pusher, hãy xem thử [các lựa chọn package thay thế nguồn mở](#open-source-alternatives).
 
 <a name="using-example-application"></a>
@@ -281,7 +282,6 @@ Khi người dùng đang xem một trong các đơn hàng của họ, chúng ta 
     use Illuminate\Broadcasting\Channel;
     use Illuminate\Broadcasting\InteractsWithSockets;
     use Illuminate\Broadcasting\PresenceChannel;
-    use Illuminate\Broadcasting\PrivateChannel;
     use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
     use Illuminate\Queue\SerializesModels;
 
@@ -297,14 +297,32 @@ Khi người dùng đang xem một trong các đơn hàng của họ, chúng ta 
 
 Interface `ShouldBroadcast` yêu cầu event của chúng ta cần định nghĩa một phương thức là `broadcastOn`. Phương thức này sẽ chịu trách nhiệm trả về các channel mà event này sẽ broadcast trên đó. Một empty stub của phương thức này sẽ được định nghĩa sẵn cho chúng ta trên các class event đã được tạo ra, vì vậy chúng ta sẽ chỉ cần điền các thông tin chi tiết về nó. Chúng ta muốn chỉ duy nhất người đã tạo đơn hàng này mới có thể xem trạng thái, vì vậy chúng ta sẽ cần broadcast event này trên một channel private được gắn với đơn đặt hàng:
 
+    use Illuminate\Broadcasting\Channel;
+    use Illuminate\Broadcasting\PrivateChannel;
+
+    /**
+     * Get the channel the event should broadcast on.
+     */
+    public function broadcastOn(): Channel
+    {
+        return new PrivateChannel('orders.'.$this->order->id);
+    }
+
+Nếu bạn muốn event được broadcast đến nhiều channel, bạn có thể trả về một `array`:
+
+    use Illuminate\Broadcasting\PrivateChannel;
+
     /**
      * Get the channels the event should broadcast on.
      *
-     * @return \Illuminate\Broadcasting\PrivateChannel
+     * @return array<int, \Illuminate\Broadcasting\Channel>
      */
-    public function broadcastOn()
+    public function broadcastOn(): array
     {
-        return new PrivateChannel('orders.'.$this->order->id);
+        return [
+            new PrivateChannel('orders.'.$this->order->id),
+            // ...
+        ];
     }
 
 <a name="example-application-authorizing-channels"></a>
@@ -313,8 +331,9 @@ Interface `ShouldBroadcast` yêu cầu event của chúng ta cần định nghĩ
 Hãy nhớ rằng, người dùng phải có phép thì mới có thể listen trên các channel private. Chúng ta có thể định nghĩa các quy tắc authorization cho channel này trong file `routes/channels.php` của application. Trong ví dụ này, chúng ta cần kiểm tra rằng bất kỳ người dùng nào đang cố gắng listen trên channel private `orders.1` này có phải là người đã tạo ra đơn đặt hàng hay không:
 
     use App\Models\Order;
+    use App\Models\User;
 
-    Broadcast::channel('order.{orderId}', function ($user, $orderId) {
+    Broadcast::channel('orders.{orderId}', function (User $user, int $orderId) {
         return $user->id === Order::findOrNew($orderId)->user_id;
     });
 
@@ -358,31 +377,22 @@ Interface `ShouldBroadcast` yêu cầu bạn implement một phương thức: `b
         use SerializesModels;
 
         /**
-         * The user that created the server.
-         *
-         * @var \App\Models\User
-         */
-        public $user;
-
-        /**
          * Create a new event instance.
-         *
-         * @param  \App\Models\User  $user
-         * @return void
          */
-        public function __construct(User $user)
-        {
-            $this->user = $user;
-        }
+        public function __construct(
+            public User $user,
+        ) {}
 
         /**
          * Get the channels the event should broadcast on.
          *
-         * @return Channel|array
+         * @return array<int, \Illuminate\Broadcasting\Channel>
          */
-        public function broadcastOn()
+        public function broadcastOn(): array
         {
-            return new PrivateChannel('user.'.$this->user->id);
+            return [
+                new PrivateChannel('user.'.$this->user->id),
+            ];
         }
     }
 
@@ -395,10 +405,8 @@ Mặc định, Laravel sẽ broadcast event bằng tên class của event. Tuy n
 
     /**
      * The event's broadcast name.
-     *
-     * @return string
      */
-    public function broadcastAs()
+    public function broadcastAs(): string
     {
         return 'server.created';
     }
@@ -429,9 +437,9 @@ Tuy nhiên, nếu bạn muốn có quyền kiểm soát chi tiết hơn đối v
     /**
      * Get the data to broadcast.
      *
-     * @return array
+     * @return array<string, mixed>
      */
-    public function broadcastWith()
+    public function broadcastWith(): array
     {
         return ['id' => $this->user->id];
     }
@@ -459,10 +467,8 @@ Ngoài ra, bạn có thể tùy chỉnh tên queue bằng cách định nghĩa p
 
     /**
      * The name of the queue on which to place the broadcasting job.
-     *
-     * @return string
      */
-    public function broadcastQueue()
+    public function broadcastQueue(): string
     {
         return 'default';
     }
@@ -475,7 +481,7 @@ Nếu bạn muốn broadcast event của bạn bằng queue `sync` thay vì driv
 
     class OrderShipmentStatusUpdated implements ShouldBroadcastNow
     {
-        //
+        // ...
     }
 
 <a name="broadcast-conditions"></a>
@@ -485,10 +491,8 @@ Thỉnh thoảng bạn cũng có thể muốn broadcast event của bạn trong 
 
     /**
      * Determine if this event should broadcast.
-     *
-     * @return bool
      */
-    public function broadcastWhen()
+    public function broadcastWhen(): bool
     {
         return $this->order->value > 100;
     }
@@ -498,23 +502,22 @@ Thỉnh thoảng bạn cũng có thể muốn broadcast event của bạn trong 
 
 Khi các broadcast event được gửi đi trong các database transaction, chúng có thể được queue xử lý trước khi database transaction được thực hiện. Khi điều này xảy ra, bất kỳ cập nhật nào mà bạn đã thực hiện đối với model hoặc record cơ sở dữ liệu trong quá trình database transaction có thể chưa được phản ánh trong cơ sở dữ liệu. Ngoài ra, bất kỳ model hoặc record cơ sở dữ liệu nào được tạo trong transaction có thể không tồn tại trong cơ sở dữ liệu. Nếu event của bạn phụ thuộc vào các model này, lỗi không mong muốn có thể xảy ra khi job broadcast event được xử lý.
 
-Nếu tùy chọn cấu hình `after_commit` của queue connection của bạn được set thành `false`, thì bạn vẫn có thể cho biết một broadcast event sẽ được gửi đi sau khi tất cả các database transaction đã được thực hiện bằng cách định nghĩa thuộc tính `$afterCommit` trên class event đó:
+Nếu tùy chọn cấu hình `after_commit` của queue connection của bạn được set thành `false`, thì bạn vẫn có thể cho biết một broadcast event sẽ được gửi đi sau khi tất cả các database transaction đã được thực hiện bằng cách implement interface `ShouldDispatchAfterCommit` trên class event đó:
 
     <?php
 
     namespace App\Events;
 
     use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
+    use Illuminate\Contracts\Events\ShouldDispatchAfterCommit;
     use Illuminate\Queue\SerializesModels;
 
-    class ServerCreated implements ShouldBroadcast
+    class ServerCreated implements ShouldBroadcast, ShouldDispatchAfterCommit
     {
         use SerializesModels;
-
-        public $afterCommit = true;
     }
 
-> **Note**
+> [!NOTE]
 > Để tìm hiểu thêm về cách khắc phục những sự cố như thế này, vui lòng xem lại tài liệu về [queued job và database transaction](/docs/{{version}}/queues#jobs-and-database-transactions).
 
 <a name="authorizing-channels"></a>
@@ -578,7 +581,9 @@ window.Echo = new Echo({
 
 Tiếp theo, chúng ta cần định nghĩa các logic sẽ được determine if the currently authenticated user can listen to a given channel. Điều này sẽ được thực hiện trong file `routes/channels.php` đi kèm với application. Trong file này, bạn có thể sử dụng phương thức `Broadcast::channel` để đăng ký các callback authorization channel:
 
-    Broadcast::channel('orders.{orderId}', function ($user, $orderId) {
+    use App\Models\User;
+
+    Broadcast::channel('orders.{orderId}', function (User $user, int $orderId) {
         return $user->id === Order::findOrNew($orderId)->user_id;
     });
 
@@ -586,18 +591,25 @@ Phương thức `channel` chấp nhận hai tham số: một là tên của chan
 
 Tất cả các callback authorization đều nhận vào tham số đầu tiên là người dùng hiện tại đang được authenticate và tham số tiếp theo là một tham số đại diện. Trong ví dụ này, chúng ta đang sử dụng biến `{orderId}` để chỉ ra phần "ID" của tên channel.
 
+Bạn có thể xem một danh sách các callback của broadcast authorization trong ứng dụng của bằng lệnh Artisan `channel:list`:
+
+```shell
+php artisan channel:list
+```
+
 <a name="authorization-callback-model-binding"></a>
 #### Authorization Callback Model Binding
 
 Giống như các route HTTP, các route channel cũng có thể tận dụng các [route model binding](/docs/{{version}}/routing#route-model-binding). Ví dụ, thay vì nhận một chuỗi ID hoặc một chuỗi số thứ tự, bạn có thể yêu cầu một instance model `Order`:
 
     use App\Models\Order;
+    use App\Models\User;
 
-    Broadcast::channel('orders.{order}', function ($user, Order $order) {
+    Broadcast::channel('orders.{order}', function (User $user, Order $order) {
         return $user->id === $order->user_id;
     });
 
-> **Warning**
+> [!WARNING]
 > Không giống như liên kết model route HTTP, liên kết model channel không cung cấp hỗ trợ tự động [scope theo liên kết model ngầm](/docs/{{version}}/routing#implicit-model-binding-scoping). Tuy nhiên, đây hiếm khi là vấn đề vì hầu hết các channel có thể được xác định scope dựa trên khóa chính, duy nhất của một model.
 
 <a name="authorization-callback-authentication"></a>
@@ -637,28 +649,22 @@ Cuối cùng, bạn có thể viết các logic cấp quyền cho channel của 
     {
         /**
          * Create a new channel instance.
-         *
-         * @return void
          */
         public function __construct()
         {
-            //
+            // ...
         }
 
         /**
          * Authenticate the user's access to the channel.
-         *
-         * @param  \App\Models\User  $user
-         * @param  \App\Models\Order  $order
-         * @return array|bool
          */
-        public function join(User $user, Order $order)
+        public function join(User $user, Order $order): array|bool
         {
             return $user->id === $order->user_id;
         }
     }
 
-> **Note**
+> [!NOTE]
 > Giống như nhiều class khác trong Laravel, các class channel sẽ tự động được resolve bởi [service container](/docs/{{version}}/container). Vì vậy, bạn có thể khai báo bất kỳ phụ thuộc nào mà channel của bạn cần trong hàm tạo của nó.
 
 <a name="broadcasting-events"></a>
@@ -690,7 +696,7 @@ axios.post('/task', task)
 
 Tuy nhiên, hãy nhớ rằng chúng ta đang broadcast một event tạo task. Nếu JavaScript của bạn cũng đang listening event này, để thêm task mới vào danh sách task, thì bạn có thể có các task trùng lặp trong danh sách của bạn: một là từ route và một là từ broadcast. Bạn có thể giải quyết điều này bằng cách sử dụng phương thức `toOthers` để hướng dẫn broadcaster không broadcast event tới người dùng hiện tại.
 
-> **Warning**
+> [!WARNING]
 > Event của bạn phải sử dụng trait `Illuminate\Broadcasting\InteractsWithSockets` để gọi phương thức `toOthers`.
 
 <a name="only-to-others-configuration"></a>
@@ -733,8 +739,6 @@ Ngoài ra, bạn có thể chỉ định kết nối broadcast của event bằn
 
         /**
          * Create a new event instance.
-         *
-         * @return void
          */
         public function __construct()
         {
@@ -808,7 +812,7 @@ Ngoài ra, bạn có thể thêm tiền tố cho các class event với một d�
 ```js
 Echo.channel('orders')
     .listen('.Namespace\\Event\\Class', (e) => {
-        //
+        // ...
     });
 ```
 
@@ -824,7 +828,9 @@ Tất cả các presence channel cũng là các private channel; do đó, ngư�
 
 Dữ liệu được trả về bởi authorization callback cũng sẽ được cung cấp cho những người khác đang listen event trong presence channel của JavaScript của bạn. Nếu người dùng không được phép tham gia presence channel, bạn nên trả về `false` hoặc `null`:
 
-    Broadcast::channel('chat.{roomId}', function ($user, $roomId) {
+    use App\Models\User;
+
+    Broadcast::channel('chat.{roomId}', function (User $user, int $roomId) {
         if ($user->canJoinRoom($roomId)) {
             return ['id' => $user->id, 'name' => $user->name];
         }
@@ -838,7 +844,7 @@ Dữ liệu được trả về bởi authorization callback cũng sẽ được
 ```js
 Echo.join(`chat.${roomId}`)
     .here((users) => {
-        //
+        // ...
     })
     .joining((user) => {
         console.log(user.name);
@@ -861,11 +867,13 @@ Các presence channel có thể nhận các event giống như các public hoặ
     /**
      * Get the channels the event should broadcast on.
      *
-     * @return Channel|array
+     * @return array<int, \Illuminate\Broadcasting\Channel>
      */
-    public function broadcastOn()
+    public function broadcastOn(): array
     {
-        return new PresenceChannel('room.'.$this->message->room_id);
+        return [
+            new PresenceChannel('chat.'.$this->message->room_id),
+        ];
     }
 
 Cũng như các event khác, bạn có thể sử dụng helper `broadcast` và phương thức `toOthers` để loại người dùng hiện tại ra khỏi việc nhận broadcast:
@@ -882,14 +890,14 @@ Echo.join(`chat.${roomId}`)
     .joining(/* ... */)
     .leaving(/* ... */)
     .listen('NewMessage', (e) => {
-        //
+        // ...
     });
 ```
 
 <a name="model-broadcasting"></a>
 ## Model Broadcasting
 
-> **Warning**
+> [!WARNING]
 > Trước khi đọc tài liệu dưới đây về model broadcasting, chúng tôi khuyên bạn nên làm quen với các khái niệm chung về các service model broadcasting của Laravel cũng như cách tạo và lắng nghe các broadcast event.
 
 Thông thường sẽ broadcast các event khi [model Eloquent](/docs/{{version}}/eloquent) của ứng dụng của bạn được tạo, cập nhật hoặc xóa. Tất nhiên, điều này có thể dễ dàng được thực hiện bằng cách [định nghĩa các custom event cho các thay đổi trạng thái của model Eloquent](/docs/{{version}}/eloquent#events) và đánh dấu các event đó bằng interface `ShouldBroadcast`.
@@ -903,10 +911,12 @@ Tuy nhiên, nếu bạn không sử dụng các event này cho bất kỳ mục 
 
 namespace App\Models;
 
+use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Database\Eloquent\BroadcastsEvents;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Post extends Model
 {
@@ -915,7 +925,7 @@ class Post extends Model
     /**
      * Get the user that the post belongs to.
      */
-    public function user()
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
@@ -923,10 +933,9 @@ class Post extends Model
     /**
      * Get the channels that model events should broadcast on.
      *
-     * @param  string  $event
-     * @return \Illuminate\Broadcasting\Channel|array
+     * @return array<int, \Illuminate\Broadcasting\Channel|\Illuminate\Database\Eloquent\Model>
      */
-    public function broadcastOn($event)
+    public function broadcastOn(string $event): array
     {
         return [$this, $this->user];
     }
@@ -941,10 +950,9 @@ Ngoài ra, bạn có thể nhận thấy rằng phương thức `broadcastOn` c�
 /**
  * Get the channels that model events should broadcast on.
  *
- * @param  string  $event
- * @return \Illuminate\Broadcasting\Channel|array
+ * @return array<string, array<int, \Illuminate\Broadcasting\Channel|\Illuminate\Database\Eloquent\Model>>
  */
-public function broadcastOn($event)
+public function broadcastOn(string $event): array
 {
     return match ($event) {
         'deleted' => [],
@@ -963,11 +971,8 @@ use Illuminate\Database\Eloquent\BroadcastableModelEventOccurred;
 
 /**
  * Create a new broadcastable model event for the model.
- *
- * @param  string  $event
- * @return \Illuminate\Database\Eloquent\BroadcastableModelEventOccurred
  */
-protected function newBroadcastableEvent($event)
+protected function newBroadcastableEvent(string $event): BroadcastableModelEventOccurred
 {
     return (new BroadcastableModelEventOccurred(
         $this, $event
@@ -991,12 +996,13 @@ use Illuminate\Broadcasting\PrivateChannel;
 /**
  * Get the channels that model events should broadcast on.
  *
- * @param  string  $event
- * @return \Illuminate\Broadcasting\Channel|array
+ * @return array<int, \Illuminate\Broadcasting\Channel>
  */
-public function broadcastOn($event)
+public function broadcastOn(string $event): array
 {
-    return [new PrivateChannel('user.'.$this->id)];
+    return [
+        new PrivateChannel('user.'.$this->id)
+    ];
 }
 ```
 
@@ -1006,7 +1012,7 @@ Nếu bạn định trả về một instance channel từ phương thức `broa
 return [new Channel($this->user)];
 ```
 
-Nếu bạn cần xác định xem tên channel của một model, bạn có thể gọi phương thức `broadcastChannel` trên bất kỳ instance model nào. Ví dụ: phương thức này trả về chuỗi `App.Models.User.1` cho model `App\Models\User` với `id` là `1`:
+Nếu bạn cần xác định xem tên channel của một model, bạn có thể gọi phương thức `broadcastChannel` trên bất kỳ instance model nào. Ví dụ: phương thức này trả về chuỗi `App.Models.User.1` cho một model `App\Models\User` với `id` là `1`:
 
 ```php
 $user->broadcastChannel()
@@ -1038,11 +1044,8 @@ Nếu muốn, bạn có thể định nghĩa một tuỳ biến tên broadcast v
 ```php
 /**
  * The model event's broadcast name.
- *
- * @param  string  $event
- * @return string|null
  */
-public function broadcastAs($event)
+public function broadcastAs(string $event): string|null
 {
     return match ($event) {
         'created' => 'post.created',
@@ -1053,10 +1056,9 @@ public function broadcastAs($event)
 /**
  * Get the data to broadcast for the model.
  *
- * @param  string  $event
- * @return array
+ * @return array<string, mixed>
  */
-public function broadcastWith($event)
+public function broadcastWith(string $event): array
 {
     return match ($event) {
         'created' => ['title' => $this->title],
@@ -1084,7 +1086,7 @@ Echo.private(`App.Models.User.${this.user.id}`)
 <a name="client-events"></a>
 ## Client Event
 
-> **Note**
+> [!NOTE]
 > Khi sử dụng [Pusher Channels](https://pusher.com/channels), bạn phải bật tùy chọn "Client Events" trong phần "App Settings" của [bảng điều khiển ứng dụng](https://dashboard.pusher.com/) để gửi các client event.
 
 Thỉnh thoảng bạn có thể muốn broadcast một event cho những client được kết nối khác mà không cần gọi application Laravel của bạn. Điều này có thể đặc biệt hữu ích cho những việc như thông báo "đang gõ", bạn muốn thông báo cho người dùng application của bạn rằng có một người dùng khác đang gõ một tin nhắn trên màn hình.

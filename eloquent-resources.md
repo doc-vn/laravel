@@ -44,7 +44,7 @@ php artisan make:resource UserCollection
 <a name="concept-overview"></a>
 ## Khái niệm tổng quan
 
-> **Note**
+> [!NOTE]
 > Đây là tổng quan về resource và resource collection. Bạn được khuyến khích đọc các phần khác của tài liệu này để hiểu sâu hơn về khả năng tùy biến và sức mạnh của các resource có thể cung cấp cho bạn.
 
 Trước khi đi sâu vào tất cả các tùy chọn có sẵn cho bạn khi bạn viết resource, trước tiên chúng ta hãy xem về cách sử dụng resource trong Laravel. Một class resource sẽ đại diện cho một model cần chuyển đổi thành dạng JSON. Ví dụ, đây là một resource class `UserResource` đơn giản:
@@ -53,6 +53,7 @@ Trước khi đi sâu vào tất cả các tùy chọn có sẵn cho bạn khi b
 
     namespace App\Http\Resources;
 
+    use Illuminate\Http\Request;
     use Illuminate\Http\Resources\Json\JsonResource;
 
     class UserResource extends JsonResource
@@ -60,10 +61,9 @@ Trước khi đi sâu vào tất cả các tùy chọn có sẵn cho bạn khi b
         /**
          * Transform the resource into an array.
          *
-         * @param  \Illuminate\Http\Request  $request
-         * @return array
+         * @return array<string, mixed>
          */
-        public function toArray($request)
+        public function toArray(Request $request): array
         {
             return [
                 'id' => $this->id,
@@ -82,7 +82,7 @@ Lưu ý rằng chúng ta có thể truy cập vào các thuộc tính của mode
     use App\Http\Resources\UserResource;
     use App\Models\User;
 
-    Route::get('/user/{id}', function ($id) {
+    Route::get('/user/{id}', function (string $id) {
         return new UserResource(User::findOrFail($id));
     });
 
@@ -110,6 +110,7 @@ Khi class resource collection đã được tạo, bạn có thể dễ dàng đ
 
     namespace App\Http\Resources;
 
+    use Illuminate\Http\Request;
     use Illuminate\Http\Resources\Json\ResourceCollection;
 
     class UserCollection extends ResourceCollection
@@ -117,10 +118,9 @@ Khi class resource collection đã được tạo, bạn có thể dễ dàng đ
         /**
          * Transform the resource collection into an array.
          *
-         * @param  \Illuminate\Http\Request  $request
-         * @return array
+         * @return array<int|string, mixed>
          */
-        public function toArray($request)
+        public function toArray(Request $request): array
         {
             return [
                 'data' => $this->collection,
@@ -196,15 +196,16 @@ Ví dụ: `UserCollection` sẽ thử ánh xạ các instance user vào một re
 <a name="writing-resources"></a>
 ## Viết Resources
 
-> **Note**
+> [!NOTE]
 > Nếu bạn chưa đọc phần [khái niệm tổng quan](#concept-overview), bạn được khuyến khích đọc nó trước khi tiếp tục với phần này.
 
-Về bản chất, resource rất đơn giản. Nó chỉ cần chuyển đổi một model thành một mảng. Vì vậy, mỗi resource chứa một phương thức `toArray` để giúp chuyển các thuộc tính của model của bạn thành một mảng thân thiện với API để có thể được trả về từ các route hoặc controller của ứng dụng của bạn:
+Resource chỉ cần chuyển đổi một model thành một mảng. Vì vậy, mỗi resource chứa một phương thức `toArray` để giúp chuyển các thuộc tính của model của bạn thành một mảng thân thiện với API để có thể được trả về từ các route hoặc controller của ứng dụng của bạn:
 
     <?php
 
     namespace App\Http\Resources;
 
+    use Illuminate\Http\Request;
     use Illuminate\Http\Resources\Json\JsonResource;
 
     class UserResource extends JsonResource
@@ -212,10 +213,9 @@ Về bản chất, resource rất đơn giản. Nó chỉ cần chuyển đổi 
         /**
          * Transform the resource into an array.
          *
-         * @param  \Illuminate\Http\Request  $request
-         * @return array
+         * @return array<string, mixed>
          */
-        public function toArray($request)
+        public function toArray(Request $request): array
         {
             return [
                 'id' => $this->id,
@@ -232,7 +232,7 @@ Khi một resource đã được định nghĩa xong, nó có thể được tr�
     use App\Http\Resources\UserResource;
     use App\Models\User;
 
-    Route::get('/user/{id}', function ($id) {
+    Route::get('/user/{id}', function (string $id) {
         return new UserResource(User::findOrFail($id));
     });
 
@@ -242,14 +242,14 @@ Khi một resource đã được định nghĩa xong, nó có thể được tr�
 Nếu bạn muốn thêm các quan hệ vào trong một response của bạn, bạn có thể thêm chúng vào mảng được trả về trong phương thức `toArray` của resource của bạn. Trong ví dụ này, chúng ra sẽ sử dụng phương thức `collection` của resource `PostResource` để thêm các post trên blog của người dùng vào response của resource:
 
     use App\Http\Resources\PostResource;
+    use Illuminate\Http\Request;
 
     /**
      * Transform the resource into an array.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @return array
+     * @return array<string, mixed>
      */
-    public function toArray($request)
+    public function toArray(Request $request): array
     {
         return [
             'id' => $this->id,
@@ -261,7 +261,7 @@ Nếu bạn muốn thêm các quan hệ vào trong một response của bạn, b
         ];
     }
 
-> **Note**
+> [!NOTE]
 > Nếu bạn chỉ thêm các quan hệ chỉ khi chúng đã được load, hãy xem tài liệu về [điều kiện cho quan hệ](#conditional-relationships).
 
 <a name="writing-resource-collections"></a>
@@ -282,6 +282,7 @@ Tuy nhiên, nếu bạn cần tùy chỉnh dữ liệu meta được trả về 
 
     namespace App\Http\Resources;
 
+    use Illuminate\Http\Request;
     use Illuminate\Http\Resources\Json\ResourceCollection;
 
     class UserCollection extends ResourceCollection
@@ -289,10 +290,9 @@ Tuy nhiên, nếu bạn cần tùy chỉnh dữ liệu meta được trả về 
         /**
          * Transform the resource collection into an array.
          *
-         * @param  \Illuminate\Http\Request  $request
-         * @return array
+         * @return array<string, mixed>
          */
-        public function toArray($request)
+        public function toArray(Request $request): array
         {
             return [
                 'data' => $this->collection,
@@ -334,24 +334,6 @@ Mặc định, resource ngoài cùng của bạn sẽ được bao bọc bởi m
 }
 ```
 
-Nếu bạn muốn sử dụng một khóa tùy biến thay vì `data`, bạn có thể định nghĩa một thuộc tính `$wrap` trên resource class:
-
-    <?php
-
-    namespace App\Http\Resources;
-
-    use Illuminate\Http\Resources\Json\JsonResource;
-
-    class UserResource extends JsonResource
-    {
-        /**
-         * The "data" wrapper that should be applied.
-         *
-         * @var string|null
-         */
-        public static $wrap = 'user';
-    }
-
 Nếu bạn muốn vô hiệu hóa việc bao bọc resource này, bạn nên gọi phương thức `withoutWrapping` trên class `Illuminate\Http\Resources\Json\JsonResource`. Thông thường, bạn nên gọi phương thức này từ `AppServiceProvider` hoặc từ một [service provider](/docs/{{version}}/providers) khác để được load cho mọi request trong application của bạn:
 
     <?php
@@ -365,26 +347,22 @@ Nếu bạn muốn vô hiệu hóa việc bao bọc resource này, bạn nên g�
     {
         /**
          * Register any application services.
-         *
-         * @return void
          */
-        public function register()
+        public function register(): void
         {
-            //
+            // ...
         }
 
         /**
          * Bootstrap any application services.
-         *
-         * @return void
          */
-        public function boot()
+        public function boot(): void
         {
             JsonResource::withoutWrapping();
         }
     }
 
-> **Warning**
+> [!WARNING]
 > Phương thức `withoutWrapping` chỉ ảnh hưởng đến response ở ngoài cùng và sẽ không xóa các key `data` mà bạn đã thêm vào bên trong resource collection.
 
 <a name="wrapping-nested-resources"></a>
@@ -405,10 +383,9 @@ Bạn có thể tự hỏi liệu rằng điều này có khiến resource ngoà
         /**
          * Transform the resource collection into an array.
          *
-         * @param  \Illuminate\Http\Request  $request
-         * @return array
+         * @return array<string, mixed>
          */
-        public function toArray($request)
+        public function toArray(Request $request): array
         {
             return ['data' => $this->collection];
         }
@@ -434,8 +411,8 @@ Khi trả về một collection được phân trang thông qua một response r
         }
     ],
     "links":{
-        "first": "http://example.com/pagination?page=1",
-        "last": "http://example.com/pagination?page=1",
+        "first": "http://example.com/users?page=1",
+        "last": "http://example.com/users?page=1",
         "prev": null,
         "next": null
     },
@@ -443,7 +420,7 @@ Khi trả về một collection được phân trang thông qua một response r
         "current_page": 1,
         "from": 1,
         "last_page": 1,
-        "path": "http://example.com/pagination",
+        "path": "http://example.com/users",
         "per_page": 15,
         "to": 10,
         "total": 10
@@ -480,8 +457,8 @@ Các response được phân trang luôn chứa các key `meta` và `links` cùn
         }
     ],
     "links":{
-        "first": "http://example.com/pagination?page=1",
-        "last": "http://example.com/pagination?page=1",
+        "first": "http://example.com/users?page=1",
+        "last": "http://example.com/users?page=1",
         "prev": null,
         "next": null
     },
@@ -489,13 +466,33 @@ Các response được phân trang luôn chứa các key `meta` và `links` cùn
         "current_page": 1,
         "from": 1,
         "last_page": 1,
-        "path": "http://example.com/pagination",
+        "path": "http://example.com/users",
         "per_page": 15,
         "to": 10,
         "total": 10
     }
 }
 ```
+
+<a name="customizing-the-pagination-information"></a>
+#### Customizing the Pagination Information
+
+Nếu bạn muốn tùy chỉnh thông tin được chứa trong các key `links` hoặc `meta` của response phân trang, bạn có thể định nghĩa phương thức `paginationInformation` trên các resource. Phương thức này sẽ nhận vào dữ liệu `$paginated` và một mảng thông tin `$default` có chứa các key `links` và `meta`:
+
+    /**
+     * Customize the pagination information for the resource.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  array $paginated
+     * @param  array $default
+     * @return array
+     */
+    public function paginationInformation($request, $paginated, $default)
+    {
+        $default['links']['custom'] = 'https://example.com';
+
+        return $default;
+    }
 
 <a name="conditional-attributes"></a>
 ### Điều kiện cho thuộc tính
@@ -505,10 +502,9 @@ Các response được phân trang luôn chứa các key `meta` và `links` cùn
     /**
      * Transform the resource into an array.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @return array
+     * @return array<string, mixed>
      */
-    public function toArray($request)
+    public function toArray(Request $request): array
     {
         return [
             'id' => $this->id,
@@ -544,10 +540,9 @@ Thỉnh thoảng bạn có thể có một số thuộc tính chỉ được đ�
     /**
      * Transform the resource into an array.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @return array
+     * @return array<string, mixed>
      */
-    public function toArray($request)
+    public function toArray(Request $request): array
     {
         return [
             'id' => $this->id,
@@ -564,7 +559,7 @@ Thỉnh thoảng bạn có thể có một số thuộc tính chỉ được đ�
 
 Một lần nữa, nếu điều kiện trả về giá trị là `false`, các thuộc tính này sẽ bị xóa ra khỏi response resource trước khi nó được gửi về client.
 
-> **Warning**
+> [!WARNING]
 > Không nên sử dụng phương thức `mergeWhen` trong các mảng mà có sử dụng cả khoá string và khóa numeric. Hơn nữa, nó cũng không nên được sử dụng trong các mảng với các khóa numeric không được sắp xếp theo tuần tự.
 
 <a name="conditional-relationships"></a>
@@ -579,10 +574,9 @@ Phương thức `whenLoaded` có thể được sử dụng để load một qua
     /**
      * Transform the resource into an array.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @return array
+     * @return array<string, mixed>
      */
-    public function toArray($request)
+    public function toArray(Request $request): array
     {
         return [
             'id' => $this->id,
@@ -608,10 +602,9 @@ Phương thức `whenCounted` có thể được sử dụng để đưa count q
     /**
      * Transform the resource into an array.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @return array
+     * @return array<string, mixed>
      */
-    public function toArray($request)
+    public function toArray(Request $request): array
     {
         return [
             'id' => $this->id,
@@ -625,6 +618,15 @@ Phương thức `whenCounted` có thể được sử dụng để đưa count q
 
 Trong ví dụ này, nếu count quan hệ `posts` chưa được load, khóa `posts_count` sẽ bị xóa khỏi resource response trước khi nó được gửi đến client.
 
+Các loại tính toán khác, chẳng hạn như `avg`, `sum`, `min` và `max` cũng có thể được load có điều kiện bằng phương thức `whenAggregated`:
+
+```php
+'words_avg' => $this->whenAggregated('posts', 'words', 'avg'),
+'words_sum' => $this->whenAggregated('posts', 'words', 'sum'),
+'words_min' => $this->whenAggregated('posts', 'words', 'min'),
+'words_max' => $this->whenAggregated('posts', 'words', 'max'),
+```
+
 <a name="conditional-pivot-information"></a>
 #### Conditional Pivot Information
 
@@ -633,10 +635,9 @@ Ngoài việc thêm các thông tin quan hệ có điều kiện vào trong các
     /**
      * Transform the resource into an array.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @return array
+     * @return array<string, mixed>
      */
-    public function toArray($request)
+    public function toArray(Request $request): array
     {
         return [
             'id' => $this->id,
@@ -658,10 +659,9 @@ Nếu bảng trung gian của bạn đang sử dụng một tên accessor khác 
     /**
      * Transform the resource into an array.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @return array
+     * @return array<string, mixed>
      */
-    public function toArray($request)
+    public function toArray(Request $request): array
     {
         return [
             'id' => $this->id,
@@ -680,10 +680,9 @@ Một số tiêu chuẩn API JSON sẽ yêu cầu thêm dữ liệu meta vào c�
     /**
      * Transform the resource into an array.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @return array
+     * @return array<string, mixed>
      */
-    public function toArray($request)
+    public function toArray(Request $request): array
     {
         return [
             'data' => $this->collection,
@@ -711,10 +710,9 @@ Thỉnh thoảng bạn có thể chỉ muốn thêm một số dữ liệu meta 
         /**
          * Transform the resource collection into an array.
          *
-         * @param  \Illuminate\Http\Request  $request
-         * @return array
+         * @return array<string, mixed>
          */
-        public function toArray($request)
+        public function toArray(Request $request): array
         {
             return parent::toArray($request);
         }
@@ -722,10 +720,9 @@ Thỉnh thoảng bạn có thể chỉ muốn thêm một số dữ liệu meta 
         /**
          * Get additional data that should be returned with the resource array.
          *
-         * @param  \Illuminate\Http\Request  $request
-         * @return array
+         * @return array<string, mixed>
          */
-        public function with($request)
+        public function with(Request $request): array
         {
             return [
                 'meta' => [
@@ -753,7 +750,7 @@ Như bạn đã đọc, resources có thể được trả về trực tiếp t�
     use App\Http\Resources\UserResource;
     use App\Models\User;
 
-    Route::get('/user/{id}', function ($id) {
+    Route::get('/user/{id}', function (string $id) {
         return new UserResource(User::findOrFail($id));
     });
 
@@ -774,6 +771,8 @@ Ngoài ra, bạn cũng có thể định nghĩa một phương thức `withRespo
 
     namespace App\Http\Resources;
 
+    use Illuminate\Http\JsonResponse;
+    use Illuminate\Http\Request;
     use Illuminate\Http\Resources\Json\JsonResource;
 
     class UserResource extends JsonResource
@@ -781,10 +780,9 @@ Ngoài ra, bạn cũng có thể định nghĩa một phương thức `withRespo
         /**
          * Transform the resource into an array.
          *
-         * @param  \Illuminate\Http\Request  $request
-         * @return array
+         * @return array<string, mixed>
          */
-        public function toArray($request)
+        public function toArray(Request $request): array
         {
             return [
                 'id' => $this->id,
@@ -793,12 +791,8 @@ Ngoài ra, bạn cũng có thể định nghĩa một phương thức `withRespo
 
         /**
          * Customize the outgoing response for the resource.
-         *
-         * @param  \Illuminate\Http\Request  $request
-         * @param  \Illuminate\Http\Response
-         * @return void
          */
-        public function withResponse($request, $response)
+        public function withResponse(Request $request, JsonResponse $response): void
         {
             $response->header('X-Value', 'True');
         }

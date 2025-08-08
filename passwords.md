@@ -15,7 +15,7 @@
 
 Hầu hết các ứng dụng web đều cung cấp một cách nào đó để người dùng reset lại mật khẩu của họ. Thay vì buộc bạn phải làm lại việc này cho mọi ứng dụng mà bạn tạo ra, Laravel cung cấp một service thuận tiện để gửi link reset mật khẩu và reset lại mật khẩu một cách an toàn.
 
-> **Note**
+> [!NOTE]
 > Bạn muốn bắt đầu nhanh chóng? Hãy cài đặt [starter kit](/docs/{{version}}/starter-kits) của Laravel trong ứng dụng mới của bạn. Bộ khởi đầu của Laravel sẽ đảm nhiệm việc xây dựng toàn bộ hệ thống xác thực cho bạn, bao gồm cả việc reset mật khẩu.
 
 <a name="model-preparation"></a>
@@ -86,9 +86,12 @@ Trước khi tiếp tục, chúng ta hãy xem xét route này chi tiết hơn. �
 
 Phương thức `sendResetLink` sẽ trả về một biến "trạng thái". Trạng thái này có thể được chuyển sang ngôn ngữ khác bằng cách sử dụng helper [localization](/docs/{{version}}/localization) của Laravel để hiển thị thông báo cho người dùng về trạng thái yêu cầu của họ. Việc chuyển ngôn ngữ này được xác định bởi file ngôn ngữ `lang/{lang}/passwords.php` trong ứng dụng của bạn. Các mục cho các giá trị có thể có của biến trạng thái sẽ nằm sẵn trong file ngôn ngữ `passwords`.
 
+> [!NOTE]
+> Mặc định, Laravel application không chứa thư mục `lang`. Nếu bạn muốn tùy chỉnh các file ngôn ngữ của Laravel, bạn có thể export chúng thông qua lệnh Artisan `lang:publish`.
+
 Bạn có thể thắc mắc làm thế nào mà Laravel biết cách lấy ra bản ghi người dùng từ cơ sở dữ liệu ứng dụng của bạn khi gọi phương thức `sendResetLink` của facade `Password`. Password broker của Laravel sẽ sử dụng "user providers" của hệ thống authentication của bạn để lấy ra các bản ghi trong cơ sở dữ liệu. User provider mà được password broker sử dụng sẽ được cấu hình trong mảng cấu hình `passwords` của file cấu hình `config/auth.php` của bạn. Để tìm hiểu thêm về cách viết user provider tùy chỉnh, hãy tham khảo [tài liệu authentication](/docs/{{version}}/authentication#adding-custom-user-providers).
 
-> **Note**
+> [!NOTE]
 > Khi bạn muốn tự làm chức năng set lại mật khẩu này, thì bạn phải tự định nghĩa nội dung của các view và route của nó. Nếu bạn muốn một bộ gồm tất cả logic về xác minh và xác thực cần thiết, hãy xem [starter kit của Laravel](/docs/{{version}}/starter-kits).
 
 <a name="resetting-the-password"></a>
@@ -99,7 +102,7 @@ Bạn có thể thắc mắc làm thế nào mà Laravel biết cách lấy ra b
 
 Tiếp theo, chúng ta sẽ định nghĩa các route cần thiết để set lại mật khẩu khi người dùng nhấn vào link set lại mật khẩu đã được gửi qua email cho họ và cung cấp một mật khẩu mới. Trước tiên, hãy định nghĩa route sẽ hiển thị form set lại mật khẩu mà được hiển thị khi người dùng nhấn vào link set lại mật khẩu. Route này sẽ nhận vào tham số `token` mà chúng ta sẽ sử dụng sau này để xác minh yêu cầu set lại mật khẩu:
 
-    Route::get('/reset-password/{token}', function ($token) {
+    Route::get('/reset-password/{token}', function (string $token) {
         return view('auth.reset-password', ['token' => $token]);
     })->middleware('guest')->name('password.reset');
 
@@ -110,6 +113,7 @@ View được route này trả về sẽ hiển thị một form chứa các fie
 
 Tất nhiên, chúng ta sẽ cần định nghĩa một route để xử lý việc gửi form set lại mật khẩu. Route này sẽ chịu trách nhiệm xác thực request đến và cập nhật mật khẩu của người dùng trong cơ sở dữ liệu:
 
+    use App\Models\User;
     use Illuminate\Auth\Events\PasswordReset;
     use Illuminate\Http\Request;
     use Illuminate\Support\Facades\Hash;
@@ -125,7 +129,7 @@ Tất nhiên, chúng ta sẽ cần định nghĩa một route để xử lý vi�
 
         $status = Password::reset(
             $request->only('email', 'password', 'password_confirmation', 'token'),
-            function ($user, $password) {
+            function (User $user, string $password) {
                 $user->forceFill([
                     'password' => Hash::make($password)
                 ])->setRememberToken(Str::random(60));
@@ -145,7 +149,7 @@ Trước khi tiếp tục, chúng ta hãy xem xét route này một cách chi ti
 
 Nếu token, địa chỉ email và mật khẩu được cung cấp cho password broker là hợp lệ, thì closure mà được truyền cho phương thức `reset` sẽ được gọi. Trong closure này sẽ nhận vào một instance người dùng và mật khẩu được nhập từ form set lại mật khẩu, sau đó chúng ta có thể cập nhật mật khẩu của người dùng trong cơ sở dữ liệu.
 
-Phương thức `reset` sẽ trả về một biến "trạng thái". Trạng thái này có thể được chuyển sang ngôn ngữ khác bằng cách sử dụng helper [localization](/docs/{{version}}/localization) của Laravel để hiển thị thông báo cho người dùng về trạng thái yêu cầu của họ. Việc chuyển ngôn ngữ này được xác định bởi file ngôn ngữ `lang/{lang}/passwords.php` trong ứng dụng của bạn. Các mục cho các giá trị có thể có của biến trạng thái sẽ nằm sẵn trong file ngôn ngữ `passwords`.
+Phương thức `reset` sẽ trả về một biến "trạng thái". Trạng thái này có thể được chuyển sang ngôn ngữ khác bằng cách sử dụng helper [localization](/docs/{{version}}/localization) của Laravel để hiển thị thông báo cho người dùng về trạng thái yêu cầu của họ. Việc chuyển ngôn ngữ này được xác định bởi file ngôn ngữ `lang/{lang}/passwords.php` trong ứng dụng của bạn. Các mục cho các giá trị có thể có của biến trạng thái sẽ nằm sẵn trong file ngôn ngữ `passwords`. Nếu ứng dụng của bạn không chứa thư mục `lang`, bạn có thể tạo ra thư mục đó bằng lệnh Artisan `lang:publish`.
 
 Trước khi tiếp tục, bạn có thể thắc mắc làm thế nào mà Laravel biết cách lấy ra bản ghi người dùng từ cơ sở dữ liệu ứng dụng của bạn khi gọi phương thức `reset` của facade `Password`. Password broker của Laravel sẽ sử dụng "user providers" của hệ thống authentication của bạn để lấy ra các bản ghi trong cơ sở dữ liệu. User provider mà được password broker sử dụng sẽ được cấu hình trong mảng cấu hình `passwords` của file cấu hình `config/auth.php` của bạn. Để tìm hiểu thêm về cách viết user provider tùy chỉnh, hãy tham khảo [tài liệu authentication](/docs/{{version}}/authentication#adding-custom-user-providers).
 
@@ -170,18 +174,15 @@ Nếu bạn muốn tự động hóa quy trình này, hãy cân nhắc thêm l�
 
 Bạn có thể tùy chỉnh URL link set lại mật khẩu bằng phương thức `createUrlUsing` do class notification `ResetPassword` cung cấp. Phương thức này chấp nhận một closure nhận vào một instance người dùng đang nhận thông báo cũng như một token set lại mật khẩu. Thông thường, bạn nên gọi phương thức này từ phương thức `boot` của service provider `App\Providers\AuthServiceProvider`:
 
+    use App\Models\User;
     use Illuminate\Auth\Notifications\ResetPassword;
 
     /**
      * Register any authentication / authorization services.
-     *
-     * @return void
      */
-    public function boot()
+    public function boot(): void
     {
-        $this->registerPolicies();
-
-        ResetPassword::createUrlUsing(function ($user, string $token) {
+        ResetPassword::createUrlUsing(function (User $user, string $token) {
             return 'https://example.com/reset-password?token='.$token;
         });
     }
@@ -197,9 +198,8 @@ Bạn có thể dễ dàng sửa class notification được sử dụng để g
      * Send a password reset notification to the user.
      *
      * @param  string  $token
-     * @return void
      */
-    public function sendPasswordResetNotification($token)
+    public function sendPasswordResetNotification($token): void
     {
         $url = 'https://example.com/reset-password?token='.$token;
 

@@ -43,13 +43,11 @@ Trong ví dụ này, chúng ta sẽ định nghĩa một accessor cho thuộc t�
     {
         /**
          * Get the user's first name.
-         *
-         * @return \Illuminate\Database\Eloquent\Casts\Attribute
          */
         protected function firstName(): Attribute
         {
             return Attribute::make(
-                get: fn ($value) => ucfirst($value),
+                get: fn (string $value) => ucfirst($value),
             );
         }
     }
@@ -64,7 +62,7 @@ Như bạn có thể thấy, giá trị ban đầu của cột được truyền
 
     $firstName = $user->first_name;
 
-> **Note**
+> [!NOTE]
 > Nếu bạn muốn thêm các giá trị được tính toán này vào một mảng hoặc một chuỗi JSON trong model của bạn, [bạn sẽ cần thêm chúng](/docs/{{version}}/eloquent-serialization#appending-values-to-json).
 
 <a name="building-value-objects-from-multiple-attributes"></a>
@@ -78,13 +76,11 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 
 /**
  * Interact with the user's address.
- *
- * @return  \Illuminate\Database\Eloquent\Casts\Attribute
  */
 protected function address(): Attribute
 {
     return Attribute::make(
-        get: fn ($value, $attributes) => new Address(
+        get: fn (mixed $value, array $attributes) => new Address(
             $attributes['address_line_one'],
             $attributes['address_line_two'],
         ),
@@ -112,7 +108,7 @@ Tuy nhiên, thỉnh thoảng bạn có thể muốn cho phép cache lại cho c�
 protected function hash(): Attribute
 {
     return Attribute::make(
-        get: fn ($value) => bcrypt(gzuncompress($value)),
+        get: fn (string $value) => bcrypt(gzuncompress($value)),
     )->shouldCache();
 }
 ```
@@ -122,13 +118,11 @@ Nếu bạn muốn bỏ hành vi lưu cache này cho đối tượng của các 
 ```php
 /**
  * Interact with the user's address.
- *
- * @return  \Illuminate\Database\Eloquent\Casts\Attribute
  */
 protected function address(): Attribute
 {
     return Attribute::make(
-        get: fn ($value, $attributes) => new Address(
+        get: fn (mixed $value, array $attributes) => new Address(
             $attributes['address_line_one'],
             $attributes['address_line_two'],
         ),
@@ -152,14 +146,12 @@ Một mutator sẽ biến đổi một giá trị của một thuộc tính Eloq
     {
         /**
          * Interact with the user's first name.
-         *
-         * @return \Illuminate\Database\Eloquent\Casts\Attribute
          */
         protected function firstName(): Attribute
         {
             return Attribute::make(
-                get: fn ($value) => ucfirst($value),
-                set: fn ($value) => strtolower($value),
+                get: fn (string $value) => ucfirst($value),
+                set: fn (string $value) => strtolower($value),
             );
         }
     }
@@ -185,13 +177,11 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 
 /**
  * Interact with the user's address.
- *
- * @return  \Illuminate\Database\Eloquent\Casts\Attribute
  */
 protected function address(): Attribute
 {
     return Attribute::make(
-        get: fn ($value, $attributes) => new Address(
+        get: fn (mixed $value, array $attributes) => new Address(
             $attributes['address_line_one'],
             $attributes['address_line_two'],
         ),
@@ -227,6 +217,7 @@ Thuộc tính `$casts` phải là một mảng trong đó khóa là tên của t
 - `encrypted:collection`
 - `encrypted:object`
 - `float`
+- `hashed`
 - `integer`
 - `object`
 - `real`
@@ -260,7 +251,7 @@ Sau khi định nghĩa cast xong, thuộc tính `is_admin` sẽ luôn được c
     $user = App\Models\User::find(1);
 
     if ($user->is_admin) {
-        //
+        // ...
     }
 
 Nếu bạn cần thêm một cast mới, tạm thời trong khi chạy, bạn có thể sử dụng phương thức `mergeCasts`. Các định nghĩa cast này sẽ được thêm vào bất kỳ cast nào đã được định nghĩa trên model:
@@ -270,13 +261,13 @@ Nếu bạn cần thêm một cast mới, tạm thời trong khi chạy, bạn c
         'options' => 'object',
     ]);
 
-> **Warning**
-> Các thuộc tính `null` sẽ không được cast. Ngoài ra, bạn cũng đừng định nghĩa một cast (hoặc một thuộc tính) có cùng tên với một quan hệ.
+> [!WARNING]
+> Các thuộc tính `null` sẽ không được cast. Ngoài ra, bạn cũng đừng định nghĩa một cast (hoặc một thuộc tính) có cùng tên với một quan hệ hoặc gán một cast vào một khoá chính của một model.
 
 <a name="stringable-casting"></a>
 #### Stringable Casting
 
-Bạn có thể sử dụng class cast `Illuminate\Database\Eloquent\Casts\AsStringable` để cast model cho [đối tượng fluent `Illuminate\Support\Stringable`](/docs/{{version}}/helpers#fluent-strings-method-list):
+Bạn có thể sử dụng class cast `Illuminate\Database\Eloquent\Casts\AsStringable` để cast model cho [đối tượng fluent `Illuminate\Support\Stringable`](/docs/{{version}}/strings#fluent-strings-method-list):
 
     <?php
 
@@ -298,7 +289,7 @@ Bạn có thể sử dụng class cast `Illuminate\Database\Eloquent\Casts\AsStr
     }
 
 <a name="array-and-json-casting"></a>
-### Array & JSON Casting
+### Array và JSON Casting
 
 Cast `array` đặc biệt hữu ích khi làm việc với các cột được lưu dưới dạng JSON. Ví dụ: nếu cơ sở dữ liệu của bạn có một loại trường `JSON` hoặc `TEXT` chứa một chuỗi dưới dạng JSON, thì việc thêm `array` cast vào thuộc tính đó sẽ tự động phân giải thuộc tính đó thành một mảng PHP và khi bạn truy cập vào nó trên model Eloquent của bạn:
 
@@ -334,14 +325,14 @@ Sau khi đã định nghĩa xong cast, bạn có thể truy cập vào thuộc t
 
     $user->save();
 
-Để cập nhật một trường của thuộc tính JSON bằng một cú pháp ngắn gọn hơn, bạn có thể sử dụng toán tử `->` khi gọi phương thức `update`:
+Để cập nhật một trường của thuộc tính JSON bằng một cú pháp ngắn gọn hơn, bạn có thể [tạo một thuộc tính mass assignable](/docs/{{version}}/eloquent#mass-assignment-json-columns) và sử dụng toán tử `->` khi gọi phương thức `update`:
 
     $user = User::find(1);
 
     $user->update(['options->key' => 'value']);
 
 <a name="array-object-and-collection-casting"></a>
-#### Array Object & Collection Casting
+#### Array Object và Collection Casting
 
 Mặc dù cast `array` là đủ cho nhiều ứng dụng, nhưng nó có một số nhược điểm. Vì cast `array` sẽ yêu cầu key phải là kiểu nguyên, nên nó sẽ không thể làm việc với key khác kiểu nguyên. Ví dụ: đoạn code sau sẽ gây ra lỗi PHP:
 
@@ -375,6 +366,20 @@ Tương tự, Laravel cũng cung cấp một cast `AsCollection` để cast các
         'options' => AsCollection::class,
     ];
 
+Nếu bạn muốn cast`AsCollection` cho một instance custom collection class thay cho một base collection class của Laravel, bạn có thể cung cấp collection class name đó dưới một tham số case:
+
+    use App\Collections\OptionCollection;
+    use Illuminate\Database\Eloquent\Casts\AsCollection;
+
+    /**
+     * The attributes that should be cast.
+     *
+     * @var array
+     */
+    protected $casts = [
+        'options' => AsCollection::class.':'.OptionCollection::class,
+    ];
+
 <a name="date-casting"></a>
 ### Date Casting
 
@@ -397,11 +402,8 @@ Bạn có thể tùy chỉnh định dạng mặc định của việc chuyển 
 
     /**
      * Prepare a date for array / JSON serialization.
-     *
-     * @param  \DateTimeInterface  $date
-     * @return string
      */
-    protected function serializeDate(DateTimeInterface $date)
+    protected function serializeDate(DateTimeInterface $date): string
     {
         return $date->format('Y-m-d');
     }
@@ -416,17 +418,14 @@ Bạn có thể tùy chỉnh định dạng mặc định của việc chuyển 
     protected $dateFormat = 'U';
 
 <a name="date-casting-and-timezones"></a>
-#### Date Casting, Serialization, & Timezones
+#### Date Casting, Serialization, và Timezones
 
-Mặc định, các cast `date` và `datetime` sẽ chuyển đổi các ngày thành các chuỗi ngày UTC ISO-8601 (`1986-05-28T21:05:54.000000Z`), bất kể múi giờ được chỉ định trong tùy chọn cấu hình `timezone` của ứng dụng của bạn là gì. Bạn được khuyến khích luôn sử dụng định dạng chuyển đổi này, và cũng như cách lưu trữ ngày trong cơ sở dữ liệu bằng cách không thay đổi tùy chọn cấu hình `timezone` của ứng dụng mặc định là giá trị `UTC`. Việc sử dụng múi giờ UTC một cách nhất quán trong toàn bộ ứng dụng của bạn sẽ mang lại mức độ tương tác tối đa với các thư viện thao tác ngày khác được viết bằng PHP hoặc JavaScript.
+Mặc định, các cast `date` và `datetime` sẽ chuyển đổi các ngày thành các chuỗi ngày UTC ISO-8601 (`YYYY-MM-DDTHH:MM:SS.uuuuuuZ`), bất kể múi giờ được chỉ định trong tùy chọn cấu hình `timezone` của ứng dụng của bạn là gì. Bạn được khuyến khích luôn sử dụng định dạng chuyển đổi này, và cũng như cách lưu trữ ngày trong cơ sở dữ liệu bằng cách không thay đổi tùy chọn cấu hình `timezone` của ứng dụng mặc định là giá trị `UTC`. Việc sử dụng múi giờ UTC một cách nhất quán trong toàn bộ ứng dụng của bạn sẽ mang lại mức độ tương tác tối đa với các thư viện thao tác ngày khác được viết bằng PHP hoặc JavaScript.
 
 Nếu một định dạng tùy chỉnh được áp dụng cho kiểu `date` hoặc `datetime`, chẳng hạn như `datetime:Y-m-d H:i:s`, thì múi giờ bên trong instance Carbon sẽ được sử dụng trong quá trình chuyển đổi ngày. Thông thường, đây sẽ là múi giờ được chỉ định trong tùy chọn cấu hình `timezone` của ứng dụng của bạn.
 
 <a name="enum-casting"></a>
 ### Enum Casting
-
-> **Warning**
-> Casting Enum chỉ khả dụng cho PHP 8.1 trở lên.
 
 Eloquent cũng cho phép bạn cast các giá trị thuộc tính của bạn sang PHP [Enums](https://www.php.net/manual/en/language.enumerations.backed.php). Để thực hiện điều này, bạn có thể chỉ định thuộc tính và enum mà bạn muốn truyền vào trong mảng thuộc tính `$casts` của model:
 
@@ -518,19 +517,17 @@ Tất cả các class cast tùy chỉnh đều được implement từ interface
     namespace App\Casts;
 
     use Illuminate\Contracts\Database\Eloquent\CastsAttributes;
+    use Illuminate\Database\Eloquent\Model;
 
     class Json implements CastsAttributes
     {
         /**
          * Cast the given value.
          *
-         * @param  \Illuminate\Database\Eloquent\Model  $model
-         * @param  string  $key
-         * @param  mixed  $value
-         * @param  array  $attributes
-         * @return array
+         * @param  array<string, mixed>  $attributes
+         * @return array<string, mixed>
          */
-        public function get($model, $key, $value, $attributes)
+        public function get(Model $model, string $key, mixed $value, array $attributes): array
         {
             return json_decode($value, true);
         }
@@ -538,13 +535,9 @@ Tất cả các class cast tùy chỉnh đều được implement từ interface
         /**
          * Prepare the given value for storage.
          *
-         * @param  \Illuminate\Database\Eloquent\Model  $model
-         * @param  string  $key
-         * @param  array  $value
-         * @param  array  $attributes
-         * @return string
+         * @param  array<string, mixed>  $attributes
          */
-        public function set($model, $key, $value, $attributes)
+        public function set(Model $model, string $key, mixed $value, array $attributes): string
         {
             return json_encode($value);
         }
@@ -584,6 +577,7 @@ Ví dụ, chúng ta sẽ định nghĩa một class cast tùy chỉnh truyền n
 
     use App\ValueObjects\Address as AddressValueObject;
     use Illuminate\Contracts\Database\Eloquent\CastsAttributes;
+    use Illuminate\Database\Eloquent\Model;
     use InvalidArgumentException;
 
     class Address implements CastsAttributes
@@ -591,13 +585,9 @@ Ví dụ, chúng ta sẽ định nghĩa một class cast tùy chỉnh truyền n
         /**
          * Cast the given value.
          *
-         * @param  \Illuminate\Database\Eloquent\Model  $model
-         * @param  string  $key
-         * @param  mixed  $value
-         * @param  array  $attributes
-         * @return \App\ValueObjects\Address
+         * @param  array<string, mixed>  $attributes
          */
-        public function get($model, $key, $value, $attributes)
+        public function get(Model $model, string $key, mixed $value, array $attributes): AddressValueObject
         {
             return new AddressValueObject(
                 $attributes['address_line_one'],
@@ -608,13 +598,10 @@ Ví dụ, chúng ta sẽ định nghĩa một class cast tùy chỉnh truyền n
         /**
          * Prepare the given value for storage.
          *
-         * @param  \Illuminate\Database\Eloquent\Model  $model
-         * @param  string  $key
-         * @param  \App\ValueObjects\Address  $value
-         * @param  array  $attributes
-         * @return array
+         * @param  array<string, mixed>  $attributes
+         * @return array<string, string>
          */
-        public function set($model, $key, $value, $attributes)
+        public function set(Model $model, string $key, mixed $value, array $attributes): array
         {
             if (! $value instanceof AddressValueObject) {
                 throw new InvalidArgumentException('The given value is not an Address instance.');
@@ -637,8 +624,24 @@ Khi cast các giá trị của đối tượng, mọi thay đổi được thự
 
     $user->save();
 
-> **Note**
+> [!NOTE]
 > Nếu bạn muốn chuyển đổi các model Eloquent của bạn chứa các giá trị của đối tượng thành JSON hoặc một mảng, bạn nên implement interface `Illuminate\Contracts\Support\Arrayable` và interface `JsonSerializable` trên giá trị của đối tượng.
+
+<a name="value-object-caching"></a>
+#### Value Object Caching
+
+Khi các thuộc tính được cast thành giá trị của một đối tượng đã được resolve, chúng sẽ được Eloquent lưu vào cache. Do đó, instance đối tượng đã được lưu cache sẽ được trả về nếu thuộc tính đó được truy cập lại.
+
+Nếu bạn muốn disable hành vi lưu cache đối tượng của các custom cast class, bạn có thể khai báo thuộc tính public `withoutObjectCaching` trên custom cast class của bạn:
+
+```php
+class Address implements CastsAttributes
+{
+    public bool $withoutObjectCaching = true;
+
+    // ...
+}
+```
 
 <a name="array-json-serialization"></a>
 ### Array / JSON Serialization
@@ -650,13 +653,9 @@ Do đó, bạn có thể chỉ định class cast tùy chỉnh của bạn sẽ 
     /**
      * Get the serialized representation of the value.
      *
-     * @param  \Illuminate\Database\Eloquent\Model  $model
-     * @param  string  $key
-     * @param  mixed  $value
-     * @param  array  $attributes
-     * @return mixed
+     * @param  array<string, mixed>  $attributes
      */
-    public function serialize($model, string $key, $value, array $attributes)
+    public function serialize(Model $model, string $key, mixed $value, array $attributes): string
     {
         return (string) $value;
     }
@@ -679,37 +678,23 @@ Một ví dụ cơ bản về class cast inbound là cast một giá trị "hash
     namespace App\Casts;
 
     use Illuminate\Contracts\Database\Eloquent\CastsInboundAttributes;
+    use Illuminate\Database\Eloquent\Model;
 
     class Hash implements CastsInboundAttributes
     {
         /**
-         * The hashing algorithm.
-         *
-         * @var string
-         */
-        protected $algorithm;
-
-        /**
          * Create a new cast class instance.
-         *
-         * @param  string|null  $algorithm
-         * @return void
          */
-        public function __construct($algorithm = null)
-        {
-            $this->algorithm = $algorithm;
-        }
+        public function __construct(
+            protected string|null $algorithm = null,
+        ) {}
 
         /**
          * Prepare the given value for storage.
          *
-         * @param  \Illuminate\Database\Eloquent\Model  $model
-         * @param  string  $key
-         * @param  array  $value
-         * @param  array  $attributes
-         * @return string
+         * @param  array<string, mixed>  $attributes
          */
-        public function set($model, $key, $value, $attributes)
+        public function set(Model $model, string $key, mixed $value, array $attributes): string
         {
             return is_null($this->algorithm)
                         ? bcrypt($value)
@@ -736,7 +721,7 @@ Khi gắn một cast tùy chỉnh vào một model, các tham số cast có th�
 
 Bạn có thể muốn cho phép các giá trị của đối tượng trong ứng dụng của bạn được định nghĩa trong các class cast tùy chỉnh của riêng chúng. Thay vì gán class cast tùy chỉnh vào model của bạn, bạn có thể gán một class giá trị đối tượng implement interface `Illuminate\Contracts\Database\Eloquent\Castable`:
 
-    use App\Models\Address;
+    use App\ValueObjects\Address;
 
     protected $casts = [
         'address' => Address::class,
@@ -746,7 +731,7 @@ Các đối tượng implement interface `Castable` phải định nghĩa một 
 
     <?php
 
-    namespace App\Models;
+    namespace App\ValueObjects;
 
     use Illuminate\Contracts\Database\Eloquent\Castable;
     use App\Casts\Address as AddressCast;
@@ -756,10 +741,9 @@ Các đối tượng implement interface `Castable` phải định nghĩa một 
         /**
          * Get the name of the caster class to use when casting from / to this cast target.
          *
-         * @param  array  $arguments
-         * @return string
+         * @param  array<string, mixed>  $arguments
          */
-        public static function castUsing(array $arguments)
+        public static function castUsing(array $arguments): string
         {
             return AddressCast::class;
         }
@@ -767,7 +751,7 @@ Các đối tượng implement interface `Castable` phải định nghĩa một 
 
 Khi sử dụng các class `Castable`, bạn vẫn có thể truyền các tham số trong định nghĩa `$casts`. Các tham số này sẽ được truyền đến phương thức `castUsing`:
 
-    use App\Models\Address;
+    use App\ValueObjects\Address;
 
     protected $casts = [
         'address' => Address::class.':argument',
@@ -780,7 +764,7 @@ Bằng cách kết hợp "castables" và [anonymous class](https://www.php.net/m
 
     <?php
 
-    namespace App\Models;
+    namespace App\ValueObjects;
 
     use Illuminate\Contracts\Database\Eloquent\Castable;
     use Illuminate\Contracts\Database\Eloquent\CastsAttributes;
@@ -792,14 +776,13 @@ Bằng cách kết hợp "castables" và [anonymous class](https://www.php.net/m
         /**
          * Get the caster class to use when casting from / to this cast target.
          *
-         * @param  array  $arguments
-         * @return object|string
+         * @param  array<string, mixed>  $arguments
          */
-        public static function castUsing(array $arguments)
+        public static function castUsing(array $arguments): CastsAttributes
         {
             return new class implements CastsAttributes
             {
-                public function get($model, $key, $value, $attributes)
+                public function get(Model $model, string $key, mixed $value, array $attributes): Address
                 {
                     return new Address(
                         $attributes['address_line_one'],
@@ -807,7 +790,7 @@ Bằng cách kết hợp "castables" và [anonymous class](https://www.php.net/m
                     );
                 }
 
-                public function set($model, $key, $value, $attributes)
+                public function set(Model $model, string $key, mixed $value, array $attributes): array
                 {
                     return [
                         'address_line_one' => $value->lineOne,

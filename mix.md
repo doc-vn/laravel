@@ -16,5 +16,5 @@ mix.js('resources/js/app.js', 'public/js')
 
 Nếu bạn đã từng bối rối và choáng ngợp khi bắt đầu với Webpack và biên dịch asset, bạn sẽ thích Laravel Mix. Tuy nhiên, bạn không bắt buộc phải sử dụng nó trong khi phát triển application của bạn; Bạn có thể thoải mái sử dụng bất kỳ công cụ asset pipeline nào bạn muốn, hoặc thậm chí không dùng gì cả.
 
-> **Note**
+> [!NOTE]
 > Vite đã thay thế Laravel Mix trong các cài đặt mới của Laravel. Để biết thêm về tài liệu Mix, vui lòng truy cập trang web [Laravel Mix chính thức](https://laravel-mix.com/). Nếu bạn muốn chuyển sang Vite, vui lòng xem [hướng dẫn chuyển sang Vite](https://github.com/laravel/vite-plugin/blob/main/UPGRADE.md#migrating-from-laravel-mix-to-vite) của chúng tôi.

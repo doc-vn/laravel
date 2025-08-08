@@ -93,7 +93,7 @@ Nếu bạn muốn, bạn cũng có thể thiết lập cài đặt có sẵn v�
 }
 ```
 
-Các cài đặt có sẵn hiện được Pint hỗ trợ là: `laravel`, `psr12` và `symfony`.
+Các cài đặt có sẵn hiện được Pint hỗ trợ là: `laravel`, `per`, `psr12` và `symfony`.
 
 <a name="rules"></a>
 ### Rules

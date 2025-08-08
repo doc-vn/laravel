@@ -59,7 +59,7 @@ Blade view có thể được trả về từ các route hoặc controller bằn
 <a name="supercharging-blade-with-livewire"></a>
 ### Supercharging Blade cùng với Livewire
 
-Bạn muốn đưa các template Blade của bạn lên một tầm cao mới và dễ dàng xây dựng các giao diện động? Hãy xem [Laravel Livewire](https://laravel-livewire.com). Livewire cho phép bạn viết các component Blade được tăng cường chức năng động mà thông thường chỉ có thể thực hiện được thông qua các framework front-end như React hoặc Vue, cung cấp một phương án tuyệt vời để xây dựng các giao diện front-end hiện đại, độ tương tác cao mà không cần đến sự phức tạp, render phía client hoặc xây dựng các bước của nhiều framework JavaScript.
+Bạn muốn đưa các template Blade của bạn lên một tầm cao mới và dễ dàng xây dựng các giao diện động? Hãy xem [Laravel Livewire](https://livewire.laravel.com). Livewire cho phép bạn viết các component Blade được tăng cường chức năng động mà thông thường chỉ có thể thực hiện được thông qua các framework front-end như React hoặc Vue, cung cấp một phương án tuyệt vời để xây dựng các giao diện front-end hiện đại, độ tương tác cao mà không cần đến sự phức tạp, render phía client hoặc xây dựng các bước của nhiều framework JavaScript.
 
 <a name="displaying-data"></a>
 ## Hiển thị dữ liệu
@@ -76,7 +76,7 @@ Bạn có thể hiển thị nội dung của biến `name` như thế này:
 Hello, {{ $name }}.
 ```
 
-> **Note**
+> [!NOTE]
 > Các câu lệnh echo `{{ }}` này của Blade sẽ được tự động gửi qua hàm `htmlspecialchars` của PHP để chặn các cuộc tấn công XSS.
 
 Bạn không bị giới hạn trong việc hiển thị nội dung của các biến đã được truyền đến view. Bạn cũng có thể echo ra kết quả với bất kỳ hàm PHP nào tương tự. Thực tế, bạn có thể set bất kỳ code PHP nào mà bạn muốn vào trong lệnh echo của Blade:
@@ -88,7 +88,7 @@ The current UNIX timestamp is {{ time() }}.
 <a name="html-entity-encoding"></a>
 ### HTML Entity Encoding
 
-Mặc định, Blade (cũng như helper `e` của Laravel) sẽ mã hóa kép các thực thể HTML. Nếu bạn không muốn mã hóa kép này, hãy gọi phương thức `Blade::withoutDoubleEncoding` từ phương thức `boot` của `AppServiceProvider` của bạn:
+Mặc định, Blade (cũng như phương thức `e` của Laravel) sẽ mã hóa kép các thực thể HTML. Nếu bạn không muốn mã hóa kép này, hãy gọi phương thức `Blade::withoutDoubleEncoding` từ phương thức `boot` của `AppServiceProvider` của bạn:
 
     <?php
 
@@ -101,10 +101,8 @@ Mặc định, Blade (cũng như helper `e` của Laravel) sẽ mã hóa kép c�
     {
         /**
          * Bootstrap any application services.
-         *
-         * @return void
          */
-        public function boot()
+        public function boot(): void
         {
             Blade::withoutDoubleEncoding();
         }
@@ -119,7 +117,7 @@ Mặc định, các câu lệnh Blade `{{ }}` này sẽ được tự động g�
 Hello, {!! $name !!}.
 ```
 
-> **Warning**
+> [!WARNING]
 > Bạn hãy cẩn thận khi hiển thị một nội dung mà được cung cấp bởi người dùng. Bạn hãy luôn sử dụng escaped với cú pháp hai lần dấu ngoặc nhọn để ngăn chặn các cuộc tấn công XSS khi hiển thị dữ liệu do người dùng cung cấp.
 
 <a name="blade-and-javascript-frameworks"></a>
@@ -172,7 +170,7 @@ Các phiên bản mới nhất của Laravel framework có chứa một facade `
 </script>
 ```
 
-> **Warning**
+> [!WARNING]
 > Bạn chỉ nên sử dụng phương thức `Js::from` để tạo ra các biến hiện có dưới dạng JSON. Việc tạo thêm các template Blade dựa trên các biểu thức thông thường và việc cố gắng truyền một biểu thức phức tạp tới câu lệnh này có thể gây ra các lỗi không mong muốn.
 
 <a name="the-at-verbatim-directive"></a>
@@ -303,6 +301,19 @@ Bạn có thể sử dụng lệnh `sectionMissing` để xác định một sec
 @endif
 ```
 
+<a name="session-directives"></a>
+#### Session Directives
+
+Lệnh `@session` có thể được sử dụng để xác định xem giá trị [session](/docs/{{version}}/session) có tồn tại hay không. Nếu giá trị session tồn tại, nội dung của template trong lệnh `@session` và `@endsession` sẽ được chạy. Trong nội dung của lệnh `@session`, bạn có thể xuất ra biến `$value` để hiển thị giá trị session:
+
+```blade
+@session('status')
+    <div class="p-4 bg-green-100">
+        {{ $value }}
+    </div>
+@endsession
+```
+
 <a name="switch-statements"></a>
 ### Lệnh switch
 
@@ -348,7 +359,7 @@ Ngoài các câu lệnh có điều kiện, Blade cung cấp các lệnh đơn g
 @endwhile
 ```
 
-> **Note**
+> [!NOTE]
 > Khi lặp vòng lặp `foreach`, bạn có thể sử dụng [biến loop](#the-loop-variable) để nhận về các thông tin có giá trị về vòng lặp, chẳng hạn như bạn đang ở vòng lặp đầu tiên hoặc vòng lặp cuối cùng.
 
 Khi sử dụng các vòng lặp, bạn cũng có thể bỏ qua vòng lặp hiện tại hoặc kết thúc vòng lặp bằng cách sử dụng các lệnh `@continue` và `@break`:
@@ -512,7 +523,7 @@ Ngoài ra, lệnh `@required` có thể được sử dụng để chỉ ra li�
 <a name="including-subviews"></a>
 ### Thêm Subviews
 
-> **Note**
+> [!NOTE]
 > Mặc dù bạn được tự do sử dụng lệnh `@include`, Blade [components](#components) cung cấp chức năng tương tự và mang lại một số lợi ích hơn so với lệnh `@include`, chẳng hạn như liên kết dữ liệu và thuộc tính.
 
 Lệnh `@include` của Blade cho phép bạn thêm một Blade view vào bên trong một view xem khác. Tất cả các biến có sẵn của view chính sẽ được cung cấp cho view được thêm vào:
@@ -553,7 +564,7 @@ Nếu bạn muốn `@include` một view nếu một biểu thức boolean đã 
 @includeFirst(['custom.admin', 'admin'], ['status' => 'complete'])
 ```
 
-> **Warning**
+> [!WARNING]
 > Bạn nên tránh sử dụng các hằng số `__DIR__` và `__FILE__` trong view Blade của bạn, vì chúng sẽ đề cập đến vị trí của view khi được biên dịch và được lưu trong bộ nhớ cache.
 
 <a name="rendering-views-for-collections"></a>
@@ -573,7 +584,7 @@ Bạn cũng có thể truyền đối số thứ tư cho lệnh `@each`. Đối 
 @each('view.name', $jobs, 'job', 'view.empty')
 ```
 
-> **Warning**
+> [!WARNING]
 > View được hiển thị qua `@each` không kế thừa các biến từ view gốc. Nếu view con yêu cầu các biến này, bạn nên sử dụng lệnh `@foreach` và `@include` để thay thế.
 
 <a name="the-once-directive"></a>
@@ -604,7 +615,7 @@ Vì lệnh `@once` thường được sử dụng kết hợp với lệnh `@pus
 <a name="raw-php"></a>
 ### Raw PHP
 
-Trong một số trường hợp, sẽ hữu ích khi nhúng mã PHP vào view của bạn. Bạn có thể sử dụng lệnh `@php` của Blade để thực thi một đoạn code PHP đơn giản trong template của bạn:
+Trong một số trường hợp, sẽ hữu ích khi nhúng code PHP vào view của bạn. Bạn có thể sử dụng lệnh `@php` của Blade để thực thi một đoạn code PHP đơn giản trong template của bạn:
 
 ```blade
 @php
@@ -612,10 +623,16 @@ Trong một số trường hợp, sẽ hữu ích khi nhúng mã PHP vào view c
 @endphp
 ```
 
-Nếu bạn chỉ cần viết một câu lệnh PHP duy nhất, bạn có thể đưa câu lệnh đó vào trong lệnh `@php`:
+Hoặc, nếu bạn chỉ muốn sử dụng PHP để import một class, bạn có thể sử dụng lệnh `@use`:
 
 ```blade
-@php($counter = 1)
+@use('App\Models\Flight')
+```
+
+Bạn có thể cung cấp tham số thứ hai cho lệnh `@use` để đặt tên cho class đã được import:
+
+```php
+@use('App\Models\Flight', 'FlightModel')
 ```
 
 <a name="comments"></a>
@@ -668,7 +685,7 @@ Tuy nhiên, nếu bạn đang xây dựng một package sử dụng các compone
     /**
      * Bootstrap your package's services.
      */
-    public function boot()
+    public function boot(): void
     {
         Blade::component('package-alert', Alert::class);
     }
@@ -685,10 +702,8 @@ Ngoài ra, bạn có thể sử dụng phương thức `componentNamespace` đ�
 
     /**
      * Bootstrap your package's services.
-     *
-     * @return void
      */
-    public function boot()
+    public function boot(): void
     {
         Blade::componentNamespace('Nightshade\\Views\\Components', 'nightshade');
     }
@@ -719,6 +734,18 @@ Nếu class component được lồng sâu hơn trong thư mục `app/View/Compo
 <x-inputs.button/>
 ```
 
+Nếu muốn render component của bạn theo một điều kiện nào đó, bạn có thể định nghĩa một phương thức `shouldRender` trên class component của bạn. Nếu phương thức `shouldRender` trả về `false` thì component sẽ không được render:
+
+    use Illuminate\Support\Str;
+
+    /**
+     * Whether the component should be rendered
+     */
+    public function shouldRender(): bool
+    {
+        return Str::length($this->message) > 0;
+    }
+
 <a name="passing-data-to-components"></a>
 ### Truyền dữ liệu tới Components
 
@@ -735,42 +762,22 @@ Bạn nên định nghĩa tất cả các dữ liệu của thuộc tính của 
     namespace App\View\Components;
 
     use Illuminate\View\Component;
+    use Illuminate\View\View;
 
     class Alert extends Component
     {
         /**
-         * The alert type.
-         *
-         * @var string
-         */
-        public $type;
-
-        /**
-         * The alert message.
-         *
-         * @var string
-         */
-        public $message;
-
-        /**
          * Create the component instance.
-         *
-         * @param  string  $type
-         * @param  string  $message
-         * @return void
          */
-        public function __construct($type, $message)
-        {
-            $this->type = $type;
-            $this->message = $message;
-        }
+        public function __construct(
+            public string $type,
+            public string $message,
+        ) {}
 
         /**
          * Get the view / contents that represent the component.
-         *
-         * @return \Illuminate\View\View|\Closure|string
          */
-        public function render()
+        public function render(): View
         {
             return view('components.alert');
         }
@@ -791,14 +798,10 @@ Các tham số của hàm khởi tạo component phải được chỉ định b
 
     /**
      * Create the component instance.
-     *
-     * @param  string  $alertType
-     * @return void
      */
-    public function __construct($alertType)
-    {
-        $this->alertType = $alertType;
-    }
+    public function __construct(
+        public string $alertType,
+    ) {}
 
 Tham số `$alertType` có thể được cung cấp vào component như sau:
 
@@ -845,11 +848,8 @@ Ngoài các biến public có sẵn trong component template của bạn, bất 
 
     /**
      * Determine if the given option is the currently selected option.
-     *
-     * @param  string  $option
-     * @return bool
      */
-    public function isSelected($option)
+    public function isSelected(string $option): bool
     {
         return $option === $this->selected;
     }
@@ -863,16 +863,16 @@ Bạn có thể thực thi phương thức này từ trong component template c�
 ```
 
 <a name="using-attributes-slots-within-component-class"></a>
-#### Accessing Attributes & Slots Within Component Classes
+#### Accessing Attributes và Slots Within Component Classes
 
 Các Blade component cũng cho phép bạn truy cập vào tên component, thuộc tính và slot bên trong phương thức render của class. Tuy nhiên, để truy cập vào các dữ liệu này, bạn nên trả về một Closure từ phương thức `render` của component của bạn. Closure sẽ nhận vào một mảng `$data` làm tham số duy nhất của nó. Mảng này sẽ chứa một số phần tử cung cấp thông tin về component:
 
+    use Closure;
+
     /**
      * Get the view / contents that represent the component.
-     *
-     * @return \Illuminate\View\View|\Closure|string
      */
-    public function render()
+    public function render(): Closure
     {
         return function (array $data) {
             // $data['componentName'];
@@ -897,18 +897,12 @@ use App\Services\AlertCreator;
 
 /**
  * Create the component instance.
- *
- * @param  \App\Services\AlertCreator  $creator
- * @param  string  $type
- * @param  string  $message
- * @return void
  */
-public function __construct(AlertCreator $creator, $type, $message)
-{
-    $this->creator = $creator;
-    $this->type = $type;
-    $this->message = $message;
-}
+public function __construct(
+    public AlertCreator $creator,
+    public string $type,
+    public string $message,
+) {}
 ```
 
 <a name="hiding-attributes-and-methods"></a>
@@ -925,18 +919,18 @@ Nếu bạn muốn ngăn không cho một số phương thức hoặc thuộc t�
     class Alert extends Component
     {
         /**
-         * The alert type.
-         *
-         * @var string
-         */
-        public $type;
-
-        /**
          * The properties / methods that should not be exposed to the component template.
          *
          * @var array
          */
         protected $except = ['type'];
+
+        /**
+         * Create the component instance.
+         */
+        public function __construct(
+            public string $type,
+        ) {}
     }
 
 <a name="component-attributes"></a>
@@ -956,7 +950,7 @@ Tất cả các thuộc tính mà không nằm trong phương thức khởi tạ
 </div>
 ```
 
-> **Warning**
+> [!WARNING]
 > Hiện tại, việc sử dụng các lệnh như `@env` trong các thẻ component không được hỗ trợ. Ví dụ: `<x-alert :live="@env('production')"/>` sẽ không được biên dịch.
 
 <a name="default-merged-attributes"></a>
@@ -1003,7 +997,7 @@ Nếu bạn cần hợp nhất các thuộc tính khác nhau vào component củ
 </button>
 ```
 
-> **Note**
+> [!NOTE]
 > Nếu bạn cần biên dịch có điều kiện các class trên các element HTML khác mà không nhận các thuộc tính được hợp nhất, bạn có thể sử dụng lệnh [`@class`](#conditional-classes).
 
 <a name="non-class-attribute-merging"></a>
@@ -1042,12 +1036,12 @@ Nếu bạn muốn một thuộc tính không phải là `class` có giá trị 
 ```
 
 <a name="filtering-attributes"></a>
-#### Retrieving & Filtering Attributes
+#### Retrieving và Filtering Attributes
 
 Bạn có thể lọc các thuộc tính bằng phương thức `filter`. Phương thức này chấp nhận một closure sẽ trả về giá trị `true` nếu bạn muốn giữ lại các thuộc tính trong attribute bag:
 
 ```blade
-{{ $attributes->filter(fn ($value, $key) => $key == 'foo') }}
+{{ $attributes->filter(fn (string $value, string $key) => $key == 'foo') }}
 ```
 
 Để thuận tiện, bạn có thể sử dụng phương thức `whereStartsWith` để lấy ra tất cả các thuộc tính có khóa bắt đầu bằng một chuỗi đã cho:
@@ -1073,6 +1067,22 @@ Nếu bạn muốn kiểm tra xem một thuộc tính có trong component hay kh
 ```blade
 @if ($attributes->has('class'))
     <div>Class attribute is present</div>
+@endif
+```
+
+Nếu một array được truyền vào phương thức `has`, thì phương thức này sẽ kiểm tra tất cả các thuộc tính đó có tồn tại trong component hay không:
+
+```blade
+@if ($attributes->has(['name', 'class']))
+    <div>All of the attributes are present</div>
+@endif
+```
+
+Phương thức `hasAny` có thể được sử dụng để kiểm tra một thuộc tính bất kỳ đã cho có tồn tại trong component hay không:
+
+```blade
+@if ($attributes->hasAny(['href', ':href', 'v-bind:href']))
+    <div>One of the attributes is present</div>
 @endif
 ```
 
@@ -1144,6 +1154,28 @@ Bạn có thể định nghĩa nội dung của một slot cụ thể bằng tag
 </x-alert>
 ```
 
+Bạn có gọi phương thức `isEmpty` trong một slot để kiểm tra xem slot đó có chứa nội dung nào hay không:
+
+```blade
+<span class="alert-title">{{ $title }}</span>
+
+<div class="alert alert-danger">
+    @if ($slot->isEmpty())
+        This is default content if the slot is empty.
+    @else
+        {{ $slot }}
+    @endif
+</div>
+```
+
+Ngoài ra, phương thức `hasActualContent` cũng có thể được sử dụng để kiểm tra slot có "thực sự" chứa bất kỳ content nào hay không, cái mà không phải là một HTML comment:
+
+```blade
+@if ($slot->hasActualContent())
+    The scope has non-comment content.
+@endif
+```
+
 <a name="scoped-slots"></a>
 #### Scoped Slots
 
@@ -1206,10 +1238,8 @@ Giống như các component của Blade, bạn có thể gán [thuộc tính](#c
 
     /**
      * Get the view / contents that represent the component.
-     *
-     * @return \Illuminate\View\View|\Closure|string
      */
-    public function render()
+    public function render(): string
     {
         return <<<'blade'
             <div class="alert alert-danger">
@@ -1233,13 +1263,15 @@ php artisan make:component Alert --inline
 Thỉnh thoảng bạn có thể cần render một component nhưng không biết component nào sẽ được render cho đến thực sự được chạy. Trong trường hợp này, bạn có thể sử dụng component `dynamic-component` có sẵn của Laravel để render ra một component dựa trên giá trị hoặc biến khi được chạy:
 
 ```blade
+// $componentName = "secondary-button";
+
 <x-dynamic-component :component="$componentName" class="mt-4" />
 ```
 
 <a name="manually-registering-components"></a>
 ### Manually Registering Components
 
-> **Warning**
+> [!WARNING]
 > Tài liệu sau đây sẽ nói về cách đăng ký component thủ công chủ yếu áp dụng cho những người đang viết các package Laravel bao gồm cả các view component. Nếu bạn không viết package, thì phần tài liệu component này có thể không liên quan đến bạn.
 
 Khi viết các component cho ứng dụng của bạn, các component sẽ tự động được phát hiện trong thư mục `app/View/Components` và thư mục `resources/views/components`.
@@ -1251,10 +1283,8 @@ Tuy nhiên, nếu bạn đang xây dựng một package sử dụng các compone
 
     /**
      * Bootstrap your package's services.
-     *
-     * @return void
      */
-    public function boot()
+    public function boot(): void
     {
         Blade::component('package-alert', AlertComponent::class);
     }
@@ -1273,10 +1303,8 @@ Ngoài ra, bạn có thể sử dụng phương thức `componentNamespace` đ�
 
     /**
      * Bootstrap your package's services.
-     *
-     * @return void
      */
-    public function boot()
+    public function boot(): void
     {
         Blade::componentNamespace('Nightshade\\Views\\Components', 'nightshade');
     }
@@ -1393,7 +1421,7 @@ Bởi vì thuộc tính `color` chỉ được truyền vào component cha (`<x-
 </li>
 ```
 
-> **Warning**
+> [!WARNING]
 > Lệnh `@aware` sẽ không thể truy cập được vào dữ liệu cha nếu bạn không truyền rõ ràng dữ liệu vào component cha thông qua các thuộc tính HTML. Mặc định, các giá trị `@props` mà không được truyền rõ ràng đến component cha thì nó cũng không thể truy cập được bởi lệnh `@aware`.
 
 <a name="anonymous-component-paths"></a>
@@ -1405,10 +1433,8 @@ Phương thức `anonymousComponentPath` chấp nhận một "đường dẫn" �
 
     /**
      * Bootstrap any application services.
-     *
-     * @return void
      */
-    public function boot()
+    public function boot(): void
     {
         Blade::anonymousComponentPath(__DIR__.'/../components');
     }
@@ -1554,7 +1580,7 @@ Khi định nghĩa view con, hãy sử dụng lệnh Blade `@extends` để ch�
 
 Trong ví dụ này, section `sidebar` đang sử dụng lệnh `@@parent` để nối thêm (chứ không phải ghi đè) nội dung vào sidebar của layout. Lệnh `@@parent` sẽ được thay thế bằng nội dung của layout khi view được hiển thị.
 
-> **Note**
+> [!NOTE]
 > Trái ngược với ví dụ trước đó, section `sidebar` này kết thúc bằng `@endsection` thay vì `@show`. Lệnh `@endsection` sẽ định nghĩa kết thúc một section trong khi `@show` cũng sẽ định nghĩa kết thúc một section nhưng nó cũng định nghĩa thêm một lệnh `@yield` để cho layout con để có thể định nghĩa thêm nội dung vào layout chính.
 
 Lệnh `@yield` cũng chấp nhận một giá trị mặc định làm tham số thứ hai của nó. Giá trị này sẽ được hiển thị nếu section đang được tạo là undefined:
@@ -1775,22 +1801,18 @@ Ví dụ sau đây sẽ tạo ra một lệnh `@datetime($var)` để format l�
     {
         /**
          * Register any application services.
-         *
-         * @return void
          */
-        public function register()
+        public function register(): void
         {
-            //
+            // ...
         }
 
         /**
          * Bootstrap any application services.
-         *
-         * @return void
          */
-        public function boot()
+        public function boot(): void
         {
-            Blade::directive('datetime', function ($expression) {
+            Blade::directive('datetime', function (string $expression) {
                 return "<?php echo ($expression)->format('m/d/Y H:i'); ?>";
             });
         }
@@ -1800,7 +1822,7 @@ Như bạn có thể thấy, chúng ta sẽ nối phương thức `format` vào 
 
     <?php echo ($var)->format('m/d/Y H:i'); ?>
 
-> **Warning**
+> [!WARNING]
 > Sau khi cập nhật logic của lệnh Blade, bạn sẽ cần xóa tất cả các view Blade đã được lưu trong bộ nhớ cache. Các view Blade được lưu trong bộ nhớ cache có thể được loại bỏ bằng lệnh Artisan `view:clear`.
 
 <a name="custom-echo-handlers"></a>
@@ -1815,10 +1837,8 @@ Trong những trường hợp như vậy, Blade cho phép bạn tuỳ chỉnh x�
 
     /**
      * Bootstrap any application services.
-     *
-     * @return void
      */
-    public function boot()
+    public function boot(): void
     {
         Blade::stringable(function (Money $money) {
             return $money->formatTo('en_GB');
@@ -1840,12 +1860,10 @@ Lập trình một lệnh tùy biến đôi khi lại là phức tạp hơn là 
 
     /**
      * Bootstrap any application services.
-     *
-     * @return void
      */
-    public function boot()
+    public function boot(): void
     {
-        Blade::if('disk', function ($value) {
+        Blade::if('disk', function (string $value) {
             return config('filesystems.default') === $value;
         });
     }

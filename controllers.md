@@ -27,23 +27,27 @@ Thay vì định nghĩa tất cả các logic xử lý cho request trong file ro
 <a name="basic-controllers"></a>
 ### Controller cơ bản
 
-Hãy xem một ví dụ về một class controller cơ bản. Lưu ý rằng controller được extend từ một class controller cơ sở đã được đi kèm với Laravel: `App\Http\Controllers\Controller`:
+Để nhanh chóng tạo một controller mới, bạn có thể chạy lệnh Artisan `make:controller`. Mặc định, tất cả các controller cho ứng dụng của bạn sẽ được lưu trữ trong thư mục `app/Http/Controllers`:
+
+```shell
+php artisan make:controller UserController
+```
+
+Chúng ta hãy xem một ví dụ về một controller cơ bản. Controller có thể có nhiều phương thức public và nó sẽ trả về các respond cho các request HTTP đến:
 
     <?php
 
     namespace App\Http\Controllers;
 
     use App\Models\User;
+    use Illuminate\View\View;
 
     class UserController extends Controller
     {
         /**
          * Show the profile for a given user.
-         *
-         * @param  int  $id
-         * @return \Illuminate\View\View
          */
-        public function show($id)
+        public function show(string $id): View
         {
             return view('user.profile', [
                 'user' => User::findOrFail($id)
@@ -51,7 +55,7 @@ Hãy xem một ví dụ về một class controller cơ bản. Lưu ý rằng co
         }
     }
 
-Bạn có định nghĩa một route tới một phương thức của controller này như sau:
+Sau khi bạn đã định nghĩa một class controller và phương thức của nó, bạn có thể định nghĩa một route tới một phương thức của controller như sau:
 
     use App\Http\Controllers\UserController;
 
@@ -59,7 +63,7 @@ Bạn có định nghĩa một route tới một phương thức của controlle
 
 Khi một request khớp với URI route đã chỉ định, phương thức `show` trên class `App\Http\Controllers\UserController` sẽ được gọi và các tham số route sẽ được truyền cho phương thức.
 
-> **Note**
+> [!NOTE]
 > Các controller không **bắt buộc** phải extend từ một class base. Tuy nhiên, bạn sẽ không có quyền truy cập vào các chức năng tiện lợi như phương thức `middleware` và `authorize`.
 
 <a name="single-action-controllers"></a>
@@ -71,14 +75,10 @@ Nếu một controller action đặc biệt phức tạp, bạn có thể thấy
 
     namespace App\Http\Controllers;
 
-    use App\Models\User;
-
     class ProvisionServer extends Controller
     {
         /**
          * Provision a new web server.
-         *
-         * @return \Illuminate\Http\Response
          */
         public function __invoke()
         {
@@ -98,7 +98,7 @@ Bạn có thể tạo một controller chỉ có một action duy nhất bằng 
 php artisan make:controller ProvisionServer --invokable
 ```
 
-> **Note**
+> [!NOTE]
 > Bạn có thể tùy chỉnh các stub của controller bằng cách [export chúng](/docs/{{version}}/artisan#stub-customization).
 
 <a name="controller-middleware"></a>
@@ -114,8 +114,6 @@ Hoặc, bạn có thể thấy thuận tiện hơn khi khai báo middleware đó
     {
         /**
          * Instantiate a new controller instance.
-         *
-         * @return void
          */
         public function __construct()
         {
@@ -127,7 +125,10 @@ Hoặc, bạn có thể thấy thuận tiện hơn khi khai báo middleware đó
 
 Controller cũng cho phép bạn đăng ký các middleware bằng cách sử dụng một closure. Điều này cung cấp một cách thuận tiện để định nghĩa middleware bên trong một single Controller mà không cần phải định nghĩa thêm một class middleware:
 
-    $this->middleware(function ($request, $next) {
+    use Closure;
+    use Illuminate\Http\Request;
+
+    $this->middleware(function (Request $request, Closure $next) {
         return $next($request);
     });
 
@@ -344,10 +345,8 @@ Mặc định, `Route::resource` sẽ tạo các URI resource bằng các độn
 
     /**
      * Define your route model bindings, pattern filters, etc.
-     *
-     * @return void
      */
-    public function boot()
+    public function boot(): void
     {
         Route::resourceVerbs([
             'create' => 'crear',
@@ -373,7 +372,7 @@ Nếu bạn cần thêm các route vào các resource controller ngoài các rou
     Route::get('/photos/popular', [PhotoController::class, 'popular']);
     Route::resource('photos', PhotoController::class);
 
-> **Note**
+> [!NOTE]
 >  Hãy nhớ giữ cho controller của bạn được tập trung. Nếu bạn cảm thấy bạn thường xuyên cần phải thêm các phương thức bên ngoài bộ resource action mặc định, hãy xem xét việc chia controller của bạn thành hai controller nhỏ hơn.
 
 <a name="singleton-resource-controllers"></a>
@@ -468,20 +467,11 @@ Laravel [service container](/docs/{{version}}/container) sẽ được sử dụ
     class UserController extends Controller
     {
         /**
-         * The user repository instance.
-         */
-        protected $users;
-
-        /**
          * Create a new controller instance.
-         *
-         * @param  \App\Repositories\UserRepository  $users
-         * @return void
          */
-        public function __construct(UserRepository $users)
-        {
-            $this->users = $users;
-        }
+        public function __construct(
+            protected UserRepository $users,
+        ) {}
     }
 
 <a name="method-injection"></a>
@@ -493,21 +483,21 @@ Ngoài việc khai báo vào hàm khởi tạo class, bạn cũng có thể khai
 
     namespace App\Http\Controllers;
 
+    use Illuminate\Http\RedirectResponse;
     use Illuminate\Http\Request;
 
     class UserController extends Controller
     {
         /**
          * Store a new user.
-         *
-         * @param  \Illuminate\Http\Request  $request
-         * @return \Illuminate\Http\Response
          */
-        public function store(Request $request)
+        public function store(Request $request): RedirectResponse
         {
             $name = $request->name;
 
-            //
+            // Store the user...
+
+            return redirect('/users');
         }
     }
 
@@ -523,19 +513,18 @@ Thì bạn vẫn có thể khai báo `Illuminate\Http\Request` và truy cập th
 
     namespace App\Http\Controllers;
 
+    use Illuminate\Http\RedirectResponse;
     use Illuminate\Http\Request;
 
     class UserController extends Controller
     {
         /**
          * Update the given user.
-         *
-         * @param  \Illuminate\Http\Request  $request
-         * @param  string  $id
-         * @return \Illuminate\Http\Response
          */
-        public function update(Request $request, $id)
+        public function update(Request $request, string $id): RedirectResponse
         {
-            //
+            // Update the user...
+
+            return redirect('/users');
         }
     }

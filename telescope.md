@@ -56,6 +56,8 @@ php artisan telescope:install
 php artisan migrate
 ```
 
+Cuối cùng, bạn có thể truy cập vào bảng điều khiển của Telescope thông qua đường dẫn `/telescope`.
+
 <a name="migration-customization"></a>
 #### Migration Customization
 
@@ -78,10 +80,8 @@ Sau khi chạy `telescope:install`, bạn nên xóa đăng ký service provider 
 
     /**
      * Register any application services.
-     *
-     * @return void
      */
-    public function register()
+    public function register(): void
     {
         if ($this->app->environment('local')) {
             $this->app->register(\Laravel\Telescope\TelescopeServiceProvider::class);
@@ -124,25 +124,25 @@ Mặc định, tất cả các dữ liệu cũ hơn 24 giờ sẽ bị lược b
 <a name="dashboard-authorization"></a>
 ### Dashboard Authorization
 
-Trang tổng quan của Telescope có thể truy cập tại route `/telescope`. Mặc định, bạn sẽ chỉ có thể truy cập được trang tổng quan này trong môi trường `local`. Trong file `app/Providers/TelescopeServiceProvider.php` của bạn, sẽ có một định nghĩa [authorization gate](/docs/{{version}}/authorization#gates). Authorization gate này sẽ kiểm soát quyền truy cập vào Telescope trong các môi trường **không phải là local**. Bạn có thể thoải mái sửa gate này nếu cần để hạn chế quyền truy cập vào cài đặt telescope của bạn:
+Trang tổng quan của Telescope có thể truy cập thông qua route `/telescope`. Mặc định, bạn sẽ chỉ có thể truy cập được trang tổng quan này trong môi trường `local`. Trong file `app/Providers/TelescopeServiceProvider.php` của bạn, sẽ có một định nghĩa [authorization gate](/docs/{{version}}/authorization#gates). Authorization gate này sẽ kiểm soát quyền truy cập vào Telescope trong các môi trường **không phải là local**. Bạn có thể thoải mái sửa gate này nếu cần để hạn chế quyền truy cập vào cài đặt telescope của bạn:
+
+    use App\Models\User;
 
     /**
      * Register the Telescope gate.
      *
      * This gate determines who can access Telescope in non-local environments.
-     *
-     * @return void
      */
-    protected function gate()
+    protected function gate(): void
     {
-        Gate::define('viewTelescope', function ($user) {
+        Gate::define('viewTelescope', function (User $user) {
             return in_array($user->email, [
                 'taylor@laravel.com',
             ]);
         });
     }
 
-> **Warning**
+> [!WARNING]
 > Bạn nên đảm bảo là bạn đã thay đổi biến môi trường `APP_ENV` thành `production` trong môi trường production của bạn. Nếu không, các cài đặt Telescope của bạn sẽ bị công khai trên môi trường internet.
 
 <a name="upgrading-telescope"></a>
@@ -181,10 +181,8 @@ Bạn có thể lọc dữ liệu được Telescope ghi lại thông qua lệnh
 
     /**
      * Register any application services.
-     *
-     * @return void
      */
-    public function register()
+    public function register(): void
     {
         $this->hideSensitiveRequestDetails();
 
@@ -207,14 +205,13 @@ Bạn có thể lọc dữ liệu được Telescope ghi lại thông qua lệnh
 Trong khi lệnh closure `filter` dùng để lọc dữ liệu cho các mục riêng lẻ, thì bạn có thể sử dụng phương thức `filterBatch` để đăng ký một lệnh closure để lọc tất cả dữ liệu cho một request hoặc một lệnh console. Nếu lệnh closure này trả về giá trị `true`, thì tất cả các mục sẽ được ghi lại bởi Telescope:
 
     use Illuminate\Support\Collection;
+    use Laravel\Telescope\IncomingEntry;
     use Laravel\Telescope\Telescope;
 
     /**
      * Register any application services.
-     *
-     * @return void
      */
-    public function register()
+    public function register(): void
     {
         $this->hideSensitiveRequestDetails();
 
@@ -223,7 +220,7 @@ Trong khi lệnh closure `filter` dùng để lọc dữ liệu cho các mục r
                 return true;
             }
 
-            return $entries->contains(function ($entry) {
+            return $entries->contains(function (IncomingEntry $entry) {
                 return $entry->isReportableException() ||
                     $entry->isFailedJob() ||
                     $entry->isScheduledTask() ||
@@ -243,10 +240,8 @@ Telescope cho phép bạn tìm kiếm các entry theo "tag". Thông thường, c
 
     /**
      * Register any application services.
-     *
-     * @return void
      */
-    public function register()
+    public function register(): void
     {
         $this->hideSensitiveRequestDetails();
 
@@ -344,6 +339,17 @@ Job watcher sẽ ghi lại dữ liệu và trạng thái của bất kỳ [job](
 
 Log watcher sẽ ghi lại dữ liệu [log](/docs/{{version}}/logging) cho bất kỳ log nào được viết bởi ứng dụng của bạn.
 
+Mặc định, Telescope sẽ chỉ ghi log ở mức `error` trở lên. Tuy nhiên, bạn có thể sửa tùy chọn `level` trong file cấu hình `config/telescope.php` của ứng dụng để sửa đổi hành vi này:
+
+    'watchers' => [
+        Watchers\LogWatcher::class => [
+            'enabled' => env('TELESCOPE_LOG_WATCHER', true),
+            'level' => 'debug',
+        ],
+
+        // ...
+    ],
+
 <a name="mail-watcher"></a>
 ### Mail Watcher
 
@@ -429,14 +435,12 @@ Trang tổng quan của Telescope sẽ hiển thị ảnh đại diện của ng
 
     /**
      * Register any application services.
-     *
-     * @return void
      */
-    public function register()
+    public function register(): void
     {
         // ...
 
-        Telescope::avatar(function ($id, $email) {
+        Telescope::avatar(function (string $id, string $email) {
             return '/avatars/'.User::find($id)->avatar_path;
         });
     }

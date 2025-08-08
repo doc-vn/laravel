@@ -18,7 +18,7 @@
 <a name="introduction"></a>
 ## Giới thiệu
 
-> **Note**
+> [!NOTE]
 > Trước khi tìm hiểu về Laravel Horizon, bạn nên tìm hiểu qua [queue services](/docs/{{version}}/queues) trong Laravel. Horizon hỗ trợ queue của Laravel với các tính năng mới nên có thể gây nhầm lẫn nếu bạn chưa quen với các tính năng cơ bản của queue do Laravel cung cấp.
 
 [Laravel Horizon](https://github.com/laravel/horizon) cung cấp một bảng điều khiển đẹp mắt và cấu hình code-driven cho [queue Redis](/docs/{{version}}/queues) được hỗ trợ bởi Laravel. Horizon cho phép bạn dễ dàng theo dõi các số liệu chính của hệ thống queue của bạn như job được thông qua, thời gian chạy hoặc job bị thất bại.
@@ -30,7 +30,7 @@ Khi sử dụng Horizon, tất cả các cấu hình queue worker của bạn đ
 <a name="installation"></a>
 ## Cài đặt
 
-> **Warning**
+> [!WARNING]
 > Laravel Horizon yêu cầu bạn sử dụng [Redis](https://redis.io) để hỗ trợ queue của bạn. Vì thế, bạn nên đảm bảo rằng queue connection của bạn đã được set thành `redis` trong file cấu hình `config/queue.php` trong apllication của bạn.
 
 Bạn có thể sử dụng Composer để cài đặt Horizon vào project Laravel của bạn:
@@ -50,7 +50,7 @@ php artisan horizon:install
 
 Sau khi export asset của Horizon xong, file cấu hình của nó sẽ được lưu tại `config/horizon.php`. File cấu hình này cho phép bạn cài đặt các tùy chọn cho queue worker cho application của bạn. Mỗi tùy chọn cài đặt này đều có chứa phần mô tả về mục đích của nó, vì vậy bạn hãy đọc kỹ file này.
 
-> **Warning**
+> [!WARNING]
 > Horizon sử dụng kết nối Redis có tên là `horizon` trong nội bộ. Tên kết nối Redis này được đặt tên trước và không được gán cho bất kỳ kết nối Redis nào khác trong file cấu hình `database.php` hoặc làm giá trị của tùy chọn `use` trong file cấu hình `horizon.php`.
 
 <a name="environments"></a>
@@ -76,7 +76,7 @@ Sau khi cài đặt, tùy chọn cấu hình Horizon chính mà bạn nên xem l
 
 Khi bạn khởi động Horizon, nó sẽ sử dụng các tùy chọn cấu hình worker process tương ứng với môi trường mà ứng dụng của bạn được chạy. Thông thường, môi trường được xác định bằng giá trị của [biến môi trường](/docs/{{version}}/configuration#determining-the-current-environment) `APP_ENV`. Ví dụ: môi trường Horizon mặc định`local` được cấu hình để bắt đầu với ba worker process và tự động cân bằng số lượng worker process được chỉ định cho mỗi queue. Môi trường `sản xuất` mặc định sẽ được cấu hình để bắt đầu tối đa 10 worker process và tự động cân bằng số lượng worker process được chỉ định cho mỗi queue.
 
-> **Warning**
+> [!WARNING]
 > Bạn nên đảm bảo tuỳ chọn `environments` trong file cấu hình `horizon` chứa các mục cho mỗi [environment](/docs/{{version}}/configuration#environment-configuration) mà bạn định chạy trên Horizon.
 
 <a name="supervisors"></a>
@@ -86,6 +86,20 @@ Như bạn có thể thấy trong file cấu hình mặc định của Horizon, 
 
 Bạn có thể thêm các supervisor vào một môi trường nhất định nếu bạn muốn định nghĩa một nhóm các worker process mới sẽ được chạy trong môi trường đó. Bạn có thể chọn thực hiện việc này nếu bạn muốn định nghĩa một chiến lược cân bằng mới hoặc một số lượng worker process nhất định cho một queue mà được ứng dụng của bạn sử dụng.
 
+<a name="maintenance-mode"></a>
+#### Maintenance Mode
+
+Trong khi ứng dụng của bạn đang ở [chế độ bảo trì](/docs/{{version}}/configuration#maintenance-mode), các queued job sẽ không được Horizon xử lý trừ khi có tùy chọn `force` của supervisor được định nghĩa là `true` trong file cấu hình Horizon:
+
+    'environments' => [
+        'production' => [
+            'supervisor-1' => [
+                // ...
+                'force' => true,
+            ],
+        ],
+    ],
+
 <a name="default-values"></a>
 #### Default Values
 
@@ -94,11 +108,11 @@ Trong file cấu hình mặc định của Horizon, bạn có thể thấy tùy 
 <a name="balancing-strategies"></a>
 ### Balancing Strategies
 
-Horizon cho phép bạn chọn từ ba chiến lược balance: `simple`, `auto`, và `false`. Chiến lược `simple` sẽ được cấu hình làm cấu hình mặc định, và nó sẽ chia đều các incoming job giữa các process:
+Horizon cho phép bạn chọn từ ba chiến lược balance: `simple`, `auto`, và `false`. Chiến lược `simple` sẽ chia đều các incoming job giữa các process:
 
     'balance' => 'simple',
 
-Chiến lược `auto` sẽ điều chỉnh số lượng process worker trên mỗi queue dựa trên khối lượng job hiện tại của queue. Ví dụ: nếu queue `notifications` của bạn có 1.000 job đang chờ trong khi queue `render` của bạn thì trống không làm gì, thì Horizon sẽ phân bổ nhiều worker hơn vào queue `notifications` của bạn cho đến khi queue đó trống.
+Chiến lược `auto` sẽ được cấu hình làm cấu hình mặc định, và sẽ điều chỉnh số lượng process worker trên mỗi queue dựa trên khối lượng job hiện tại của queue. Ví dụ: nếu queue `notifications` của bạn có 1.000 job đang chờ trong khi queue `render` của bạn thì trống không làm gì, thì Horizon sẽ phân bổ nhiều worker hơn vào queue `notifications` của bạn cho đến khi queue đó trống.
 
 Khi sử dụng chiến lược `auto`, vì bạn có thể định nghĩa các tùy chọn cấu hình `minProcesses` và `maxProcesses` để kiểm soát số lượng process worker tối thiểu và tối đa mà Horizon sẽ tăng hoặc giảm thành:
 
@@ -108,6 +122,7 @@ Khi sử dụng chiến lược `auto`, vì bạn có thể định nghĩa các 
                 'connection' => 'redis',
                 'queue' => ['default'],
                 'balance' => 'auto',
+                'autoScalingStrategy' => 'time',
                 'minProcesses' => 1,
                 'maxProcesses' => 10,
                 'balanceMaxShift' => 1,
@@ -117,6 +132,8 @@ Khi sử dụng chiến lược `auto`, vì bạn có thể định nghĩa các 
         ],
     ],
 
+Giá trị cấu hình `autoScalingStrategy` sẽ xác định xem Horizon sẽ thêm worker process vào queue nào dựa trên tổng thời gian cần thiết để thực hiện hết job trong queue (chiến lược `time`) hay theo tổng số job có trong queue (chiến lược `size`).
+
 Các giá trị cấu hình `balanceMaxShift` và `balanceCooldown` sẽ xác định cách Horizon sẽ scale như thế nào để đáp ứng nhu cầu của worker. Trong ví dụ trên, tối đa một process mới sẽ được tạo hoặc hủy sau ba giây. Bạn có thể tự do điều chỉnh các giá trị này nếu cần, dựa theo nhu cầu của ứng dụng của bạn.
 
 Khi tùy chọn `balance` được set thành `false`, thì hành vi mặc định của Laravel sẽ được sử dụng, trong đó các queue sẽ được xử lý theo thứ tự mà chúng đã được liệt kê trong cấu hình của bạn.
@@ -124,18 +141,16 @@ Khi tùy chọn `balance` được set thành `false`, thì hành vi mặc đị
 <a name="dashboard-authorization"></a>
 ### Authorization vào bảng điều khiển
 
-Horizon hiển thị bảng điều khiển tại URI `/horizon`. Mặc định, bạn sẽ chỉ có thể truy cập trang tổng quan này trong môi trường `local`. Tuy nhiên, trong file `app/Providers/HorizonServiceProvider.php` của bạn, có một định nghĩa [gate authorization](/docs/{{version}}/authorization#gates). Gate authorization này sẽ kiểm soát quyền truy cập vào Horizon trong các môi trường **không phải là local**. Bạn có thể thoải mái sửa gate này nếu cần để hạn chế quyền truy cập vào các cài đặt Horizon của bạn:
+Bảng điều khiển Horizon có thể được truy cập thông qua route `/horizon`. Mặc định, bạn sẽ chỉ có thể truy cập trang tổng quan này trong môi trường `local`. Tuy nhiên, trong file `app/Providers/HorizonServiceProvider.php` của bạn, có một định nghĩa [gate authorization](/docs/{{version}}/authorization#gates). Gate authorization này sẽ kiểm soát quyền truy cập vào Horizon trong các môi trường **không phải là local**. Bạn có thể thoải mái sửa gate này nếu cần để hạn chế quyền truy cập vào các cài đặt Horizon của bạn:
 
     /**
      * Register the Horizon gate.
      *
      * This gate determines who can access Horizon in non-local environments.
-     *
-     * @return void
      */
-    protected function gate()
+    protected function gate(): void
     {
-        Gate::define('viewHorizon', function ($user) {
+        Gate::define('viewHorizon', function (User $user) {
             return in_array($user->email, [
                 'taylor@laravel.com',
             ]);
@@ -145,7 +160,7 @@ Horizon hiển thị bảng điều khiển tại URI `/horizon`. Mặc định,
 <a name="alternative-authentication-strategies"></a>
 #### Alternative Authentication Strategies
 
-Hãy nhớ rằng Laravel sẽ tự động đưa người dùng đã xác thực vào gate closure. Nếu ứng dụng của bạn đang cung cấp bảo mật cho Horizon thông qua một phương thức khác, chẳng hạn như hạn chế IP, thì người dùng Horizon của bạn có thể không cần "đăng nhập". Do đó, bạn sẽ cần phải thay đổi format `function ($user)` của closure ở trên thành `function ($user = null)` để yêu cầu Laravel không yêu cầu xác thực.
+Hãy nhớ rằng Laravel sẽ tự động đưa người dùng đã xác thực vào gate closure. Nếu ứng dụng của bạn đang cung cấp bảo mật cho Horizon thông qua một phương thức khác, chẳng hạn như hạn chế IP, thì người dùng Horizon của bạn có thể không cần "đăng nhập". Do đó, bạn sẽ cần phải thay đổi format `function (User $user)` của closure ở trên thành `function (User $user = null)` để yêu cầu Laravel không yêu cầu xác thực.
 
 <a name="silenced-jobs"></a>
 ### Silenced Jobs
@@ -245,7 +260,7 @@ Supervisor là một process giám sát cho hệ điều hành Linux và sẽ t�
 sudo apt-get install supervisor
 ```
 
-> **Note**
+> [!NOTE]
 > Nếu bạn không muốn tự cấu hình Supervisor, hãy xem xét việc sử dụng [Laravel Forge](https://forge.laravel.com), nó sẽ tự động cài đặt và cấu hình Supervisor cho các dự án Laravel của bạn.
 
 <a name="supervisor-configuration"></a>
@@ -267,7 +282,7 @@ stopwaitsecs=3600
 
 Khi định nghĩa cấu hình supervisor, bạn phải đảm bảo rằng giá trị của `stopwaitsecs` sẽ lớn hơn số giây mà job chạy lâu nhất của bạn sử dụng. Nếu không, supervisor có thể hủy job đó trước khi nó được xử lý xong.
 
-> **Warning**
+> [!WARNING]
 > Bạn nên chắc chắn rằng giá trị của `stopwaitsecs` sẽ luôn lớn hơn số giây lâu nhất mà job của bạn đang chạy. Nếu không, Supervisor có thể kết thúc job đó trước khi nó được xử lý xong.
 
 <a name="starting-supervisor"></a>
@@ -283,7 +298,7 @@ sudo supervisorctl update
 sudo supervisorctl start horizon
 ```
 
-> **Note**
+> [!NOTE]
 > Để biết thêm thông tin về cách chạy Supervisor, hãy tham khảo [tài liệu về Supervisor](http://supervisord.org/index.html).
 
 <a name="tags"></a>
@@ -307,31 +322,18 @@ Horizon cho phép bạn gán các “tags” cho các job, bao gồm cả mailab
         use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
         /**
-         * The video instance.
-         *
-         * @var \App\Models\Video
-         */
-        public $video;
-
-        /**
          * Create a new job instance.
-         *
-         * @param  \App\Models\Video  $video
-         * @return void
          */
-        public function __construct(Video $video)
-        {
-            $this->video = $video;
-        }
+        public function __construct(
+            public Video $video,
+        ) {}
 
         /**
          * Execute the job.
-         *
-         * @return void
          */
-        public function handle()
+        public function handle(): void
         {
-            //
+            // ...
         }
     }
 
@@ -354,28 +356,45 @@ Nếu bạn muốn tự định nghĩa tag cho một trong các đối tượng 
         /**
          * Get the tags that should be assigned to the job.
          *
-         * @return array
+         * @return array<int, string>
          */
-        public function tags()
+        public function tags(): array
         {
             return ['render', 'video:'.$this->video->id];
         }
     }
 
+<a name="manually-tagging-event-listeners"></a>
+#### Manually Tagging Event Listeners
+
+Khi lấy ra các tag cho queued event listener, Horizon sẽ tự động truyền instance event tới phương thức `tags`, cho phép bạn thêm dữ liệu event vào các tag:
+
+    class SendRenderNotifications implements ShouldQueue
+    {
+        /**
+         * Get the tags that should be assigned to the listener.
+         *
+         * @return array<int, string>
+         */
+        public function tags(VideoRendered $event): array
+        {
+            return ['video:'.$event->video->id];
+        }
+    }
+
+
 <a name="notifications"></a>
 ## Thông báo
 
-> **Warning**
+> [!WARNING]
 > Khi cấu hình Horizon để gửi thông báo như Slack hoặc SMS, thì bạn cũng nên xem lại [các yêu cầu cần thiết của channel mà bạn muốn xử dụng](/docs/{{version}}/notifications).
 
 Nếu bạn muốn nhận được thông báo khi một trong các queue của bạn có thời gian chờ quá lâu, bạn có thể sử dụng các phương thức `Horizon::routeMailNotificationsTo`, `Horizon::routeSlackNotificationsTo`, và `Horizon::routeSmsNotificationsTo`. Bạn có thể gọi các phương thức này từ `App\Providers\HorizonServiceProvider`:
 
     /**
      * Bootstrap any application services.
-     *
-     * @return void
      */
-    public function boot()
+    public function boot(): void
     {
         parent::boot();
 
@@ -387,11 +406,12 @@ Nếu bạn muốn nhận được thông báo khi một trong các queue của 
 <a name="configuring-notification-wait-time-thresholds"></a>
 #### Configuring Notification Wait Time Thresholds
 
-Bạn có thể cài đặt số giây thì sẽ được coi là "chờ lâu" trong file cấu hình `config/horizon.php` trong application của bạn. Tùy chọn cấu hình `waits` trong file này cho phép bạn kiểm soát ngưỡng chờ cho mỗi connection / queue:
+Bạn có thể cài đặt số giây thì sẽ được coi là "chờ lâu" trong file cấu hình `config/horizon.php` trong application của bạn. Tùy chọn cấu hình `waits` trong file này cho phép bạn kiểm soát ngưỡng chờ cho mỗi connection và queue. Bất kỳ sự kết hợp nào giữa connection và queue mà không định nghĩa trước giá trị này sẽ mặc định ở ngưỡng là 60 giây:
 
     'waits' => [
+        'redis:critical' => 30,
         'redis:default' => 60,
-        'redis:critical,high' => 90,
+        'redis:batch' => 120,
     ],
 
 <a name="metrics"></a>
@@ -401,11 +421,8 @@ Horizon có chứa một bảng điều khiển cung cấp các thông tin về 
 
     /**
      * Define the application's command schedule.
-     *
-     * @param  \Illuminate\Console\Scheduling\Schedule  $schedule
-     * @return void
      */
-    protected function schedule(Schedule $schedule)
+    protected function schedule(Schedule $schedule): void
     {
         $schedule->command('horizon:snapshot')->everyFiveMinutes();
     }

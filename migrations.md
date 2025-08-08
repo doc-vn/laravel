@@ -44,7 +44,7 @@ Laravel sẽ sử dụng tên của migration để cố gắng đoán ra tên c
 
 Nếu bạn muốn chỉ định một path riêng cho migration được tạo ra, bạn có thể sử dụng tùy chọn `--path` khi chạy lệnh `make:migration`. Path được chỉ định phải bắt đầu từ path base của ứng dụng của bạn tạo ra.
 
-> **Note**
+> [!NOTE]
 > Các stub của migration có thể được tùy chỉnh bằng cách sử dụng [export stub](/docs/{{version}}/artisan#stub-customization)
 
 <a name="squashing-migrations"></a>
@@ -59,7 +59,7 @@ php artisan schema:dump
 php artisan schema:dump --prune
 ```
 
-Khi bạn chạy lệnh này, Laravel sẽ ghi ra một file "schema" vào thư mục `database/schema` trong ứng dụng của bạn. Tên file schema sẽ tương ứng với kết nối cơ sở dữ liệu. Bây giờ, khi bạn chạy migrate cơ sở dữ liệu của bạn mà chưa chạy file migration nào khác, thì Laravel sẽ chạy đầu tiên là các câu lệnh SQL của file schema kết nối cơ sở dữ liệu mà bạn đang sử dụng. Sau khi chạy xong các câu lệnh của file schema, Laravel sẽ chạy tiếp các file migrate còn lại mà không có trong schema dump.
+Khi bạn chạy lệnh này, Laravel sẽ ghi ra một file "schema" vào thư mục `database/schema` trong ứng dụng của bạn. Tên file schema sẽ tương ứng với kết nối cơ sở dữ liệu. Bây giờ, khi bạn chạy migrate cơ sở dữ liệu của bạn mà chưa chạy file migration nào khác, thì Laravel sẽ chạy đầu tiên là các câu lệnh SQL trong file schema kết nối cơ sở dữ liệu mà bạn đang sử dụng. Sau khi chạy xong các câu lệnh của file SQL schema, Laravel sẽ chạy tiếp các file migrate còn lại mà không có trong schema dump.
 
 Nếu các bài kiểm tra của ứng dụng của bạn sử dụng kết nối cơ sở dữ liệu nào khác, khác với kết nối mà bạn thường sử dụng trong quá trình phát triển ở local, bạn nên đảm bảo là bạn đã dump một file schema bằng kết nối cơ sở dữ liệu đó để các bài kiểm tra của bạn có thể build cơ sở dữ liệu của bạn. Bạn có thể muốn thực hiện việc này sau khi dump kết nối cơ sở dữ liệu mà bạn thường sử dụng trong quá trình phát triển ở local:
 
@@ -70,8 +70,8 @@ php artisan schema:dump --database=testing --prune
 
 Bạn nên commit file schema của cơ sở dữ liệu của bạn vào trong source control để các nhà phát triển mới khác ở trong team của bạn có thể nhanh chóng tạo ra cơ sở dữ liệu cho ứng dụng của bạn.
 
-> **Warning**
-> Tính năng dồn migration này, hiện tại sẽ chỉ có khả dụng cho cơ sở dữ liệu MySQL, PostgreSQL và SQLite, sử dụng command-line của các cơ sở dữ liệu này. File schema dump này có thể không restore lại được cho cơ sở dữ liệu in-memory SQLite.
+> [!WARNING]
+> Tính năng dồn migration này, hiện tại sẽ chỉ có khả dụng cho cơ sở dữ liệu MySQL, PostgreSQL và SQLite, sử dụng command-line của cơ sở dữ liệu bên phía client.
 
 <a name="migration-structure"></a>
 ## Cấu trúc Migration
@@ -90,10 +90,8 @@ Trong cả hai phương thức này, bạn đều có thể sử dụng schema b
     {
         /**
          * Run the migrations.
-         *
-         * @return void
          */
-        public function up()
+        public function up(): void
         {
             Schema::create('flights', function (Blueprint $table) {
                 $table->id();
@@ -105,10 +103,8 @@ Trong cả hai phương thức này, bạn đều có thể sử dụng schema b
 
         /**
          * Reverse the migrations.
-         *
-         * @return void
          */
-        public function down()
+        public function down(): void
         {
             Schema::drop('flights');
         }
@@ -128,12 +124,10 @@ Nếu migration của bạn tương tác với một kết nối cơ sở dữ l
 
     /**
      * Run the migrations.
-     *
-     * @return void
      */
-    public function up()
+    public function up(): void
     {
-        //
+        // ...
     }
 
 <a name="running-migrations"></a>
@@ -167,7 +161,7 @@ Khi tùy chọn `isolated` được cung cấp, Laravel sẽ lấy khóa atomic 
 php artisan migrate --isolated
 ```
 
-> **Warning**
+> [!WARNING]
 > Để sử dụng tính năng này, ứng dụng của bạn phải sử dụng driver cache `memcached`, `redis`, `dynamodb`, `database`, `file` hoặc `array` làm driver cache mặc định cho ứng dụng của bạn. Ngoài ra, tất cả các server phải giao tiếp cùng với một server cache trung tâm.
 
 <a name="forcing-migrations-to-run-in-production"></a>
@@ -194,6 +188,18 @@ Bạn có thể muốn rollback lại một số migration cần thiết bằng 
 php artisan migrate:rollback --step=5
 ```
 
+Bạn có thể roll back lại một "batch" migrations cụ thể bằng cách cung cấp tùy chọn `batch` cho lệnh `rollback`, trong đó tùy chọn `batch` tương ứng với giá trị batch trong bảng cơ sở dữ liệu `migrations` của ứng dụng. Ví dụ, lệnh sau sẽ roll back lại tất cả các migrations trong batch thứ ba:
+
+ ```shell
+ php artisan migrate:rollback --batch=3
+ ```
+
+Nếu bạn muốn xem các câu lệnh SQL sẽ được thực thi bởi quá trình migration mà không muốn chạy chúng, bạn có thể cung cấp flag `--pretend` cho lệnh `migrate:rollback`:
+
+```shell
+php artisan migrate:rollback --pretend
+```
+
 Lệnh `migrate:reset` sẽ rollback lại tất cả các migration của application của bạn:
 
 ```shell
@@ -201,7 +207,7 @@ php artisan migrate:reset
 ```
 
 <a name="roll-back-migrate-using-a-single-command"></a>
-#### Roll Back & Migrate Using A Single Command
+#### Roll Back và Migrate Using A Single Command
 
 Lệnh `migrate:refresh` sẽ rollback lại tất cả các migration của bạn và sau đó thực hiện lại lệnh `migrate`. Lệnh này sẽ tạo lại toàn bộ cơ sở dữ liệu của bạn:
 
@@ -219,7 +225,7 @@ php artisan migrate:refresh --step=5
 ```
 
 <a name="drop-all-tables-migrate"></a>
-#### Drop All Tables & Migrate
+#### Drop All Tables và Migrate
 
 Lệnh `migrate:fresh` sẽ xóa tất cả các bảng ra khỏi cơ sở dữ liệu và sau đó thực thi lại lệnh `migrate`:
 
@@ -229,7 +235,13 @@ php artisan migrate:fresh
 php artisan migrate:fresh --seed
 ```
 
-> **Warning**
+Mặc định, lệnh `migrate:fresh` sẽ chỉ xóa các bảng khỏi kết nối cơ sở dữ liệu mặc định. Tuy nhiên, bạn có thể sử dụng tùy chọn `--database` để chỉ định kết nối cơ sở dữ liệu nào sẽ cần migration. Tên kết nối cơ sở dữ liệu phải tương ứng với kết nối được định nghĩa trong [file cấu hình](/docs/{{version}}/configuration) `database` của ứng dụng:
+
+```shell
+php artisan migrate:fresh --database=admin
+```
+
+> [!WARNING]
 > Lệnh `migrate:fresh` sẽ xoá tất cả các bảng cơ sở dữ liệu bất kể prefix của chúng là gì. Lệnh này nên được sử dụng thận trọng khi đang phát triển trên những cơ sở dữ liệu mà nó được chia sẻ với các ứng dụng khác.
 
 <a name="tables"></a>
@@ -252,10 +264,10 @@ php artisan migrate:fresh --seed
 
 Khi tạo bảng, bạn có thể sử dụng bất kỳ [column methods](#creating-columns) nào của schema builder để định nghĩa các cột của bảng.
 
-<a name="checking-for-table-column-existence"></a>
-#### Checking For Table / Column Existence
+<a name="determining-table-column-existence"></a>
+#### Determining Table / Column Existence
 
-Bạn có thể kiểm tra sự tồn tại của một bảng hoặc một cột bằng các phương thức `hasTable` và `hasColumn`:
+Bạn có thể xác định sự tồn tại của một bảng hoặc một cột bằng các phương thức `hasTable` và `hasColumn`:
 
     if (Schema::hasTable('users')) {
         // The "users" table exists...
@@ -266,7 +278,7 @@ Bạn có thể kiểm tra sự tồn tại của một bảng hoặc một cộ
     }
 
 <a name="database-connection-table-options"></a>
-#### Database Connection & Table Options
+#### Database Connection và Table Options
 
 Nếu bạn muốn thực hiện một schema trên một kết nối cơ sở dữ liệu không phải là kết nối mặc định của application của bạn, hãy sử dụng phương thức `connection`:
 
@@ -547,7 +559,7 @@ Phương thức `foreignId` sẽ tạo một cột tương ứng với `UNSIGNED
 <a name="column-method-foreignIdFor"></a>
 #### `foreignIdFor()` {.collection-method}
 
-Phương thức `foreignIdFor` sẽ thêm một cột tương ứng với `{column}_id UNSIGNED BIGINT` cho một model class:
+Phương thức `foreignIdFor` sẽ thêm một cột tương ứng với `{column}_id` cho một model class. Kiểu cột sẽ là `UNSIGNED BIGINT`, `CHAR(36)` hoặc `CHAR(26)` tùy thuộc vào kiểu khóa model:
 
     $table->foreignIdFor(User::class);
 
@@ -606,6 +618,8 @@ Phương thức `integer` sẽ tạo một cột tương ứng với `INTEGER`:
 Phương thức `ipAddress` sẽ tạo một cột tương ứng với `VARCHAR`:
 
     $table->ipAddress('visitor');
+
+Khi sử dụng Postgres, cột `INET` sẽ được tạo.
 
 <a name="column-method-json"></a>
 #### `json()` {.collection-method}
@@ -666,7 +680,7 @@ Phương thức `mediumText` sẽ tạo một cột tương ứng với `MEDIUMT
 <a name="column-method-morphs"></a>
 #### `morphs()` {.collection-method}
 
-Phương thức `morphs` là một phương thức rất tiện lợi, nó sẽ thêm một cột tương ứng với `{column}_id` `UNSIGNED BIGINT` và một cột khác là `{column}_type` `VARCHAR`.
+Phương thức `morphs` là một phương thức rất tiện lợi, nó sẽ thêm một cột tương ứng với `{column}_id` và một cột khác là `{column}_type` `VARCHAR`. Kiểu cột cho `{column}_id` sẽ là `UNSIGNED BIGINT`, `CHAR(36)` hoặc `CHAR(26)` tùy thuộc vào kiểu khóa của model.
 
 Mục đích phương thức này là nhằm sử dụng khi định nghĩa các cột cần thiết cho [quan hệ đa hình](/docs/{{version}}/eloquent-relationships). Trong ví dụ dưới, các cột `taggable_id` và `taggable_type` sẽ được tạo:
 
@@ -986,10 +1000,8 @@ Modifier `default` sẽ chấp nhận một giá trị hoặc một instance `Il
     {
         /**
          * Run the migrations.
-         *
-         * @return void
          */
-        public function up()
+        public function up(): void
         {
             Schema::create('flights', function (Blueprint $table) {
                 $table->id();
@@ -999,15 +1011,15 @@ Modifier `default` sẽ chấp nhận một giá trị hoặc một instance `Il
         }
     };
 
-> **Warning**
-> Hỗ trợ các default expression cũng tùy thuộc vào driver cơ sở dữ liệu, phiên bản cơ sở dữ liệu và loại field của bạn. Vui lòng tham khảo thêm tài liệu database của bạn. Ngoài ra, không thể kết hợp các raw `default` expression (sử dụng `DB::raw`) với các thay đổi cột thông qua phương thức `change`.
+> [!WARNING]
+> Hỗ trợ các default expression cũng tùy thuộc vào driver cơ sở dữ liệu, phiên bản cơ sở dữ liệu và loại field của bạn. Vui lòng tham khảo thêm tài liệu database của bạn.
 
 <a name="column-order"></a>
 #### Column Order
 
 Khi sử dụng cơ sở dữ liệu MySQL, phương thức `after` có thể được sử dụng để thêm các cột vào phía sau một cột hiện có trong schema:
 
-    $table->after('password', function ($table) {
+    $table->after('password', function (Blueprint $table) {
         $table->string('address_line1');
         $table->string('address_line2');
         $table->string('city');
@@ -1016,10 +1028,22 @@ Khi sử dụng cơ sở dữ liệu MySQL, phương thức `after` có thể đ
 <a name="modifying-columns"></a>
 ### Sửa Column
 
-<a name="prerequisites"></a>
-#### Prerequisites
+Phương thức `change` cho phép bạn sửa kiểu và thuộc tính của các cột hiện có. Ví dụ, bạn có thể muốn tăng kích thước của cột `string`. Để xem phương thức `change` hoạt động như thế nào, hãy tăng kích thước của cột `name` từ 25 lên 50. Để thực hiện điều này, chúng ta chỉ cần định nghĩa trạng thái mới của cột rồi gọi phương thức `change`:
 
-Trước khi sửa một cột, bạn phải cài đặt package `doctrine/dbal` bằng Composer package manager. Thư viện Doctrine DBAL được sử dụng để xác định trạng thái hiện tại của cột và để tạo ra các truy vấn SQL cần thiết để thực hiện các yêu cầu thay đổi cột của bạn:
+    Schema::table('users', function (Blueprint $table) {
+        $table->string('name', 50)->change();
+    });
+
+Khi sửa một cột, bạn phải ghi lại tất cả các modifier mà bạn muốn giữ lại trong định nghĩa cột - bất kỳ thuộc tính nào bị thiếu thì khi chạy thuộc tính đó sẽ bị loại bỏ. Ví dụ, để giữ lại các thuộc tính `unsigned`, `default` và `comment`, bạn phải gọi các modifier đó khi thay đổi cột:
+
+    Schema::table('users', function (Blueprint $table) {
+        $table->integer('votes')->unsigned()->default(1)->comment('my comment')->change();
+    });
+
+<a name="modifying-columns-on-sqlite"></a>
+#### Modifying Columns on SQLite
+
+Nếu ứng dụng của bạn đang sử dụng cơ sở dữ liệu SQLite, bạn phải cài đặt package `doctrine/dbal` bằng Composer package manager trước khi sửa một cột. Thư viện Doctrine DBAL được sử dụng để xác định trạng thái hiện tại của cột và để tạo ra các truy vấn SQL cần thiết để thực hiện các yêu cầu thay đổi cột của bạn:
 
     composer require doctrine/dbal
 
@@ -1035,26 +1059,8 @@ use Illuminate\Database\DBAL\TimestampType;
 ],
 ```
 
-> **Warning**
-> Nếu ứng dụng của bạn đang sử dụng Microsoft SQL Server, hãy đảm bảo rằng bạn đã cài đặt `doctrine/dbal:^3.0`.
-
-<a name="updating-column-attributes"></a>
-#### Updating Column Attributes
-
-Phương thức `change` cho phép bạn sửa một số loại và thuộc tính của cột hiện có. Ví dụ: bạn có thể muốn tăng kích thước của cột `string`. Để xem phương thức `change` hoạt động như thế nào, hãy thử tăng kích thước của cột `name` từ 25 lên 50. Để thực hiện điều này, chúng ta chỉ cần định nghĩa trạng thái mới của cột và sau đó gọi phương thức `change`:
-
-    Schema::table('users', function (Blueprint $table) {
-        $table->string('name', 50)->change();
-    });
-
-Chúng ta cũng có thể sửa một cột thành nullable:
-
-    Schema::table('users', function (Blueprint $table) {
-        $table->string('name', 50)->nullable()->change();
-    });
-
-> **Warning**
-> Các loại cột sau mới có thể thay đổi: `bigInteger`, `binary`, `boolean`, `char`, `date`, `dateTime`, `dateTimeTz`, `decimal`, `double`, `integer`, `json`, `longText`, `mediumText`, `smallInteger`, `string`, `text`, `time`, `tinyText`, `unsignedBigInteger`, `unsignedInteger`, `unsignedSmallInteger`, và `uuid`.  Để sửa cột `timestamp`, bạn phải [đăng ký Doctrine type](#prerequisites).
+> [!WARNING]
+> Các loại cột sau mới có thể thay đổi: `bigInteger`, `binary`, `boolean`, `char`, `date`, `dateTime`, `dateTimeTz`, `decimal`, `double`, `integer`, `json`, `longText`, `mediumText`, `smallInteger`, `string`, `text`, `time`, `tinyText`, `unsignedBigInteger`, `unsignedInteger`, `unsignedSmallInteger`, `ulid`, và `uuid`.
 
 <a name="renaming-columns"></a>
 ### Sửa tên Column
@@ -1092,7 +1098,6 @@ Bạn có thể xóa nhiều cột từ một bảng bằng cách truyền một
     Schema::table('users', function (Blueprint $table) {
         $table->dropColumn(['votes', 'avatar', 'location']);
     });
-
 
 <a name="dropping-columns-on-legacy-databases"></a>
 #### Dropping Columns On Legacy Databases
@@ -1156,7 +1161,7 @@ Command  |  Description
 `$table->spatialIndex('location');`  |  Thêm một spatial index. (trừ SQLite).
 
 <a name="index-lengths-mysql-mariadb"></a>
-#### Index Lengths & MySQL / MariaDB
+#### Index Lengths và MySQL / MariaDB
 
 Mặc định, Laravel sử dụng ký tự mặc định là `utf8mb4`, hỗ trợ lưu trữ cả "biểu tượng cảm xúc" trong cơ sở dữ liệu. Nếu bạn đang chạy phiên bản MySQL cũ hơn phiên bản 5.7.7 hoặc MariaDB cũ hơn phiên bản 10.2.2, bạn có thể cần phải tự cấu hình độ dài mặc định của chuỗi được tạo bởi migration, để MySQL tạo index cho chúng. Bạn có thể cấu hình độ dài mặc định của chuỗi bằng cách gọi phương thức `Schema::defaultStringLength` trong phương thức `boot` của class `AppServiceProvider` của bạn:
 
@@ -1164,10 +1169,8 @@ Mặc định, Laravel sử dụng ký tự mặc định là `utf8mb4`, hỗ tr
 
     /**
      * Bootstrap any application services.
-     *
-     * @return void
      */
-    public function boot()
+    public function boot(): void
     {
         Schema::defaultStringLength(191);
     }
@@ -1181,7 +1184,7 @@ Ngoài ra, bạn có thể kích hoạt tùy chọn `innodb_large_prefix` cho c�
 
     $table->renameIndex('from', 'to')
 
-> **Warning**
+> [!WARNING]
 > Nếu ứng dụng của bạn sử dụng cơ sở dữ liệu SQLite, bạn phải cài đặt package `doctrine/dbal` thông qua trình quản lý package Composer trước khi có thể sử dụng phương thức `renameIndex`.
 
 <a name="dropping-indexes"></a>
@@ -1223,10 +1226,12 @@ Vì cú pháp này khá dài dòng, nên Laravel đã cung cấp thêm các phư
         $table->foreignId('user_id')->constrained();
     });
 
-Phương thức `foreignId` sẽ tạo một cột tương ứng với `UNSIGNED BIGINT`, trong khi phương thức `constrained` sẽ sử dụng các quy ước để xác định tên bảng và tên cột đang được tham chiếu. Nếu tên bảng của bạn không phù hợp với các quy ước của Laravel, bạn có thể chỉ định tên bảng bằng cách truyền nó làm một tham số cho phương thức `constrained`:
+Phương thức `foreignId` sẽ tạo một cột tương ứng với `UNSIGNED BIGINT`, trong khi phương thức `constrained` sẽ sử dụng các quy ước để xác định bảng và cột đang được tham chiếu. Nếu tên bảng của bạn không phù hợp với các quy ước của Laravel, bạn có thể cung cấp nó cho phương thức `constrained`. Ngoài ra, tên cần được gán cho index cũng có thể chỉ định:
 
     Schema::table('posts', function (Blueprint $table) {
-        $table->foreignId('user_id')->constrained('users');
+        $table->foreignId('user_id')->constrained(
+            table: 'users', indexName: 'posts_user_id'
+        );
     });
 
 Bạn cũng có thể khai báo hành động mong muốn cho các thuộc tính của ràng buộc "khi xóa" hoặc "khi cập nhật":
@@ -1238,13 +1243,14 @@ Bạn cũng có thể khai báo hành động mong muốn cho các thuộc tính
 
 Một cú pháp thay thế, hàm ý cũng được cung cấp cho những hành động này:
 
-Method  |  Description
--------  |  -----------
-`$table->cascadeOnUpdate();` | Cập nhật theo.
-`$table->restrictOnUpdate();`| Hạn chế cập nhật theo.
-`$table->cascadeOnDelete();` | Xoá theo.
-`$table->restrictOnDelete();`| Hạn chế xoá theo.
-`$table->nullOnDelete();`    | Set khoá ngoại là null, nếu khoá chính bị xoá.
+| Method                        | Description                                       |
+|-------------------------------|---------------------------------------------------|
+| `$table->cascadeOnUpdate();`  | Cập nhật theo.                                    |
+| `$table->restrictOnUpdate();` | Hạn chế cập nhật theo.                            |
+| `$table->noActionOnUpdate();` | Không action khi update.                          |
+| `$table->cascadeOnDelete();`  | Xoá theo.                                         |
+| `$table->restrictOnDelete();` | Hạn chế xoá theo.                                 |
+| `$table->nullOnDelete();`     | Set khoá ngoại là null, nếu khoá chính bị xoá.    |
 
 Bất kỳ [các sửa đổi bổ sung cho cột](#column-modifiers) sẽ đều phải được gọi trước phương thức `constrained`:
 
@@ -1276,7 +1282,7 @@ Bạn có thể bật hoặc tắt các ràng buộc khóa ngoại trong migrati
         // Constraints disabled within this closure...
     });
 
-> **Warning**
+> [!WARNING]
 > Mặc định, SQLite sẽ vô hiệu hóa các ràng buộc khóa ngoại. Khi sử dụng SQLite, bạn hãy chắc chắn rằng là [đã bật hỗ trợ khóa ngoại](/docs/{{version}}/database#configuration) trong cấu hình cơ sở dữ liệu của bạn trước khi tạo chúng trong quá trình migration của bạn. Ngoài ra, SQLite chỉ hỗ trợ khóa ngoại khi tạo bảng và [không hỗ trợ khi bảng bị thay đổi](https://www.sqlite.org/omitted.html).
 
 <a name="events"></a>

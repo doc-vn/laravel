@@ -18,7 +18,7 @@ Nếu bạn mở file `config/app.php` đi cùng với Laravel, bạn sẽ thấ
 
 Trong phần tổng quan này, bạn sẽ học cách viết các service provider của riêng bạn và đăng ký chúng với application Laravel.
 
-> **Note**
+> [!NOTE]
 > Nếu bạn muốn tìm hiểu thêm về cách Laravel xử lý các request và hoạt động nội bộ trong Laravel, hãy xem tài liệu của chúng tôi về Laravel [vòng đời request](/docs/{{version}}/lifecycle).
 
 <a name="writing-service-providers"></a>
@@ -44,18 +44,17 @@ Chúng ta hãy cùng xem một service provider cơ bản. Trong bất kỳ phư
     namespace App\Providers;
 
     use App\Services\Riak\Connection;
+    use Illuminate\Contracts\Foundation\Application;
     use Illuminate\Support\ServiceProvider;
 
     class RiakServiceProvider extends ServiceProvider
     {
         /**
          * Register any application services.
-         *
-         * @return void
          */
-        public function register()
+        public function register(): void
         {
-            $this->app->singleton(Connection::class, function ($app) {
+            $this->app->singleton(Connection::class, function (Application $app) {
                 return new Connection(config('riak'));
             });
         }
@@ -117,13 +116,11 @@ Vậy, điều gì sẽ xảy ra nếu chúng ta cần đăng ký một [view co
     {
         /**
          * Bootstrap any application services.
-         *
-         * @return void
          */
-        public function boot()
+        public function boot(): void
         {
             View::composer('view', function () {
-                //
+                // ...
             });
         }
     }
@@ -137,29 +134,26 @@ Bạn có thể viết khai báo phụ thuộc vào trong phương thức `boot`
 
     /**
      * Bootstrap any application services.
-     *
-     * @param  \Illuminate\Contracts\Routing\ResponseFactory  $response
-     * @return void
      */
-    public function boot(ResponseFactory $response)
+    public function boot(ResponseFactory $response): void
     {
-        $response->macro('serialized', function ($value) {
-            //
+        $response->macro('serialized', function (mixed $value) {
+            // ...
         });
     }
 
 <a name="registering-providers"></a>
 ## Đăng ký Providers
 
-Tất cả các service provider được đăng ký trong file cấu hình `config/app.php`. File này chứa một mảng các `providers` nơi mà bạn có thể liệt kê tên class của các service provider của bạn. Mặc định, một nhóm các service provider core của Laravel đã được liệt kê ở trong mảng này. Các provider này sẽ khởi động các thành phần core của Laravel, chẳng hạn như mailer, queue, cache, và các thành phần khác.
+Tất cả các service provider được đăng ký trong file cấu hình `config/app.php`. File này chứa một mảng các `providers` nơi mà bạn có thể liệt kê tên class của các service provider của bạn. Mặc định, một nhóm các service provider core của Laravel đã được đăng ký ở trong mảng này. Mặc định, các provider này sẽ khởi động các thành phần core của Laravel, chẳng hạn như mailer, queue, cache, và các thành phần khác.
 
 Để đăng ký provider của bạn, hãy thêm nó vào mảng:
 
-    'providers' => [
+    'providers' => ServiceProvider::defaultProviders()->merge([
         // Other Service Providers
 
         App\Providers\ComposerServiceProvider::class,
-    ],
+    ])->toArray(),
 
 <a name="deferred-providers"></a>
 ## Các Provider hoãn
@@ -175,6 +169,7 @@ Laravel sẽ biên dịch và lưu trữ một danh sách tất cả các servic
     namespace App\Providers;
 
     use App\Services\Riak\Connection;
+    use Illuminate\Contracts\Foundation\Application;
     use Illuminate\Contracts\Support\DeferrableProvider;
     use Illuminate\Support\ServiceProvider;
 
@@ -182,12 +177,10 @@ Laravel sẽ biên dịch và lưu trữ một danh sách tất cả các servic
     {
         /**
          * Register any application services.
-         *
-         * @return void
          */
-        public function register()
+        public function register(): void
         {
-            $this->app->singleton(Connection::class, function ($app) {
+            $this->app->singleton(Connection::class, function (Application $app) {
                 return new Connection($app['config']['riak']);
             });
         }
@@ -195,9 +188,9 @@ Laravel sẽ biên dịch và lưu trữ một danh sách tất cả các servic
         /**
          * Get the services provided by the provider.
          *
-         * @return array
+         * @return array<int, string>
          */
-        public function provides()
+        public function provides(): array
         {
             return [Connection::class];
         }

@@ -9,10 +9,6 @@
     - [Lưu item trong cache](#storing-items-in-the-cache)
     - [Xoá item trong cache](#removing-items-from-the-cache)
     - [Cache helper](#the-cache-helper)
-- [Cache tag](#cache-tags)
-    - [Lưu item vào cache tag](#storing-tagged-cache-items)
-    - [Truy cập item từ cache tag](#accessing-tagged-cache-items)
-    - [Xoá item từ cache tag](#removing-tagged-cache-items)
 - [Atomic Locks](#atomic-locks)
     - [Yêu cầu driver](#lock-driver-prerequisites)
     - [Quản lý Locks](#managing-locks)
@@ -44,13 +40,13 @@ File cấu hình cache cũng chứa nhiều tùy chọn khác, vì vậy hãy ch
 
 Khi sử dụng cache driver `database`, bạn sẽ cần cài đặt một bảng để chứa các item cache. Bạn có thể làm như ví dụ ở bên dưới, khai báo một `Schema` cho một bảng:
 
-    Schema::create('cache', function ($table) {
+    Schema::create('cache', function (Blueprint $table) {
         $table->string('key')->unique();
         $table->text('value');
         $table->integer('expiration');
     });
 
-> **Note**
+> [!NOTE]
 > Bạn cũng có thể sử dụng lệnh Artisan `php artisan cache:table` để tạo migration với một schema phù hợp.
 
 <a name="memcached"></a>
@@ -110,14 +106,14 @@ Bảng này cũng phải có một chuỗi khóa phân vùng có tên tương �
     {
         /**
          * Show a list of all users of the application.
-         *
-         * @return Response
          */
-        public function index()
+        public function index(): array
         {
             $value = Cache::get('key');
 
-            //
+            return [
+                // ...
+            ];
         }
     }
 
@@ -145,13 +141,13 @@ Bạn thậm chí có thể truyền vào một closure làm giá trị mặc đ
         return DB::table(/* ... */)->get();
     });
 
-<a name="checking-for-item-existence"></a>
-#### Checking For Item Existence
+<a name="determining-item-existence"></a>
+#### Determining Item Existence
 
 Phương thức `has` có thể được sử dụng để xác định xem một item có tồn tại trong cache hay không. Phương thức này cũng sẽ trả về `false` nếu item có tồn tại nhưng giá trị của nó là `null`:
 
     if (Cache::has('key')) {
-        //
+        // ...
     }
 
 <a name="incrementing-decrementing-values"></a>
@@ -159,13 +155,17 @@ Phương thức `has` có thể được sử dụng để xác định xem mộ
 
 Các phương thức `increment` và `decrement` có thể được sử dụng để điều chỉnh giá trị của các item integer trong cache. Cả hai phương thức này đều chấp nhận một tham số tùy chọn thứ hai cho biết số lượng tăng hoặc giảm giá trị của item:
 
+    // Initialize the value if it does not exist...
+    Cache::add('key', 0, now()->addHours(4));
+
+    // Increment or decrement the value...
     Cache::increment('key');
     Cache::increment('key', $amount);
     Cache::decrement('key');
     Cache::decrement('key', $amount);
 
 <a name="retrieve-store"></a>
-#### Retrieve & Store
+#### Retrieve và Store
 
 Thỉnh thoảng bạn cũng có thể muốn lấy ra một item từ cache và cũng muốn lưu lại một giá trị mặc định vào cache nếu item đó không tồn tại. Ví dụ: bạn có thể muốn lấy ra tất cả các người dùng từ cache, nếu trong cache chưa tồn tại dữ liệu đó, thì bạn có thể lấy chúng ra từ cơ sở dữ liệu và thêm chúng vào cache. Bạn có thể làm điều này bằng cách sử dụng phương thức `Cache::remember`:
 
@@ -182,7 +182,7 @@ Bạn có thể sử dụng phương thức `rememberForever` để lấy một 
     });
 
 <a name="retrieve-delete"></a>
-#### Retrieve & Delete
+#### Retrieve và Delete
 
 Nếu bạn cần lấy một item từ cache và sau đó xóa item đó đi, bạn có thể sử dụng phương thức `pull`. Giống như phương thức `get`, thì `null` sẽ được trả về nếu item đó không tồn tại trong cache:
 
@@ -217,7 +217,7 @@ Phương thức `forever` có thể được sử dụng để lưu trữ một 
 
     Cache::forever('key', 'value');
 
-> **Note**
+> [!NOTE]
 > Nếu bạn đang sử dụng driver Memcached, các item được lưu trữ "forever" có thể bị xóa đi khi cache đạt tới một giới hạn kích thước nhất định.
 
 <a name="removing-items-from-the-cache"></a>
@@ -237,7 +237,7 @@ Bạn có thể xóa toàn bộ cache bằng phương thức `flush`:
 
     Cache::flush();
 
-> **Warning**
+> [!WARNING]
 > Khi xóa toàn bộ cache thì nó sẽ xóa tất cả các item ra khỏi cache đã cấu hình mà không tâm đến cache prefix. Hãy xem xét điều này một cách cẩn thận trước khi xóa, nếu cache đó đang được dùng để chia sẻ cho các application khác.
 
 <a name="the-cache-helper"></a>
@@ -259,48 +259,13 @@ Khi hàm `cache` được gọi mà không có bất kỳ tham số nào đượ
         return DB::table('users')->get();
     });
 
-> **Note**
+> [!NOTE]
 > Khi testing tới các lệnh gọi hàm global `cache`, bạn có thể sử dụng phương thức `Cache::shouldReceive` giống như bạn đang [testing một facade](/docs/{{version}}/mocking#mocking-facades).
-
-<a name="cache-tags"></a>
-## Cache Tags
-
-> **Warning**
-> Cache tag sẽ không được hỗ trợ khi sử dụng các cache driver `file`, `dynamodb`, hoặc `database`. Hơn nữa, khi sử dụng nhiều tag với các cache mà được lưu trữ "mãi mãi", thì hiệu suất sẽ tốt nhất với một driver như `memcached`, loại tự động xóa các record cũ.
-
-<a name="storing-tagged-cache-items"></a>
-### Storing Tagged Cache Items
-
-Cache tag cho phép bạn gắn tag cho các item liên quan đến nhau vào trong bộ nhớ cache và sau đó sẽ xóa tất cả các giá trị đã được gán tag trước đó. Bạn có thể truy cập vào một giá trị đã được gắn tag bằng cách truyền vào một dãy tên tag có thứ tự. Ví dụ: hãy truy cập vào một giá trị đã được gắn tag và `put` một giá trị vào trong cache:
-
-    Cache::tags(['people', 'artists'])->put('John', $john, $seconds);
-
-    Cache::tags(['people', 'authors'])->put('Anne', $anne, $seconds);
-
-<a name="accessing-tagged-cache-items"></a>
-### Accessing Tagged Cache Items
-
-Các item được lưu trữ thông qua tag có thể không truy cập được nếu không cung cấp tag, cái mà được sử dụng để lưu trữ các giá trị đó. Để lấy ra một item mà đã được gắn tag, hãy truyền cùng một danh sách các tag được sắp xếp theo thứ tự cho phương thức `tags` và sau đó gọi phương thức `get` với khóa mà bạn muốn lấy:
-
-    $john = Cache::tags(['people', 'artists'])->get('John');
-
-    $anne = Cache::tags(['people', 'authors'])->get('Anne');
-
-<a name="removing-tagged-cache-items"></a>
-### Removing Tagged Cache Items
-
-Bạn có thể xóa tất cả các item được gán tag hoặc một danh sách tag. Ví dụ: câu lệnh sau sẽ xóa tất cả các giá trị đã được gắn tag là `people`, `authors`, hoặc cả hai. Vì vậy, cả `Anne` và `John` sẽ đều bị xóa khỏi bộ nhớ cache:
-
-    Cache::tags(['people', 'authors'])->flush();
-
-Ngược lại, câu lệnh này sẽ chỉ xóa các cache đã được gắn tag là `authors`, nên `Anne` sẽ bị xóa, nhưng không xóa `John`:
-
-    Cache::tags('authors')->flush();
 
 <a name="atomic-locks"></a>
 ## Atomic Locks
 
-> **Warning**
+> [!WARNING]
 > Để sử dụng tính năng này, ứng dụng của bạn phải sử dụng cache driver `memcached`, `redis`, `dynamodb`, `database`, `file`, hoặc `array` làm cache driver mặc định của ứng dụng của bạn. Ngoài ra, tất cả các server phải được giao tiếp với cùng một server cache trung tâm.
 
 <a name="lock-driver-prerequisites"></a>
@@ -311,11 +276,14 @@ Ngược lại, câu lệnh này sẽ chỉ xóa các cache đã được gắn 
 
 Khi sử dụng cache driver `database`, bạn sẽ cần cài đặt một bảng để chứa các cache lock của application. Bạn có thể tham khảo một khai báo `Schema` mẫu như bảng dưới đây:
 
-    Schema::create('cache_locks', function ($table) {
+    Schema::create('cache_locks', function (Blueprint $table) {
         $table->string('key')->primary();
         $table->string('owner');
         $table->integer('expiration');
     });
+
+> [!NOTE]
+> Nếu bạn dùng lệnh Artisan `cache:table` để tạo table cache của driver database, thì file migration được tạo bởi lệnh Artisan đã chứa sẵn một định nghĩa cho table `cache_locks`.
 
 <a name="managing-locks"></a>
 ### Quản lý Locks
@@ -351,7 +319,7 @@ Nếu khóa chưa sẵn sàng tại thời điểm bạn yêu cầu, bạn có t
     } catch (LockTimeoutException $e) {
         // Unable to acquire lock...
     } finally {
-        optional($lock)->release();
+        $lock?->release();
     }
 
 Ví dụ trên có thể được đơn giản hóa bằng cách truyền một closure cho phương thức `block`. Khi một closure được truyền cho phương thức này, Laravel sẽ cố lấy khóa trong số giây đã chỉ định và sẽ tự động giải phóng khóa sau khi quá trình closure đã được thực thi:
@@ -413,11 +381,11 @@ Nếu bạn muốn giải phóng khóa mà bỏ qua owner hiện tại của kho
 
 Chúng ta chỉ cần implement từng phương thức này bằng một kết nối đến MongoDB. Để biết thêm về cách implement cho từng phương thức này, hãy xem `Illuminate\Cache\MemcachedStore` trong [source code của framework Laravel](https://github.com/laravel/framework). Khi việc implement của chúng ta hoàn tất, chúng ta có thể đăng ký tùy biến driver như sau by calling the `Cache` facade's `extend` method:
 
-    Cache::extend('mongo', function ($app) {
+    Cache::extend('mongo', function (Application $app) {
         return Cache::repository(new MongoStore);
     });
 
-> **Note**
+> [!NOTE]
 > Nếu bạn đang tự hỏi nên lưu code tùy biến cache driver ở đâu, thì bạn có thể tạo ra một namespace `Extensions` trong thư mục `app` của bạn. Tuy nhiên, hãy nhớ rằng Laravel không có cấu trúc application theo kiểu cứng nhắc và bạn có thể thoải mái tự tổ chức application của bạn theo sở thích của bạn.
 
 <a name="registering-the-driver"></a>
@@ -430,20 +398,19 @@ Chúng ta chỉ cần implement từng phương thức này bằng một kết n
     namespace App\Providers;
 
     use App\Extensions\MongoStore;
+    use Illuminate\Contracts\Foundation\Application;
     use Illuminate\Support\Facades\Cache;
     use Illuminate\Support\ServiceProvider;
 
-    class CacheServiceProvider extends ServiceProvider
+    class AppServiceProvider extends ServiceProvider
     {
         /**
          * Register any application services.
-         *
-         * @return void
          */
-        public function register()
+        public function register(): void
         {
             $this->app->booting(function () {
-                 Cache::extend('mongo', function ($app) {
+                 Cache::extend('mongo', function (Application $app) {
                      return Cache::repository(new MongoStore);
                  });
              });
@@ -451,12 +418,10 @@ Chúng ta chỉ cần implement từng phương thức này bằng một kết n
 
         /**
          * Bootstrap any application services.
-         *
-         * @return void
          */
-        public function boot()
+        public function boot(): void
         {
-            //
+            // ...
         }
     }
 

@@ -19,9 +19,9 @@ Hầu hết các ứng dụng web hiện đại đều tương tác với cơ s�
 
 <div class="content-list" markdown="1">
 
-- MariaDB 10.3+ ([Version Policy](https://mariadb.org/about/#maintenance-policy))
+- MariaDB 10.10+ ([Version Policy](https://mariadb.org/about/#maintenance-policy))
 - MySQL 5.7+ ([Version Policy](https://en.wikipedia.org/wiki/MySQL#Release_history))
-- PostgreSQL 10.0+ ([Version Policy](https://www.postgresql.org/support/versioning/))
+- PostgreSQL 11.0+ ([Version Policy](https://www.postgresql.org/support/versioning/))
 - SQLite 3.8.8+
 - SQL Server 2017+ ([Version Policy](https://docs.microsoft.com/en-us/lifecycle/products/?products=sql-server))
 
@@ -118,7 +118,7 @@ Tùy chọn `sticky` là một giá trị *tùy chọn* có thể được sử 
 Khi bạn đã cấu hình các kết nối cơ sở dữ liệu của bạn, bạn có thể chạy các truy vấn bằng cách sử dụng facade `DB`. Facade `DB` sẽ cung cấp các phương thức cho từng loại truy vấn như: `select`, `update`, `insert`, `delete`, và `statement`.
 
 <a name="running-a-select-query"></a>
-#### Running A Select Query
+#### Running a Select Query
 
 Để chạy một truy vấn SELECT cơ bản, bạn có thể sử dụng phương thức `select` trên facade `DB`:
 
@@ -128,15 +128,14 @@ Khi bạn đã cấu hình các kết nối cơ sở dữ liệu của bạn, b�
 
     use App\Http\Controllers\Controller;
     use Illuminate\Support\Facades\DB;
+    use Illuminate\View\View;
 
     class UserController extends Controller
     {
         /**
          * Show a list of all of the application's users.
-         *
-         * @return \Illuminate\Http\Response
          */
-        public function index()
+        public function index(): View
         {
             $users = DB::select('select * from users where active = ?', [1]);
 
@@ -165,6 +164,15 @@ Thỉnh thoảng truy vấn cơ sở dữ liệu của bạn có thể dẫn đ�
         "select count(case when food = 'burger' then 1 end) as burgers from menu"
     );
 
+<a name="selecting-multiple-result-sets"></a>
+#### Selecting Multiple Result Sets
+
+Nếu ứng dụng của bạn gọi các procedure của sql và trả về nhiều kết quả, bạn có thể sử dụng phương thức `selectResultSets` để lấy ra tất cả các kết quả được trả về bởi procedure đó:
+
+    [$options, $notifications] = DB::selectResultSets(
+        "CALL get_user_options_and_notifications(?)", $request->user()->id
+    );
+
 <a name="using-named-bindings"></a>
 #### Using Named Bindings
 
@@ -173,7 +181,7 @@ Thay vì sử dụng `?` để biểu thị cho các tham số của bạn, bạ
     $results = DB::select('select * from users where id = :id', ['id' => 1]);
 
 <a name="running-an-insert-statement"></a>
-#### Running An Insert Statement
+#### Running an Insert Statement
 
 Để thực hiện một câu lệnh `insert`, bạn có thể sử dụng phương thức `insert` trên facade `DB`. Giống như `select`, phương thức này chấp nhận truy vấn SQL làm tham số đầu tiên và các tham số còn lại làm tham số thứ hai:
 
@@ -182,7 +190,7 @@ Thay vì sử dụng `?` để biểu thị cho các tham số của bạn, bạ
     DB::insert('insert into users (id, name) values (?, ?)', [1, 'Marc']);
 
 <a name="running-an-update-statement"></a>
-#### Running An Update Statement
+#### Running an Update Statement
 
 Phương thức `update` sẽ được sử dụng để cập nhật các bản ghi hiện có trong cơ sở dữ liệu. Số lượng các hàng bị cập nhật bởi câu lệnh này sẽ được trả về từ phương thức:
 
@@ -194,7 +202,7 @@ Phương thức `update` sẽ được sử dụng để cập nhật các bản
     );
 
 <a name="running-a-delete-statement"></a>
-#### Running A Delete Statement
+#### Running a Delete Statement
 
 Phương thức `delete` sẽ được sử dụng để xóa các bản ghi ra khỏi cơ sở dữ liệu. Giống như `update`, Số lượng các hàng bị xoá sẽ được trả về từ phương thức:
 
@@ -203,20 +211,20 @@ Phương thức `delete` sẽ được sử dụng để xóa các bản ghi ra 
     $deleted = DB::delete('delete from users');
 
 <a name="running-a-general-statement"></a>
-#### Running A General Statement
+#### Running a General Statement
 
 Có một số lệnh cơ sở dữ liệu không trả về bất kỳ giá trị nào. Đối với các loại lệnh như thế này, bạn có thể sử dụng phương thức `statement` trên facade `DB`:
 
     DB::statement('drop table users');
 
 <a name="running-an-unprepared-statement"></a>
-#### Running An Unprepared Statement
+#### Running an Unprepared Statement
 
 Thỉnh thoảng bạn có thể muốn thực hiện một câu lệnh SQL mà không có liên kết với bất kỳ vào giá trị nào. Bạn có thể sử dụng phương pháp `unprepared` của facade `DB` để thực hiện việc này:
 
     DB::unprepared('update users set votes = 100 where name = "Dries"');
 
-> **Warning**
+> [!WARNING]
 > Vì các câu lệnh unprepared không liên kết với bất kỳ tham số nên chúng có thể dễ bị tấn công bởi SQL injection. Bạn đừng bao giờ cho phép các giá trị do người dùng kiểm soát thực hiện trong câu lệnh unprepared .
 
 <a name="implicit-commits-in-transactions"></a>
@@ -250,6 +258,7 @@ Nếu bạn muốn chỉ định một closure được gọi cho mỗi truy v�
 
     namespace App\Providers;
 
+    use Illuminate\Database\Events\QueryExecuted;
     use Illuminate\Support\Facades\DB;
     use Illuminate\Support\ServiceProvider;
 
@@ -257,22 +266,18 @@ Nếu bạn muốn chỉ định một closure được gọi cho mỗi truy v�
     {
         /**
          * Register any application services.
-         *
-         * @return void
          */
-        public function register()
+        public function register(): void
         {
-            //
+            // ...
         }
 
         /**
          * Bootstrap any application services.
-         *
-         * @return void
          */
-        public function boot()
+        public function boot(): void
         {
-            DB::listen(function ($query) {
+            DB::listen(function (QueryExecuted $query) {
                 // $query->sql;
                 // $query->bindings;
                 // $query->time;
@@ -298,20 +303,16 @@ Lỗi hiệu suất phổ biến của các ứng dụng web hiện đại là l
     {
         /**
          * Register any application services.
-         *
-         * @return void
          */
-        public function register()
+        public function register(): void
         {
-            //
+            // ...
         }
 
         /**
          * Bootstrap any application services.
-         *
-         * @return void
          */
-        public function boot()
+        public function boot(): void
         {
             DB::whenQueryingForLongerThan(500, function (Connection $connection, QueryExecuted $event) {
                 // Notify development team...
@@ -362,7 +363,7 @@ Cuối cùng, bạn có thể commit một transaction thông qua phương thứ
 
     DB::commit();
 
-> **Note**
+> [!NOTE]
 > Các phương thức transaction của facade `DB` sẽ kiểm soát các transaction cho cả [query builder](/docs/{{version}}/queries) và [Eloquent ORM](/docs/{{version}}/eloquent).
 
 <a name="connecting-to-the-database-cli"></a>
@@ -431,10 +432,8 @@ use Illuminate\Support\Facades\Notification;
 
 /**
  * Register any other events for your application.
- *
- * @return void
  */
-public function boot()
+public function boot(): void
 {
     Event::listen(function (DatabaseBusy $event) {
         Notification::route('mail', 'dev@example.com')

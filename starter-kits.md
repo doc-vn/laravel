@@ -4,6 +4,7 @@
 - [Laravel Breeze](#laravel-breeze)
     - [Cài đặt](#laravel-breeze-installation)
     - [Breeze và Blade](#breeze-and-blade)
+    - [Breeze và Livewire](#breeze-and-livewire)
     - [Breeze và React / Vue](#breeze-and-inertia)
     - [Breeze và Next.js / API](#breeze-and-next)
 - [Laravel Jetstream](#laravel-jetstream)
@@ -20,9 +21,7 @@ Mặc dù bạn có thể thoải mái sử dụng những bộ công cụ khở
 
 [Laravel Breeze](https://github.com/laravel/breeze) là cách triển khai đơn giản, tối thiểu tất cả các [tính năng xác thực](/docs/{{version}}/authentication), bao gồm đăng nhập, đăng ký, reset mật khẩu, xác minh email và xác nhận mật khẩu. Ngoài ra, Breeze còn có một trang "profile" đơn giản nơi mà người dùng có thể cập nhật tên, địa chỉ email và mật khẩu của họ.
 
-Layer view mặc định của Laravel Breeze được tạo thành từ [template Blade](/docs/{{version}}/blade) đơn giản với [Tailwind CSS](https://tailwindcss.com). Hoặc, Breeze cũng có thể xây dựng ứng dụng của bạn bằng Vue hoặc React và [Inertia](https://inertiajs.com).
-
-Breeze cung cấp một điểm khởi đầu tuyệt vời để bắt đầu một ứng dụng Laravel mới và cũng là một sự lựa chọn tuyệt vời cho các dự án có kế hoạch đưa Blade của họ lên một tầm cao mới với [Laravel Livewire](https://laravel-livewire.com).
+Layer view mặc định của Laravel Breeze được tạo thành từ [template Blade](/docs/{{version}}/blade) đơn giản với [Tailwind CSS](https://tailwindcss.com). Ngoài ra, Breeze cũng cung cấp các tùy chọn scaffolding dựa trên [Livewire](https://livewire.laravel.com) hoặc [Inertia](https://inertiajs.com) với tùy chọn sử dụng Vue hoặc React cho scaffolding dựa trên Inertia.
 
 <img src="https://laravel.com/img/docs/breeze-register.png">
 
@@ -39,14 +38,22 @@ Trước tiên, bạn nên [tạo một ứng dụng Laravel mới](/docs/{{vers
 composer require laravel/breeze --dev
 ```
 
-Sau khi Breeze đã được cài đặt, bạn có thể xây dựng ứng dụng của bạn bằng một trong các "stack" Breeze được thảo luận trong tài liệu bên dưới.
-
-<a name="breeze-and-blade"></a>
-### Breeze và Blade
-
 Sau khi Composer đã cài đặt xong package Laravel Breeze, bạn có thể chạy lệnh Artisan `breeze:install`. Lệnh này sẽ export ra các view xác thực, route, controller và các resource khác cho ứng dụng của bạn. Laravel Breeze sẽ export tất cả các code của nó vào ứng dụng của bạn để bạn có toàn quyền kiểm soát và hiển thị các tính năng cũng như cách triển khai của nó.
 
-"Stack" Breeze mặc định là stack Blade, sử dụng [templates Blade](/docs/{{version}}/blade) đơn giản để render frontend cho ứng dụng. Stack Blade có thể được cài đặt bằng cách gõ lệnh `breeze:install` mà không cần thêm bất kỳ tham số nào khác. Sau khi Breeze đã được cài đặt xong, bạn cũng nên biên dịch các asset frontend của ứng dụng:
+Lệnh `breeze:install` sẽ nhắc bạn chọn stack frontend và framework testing:
+
+```shell
+php artisan breeze:install
+
+php artisan migrate
+npm install
+npm run dev
+```
+
+<a name="breeze-and-blade"></a>
+### Breeze and Blade
+
+"Stack" Breeze mặc định là stack Blade, sử dụng [templates Blade](/docs/{{version}}/blade) đơn giản để render frontend cho ứng dụng. Stack Blade có thể được cài đặt bằng cách gõ lệnh `breeze:install` mà không cần thêm bất kỳ tham số nào khác và chọn Blade frontend stack. Sau khi Breeze đã được cài đặt xong, bạn cũng nên biên dịch các asset frontend của ứng dụng:
 
 ```shell
 php artisan breeze:install
@@ -58,31 +65,35 @@ npm run dev
 
 Tiếp theo, bạn có thể điều hướng đến URL `/login` hoặc URL `/register` của ứng dụng trong trình duyệt web của bạn. Tất cả các route của Breeze đều được định nghĩa trong file `routes/auth.php`.
 
-<a name="dark-mode"></a>
-#### Dark Mode
+> [!NOTE]
+> Để tìm hiểu thêm về cách biên dịch code CSS và code JavaScript cho ứng dụng của bạn, hãy tham khảo [tài liệu Vite](/docs/{{version}}/vite#running-vite) của Laravel.
 
-Nếu bạn muốn Breeze cũng hỗ trợ "chế độ dark mode" khi tạo giao diện người dùng cho ứng dụng, bạn chỉ cần cung cấp thêm lệnh `--dark` khi thực hiện lệnh `breeze:install`:
+<a name="breeze-and-livewire"></a>
+### Breeze và Livewire
+
+Laravel Breeze cũng cung cấp scaffolding [Livewire](https://livewire.laravel.com). Livewire là một cách mạnh mẽ để xây dựng một giao diện người dùng front-end động, linh hoạt mà chỉ bằng code PHP.
+
+Livewire rất phù hợp với các team chủ yếu sử dụng template Blade và đang tìm kiếm một giải pháp thay thế đơn giản hơn cho các framework SPA chạy bằng JavaScript như Vue và React.
+
+Để sử dụng stack Livewire, bạn có thể chọn stack frontend Livewire khi chạy lệnh Artisan `breeze:install`. Sau khi cài đặt scaffolding Breeze, bạn nên chạy migration cơ sở dữ liệu của bạn:
 
 ```shell
-php artisan breeze:install --dark
-```
+php artisan breeze:install
 
-> **Note**
-> Để tìm hiểu thêm về cách compile CSS và JavaScript cho ứng dụng của bạn, hãy xem [tài liệu về Vite](/docs/{{version}}/vite#running-vite) của Laravel.
+php artisan migrate
+```
 
 <a name="breeze-and-inertia"></a>
 ### Breeze và React / Vue
 
 Laravel Breeze cũng cung cấp scaffolding React và Vue thông qua một implementation frontend [Inertia](https://inertiajs.com). Inertia cho phép bạn xây dựng các ứng dụng single-page React và Vue hiện đại bằng cách sử dụng routing và controller giống như ở một server-side cổ điển.
 
-Inertia cho phép bạn tận hưởng sức mạnh frontend của React và Vue kết hợp với năng suất backend đáng kinh ngạc của Laravel và trình biên dịch [Vite](https://vitejs.dev) cực nhanh. Để sử dụng Inertia stack, hãy chỉ định `vue` hoặc `react` làm stack mong muốn của bạn khi thực hiện lệnh Artisan `breeze:install`. Sau khi scaffolding của Breeze đã được cài đặt xong, bạn cũng nên biên dịch các asset frontend của ứng dụng:
+Inertia cho phép bạn tận hưởng sức mạnh frontend của React và Vue kết hợp với năng suất backend đáng kinh ngạc của Laravel và trình biên dịch [Vite](https://vitejs.dev) cực nhanh. Để sử dụng Inertia stack, bạn có thể chọn stack frontend Vue hoặc React khi chạy lệnh Artisan `breeze:install`.
+
+Khi chọn stack frontend Vue hoặc React, thì cài đặt Breeze cũng sẽ nhắc bạn xác định xem bạn muốn hỗ trợ [Inertia SSR](https://inertiajs.com/server-side-rendering) hay TypeScript. Sau khi scaffolding của Breeze đã được cài đặt xong, bạn cũng nên biên dịch các asset frontend của ứng dụng:
 
 ```shell
-php artisan breeze:install vue
-
-# Or...
-
-php artisan breeze:install react
+php artisan breeze:install
 
 php artisan migrate
 npm install
@@ -91,23 +102,13 @@ npm run dev
 
 Tiếp theo, bạn có thể điều hướng đến URL `/login` hoặc `/register` của ứng dụng trên trình duyệt web của bạn. Tất cả các route của Breeze đều đã được định nghĩa trong file `routes/auth.php`.
 
-<a name="server-side-rendering"></a>
-#### Server-Side Rendering
-
-Nếu bạn muốn Breeze hỗ trợ [Inertia SSR](https://inertiajs.com/server-side-rendering), bạn có thể cung cấp tùy chọn `ssr` khi gọi lệnh `breeze:install`:
-
-```shell
-php artisan breeze:install vue --ssr
-php artisan breeze:install react --ssr
-```
-
 <a name="breeze-and-next"></a>
 ### Breeze và Next.js / API
 
-Laravel Breeze cũng có thể xây dựng một API xác thực sẵn sàng cho xác thực các ứng dụng JavaScript hiện đại, chẳng hạn như các ứng dụng được tạo bởi [Next](https://nextjs.org), [Nuxt](https://nuxt.com) và các ứng dụng khác. Để bắt đầu, hãy chỉ định stack `api` làm stack mong muốn của bạn khi thực hiện lệnh Artisan `breeze:install`:
+Laravel Breeze cũng có thể xây dựng một API xác thực sẵn sàng cho xác thực các ứng dụng JavaScript hiện đại, chẳng hạn như các ứng dụng được tạo bởi [Next](https://nextjs.org), [Nuxt](https://nuxt.com) và các ứng dụng khác. Để bắt đầu, hãy chọn API stack mong muốn của bạn khi chạy lệnh Artisan `breeze:install`:
 
 ```shell
-php artisan breeze:install api
+php artisan breeze:install
 
 php artisan migrate
 ```
@@ -124,6 +125,6 @@ Cuối cùng, bạn đã sẵn sàng để ghép phần backend với phần fro
 
 Trong khi Laravel Breeze cung cấp một điểm khởi đầu đơn giản và tối thiểu để xây dựng một ứng dụng Laravel mới, thì Jetstream lại tăng cường chức năng đó bằng các tính năng mạnh mẽ hơn và các stack công nghệ về frontend. **Đối với những người mới làm quen với Laravel, chúng tôi khuyên bạn chỉ nên tìm hiểu các kiến thức cơ bản về Laravel Breeze trước khi chuyển sang Laravel Jetstream.**
 
-Jetstream cung cấp một scaffolding ứng dụng được thiết kế đẹp mắt cho Laravel và chứa các form đăng nhập, đăng ký, xác minh email, xác thực hai yếu tố, quản lý session, hỗ trợ API thông qua Laravel Sanctum và tùy chọn quản lý team. Jetstream được thiết kế bằng [Tailwind CSS](https://tailwindcss.com) và cho bạn lựa chọn [Livewire](https://laravel-livewire.com) hoặc [Inertia](https://inertiajs.com) để chạy frontend scaffolding.
+Jetstream cung cấp một scaffolding ứng dụng được thiết kế đẹp mắt cho Laravel và chứa các form đăng nhập, đăng ký, xác minh email, xác thực hai yếu tố, quản lý session, hỗ trợ API thông qua Laravel Sanctum và tùy chọn quản lý team. Jetstream được thiết kế bằng [Tailwind CSS](https://tailwindcss.com) và cho bạn lựa chọn [Livewire](https://livewire.laravel.com) hoặc [Inertia](https://inertiajs.com) để chạy frontend scaffolding.
 
-Bạn có thể tìm thấy tài liệu đầy đủ về cách cài đặt Laravel Jetstream trong [tài liệu Jetstream chính thức](https://jetstream.laravel.com/introduction.html).
+Bạn có thể tìm thấy tài liệu đầy đủ về cách cài đặt Laravel Jetstream trong [tài liệu Jetstream chính thức](https://jetstream.laravel.com).

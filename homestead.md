@@ -18,10 +18,9 @@
     - [Ports](#ports)
     - [Phiên bản PHP](#php-versions)
     - [Kết nối đến database](#connecting-to-databases)
-    - [Tạo Databases](#creating-databases)
     - [Sao lưu database](#database-backups)
     - [Cấu hình Cron Schedules](#configuring-cron-schedules)
-    - [Cấu hình MailHog](#configuring-mailhog)
+    - [Cấu hình Mailpit](#configuring-mailpit)
     - [Cấu hình Minio](#configuring-minio)
     - [Laravel Dusk](#laravel-dusk)
     - [Chia sẻ biến environment của bạn](#sharing-your-environment)
@@ -43,7 +42,7 @@ Laravel cố gắng làm cho toàn bộ trải nghiệm phát triển PHP của 
 
 Homestead có thể chạy trên nhiều hệ điều hành Windows, macOS, hoặc Linux, và chứa Nginx, PHP, MySQL, PostgreSQL, Redis, Memcached, Node, và những software tuyệt vời khác để giúp bạn phát triển application của bạn.
 
-> **Warning**
+> [!WARNING]
 > Nếu bạn đang dùng Windows, bạn có thể cần bật hardware virtualization (VT-x). Nó có thể được bật thông qua BIOS của bạn. Nếu bạn đang dùng Hyper-V trên hệ thống UEFI, bạn có thể cần phải tắt Hyper-V để có thể truy cập vào VT-x.
 
 <a name="included-software"></a>
@@ -59,9 +58,10 @@ Homestead có thể chạy trên nhiều hệ điều hành Windows, macOS, ho�
 
 <div id="software-list" markdown="1">
 
-- Ubuntu 20.04
+- Ubuntu 22.04
 - Git
-- PHP 8.2 (Default)
+- PHP 8.3
+- PHP 8.2
 - PHP 8.1
 - PHP 8.0
 - PHP 7.4
@@ -77,11 +77,11 @@ Homestead có thể chạy trên nhiều hệ điều hành Windows, macOS, ho�
 - PostgreSQL 15
 - Composer
 - Docker
-- Node 18 (With Yarn, Bower, Grunt, and Gulp)
+- Node (With Yarn, Bower, Grunt, and Gulp)
 - Redis
 - Memcached
 - Beanstalkd
-- Mailhog
+- Mailpit
 - avahi
 - ngrok
 - Xdebug
@@ -115,8 +115,8 @@ Homestead có thể chạy trên nhiều hệ điều hành Windows, macOS, ho�
 - Gearman
 - Go
 - Grafana
-- Heroku CLI
 - InfluxDB
+- Logstash
 - MariaDB
 - Meilisearch
 - MinIO
@@ -125,9 +125,10 @@ Homestead có thể chạy trên nhiều hệ điều hành Windows, macOS, ho�
 - Oh My Zsh
 - Open Resty
 - PM2
-- Python 3
+- Python
 - R
 - RabbitMQ
+- Rust
 - RVM (Ruby Version Manager)
 - Solr
 - TimescaleDB
@@ -144,7 +145,7 @@ Homestead có thể chạy trên nhiều hệ điều hành Windows, macOS, ho�
 
 Trước khi chạy môi trường Homestead của bạn, bạn cần phải cài đặt [Vagrant](https://developer.hashicorp.com/vagrant/downloads) hoặc một trong những nhà cung cấp được hỗ trợ sau:
 
-- [VirtualBox 6.1.x](https://www.virtualbox.org/wiki/Downloads)
+- [VirtualBox 6.1.x](https://www.virtualbox.org/wiki/Download_Old_Builds_6_1)
 - [Parallels](https://www.parallels.com/products/desktop/)
 
 Tất cả các package phần mềm này đều có cách cài đặt trực quan dễ sử dụng cho tất cả các hệ điều hành phổ biến.
@@ -188,8 +189,8 @@ Từ khoá `provider` trong file `Homestead.yaml` của bạn sẽ chỉ ra lo�
 
     provider: virtualbox
 
-> **Warning**
-> Nếu bạn đang sử dụng Apple Silicon, bạn nên thêm `box: laravel/homestead-arm` vào file `Homestead.yaml` của bạn. Apple Silicon yêu cầu nhà cung cấp Parallels.
+> [!WARNING]
+> Nếu bạn đang sử dụng Apple Silicon, nó sẽ yêu cầu provider Parallels.
 
 <a name="configuring-shared-folders"></a>
 #### Cài đặt thư mục chia sẻ
@@ -202,7 +203,7 @@ folders:
       to: /home/vagrant/project1
 ```
 
-> **Warning**
+> [!WARNING]
 > Người dùng Windows không nên sử dụng cú pháp đường dẫn `~/` và thay vào đó nên sử dụng đường dẫn đầy đủ đến project của họ, chẳng hạn như `C:\Users\user\Code\project1`.
 
 Bạn nên map các project nhỏ thành các thư mục riêng của chúng thay vì map toàn bộ thư mục `~/code` của bạn. Khi bạn map một thư mục, máy ảo phải theo dõi tất cả disk IO  cho *mọi file* có trong thư mục đó. Điều đó sẽ dẫn đến các vấn đề về hiệu suất nếu bạn có một lượng lớn các file trong một thư mục.
@@ -215,10 +216,10 @@ folders:
       to: /home/vagrant/project2
 ```
 
-> **Warning**
+> [!WARNING]
 > Bạn không nên mount `.` (thư mục hiện tại) khi sử dụng Homestead. Điều này khiến Vagrant không map được thư mục hiện tại thành `/vagrant` và sẽ phá vỡ các tính năng tùy chọn và gây ra kết quả không mong muốn khi cấp phép.
 
-Để bật [NFS](https://www.vagrantup.com/docs/synced-folders/nfs.html), bạn có thể thêm tùy chọn `type` vào thư mục mapping của bạn:
+Để bật [NFS](https://developer.hashicorp.com/vagrant/docs/synced-folders/nfs), bạn có thể thêm tùy chọn `type` vào thư mục mapping của bạn:
 
 ```yaml
 folders:
@@ -227,10 +228,10 @@ folders:
       type: "nfs"
 ```
 
-> **Warning**
+> [!WARNING]
 > Khi dùng NFS trên Windows, bạn nên cân nhắc cài đặt plug-in [vagrant-winnfsd](https://github.com/winnfsd/vagrant-winnfsd). Plug-in này duy trì chính xác các quyền user và group cho các file và các thư mục trong máy ảo Homestead.
 
-Bạn cũng có thể thêm vào các option khác được hỗ trợ bởi Vagrant [Synced Folders](https://www.vagrantup.com/docs/synced-folders/basic_usage.html) bằng cách liệt kê chúng dưới từ khoá `options`:
+Bạn cũng có thể thêm vào các option khác được hỗ trợ bởi Vagrant [Synced Folders](https://developer.hashicorp.com/vagrant/docs/synced-folders/basic_usage) bằng cách liệt kê chúng dưới từ khoá `options`:
 
 ```yaml
 folders:
@@ -255,7 +256,7 @@ sites:
 
 Nếu bạn muốn thay đổi thuộc tính `sites` khi máy ảo Homestead đã được cài đặt, bạn nên chạy lệnh `vagrant reload --provision` trong terminal của bạn để cập nhật cấu hình Nginx trên máy ảo.
 
-> **Warning**
+> [!WARNING]
 > Các script Homestead được xây dựng sao cho phù hợp nhất có thể. Tuy nhiên, nếu bạn đang gặp sự cố trong khi cấp phép, bạn nên xoá và build lại một máy ảo bằng cách chạy lệnh `vagrant destroy && vagrant up`.
 
 <a name="hostname-resolution"></a>
@@ -334,6 +335,7 @@ features:
     - chronograf: true
     - couchdb: true
     - crystal: true
+    - dragonflydb: true
     - elasticsearch:
         version: 7.9.0
     - eventstore: true
@@ -342,13 +344,12 @@ features:
     - gearman: true
     - golang: true
     - grafana: true
-    - heroku: true
     - influxdb: true
+    - logstash: true
     - mariadb: true
     - meilisearch: true
     - minio: true
     - mongodb: true
-    - mysql: true
     - neo4j: true
     - ohmyzsh: true
     - openresty: true
@@ -356,6 +357,7 @@ features:
     - python: true
     - r-base: true
     - rabbitmq: true
+    - rustc: true
     - rvm: true
     - solr: true
     - timescaledb: true
@@ -368,18 +370,13 @@ features:
 
 Bạn có thể chỉ định phiên bản được hỗ trợ cho Elasticsearch, nó phải là phiên bản chính xác (major.minor.patch). Cài đặt mặc định sẽ tạo ra một cụm có tên là 'homestead'. Bạn đừng nên cho Elasticsearch nhiều hơn một nửa bộ nhớ của máy ảo, vì vậy hãy đảm bảo rằng máy ảo Homestead của bạn có ít nhất gấp đôi lượng được phân bổ cho Elasticsearch.
 
-> **Note**
+> [!NOTE]
 > Hãy xem [tài liệu về Elasticsearch](https://www.elastic.co/guide/en/elasticsearch/reference/current) để tìm hiểu cách tùy chỉnh cấu hình của bạn.
 
 <a name="mariadb"></a>
 #### MariaDB
 
-Hãy bật MariaDB rồi xóa MySQL và cài đặt MariaDB. MariaDB server thường sẽ đóng vai trò thay thế cho MySQL, vì vậy bạn vẫn nên sử dụng driver cơ sở dữ liệu là `mysql` trong cấu hình cơ sở dữ liệu trong ứng dụng của bạn:
-
-```yaml
-features:
-  - mariadb: true
-```
+Hãy bật MariaDB rồi xóa MySQL và cài đặt MariaDB. MariaDB server thường sẽ đóng vai trò thay thế cho MySQL, vì vậy bạn vẫn nên sử dụng driver cơ sở dữ liệu là `mysql` trong cấu hình cơ sở dữ liệu trong ứng dụng của bạn.
 
 <a name="mongodb"></a>
 #### MongoDB
@@ -471,7 +468,7 @@ sites:
       to: /home/vagrant/project2/public
 ```
 
-> **Warning**
+> [!WARNING]
 > Bạn nên đảm bảo là bạn đã cấu hình [folder mapping](#configuring-shared-folders) cho thư mục của dự án trước khi thêm site.
 
 Nếu Vagrant không tự động quản lý file "hosts" cho bạn, thì bạn có thể cần thêm thông tin site mới vào file host như sau. Trên Mac và Linux, file này được lưu tại `/etc/hosts`. Trên Windows, file đó được lưu tại `C:\Windows\System32\drivers\etc\hosts`.
@@ -493,7 +490,7 @@ sites:
       type: "statamic"
 ```
 
-Các loại site được hỗ trợ là: `apache`, `laravel` (mặc định), `proxy`, `silverstripe`, `statamic`, `symfony2`, và `symfony4`.
+Các loại site được hỗ trợ là: `apache`, `apache-proxy`, `laravel` (mặc định), `proxy` (cho nginx), `silverstripe`, `statamic`, `symfony2`, và `symfony4`.
 
 <a name="site-parameters"></a>
 #### Site Parameters
@@ -559,7 +556,7 @@ Dưới đây là danh sách các cổng service Homestead mà bạn có thể m
 - **MySQL:** 33060 &rarr; To 3306
 - **PostgreSQL:** 54320 &rarr; To 5432
 - **MongoDB:** 27017 &rarr; To 27017
-- **Mailhog:** 8025 &rarr; To 8025
+- **Mailpit:** 8025 &rarr; To 8025
 - **Minio:** 9600 &rarr; To 9600
 
 </div>
@@ -567,7 +564,7 @@ Dưới đây là danh sách các cổng service Homestead mà bạn có thể m
 <a name="php-versions"></a>
 ### Phiên bản PHP
 
-Homestead hỗ trợ cho nhiều phiên bản PHP trên cùng một máy ảo. Bạn có thể chỉ định phiên bản PHP nào sẽ sử dụng cho một trang web nhất định trong file `Homestead.yaml` của bạn. Các phiên bản PHP có sẵn là: "5.6", "7.0", "7.1", "7.2", "7.3", "7.4", "8.0", "8.1", và "8.2" (mặc định):
+Homestead hỗ trợ cho nhiều phiên bản PHP trên cùng một máy ảo. Bạn có thể chỉ định phiên bản PHP nào sẽ sử dụng cho một trang web nhất định trong file `Homestead.yaml` của bạn. Các phiên bản PHP có sẵn là: "5.6", "7.0", "7.1", "7.2", "7.3", "7.4", "8.0", "8.1", "8.2", và "8.3" (mặc định):
 
 ```yaml
 sites:
@@ -588,15 +585,10 @@ php7.4 artisan list
 php8.0 artisan list
 php8.1 artisan list
 php8.2 artisan list
+php8.3 artisan list
 ```
 
-Bạn cũng có thể chỉ định phiên bản PHP mà CLI sẽ sử dụng trong file `Homestead.yaml` của bạn:
-
-```yaml
-php: 8.0
-```
-
-Hoặc, bạn có thể thay đổi thủ công bằng cách chạy các lệnh sau từ bên trong máy ảo Homestead của bạn:
+Bạn có thể thay đổi phiên bản PHP mặc định được CLI sử dụng bằng cách chạy các lệnh sau từ bên trong máy ảo Homestead của bạn:
 
 ```shell
 php56
@@ -608,6 +600,7 @@ php74
 php80
 php81
 php82
+php83
 ```
 
 <a name="connecting-to-databases"></a>
@@ -615,19 +608,8 @@ php82
 
 Một database `homestead` sẽ được cấu hình cho cả MySQL và PostgreSQL. Để kết nối đến database MySQL hoặc PostgreSQL từ máy thật của bạn, bạn cần kết nối tới địa chỉ `127.0.0.1` và cổng là `33060` (MySQL) hoặc `54320` (PostgreSQL). Với username và password sẽ là `homestead` và `secret`.
 
-> **Warning**
+> [!WARNING]
 > Bạn chỉ nên sử dụng các cổng không mặc định này khi kết nối với cơ sở dữ liệu từ máy thật của bạn. Bạn sẽ dùng các cổng mặc định 3306 và 5432 trong file cấu hình `database` trong application của bạn vì Laravel đang chạy _trong_ máy ảo chứ không phải máy thật của bạn.
-
-<a name="creating-databases"></a>
-### Tạo Databases
-
-Homestead có thể tự động tạo bất kỳ cơ sở dữ liệu nào mà ứng dụng của bạn cần. Nếu một database service đang chạy trong quá trình cung cấp, Homestead sẽ đảm bảo rằng mỗi cơ sở dữ liệu trong file cấu hình `Homestead.yaml` của bạn đều sẽ được tạo nếu nó chưa tồn tại:
-
-```yaml
-databases:
-  - database_1
-  - database_2
-```
 
 <a name="database-backups"></a>
 ### Sao lưu database
@@ -654,10 +636,10 @@ sites:
 
 Cron job cho site sẽ được thiết lập trong thư mục `/etc/cron.d` trong máy ảo Homestead.
 
-<a name="configuring-mailhog"></a>
-### Cấu hình MailHog
+<a name="configuring-mailpit"></a>
+### Cấu hình Mailpit
 
-[MailHog](https://github.com/mailhog/MailHog) cho phép bạn chặn việc gửi email và thực hiện việc kiểm tra quá trình gửi mail đó mà không cần phải thực sự gửi mail đến người dùng. Để bắt đầu, hãy cập nhật file `.env` trong application của bạn sử dụng các cài đặt như sau:
+[Mailpit](https://github.com/axllent/mailpit) cho phép bạn chặn việc gửi email và thực hiện việc kiểm tra quá trình gửi mail đó mà không cần phải thực sự gửi mail đến người dùng. Để bắt đầu, hãy cập nhật file `.env` trong application của bạn sử dụng các cài đặt như sau:
 
 ```ini
 MAIL_MAILER=smtp
@@ -668,7 +650,7 @@ MAIL_PASSWORD=null
 MAIL_ENCRYPTION=null
 ```
 
-Khi MailHog đã được cấu hình xong, bạn có thể truy cập vào bảng điều khiển của MailHog tại `http://localhost:8025`.
+Khi Mailpit đã được cấu hình xong, bạn có thể truy cập vào bảng điều khiển của Mailpit tại `http://localhost:8025`.
 
 <a name="configuring-minio"></a>
 ### Cấu hình Minio
@@ -741,7 +723,9 @@ Sau khi chạy lệnh, bạn sẽ thấy một màn hình Ngrok xuất hiện ch
 share homestead.test -region=eu -subdomain=laravel
 ```
 
-> **Warning**
+Nếu bạn cần share content qua HTTPS thay vì HTTP, hãy sử dụng lệnh `sshare` thay vì `share` để thực hiện việc này.
+
+> [!WARNING]
 > Hãy nhớ rằng, Vagrant vốn không an toàn và bạn đang công khai máy ảo của bạn với Internet khi bạn chạy lệnh `share`.
 
 <a name="debugging-and-profiling"></a>
@@ -752,11 +736,9 @@ share homestead.test -region=eu -subdomain=laravel
 
 Homestead có hỗ trợ debug bằng [Xdebug](https://xdebug.org). Ví dụ: bạn có thể truy cập vào một trang web trên trình duyệt của bạn và PHP sẽ kết nối đến IDE của bạn để cho phép kiểm tra và sửa lỗi code đang chạy.
 
-Mặc định, Xdebug đã được chạy và sẵn sàng cho viêc kết nối. Nếu bạn cần bật hoặc tắt Xdebug trên CLI, hãy chạy lệnh `sudo phpenmod xdebug` hoặc `sudo phpdismod xdebug` trong máy ảo Homestead của bạn.
+Mặc định, Xdebug đã được chạy và sẵn sàng cho viêc kết nối. Nếu bạn cần bật Xdebug trên CLI, hãy chạy lệnh `sudo phpenmod xdebug` trong máy ảo Homestead của bạn. Tiếp theo, làm theo hướng dẫn của IDE để bật debug. Cuối cùng, cấu hình trình duyệt mà bạn muốn chạy trang web để kích hoạt Xdebug, bạn có thể kích hoạt Xdebug bằng một extension hoặc [bookmarklet](https://www.jetbrains.com/phpstorm/marklets/).
 
-Tiếp theo, làm theo hướng dẫn của IDE để bật debug. Cuối cùng, cấu hình trình duyệt mà bạn muốn chạy trang web để kích hoạt Xdebug, bạn có thể kích hoạt Xdebug bằng một extension hoặc [bookmarklet](https://www.jetbrains.com/phpstorm/marklets/).
-
-> **Warning**
+> [!WARNING]
 > Xdebug sẽ khiến PHP chạy chậm hơn đáng kể. Để tắt Xdebug, hãy chạy `sudo phpdismod xdebug` trong máy ảo Homestead của bạn và khởi động lại FPM service.
 
 <a name="autostarting-xdebug"></a>
@@ -809,7 +791,7 @@ networks:
       ip: "192.168.10.20"
 ```
 
-Để bật một [bridged](https://www.vagrantup.com/docs/networking/public_network.html) interface, hãy cấu hình một `bridge` cho network và đổi loại của network sang `public_network`:
+Để bật một [bridged](https://developer.hashicorp.com/vagrant/docs/networking/public_network) interface, hãy cấu hình một `bridge` cho network và đổi loại của network sang `public_network`:
 
 ```yaml
 networks:
@@ -818,12 +800,22 @@ networks:
       bridge: "en1: Wi-Fi (AirPort)"
 ```
 
-Để bật một [DHCP](https://www.vagrantup.com/docs/networking/public_network.html), chỉ cần xoá tuỳ chọn `ip` từ file cấu hình của bạn:
+Để bật một [DHCP](https://developer.hashicorp.com/vagrant/docs/networking/public_network), chỉ cần xoá tuỳ chọn `ip` từ file cấu hình của bạn:
 
 ```yaml
 networks:
     - type: "public_network"
       bridge: "en1: Wi-Fi (AirPort)"
+```
+
+Để cập nhật thiết bị mạng đang sử dụng, bạn có thể thêm tùy chọn `dev` vào cấu hình mạng. Giá trị `dev` mặc định sẽ là `eth0`:
+
+```yaml
+networks:
+    - type: "public_network"
+      ip: "192.168.10.20"
+      bridge: "en1: Wi-Fi (AirPort)"
+      dev: "enp2s0"
 ```
 
 <a name="extending-homestead"></a>
@@ -859,15 +851,4 @@ Mặc định, Homestead cấu hình `natdnshostresolver` là `on`. Điều này
 ```yaml
 provider: virtualbox
 natdnshostresolver: 'off'
-```
-
-<a name="symbolic-links-on-windows"></a>
-#### Link ảo trên Windows
-
-Nếu như các link ảo không hoạt động đúng trên máy Windows của bạn, thì bạn có thể cần thêm lệnh sau vào `Vagrantfile`:
-
-```ruby
-config.vm.provider "virtualbox" do |v|
-    v.customize ["setextradata", :id, "VBoxInternal2/SharedFoldersEnableSymlinksCreate/v-root", "1"]
-end
 ```

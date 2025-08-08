@@ -52,10 +52,8 @@ Nếu bạn muốn tùy biến giá trị được set trong tham số route, b�
 
     /**
      * Get the value of the model's route key.
-     *
-     * @return mixed
      */
-    public function getRouteKey()
+    public function getRouteKey(): mixed
     {
         return $this->slug;
     }

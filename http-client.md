@@ -118,6 +118,13 @@ Khi thực hiện các request `GET`, bạn có thể muốn nối một chuỗi
         'page' => 1,
     ]);
 
+Ngoài ra, phương thức `withQueryParameters` cũng có thể được sử dụng:
+
+    Http::retry(3, 100)->withQueryParameters([
+        'name' => 'Taylor',
+        'page' => 1,
+    ])->get('http://example.com/users')
+
 <a name="sending-form-url-encoded-requests"></a>
 #### Sending Form URL Encoded Requests
 
@@ -140,10 +147,10 @@ Bạn có thể sử dụng phương thức `withBody` nếu bạn muốn đưa 
 <a name="multi-part-requests"></a>
 #### Multi-Part Requests
 
-Nếu bạn muốn gửi một file dưới dạng request multi-part, bạn nên gọi phương thức `attach` trước khi tạo request của bạn. Phương thức này chấp nhận tên của file và nội dung của file đó. Nếu cần, bạn cũng có thể cung cấp thêm tham số thứ ba sẽ được coi là filename của file:
+Nếu bạn muốn gửi một file dưới dạng request multi-part, bạn nên gọi phương thức `attach` trước khi tạo request của bạn. Phương thức này chấp nhận tên của file và nội dung của file đó. Nếu cần, bạn cũng có thể cung cấp thêm tham số thứ ba sẽ được coi là filename của file, trong khi tham số thứ tư có thể được sử dụng để cung cấp các header liên quan đến file:
 
     $response = Http::attach(
-        'attachment', file_get_contents('photo.jpg'), 'photo.jpg'
+        'attachment', file_get_contents('photo.jpg'), 'photo.jpg', ['Content-Type' => 'image/jpeg']
     )->post('http://example.com/attachments');
 
 Thay vì truyền nội dung thô của một file, bạn có thể truyền một stream resource:
@@ -174,6 +181,18 @@ Bạn có thể sử dụng phương thức `accept` để chỉ định content
 
     $response = Http::acceptJson()->get('http://example.com/users');
 
+Phương thức `withHeaders` sẽ nối các header mới vào các header đã có của request. Nếu cần, bạn có thể thay đổi toàn bộ các header bằng phương thức `replaceHeaders`:
+
+```php
+$response = Http::withHeaders([
+    'X-Original' => 'foo',
+])->replaceHeaders([
+    'X-Replacement' => 'bar',
+])->post('http://example.com/users', [
+    'name' => 'Taylor',
+]);
+```
+
 <a name="authentication"></a>
 ### Authentication
 
@@ -195,7 +214,7 @@ Nếu bạn muốn thêm nhanh header `Authorization` bearer token vào trong he
 <a name="timeout"></a>
 ### Timeout
 
-Phương thức `timeout` có thể được sử dụng để chỉ định số giây tối đa có thể chờ một response:
+Phương thức `timeout` có thể được sử dụng để chỉ định số giây tối đa có thể chờ một response. Mặc định, HTTP client sẽ đợi response trong 30 giây:
 
     $response = Http::timeout(3)->get(/* ... */);
 
@@ -212,15 +231,34 @@ Nếu bạn muốn HTTP client tự động thử lại request nếu xảy ra l
 
     $response = Http::retry(3, 100)->post(/* ... */);
 
+Nếu bạn muốn tự điều chỉnh số mili giây chờ đợi giữa các lần thử, bạn có thể truyền một closure làm tham số thứ hai cho phương thức `retry`:
+
+    use Exception;
+
+    $response = Http::retry(3, function (int $attempt, Exception $exception) {
+        return $attempt * 100;
+    })->post(/* ... */);
+
+Để thuận tiện, bạn cũng có thể cung cấp một mảng làm tham số đầu tiên cho phương thức `retry`. Mảng này sẽ được sử dụng để xác định xem số mili giây chờ đợi giữa các lần thử tiếp theo:
+
+    $response = Http::retry([100, 200])->post(/* ... */);
+
 Nếu cần, bạn có thể truyền tham số thứ ba cho phương thức `retry`. Tham số thứ ba phải là một tham số callable để xác định xem có thực sự nên thử lại hay không. Ví dụ: bạn có thể chỉ muốn thử lại request nếu request ban đầu gặp phải lỗi `ConnectionException`:
 
-    $response = Http::retry(3, 100, function ($exception, $request) {
+    use Exception;
+    use Illuminate\Http\Client\PendingRequest;
+
+    $response = Http::retry(3, 100, function (Exception $exception, PendingRequest $request) {
         return $exception instanceof ConnectionException;
     })->post(/* ... */);
 
 Nếu lần thử của request bị thất bại, bạn có thể muốn thực hiện một thay đổi đối với request trước khi nó được thực hiện lại. Bạn có thể đạt được điều này bằng cách sửa tham số request được cung cấp cho lệnh callable mà bạn đã cung cấp cho phương thức `retry`. Ví dụ: bạn có thể muốn thử lại request bằng một mã authorization token mới nếu lần thử đầu tiên trả về lỗi authentication:
 
-    $response = Http::withToken($this->getToken())->retry(2, 0, function ($exception, $request) {
+    use Exception;
+    use Illuminate\Http\Client\PendingRequest;
+    use Illuminate\Http\Client\RequestException;
+
+    $response = Http::withToken($this->getToken())->retry(2, 0, function (Exception $exception, PendingRequest $request) {
         if (! $exception instanceof RequestException || $exception->response->status() !== 401) {
             return false;
         }
@@ -234,7 +272,7 @@ Nếu tất cả các request đều thất bại, thì một instance của `Il
 
     $response = Http::retry(3, 100, throw: false)->post(/* ... */);
 
-> **Warning**
+> [!WARNING]
 > Nếu tất cả các request đều không thành công do một sự cố kết nối, thì `Illuminate\Http\Client\ConnectionException` vẫn sẽ được đưa ra ngay cả khi tham số `throw` được set thành `false`.
 
 <a name="error-handling"></a>
@@ -262,6 +300,8 @@ Không giống như hành vi mặc định của thư viện Guzzle, HTTP client
 
 Nếu bạn có một instance response và muốn đưa ra một instance `Illuminate\Http\Client\RequestException` nếu response status code trả về là một lỗi của client hoặc là của server, bạn có thể sử dụng phương thức `throw` hoặc `throwIf`:
 
+    use Illuminate\Http\Client\Response;
+
     $response = Http::post(/* ... */);
 
     // Throw an exception if a client or server error occurred...
@@ -271,13 +311,13 @@ Nếu bạn có một instance response và muốn đưa ra một instance `Illu
     $response->throwIf($condition);
 
     // Throw an exception if an error occurred and the given closure resolves to true...
-    $response->throwIf(fn ($response) => true);
+    $response->throwIf(fn (Response $response) => true);
 
     // Throw an exception if an error occurred and the given condition is false...
     $response->throwUnless($condition);
 
     // Throw an exception if an error occurred and the given closure resolves to false...
-    $response->throwUnless(fn ($response) => false);
+    $response->throwUnless(fn (Response $response) => false);
 
     // Throw an exception if the response has a specific status code...
     $response->throwIfStatus(403);
@@ -295,42 +335,58 @@ Phương thức `throw` sẽ trả về một instance response nếu như khôn
 
 Nếu bạn muốn thực hiện một số logic bổ sung trước khi đưa ra exception, bạn có thể truyền một closure cho phương thức `throw`. Exception này sẽ được đưa ra tự động sau khi closure được gọi, do đó bạn không cần phải đưa lại exception này từ bên trong closure:
 
-    return Http::post(/* ... */)->throw(function ($response, $e) {
-        //
+    use Illuminate\Http\Client\Response;
+    use Illuminate\Http\Client\RequestException;
+
+    return Http::post(/* ... */)->throw(function (Response $response, RequestException $e) {
+        // ...
     })->json();
 
 <a name="guzzle-middleware"></a>
 ### Guzzle Middleware
 
-Vì HTTP client của Laravel được cung cấp bởi Guzzle, nên bạn có thể tận dụng [Guzzle Middleware](https://docs.guzzlephp.org/en/stable/handlers-and-middleware.html) để thao tác với các request gửi đi hoặc kiểm tra response gửi đến. Để xử lý request gửi đi, hãy đăng ký một Guzzle middleware thông qua phương thức `withMiddleware` kết hợp với phương thức `mapRequest` của middleware factory của Guzzle:
+Vì HTTP client của Laravel được cung cấp bởi Guzzle, nên bạn có thể tận dụng [Guzzle Middleware](https://docs.guzzlephp.org/en/stable/handlers-and-middleware.html) để thao tác với các request gửi đi hoặc kiểm tra response gửi đến. Để xử lý request gửi đi, hãy đăng ký một Guzzle middleware thông qua phương thức `withRequestMiddleware`:
 
-    use GuzzleHttp\Middleware;
     use Illuminate\Support\Facades\Http;
     use Psr\Http\Message\RequestInterface;
 
-    $response = Http::withMiddleware(
-        Middleware::mapRequest(function (RequestInterface $request) {
-            $request = $request->withHeader('X-Example', 'Value');
-
-            return $request;
-        })
+    $response = Http::withRequestMiddleware(
+        function (RequestInterface $request) {
+            return $request->withHeader('X-Example', 'Value');
+        }
     )->get('http://example.com');
 
-Tương tự, bạn có thể kiểm tra response HTTP phản hồi bằng cách đăng ký một middleware thông qua phương thức `withMiddleware` kết hợp với phương thức `mapResponse` của middleware factory của Guzzle:
+Tương tự, bạn có thể kiểm tra response HTTP phản hồi bằng cách đăng ký một middleware thông qua phương thức `withResponseMiddleware`:
 
-    use GuzzleHttp\Middleware;
     use Illuminate\Support\Facades\Http;
     use Psr\Http\Message\ResponseInterface;
 
-    $response = Http::withMiddleware(
-        Middleware::mapResponse(function (ResponseInterface $response) {
+    $response = Http::withResponseMiddleware(
+        function (ResponseInterface $response) {
             $header = $response->getHeader('X-Example');
 
             // ...
 
             return $response;
-        })
+        }
     )->get('http://example.com');
+
+<a name="global-middleware"></a>
+#### Global Middleware
+
+Thỉnh thoảng, bạn có thể muốn đăng ký một middleware áp dụng cho mọi request được gửi đi và response được nhận về. Để thực hiện điều này, bạn có thể sử dụng các phương thức `globalRequestMiddleware` và `globalResponseMiddleware`. Thông thường, các phương thức này phải được gọi trong phương thức `boot` của `AppServiceProvider` trong ứng dụng của bạn:
+
+```php
+use Illuminate\Support\Facades\Http;
+
+Http::globalRequestMiddleware(fn ($request) => $request->withHeader(
+    'User-Agent', 'Example Application/1.0'
+));
+
+Http::globalResponseMiddleware(fn ($response) => $response->withHeader(
+    'X-Finished-At', now()->toDateTimeString()
+));
+```
 
 <a name="guzzle-options"></a>
 ### Guzzle Options
@@ -374,6 +430,26 @@ Như bạn có thể thấy, mỗi instance response có thể được truy c�
 
     return $responses['first']->ok();
 
+<a name="customizing-concurrent-requests"></a>
+#### Customizing Concurrent Requests
+
+Phương thức `pool` sẽ không thể nối với các phương thức HTTP client khác như phương thức `withHeaders` hoặc `middleware`. Nếu bạn muốn thực hiện một header tùy chỉnh hoặc middleware cho các request có trong nhóm, bạn cần cấu hình các tùy chọn đó trong mỗi request trong nhóm đó:
+
+```php
+use Illuminate\Http\Client\Pool;
+use Illuminate\Support\Facades\Http;
+
+$headers = [
+    'X-Example' => 'example',
+];
+
+$responses = Http::pool(fn (Pool $pool) => [
+    $pool->withHeaders($headers)->get('http://laravel.test/test'),
+    $pool->withHeaders($headers)->get('http://laravel.test/test'),
+    $pool->withHeaders($headers)->get('http://laravel.test/test'),
+]);
+```
+
 <a name="macros"></a>
 ## Macros
 
@@ -384,10 +460,8 @@ use Illuminate\Support\Facades\Http;
 
 /**
  * Bootstrap any application services.
- *
- * @return void
  */
-public function boot()
+public function boot(): void
 {
     Http::macro('github', function () {
         return Http::withHeaders([

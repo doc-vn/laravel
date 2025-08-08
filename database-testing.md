@@ -21,7 +21,6 @@ Trước khi tiếp tục, hãy thảo luận về cách reset lại cơ sở d�
     namespace Tests\Feature;
 
     use Illuminate\Foundation\Testing\RefreshDatabase;
-    use Illuminate\Foundation\Testing\WithoutMiddleware;
     use Tests\TestCase;
 
     class ExampleTest extends TestCase
@@ -30,10 +29,8 @@ Trước khi tiếp tục, hãy thảo luận về cách reset lại cơ sở d�
 
         /**
          * A basic functional test example.
-         *
-         * @return void
          */
-        public function test_basic_example()
+        public function test_basic_example(): void
         {
             $response = $this->get('/');
 
@@ -54,7 +51,7 @@ Khi test, bạn có thể cần thêm một vài bản ghi vào cơ sở dữ li
 
     use App\Models\User;
 
-    public function test_models_can_be_instantiated()
+    public function test_models_can_be_instantiated(): void
     {
         $user = User::factory()->create();
 
@@ -73,7 +70,6 @@ Nếu bạn muốn sử dụng [database seeders](/docs/{{version}}/seeding) đ�
     use Database\Seeders\OrderStatusSeeder;
     use Database\Seeders\TransactionStatusSeeder;
     use Illuminate\Foundation\Testing\RefreshDatabase;
-    use Illuminate\Foundation\Testing\WithoutMiddleware;
     use Tests\TestCase;
 
     class ExampleTest extends TestCase
@@ -82,10 +78,8 @@ Nếu bạn muốn sử dụng [database seeders](/docs/{{version}}/seeding) đ�
 
         /**
          * Test creating a new order.
-         *
-         * @return void
          */
-        public function test_orders_can_be_created()
+        public function test_orders_can_be_created(): void
         {
             // Run the DatabaseSeeder...
             $this->seed();

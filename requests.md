@@ -10,7 +10,7 @@
     - [PSR-7 Requests](#psr7-requests)
 - [Input](#input)
     - [Lấy Input](#retrieving-input)
-    - [Xác nhận nếu Input tồn tại](#determining-if-input-is-present)
+    - [Kiểm tra Input](#input-presence)
     - [Merge thêm giá trị Input](#merging-additional-input)
     - [Old Input](#old-input)
     - [Cookies](#cookies)
@@ -38,21 +38,21 @@ Class `Illuminate\Http\Request` của Laravel cung cấp một cách hướng đ
 
     namespace App\Http\Controllers;
 
+    use Illuminate\Http\RedirectResponse;
     use Illuminate\Http\Request;
 
     class UserController extends Controller
     {
         /**
          * Store a new user.
-         *
-         * @param  \Illuminate\Http\Request  $request
-         * @return \Illuminate\Http\Response
          */
-        public function store(Request $request)
+        public function store(Request $request): RedirectResponse
         {
             $name = $request->input('name');
 
-            //
+            // Store the user...
+
+            return redirect('/users');
         }
     }
 
@@ -61,7 +61,7 @@ Như đã đề cập, bạn cũng có thể khai báo kiểu class `Illuminate\
     use Illuminate\Http\Request;
 
     Route::get('/', function (Request $request) {
-        //
+        // ...
     });
 
 <a name="dependency-injection-route-parameters"></a>
@@ -79,20 +79,19 @@ Bạn vẫn có thể khai báo kiểu `Illuminate\Http\Request` và truy cập 
 
     namespace App\Http\Controllers;
 
+    use Illuminate\Http\RedirectResponse;
     use Illuminate\Http\Request;
 
     class UserController extends Controller
     {
         /**
          * Update the specified user.
-         *
-         * @param  \Illuminate\Http\Request  $request
-         * @param  string  $id
-         * @return \Illuminate\Http\Response
          */
-        public function update(Request $request, $id)
+        public function update(Request $request, string $id): RedirectResponse
         {
-            //
+            // Update the user...
+
+            return redirect('/users');
         }
     }
 
@@ -114,13 +113,13 @@ Phương thức `path` trả về thông tin path của request. Vì vậy, nế
 Phương thức `is` cho phép bạn kiểm tra path của request có khớp với một pattern đã cho hay không. Bạn có thể sử dụng ký tự `*` làm ký tự đại diện khi sử dụng phương thức này:
 
     if ($request->is('admin/*')) {
-        //
+        // ...
     }
 
 Bằng cách sử dụng phương thức `routeIs`, bạn có thể xác định xem request đến có khớp với [tên của một route](/docs/{{version}}/routing#named-routes) hay không:
 
     if ($request->routeIs('admin.*')) {
-        //
+        // ...
     }
 
 <a name="retrieving-the-request-url"></a>
@@ -135,6 +134,12 @@ Bằng cách sử dụng phương thức `routeIs`, bạn có thể xác định
 Nếu bạn muốn nối thêm biến vào URL hiện tại, bạn có thể gọi phương thức `fullUrlWithQuery`. Phương thức này sẽ nối một mảng các biến đã cho vào các biến hiện tại:
 
     $request->fullUrlWithQuery(['type' => 'phone']);
+
+Nếu bạn muốn lấy URL hiện tại mà không cần đến các tham số chuỗi truy vấn, thì bạn có thể sử dụng phương thức `fullUrlWithoutQuery`:
+
+```php
+$request->fullUrlWithoutQuery(['type']);
+```
 
 <a name="retrieving-the-request-host"></a>
 #### Retrieving The Request Host
@@ -153,7 +158,7 @@ Phương thức `method` sẽ trả về mothed HTTP của request. Bạn có th
     $method = $request->method();
 
     if ($request->isMethod('post')) {
-        //
+        // ...
     }
 
 <a name="request-headers"></a>
@@ -168,7 +173,7 @@ Bạn có thể lấy ra header của request từ instance `Illuminate\Http\Req
 Phương thức `hasHeader` có thể được sử dụng để xác định xem request có chứa header nhất định hay không:
 
     if ($request->hasHeader('X-Header-Name')) {
-        //
+        // ...
     }
 
 Để thuận tiện, phương thức `bearerToken` có thể được sử dụng để lấy ra mã token từ header `Authorization`. Nếu không có header nào như vậy, một chuỗi trống sẽ được trả về:
@@ -181,6 +186,12 @@ Phương thức `hasHeader` có thể được sử dụng để xác định xe
 Phương thức `ip` có thể được sử dụng để lấy ra địa chỉ IP của client đã gửi request tới ứng dụng của bạn:
 
     $ipAddress = $request->ip();
+
+Nếu bạn muốn lấy ra một mảng các địa chỉ IP, bao gồm tất cả các địa chỉ IP của client được chuyển qua bởi proxy, bạn có thể sử dụng phương thức `ips`. Địa chỉ IP của client "gốc" sẽ nằm ở cuối mảng:
+
+    $ipAddresses = $request->ips();
+
+Nhìn chung, địa chỉ IP nên được coi là dữ liệu input không đáng tin cậy, bởi vì người dùng kiểm soát thông tin này và chỉ được sử dụng cho mục đích thông tin.
 
 <a name="content-negotiation"></a>
 ### Content Negotiation
@@ -220,10 +231,10 @@ Khi bạn đã cài đặt xong các thư viện trên, bạn có thể lấy đ
     use Psr\Http\Message\ServerRequestInterface;
 
     Route::get('/', function (ServerRequestInterface $request) {
-        //
+        // ...
     });
 
-> **Note**
+> [!NOTE]
 > Nếu bạn muốn trả về một instance response PSR-7 từ một route hoặc một controller, nó sẽ tự động được chuyển đổi trở lại thành một instance response Laravel và được hiển thị bởi framework.
 
 <a name="input"></a>
@@ -245,7 +256,7 @@ Bằng cách sử dụng phương thức `collect`, bạn có thể lấy ra t�
 
 Phương thức `collect` cũng cho phép bạn lấy ra một tập con của input của incoming request dưới dạng một collection:
 
-    $request->collect('users')->each(function ($user) {
+    $request->collect('users')->each(function (string $user) {
         // ...
     });
 
@@ -350,59 +361,65 @@ Nếu bạn cần truy xuất một tập con của dữ liệu input, bạn có
 
     $input = $request->except('credit_card');
 
-> **Warning**
+> [!WARNING]
 > Phương thức `only` trả về tất cả các cặp key / value mà bạn yêu cầu; tuy nhiên, nó sẽ không trả về các cặp key / value mà không có trong request.
 
-<a name="determining-if-input-is-present"></a>
-### Xác nhận nếu Input tồn tại
+<a name="input-presence"></a>
+### Kiểm tra Input
 
 Bạn có thể sử dụng phương thức `has` để xác định xem giá trị đó có tồn tại trong request hay không. Phương thức `has` sẽ trả về `true` nếu giá trị tồn tại trong request:
 
     if ($request->has('name')) {
-        //
+        // ...
     }
 
 Khi được cung cấp một mảng, phương thức `has` sẽ xác định xem tất cả các giá trị có trong mảng đó có tồn tại hay không:
 
     if ($request->has(['name', 'email'])) {
-        //
+        // ...
+    }
+
+Phương thức `hasAny` trả về `true` nếu có bất kỳ giá trị nào tồn tại:
+
+    if ($request->hasAny(['name', 'email'])) {
+        // ...
     }
 
 Phương thức `whenHas` sẽ chạy closure đã cho nếu có một giá trị trong request tồn tại:
 
-    $request->whenHas('name', function ($input) {
-        //
+    $request->whenHas('name', function (string $input) {
+        // ...
     });
 
 Closure thứ hai có thể được truyền cho phương thức `whenHas` và sẽ được chạy nếu giá trị được chỉ định không tồn tại trong request:
 
-    $request->whenHas('name', function ($input) {
+    $request->whenHas('name', function (string $input) {
         // The "name" value is present...
     }, function () {
         // The "name" value is not present...
     });
 
-Phương thức `hasAny` trả về `true` nếu có bất kỳ giá trị nào tồn tại:
-
-    if ($request->hasAny(['name', 'email'])) {
-        //
-    }
-
 Nếu bạn muốn xác định xem một giá trị có tồn tại trong request và không rỗng hay không, bạn có thể sử dụng phương thức `filled`:
 
     if ($request->filled('name')) {
-        //
+        // ...
+    }
+
+Phương thức `anyFilled` sẽ trả về `true` nếu có giá trị nào đó được chỉ định không phải là chuỗi trống:
+
+    if ($request->anyFilled(['name', 'email'])) {
+        // ...
     }
 
 Phương thức `whenFilled` sẽ chạy closure đã cho nếu có một giá trị trong request và không rỗng:
 
-    $request->whenFilled('name', function ($input) {
-        //
+    $request->whenFilled('name', function (string $input) {
+        // ...
     });
 
 Closure thứ hai có thể được truyền đến phương thức `whenFilled` sẽ được chạy nếu giá trị được chỉ định không có nội dung:
 
-    $request->whenFilled('name', function ($input) {
+    $request->whenFilled('name', function (string $input) {
         // The "name" value is filled...
     }, function () {
         // The "name" value is not filled...
@@ -411,10 +428,10 @@ Closure thứ hai có thể được truyền đến phương thức `whenFilled
 Để xác định xem một khóa nào đó có bị thiếu trong request hay không, bạn có thể sử dụng phương thức `missing` và phương thức `whenMissing`:
 
     if ($request->missing('name')) {
-        //
+        // ...
     }
 
-    $request->whenMissing('name', function ($input) {
+    $request->whenMissing('name', function (array $input) {
         // The "name" value is missing...
     }, function () {
         // The "name" value is present...
@@ -496,20 +513,19 @@ Nếu bạn muốn vô hiệu hóa việc cắt chuỗi và việc chuyển đ�
 
 ```php
 use App\Http\Middleware\TrimStrings;
+use Illuminate\Http\Request;
 use Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull;
 
 /**
  * Bootstrap any application services.
- *
- * @return void
  */
-public function boot()
+public function boot(): void
 {
-    TrimStrings::skipWhen(function ($request) {
+    TrimStrings::skipWhen(function (Request $request) {
         return $request->is('admin/*');
     });
 
-    ConvertEmptyStringsToNull::skipWhen(function ($request) {
+    ConvertEmptyStringsToNull::skipWhen(function (Request $request) {
         // ...
     });
 }
@@ -530,7 +546,7 @@ Bạn có thể ra các file đã được upload từ một instance`Illuminate
 Bạn có thể kiểm tra một file có tồn tại trong request hay không bằng cách sử dụng phương thức `hasFile`:
 
     if ($request->hasFile('photo')) {
-        //
+        // ...
     }
 
 <a name="validating-successful-uploads"></a>
@@ -539,7 +555,7 @@ Bạn có thể kiểm tra một file có tồn tại trong request hay không b
 Ngoài việc kiểm tra xem file có tồn tại hay không, bạn cũng có thể cần xác minh rằng không có vấn đề gì khi tải file lên, qua phương thức `isValid`:
 
     if ($request->file('photo')->isValid()) {
-        //
+        // ...
     }
 
 <a name="file-paths-extensions"></a>
@@ -575,7 +591,7 @@ Nếu bạn không muốn tên tệp được tự động tạo, bạn có th�
 
     $path = $request->photo->storeAs('images', 'filename.jpg', 's3');
 
-> **Note**
+> [!NOTE]
 > Để biết thêm thông tin về việc lưu file trong Laravel, hãy xem [tài liệu về lưu file](/docs/{{version}}/filesystem).
 
 <a name="configuring-trusted-proxies"></a>
@@ -612,7 +628,7 @@ Khi application của bạn đang chạy sau một hệ thống load balancer, m
         protected $headers = Request::HEADER_X_FORWARDED_FOR | Request::HEADER_X_FORWARDED_HOST | Request::HEADER_X_FORWARDED_PORT | Request::HEADER_X_FORWARDED_PROTO;
     }
 
-> **Note**
+> [!NOTE]
 > Nếu bạn đang sử dụng AWS Elastic Load Balancing, thì giá trị `$headers` của bạn phải là `Request::HEADER_X_FORWARDED_AWS_ELB`. Để biết thêm thông tin về các hằng số có thể được sử dụng trong thuộc tính `$headers`, hãy xem tài liệu của Symfony về [trusting proxies](https://symfony.com/doc/current/deployment/proxies.html).
 
 <a name="trusting-all-proxies"></a>
@@ -639,9 +655,9 @@ Middleware `TrustHosts` đã được khai báo có sẵn trong stack `$middlewa
     /**
      * Get the host patterns that should be trusted.
      *
-     * @return array
+     * @return array<int, string>
      */
-    public function hosts()
+    public function hosts(): array
     {
         return [
             'laravel.test',

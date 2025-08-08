@@ -3,6 +3,7 @@
 - [Giới thiệu](#introduction)
 - [Kỳ vọng thành công hay thất bai](#success-failure-expectations)
 - [Kỳ vọng input và output](#input-output-expectations)
+- [Console Events](#console-events)
 
 <a name="introduction"></a>
 ## Giới thiệu
@@ -16,10 +17,8 @@ Ngoài việc đơn giản hóa cách kiểm tra HTTP, Laravel cung cấp một 
 
     /**
      * Test a console command.
-     *
-     * @return void
      */
-    public function test_console_command()
+    public function test_console_command(): void
     {
         $this->artisan('inspire')->assertExitCode(0);
     }
@@ -55,10 +54,8 @@ Bạn có thể kiểm tra lệnh này bằng cách sử dụng bài test dướ
 
     /**
      * Test a console command.
-     *
-     * @return void
      */
-    public function test_console_command()
+    public function test_console_command(): void
     {
         $this->artisan('question')
              ->expectsQuestion('What is your name?', 'Taylor Otwell')
@@ -92,3 +89,22 @@ Nếu lệnh của bạn hiển thị một bảng thông tin bằng cách sử 
             [1, 'taylor@example.com'],
             [2, 'abigail@example.com'],
         ]);
+
+<a name="console-events"></a>
+## Console Events
+
+Mặc định, các event `Illuminate\Console\Events\CommandStarting` và `Illuminate\Console\Events\CommandFinished` sẽ không được gửi đi khi đang chạy test cho ứng dụng của bạn. Tuy nhiên, bạn có thể kích hoạt các event này cho một class test case nhất định bằng cách thêm trait `Illuminate\Foundation\Testing\WithConsoleEvents` vào class:
+
+    <?php
+
+    namespace Tests\Feature;
+
+    use Illuminate\Foundation\Testing\WithConsoleEvents;
+    use Tests\TestCase;
+
+    class ConsoleEventTest extends TestCase
+    {
+        use WithConsoleEvents;
+
+        // ...
+    }

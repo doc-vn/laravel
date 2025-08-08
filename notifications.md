@@ -36,16 +36,18 @@
 - [SMS Notifications](#sms-notifications)
     - [Yêu cầu](#sms-prerequisites)
     - [Formatting SMS Notifications](#formatting-sms-notifications)
-    - [Formatting Shortcode Notifications](#formatting-shortcode-notifications)
+    - [Unicode Content](#unicode-content)
     - [Tuỳ biến "From" Number](#customizing-the-from-number)
     - [Thêm Client Reference](#adding-a-client-reference)
     - [Routing SMS Notifications](#routing-sms-notifications)
 - [Slack Notifications](#slack-notifications)
     - [Yêu cầu](#slack-prerequisites)
     - [Formatting Slack Notifications](#formatting-slack-notifications)
-    - [Đính kèm vào message slack](#slack-attachments)
+    - [Tương tác với Slack](#slack-interactivity)
     - [Routing Slack Notifications](#routing-slack-notifications)
+    - [Thông báo đến một External Slack Workspaces](#notifying-external-slack-workspaces)
 - [Ngôn ngữ trong Notifications](#localizing-notifications)
+- [Testing](#testing)
 - [Notification Events](#notification-events)
 - [Tuỳ biến Channels](#custom-channels)
 
@@ -93,7 +95,7 @@ Phương thức `notify` được cung cấp bởi trait này sẽ nhận vào m
 
     $user->notify(new InvoicePaid($invoice));
 
-> **Note**
+> [!NOTE]
 > Hãy nhớ rằng, bạn có thể sử dụng trait `Notifiable` trên bất kỳ model nào mà bạn muốn. Bạn không bị giới hạn dùng nó trên model `User` của bạn.
 
 <a name="using-the-notification-facade"></a>
@@ -114,7 +116,7 @@ Bạn cũng có thể gửi một notification ngay lập tức bằng phương 
 
 Mỗi class notification có một phương thức `via` định nghĩa channel nào của notification sẽ được gửi. Các notification có thể được gửi trên các channel `mail`, `database`, `broadcast`, `vonage`, và `slack`.
 
-> **Note**
+> [!NOTE]
 > Nếu bạn muốn sử dụng các channel khác như Telegram hoặc Pusher, hãy xem drive do cộng đồng phát triển [Laravel Notification Channels website](http://laravel-notification-channels.com).
 
 Phương thức `via` nhận vào một instance `$notifiable`, đây sẽ là một instance của class mà notification sẽ gửi đến. Bạn có thể sử dụng `$notifiable` để xác định channel nào sẽ gửi notification:
@@ -122,10 +124,9 @@ Phương thức `via` nhận vào một instance `$notifiable`, đây sẽ là m
     /**
      * Get the notification's delivery channels.
      *
-     * @param  mixed  $notifiable
-     * @return array
+     * @return array<int, string>
      */
-    public function via($notifiable)
+    public function via(object $notifiable): array
     {
         return $notifiable->prefers_sms ? ['vonage'] : ['mail', 'database'];
     }
@@ -133,8 +134,8 @@ Phương thức `via` nhận vào một instance `$notifiable`, đây sẽ là m
 <a name="queueing-notifications"></a>
 ### Queue Notification
 
-> **Warning**
-> Trước khi queue notification, bạn nên cấu hình queue và [chạy một worker](/docs/{{version}}/queues).
+> [!WARNING]
+> Trước khi queue notification, bạn nên cấu hình queue và [chạy một worker](/docs/{{version}}/queues#running-the-queue-worker).
 
 Gửi notification có thể mất nhiều thời gian, đặc biệt nếu channel cần gọi API bên ngoài để gửi notification. Để tăng tốc độ thời gian phản hồi của application, hãy queue notification của bạn bằng cách thêm interface `ShouldQueue` và trait `Queueable` vào class của bạn. Interface và trait này sẽ mặc định được import cho các notification được tạo ra bằng lệnh `make:notification`, vì vậy bạn có thể ngay lập tức thêm chúng vào trong class notification của bạn:
 
@@ -183,10 +184,9 @@ Ngoài ra, bạn có thể định nghĩa phương thức `withDelay` trên chí
     /**
      * Determine the notification's delivery delay.
      *
-     * @param  mixed  $notifiable
-     * @return array
+     * @return array<string, \Illuminate\Support\Carbon>
      */
-    public function withDelay($notifiable)
+    public function withDelay(object $notifiable): array
     {
         return [
             'mail' => now()->addMinutes(5),
@@ -197,23 +197,37 @@ Ngoài ra, bạn có thể định nghĩa phương thức `withDelay` trên chí
 <a name="customizing-the-notification-queue-connection"></a>
 #### Customizing The Notification Queue Connection
 
-Mặc định, các queued notification sẽ được queue bằng kết nối queue mặc định trong ứng dụng của bạn. Nếu bạn muốn chỉ định một kết nối khác sẽ được sử dụng cho một notification cụ thể, bạn có thể định nghĩa một thuộc tính `$connection` trên class notification:
+Mặc định, các queued notification sẽ được queue bằng kết nối queue mặc định trong ứng dụng của bạn. Nếu bạn muốn chỉ định một kết nối khác sẽ được sử dụng cho một notification cụ thể, bạn có thể gọi phương thức `onConnection` từ hàm constructor của notification của bạn:
 
-    /**
-     * The name of the queue connection to use when queueing the notification.
-     *
-     * @var string
-     */
-    public $connection = 'redis';
+    <?php
+
+    namespace App\Notifications;
+
+    use Illuminate\Bus\Queueable;
+    use Illuminate\Contracts\Queue\ShouldQueue;
+    use Illuminate\Notifications\Notification;
+
+    class InvoicePaid extends Notification implements ShouldQueue
+    {
+        use Queueable;
+
+        /**
+         * Create a new notification instance.
+         */
+        public function __construct()
+        {
+            $this->onConnection('redis');
+        }
+    }
 
 Hoặc, nếu bạn muốn chỉ định cụ thể một kết nối queue sẽ được sử dụng cho mỗi channel notification mà được notification của bạn hỗ trợ, bạn có thể định nghĩa phương thức `viaConnections` trên notification của bạn. Phương thức này sẽ trả về một mảng gồm các cặp tên channel và tên kết nối queue:
 
     /**
      * Determine which connections should be used for each notification channel.
      *
-     * @return array
+     * @return array<string, string>
      */
-    public function viaConnections()
+    public function viaConnections(): array
     {
         return [
             'mail' => 'redis',
@@ -229,9 +243,9 @@ Nếu bạn muốn chỉ định một queue cụ thể được sử dụng cho
     /**
      * Determine which queues should be used for each notification channel.
      *
-     * @return array
+     * @return array<string, string>
      */
-    public function viaQueues()
+    public function viaQueues(): array
     {
         return [
             'mail' => 'mail-queue',
@@ -240,7 +254,7 @@ Nếu bạn muốn chỉ định một queue cụ thể được sử dụng cho
     }
 
 <a name="queued-notifications-and-database-transactions"></a>
-#### Queued Notifications & Database Transactions
+#### Queued Notifications và Database Transactions
 
 Khi các queued notification được gửi đi trong các database transaction, chúng có thể bị queue xử lý trước khi database transaction được commit. Khi điều này xảy ra, mọi cập nhật bạn đã commit đối với model hoặc bản ghi cơ sở dữ liệu trong quá trình database transaction có thể chưa được lưu vào trong cơ sở dữ liệu. Ngoài ra, mọi model hoặc bản ghi cơ sở dữ liệu được tạo trong transaction có thể không tồn tại trong cơ sở dữ liệu. Nếu notification của bạn phụ thuộc vào các trường hợp như thế này thì các lỗi không mong muốn có thể xảy ra khi job xử lý queued notification.
 
@@ -266,8 +280,6 @@ Ngoài ra, bạn có thể gọi phương thức `afterCommit` từ hàm khởi 
 
         /**
          * Create a new notification instance.
-         *
-         * @return void
          */
         public function __construct()
         {
@@ -275,7 +287,7 @@ Ngoài ra, bạn có thể gọi phương thức `afterCommit` từ hàm khởi 
         }
     }
 
-> **Note**
+> [!NOTE]
 > Để tìm hiểu thêm về cách giải quyết những vấn đề này, vui lòng xem lại tài liệu về [queued job và database transaction](/docs/{{version}}/queues#jobs-and-database-transactions).
 
 <a name="determining-if-the-queued-notification-should-be-sent"></a>
@@ -287,12 +299,8 @@ Tuy nhiên, nếu bạn muốn đưa ra một kiểm tra cuối cùng về việ
 
     /**
      * Determine if the notification should be sent.
-     *
-     * @param  mixed  $notifiable
-     * @param  string  $channel
-     * @return bool
      */
-    public function shouldSend($notifiable, $channel)
+    public function shouldSend(object $notifiable, string $channel): bool
     {
         return $this->invoice->isPaid();
     }
@@ -307,7 +315,7 @@ Thỉnh thoảng bạn có thể cần gửi notification cho người mà chưa
 
     Notification::route('mail', 'taylor@example.com')
                 ->route('vonage', '5555555555')
-                ->route('slack', 'https://hooks.slack.com/services/...')
+                ->route('slack', '#slack-channel')
                 ->route('broadcast', [new Channel('channel-name')])
                 ->notify(new InvoicePaid($invoice));
 
@@ -315,6 +323,13 @@ Nếu bạn muốn thêm tên người nhận khi gửi notification tới route
 
     Notification::route('mail', [
         'barrett@example.com' => 'Barrett Blair',
+    ])->notify(new InvoicePaid($invoice));
+
+Bằng cách sử dụng phương thức `routes`, bạn có thể cung cấp thông tin tùy ý cho nhiều channel thông báo cùng một lúc:
+
+    Notification::routes([
+        'mail' => ['barrett@example.com' => 'Barrett Blair'],
+        'vonage' => '5555555555',
     ])->notify(new InvoicePaid($invoice));
 
 <a name="mail-notifications"></a>
@@ -329,11 +344,8 @@ Class `MailMessage` có chứa một số phương thức đơn giản để gi�
 
     /**
      * Get the mail representation of the notification.
-     *
-     * @param  mixed  $notifiable
-     * @return \Illuminate\Notifications\Messages\MailMessage
      */
-    public function toMail($notifiable)
+    public function toMail(object $notifiable): MailMessage
     {
         $url = url('/invoice/'.$this->invoice->id);
 
@@ -345,14 +357,14 @@ Class `MailMessage` có chứa một số phương thức đơn giản để gi�
                     ->line('Thank you for using our application!');
     }
 
-> **Note**
+> [!NOTE]
 > Lưu ý rằng chúng ta đang sử dụng `$this->invoice->id` trong phương thức `toMail`. Bạn có thể truyền bất kỳ dữ liệu nào mà notification của bạn cần để tạo message cho nó bằng hàm khởi tạo của notification.
 
 Trong ví dụ này, chúng ta đã đăng ký một lời chào, một dòng text, một call to action và sau đó là một dòng text khác. Các phương thức này được cung cấp bởi đối tượng `MailMessage` giúp cho việc định dạng các email giao dịch nhỏ trở nên dễ dàng và đơn giản hơn. Sau đó, mail channel sẽ dịch các thành phần của message này thành một template email HTML đẹp có phản hồi nhanh với một bản sao text đơn giản. Đây là một ví dụ mẫu về email được tạo bởi channel `mail`:
 
 <img src="https://laravel.com/img/docs/notification-example-2.png">
 
-> **Note**
+> [!NOTE]
 > Khi gửi mail notification, hãy đảm bảo là bạn đã set tuỳ chọn cấu hình `name` trong file cấu hình `config/app.php` của bạn. Giá trị này sẽ được sử dụng trong phần header và footer của message mail notification của bạn.
 
 <a name="error-messages"></a>
@@ -362,11 +374,8 @@ Một số notification sẽ thông báo cho người dùng về lỗi, chẳng 
 
     /**
      * Get the mail representation of the notification.
-     *
-     * @param  mixed  $notifiable
-     * @return \Illuminate\Notifications\Messages\MailMessage
      */
-    public function toMail($notifiable)
+    public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
                     ->error()
@@ -381,14 +390,11 @@ Thay vì định nghĩa "các dòng" văn bản trong class thông báo, bạn c
 
     /**
      * Get the mail representation of the notification.
-     *
-     * @param  mixed  $notifiable
-     * @return \Illuminate\Notifications\Messages\MailMessage
      */
-    public function toMail($notifiable)
+    public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)->view(
-            'emails.name', ['invoice' => $this->invoice]
+            'mail.invoice.paid', ['invoice' => $this->invoice]
         );
     }
 
@@ -396,15 +402,24 @@ Bạn có thể chỉ định thêm chế độ plain-text view cho tin nhắn e
 
     /**
      * Get the mail representation of the notification.
-     *
-     * @param  mixed  $notifiable
-     * @return \Illuminate\Notifications\Messages\MailMessage
      */
-    public function toMail($notifiable)
+    public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)->view(
-            ['emails.name.html', 'emails.name.plain'],
+            ['mail.invoice.paid', 'mail.invoice.paid-text'],
             ['invoice' => $this->invoice]
+        );
+    }
+
+Hoặc, nếu tin nhắn của bạn chỉ có dạng plain-text, bạn có thể sử dụng phương thức `text`:
+
+    /**
+     * Get the mail representation of the notification.
+     */
+    public function toMail(object $notifiable): MailMessage
+    {
+        return (new MailMessage)->text(
+            'mail.invoice.paid-text', ['invoice' => $this->invoice]
         );
     }
 
@@ -415,11 +430,8 @@ Mặc định, địa chỉ người gửi hoặc từ địa chỉ email đư�
 
     /**
      * Get the mail representation of the notification.
-     *
-     * @param  mixed  $notifiable
-     * @return \Illuminate\Notifications\Messages\MailMessage
      */
-    public function toMail($notifiable)
+    public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
                     ->from('barrett@example.com', 'Barrett Blair')
@@ -437,6 +449,7 @@ Khi gửi notifications qua channel `mail`, hệ thống notification sẽ tự 
 
     use Illuminate\Foundation\Auth\User as Authenticatable;
     use Illuminate\Notifications\Notifiable;
+    use Illuminate\Notifications\Notification;
 
     class User extends Authenticatable
     {
@@ -445,10 +458,9 @@ Khi gửi notifications qua channel `mail`, hệ thống notification sẽ tự 
         /**
          * Route notifications for the mail channel.
          *
-         * @param  \Illuminate\Notifications\Notification  $notification
-         * @return array|string
+         * @return  array<string, string>|string
          */
-        public function routeNotificationForMail($notification)
+        public function routeNotificationForMail(Notification $notification): array|string
         {
             // Return email address only...
             return $this->email_address;
@@ -465,11 +477,8 @@ Mặc định, chủ đề của email là tên class của notification đượ
 
     /**
      * Get the mail representation of the notification.
-     *
-     * @param  mixed  $notifiable
-     * @return \Illuminate\Notifications\Messages\MailMessage
      */
-    public function toMail($notifiable)
+    public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
                     ->subject('Notification Subject')
@@ -483,11 +492,8 @@ Mặc định, email notification sẽ được gửi bằng mailer mặc địn
 
     /**
      * Get the mail representation of the notification.
-     *
-     * @param  mixed  $notifiable
-     * @return \Illuminate\Notifications\Messages\MailMessage
      */
-    public function toMail($notifiable)
+    public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
                     ->mailer('postmark')
@@ -510,29 +516,23 @@ php artisan vendor:publish --tag=laravel-notifications
 
     /**
      * Get the mail representation of the notification.
-     *
-     * @param  mixed  $notifiable
-     * @return \Illuminate\Notifications\Messages\MailMessage
      */
-    public function toMail($notifiable)
+    public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
                     ->greeting('Hello!')
                     ->attach('/path/to/file');
     }
 
-> **Note**
+> [!NOTE]
 > Phương thức `attach` được cung cấp bởi các tin nhắn thông báo email cũng chấp nhận các [attachable object](/docs/{{version}}/mail#attachable-objects). Vui lòng tham khảo tài liệu cụ thể về các [attachable object](/docs/{{version}}/mail#attachable-objects) để hiểu thêm về chúng.
 
 Khi đính kèm file vào tin nhắn, bạn cũng có thể chỉ định thêm tên hiển thị hoặc loại MIME bằng cách truyền một `array` làm tham số thứ hai cho phương thức `attach`:
 
     /**
      * Get the mail representation of the notification.
-     *
-     * @param  mixed  $notifiable
-     * @return \Illuminate\Notifications\Messages\MailMessage
      */
-    public function toMail($notifiable)
+    public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
                     ->greeting('Hello!')
@@ -548,11 +548,8 @@ Không giống như đính kèm file trong các đối tượng mail, bạn khô
 
     /**
      * Get the mail representation of the notification.
-     *
-     * @param  mixed  $notifiable
-     * @return Mailable
      */
-    public function toMail($notifiable)
+    public function toMail(object $notifiable): Mailable
     {
         return (new InvoicePaidMailable($this->invoice))
                     ->to($notifiable->email)
@@ -563,11 +560,8 @@ Khi cần thiết, có thể đính kèm nhiều file vào một tin nhắn bằ
 
     /**
      * Get the mail representation of the notification.
-     *
-     * @param  mixed  $notifiable
-     * @return \Illuminate\Notifications\Messages\MailMessage
      */
-    public function toMail($notifiable)
+    public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
                     ->greeting('Hello!')
@@ -587,11 +581,8 @@ Phương thức `attachData` có thể được sử dụng để đính kèm m�
 
     /**
      * Get the mail representation of the notification.
-     *
-     * @param  mixed  $notifiable
-     * @return \Illuminate\Notifications\Messages\MailMessage
      */
-    public function toMail($notifiable)
+    public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
                     ->greeting('Hello!')
@@ -607,11 +598,8 @@ Một số nhà cung cấp dịch vụ email của bên thứ ba như Mailgun v�
 
     /**
      * Get the mail representation of the notification.
-     *
-     * @param  mixed  $notifiable
-     * @return \Illuminate\Notifications\Messages\MailMessage
      */
-    public function toMail($notifiable)
+    public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
                     ->greeting('Comment Upvoted!')
@@ -632,11 +620,8 @@ Phương thức `withSymfonyMessage` của class `MailMessage` cho phép bạn �
 
     /**
      * Get the mail representation of the notification.
-     *
-     * @param  mixed  $notifiable
-     * @return \Illuminate\Notifications\Messages\MailMessage
      */
-    public function toMail($notifiable)
+    public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
                     ->withSymfonyMessage(function (Email $message) {
@@ -652,14 +637,12 @@ Phương thức `withSymfonyMessage` của class `MailMessage` cho phép bạn �
 Nếu cần, bạn có thể trả về một [mailable object](/docs/{{version}}/mail) từ phương thức `toMail` của notification. Khi trả về `Mailable` thay vì `MailMessage`, bạn sẽ cần chỉ định người nhận mail bằng phương thức `to` của đối tượng mailable:
 
     use App\Mail\InvoicePaid as InvoicePaidMailable;
+    use Illuminate\Mail\Mailable;
 
     /**
      * Get the mail representation of the notification.
-     *
-     * @param  mixed  $notifiable
-     * @return Mailable
      */
-    public function toMail($notifiable)
+    public function toMail(object $notifiable): Mailable
     {
         return (new InvoicePaidMailable($this->invoice))
                     ->to($notifiable->email);
@@ -672,14 +655,12 @@ Nếu bạn đang gửi [notification theo yêu cầu](#on-demand-notifications)
 
     use App\Mail\InvoicePaid as InvoicePaidMailable;
     use Illuminate\Notifications\AnonymousNotifiable;
+    use Illuminate\Mail\Mailable;
 
     /**
      * Get the mail representation of the notification.
-     *
-     * @param  mixed  $notifiable
-     * @return Mailable
      */
-    public function toMail($notifiable)
+    public function toMail(object $notifiable): Mailable
     {
         $address = $notifiable instanceof AnonymousNotifiable
                 ? $notifiable->routeNotificationFor('mail')
@@ -722,11 +703,8 @@ Giống như tất cả các mail notification khác, các notification sử d�
 
     /**
      * Get the mail representation of the notification.
-     *
-     * @param  mixed  $notifiable
-     * @return \Illuminate\Notifications\Messages\MailMessage
      */
-    public function toMail($notifiable)
+    public function toMail(object $notifiable): MailMessage
     {
         $url = url('/invoice/'.$this->invoice->id);
 
@@ -813,11 +791,8 @@ Nếu bạn muốn xây dựng một theme mới cho các component Markdown c�
 
     /**
      * Get the mail representation of the notification.
-     *
-     * @param  mixed  $notifiable
-     * @return \Illuminate\Notifications\Messages\MailMessage
      */
-    public function toMail($notifiable)
+    public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
                     ->theme('invoice')
@@ -841,6 +816,9 @@ php artisan notifications:table
 php artisan migrate
 ```
 
+> [!NOTE]
+> Nếu các model notifiable của bạn đang sử dụng [khóa chính UUID hoặc ULID](/docs/{{version}}/eloquent#uuid-and-ulid-keys), bạn nên thay phương thức `morphs` bằng [`uuidMorphs`](/docs/{{version}}/migrations#column-method-uuidMorphs) hoặc [`ulidMorphs`](/docs/{{version}}/migrations#column-method-ulidMorphs) trong bảng notification migration.
+
 <a name="formatting-database-notifications"></a>
 ### Formatting Database Notifications
 
@@ -849,15 +827,26 @@ Nếu một notification hỗ trợ lưu trữ trong bảng cơ sở dữ liệu
     /**
      * Get the array representation of the notification.
      *
-     * @param  mixed  $notifiable
-     * @return array
+     * @return array<string, mixed>
      */
-    public function toArray($notifiable)
+    public function toArray(object $notifiable): array
     {
         return [
             'invoice_id' => $this->invoice->id,
             'amount' => $this->invoice->amount,
         ];
+    }
+
+Khi thông báo được lưu vào trong cơ sở dữ liệu của ứng dụng, cột `type` sẽ được điền bằng tên class của thông báo. Tuy nhiên, bạn có thể tùy chỉnh hành vi này bằng cách định nghĩa phương thức `databaseType` trên class thông báo của bạn:
+
+    /**
+     * Get the notification's database type.
+     *
+     * @return string
+     */
+    public function databaseType(object $notifiable): string
+    {
+        return 'invoice-paid';
     }
 
 <a name="todatabase-vs-toarray"></a>
@@ -884,7 +873,7 @@ Nếu bạn chỉ muốn lấy các notification "chưa đọc", bạn có thể
         echo $notification->type;
     }
 
-> **Note**
+> [!NOTE]
 > Để truy cập vào notification của bạn từ JavaScript client, bạn nên định nghĩa một notification controller riêng cho application của bạn để trả về notification cho một thực thể notifiable, chẳng hạn như người dùng hiện tại. Sau đó, bạn hãy tạo một HTTP request đến URL của controller đó từ JavaScript client của bạn.
 
 <a name="marking-notifications-as-read"></a>
@@ -929,11 +918,8 @@ Channel `broadcast` của broadcasts notification sẽ dùng các service [event
 
     /**
      * Get the broadcastable representation of the notification.
-     *
-     * @param  mixed  $notifiable
-     * @return BroadcastMessage
      */
-    public function toBroadcast($notifiable)
+    public function toBroadcast(object $notifiable): BroadcastMessage
     {
         return new BroadcastMessage([
             'invoice_id' => $this->invoice->id,
@@ -955,14 +941,10 @@ Tất cả các broadcast notification sẽ được queue lại để broadcast
 
 Ngoài dữ liệu bạn chỉ định, tất cả các broadcast notification cũng có thêm một trường `type` để chứa tên class của notification. Nếu bạn muốn tùy chỉnh `type` của notification, bạn có thể định nghĩa phương thức` broadcastType` trên class notification đó:
 
-    use Illuminate\Notifications\Messages\BroadcastMessage;
-
     /**
      * Get the type of the notification being broadcast.
-     *
-     * @return string
      */
-    public function broadcastType()
+    public function broadcastType(): string
     {
         return 'broadcast.message';
     }
@@ -996,10 +978,8 @@ Nếu bạn muốn tùy chỉnh channel mà một broadcast notification của t
 
         /**
          * The channels the user receives notification broadcasts on.
-         *
-         * @return string
          */
-        public function receivesBroadcastNotificationsOn()
+        public function receivesBroadcastNotificationsOn(): string
         {
             return 'users.'.$this->id;
         }
@@ -1026,13 +1006,12 @@ Sau khi định nghĩa key của bạn, bạn nên set một biến môi trườ
 
 Nếu một notification hỗ trợ gửi dưới dạng SMS, bạn nên định nghĩa phương thức `toVonage` trên class notification. Phương thức này sẽ nhận vào một thực thể `$notifiable` và sẽ trả về một instance `Illuminate\Notifications\Messages\VonageMessage`:
 
+    use Illuminate\Notifications\Messages\VonageMessage;
+
     /**
      * Get the Vonage / SMS representation of the notification.
-     *
-     * @param  mixed  $notifiable
-     * @return \Illuminate\Notifications\Messages\VonageMessage
      */
-    public function toVonage($notifiable)
+    public function toVonage(object $notifiable): VonageMessage
     {
         return (new VonageMessage)
                     ->content('Your SMS message content');
@@ -1043,13 +1022,12 @@ Nếu một notification hỗ trợ gửi dưới dạng SMS, bạn nên định
 
 Nếu tin nhắn SMS của bạn chứa các ký tự unicode, bạn nên gọi phương thức `unicode` khi khởi tạo instance `VonageMessage`:
 
+    use Illuminate\Notifications\Messages\VonageMessage;
+
     /**
      * Get the Vonage / SMS representation of the notification.
-     *
-     * @param  mixed  $notifiable
-     * @return \Illuminate\Notifications\Messages\VonageMessage
      */
-    public function toVonage($notifiable)
+    public function toVonage(object $notifiable): VonageMessage
     {
         return (new VonageMessage)
                     ->content('Your unicode message')
@@ -1061,13 +1039,12 @@ Nếu tin nhắn SMS của bạn chứa các ký tự unicode, bạn nên gọi 
 
 Nếu bạn muốn gửi một số thông báo từ một số điện thoại khác, khác với số điện thoại được chỉ định bằng biến môi trường `VONAGE_SMS_FROM` của bạn, bạn có thể gọi phương thức `from` trên instance `VonageMessage`:
 
+    use Illuminate\Notifications\Messages\VonageMessage;
+
     /**
      * Get the Vonage / SMS representation of the notification.
-     *
-     * @param  mixed  $notifiable
-     * @return \Illuminate\Notifications\Messages\VonageMessage
      */
-    public function toVonage($notifiable)
+    public function toVonage(object $notifiable): VonageMessage
     {
         return (new VonageMessage)
                     ->content('Your SMS message content')
@@ -1079,13 +1056,12 @@ Nếu bạn muốn gửi một số thông báo từ một số điện thoại 
 
 Nếu bạn muốn theo dõi chi phí cho mỗi người dùng, một nhóm hoặc khách hàng của bạn, bạn có thể thêm một "client reference" vào thông báo. Vonage sẽ cho phép bạn tạo báo cáo bằng cách sử dụng client reference này để bạn có thể hiểu rõ hơn về việc sử dụng SMS của một khách hàng cụ thể. Client reference có thể là bất kỳ chuỗi nào mà bạn muốn và có tối đa 40 ký tự:
 
+    use Illuminate\Notifications\Messages\VonageMessage;
+
     /**
      * Get the Vonage / SMS representation of the notification.
-     *
-     * @param  mixed  $notifiable
-     * @return \Illuminate\Notifications\Messages\VonageMessage
      */
-    public function toVonage($notifiable)
+    public function toVonage(object $notifiable): VonageMessage
     {
         return (new VonageMessage)
                     ->clientReference((string) $notifiable->id)
@@ -1103,6 +1079,7 @@ Nếu bạn muốn theo dõi chi phí cho mỗi người dùng, một nhóm ho�
 
     use Illuminate\Foundation\Auth\User as Authenticatable;
     use Illuminate\Notifications\Notifiable;
+    use Illuminate\Notifications\Notification;
 
     class User extends Authenticatable
     {
@@ -1110,11 +1087,8 @@ Nếu bạn muốn theo dõi chi phí cho mỗi người dùng, một nhóm ho�
 
         /**
          * Route notifications for the Vonage channel.
-         *
-         * @param  \Illuminate\Notifications\Notification  $notification
-         * @return string
          */
-        public function routeNotificationForVonage($notification)
+        public function routeNotificationForVonage(Notification $notification): string
         {
             return $this->phone_number;
         }
@@ -1126,110 +1100,155 @@ Nếu bạn muốn theo dõi chi phí cho mỗi người dùng, một nhóm ho�
 <a name="slack-prerequisites"></a>
 ### Yêu cầu
 
-Trước khi bạn có thể gửi notification qua Slack, bạn phải cài đặt notification channel Slack thông qua Composer:
+Trước khi bạn gửi một Slack notification, bạn cần cài đặt notification channel Slack thông qua Composer:
 
 ```shell
 composer require laravel/slack-notification-channel
 ```
 
-Bạn cũng sẽ cần tạo một [Slack App](https://api.slack.com/apps?new_app=1) cho team của bạn. Sau khi tạo App xong, bạn nên cấu hình "Webhook đến" cho workspace. Sau đó, Slack sẽ cung cấp cho bạn một URL webhook để bạn có thể sử dụng khi [routing Slack notifications](#routing-slack-notifications).
+Ngoài ra, bạn phải tạo một [Slack App](https://api.slack.com/apps?new_app=1) cho Slack workspace của bạn.
+
+Nếu bạn chỉ cần gửi thông báo đến cùng một Slack workspace mà App được tạo ra, bạn nên đảm bảo là App của bạn có quyền `chat:write`, `chat:write.public` và `chat:write.customize`. Các quyền này có thể được thêm vào từ tab quản lý App "OAuth & Permissions" trong Slack.
+
+Tiếp theo, copy "Bot User OAuth Token" của App và set nó vào mảng cấu hình `slack` trong file cấu hình `services.php` của ứng dụng. Token này có thể được tìm thấy trên tab "OAuth & Permissions" trong Slack:
+
+    'slack' => [
+        'notifications' => [
+            'bot_user_oauth_token' => env('SLACK_BOT_USER_OAUTH_TOKEN'),
+            'channel' => env('SLACK_BOT_USER_DEFAULT_CHANNEL'),
+        ],
+    ],
+
+<a name="slack-app-distribution"></a>
+#### App Distribution
+
+Nếu ứng dụng của bạn cần gửi thông báo đến các Slack workspace bên ngoài do người dùng ứng dụng của bạn sở hữu, bạn sẽ cần phải "phân phối" App của bạn qua Slack. Việc phân phối App có thể được quản lý từ tab "Manage Distribution" của App trong Slack. Sau khi App của bạn đã được phân phối, bạn có thể sử dụng [Socialite](/docs/{{version}}/socialite) để [lấy token Slack Bot](/docs/{{version}}/socialite#slack-bot-scopes) thay cho người dùng ứng dụng của bạn.
 
 <a name="formatting-slack-notifications"></a>
 ### Formatting Slack Notifications
 
-Nếu một notification hỗ trợ gửi dưới dạng message của Slack, bạn nên định nghĩa phương thức `toSlack` trên class notification. Phương thức này sẽ nhận vào một thực thể `$notifiable` và sẽ trả về một instance `Illuminate\Notifications\Messages\SlackMessage`. Message Slack có thể có chứa nội dung text cũng như "đính kèm" thêm một định dạng text hoặc một mảng các trường. Chúng ta hãy xem một ví dụ `toSlack` cơ bản:
+Nếu một notification hỗ trợ gửi dưới dạng message của Slack, bạn nên định nghĩa phương thức `toSlack` trên class notification. Phương thức này sẽ nhận vào một thực thể `$notifiable` và sẽ trả về một instance `Illuminate\Notifications\Slack\SlackMessage`. Bạn có thể xây dựng thông báo bằng cách sử dụng [Slack's Block Kit API](https://api.slack.com/block-kit). Ví dụ sau có thể được preview trong [Slack's Block Kit builder](https://app.slack.com/block-kit-builder/T01KWS6K23Z#%7B%22blocks%22:%5B%7B%22type%22:%22header%22,%22text%22:%7B%22type%22:%22plain_text%22,%22text%22:%22Invoice%20Paid%22%7D%7D,%7B%22type%22:%22context%22,%22elements%22:%5B%7B%22type%22:%22plain_text%22,%22text%22:%22Customer%20%231234%22%7D%5D%7D,%7B%22type%22:%22section%22,%22text%22:%7B%22type%22:%22plain_text%22,%22text%22:%22An%20invoice%20has%20been%20paid.%22%7D,%22fields%22:%5B%7B%22type%22:%22mrkdwn%22,%22text%22:%22*Invoice%20No:*%5Cn1000%22%7D,%7B%22type%22:%22mrkdwn%22,%22text%22:%22*Invoice%20Recipient:*%5Cntaylor@laravel.com%22%7D%5D%7D,%7B%22type%22:%22divider%22%7D,%7B%22type%22:%22section%22,%22text%22:%7B%22type%22:%22plain_text%22,%22text%22:%22Congratulations!%22%7D%7D%5D%7D):
+
+    use Illuminate\Notifications\Slack\BlockKit\Blocks\ContextBlock;
+    use Illuminate\Notifications\Slack\BlockKit\Blocks\SectionBlock;
+    use Illuminate\Notifications\Slack\BlockKit\Composites\ConfirmObject;
+    use Illuminate\Notifications\Slack\SlackMessage;
 
     /**
      * Get the Slack representation of the notification.
-     *
-     * @param  mixed  $notifiable
-     * @return \Illuminate\Notifications\Messages\SlackMessage
      */
-    public function toSlack($notifiable)
+    public function toSlack(object $notifiable): SlackMessage
     {
         return (new SlackMessage)
-                    ->content('One of your invoices has been paid!');
+                ->text('One of your invoices has been paid!')
+                ->headerBlock('Invoice Paid')
+                ->contextBlock(function (ContextBlock $block) {
+                    $block->text('Customer #1234');
+                })
+                ->sectionBlock(function (SectionBlock $block) {
+                    $block->text('An invoice has been paid.');
+                    $block->field("*Invoice No:*\n1000")->markdown();
+                    $block->field("*Invoice Recipient:*\ntaylor@laravel.com")->markdown();
+                })
+                ->dividerBlock()
+                ->sectionBlock(function (SectionBlock $block) {
+                    $block->text('Congratulations!');
+                });
     }
 
-<a name="slack-attachments"></a>
-### Đính kèm vào message slack
+<a name="slack-interactivity"></a>
+### Tương tác với Slack
 
-Bạn cũng có thể "đính kèm" thêm thông tin vào tin nhắn Slack. Đính kèm này cung cấp các tùy chọn định dạng phong phú hơn các tin nhắn text bình thường. Trong ví dụ này, chúng ta sẽ gửi notification lỗi về một ngoại lệ xảy ra trong application, chứa một link liên kết để xem chi tiết hơn về ngoại lệ:
+Hệ thống Block Kit notification system của Slack cung cấp các tính năng mạnh mẽ để [xử lý tương tác với người dùng](https://api.slack.com/interactivity/handling). Để sử dụng các tính năng này, Slack App của bạn phải được bật chế độ "tương tác" và cấu hình "Request URL" trỏ đến URL do ứng dụng của bạn cung cấp. Các cài đặt này có thể được quản lý từ tab quản lý App "Interactivity & Shortcuts" trong Slack.
+
+Trong ví dụ sau sẽ sử dụng phương thức `actionsBlock`, Slack sẽ gửi một request `POST` đến "Request URL" của bạn với một data chứa người dùng Slack đã ấn vào nút, ID của nút đã được ấn và nhiều thông tin khác. Sau đó, ứng dụng của bạn có thể xác định hành động cần thực hiện dựa trên data đó. Và bạn cũng nên [verify request](https://api.slack.com/authentication/verifying-requests-from-slack) được thực hiện bởi Slack:
+
+    use Illuminate\Notifications\Slack\BlockKit\Blocks\ActionsBlock;
+    use Illuminate\Notifications\Slack\BlockKit\Blocks\ContextBlock;
+    use Illuminate\Notifications\Slack\BlockKit\Blocks\SectionBlock;
+    use Illuminate\Notifications\Slack\SlackMessage;
 
     /**
      * Get the Slack representation of the notification.
-     *
-     * @param  mixed  $notifiable
-     * @return \Illuminate\Notifications\Messages\SlackMessage
      */
-    public function toSlack($notifiable)
+    public function toSlack(object $notifiable): SlackMessage
     {
-        $url = url('/exceptions/'.$this->exception->id);
-
         return (new SlackMessage)
-                    ->error()
-                    ->content('Whoops! Something went wrong.')
-                    ->attachment(function ($attachment) use ($url) {
-                        $attachment->title('Exception: File Not Found', $url)
-                                   ->content('File [background.jpg] was not found.');
-                    });
+                ->text('One of your invoices has been paid!')
+                ->headerBlock('Invoice Paid')
+                ->contextBlock(function (ContextBlock $block) {
+                    $block->text('Customer #1234');
+                })
+                ->sectionBlock(function (SectionBlock $block) {
+                    $block->text('An invoice has been paid.');
+                })
+                ->actionsBlock(function (ActionsBlock $block) {
+                     // ID defaults to "button_acknowledge_invoice"...
+                    $block->button('Acknowledge Invoice')->primary();
+
+                    // Manually configure the ID...
+                    $block->button('Deny')->danger()->id('deny_invoice');
+                });
     }
 
-Đính kèm này cũng cho phép bạn khai báo một mảng dữ liệu sẽ được hiển thị cho người dùng. Dữ liệu này sẽ được hiển thị theo định dạng bảng để dễ đọc hơn:
+<a name="slack-confirmation-modals"></a>
+#### Confirmation Modals
+
+Nếu bạn muốn người dùng cần xác nhận một hành động trước khi thực hiện, bạn có thể gọi phương thức `confirm` khi định nghĩa nút của bạn. Phương thức `confirm` chấp nhận một thông báo và một closure nhận vào một instance `ConfirmObject`:
+
+    use Illuminate\Notifications\Slack\BlockKit\Blocks\ActionsBlock;
+    use Illuminate\Notifications\Slack\BlockKit\Blocks\ContextBlock;
+    use Illuminate\Notifications\Slack\BlockKit\Blocks\SectionBlock;
+    use Illuminate\Notifications\Slack\BlockKit\Composites\ConfirmObject;
+    use Illuminate\Notifications\Slack\SlackMessage;
 
     /**
      * Get the Slack representation of the notification.
-     *
-     * @param  mixed  $notifiable
-     * @return SlackMessage
      */
-    public function toSlack($notifiable)
+    public function toSlack(object $notifiable): SlackMessage
     {
-        $url = url('/invoices/'.$this->invoice->id);
-
         return (new SlackMessage)
-                    ->success()
-                    ->content('One of your invoices has been paid!')
-                    ->attachment(function ($attachment) use ($url) {
-                        $attachment->title('Invoice 1322', $url)
-                                   ->fields([
-                                        'Title' => 'Server Expenses',
-                                        'Amount' => '$1,234',
-                                        'Via' => 'American Express',
-                                        'Was Overdue' => ':-1:',
-                                    ]);
-                    });
+                ->text('One of your invoices has been paid!')
+                ->headerBlock('Invoice Paid')
+                ->contextBlock(function (ContextBlock $block) {
+                    $block->text('Customer #1234');
+                })
+                ->sectionBlock(function (SectionBlock $block) {
+                    $block->text('An invoice has been paid.');
+                })
+                ->actionsBlock(function (ActionsBlock $block) {
+                    $block->button('Acknowledge Invoice')
+                        ->primary()
+                        ->confirm(
+                            'Acknowledge the payment and send a thank you email?',
+                            function (ConfirmObject $dialog) {
+                                $dialog->confirm('Yes');
+                                $dialog->deny('No');
+                            }
+                        );
+                });
     }
 
-<a name="markdown-attachment-content"></a>
-#### Markdown Attachment Content
+<a name="inspecting-slack-blocks"></a>
+#### Inspecting Slack Blocks
 
-Nếu một số trường đính kèm của bạn chứa Markdown, bạn có thể sử dụng phương thức `markdown` để bảo Slack phân tích cú pháp và hiển thị các trường đính kèm dưới dạng văn bản được định dạng theo kiểu Markdown. Các giá trị được phương thức này chấp nhận là: `pretext`, `text` hoặc `fields`. Để biết thêm thông tin về định dạng đính kèm Slack, hãy xem [Tài liệu API Slack](https://api.slack.com/docs/message-formatting#message_formatting):
+Nếu bạn muốn kiểm tra qua các block mà bạn đã build, bạn có thể gọi phương thức `dd` trên instance `SlackMessage`. Phương thức `dd` sẽ tạo và dump một URL đến [Block Kit Builder](https://app.slack.com/block-kit-builder/) của Slack, hiển thị bản preview của data và thông báo trong trình duyệt của bạn. Bạn có thể truyền `true` cho phương thức `dd` để dump ra raw data:
 
-    /**
-     * Get the Slack representation of the notification.
-     *
-     * @param  mixed  $notifiable
-     * @return SlackMessage
-     */
-    public function toSlack($notifiable)
-    {
-        $url = url('/exceptions/'.$this->exception->id);
-
-        return (new SlackMessage)
-                    ->error()
-                    ->content('Whoops! Something went wrong.')
-                    ->attachment(function ($attachment) use ($url) {
-                        $attachment->title('Exception: File Not Found', $url)
-                                   ->content('File [background.jpg] was *not found*.')
-                                   ->markdown(['text']);
-                    });
-    }
+    return (new SlackMessage)
+            ->text('One of your invoices has been paid!')
+            ->headerBlock('Invoice Paid')
+            ->dd();
 
 <a name="routing-slack-notifications"></a>
 ### Routing Slack Notifications
 
-Để route Slack notification đến một Slack team và channel, hãy định nghĩa phương thức `routeNotificationForSlack` trên thực thể notifiable của bạn. Điều này sẽ trả về một URL webhook mà notification sẽ được gửi tới đó. URL webhook có thể được tạo ra bằng cách thêm một "Incoming Webhook" vào group Slack của bạn:
+Để chuyển hướng thông báo Slack đến một nhóm và channel Slack phù hợp, hãy định nghĩa phương thức `routeNotificationForSlack` trên model notifiable của bạn. Phương thức này có thể trả về một trong ba giá trị:
+
+- `null` - sẽ giao phó việc chuyển hướng này đến channel được cấu hình trong chính thông báo đó. Bạn có thể sử dụng phương thức `to` khi xây dựng `SlackMessage` để cấu hình channel được chuyển hướng trong thông báo.
+- Một string chỉ định channel Slack sẽ nhận thông báo, ví dụ: `#support-channel`.
+- Một instance `SlackRoute`, cho phép bạn chỉ định mã token OAuth và tên channel, ví dụ: `SlackRoute::make($this->slack_channel, $this->slack_token)`. Phương thức này nên được sử dụng để gửi thông báo đến các workspace bên ngoài Slack.
+
+Ví dụ, việc trả về `#support-channel` từ phương thức `routeNotificationForSlack` sẽ gửi thông báo đến channel `#support-channel` trong workspace được liên kết với mã token Bot User OAuth nằm trong file cấu hình `services.php` của ứng dụng của bạn:
 
     <?php
 
@@ -1237,6 +1256,7 @@ Nếu một số trường đính kèm của bạn chứa Markdown, bạn có th
 
     use Illuminate\Foundation\Auth\User as Authenticatable;
     use Illuminate\Notifications\Notifiable;
+    use Illuminate\Notifications\Notification;
 
     class User extends Authenticatable
     {
@@ -1244,13 +1264,42 @@ Nếu một số trường đính kèm của bạn chứa Markdown, bạn có th
 
         /**
          * Route notifications for the Slack channel.
-         *
-         * @param  \Illuminate\Notifications\Notification  $notification
-         * @return string
          */
-        public function routeNotificationForSlack($notification)
+        public function routeNotificationForSlack(Notification $notification): mixed
         {
-            return 'https://hooks.slack.com/services/...';
+            return '#support-channel';
+        }
+    }
+
+<a name="notifying-external-slack-workspaces"></a>
+### Thông báo đến một External Slack Workspaces
+
+> [!NOTE]
+> Trước khi gửi thông báo đến các workspace bên ngoài Slack, Slack App của bạn phải được [phân phối](#slack-app-distribution).
+
+Tất nhiên, bạn thường muốn gửi một thông báo đến workspace bên trong Slack do người dùng ứng dụng của bạn sở hữu. Để làm như vậy, trước tiên bạn cần lấy mã token Slack OAuth cho người dùng. Rất may, [Laravel Socialite](/docs/{{version}}/socialite) đã chứa một driver Slack cho phép bạn dễ dàng xác thực người dùng ứng dụng của bạn bằng Slack và [lấy mã token bot](/docs/{{version}}/socialite#slack-bot-scopes) đó một cách dễ dàng.
+
+Sau khi bạn đã có được mã token bot và lưu nó vào trong cơ sở dữ liệu của ứng dụng, bạn có thể sử dụng phương thức `SlackRoute::make` để chuyển thông báo đó đến workspace của người dùng. Ngoài ra, ứng dụng của bạn có thể cần cung cấp cho người dùng cách chỉ định channel thông báo nào sẽ được gửi đến:
+
+    <?php
+
+    namespace App\Models;
+
+    use Illuminate\Foundation\Auth\User as Authenticatable;
+    use Illuminate\Notifications\Notifiable;
+    use Illuminate\Notifications\Notification;
+    use Illuminate\Notifications\Slack\SlackRoute;
+
+    class User extends Authenticatable
+    {
+        use Notifiable;
+
+        /**
+         * Route notifications for the Slack channel.
+         */
+        public function routeNotificationForSlack(Notification $notification): mixed
+        {
+            return SlackRoute::make($this->slack_channel, $this->slack_token);
         }
     }
 
@@ -1280,10 +1329,8 @@ Thỉnh thoảng, các application sẽ lưu lại ngôn ngữ ưa thích của 
     {
         /**
          * Get the user's preferred locale.
-         *
-         * @return string
          */
-        public function preferredLocale()
+        public function preferredLocale(): string
         {
             return $this->locale;
         }
@@ -1292,6 +1339,72 @@ Thỉnh thoảng, các application sẽ lưu lại ngôn ngữ ưa thích của 
 Khi bạn đã implement xong interface này, Laravel sẽ tự động sử dụng ngôn ngữ này khi gửi notification và mailable tới model. Do đó, không cần phải gọi phương thức `locale` khi bạn sử dụng interface này:
 
     $user->notify(new InvoicePaid($invoice));
+
+<a name="testing"></a>
+## Testing
+
+Bạn có thể sử dụng phương thức `fake` của facade `Notification` để chặn một thông báo được gửi đi. Thông thường, việc gửi thông báo không liên quan đến code mà bạn đang kiểm tra. Nhiều khả năng, chỉ cần kiểm tra là Laravel đã gửi một thông báo đi là đủ.
+
+Sau khi gọi phương thức `fake` của facade `Notification`, bạn có thể kiểm tra các thông báo đã được gửi đến một người dùng hoặc thậm chí là kiểm tra dữ liệu mà các thông báo đã gửi:
+
+    <?php
+
+    namespace Tests\Feature;
+
+    use App\Notifications\OrderShipped;
+    use Illuminate\Support\Facades\Notification;
+    use Tests\TestCase;
+
+    class ExampleTest extends TestCase
+    {
+        public function test_orders_can_be_shipped(): void
+        {
+            Notification::fake();
+
+            // Perform order shipping...
+
+            // Assert that no notifications were sent...
+            Notification::assertNothingSent();
+
+            // Assert a notification was sent to the given users...
+            Notification::assertSentTo(
+                [$user], OrderShipped::class
+            );
+
+            // Assert a notification was not sent...
+            Notification::assertNotSentTo(
+                [$user], AnotherNotification::class
+            );
+
+            // Assert that a given number of notifications were sent...
+            Notification::assertCount(3);
+        }
+    }
+
+Bạn có thể truyền một closure cho các phương thức `assertSentTo` hoặc `assertNotSentTo` để kiểm tra một thông báo đã được gửi đi và pass qua được "truth test" đã cho. Nếu có ít nhất một thông báo đã được gửi đi và pass được bài kiểm tra truth test đã cho thì kiểm tra đó sẽ thành công:
+
+    Notification::assertSentTo(
+        $user,
+        function (OrderShipped $notification, array $channels) use ($order) {
+            return $notification->order->id === $order->id;
+        }
+    );
+
+<a name="on-demand-notifications"></a>
+#### On-Demand Notifications
+
+Nếu code bạn đang kiểm tra gửi một [thông báo theo yêu cầu](#on-demand-notifications), bạn có thể kiểm tra xem thông báo đó có được gửi đi hay không qua phương thức `assertSentOnDemand`:
+
+    Notification::assertSentOnDemand(OrderShipped::class);
+
+Bằng cách truyền vào một closure làm tham số thứ hai cho phương thức `assertSentOnDemand`, bạn có thể xác định xem thông báo đó có được gửi đến đúng địa chỉ "route" hay không:
+
+    Notification::assertSentOnDemand(
+        OrderShipped::class,
+        function (OrderShipped $notification, array $channels, object $notifiable) use ($user) {
+            return $notifiable->routes['mail'] === $user->email;
+        }
+    );
 
 <a name="notification-events"></a>
 ## Notification Events
@@ -1321,11 +1434,8 @@ Thông báo sẽ không được gửi nếu event listener cho event `Notificat
 
     /**
      * Handle the event.
-     *
-     * @param  \Illuminate\Notifications\Events\NotificationSending  $event
-     * @return void
      */
-    public function handle(NotificationSending $event)
+    public function handle(NotificationSending $event): bool
     {
         return false;
     }
@@ -1334,11 +1444,8 @@ Trong event listener này, bạn có thể truy cập vào các thuộc tính `n
 
     /**
      * Handle the event.
-     *
-     * @param  \Illuminate\Notifications\Events\NotificationSending  $event
-     * @return void
      */
-    public function handle(NotificationSending $event)
+    public function handle(NotificationSending $event): void
     {
         // $event->channel
         // $event->notifiable
@@ -1364,18 +1471,15 @@ Khi một notification đã được gửi, thì một [event](/docs/{{version}}
         ],
     ];
 
-> **Note**
+> [!NOTE]
 > Sau khi đăng ký listener trong `EventServiceProvider`, hãy sử dụng lệnh Artisan `event:generate` để tạo ra các class listener.
 
 Trong một event listener, bạn có thể truy cập vào các thuộc tính `notifiable`, `notification`, `channel`, và `response` trong event để biết thêm thông tin về người nhận notification hoặc chính notification đó:
 
     /**
      * Handle the event.
-     *
-     * @param  \Illuminate\Notifications\Events\NotificationSent  $event
-     * @return void
      */
-    public function handle(NotificationSent $event)
+    public function handle(NotificationSent $event): void
     {
         // $event->channel
         // $event->notifiable
@@ -1400,12 +1504,8 @@ Trong phương thức `send`, bạn có thể gọi các phương thức trên n
     {
         /**
          * Send the given notification.
-         *
-         * @param  mixed  $notifiable
-         * @param  \Illuminate\Notifications\Notification  $notification
-         * @return void
          */
-        public function send($notifiable, Notification $notification)
+        public function send(object $notifiable, Notification $notification): void
         {
             $message = $notification->toVoice($notifiable);
 
@@ -1431,22 +1531,16 @@ Khi class notification channel của bạn đã được định nghĩa, bạn c
 
         /**
          * Get the notification channels.
-         *
-         * @param  mixed  $notifiable
-         * @return array|string
          */
-        public function via($notifiable)
+        public function via(object $notifiable): string
         {
-            return [VoiceChannel::class];
+            return VoiceChannel::class;
         }
 
         /**
          * Get the voice representation of the notification.
-         *
-         * @param  mixed  $notifiable
-         * @return VoiceMessage
          */
-        public function toVoice($notifiable)
+        public function toVoice(object $notifiable): VoiceMessage
         {
             // ...
         }

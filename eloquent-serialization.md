@@ -13,7 +13,7 @@
 
 Khi xây dựng một API mà dùng Laravel, bạn thường sẽ cần phải chuyển đổi các model và các quan hệ của bạn thành các mảng hoặc JSON. Eloquent có chứa các phương thức thuận tiện để thực hiện các chuyển đổi này, cũng như kiểm soát các thuộc tính nào sẽ được thêm vào trong các chuyển đổi representation of your models.
 
-> **Note**
+> [!NOTE]
 > Để biết cách xử lý chuyển hóa JSON của collection và model Eloquent hiệu quả hơn nữa, hãy xem tài liệu về [resource API Eloquent](/docs/{{version}}/eloquent-resources).
 
 <a name="serializing-models-and-collections"></a>
@@ -91,7 +91,7 @@ Thỉnh thoảng bạn cũng có thể muốn giới hạn các thuộc tính, c
         protected $hidden = ['password'];
     }
 
-> **Note**
+> [!NOTE]
 > Để ẩn các quan hệ, hãy thêm tên phương thức của quan hệ đó vào thuộc tính `$hidden` của model Eloquent của bạn.
 
 Ngoài ra, bạn có thể sử dụng thuộc tính `visible` để định nghĩa một danh sách các thuộc tính có thể hiển thị trong mảng hoặc JSON của bạn. Tất cả các thuộc tính không có mặt trong mảng `$visible` sẽ bị ẩn khi model được chuyển đổi thành một mảng hoặc một JSON:
@@ -145,8 +145,6 @@ Nếu bạn muốn tạm thời ghi đè tất cả các thuộc tính ẩn ho�
     {
         /**
          * Determine if the user is an administrator.
-         *
-         * @return \Illuminate\Database\Eloquent\Casts\Attribute
          */
         protected function isAdmin(): Attribute
         {
@@ -156,7 +154,7 @@ Nếu bạn muốn tạm thời ghi đè tất cả các thuộc tính ẩn ho�
         }
     }
 
-Sau khi tạo accessor xong, hãy thêm tên thuộc tính đó vào thuộc tính `appends` của model của bạn. Lưu ý rằng tên thuộc tính thường được tham chiếu thường sử dụng quy ước "snake case", mặc dù phương phức PHP của accessor được định nghĩa theo kiểu "camel case":
+Nếu bạn muốn accessor luôn được thêm vào mảng hoặc chuổi JSON của model, bạn có thể thêm tên thuộc tính đó vào thuộc tính `appends` của model của bạn. Lưu ý rằng tên thuộc tính thường được tham chiếu thường sử dụng quy ước "snake case", mặc dù phương phức PHP của accessor được định nghĩa theo kiểu "camel case":
 
     <?php
 
@@ -195,11 +193,8 @@ Bạn có thể tùy chỉnh định dạng chuyển đổi mặc định bằng
 
     /**
      * Prepare a date for array / JSON serialization.
-     *
-     * @param  \DateTimeInterface  $date
-     * @return string
      */
-    protected function serializeDate(DateTimeInterface $date)
+    protected function serializeDate(DateTimeInterface $date): string
     {
         return $date->format('Y-m-d');
     }

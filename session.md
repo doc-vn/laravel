@@ -39,7 +39,7 @@ Tham số `driver` sẽ khai báo nơi mà dữ liệu của session sẽ đư�
 
 </div>
 
-> **Note**
+> [!NOTE]
 > Array driver sẽ được sử dụng là driver chính trong các [testing](/docs/{{version}}/testing) để ngăn việc dữ liệu được lưu trữ trong session.
 
 <a name="driver-prerequisites"></a>
@@ -50,7 +50,10 @@ Tham số `driver` sẽ khai báo nơi mà dữ liệu của session sẽ đư�
 
 Khi sử dụng session driver `database`, bạn sẽ cần tạo một bảng để chứa các record session. Dưới đây là một ví dụ khai báo `Schema` cho bảng có thể tìm thấy bên dưới:
 
-    Schema::create('sessions', function ($table) {
+    use Illuminate\Database\Schema\Blueprint;
+    use Illuminate\Support\Facades\Schema;
+
+    Schema::create('sessions', function (Blueprint $table) {
         $table->string('id')->primary();
         $table->foreignId('user_id')->nullable()->index();
         $table->string('ip_address', 45)->nullable();
@@ -72,7 +75,7 @@ php artisan migrate
 
 Trước khi sử dụng session Redis cùng với Laravel, bạn sẽ cần phải cài đặt extension của PHP thông qua PECL hoặc cài đặt package `predis/predis` (~1.0) thông qua Composer. Để biết thêm thông tin về cách cấu hình Redis, hãy tham khảo [tài liệu Redis](/docs/{{version}}/redis#configuration) của Laravel.
 
-> **Note**
+> [!NOTE]
 > Trong file cấu hình `session` sẽ có tùy chọn `connection` để có thể được sử dụng để định nghĩa kết nối Redis nào mà có thể được sử dụng bởi session.
 
 <a name="interacting-with-the-session"></a>
@@ -87,23 +90,23 @@ Có hai cách chính để truy cập vào dữ liệu session trong Laravel: gl
 
     namespace App\Http\Controllers;
 
-    use App\Http\Controllers\Controller;
     use Illuminate\Http\Request;
+    use Illuminate\View\View;
 
     class UserController extends Controller
     {
         /**
          * Show the profile for the given user.
-         *
-         * @param  Request  $request
-         * @param  int  $id
-         * @return Response
          */
-        public function show(Request $request, $id)
+        public function show(Request $request, string $id): View
         {
             $value = $request->session()->get('key');
 
-            //
+            // ...
+
+            $user = $this->users->find($id);
+
+            return view('user.profile', ['user' => $user]);
         }
     }
 
@@ -131,7 +134,7 @@ Bạn cũng có thể sử dụng qua hàm PHP global `session` để lấy và 
         session(['key' => 'value']);
     });
 
-> **Note**
+> [!NOTE]
 > Có rất ít sự khác biệt giữa việc sử dụng session thông qua instance request HTTP và sử dụng thông qua global helper `session`. Cả hai phương thức đều có thể [test](/docs/{{version}}/testing) thông qua phương thức `assertSessionHas` có sẵn trong tất cả các test case của bạn.
 
 <a name="retrieving-all-session-data"></a>
@@ -141,25 +144,34 @@ Nếu bạn muốn lấy tất cả dữ liệu trong session, bạn có thể s
 
     $data = $request->session()->all();
 
+<a name="retrieving-a-portion-of-the-session-data"></a>
+#### Retrieving a Portion of the Session Data
+
+Các phương thức `only` và `except` có thể được sử dụng để lấy ra một tập con của dữ liệu session:
+
+    $data = $request->session()->only(['username', 'email']);
+
+    $data = $request->session()->except(['username', 'email']);
+
 <a name="determining-if-an-item-exists-in-the-session"></a>
 #### Xác định một item có tồn tại trong session hay không
 
 Để xác định xem một item có trong session hay không, bạn có thể sử dụng phương thức `has`. Phương thức `has` sẽ trả về `true` nếu item đó tồn tại và khác giá trị `null`:
 
     if ($request->session()->has('users')) {
-        //
+        // ...
     }
 
 Để xác định xem một item có trong session hay không, ngay cả khi giá trị của nó là `null`, thì bạn có thể sử dụng phương thức `exists`:
 
     if ($request->session()->exists('users')) {
-        //
+        // ...
     }
 
 Để xác định xem một item có tồn tại trong session hay không, bạn có thể sử dụng phương thức `missing`. Phương thức `missing` sẽ trả về `true` nếu item đó không có tồn tại trong session:
 
     if ($request->session()->missing('users')) {
-        //
+        // ...
     }
 
 <a name="storing-data"></a>
@@ -246,19 +258,19 @@ Nếu bạn cần tạo lại ID session và xóa tất cả các dữ liệu ra
 <a name="session-blocking"></a>
 ## Chặn session
 
-> **Warning**
-> Để sử dụng tính năng chặn session, ứng dụng của bạn phải sử dụng một driver cache mà hỗ trợ [atomic locks](/docs/{{version}}/cache#atomic-locks). Hiện tại, những driver cache đó là các driver `memcached`, `dynamicodb`, `redis` và `database`. Ngoài ra, bạn không thể sử dụng driver session `cookie`.
+> [!WARNING]
+> Để sử dụng tính năng chặn session, ứng dụng của bạn phải sử dụng một driver cache mà hỗ trợ [atomic locks](/docs/{{version}}/cache#atomic-locks). Hiện tại, những driver cache đó là các driver `memcached`, `dynamicodb`, `redis`, `database`, `file`, và `array` . Ngoài ra, bạn không thể sử dụng driver session `cookie`.
 
 Mặc định, Laravel cho phép các request sử dụng cùng một session để chạy đồng thời. Vì vậy, ví dụ: nếu bạn sử dụng thư viện JavaScript HTTP để thực hiện hai request HTTP tới ứng dụng của bạn cùng một lúc, thì cả hai sẽ thực thi đồng thời. Đối với nhiều ứng dụng, đây không phải là vấn đề; tuy nhiên, mất dữ liệu session cũng có thể xảy ra trong một phần hiếm các ứng dụng khi thực hiện request đồng thời đến hai điểm khác nhau trong cùng một ứng dụng, mà cả hai điểm đó đều có cùng chức năng ghi dữ liệu vào session.
 
 Để giảm thiểu điều này, Laravel cung cấp chức năng cho phép bạn giới hạn các request đồng thời cho một session nhất định. Để bắt đầu, bạn có thể chỉ cần kết hợp thêm phương thức `block` vào định nghĩa route của bạn. Trong ví dụ này, một request đến điểm `/profile` sẽ nhận được một session lock. Trong khi lock này mà đang được giữ, thì bất kỳ request nào khác đến điểm `/profile` hoặc điểm `/order` mà có cùng ID session thì sẽ đợi request đến trước đó kết thúc rồi mới đến request tiếp theo tiếp tục được thực thi:
 
     Route::post('/profile', function () {
-        //
+        // ...
     })->block($lockSeconds = 10, $waitSeconds = 10)
 
     Route::post('/order', function () {
-        //
+        // ...
     })->block($lockSeconds = 10, $waitSeconds = 10)
 
 Phương thức `block` chấp nhận hai tham số tùy chọn. Tham số đầu tiên được phương thức `block` chấp nhận là số giây tối đa mà session lock sẽ được giữ trước khi nó được giải phóng. Tất nhiên, nếu request kết thúc trước thời điểm này, thì lock này sẽ được giải phóng sớm hơn.
@@ -268,7 +280,7 @@ Tham số thứ hai được phương thức `block` chấp nhận là số giâ
 Nếu cả hai tham số này đều không được truyền vào, thì lock sẽ được giữ trong thời gian tối đa là 10 giây và các request khác sẽ đợi tối đa 10 giây trong khi cố gắng lấy lock:
 
     Route::post('/profile', function () {
-        //
+        // ...
     })->block()
 
 <a name="adding-custom-session-drivers"></a>
@@ -293,7 +305,7 @@ Nếu không có driver session nào phù hợp với nhu cầu ứng dụng c�
         public function gc($lifetime) {}
     }
 
-> **Note**
+> [!NOTE]
 > Laravel sẽ không định nghĩa một thư mục để chứa các extension cho bạn. Bạn có thể tự do lưu extension của bạn vào bất kỳ nơi nào mà bạn thích. Trong ví dụ này, chúng tôi đã tạo một thư mục `Extensions` để chứa `MongoSessionHandler`.
 
 Vì mục đích của những phương thức này là không dễ hiểu, chúng ta hãy nhanh chóng xem những gì mà mỗi phương thức làm:
@@ -319,6 +331,7 @@ Khi driver của bạn đã được thực hiện xong, bạn đã sẵn sàng 
     namespace App\Providers;
 
     use App\Extensions\MongoSessionHandler;
+    use Illuminate\Contracts\Foundation\Application;
     use Illuminate\Support\Facades\Session;
     use Illuminate\Support\ServiceProvider;
 
@@ -326,22 +339,18 @@ Khi driver của bạn đã được thực hiện xong, bạn đã sẵn sàng 
     {
         /**
          * Register any application services.
-         *
-         * @return void
          */
-        public function register()
+        public function register(): void
         {
-            //
+            // ...
         }
 
         /**
          * Bootstrap any application services.
-         *
-         * @return void
          */
-        public function boot()
+        public function boot(): void
         {
-            Session::extend('mongo', function ($app) {
+            Session::extend('mongo', function (Application $app) {
                 // Return an implementation of SessionHandlerInterface...
                 return new MongoSessionHandler;
             });
