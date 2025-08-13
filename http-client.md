@@ -548,11 +548,11 @@ Nếu bạn muốn fake một trình tự response nhưng không muốn chỉ đ
 <a name="fake-callback"></a>
 #### Fake Callback
 
-Nếu bạn yêu cầu một logic phức tạp hơn để xác định response nào sẽ trả về cho một số endpoint nhất định, bạn có thể truyền voà một lệnh closure cho phương thức `fake`. Lệnh closure này sẽ nhận vào một instance của `Illuminate\Http\Client\Request` và sẽ trả về một instance response. Trong closure của bạn, bạn có thể thực hiện bất kỳ logic nào cần thiết để xác định loại response nào sẽ trả về:
+Nếu bạn yêu cầu một logic phức tạp hơn để xác định response nào sẽ trả về cho một số endpoint nhất định, bạn có thể truyền vào một lệnh closure cho phương thức `fake`. Lệnh closure này sẽ nhận vào một instance của `Illuminate\Http\Client\Request` và một mảng các tùy chọn. The closure sẽ trả về một instance response. Trong closure của bạn, bạn có thể thực hiện bất kỳ logic nào cần thiết để xác định loại response nào sẽ trả về:
 
     use Illuminate\Http\Client\Request;
 
-    Http::fake(function (Request $request) {
+    Http::fake(function (Request $request, array $options) {
         return Http::response('Hello World', 200);
     });
 

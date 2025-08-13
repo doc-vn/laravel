@@ -28,7 +28,7 @@ Khi sủ dụng framework Laravel hoặc các component của nó từ applicati
 | 8 | 7.3 - 8.1 | ngày 8 tháng 9 năm 2020 | ngày 26 tháng 7 năm 2022 | ngày 24 tháng 1 năm 2023 |
 | 9 | 8.0 - 8.2 | ngày 8 tháng 2 năm 2022 | ngày 8 tháng 8 năm 2023 | ngày 6 tháng 2 năm 2024 |
 | 10 | 8.1 - 8.3 | ngày 14 tháng 2 năm 2023 | ngày 6 tháng 8 năm 2024 | ngày 4 tháng 2 năm 2025 |
-| 11 | 8.2 - 8.3 | Q1 năm 2024 | ngày 5 tháng 8 năm 2025 | ngày 3 tháng 2 năm 2026 |
+| 11 | 8.2 - 8.4 | ngày 12 tháng 3 năm 2024 | ngày 3 tháng 9 năm 2025 | ngày 12 tháng 3 năm 2026 |
 
 </div>
 

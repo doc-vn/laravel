@@ -363,7 +363,6 @@ Hàm `Str::camel` sẽ chuyển chuỗi đã cho thành `camelCase`:
     // 'fooBar'
 
 <a name="method-char-at"></a>
-
 #### `Str::charAt()` {.collection-method}
 
 Hàm `Str::charAt` sẽ trả về một ký tự tại vị trí được chỉ định. Nếu vị trí chỉ định nằm ngoài chuỗi, thì `false` sẽ được trả về:
@@ -494,6 +493,19 @@ Hàm `Str::inlineMarkdown` sẽ chuyển đổi Markdown định dạng theo chu
     $html = Str::inlineMarkdown('**Laravel**');
 
     // <strong>Laravel</strong>
+
+#### Markdown Security
+
+Mặc định, Markdown hỗ trợ HTML raw, điều này sẽ tạo ra lỗ hổng Cross-Site Scripting (XSS) khi sử dụng với dữ liệu input raw của người dùng. Theo [tài liệu bảo mật CommonMark](https://commonmark.thephpleague.com/security/), bạn có thể sử dụng tùy chọn `html_input` để loại bỏ ký tự đặc biệt hoặc loại bỏ thẻ HTML, và tùy chọn `allow_unsafe_links` để chỉ định có cho phép các unsafe link hay không. Nếu bạn cần cho phép một số HTML raw, bạn nên truyền Markdown đã biên dịch của bạn qua HTML Purifier:
+
+    use Illuminate\Support\Str;
+
+    Str::inlineMarkdown('Inject: <script>alert("Hello XSS!");</script>', [
+        'html_input' => 'strip',
+        'allow_unsafe_links' => false,
+    ]);
+
+    // Inject: alert(&quot;Hello XSS!&quot;);
 
 <a name="method-str-is"></a>
 #### `Str::is()` {.collection-method}
@@ -673,6 +685,19 @@ Hàm `Str::markdown` sẽ chuyển đổi Markdown định dạng theo chuẩn G
 
     // <h1>Taylor Otwell</h1>
 
+#### Markdown Security
+
+Mặc định, Markdown hỗ trợ HTML raw, điều này sẽ tạo ra lỗ hổng Cross-Site Scripting (XSS) khi sử dụng với dữ liệu input raw của người dùng. Theo [tài liệu bảo mật CommonMark](https://commonmark.thephpleague.com/security/), bạn có thể sử dụng tùy chọn `html_input` để loại bỏ ký tự đặc biệt hoặc loại bỏ thẻ HTML, và tùy chọn `allow_unsafe_links` để chỉ định có cho phép các unsafe link hay không. Nếu bạn cần cho phép một số HTML raw, bạn nên truyền Markdown đã biên dịch của bạn qua HTML Purifier:
+
+    use Illuminate\Support\Str;
+
+    Str::markdown('Inject: <script>alert("Hello XSS!");</script>', [
+        'html_input' => 'strip',
+        'allow_unsafe_links' => false,
+    ]);
+
+    // <p>Inject: alert(&quot;Hello XSS!&quot;);</p>
+
 <a name="method-str-mask"></a>
 #### `Str::mask()` {.collection-method}
 
@@ -836,6 +861,16 @@ Hàm `Str::random` sẽ tạo ra một chuỗi ngẫu nhiên có độ dài đư
     use Illuminate\Support\Str;
 
     $random = Str::random(40);
+
+Trong quá trình testing, việc "fake" các giá trị được trả về bởi phương thức `Str::random` có thể hữu ích. Để thực hiện việc này, bạn có thể sử dụng phương thức `createRandomStringsUsing`:
+
+    Str::createRandomStringsUsing(function () {
+        return 'fake-random-string';
+    });
+
+Để bảo phương thức `random` quay lại tạo một chuỗi ngẫu nhiên một cách bình thường, bạn có thể gọi phương thức `createRandomStringsNormally`:
+
+    Str::createRandomStringsNormally();
 
 <a name="method-str-remove"></a>
 #### `Str::remove()` {.collection-method}
@@ -1224,6 +1259,18 @@ use Illuminate\Support\Str;
 $date = Carbon::createFromId((string) Str::ulid());
 ```
 
+Trong quá trình testing, việc "fake" các giá trị được trả về bởi phương thức `Str::ulid` có thể hữu ích. Để thực hiện việc này, bạn có thể sử dụng phương thức `createUlidsUsing`:
+
+    use Symfony\Component\Uid\Ulid;
+
+    Str::createUlidsUsing(function () {
+        return new Ulid('01HRDBNHHCKNW2AK4Z29SN82T9');
+    });
+
+Để bảo phương thức `ulid` quay lại tạo một ULID theo cách bình thường, bạn có thể gọi phương thức `createUlidsNormally`:
+
+    Str::createUlidsNormally();
+
 <a name="method-str-unwrap"></a>
 #### `Str::unwrap()` {.collection-method}
 
@@ -1247,6 +1294,18 @@ Hàm `Str::uuid` sẽ tạo ra một UUID (phiên bản 4):
     use Illuminate\Support\Str;
 
     return (string) Str::uuid();
+
+Trong quá trình testing, việc "fake" các giá trị được trả về bởi phương thức `Str::uuid` có thể hữu ích. Để thực hiện việc này, bạn có thể sử dụng phương thức `createUuidsUsing`:
+
+    use Ramsey\Uuid\Uuid;
+
+    Str::createUuidsUsing(function () {
+        return Uuid::fromString('eadbfeac-5258-45c2-bab7-ccb9b5ef74f9');
+    });
+
+Để bảo phương thức `uuid` quay lại tạo một UUID theo cách bình thường, bạn có thể gọi phương thức `createUuidsNormally`:
+
+    Str::createUuidsNormally();
 
 <a name="method-str-word-count"></a>
 #### `Str::wordCount()` {.collection-method}
@@ -1652,6 +1711,19 @@ Hàm `inlineMarkdown` sẽ chuyển đổi Markdown định dạng theo chuẩn 
 
     // <strong>Laravel</strong>
 
+#### Markdown Security
+
+Mặc định, Markdown hỗ trợ HTML raw, điều này sẽ tạo ra lỗ hổng Cross-Site Scripting (XSS) khi sử dụng với dữ liệu input raw của người dùng. Theo [tài liệu bảo mật CommonMark](https://commonmark.thephpleague.com/security/), bạn có thể sử dụng tùy chọn `html_input` để loại bỏ ký tự đặc biệt hoặc loại bỏ thẻ HTML, và tùy chọn `allow_unsafe_links` để chỉ định có cho phép các unsafe link hay không. Nếu bạn cần cho phép một số HTML raw, bạn nên truyền Markdown đã biên dịch của bạn qua HTML Purifier:
+
+    use Illuminate\Support\Str;
+
+    Str::of('Inject: <script>alert("Hello XSS!");</script>')->inlineMarkdown([
+        'html_input' => 'strip',
+        'allow_unsafe_links' => false,
+    ]);
+
+    // Inject: alert(&quot;Hello XSS!&quot;);
+
 <a name="method-fluent-str-is"></a>
 #### `is` {.collection-method}
 
@@ -1876,6 +1948,19 @@ Hàm `markdown` sẽ chuyển đổi Markdown định dạng theo chuẩn GitHub
     ]);
 
     // <h1>Taylor Otwell</h1>
+
+#### Markdown Security
+
+Mặc định, Markdown hỗ trợ HTML raw, điều này sẽ tạo ra lỗ hổng Cross-Site Scripting (XSS) khi sử dụng với dữ liệu input raw của người dùng. Theo [tài liệu bảo mật CommonMark](https://commonmark.thephpleague.com/security/), bạn có thể sử dụng tùy chọn `html_input` để loại bỏ ký tự đặc biệt hoặc loại bỏ thẻ HTML, và tùy chọn `allow_unsafe_links` để chỉ định có cho phép các unsafe link hay không. Nếu bạn cần cho phép một số HTML raw, bạn nên truyền Markdown đã biên dịch của bạn qua HTML Purifier:
+
+    use Illuminate\Support\Str;
+
+    Str::of('Inject: <script>alert("Hello XSS!");</script>')->markdown([
+        'html_input' => 'strip',
+        'allow_unsafe_links' => false,
+    ]);
+
+    // <p>Inject: alert(&quot;Hello XSS!&quot;);</p>
 
 <a name="method-fluent-str-mask"></a>
 #### `mask` {.collection-method}

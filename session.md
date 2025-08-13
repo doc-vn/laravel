@@ -199,7 +199,7 @@ Phương thức `pull` sẽ lấy ra và xóa đi một item ra khỏi session c
 
     $value = $request->session()->pull('key', 'default');
 
-<a name="#incrementing-and-decrementing-session-values"></a>
+<a name="incrementing-and-decrementing-session-values"></a>
 #### Incrementing & Decrementing Session Values
 
 Nếu dữ liệu session của bạn chứa một số nguyên và bạn muốn tăng hoặc giảm số nguyên đó, bạn có thể sử dụng các phương thức `increment` và `decrement`:

@@ -12,7 +12,8 @@
 - [Lệnh where cơ bản](#basic-where-clauses)
     - [Lệnh where](#where-clauses)
     - [Lệnh where or](#or-where-clauses)
-    - [Lệnh ưhere not](#where-not-clauses)
+    - [Lệnh where not](#where-not-clauses)
+    - [Lệnh Where any và Where all](#where-any-all-clauses)
     - [Lệnh where cho json](#json-where-clauses)
     - [Lệnh where khác](#additional-where-clauses)
     - [Logic nhóm](#logical-grouping)
@@ -490,7 +491,7 @@ select * from users where votes > 100 or (name = 'Abigail' and votes > 50)
 > Bạn nên nhóm các lệnh `orWhere` lại với nhau để tránh các hành vi không mong muốn khi sử dụng global scope.
 
 <a name="where-not-clauses"></a>
-### Lệnh ưhere not
+### Lệnh where not
 
 Các phương thức `whereNot` và `orWhereNot` có thể được sử dụng để phủ định một nhóm các lệnh nhất định. Ví dụ, truy vấn sau đây bỏ qua các sản phẩm đang được thanh lý hoặc có giá dưới mười:
 
@@ -500,6 +501,53 @@ Các phương thức `whereNot` và `orWhereNot` có thể được sử dụng 
                               ->orWhere('price', '<', 10);
                     })
                     ->get();
+
+<a name="where-any-all-clauses"></a>
+### Lệnh Where any và Where all
+
+Thỉnh thoảng bạn có thể cần sử dụng cùng một ràng buộc truy vấn cho nhiều cột. Ví dụ: bạn có thể muốn lấy ra tất cả các bản ghi mà có bất kỳ cột nào có giá trị giống với giá trị được truyền vào toán tử `LIKE`. Bạn có thể thực hiện điều này bằng phương thức `whereAny`:
+
+    $users = DB::table('users')
+                ->where('active', true)
+                ->whereAny([
+                    'name',
+                    'email',
+                    'phone',
+                ], 'LIKE', 'Example%')
+                ->get();
+
+Truy vấn trên sẽ cho ra kết quả SQL như sau:
+
+```sql
+SELECT *
+FROM users
+WHERE active = true AND (
+    name LIKE 'Example%' OR
+    email LIKE 'Example%' OR
+    phone LIKE 'Example%'
+)
+```
+
+Tương tự như vậy, phương thức `whereAll` có thể được sử dụng để lấy ra các bản ghi mà trong đó tất cả các cột được chỉ định đều khớp với một ràng buộc nhất định:
+
+    $posts = DB::table('posts')
+                ->where('published', true)
+                ->whereAll([
+                    'title',
+                    'content',
+                ], 'LIKE', '%Laravel%')
+                ->get();
+
+Truy vấn trên sẽ cho ra kết quả SQL như sau:
+
+```sql
+SELECT *
+FROM posts
+WHERE published = true AND (
+    title LIKE '%Laravel%' AND
+    content LIKE '%Laravel%'
+)
+```
 
 <a name="json-where-clauses"></a>
 ### Lệnh where cho json

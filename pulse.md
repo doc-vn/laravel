@@ -249,6 +249,15 @@ php artisan pulse:check
 > [!NOTE]
 > Để duy trì process `pulse:check` chạy liên tục ở chế độ background, bạn nên sử dụng một trình giám sát process như Supervisor để đảm bảo lệnh này sẽ không bị dừng.
 
+Vì lệnh `pulse:check` là một process chạy liên tục, nên nếu process đó không được khởi động lại, thì nó sẽ không thấy được sự thay đổi code của bạn. Bạn nên khởi động lại lệnh một cách bình thường bằng cách gọi lệnh `pulse:restart` trong quá trình deploy ứng dụng:
+
+```sh
+php artisan pulse:restart
+```
+
+> [!NOTE]
+> Pulse sử dụng [cache](/docs/{{version}}/cache) để lưu trữ tín hiệu khởi động lại, do đó bạn nên kiểm tra cache driver đã được cấu hình đúng cho ứng dụng của bạn trước khi sử dụng chức năng này.
+
 <a name="recorders"></a>
 ### Recorders
 
@@ -424,6 +433,15 @@ php artisan pulse:work
 
 > [!NOTE]
 > Để duy trì process `pulse:work` chạy liên tục ở background, bạn nên sử dụng trình giám sát process như Supervisor để đảm bảo process Pulse sẽ không bị ngừng chạy.
+
+Vì lệnh `pulse:work` là một process chạy liên tục, nên nếu process đó không được khởi động lại, thì nó sẽ không thấy được sự thay đổi code của bạn. Bạn nên khởi động lại lệnh một cách bình thường bằng cách gọi lệnh `pulse:restart` trong quá trình deploy ứng dụng:
+
+```sh
+php artisan pulse:restart
+```
+
+> [!NOTE]
+> Pulse sử dụng [cache](/docs/{{version}}/cache) để lưu trữ tín hiệu khởi động lại, do đó bạn nên kiểm tra cache driver đã được cấu hình đúng cho ứng dụng của bạn trước khi sử dụng chức năng này.
 
 <a name="sampling"></a>
 ### Lấy mẫu

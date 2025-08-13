@@ -82,7 +82,63 @@ services:
   laravel.test:
     environment:
       SUPERVISOR_PHP_COMMAND: "/usr/bin/php -d variables_order=EGPCS /var/www/html/artisan octane:start --server=frankenphp --host=0.0.0.0 --admin-port=2019 --port=80" # [tl! add]
+XDG_CONFIG_HOME:  /var/www/html/config # [tl! add]
+      XDG_DATA_HOME:  /var/www/html/data # [tl! add]
 ```
+
+Để bật HTTPS, HTTP/2 và HTTP/3, hãy sử dụng những thay đổi sau:
+
+```yaml
+services:
+  laravel.test:
+    ports:
+        - '${APP_PORT:-80}:80'
+        - '${VITE_PORT:-5173}:${VITE_PORT:-5173}'
+        - '443:443' # [tl! add]
+        - '443:443/udp' # [tl! add]
+    environment:
+      SUPERVISOR_PHP_COMMAND: "/usr/bin/php -d variables_order=EGPCS /var/www/html/artisan octane:start --host=localhost --port=443 --admin-port=2019 --https" # [tl! add]
+      XDG_CONFIG_HOME:  /var/www/html/config # [tl! add]
+      XDG_DATA_HOME:  /var/www/html/data # [tl! add]
+```
+
+Thông thường, bạn nên truy cập ứng dụng FrankenPHP Sail của bạn thông qua `https://localhost`, thay vì sử dụng `https://127.0.0.1`, vì nó sẽ yêu cầu cấu hình thêm và [không được khuyến khích](https://frankenphp.dev/docs/known-issues/#using-https127001-with-docker).
+
+<a name="frankenphp-via-docker"></a>
+#### FrankenPHP via Docker
+
+Sử dụng Docker image chính thức của FrankenPHP có thể cải thiện hiệu suất và tận dụng thêm các extension không có trong các bản cài đặt trực tiếp của FrankenPHP. Ngoài ra, Docker image chính thức còn hỗ trợ chạy FrankenPHP trên các nền tảng mà nó không hỗ trợ native, chẳng hạn như Windows. Docker image chính thức của FrankenPHP cũng phù hợp cho cả môi trường phát triển là local và cả sử dụng trong môi trường production.
+
+Bạn có thể sử dụng Dockerfile sau đây để làm điểm khởi đầu để chứa ứng dụng Laravel chạy bằng FrankenPHP của bạn:
+
+```dockerfile
+FROM dunglas/frankenphp
+
+RUN install-php-extensions \
+    pcntl
+    # Add other PHP extensions here...
+
+COPY . /app
+
+ENTRYPOINT ["php", "artisan", "octane:frankenphp"]
+```
+
+Sau đó, trong quá trình phát triển, bạn có thể sử dụng file Docker Compose sau để chạy ứng dụng của mình:
+
+```yaml
+# compose.yaml
+services:
+  frankenphp:
+    build:
+      context: .
+    entrypoint: php artisan octane:frankenphp --max-requests=1
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+```
+
+Bạn có thể tham khảo [tài liệu chính thức của FrankenPHP](https://frankenphp.dev/docs/docker/) để biết thêm thông tin chi tiết về cách chạy FrankenPHP cùng với Docker.
 
 <a name="roadrunner"></a>
 ### RoadRunner
