@@ -60,7 +60,6 @@ Tốt nhất là bạn hãy hình dung middleware như là các "layers" mà cá
 > [!NOTE]
 > Tất cả các middleware đều được resolve thông qua [service container](/docs/{{version}}/container), vì vậy bạn có thể khai báo bất kỳ phụ thuộc nào mà bạn cần trong phương thức khởi tạo của middleware.
 
-<a name="before-after-middleware"></a>
 <a name="middleware-and-responses"></a>
 #### Middleware và Responses
 

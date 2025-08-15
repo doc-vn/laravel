@@ -3,10 +3,12 @@
 - [Giới thiệu](#introduction)
 - [Cài đặt phía Server](#server-side-installation)
     - [Cấu hình](#configuration)
+    - [Reverb](#reverb)
     - [Pusher Channels](#pusher-channels)
     - [Ably](#ably)
     - [Open Source Alternatives](#open-source-alternatives)
 - [Cài đặt phía Client](#client-side-installation)
+    - [Reverb](#client-reverb)
     - [Pusher Channels](#client-pusher-channels)
     - [Ably](#client-ably)
 - [Khái niệm tổng quan](#concept-overview)
@@ -52,7 +54,7 @@ Các khái niệm cốt lõi đằng sau việc broadcasting rất đơn giản:
 <a name="supported-drivers"></a>
 #### Supported Drivers
 
-Mặc định, Laravel có chứa driver broadcasting cho server-side để bạn lựa chọn: [Pusher Channels](https://pusher.com/channels) và [Ably](https://ably.com). Tuy nhiên, các package do cộng đồng phát triển như [soketi](https://docs.soketi.app/) cũng cung cấp thêm các driver broadcasting và không yêu cầu một giấy phép broadcasting thương mại.
+Mặc định, Laravel có chứa ba driver broadcasting cho server-side để bạn lựa chọn:  [Laravel Reverb](https://reverb.laravel.com), [Pusher Channels](https://pusher.com/channels), và [Ably](https://ably.com).
 
 > [!NOTE]
 > Trước khi đi sâu vào broadcasting event, hãy đảm bảo là bạn đã đọc tài liệu của Laravel về [event và listener](/docs/{{version}}/events).
@@ -78,6 +80,23 @@ Trước khi broadcasting bất kỳ event nào, đầu tiên bạn sẽ cần p
 #### Queue Configuration
 
 Bạn cũng sẽ cần cấu hình và chạy một [queue worker](/docs/{{version}}/queues). Tất cả việc broadcasting event sẽ được thực hiện thông qua các queued job để thời gian phản hồi của ứng dụng của bạn không bị ảnh hưởng nghiêm trọng bởi các event đang được broadcast.
+
+<a name="reverb"></a>
+### Reverb
+
+Bạn có thể cài đặt Reverb bằng trình quản lý package Composer:
+
+```sh
+composer require laravel/reverb
+```
+
+Sau khi package được cài đặt xong, bạn có thể chạy lệnh cài đặt của Reverb để export ra cấu hình, cập nhật cấu hình broadcasting của ứng dụng và thêm các biến môi trường cần thiết của Reverb:
+
+```sh
+php artisan reverb:install
+```
+
+Bạn có thể tìm thấy hướng dẫn cài đặt và sử dụng Reverb chi tiết hơn trong [tài liệu Reverb](/docs/{{version}}/reverb).
 
 <a name="pusher-channels"></a>
 ### Pusher Channels
@@ -148,6 +167,43 @@ Cuối cùng, bạn đã sẵn sàng để cài đặt và cấu hình [Laravel 
 
 <a name="client-side-installation"></a>
 ## Cài đặt phía Client
+
+<a name="client-reverb"></a>
+### Reverb
+
+[Laravel Echo](https://github.com/laravel/echo) là một thư viện JavaScript giúp việc subscribe channel và lắng nghe các event broadcast được tạo bởi driver server-side broadcasting trở nên dễ dàng. Bạn có thể cài đặt Echo thông qua trình quản lý package NPM. Trong ví dụ này, chúng ta cũng sẽ cài đặt package `pusher-js` vì Reverb sử dụng giao thức Pusher cho các subscription, channel và tin nhắn thông qua WebSocket:
+
+```shell
+npm install --save-dev laravel-echo pusher-js
+```
+
+Sau khi Echo được cài đặt xong, bạn đã sẵn sàng tạo một instance Echo mới trong JavaScript của ứng dụng. Một vị trí tuyệt vời để thực hiện việc này là ở cuối file `resources/js/bootstrap.js` được chứa sẵn trong framework Laravel. Mặc định, một cấu hình Echo mẫu đã được chứa trong file này - bạn chỉ cần bỏ comment và cập nhật tùy chọn cấu hình `broadcaster` thành `reverb`:
+
+```js
+import Echo from 'laravel-echo';
+
+import Pusher from 'pusher-js';
+window.Pusher = Pusher;
+
+window.Echo = new Echo({
+    broadcaster: 'reverb',
+    key: import.meta.env.VITE_REVERB_APP_KEY,
+    wsHost: import.meta.env.VITE_REVERB_HOST,
+    wsPort: import.meta.env.VITE_REVERB_PORT,
+    wssPort: import.meta.env.VITE_REVERB_PORT,
+    forceTLS: (import.meta.env.VITE_REVERB_SCHEME ?? 'https') === 'https',
+    enabledTransports: ['ws', 'wss'],
+});
+```
+
+Tiếp theo, bạn nên compile các asset của ứng dụng:
+
+```shell
+npm run build
+```
+
+> [!WARNING]
+> Laravel Echo `reverb` broadcaster sẽ yêu cầu laravel-echo v1.16.0 trở lên.
 
 <a name="client-pusher-channels"></a>
 ### Pusher Channels
@@ -290,7 +346,7 @@ Khi người dùng đang xem một trong các đơn hàng của họ, chúng ta 
         /**
          * The order instance.
          *
-         * @var \App\Order
+         * @var \App\Models\Order
          */
         public $order;
     }
@@ -702,7 +758,7 @@ Tuy nhiên, hãy nhớ rằng chúng ta đang broadcast một event tạo task. 
 <a name="only-to-others-configuration"></a>
 #### Cấu hình
 
-Khi bạn khởi tạo một instance Laravel Echo, một ID socket cũng sẽ được khởi tạo. Nếu bạn đang sử dụng một global instance [Axios](https://github.com/mzabriskie/axios) để thực hiện các request HTTP từ ứng dụng JavaScript của bạn, thì ID socket đó sẽ được tự động đính kèm vào mọi request gửi đi dưới dạng `X-Socket-ID`. Sau đó, khi bạn gọi phương thức `toOthers`, Laravel sẽ lấy ID socket từ header và hướng dẫn broadcaster sẽ không broadcast đến bất kỳ kết nối nào mà trùng với ID socket đó.
+Khi bạn khởi tạo một instance Laravel Echo, một ID socket cũng sẽ được khởi tạo. Nếu bạn đang sử dụng một global instance [Axios](https://github.com/mzabriskie/axios) để thực hiện các request HTTP từ ứng dụng JavaScript của bạn, thì ID socket đó sẽ được tự động đính kèm vào mọi request gửi đi dưới dạng một `X-Socket-ID` header. Sau đó, khi bạn gọi phương thức `toOthers`, Laravel sẽ lấy ID socket từ header và hướng dẫn broadcaster sẽ không broadcast đến bất kỳ kết nối nào mà trùng với ID socket đó.
 
 Nếu bạn không sử dụng một global Axios instance, bạn sẽ cần phải tự cấu hình JavaScript của bạn để gửi header `X-Socket-ID` với tất cả các request gửi đi. Bạn có thể lấy ra ID socket bằng phương thức `Echo.socketId`:
 
@@ -988,7 +1044,7 @@ protected function newBroadcastableEvent(string $event): BroadcastableModelEvent
 
 Như bạn có thể nhận thấy, phương thức `broadcastOn` trong ví dụ model ở trên không trả về các instance `Channel`. Thay vào đó, các model Eloquent được trả về trực tiếp. Nếu một instance model Eloquent được trả về trực tiếp bởi phương thức `broadcastOn` của model của bạn (hoặc được chứa trong một mảng được phương thức này trả về), Laravel sẽ tự động khởi tạo một instance private channel cho model đó bằng cách sử dụng tên class của model và identifier khóa chính của model làm tên channel.
 
-Vì vậy, model `App\Models\User` có `id` là `1` sẽ được chuyển thành instance `Illuminate\Broadcasting\PrivateChannel` với tên là `App.Models.User.1`. Tất nhiên, ngoài việc trả về các instance model Eloquent từ phương thức `broadcastOn` của model, bạn có thể trả về các instance `Channel` hoàn chỉnh để có toàn quyền kiểm soát tên channel của model:
+Vì vậy, model `App\Models\User` có `id` là `1` sẽ được chuyển thành một instance `Illuminate\Broadcasting\PrivateChannel` với tên là `App.Models.User.1`. Tất nhiên, ngoài việc trả về các instance model Eloquent từ phương thức `broadcastOn` của model, bạn có thể trả về các instance `Channel` hoàn chỉnh để có toàn quyền kiểm soát tên channel của model:
 
 ```php
 use Illuminate\Broadcasting\PrivateChannel;

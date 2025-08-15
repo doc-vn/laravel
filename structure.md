@@ -88,6 +88,8 @@ Thư mục `storage` sẽ chứa những file log, Blade đã được biên d�
 
 Thư mục `storage/app/public` có thể được dùng để lưu trữ các file mà user tạo như là: avatars, những loại mà được phép public. Bạn cũng nên tạo một link ảo `public/storage` để trỏ vào thư mục này. Bạn có thể tạo link ảo đó bằng câu lệnh Artisan sau: `php artisan storage:link`.
 
+Vị trí của thư mục `storage` có thể được sửa thông qua biến môi trường `LARAVEL_STORAGE_PATH`.
+
 <a name="the-tests-directory"></a>
 #### Thư mục Tests
 

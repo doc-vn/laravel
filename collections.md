@@ -797,7 +797,6 @@ Phương thức `ensure` có thể được dùng để xác nhận tất cả c
 
 Các kiểu nguyên thuỷ như `string`, `int`, `float`, `bool`, và `array` có thể được chỉ định:
 
-
     return $collection->ensure('int');
 
 > [!WARNING]
@@ -2438,7 +2437,31 @@ Ngoài ra, bạn có thể truyền vào một closure của bạn để xác đ
         ]
     */
 
-Nếu bạn muốn sắp xếp collection của bạn theo nhiều thuộc tính, bạn có thể truyền một mảng các thao tác sắp xếp vào phương thức `sortBy`. Mỗi thao tác sắp xếp phải là một mảng chứa các thuộc tính mà bạn muốn sắp xếp và hướng sắp xếp mà bạn mong muốn:
+Nếu bạn muốn sắp xếp collection của bạn theo nhiều thuộc tính, bạn có thể truyền một mảng các thuộc tính mà bạn muốn sắp xếp vào phương thức:
+
+    $collection = collect([
+        ['name' => 'Taylor Otwell', 'age' => 34],
+        ['name' => 'Abigail Otwell', 'age' => 30],
+        ['name' => 'Taylor Otwell', 'age' => 36],
+        ['name' => 'Abigail Otwell', 'age' => 32],
+    ]);
+
+    $sorted = $collection->sortBy(['name', 'age']);
+
+    $sorted->values()->all();
+
+    /*
+        [
+            ['name' => 'Abigail Otwell', 'age' => 30],
+            ['name' => 'Abigail Otwell', 'age' => 32],
+            ['name' => 'Taylor Otwell', 'age' => 34],
+            ['name' => 'Taylor Otwell', 'age' => 36],
+        ]
+    */
+
+
+
+Khi sắp xếp nhiều thuộc tính và có các thứ tự sắp xếp khác nhau, bạn có thể truyền một mảng các thao tác sắp xếp vào phương thức `sortBy`. Mỗi thao tác sắp xếp phải là một mảng chứa các thuộc tính mà bạn muốn sắp xếp và hướng sắp xếp mà bạn mong muốn:
 
     $collection = collect([
         ['name' => 'Taylor Otwell', 'age' => 34],

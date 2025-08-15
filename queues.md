@@ -1897,7 +1897,7 @@ Khi một job bị thất bại, bạn có thể muốn gửi thông báo cho ng
         /**
          * Handle a job failure.
          */
-        public function failed(Throwable $exception): void
+        public function failed(?Throwable $exception): void
         {
             // Send user notification of failure, etc...
         }

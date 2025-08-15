@@ -796,12 +796,24 @@ Nếu bạn muốn xóa _tất cả_ các chức năng ra khỏi bộ lưu trữ
 Feature::purge();
 ```
 
-Vì việc xóa các chức năng có thể hữu ích như một phần của quy trình deploy ứng dụng, Pennant có chứa một lệnh Artisan `pennant:purge`:
+Vì việc xóa các chức năng có thể hữu ích như một phần của quy trình deploy ứng dụng, Pennant có chứa một lệnh Artisan `pennant:purge` sẽ xóa các chức năng được cung cấp ra khỏi bộ lưu trữ:
 
 ```sh
 php artisan pennant:purge new-api
 
 php artisan pennant:purge new-api purchase-button
+```
+
+Bạn cũng có thể xóa tất cả các chức năng _trừ_ những chức năng có trong danh sách chức năng nhất định. Ví dụ, hãy tưởng tượng bạn muốn xóa tất cả các chức năng nhưng vẫn giữ lại các chức năng "new-api" và "purchase-button" trong bộ lưu trữ. Để thực hiện điều này, bạn có thể truyền tên các chức năng đó vào tùy chọn `--except`:
+
+```sh
+php artisan pennant:purge --except=new-api --except=purchase-button
+```
+
+Để thuận tiện, lệnh `pennant:purge` cũng hỗ trợ flag `--except-registered`. Flag này cho biết tất cả các chức năng, ngoại trừ những chức năng đã được đăng ký trong một service provider, còn lại tất cả đều được xóa:
+
+```sh
+php artisan pennant:purge --except-registered
 ```
 
 <a name="testing"></a>

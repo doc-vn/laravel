@@ -76,6 +76,7 @@ Bạn nên cập nhật các library sau vào file `composer.json` của ứng d
 - `doctrine/dbal` to `^3.0`
 - `spatie/laravel-ignition` to `^2.0`
 - `laravel/passport` to `^11.0` ([Upgrade Guide](https://github.com/laravel/passport/blob/11.x/UPGRADE.md))
+- `laravel/ui` to `^4.0`
 
 </div>
 

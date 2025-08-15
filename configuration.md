@@ -202,14 +202,6 @@ Bạn có thể dễ dàng gọi biến mà bạn đã cấu hình bằng facade
 
     config(['app.timezone' => 'America/Chicago']);
 
-Để hỗ trợ phân tích dữ liệu static, facade `Config` cũng cung cấp các phương thức lấy ra cấu hình theo loại. Nếu giá trị cấu hình được lấy ra không khớp với loại được chỉ định, một ngoại lệ sẽ được đưa ra:
-
-    Config::string('config-key');
-    Config::integer('config-key');
-    Config::float('config-key');
-    Config::boolean('config-key');
-    Config::array('config-key');
-
 <a name="configuration-caching"></a>
 ## Caching các biến config
 

@@ -255,7 +255,7 @@ Khi bạn chạy lệnh `dusk`, nếu bạn gặp lỗi ở chỗ cuối cùng, 
 php artisan dusk:fails
 ```
 
-Lệnh `dusk` chấp nhận tất cả các tham số mà PHPUnit test chấp nhận, chẳng hạn như cho phép bạn chỉ chạy các bài test cho một [group](https://phpunit.readthedocs.io/en/10.1/annotations.html#group) nhất định, vv...:
+Lệnh `dusk` chấp nhận tất cả các tham số mà PHPUnit test chấp nhận, chẳng hạn như cho phép bạn chỉ chạy các bài test cho một [group](https://docs.phpunit.de/en/10.5/annotations.html#group) nhất định, vv...:
 
 ```shell
 php artisan dusk --group=foo

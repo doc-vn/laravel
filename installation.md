@@ -58,7 +58,7 @@ Trước khi tạo project Laravel đầu tiên, bạn hãy chắc chắn là m�
 Sau khi bạn đã hoàn thành việc cài đặt PHP và Composer, bạn có thể tạo một project Laravel mới thông qua lệnh `create-project` của Composer:
 
 ```nothing
-composer create-project laravel/laravel example-app
+composer create-project "laravel/laravel:^10.0" example-app
 ```
 
 Hoặc, bạn có thể tạo project Laravel mới bằng cách dùng qua [Laravel installer](https://github.com/laravel/installer) đang được cài đặt global thông qua Composer:
