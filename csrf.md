@@ -60,7 +60,7 @@ Bất cứ khi nào bạn định nghĩa một HTML form "POST", "PUT", "PATCH",
 </form>
 ```
 
-Mặc định, `App\Http\Middleware\VerifyCsrfToken` [middleware](/docs/{{version}}/middleware), đã được khai báo sẵn trong group middleware `web`, và sẽ tự động kiểm tra mã token trong input của request có khớp với mã token được lưu trữ trong session trên server hay không. Khi hai token này khớp với nhau, chúng ta biết rằng người dùng đang được xác thực chính là người request.
+Mặc định, `Illuminate\Foundation\Http\Middleware\ValidateCsrfToken` [middleware](/docs/{{version}}/middleware), đã được khai báo sẵn trong group middleware `web`, và sẽ tự động kiểm tra mã token trong input của request có khớp với mã token được lưu trữ trong session trên server hay không. Khi hai token này khớp với nhau, chúng ta biết rằng người dùng đang được xác thực chính là người request.
 
 <a name="csrf-tokens-and-spas"></a>
 ### CSRF Tokens và SPAs
@@ -72,27 +72,15 @@ Nếu bạn đang xây dựng một SPA đang sử dụng Laravel làm backend A
 
 Đôi khi bạn có thể muốn loại bỏ một URI ra khỏi CSRF protection. Ví dụ: nếu bạn đang sử dụng [Stripe](https://stripe.com) để xử lý thanh toán và đang sử dụng hệ thống webhook của họ, bạn sẽ cần phải loại bỏ những route mà xử lý những webhook Stripe đó ra khỏi CSRF protection vì Stripe sẽ không biết mã token CSRF nào sẽ được gửi đến route của bạn.
 
-Thông thường, bạn nên đặt các loại route này ra ngoài group middleware `web`, group này được khai báo trong file `App\Providers\RouteServiceProvider` và áp dụng cho tất cả các route có trong file `routes/web.php`. Tuy nhiên, bạn cũng có thể loại bỏ các route này bằng cách thêm URI của chúng vào thuộc tính `$except` trong middleware `VerifyCsrfToken`:
+Thông thường, bạn nên đặt các loại route này ra ngoài group middleware `web`, group này được Laravel áp dụng cho tất cả các route có trong file `routes/web.php`. Tuy nhiên, bạn cũng có thể loại bỏ các route cụ thể bằng cách cung cấp URI của chúng cho phương thức `validateCsrfTokens` trong file `bootstrap/app.php` của ứng dụng của bạn:
 
-    <?php
-
-    namespace App\Http\Middleware;
-
-    use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken as Middleware;
-
-    class VerifyCsrfToken extends Middleware
-    {
-        /**
-         * The URIs that should be excluded from CSRF verification.
-         *
-         * @var array
-         */
-        protected $except = [
+    ->withMiddleware(function (Middleware $middleware) {
+        $middleware->validateCsrfTokens(except: [
             'stripe/*',
             'http://example.com/foo/bar',
             'http://example.com/foo/*',
-        ];
-    }
+        ]);
+    })
 
 > [!NOTE]
 > Để thuận tiện, CSRF middleware sẽ tự động bị disable cho tất cả các route khi [đang chạy test](/docs/{{version}}/testing).
@@ -100,7 +88,7 @@ Thông thường, bạn nên đặt các loại route này ra ngoài group middl
 <a name="csrf-x-csrf-token"></a>
 ## X-CSRF-TOKEN
 
-Ngoài việc kiểm tra mã token CSRF dưới dạng là một tham số của một POST, middleware `App\Http\Middleware\VerifyCsrfToken` cũng sẽ kiểm tra request header `X-CSRF-TOKEN`. Ví dụ, bạn có thể lưu trữ mã token vào trong một thẻ `meta` HTML:
+Ngoài việc kiểm tra mã token CSRF dưới dạng là một tham số của POST, middleware `Illuminate\Foundation\Http\Middleware\ValidateCsrfToken` cũng sẽ kiểm tra request header `X-CSRF-TOKEN`. Mặc định, middleware này đã có sẵn trong group middleware `web`. Ví dụ, bạn có thể lưu trữ mã token vào trong một thẻ `meta` HTML:
 
 ```blade
 <meta name="csrf-token" content="{{ csrf_token() }}">

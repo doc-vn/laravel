@@ -14,6 +14,7 @@
     - [JSON Responses](#json-responses)
     - [File Downloads](#file-downloads)
     - [File Responses](#file-responses)
+    - [Streamed Responses](#streamed-responses)
 - [Response Macros](#response-macros)
 
 <a name="creating-responses"></a>
@@ -46,7 +47,7 @@ Trả về cả một instance `Response` cho phép bạn tùy biến status cod
 
     Route::get('/home', function () {
         return response('Hello World', 200)
-                      ->header('Content-Type', 'text/plain');
+            ->header('Content-Type', 'text/plain');
     });
 
 <a name="eloquent-models-and-collections"></a>
@@ -66,18 +67,18 @@ Bạn cũng có thể trả về các model và collection [Eloquent ORM](/docs/
 Hãy nhớ rằng hầu hết các phương thức response đều có thể kết hợp lại với nhau, cho phép bạn dễ dàng khởi tạo một response instance. Ví dụ, bạn có thể sử dụng phương thức `header` để thêm một danh sách header cho response trước khi gửi chúng về cho người dùng:
 
     return response($content)
-                ->header('Content-Type', $type)
-                ->header('X-Header-One', 'Header Value')
-                ->header('X-Header-Two', 'Header Value');
+        ->header('Content-Type', $type)
+        ->header('X-Header-One', 'Header Value')
+        ->header('X-Header-Two', 'Header Value');
 
 Hoặc, bạn có thể sử dụng phương thức `withHeaders` để chỉ định một mảng các header sẽ được thêm vào response:
 
     return response($content)
-                ->withHeaders([
-                    'Content-Type' => $type,
-                    'X-Header-One' => 'Header Value',
-                    'X-Header-Two' => 'Header Value',
-                ]);
+        ->withHeaders([
+            'Content-Type' => $type,
+            'X-Header-One' => 'Header Value',
+            'X-Header-Two' => 'Header Value',
+        ]);
 
 <a name="cache-control-middleware"></a>
 #### Cache Control Middleware
@@ -138,16 +139,13 @@ Nếu bạn chưa có instance của response, bạn có thể sử dụng phư�
 <a name="cookies-and-encryption"></a>
 ### Cookies và Encryption
 
-Mặc định, tất cả các cookie được tạo bởi Laravel đều được mã hóa và được ký để client không thể sửa đổi hoặc đọc chúng. Nếu bạn muốn tắt mã hóa cho một số cookie mà bạn tạo ra, bạn có thể sử dụng thuộc tính `$except` của middleware `App\Http\Middleware\EncryptCookies`, nằm trong thư mục `app/Http/Middleware`:
+Mặc định, nhờ vào middleware `Illuminate\Cookie\Middleware\EncryptCookies`, tất cả các cookie được tạo bởi Laravel đều được mã hóa và được ký để client không thể sửa đổi hoặc đọc chúng. Nếu bạn muốn tắt mã hóa cho một số cookie mà bạn tạo ra, bạn có thể sử dụng phương thức `encryptCookies` trong file `bootstrap/app.php` của ứng dụng của bạn:
 
-    /**
-     * The names of the cookies that should not be encrypted.
-     *
-     * @var array
-     */
-    protected $except = [
-        'cookie_name',
-    ];
+    ->withMiddleware(function (Middleware $middleware) {
+        $middleware->encryptCookies(except: [
+            'cookie_name',
+        ]);
+    })
 
 <a name="redirects"></a>
 ## Redirect
@@ -155,7 +153,7 @@ Mặc định, tất cả các cookie được tạo bởi Laravel đều đư�
 Redirect response là một instance của class `Illuminate\Http\RedirectResponse` và chứa các header cần thiết để chuyển hướng người dùng đến một URL khác. Có một số cách để tạo ra một instance `RedirectResponse`. Phương pháp đơn giản nhất là sử dụng global helper `redirect`:
 
     Route::get('/dashboard', function () {
-        return redirect('home/dashboard');
+        return redirect('/home/dashboard');
     });
 
 Thỉnh thoảng bạn có thể muốn chuyển hướng người dùng đến một trang trước đó, chẳng hạn như khi nhập form không hợp lệ. Bạn có thể làm như vậy bằng cách sử dụng hàm global helper `back`. Vì chức năng này sử dụng [session](/docs/{{version}}/session), nên hãy đảm bảo là route được gọi bởi hàm `back` cũng đang dùng group middleware `web`:
@@ -228,7 +226,7 @@ Chuyển hướng đến một URL mới và [flashing data tới session](/docs
     Route::post('/user/profile', function () {
         // ...
 
-        return redirect('dashboard')->with('status', 'Profile updated!');
+        return redirect('/dashboard')->with('status', 'Profile updated!');
     });
 
 Sau khi người dùng đã được chuyển hướng, bạn có thể hiển thị thông báo được flash từ [session](/docs/{{version}}/session). Ví dụ: sử dụng [Blade syntax](/docs/{{version}}/blade):
@@ -257,8 +255,8 @@ Helper `response` có thể được sử dụng để tạo các loại instanc
 Nếu bạn cần kiểm soát trạng thái và header của response nhưng cũng cần trả về một [view](/docs/{{version}}/views) làm nội dung của response, bạn nên sử dụng phương thức `view`:
 
     return response()
-                ->view('hello', $data, 200)
-                ->header('Content-Type', $type);
+        ->view('hello', $data, 200)
+        ->header('Content-Type', $type);
 
 Và dĩ nhiên, nếu bạn không cần tuỳ chỉnh HTTP status code hoặc custom header, bạn có thể dùng hàm global helper `view`.
 
@@ -275,8 +273,8 @@ Phương thức `json` sẽ tự động set header `Content-Type` của respons
 Nếu bạn muốn tạo một JSONP response, bạn có thể sử dụng phương thức `json` kết hợp với phương thức `withCallback`:
 
     return response()
-                ->json(['name' => 'Abigail', 'state' => 'CA'])
-                ->withCallback($request->input('callback'));
+        ->json(['name' => 'Abigail', 'state' => 'CA'])
+        ->withCallback($request->input('callback'));
 
 <a name="file-downloads"></a>
 ### File Downloads
@@ -290,6 +288,85 @@ Phương thức `download` có thể được sử dụng để tạo response b
 > [!WARNING]
 > Quản lý file download Symfony HttpFoundation yêu cầu file download phải có tên file là ASCII.
 
+<a name="file-responses"></a>
+### File Responses
+
+Phương thức `file` có thể được sử dụng để hiển thị một file, chẳng hạn như một hình ảnh hoặc một file PDF trực tiếp trên trình duyệt của người dùng thay vì bắt người dùng tải xuống. Phương thức này sẽ chấp nhận một đường dẫn tuyệt đối đến file làm tham số đầu tiên và một mảng các header làm tham số thứ hai:
+
+    return response()->file($pathToFile);
+
+    return response()->file($pathToFile, $headers);
+
+<a name="streamed-responses"></a>
+### Streamed Responses
+
+Bằng cách streaming data đến client ngay khi nó được tạo ra, bạn có thể giảm đáng kể việc sử dụng bộ nhớ và cải thiện hiệu suất, đặc biệt đối với các response rất lớn. Các response được streaming cho phép client bắt đầu xử lý dữ liệu trước khi server hoàn tất việc gửi chúng:
+
+    function streamedContent(): Generator {
+        yield 'Hello, ';
+        yield 'World!';
+    }
+
+    Route::get('/stream', function () {
+        return response()->stream(function (): void {
+            foreach (streamedContent() as $chunk) {
+                echo $chunk;
+                ob_flush();
+                flush();
+                sleep(2); // Simulate delay between chunks...
+            }
+        }, 200, ['X-Accel-Buffering' => 'no']);
+    });
+
+> [!NOTE]
+> Bên trong, Laravel sử dụng chức năng output buffering của PHP. Như bạn có thể thấy trong ví dụ trên, bạn nên sử dụng các hàm `ob_flush` và `flush` để push nội dung đã buffer đến client.
+
+<a name="streamed-json-responses"></a>
+#### Streamed JSON Responses
+
+Nếu bạn cần stream dữ liệu JSON tăng dần, bạn có thể sử dụng phương thức `streamJson`. Phương thức này đặc biệt hữu ích cho các tập dữ liệu lớn mà cần được gửi dần dần đến trình duyệt ở định dạng có thể dễ dàng phân tích cú pháp bằng JavaScript:
+
+    use App\Models\User;
+
+    Route::get('/users.json', function () {
+        return response()->streamJson([
+            'users' => User::cursor(),
+        ]);
+    });
+
+<a name="event-streams"></a>
+#### Event Streams
+
+Phương thức `eventStream` có thể được sử dụng để trả về một stream response được gửi từ server-sent event (SSE) bằng cách sử dụng content type là `text/event-stream`. Phương thức `eventStream` sẽ chấp nhận một closure mà nên [yield](https://www.php.net/manual/en/language.generators.overview.php) các response vào stream khi response trở nên có sẵn:
+
+```php
+Route::get('/chat', function () {
+    return response()->eventStream(function () {
+        $stream = OpenAI::client()->chat()->createStreamed(...);
+
+        foreach ($stream as $response) {
+            yield $response->choices[0];
+        }
+    });
+});
+```
+
+Event stream này có thể được frontend của ứng dụng sử dụng thông qua một đối tượng [EventSource](https://developer.mozilla.org/en-US/docs/Web/API/EventSource). Phương thức `eventStream` sẽ tự động gửi một update `</stream>` đến event stream khi stream hoàn tất:
+
+```js
+const source = new EventSource('/chat');
+
+source.addEventListener('update', (event) => {
+    if (event.data === '</stream>') {
+        source.close();
+
+        return;
+    }
+
+    console.log(event.data);
+})
+```
+
 <a name="streamed-downloads"></a>
 #### Streamed Downloads
 
@@ -299,18 +376,9 @@ Thỉnh thoảng bạn có thể muốn biến chuỗi response của một ho�
 
     return response()->streamDownload(function () {
         echo GitHub::api('repo')
-                    ->contents()
-                    ->readme('laravel', 'laravel')['contents'];
+            ->contents()
+            ->readme('laravel', 'laravel')['contents'];
     }, 'laravel-readme.md');
-
-<a name="file-responses"></a>
-### File Responses
-
-Phương thức `file` có thể được sử dụng để hiển thị một file, chẳng hạn như file image hoặc file PDF, cho phép xem trực tiếp ngay tại trình duyệt của người dùng thay vì phải download. Phương thức này chấp nhận đường dẫn tuyệt đối đến file làm tham số đầu tiên và một mảng các header làm tham số thứ hai của nó:
-
-    return response()->file($pathToFile);
-
-    return response()->file($pathToFile, $headers);
 
 <a name="response-macros"></a>
 ## Response Macros

@@ -623,7 +623,7 @@ Sau khi đã được cấu hình, Homestead sẽ export cơ sở dữ liệu c�
 <a name="configuring-cron-schedules"></a>
 ### Cấu hình schedule cho Cron
 
-Laravel cung cấp một cách thuận tiện để [schedule Cron jobs](/docs/{{version}}/scheduling) bằng lệnh Artisan `schedule:run`, sẽ chạy mỗi phút. Lệnh `schedule:run` sẽ kiểm tra danh sách job đã được cài đặt trong class `App\Console\Kernel` của bạn để xác định xem task nào sẽ được chạy.
+Laravel cung cấp một cách thuận tiện để [schedule Cron jobs](/docs/{{version}}/scheduling) bằng lệnh Artisan `schedule:run`, sẽ chạy mỗi phút. Lệnh `schedule:run` sẽ kiểm tra danh sách job đã được cài đặt trong file `routes/console.php` của bạn để xác định xem task nào sẽ được chạy.
 
 Nếu bạn muốn lệnh `schedule:run` sẽ chạy cho một site trong Homestead, bạn có thể thiết lập option `schedule` với giá trị `true` khi thiết lập thông tin site:
 
@@ -661,25 +661,14 @@ Khi Mailpit đã được cấu hình xong, bạn có thể truy cập vào bả
 
 Mặc định, Minio có sẵn trên cổng 9600. Bạn có thể truy cập vào bảng điều khiển của Minio bằng cách truy cập vào `http://localhost:9600`. Khóa truy cập mặc định là `homestead`, trong khi khóa bí mật mặc định là `secretkey`. Khi truy cập vào Minio, bạn nên sử dụng region `us-east-1`.
 
-Để sử dụng Minio, bạn sẽ cần điều chỉnh cấu hình S3 disk trong file cấu hình `config/filesystems.php` trong application của bạn. Bạn sẽ cần thêm tùy chọn `use_path_style_endpoint` vào cấu hình disk cũng như thay đổi `url` thành `endpoint`:
-
-    's3' => [
-        'driver' => 's3',
-        'key' => env('AWS_ACCESS_KEY_ID'),
-        'secret' => env('AWS_SECRET_ACCESS_KEY'),
-        'region' => env('AWS_DEFAULT_REGION'),
-        'bucket' => env('AWS_BUCKET'),
-        'endpoint' => env('AWS_URL'),
-        'use_path_style_endpoint' => true,
-    ]
-
-Cuối cùng, hãy đảm bảo file `.env` của bạn đã có các tùy chọn sau:
+Để sử dụng Minio, hãy đảm bảo file `.env` của bạn đã có các tùy chọn sau:
 
 ```ini
+AWS_USE_PATH_STYLE_ENDPOINT=true
+AWS_ENDPOINT=http://localhost:9600
 AWS_ACCESS_KEY_ID=homestead
 AWS_SECRET_ACCESS_KEY=secretkey
 AWS_DEFAULT_REGION=us-east-1
-AWS_URL=http://localhost:9600
 ```
 
 Để cung cấp các bucket "S3" được hỗ trợ bởi Minio, hãy thêm lệnh `buckets` vào file `Homestead.yaml` của bạn. Sau khi định nghĩa xong bucket của bạn, bạn nên chạy lại lệnh `vagrant reload --provision` trong terminal của bạn:

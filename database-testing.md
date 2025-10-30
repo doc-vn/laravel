@@ -16,27 +16,43 @@ Laravel cung cấp nhiều công cụ và assertion hữu ích để giúp bạn
 
 Trước khi tiếp tục, hãy thảo luận về cách reset lại cơ sở dữ liệu của bạn sau mỗi lần kiểm tra của bạn thường rất hữu ích để dữ liệu từ những lần kiểm tra trước sẽ không còn can thiệp được vào các lần kiểm tra sau. Trait `Illuminate\Foundation\Testing\RefreshDatabase` có sẵn của Laravel sẽ giải quyết vấn đề này cho bạn. Bạn chỉ cần sử dụng trait này trong class test của bạn:
 
-    <?php
+```php tab=Pest
+<?php
 
-    namespace Tests\Feature;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 
-    use Illuminate\Foundation\Testing\RefreshDatabase;
-    use Tests\TestCase;
+uses(RefreshDatabase::class);
 
-    class ExampleTest extends TestCase
+test('basic example', function () {
+    $response = $this->get('/');
+
+    // ...
+});
+```
+
+```php tab=PHPUnit
+<?php
+
+namespace Tests\Feature;
+
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
+
+class ExampleTest extends TestCase
+{
+    use RefreshDatabase;
+
+    /**
+     * A basic functional test example.
+     */
+    public function test_basic_example(): void
     {
-        use RefreshDatabase;
+        $response = $this->get('/');
 
-        /**
-         * A basic functional test example.
-         */
-        public function test_basic_example(): void
-        {
-            $response = $this->get('/');
-
-            // ...
-        }
+        // ...
     }
+}
+```
 
 Trait `Illuminate\Foundation\Testing\RefreshDatabase` sẽ không migrate vào cơ sở dữ liệu của bạn nếu schema của bạn được cập nhật. Thay vào đó, nó sẽ chỉ thực hiện test trong một transaction cơ sở dữ liệu. Do đó, mọi record được thêm vào cơ sở dữ liệu bằng các test case không dùng trait này vẫn có thể tồn tại trong cơ sở dữ liệu.
 
@@ -49,54 +65,95 @@ Khi test, bạn có thể cần thêm một vài bản ghi vào cơ sở dữ li
 
 Để hiểu thêm về cách tạo và sử dụng các model factory để tạo các model, vui lòng tham khảo [tài liệu đầy đủ về model factory](/docs/{{version}}/eloquent-factories). Khi bạn đã định nghĩa xong model factory, bạn có thể sử dụng model factory này trong bài test của bạn để tạo model:
 
-    use App\Models\User;
+```php tab=Pest
+use App\Models\User;
 
-    public function test_models_can_be_instantiated(): void
-    {
-        $user = User::factory()->create();
+test('models can be instantiated', function () {
+    $user = User::factory()->create();
 
-        // ...
-    }
+    // ...
+});
+```
+
+```php tab=PHPUnit
+use App\Models\User;
+
+public function test_models_can_be_instantiated(): void
+{
+    $user = User::factory()->create();
+
+    // ...
+}
+```
 
 <a name="running-seeders"></a>
 ## Chạy Seeders
 
 Nếu bạn muốn sử dụng [database seeders](/docs/{{version}}/seeding) để tạo cơ sở dữ liệu trong quá trình test chức năng của bạn, bạn có thể gọi phương thức `seed`. Mặc định, phương thức `seed` sẽ chạy `DatabaseSeeder`, phương thức này sẽ chạy tất cả các seeder khác của bạn. Ngoài ra, bạn cũng có thể truyền vào một tên của class seeder cụ thể cho phương thức `seed`:
 
-    <?php
+```php tab=Pest
+<?php
 
-    namespace Tests\Feature;
+use Database\Seeders\OrderStatusSeeder;
+use Database\Seeders\TransactionStatusSeeder;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 
-    use Database\Seeders\OrderStatusSeeder;
-    use Database\Seeders\TransactionStatusSeeder;
-    use Illuminate\Foundation\Testing\RefreshDatabase;
-    use Tests\TestCase;
+uses(RefreshDatabase::class);
 
-    class ExampleTest extends TestCase
+test('orders can be created', function () {
+    // Run the DatabaseSeeder...
+    $this->seed();
+
+    // Run a specific seeder...
+    $this->seed(OrderStatusSeeder::class);
+
+    // ...
+
+    // Run an array of specific seeders...
+    $this->seed([
+        OrderStatusSeeder::class,
+        TransactionStatusSeeder::class,
+        // ...
+    ]);
+});
+```
+
+```php tab=PHPUnit
+<?php
+
+namespace Tests\Feature;
+
+use Database\Seeders\OrderStatusSeeder;
+use Database\Seeders\TransactionStatusSeeder;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
+
+class ExampleTest extends TestCase
+{
+    use RefreshDatabase;
+
+    /**
+     * Test creating a new order.
+     */
+    public function test_orders_can_be_created(): void
     {
-        use RefreshDatabase;
+        // Run the DatabaseSeeder...
+        $this->seed();
 
-        /**
-         * Test creating a new order.
-         */
-        public function test_orders_can_be_created(): void
-        {
-            // Run the DatabaseSeeder...
-            $this->seed();
+        // Run a specific seeder...
+        $this->seed(OrderStatusSeeder::class);
 
-            // Run a specific seeder...
-            $this->seed(OrderStatusSeeder::class);
+        // ...
 
+        // Run an array of specific seeders...
+        $this->seed([
+            OrderStatusSeeder::class,
+            TransactionStatusSeeder::class,
             // ...
-
-            // Run an array of specific seeders...
-            $this->seed([
-                OrderStatusSeeder::class,
-                TransactionStatusSeeder::class,
-                // ...
-            ]);
-        }
+        ]);
     }
+}
+```
 
 Ngoài ra, bạn có thể hướng dẫn Laravel tự động khởi tạo cơ sở dữ liệu trước mỗi lần kiểm tra bằng cách sử dụng trait `RefreshDatabase`. Bạn có thể thực hiện việc này bằng cách định nghĩa thuộc tính `$seed` trên class test cơ sở của bạn:
 
@@ -108,8 +165,6 @@ Ngoài ra, bạn có thể hướng dẫn Laravel tự động khởi tạo cơ 
 
     abstract class TestCase extends BaseTestCase
     {
-        use CreatesApplication;
-
         /**
          * Indicates whether the default seeder should run before each test.
          *
@@ -132,7 +187,7 @@ Khi thuộc tính `$seed` là `true`, thì bài test sẽ chạy class `Database
 <a name="available-assertions"></a>
 ## Assertion có sẵn
 
-Laravel cung cấp một số assertion cơ sở dữ liệu cho các test chức năng [PHPUnit](https://phpunit.de/) của bạn. Chúng ta sẽ thảo luận về từng assertion dưới đây.
+Laravel cung cấp một số assertion cơ sở dữ liệu cho các test chức năng [Pest](https://pestphp.com) hoặc [PHPUnit](https://phpunit.de) của bạn. Chúng ta sẽ thảo luận về từng assertion dưới đây.
 
 <a name="assert-database-count"></a>
 #### assertDatabaseCount
@@ -140,6 +195,13 @@ Laravel cung cấp một số assertion cơ sở dữ liệu cho các test chứ
 Yêu cầu một bảng trong cơ sở dữ liệu phải chứa một số record đã cho:
 
     $this->assertDatabaseCount('users', 5);
+
+<a name="assert-database-empty"></a>
+#### assertDatabaseEmpty
+
+Yêu cầu một bảng trong cơ sở dữ liệu không chứa record nào:
+
+    $this->assertDatabaseEmpty('users');
 
 <a name="assert-database-has"></a>
 #### assertDatabaseHas

@@ -2,7 +2,7 @@
 
 - [Giới thiệu](#introduction)
 - [Cấu hình](#configuration)
-- [Xử lý exception](#the-exception-handler)
+- [Xử lý Exceptions](#handling-exceptions)
     - [Reporting Exceptions](#reporting-exceptions)
     - [Mức độ log exceptions](#exception-log-levels)
     - [Chặn exceptions theo loại](#ignoring-exceptions-by-type)
@@ -15,7 +15,9 @@
 <a name="introduction"></a>
 ## Giới thiệu
 
-Khi bạn bắt đầu một dự án mới, các xử lý lỗi và các ngoại lệ đã được cấu hình sẵn cho bạn. Class `App\Exceptions\Handler` là nơi mà tất cả các ngoại lệ sẽ được đưa ra trong application, tại đó các ngoại lệ sẽ được log và sau đó được hiển thị cho người dùng. Chúng ta sẽ đi sâu hơn vào class này trong các phần còn lại của tài liệu.
+Khi bạn bắt đầu một dự án mới, các xử lý lỗi và các ngoại lệ đã được cấu hình sẵn cho bạn; tuy nhiên, tại bất kỳ thời điểm nào bạn muốn, bạn có thể sử dụng phương thức `withExceptions` trong `bootstrap/app.php` của ứng dụng để quản lý cách mà các ngoại lệ được report và hiển thị bởi ứng dụng của bạn.
+
+Đối tượng `$exceptions` được cung cấp cho closure `withExceptions` là một instance của `Illuminate\Foundation\Configuration\Exceptions` và chịu trách nhiệm quản lý việc xử lý ngoại lệ trong ứng dụng của bạn.Chúng ta sẽ đi sâu hơn vào object này trong các phần còn lại của tài liệu.
 
 <a name="configuration"></a>
 ## Cấu hình
@@ -24,37 +26,33 @@ Tùy chọn `debug` trong file cấu hình `config/app.php` của bạn sẽ đ�
 
 Trong quá trình phát triển ở local, thì bạn nên lưu biến môi trường `APP_DEBUG` thành `true`. **Nếu môi trường chạy product, thì bạn nên lưu giá trị này là `false`. Nếu giá trị được lưu thành `true` trong môi trường product, bạn có thể có nguy cơ lộ các giá trị cấu hình nhạy cảm cho người dùng application.**
 
-<a name="the-exception-handler"></a>
-## Xử lý exception
+<a name="handling-exceptions"></a>
+## Xử lý Exceptions
 
 <a name="reporting-exceptions"></a>
 ### Reporting Exceptions
 
-Tất cả các ngoại lệ sẽ được xử lý bởi class `App\Exceptions\Handler`. Class này chứa một phương thức `register` là nơi bạn có thể đăng ký các exception reporting tùy biến của bạn và các rendering callback. Chúng ta sẽ xem xét chi tiết từng khái niệm này. Exception reporting sẽ được sử dụng để ghi lại log hoặc gửi ngoại lệ đến một dịch vụ bên ngoài như là [Flare](https://flareapp.io), [Bugsnag](https://bugsnag.com) hoặc [Sentry](https://github.com/getsentry/sentry-laravel). Mặc định, ngoại lệ sẽ được log lại trên cấu hình [ghi log](/docs/{{version}}/logging) của bạn. Tuy nhiên, bạn có thể thoải mái log ngoại lệ theo cách bạn muốn.
+Trong Laravel, report ngoại lệ là sẽ được sử dụng để ghi lại log hoặc gửi ngoại lệ đến một dịch vụ bên ngoài như là [Sentry](https://github.com/getsentry/sentry-laravel) hoặc [Flare](https://flareapp.io). Mặc định, ngoại lệ sẽ được log lại trên cấu hình [ghi log](/docs/{{version}}/logging) của bạn. Tuy nhiên, bạn có thể thoải mái log ngoại lệ theo cách bạn muốn.
 
-Nếu bạn cần report các loại ngoại lệ khác nhau theo những cách khác nhau, bạn có thể sử dụng phương thức `reportable` để đăng ký một closure sẽ được thực thi khi cần report một ngoại lệ nhất định. Laravel sẽ xác định ngoại lệ của closure report bằng cách kiểm tra khai báo của closure:
+Nếu bạn cần report các loại ngoại lệ khác nhau theo những cách khác nhau, bạn có thể sử dụng phương thức ngoại lệ `report` trong `bootstrap/app.php` của ứng dụng của bạn để đăng ký một closure sẽ được thực thi khi cần report một ngoại lệ nhất định. Laravel sẽ xác định ngoại lệ của closure report bằng cách kiểm tra khai báo của closure:
 
-    use App\Exceptions\InvalidOrderException;
-
-    /**
-     * Register the exception handling callbacks for the application.
-     */
-    public function register(): void
-    {
-        $this->reportable(function (InvalidOrderException $e) {
+    ->withExceptions(function (Exceptions $exceptions) {
+        $exceptions->report(function (InvalidOrderException $e) {
             // ...
         });
-    }
+    })
 
-Khi bạn đăng ký custom exception reporting callback bằng phương thức `reportable` xong, Laravel sẽ vẫn ghi log ngoại lệ bằng cách sử dụng cấu hình ghi log mặc định cho ứng dụng. Nếu bạn muốn dừng việc ghi log mặc định đối với ngoại lệ, bạn có thể sử dụng phương thức `stop` khi định nghĩa reporting callback của bạn hoặc trả về `false` từ trong callback:
+Khi bạn đăng ký custom exception reporting callback bằng phương thức `report` xong, Laravel sẽ vẫn ghi log ngoại lệ bằng cách sử dụng cấu hình ghi log mặc định cho ứng dụng. Nếu bạn muốn dừng việc ghi log mặc định đối với ngoại lệ, bạn có thể sử dụng phương thức `stop` khi định nghĩa reporting callback của bạn hoặc trả về `false` từ trong callback:
 
-    $this->reportable(function (InvalidOrderException $e) {
-        // ...
-    })->stop();
+    ->withExceptions(function (Exceptions $exceptions) {
+        $exceptions->report(function (InvalidOrderException $e) {
+            // ...
+        })->stop();
 
-    $this->reportable(function (InvalidOrderException $e) {
-        return false;
-    });
+        $exceptions->report(function (InvalidOrderException $e) {
+            return false;
+        });
+    })
 
 > [!NOTE]
 > Để tùy chỉnh exception reporting cho một exception nhất định, bạn cũng có thể sử dụng [reportable exceptions](/docs/{{version}}/errors#renderable-exceptions)
@@ -62,19 +60,13 @@ Khi bạn đăng ký custom exception reporting callback bằng phương thức 
 <a name="global-log-context"></a>
 #### Global Log Context
 
-Nếu có sẵn, Laravel sẽ tự động thêm ID của người dùng hiện tại vào mọi log message của ngoại lệ dưới dạng dữ liệu theo ngữ cảnh. Bạn có thể định nghĩa dữ liệu theo ngữ cảnh global của riêng bạn bằng cách định nghĩa một phương thức `context` trên class `App\Exceptions\Handler` trong ứng dụng của bạn. Thông tin này sẽ được thêm vào trong mọi log message của ngoại lệ được viết bởi ứng dụng của bạn:
+Nếu có sẵn, Laravel sẽ tự động thêm ID của người dùng hiện tại vào mọi log message của ngoại lệ dưới dạng dữ liệu theo ngữ cảnh. Bạn có thể định nghĩa dữ liệu theo ngữ cảnh global của riêng bạn bằng cách dùng phương thức ngoại lệ `context` trong file `bootstrap/app.php` của ứng dụng của bạn. Thông tin này sẽ được thêm vào trong mọi log message của ngoại lệ được viết bởi ứng dụng của bạn:
 
-    /**
-     * Get the default context variables for logging.
-     *
-     * @return array<string, mixed>
-     */
-    protected function context(): array
-    {
-        return array_merge(parent::context(), [
+    ->withExceptions(function (Exceptions $exceptions) {
+        $exceptions->context(fn () => [
             'foo' => 'bar',
         ]);
-    }
+    })
 
 <a name="exception-log-context"></a>
 #### Exception Log Context
@@ -105,7 +97,7 @@ Mặc dù việc thêm thông tin vào mọi thông báo log có thể hữu íc
 <a name="the-report-helper"></a>
 #### Helper `report`
 
-Thỉnh thoảng bạn có thể cần report một ngoại lệ nhưng vẫn tiếp tục chạy request hiện tại. Hàm helper `report` cho phép bạn nhanh chóng report một ngoại lệ thông qua exception handler mà không cần tạo trên trang lỗi cho người dùng:
+Thỉnh thoảng bạn có thể cần report một ngoại lệ nhưng vẫn tiếp tục chạy request hiện tại. Hàm helper `report` cho phép bạn nhanh chóng report một ngoại lệ mà không cần tạo trên trang lỗi cho người dùng:
 
     public function isValid(string $value): bool
     {
@@ -123,25 +115,11 @@ Thỉnh thoảng bạn có thể cần report một ngoại lệ nhưng vẫn ti
 
 Nếu bạn sử dụng hàm `report` trong toàn bộ ứng dụng, đôi khi bạn có thể report cùng một loại ngoại lệ nhiều lần, và tạo ra các mục trùng nhau trong log của bạn.
 
-Nếu bạn muốn chắc chắn rằng chỉ một instance exception được report trong một lần duy nhất, bạn có thể set thuộc tính `$withoutDuplicates` thành `true` trong class `App\Exceptions\Handler` của application:
+Nếu bạn muốn chắc chắn rằng chỉ một instance exception được report trong một lần duy nhất, bạn có thể gọi phương thức ngoại lệ `dontReportDuplicates` trong file `bootstrap/app.php` của ứng dụng của bạn:
 
-```php
-namespace App\Exceptions;
-
-use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
-
-class Handler extends ExceptionHandler
-{
-    /**
-     * Indicates that an exception instance should only be reported once.
-     *
-     * @var bool
-     */
-    protected $withoutDuplicates = true;
-
-    // ...
-}
-```
+    ->withExceptions(function (Exceptions $exceptions) {
+        $exceptions->dontReportDuplicates();
+    })
 
 Bây giờ, khi `report` helper được gọi với cùng instance của một exception, thì chỉ lần call đầu tiên sẽ được report:
 
@@ -165,95 +143,126 @@ report($caught); // ignored
 
 Khi một message được ghi vào trong [logs](/docs/{{version}}/logging) trong ứng dụng của bạn, một message sẽ được ghi ở một [log level](/docs/{{version}}/logging#log-levels) nhất định, cho biết mức độ nghiêm trọng hoặc tầm quan trọng của message được ghi lại.
 
-Như đã lưu ý ở trên, ngay cả khi bạn đăng ký một callback custom exception report bằng phương thức `reportable`, Laravel vẫn sẽ ghi log exception bằng cấu hình ghi log mặc định trong ứng dụng; tuy nhiên, vì cấp độ log đôi khi có thể ảnh hưởng đến các channel mà các message sẽ được ghi vào đó nên bạn có thể muốn cấu hình cấp độ log mà một số ngoại lệ nhất định được ghi vào.
+Như đã lưu ý ở trên, ngay cả khi bạn đăng ký một callback custom exception report bằng phương thức `report`, Laravel vẫn sẽ ghi log exception bằng cấu hình ghi log mặc định trong ứng dụng; tuy nhiên, vì cấp độ log đôi khi có thể ảnh hưởng đến các channel mà các message sẽ được ghi vào đó nên bạn có thể muốn cấu hình cấp độ log mà một số ngoại lệ nhất định được ghi vào.
 
-Để thực hiện điều này, bạn có thể định nghĩa một thuộc tính `$levels` trong application exception handler. Thuộc tính này sẽ chứa một mảng các loại exception và cấp độ log của chúng:
+Để thực hiện điều này, bạn có thể sử dụng phương thức ngoại lệ `level` trong file `bootstrap/app.php` của ứng dụng. Phương thức này sẽ nhận vào loại của ngoại lệ làm tham số đầu tiên và mức log level làm tham số thứ hai:
 
     use PDOException;
     use Psr\Log\LogLevel;
 
-    /**
-     * A list of exception types with their corresponding custom log levels.
-     *
-     * @var array<class-string<\Throwable>, \Psr\Log\LogLevel::*>
-     */
-    protected $levels = [
-        PDOException::class => LogLevel::CRITICAL,
-    ];
+    ->withExceptions(function (Exceptions $exceptions) {
+        $exceptions->level(PDOException::class, LogLevel::CRITICAL);
+    })
 
 <a name="ignoring-exceptions-by-type"></a>
 ### Chặn exceptions theo loại
 
-Khi xây dựng ứng dụng của bạn, sẽ có một số loại ngoại lệ mà bạn sẽ muốn không bao giờ report. Để chặn những exception này, bạn hãy định nghĩa một thuộc tính `$dontReport` trong application exception handler của bạn. Bất kỳ class nào mà bạn thêm vào thuộc tính này sẽ không được report; tuy nhiên, chúng vẫn có thể có logic rendering riêng:
+Khi xây dựng ứng dụng của bạn, sẽ có một số loại ngoại lệ mà bạn sẽ muốn không bao giờ report. Để chặn những exception này, bạn có thể sử dụng phương thức ngoại lệ `dontReport` trong file `bootstrap/app.php` của ứng dụng. Bất kỳ class nào được cung cấp cho phương thức này sẽ không bao giờ được report; tuy nhiên, chúng vẫn có thể có logic rendering riêng:
 
     use App\Exceptions\InvalidOrderException;
 
-    /**
-     * A list of the exception types that are not reported.
-     *
-     * @var array<int, class-string<\Throwable>>
-     */
-    protected $dontReport = [
-        InvalidOrderException::class,
-    ];
+    ->withExceptions(function (Exceptions $exceptions) {
+        $exceptions->dontReport([
+            InvalidOrderException::class,
+        ]);
+    })
 
-Mặc định, Laravel đã bỏ qua một số loại lỗi cho bạn, chẳng hạn như các trường hợp ngoại lệ do lỗi 404 HTTP hoặc lỗi HTTP response 419 được tạo bởi do CSRF token không hợp lệ. Nếu bạn muốn Laravel dừng việc bỏ qua một số loại exception, bạn có thể gọi phương thức `stopIgnoring` trong phương thức `register` trong exception handler của bạn:
+Ngoài ra, bạn có thể chỉ cần "đánh dấu" một class ngoại lệ bằng interface `Illuminate\Contracts\Debug\ShouldntReport`. Khi một ngoại lệ được đánh dấu bằng interface này, trình xử lý ngoại lệ của Laravel sẽ không bao giờ report nó:
+
+```php
+<?php
+
+namespace App\Exceptions;
+
+use Exception;
+use Illuminate\Contracts\Debug\ShouldntReport;
+
+class PodcastProcessingException extends Exception implements ShouldntReport
+{
+    //
+}
+```
+
+Mặc định, Laravel đã bỏ qua một số loại lỗi cho bạn, chẳng hạn như các trường hợp ngoại lệ do lỗi 404 HTTP hoặc lỗi HTTP response 419 được tạo bởi do CSRF token không hợp lệ. Nếu bạn muốn Laravel dừng việc bỏ qua một số loại exception, bạn có thể sử dụng phương thức ngoại lệ `stopIgnoring` trong file `bootstrap/app.php` của ứng dụng của bạn:
 
     use Symfony\Component\HttpKernel\Exception\HttpException;
 
-    /**
-     * Register the exception handling callbacks for the application.
-     */
-    public function register(): void
-    {
-        $this->stopIgnoring(HttpException::class);
-
-        // ...
-    }
+    ->withExceptions(function (Exceptions $exceptions) {
+        $exceptions->stopIgnoring(HttpException::class);
+    })
 
 <a name="rendering-exceptions"></a>
 ### Rendering Exceptions
 
-Mặc định, Laravel exception handler sẽ chuyển một ngoại lệ thành một response HTTP cho bạn. Tuy nhiên, bạn có thể tự do đăng ký một custom rendering closure cho các exception của một loại nhất định. Bạn có thể thực hiện điều này bằng cách gọi phương thức `renderable` trong exception handler của bạn.
+Mặc định, Laravel exception handler sẽ chuyển một ngoại lệ thành một response HTTP cho bạn. Tuy nhiên, bạn có thể tự do đăng ký một custom rendering closure cho các exception của một loại nhất định. Bạn có thể thực hiện điều này bằng cách  sử dụng phương thức ngoại lệ `render` trong file `bootstrap/app.php` của ứng dụng.
 
-Closure được truyền cho phương thức `renderable` sẽ phải trả về một instance của `Illuminate\Http\Response`, có thể được tạo thông qua helper `response`. Laravel sẽ xác định ngoại lệ mà closure render bằng cách kiểm tra khai báo của closure:
+Closure được truyền cho phương thức `render` sẽ phải trả về một instance của `Illuminate\Http\Response`, có thể được tạo thông qua helper `response`. Laravel sẽ xác định ngoại lệ mà closure render bằng cách kiểm tra khai báo của closure:
 
     use App\Exceptions\InvalidOrderException;
     use Illuminate\Http\Request;
 
-    /**
-     * Register the exception handling callbacks for the application.
-     */
-    public function register(): void
-    {
-        $this->renderable(function (InvalidOrderException $e, Request $request) {
-            return response()->view('errors.invalid-order', [], 500);
+    ->withExceptions(function (Exceptions $exceptions) {
+        $exceptions->render(function (InvalidOrderException $e, Request $request) {
+            return response()->view('errors.invalid-order', status: 500);
         });
-    }
+    })
 
-Bạn cũng có thể sử dụng phương thức `renderable` để ghi đè các hành động rendering cho các ngoại lệ được tích hợp sẵn trong Laravel hoặc Symfony, chẳng hạn như `NotFoundHttpException`. Nếu closure được cung cấp cho phương thức `renderable` không trả về giá trị, rendering ngoại lệ mặc định của Laravel sẽ được sử dụng:
+Bạn cũng có thể sử dụng phương thức `render` để ghi đè các hành động rendering cho các ngoại lệ được tích hợp sẵn trong Laravel hoặc Symfony, chẳng hạn như `NotFoundHttpException`. Nếu closure được cung cấp cho phương thức `render` không trả về giá trị, rendering ngoại lệ mặc định của Laravel sẽ được sử dụng:
 
     use Illuminate\Http\Request;
     use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
-    /**
-     * Register the exception handling callbacks for the application.
-     */
-    public function register(): void
-    {
-        $this->renderable(function (NotFoundHttpException $e, Request $request) {
+    ->withExceptions(function (Exceptions $exceptions) {
+        $exceptions->render(function (NotFoundHttpException $e, Request $request) {
             if ($request->is('api/*')) {
                 return response()->json([
                     'message' => 'Record not found.'
                 ], 404);
             }
         });
-    }
+    })
+
+<a name="rendering-exceptions-as-json"></a>
+#### Rendering Exceptions as JSON
+
+Khi render một ngoại lệ, Laravel sẽ tự động xác định xem ngoại lệ đó nên được render dưới dạng một response HTML hay là một response JSON dựa vào header `Accept` của request. Nếu bạn muốn tùy chỉnh cách Laravel xác định render response ngoại lệ theo dạng HTML hay JSON, bạn có thể sử dụng phương thức `shouldRenderJsonWhen`:
+
+    use Illuminate\Http\Request;
+    use Throwable;
+
+    ->withExceptions(function (Exceptions $exceptions) {
+        $exceptions->shouldRenderJsonWhen(function (Request $request, Throwable $e) {
+            if ($request->is('admin/*')) {
+                return true;
+            }
+
+            return $request->expectsJson();
+        });
+    })
+
+<a name="customizing-the-exception-response"></a>
+#### Customizing the Exception Response
+
+Trong một số trường hợp hiếm gặp, bạn có thể cần tùy chỉnh toàn bộ response HTTP được trình xử lý ngoại lệ của Laravel render. Để thực hiện việc này, bạn có thể đăng ký một closure tùy chỉnh response bằng phương thức `respond`:
+
+    use Symfony\Component\HttpFoundation\Response;
+
+    ->withExceptions(function (Exceptions $exceptions) {
+        $exceptions->respond(function (Response $response) {
+            if ($response->getStatusCode() === 419) {
+                return back()->with([
+                    'message' => 'The page expired, please try again.',
+                ]);
+            }
+
+            return $response;
+        });
+    })
 
 <a name="renderable-exceptions"></a>
 ### Reportable và Renderable Exceptions
 
-Thay vì định nghĩa ra một custom report và cách xử lý report đó trong phương thức `register`của exception handler của bạn, bạn có thể định nghĩa các phương thức `report` và `render` trực tiếp trên các ngoại lệ trong ứng dụng của bạn. Khi các phương thức này đã tồn tại, chúng sẽ được gọi tự động bởi framework:
+Thay vì định nghĩa ra một custom report và cách xử lý report đó trong file `bootstrap/app.php` của application của bạn, bạn có thể định nghĩa các phương thức `report` và `render` trực tiếp trên các ngoại lệ trong ứng dụng của bạn. Khi các phương thức này đã tồn tại, chúng sẽ được gọi tự động bởi framework:
 
     <?php
 
@@ -322,96 +331,76 @@ Nếu ngoại lệ của bạn chứa logic reporting tùy chỉnh mà chỉ c�
 
 Nếu ứng dụng của bạn report ra một số lượng rất lớn các exception, bạn có thể muốn đưa ra số lượng thực sự bao nhiêu exception đã được log và đã được gửi cho hệ thống tracking error của một service bên ngoài.
 
-Để lấy ra tỷ lệ ngẫu nhiên của một exception, bạn có thể trả về một instance `Lottery` từ phương thức `throttle` trong exception handler của bạn. Nếu class của bạn không có chứa phương thức đó, bạn chỉ đơn giản là thêm nó vào class:
+Để lấy ra tỷ lệ ngẫu nhiên của một exception, bạn có thể sử dụng phương thức ngoại lệ `throttle` trong file `bootstrap/app.php` của ứng dụng. Phương thức `throttle` sẽ nhận vào một closure sẽ trả về một instance `Lottery`:
 
-```php
-use Illuminate\Support\Lottery;
-use Throwable;
+    use Illuminate\Support\Lottery;
+    use Throwable;
 
-/**
- * Throttle incoming exceptions.
- */
-protected function throttle(Throwable $e): mixed
-{
-    return Lottery::odds(1, 1000);
-}
-```
+    ->withExceptions(function (Exceptions $exceptions) {
+        $exceptions->throttle(function (Throwable $e) {
+            return Lottery::odds(1, 1000);
+        });
+    })
 
 Nó cũng có thể thêm điều kiện cho một loại exception cụ thể. Nếu bạn chỉ muốn lấy ra một instance mẫu của một class exception cụ thể, bạn có thể trả về một instance `Lottery` cho class đó:
 
-```php
-use App\Exceptions\ApiMonitoringException;
-use Illuminate\Support\Lottery;
-use Throwable;
+    use App\Exceptions\ApiMonitoringException;
+    use Illuminate\Support\Lottery;
+    use Throwable;
 
-/**
- * Throttle incoming exceptions.
- */
-protected function throttle(Throwable $e): mixed
-{
-    if ($e instanceof ApiMonitoringException) {
-        return Lottery::odds(1, 1000);
-    }
-}
-```
+    ->withExceptions(function (Exceptions $exceptions) {
+        $exceptions->throttle(function (Throwable $e) {
+            if ($e instanceof ApiMonitoringException) {
+                return Lottery::odds(1, 1000);
+            }
+        });
+    })
 
 Bạn có thể đặt một giới hạn cho một exception được log và gửi cho service error tracking của bên thứ ba bằng cách trả về một instance `Limit` thay vì một instance `Lottery`. Nó sẽ hữu dụng nếu bạn muốn bảo vệ để chống lại các ngoại lệ bị đột ngột tạo ra trong log của bạn, ví dụ, khi dịch vụ của bên thứ ba mà ứng dụng của bạn sử dụng bị ngừng hoạt động:
 
-```php
-use Illuminate\Broadcasting\BroadcastException;
-use Illuminate\Cache\RateLimiting\Limit;
-use Throwable;
+    use Illuminate\Broadcasting\BroadcastException;
+    use Illuminate\Cache\RateLimiting\Limit;
+    use Throwable;
 
-/**
- * Throttle incoming exceptions.
- */
-protected function throttle(Throwable $e): mixed
-{
-    if ($e instanceof BroadcastException) {
-        return Limit::perMinute(300);
-    }
-}
-```
+    ->withExceptions(function (Exceptions $exceptions) {
+        $exceptions->throttle(function (Throwable $e) {
+            if ($e instanceof BroadcastException) {
+                return Limit::perMinute(300);
+            }
+        });
+    })
 
 Mặc định, limit sẽ sử dụng class của exception làm khóa giới hạn. Bạn có thể tùy chỉnh điều này bằng cách chỉ định khóa của riêng bạn bằng phương thức `by` trên `Limit`:
 
-```php
-use Illuminate\Broadcasting\BroadcastException;
-use Illuminate\Cache\RateLimiting\Limit;
-use Throwable;
+    use Illuminate\Broadcasting\BroadcastException;
+    use Illuminate\Cache\RateLimiting\Limit;
+    use Throwable;
 
-/**
- * Throttle incoming exceptions.
- */
-protected function throttle(Throwable $e): mixed
-{
-    if ($e instanceof BroadcastException) {
-        return Limit::perMinute(300)->by($e->getMessage());
-    }
-}
-```
+    ->withExceptions(function (Exceptions $exceptions) {
+        $exceptions->throttle(function (Throwable $e) {
+            if ($e instanceof BroadcastException) {
+                return Limit::perMinute(300)->by($e->getMessage());
+            }
+        });
+    })
 
 Tất nhiên, bạn có thể trả về một mix của instance `Lottery` và instance `Limit` cho các trường hợp exception khác nhau:
 
-```php
-use App\Exceptions\ApiMonitoringException;
-use Illuminate\Broadcasting\BroadcastException;
-use Illuminate\Cache\RateLimiting\Limit;
-use Illuminate\Support\Lottery;
-use Throwable;
+    use App\Exceptions\ApiMonitoringException;
+    use Illuminate\Broadcasting\BroadcastException;
+    use Illuminate\Cache\RateLimiting\Limit;
+    use Illuminate\Support\Lottery;
+    use Throwable;
 
-/**
- * Throttle incoming exceptions.
- */
-protected function throttle(Throwable $e): mixed
-{
-    return match (true) {
-        $e instanceof BroadcastException => Limit::perMinute(300),
-        $e instanceof ApiMonitoringException => Lottery::odds(1, 1000),
-        default => Limit::none(),
-    };
-}
-```
+    ->withExceptions(function (Exceptions $exceptions) {
+        $exceptions->throttle(function (Throwable $e) {
+            return match (true) {
+                $e instanceof BroadcastException => Limit::perMinute(300),
+                $e instanceof ApiMonitoringException => Lottery::odds(1, 1000),
+                default => Limit::none(),
+            };
+        });
+    })
 
 <a name="http-exceptions"></a>
 ## HTTP Exceptions
@@ -437,3 +426,5 @@ php artisan vendor:publish --tag=laravel-errors
 #### Fallback HTTP Error Pages
 
 Bạn cũng có thể định nghĩa một trang lỗi "dự phòng" cho một loạt các HTTP status code nhất định. Trang này sẽ được hiển thị nếu không có trang HTTP status code nào tương ứng. Để thực hiện điều này, hãy định nghĩa một template `4xx.blade.php` và một template `5xx.blade.php` trong thư mục `resources/views/errors` của ứng dụng của bạn.
+
+Khi định nghĩa các trang lỗi dự phòng, các trang dự phòng sẽ không làm ảnh hưởng đến các response lỗi `404`, `500` và `503` vì Laravel có các trang nội bộ, chuyên dụng cho các status code này. Để tùy chỉnh các trang được hiển thị cho các status code này, bạn nên định nghĩa một trang lỗi riêng cho từng lỗi.

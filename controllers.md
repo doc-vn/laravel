@@ -64,7 +64,7 @@ Sau khi bạn đã định nghĩa một class controller và phương thức c�
 Khi một request khớp với URI route đã chỉ định, phương thức `show` trên class `App\Http\Controllers\UserController` sẽ được gọi và các tham số route sẽ được truyền cho phương thức.
 
 > [!NOTE]
-> Các controller không **bắt buộc** phải extend từ một class base. Tuy nhiên, bạn sẽ không có quyền truy cập vào các chức năng tiện lợi như phương thức `middleware` và `authorize`.
+> Các controller không **bắt buộc** phải extend từ một class base. Tuy nhiên, đôi khi nó sẽ hiệu quả hơn khi extend class controller base có chứa các phương thức cần được chia sẻ cho tất cả các controller của bạn.
 
 <a name="single-action-controllers"></a>
 ### Single Action Controllers
@@ -106,31 +106,54 @@ php artisan make:controller ProvisionServer --invokable
 
 [Middleware](/docs/{{version}}/middleware) có thể được gán vào route của controller trong file route của bạn:
 
-    Route::get('profile', [UserController::class, 'show'])->middleware('auth');
+    Route::get('/profile', [UserController::class, 'show'])->middleware('auth');
 
-Hoặc, bạn có thể thấy thuận tiện hơn khi khai báo middleware đó trong hàm khởi tạo của controller của bạn. Sử dụng phương thức `middleware` trong hàm khởi tạo của controller, bạn có thể gán middleware vào các action của controller.
+Hoặc, bạn có thể thấy thuận tiện hơn khi khai báo middleware đó trong class controller của bạn. Để làm như vậy, controller của bạn phải implement interface `HasMiddleware`, interface này sẽ quy định controller phải có một phương thức static `middleware`. Từ phương thức này, bạn có thể trả về một mảng middleware cần được áp dụng cho các hành động của controller:
 
-    class UserController extends Controller
+    <?php
+
+    namespace App\Http\Controllers;
+
+    use App\Http\Controllers\Controller;
+    use Illuminate\Routing\Controllers\HasMiddleware;
+    use Illuminate\Routing\Controllers\Middleware;
+
+    class UserController extends Controller implements HasMiddleware
     {
         /**
-         * Instantiate a new controller instance.
+         * Get the middleware that should be assigned to the controller.
          */
-        public function __construct()
+        public static function middleware(): array
         {
-            $this->middleware('auth');
-            $this->middleware('log')->only('index');
-            $this->middleware('subscribed')->except('store');
+            return [
+                'auth',
+                new Middleware('log', only: ['index']),
+                new Middleware('subscribed', except: ['store']),
+            ];
         }
+
+        // ...
     }
 
-Controller cũng cho phép bạn đăng ký các middleware bằng cách sử dụng một closure. Điều này cung cấp một cách thuận tiện để định nghĩa middleware bên trong một single Controller mà không cần phải định nghĩa thêm một class middleware:
+Bạn cũng có thể định nghĩa middleware cho controller dưới dạng closure, đây là cách thuận tiện để định nghĩa middleware ngay trong controller mà không cần viết toàn bộ class middleware:
 
     use Closure;
     use Illuminate\Http\Request;
 
-    $this->middleware(function (Request $request, Closure $next) {
-        return $next($request);
-    });
+    /**
+     * Get the middleware that should be assigned to the controller.
+     */
+    public static function middleware(): array
+    {
+        return [
+            function (Request $request, Closure $next) {
+                return $next($request);
+            },
+        ];
+    }
+
+> [!WARNING]
+> Controller đang implement `Illuminate\Routing\Controllers\HasMiddleware` thì không nên extend `Illuminate\Routing\Controller`.
 
 <a name="resource-controllers"></a>
 ## Resource Controllers
@@ -161,15 +184,19 @@ Bạn thậm chí có thể đăng ký nhiều resource controller cùng một l
 <a name="actions-handled-by-resource-controller"></a>
 #### Các hành động được xử lý bởi Resource Controller
 
-Verb      | URI                    | Action       | Route Name
-----------|------------------------|--------------|---------------------
-GET       | `/photos`              | index        | photos.index
-GET       | `/photos/create`       | create       | photos.create
-POST      | `/photos`              | store        | photos.store
-GET       | `/photos/{photo}`      | show         | photos.show
-GET       | `/photos/{photo}/edit` | edit         | photos.edit
-PUT/PATCH | `/photos/{photo}`      | update       | photos.update
-DELETE    | `/photos/{photo}`      | destroy      | photos.destroy
+<div class="overflow-auto">
+
+| Verb      | URI                    | Action  | Route Name     |
+| --------- | ---------------------- | ------- | -------------- |
+| GET       | `/photos`              | index   | photos.index   |
+| GET       | `/photos/create`       | create  | photos.create  |
+| POST      | `/photos`              | store   | photos.store   |
+| GET       | `/photos/{photo}`      | show    | photos.show    |
+| GET       | `/photos/{photo}/edit` | edit    | photos.edit    |
+| PUT/PATCH | `/photos/{photo}`      | update  | photos.update  |
+| DELETE    | `/photos/{photo}`      | destroy | photos.destroy |
+
+</div>
 
 <a name="customizing-missing-model-behavior"></a>
 #### Customizing Missing Model Behavior
@@ -181,9 +208,9 @@ Thông thường, response HTTP 404 sẽ được tạo nếu không tìm thấy
     use Illuminate\Support\Facades\Redirect;
 
     Route::resource('photos', PhotoController::class)
-            ->missing(function (Request $request) {
-                return Redirect::route('photos.index');
-            });
+        ->missing(function (Request $request) {
+            return Redirect::route('photos.index');
+        });
 
 <a name="soft-deleted-models"></a>
 #### Soft Deleted Models
@@ -285,15 +312,19 @@ Thông thường, không nhất thiết phải có cả ID cha và ID con trong 
 
 Định nghĩa route này sẽ định nghĩa ra các route như sau:
 
-Verb      | URI                               | Action       | Route Name
-----------|-----------------------------------|--------------|---------------------
-GET       | `/photos/{photo}/comments`        | index        | photos.comments.index
-GET       | `/photos/{photo}/comments/create` | create       | photos.comments.create
-POST      | `/photos/{photo}/comments`        | store        | photos.comments.store
-GET       | `/comments/{comment}`             | show         | comments.show
-GET       | `/comments/{comment}/edit`        | edit         | comments.edit
-PUT/PATCH | `/comments/{comment}`             | update       | comments.update
-DELETE    | `/comments/{comment}`             | destroy      | comments.destroy
+<div class="overflow-auto">
+
+| Verb      | URI                               | Action  | Route Name             |
+| --------- | --------------------------------- | ------- | ---------------------- |
+| GET       | `/photos/{photo}/comments`        | index   | photos.comments.index  |
+| GET       | `/photos/{photo}/comments/create` | create  | photos.comments.create |
+| POST      | `/photos/{photo}/comments`        | store   | photos.comments.store  |
+| GET       | `/comments/{comment}`             | show    | comments.show          |
+| GET       | `/comments/{comment}/edit`        | edit    | comments.edit          |
+| PUT/PATCH | `/comments/{comment}`             | update  | comments.update        |
+| DELETE    | `/comments/{comment}`             | destroy | comments.destroy       |
+
+</div>
 
 <a name="restful-naming-resource-routes"></a>
 ### Naming Resource Routes
@@ -341,10 +372,10 @@ Khi sử dụng liên kết ngầm có key tùy biến làm một tham số rout
 <a name="restful-localizing-resource-uris"></a>
 ### Localizing Resource URIs
 
-Mặc định, `Route::resource` sẽ tạo các URI resource bằng các động từ và quy tắc số nhiều trong tiếng Anh. Nếu bạn cần bản địa hóa các động từ này như `create` và `edit`, bạn có thể sử dụng phương thức `Route::resourceVerbs`. Điều này có thể được thực hiện ở đầu của phương thức `boot` trong `App\Providers\RouteServiceProvider` của ứng dụng của bạn:
+Mặc định, `Route::resource` sẽ tạo các URI resource bằng các động từ và quy tắc số nhiều trong tiếng Anh. Nếu bạn cần bản địa hóa các động từ này như `create` và `edit`, bạn có thể sử dụng phương thức `Route::resourceVerbs`. Điều này có thể được thực hiện ở đầu của phương thức `boot` trong `App\Providers\AppServiceProvider` của ứng dụng của bạn:
 
     /**
-     * Define your route model bindings, pattern filters, etc.
+     * Bootstrap any application services.
      */
     public function boot(): void
     {
@@ -352,8 +383,6 @@ Mặc định, `Route::resource` sẽ tạo các URI resource bằng các độn
             'create' => 'crear',
             'edit' => 'editar',
         ]);
-
-        // ...
     }
 
 Bộ quy tắc số nhiều của Laravel hỗ trợ [một số ngôn ngữ khác nhau mà bạn có thể cấu hình dựa trên nhu cầu của bạn](/docs/{{version}}/localization#pluralization-language). Khi các động từ và quy tắc số nhiều đã được tùy biến xong, nếu bạn đăng ký resource route là `Route::resource('publicacion', PublicacionController::class)` thì sẽ tạo ra các URI như sau:
@@ -389,11 +418,15 @@ Route::singleton('profile', ProfileController::class);
 
 Định nghĩa resources singleton ở trên sẽ tạo ra các đăng ký route như sau. Như bạn có thể thấy, các route "creation" không được đăng ký cho các resources singleton và các route đã đăng ký sẽ không chấp nhận id vì chỉ có một instance của resource có thể tồn tại:
 
-Verb      | URI                               | Action       | Route Name
-----------|-----------------------------------|--------------|---------------------
-GET       | `/profile`                        | show         | profile.show
-GET       | `/profile/edit`                   | edit         | profile.edit
-PUT/PATCH | `/profile`                        | update       | profile.update
+<div class="overflow-auto">
+
+| Verb      | URI             | Action | Route Name     |
+| --------- | --------------- | ------ | -------------- |
+| GET       | `/profile`      | show   | profile.show   |
+| GET       | `/profile/edit` | edit   | profile.edit   |
+| PUT/PATCH | `/profile`      | update | profile.update |
+
+</div>
 
 Resources singleton cũng có thể được lồng trong một resource tiêu chuẩn:
 
@@ -401,13 +434,17 @@ Resources singleton cũng có thể được lồng trong một resource tiêu c
 Route::singleton('photos.thumbnail', ThumbnailController::class);
 ```
 
-Trong ví dụ này, resource `photos` sẽ nhận được tất cả [route resource tiêu chuẩn](#actions-handled-by-resource-controller); tuy nhiên, resource `thumbnail` sẽ là resource singleton với các route như sau:
+Trong ví dụ này, resource `photos` sẽ nhận được tất cả [route resource tiêu chuẩn](#actions-handled-by-resource-controllers); tuy nhiên, resource `thumbnail` sẽ là resource singleton với các route như sau:
 
-| Verb      | URI                              | Action  | Route Name               |
-|-----------|----------------------------------|---------|--------------------------|
-| GET       | `/photos/{photo}/thumbnail`      | show    | photos.thumbnail.show    |
-| GET       | `/photos/{photo}/thumbnail/edit` | edit    | photos.thumbnail.edit    |
-| PUT/PATCH | `/photos/{photo}/thumbnail`      | update  | photos.thumbnail.update  |
+<div class="overflow-auto">
+
+| Verb      | URI                              | Action | Route Name              |
+| --------- | -------------------------------- | ------ | ----------------------- |
+| GET       | `/photos/{photo}/thumbnail`      | show   | photos.thumbnail.show   |
+| GET       | `/photos/{photo}/thumbnail/edit` | edit   | photos.thumbnail.edit   |
+| PUT/PATCH | `/photos/{photo}/thumbnail`      | update | photos.thumbnail.update |
+
+</div>
 
 <a name="creatable-singleton-resources"></a>
 #### Creatable Singleton Resources
@@ -420,14 +457,18 @@ Route::singleton('photos.thumbnail', ThumbnailController::class)->creatable();
 
 Trong ví dụ này, các route sau sẽ được đăng ký. Như bạn có thể thấy, route `DELETE` cũng sẽ được đăng ký cho các resource singleton:
 
+<div class="overflow-auto">
+
 | Verb      | URI                                | Action  | Route Name               |
-|-----------|------------------------------------|---------|--------------------------|
+| --------- | ---------------------------------- | ------- | ------------------------ |
 | GET       | `/photos/{photo}/thumbnail/create` | create  | photos.thumbnail.create  |
 | POST      | `/photos/{photo}/thumbnail`        | store   | photos.thumbnail.store   |
 | GET       | `/photos/{photo}/thumbnail`        | show    | photos.thumbnail.show    |
 | GET       | `/photos/{photo}/thumbnail/edit`   | edit    | photos.thumbnail.edit    |
 | PUT/PATCH | `/photos/{photo}/thumbnail`        | update  | photos.thumbnail.update  |
 | DELETE    | `/photos/{photo}/thumbnail`        | destroy | photos.thumbnail.destroy |
+
+</div>
 
 Nếu bạn muốn Laravel đăng ký route `DELETE` cho một resource singleton nhưng không đăng ký các route creation hoặc storage khác, bạn có thể sử dụng phương thức `destroyable`:
 

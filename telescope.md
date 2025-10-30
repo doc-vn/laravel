@@ -48,7 +48,7 @@ Bạn có thể sử dụng Composer package manager để cài đặt Telescope
 composer require laravel/telescope
 ```
 
-Sau khi cài đặt Telescope, hãy export nội dung của nó bằng lệnh Artisan `telescope:install`. Sau khi cài đặt Telescope xong, bạn cũng nên chạy lệnh `migrate` để tạo ra các bảng cần thiết để lưu trữ dữ liệu của Telescope:
+Sau khi cài đặt Telescope, hãy export asset và migration của nó bằng lệnh Artisan `telescope:install`. Sau khi cài đặt Telescope xong, bạn cũng nên chạy lệnh `migrate` để tạo ra các bảng cần thiết để lưu trữ dữ liệu của Telescope:
 
 ```shell
 php artisan telescope:install
@@ -57,11 +57,6 @@ php artisan migrate
 ```
 
 Cuối cùng, bạn có thể truy cập vào bảng điều khiển của Telescope thông qua đường dẫn `/telescope`.
-
-<a name="migration-customization"></a>
-#### Migration Customization
-
-Nếu bạn không định sử dụng các migration mặc định của Telescope, bạn nên gọi phương thức `Telescope::ignoreMigrations` trong phương thức `register` của class `App\Providers\AppServiceProvider` trong ứng dụng của bạn. Bạn có thể export các migration mặc định bằng lệnh sau: `php artisan vendor:publish --tag=telescope-migrations`
 
 <a name="local-only-installation"></a>
 ### Chỉ cài đặt trên local
@@ -76,14 +71,14 @@ php artisan telescope:install
 php artisan migrate
 ```
 
-Sau khi chạy `telescope:install`, bạn nên xóa đăng ký service provider `TelescopeServiceProvider` ra khỏi file cấu hình `config/app.php` của application của bạn. Thay vào đó, hãy tự đăng ký service provider của Telescope vào trong phương thức `register` của class `App\Providers\AppServiceProvider`. Chúng tôi sẽ đảm bảo môi trường hiện tại là `local` trước khi đăng ký provider:
+Sau khi chạy `telescope:install`, bạn nên xóa đăng ký service provider `TelescopeServiceProvider` ra khỏi file cấu hình `bootstrap/providers.php` của application của bạn. Thay vào đó, hãy tự đăng ký service provider của Telescope vào trong phương thức `register` của class `App\Providers\AppServiceProvider`. Chúng tôi sẽ đảm bảo môi trường hiện tại là `local` trước khi đăng ký provider:
 
     /**
      * Register any application services.
      */
     public function register(): void
     {
-        if ($this->app->environment('local')) {
+        if ($this->app->environment('local') && class_exists(\Laravel\Telescope\TelescopeServiceProvider::class)) {
             $this->app->register(\Laravel\Telescope\TelescopeServiceProvider::class);
             $this->app->register(TelescopeServiceProvider::class);
         }
@@ -104,7 +99,7 @@ Cuối cùng, bạn cũng nên ngăn package Telescope [tự động đăng ký]
 <a name="configuration"></a>
 ### Cấu hình
 
-Sau khi export nội dung của Telescope, file cấu hình chính của Telescope sẽ được lưu tại `config/telescope.php`. File cấu hình này cho phép bạn cấu hình các [tùy chọn theo dõi](#available-watchers) của bạn. Mỗi tùy chọn cấu hình lại chứa phần mô tả về mục đích của nó, vì vậy hãy chắc chắn là bạn đã xem kỹ file này.
+Sau khi export asset của Telescope, file cấu hình chính của Telescope sẽ được lưu tại `config/telescope.php`. File cấu hình này cho phép bạn cấu hình các [tùy chọn theo dõi](#available-watchers) của bạn. Mỗi tùy chọn cấu hình lại chứa phần mô tả về mục đích của nó, vì vậy hãy chắc chắn là bạn đã xem kỹ file này.
 
 Nếu muốn, bạn có thể tắt hoàn toàn việc thu thập dữ liệu của Telescope bằng cách sử dụng tùy chọn cấu hình `enabled`:
 
@@ -115,11 +110,15 @@ Nếu muốn, bạn có thể tắt hoàn toàn việc thu thập dữ liệu c�
 
 Nếu không bỏ bớt data, thì bảng `telescope_entries` có thể bị tăng các bản ghi một cách nhanh chóng. Để giảm thiểu điều này, bạn nên lập một [lịch](/docs/{{version}}/scheduling) để chạy lệnh Artisan `telescope:prune` mỗi ngày:
 
-    $schedule->command('telescope:prune')->daily();
+    use Illuminate\Support\Facades\Schedule;
+
+    Schedule::command('telescope:prune')->daily();
 
 Mặc định, tất cả các dữ liệu cũ hơn 24 giờ sẽ bị lược bỏ. Bạn cũng có thể sử dụng tùy chọn `hours` khi gọi lệnh để định nghĩa thời gian lưu trữ dữ liệu của Telescope. Ví dụ: lệnh sau sẽ xóa tất cả các bản ghi được tạo từ 48 giờ trước:
 
-    $schedule->command('telescope:prune --hours=48')->daily();
+    use Illuminate\Support\Facades\Schedule;
+
+    Schedule::command('telescope:prune --hours=48')->daily();
 
 <a name="dashboard-authorization"></a>
 ### Dashboard Authorization
@@ -247,8 +246,8 @@ Telescope cho phép bạn tìm kiếm các entry theo "tag". Thông thường, c
 
         Telescope::tag(function (IncomingEntry $entry) {
             return $entry->type === 'request'
-                        ? ['status:'.$entry->content['response_status']]
-                        : [];
+                ? ['status:'.$entry->content['response_status']]
+                : [];
         });
      }
 

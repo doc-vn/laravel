@@ -13,6 +13,7 @@
     - [View Components](#view-components)
     - [Lệnh Artisan "About"](#about-artisan-command)
 - [Lệnh](#commands)
+    - [Optimize Commands](#optimize-commands)
 - [Public Assets](#public-assets)
 - [Publishing File Groups](#publishing-file-groups)
 
@@ -21,7 +22,7 @@
 
 Package là cách chính để thêm chức năng khác nhau cho Laravel. Các package có thể là bất cứ thứ gì từ việc làm việc với thời gian như [Carbon](https://github.com/briannesbitt/Carbon) hoặc một package cho phép bạn liên kết các file với các model Eloquent như [thư viện media Laravel](https://github.com/spatie/laravel-medialibrary) của Spatie.
 
-Có nhiều loại package khác nhau. Một số package là độc lập, có nghĩa là chúng hoạt động với bất kỳ framework PHP nào. Carbon và PHPUnit là các ví dụ về các package độc lập. Bất kỳ package nào trong số này có thể được sử dụng với Laravel bằng cách khai báo chúng vào trong file `composer.json` của bạn.
+Có nhiều loại package khác nhau. Một số package là độc lập, có nghĩa là chúng hoạt động với bất kỳ framework PHP nào. Carbon và Pest là các ví dụ về các package độc lập. Bất kỳ package nào trong số này có thể được sử dụng với Laravel bằng cách khai báo chúng vào trong file `composer.json` của bạn.
 
 Mặt khác, có các package khác sẽ được dành riêng để sử dụng với Laravel. Các package này có thể có các route, controller, view và được cấu hình dành riêng cho mục đích sử dụng application Laravel. Các hướng dẫn ở bên dưới sẽ chủ yếu nói về các package dành riêng cho Laravel.
 
@@ -33,7 +34,7 @@ Khi viết một application Laravel, thường không có vấn đề gì nếu
 <a name="package-discovery"></a>
 ## Package Discovery
 
-Trong file cấu hình `config/app.php` của application Laravel, tùy chọn `providers` sẽ định nghĩa một danh sách các service provider sẽ được load bởi Laravel. Khi ai đó cài đặt package của bạn, bạn sẽ luôn muốn service provider của bạn được đưa vào trong danh sách này. Thay vì yêu cầu người dùng tự thêm service provider của bạn vào danh sách này, bạn có thể định nghĩa provider trong phần `extra` trong file `composer.json` trong package của bạn. Ngoài các service provider, bạn cũng có thể liệt kê bất kỳ [facades](/docs/{{version}}/facades) nào mà bạn muốn được đăng ký:
+Trong file `bootstrap/providers.php` của ứng dụng Laravel có chứa một danh sách các service provider sẽ được load bởi Laravel. Tuy nhiên, thay vì yêu cầu người dùng tự thêm service provider của bạn vào danh sách này, bạn có thể định nghĩa provider trong phần `extra` trong file `composer.json` trong package của bạn để Laravel tự động load. Ngoài các service provider, bạn cũng có thể liệt kê bất kỳ [facades](/docs/{{version}}/facades) nào mà bạn muốn được đăng ký:
 
 ```json
 "extra": {
@@ -145,17 +146,17 @@ Nếu package của bạn chứa các route, thì bạn có thể load chúng b�
 <a name="migrations"></a>
 ### Migration
 
-Nếu package của bạn chứa [database migrations](/docs/{{version}}/migrations), bạn có thể sử dụng phương thức `loadMigationsFrom` để thông báo cho Laravel biết cách load chúng. Phương thức `loadMigationsFrom` chấp nhận một đường dẫn đến các file migration của package của bạn như là tham số duy nhất của nó:
+Nếu package của bạn chứa [database migrations](/docs/{{version}}/migrations), bạn có thể sử dụng phương thức `publishesMigrations` để thông báo cho Laravel biết thư mục hoặc file mà có chứa các migration. Khi Laravel publish các migration, nó sẽ tự động cập nhật timestamp trong tên file của chúng để phản ánh ngày và giờ hiện tại:
 
     /**
      * Bootstrap any package services.
      */
     public function boot(): void
     {
-        $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
+        $this->publishesMigrations([
+            __DIR__.'/../database/migrations' => database_path('migrations'),
+        ]);
     }
-
-Khi file migration package của bạn đã được đăng ký, chúng sẽ được tự động chạy khi lệnh `php artisan migrate` được chạy. Bạn không cần export chúng vào thư mục `database/migrations` của application.
 
 <a name="language-files"></a>
 ### Language File
@@ -339,6 +340,24 @@ Lệnh Artisan `about` có sẵn của Laravel cung cấp tóm tắt về môi t
         }
     }
 
+<a name="optimize-commands"></a>
+### Optimize Commands
+
+Lệnh [`optimize`](/docs/{{version}}/deployment#optimization) của Laravel sẽ cache các cấu hình, event, route và view của ứng dụng. Sử dụng phương thức `optimizes`, bạn có thể đăng ký các lệnh Artisan riêng của package mà bạn muốn được gọi khi lệnh `optimize` và lệnh `optimize:clear` được chạy:
+
+    /**
+     * Bootstrap any package services.
+     */
+    public function boot(): void
+    {
+        if ($this->app->runningInConsole()) {
+            $this->optimizes(
+                optimize: 'package:optimize',
+                clear: 'package:clear-optimizations',
+            );
+        }
+    }
+
 <a name="public-assets"></a>
 ## Public Assets
 
@@ -374,7 +393,7 @@ Bạn có thể muốn export riêng rẽ các group asset và các resources c�
             __DIR__.'/../config/package.php' => config_path('package.php')
         ], 'courier-config');
 
-        $this->publishes([
+        $this->publishesMigrations([
             __DIR__.'/../database/migrations/' => database_path('migrations')
         ], 'courier-migrations');
     }

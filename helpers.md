@@ -5,9 +5,11 @@
 - [Các class hữu ích khác](#other-utilities)
     - [Benchmarking](#benchmarking)
     - [Dates](#dates)
+    - [Phương thức chạy sau](#deferred-functions)
     - [Lottery](#lottery)
     - [Pipeline](#pipeline)
     - [Sleep](#sleep)
+    - [Timebox](#timebox)
 
 <a name="introduction"></a>
 ## Giới thiệu
@@ -55,6 +57,7 @@ Laravel chứa một loạt các hàm PHP global "helper". Nhiều trong số c�
 [Arr::keyBy](#method-array-keyby)
 [Arr::last](#method-array-last)
 [Arr::map](#method-array-map)
+[Arr::mapSpread](#method-array-map-spread)
 [Arr::mapWithKeys](#method-array-map-with-keys)
 [Arr::only](#method-array-only)
 [Arr::pluck](#method-array-pluck)
@@ -63,12 +66,12 @@ Laravel chứa một loạt các hàm PHP global "helper". Nhiều trong số c�
 [Arr::pull](#method-array-pull)
 [Arr::query](#method-array-query)
 [Arr::random](#method-array-random)
+[Arr::reject](#method-array-reject)
 [Arr::set](#method-array-set)
 [Arr::shuffle](#method-array-shuffle)
 [Arr::sort](#method-array-sort)
 [Arr::sortDesc](#method-array-sort-desc)
 [Arr::sortRecursive](#method-array-sort-recursive)
-[Arr::sortRecursiveDesc](#method-array-sort-recursive-desc)
 [Arr::take](#method-array-take)
 [Arr::toCssClasses](#method-array-to-css-classes)
 [Arr::toCssStyles](#method-array-to-css-styles)
@@ -92,17 +95,22 @@ Laravel chứa một loạt các hàm PHP global "helper". Nhiều trong số c�
 [Number::abbreviate](#method-number-abbreviate)
 [Number::clamp](#method-number-clamp)
 [Number::currency](#method-number-currency)
+[Number::defaultCurrency](#method-default-currency)
+[Number::defaultLocale](#method-default-locale)
 [Number::fileSize](#method-number-file-size)
 [Number::forHumans](#method-number-for-humans)
 [Number::format](#method-number-format)
 [Number::ordinal](#method-number-ordinal)
+[Number::pairs](#method-number-pairs)
 [Number::percentage](#method-number-percentage)
 [Number::spell](#method-number-spell)
+[Number::trim](#method-number-trim)
 [Number::useLocale](#method-number-use-locale)
 [Number::withLocale](#method-number-with-locale)
+[Number::useCurrency](#method-number-use-currency)
+[Number::withCurrency](#method-number-with-currency)
 
 </div>
-
 
 <a name="paths-method-list"></a>
 ### Paths
@@ -154,6 +162,7 @@ Laravel chứa một loạt các hàm PHP global "helper". Nhiều trong số c�
 [class_uses_recursive](#method-class-uses-recursive)
 [collect](#method-collect)
 [config](#method-config)
+[context](#method-context)
 [cookie](#method-cookie)
 [csrf_field](#method-csrf-field)
 [csrf_token](#method-csrf-token)
@@ -168,10 +177,12 @@ Laravel chứa một loạt các hàm PHP global "helper". Nhiều trong số c�
 [fake](#method-fake)
 [filled](#method-filled)
 [info](#method-info)
+[literal](#method-literal)
 [logger](#method-logger)
 [method_field](#method-method-field)
 [now](#method-now)
 [old](#method-old)
+[once](#method-once)
 [optional](#method-optional)
 [policy](#method-policy)
 [redirect](#method-redirect)
@@ -194,6 +205,7 @@ Laravel chứa một loạt các hàm PHP global "helper". Nhiều trong số c�
 [value](#method-value)
 [view](#method-view)
 [with](#method-with)
+[when](#method-when)
 
 </div>
 
@@ -238,7 +250,6 @@ Hàm `Arr::add` sẽ thêm một cặp key / giá trị vào một mảng nếu 
     $array = Arr::add(['name' => 'Desk', 'price' => null], 'price', 100);
 
     // ['name' => 'Desk', 'price' => 100]
-
 
 <a name="method-array-collapse"></a>
 #### `Arr::collapse()` {.collection-method}
@@ -550,6 +561,30 @@ Hàm `Arr::map` sẽ lặp từng phần tử của mảng và chuyển từng g
 
     // ['first' => 'James', 'last' => 'Kirk']
 
+<a name="method-array-map-spread"></a>
+#### `Arr::mapSpread()` {.collection-method}
+
+Hàm `Arr::mapSpread` sẽ lặp qua mảng và chuyển từng giá trị của item trong mảng vào một closure đã cho. Closure có thể tự do sửa item và trả về giá trị mới và giá trị mới này sẽ tạo thành ra một mảng mới gồm các item đã được sửa:
+
+
+    use Illuminate\Support\Arr;
+
+    $array = [
+        [0, 1],
+        [2, 3],
+        [4, 5],
+        [6, 7],
+        [8, 9],
+    ];
+
+    $mapped = Arr::mapSpread($array, function (int $even, int $odd) {
+        return $even + $odd;
+    });
+
+    /*
+        [1, 5, 9, 13, 17]
+    */
+
 <a name="method-array-map-with-keys"></a>
 #### `Arr::mapWithKeys()` {.collection-method}
 
@@ -722,6 +757,21 @@ Bạn cũng có thể chỉ định số lượng item sẽ được trả về 
     $items = Arr::random($array, 2);
 
     // [2, 5] - (retrieved randomly)
+
+<a name="method-array-reject"></a>
+#### `Arr::reject()` {.collection-method}
+
+Hàm `Arr::reject` sẽ xoá các phần tử ra khỏi một mảng bằng cách sử dụng closure đã cho:
+
+    use Illuminate\Support\Arr;
+
+    $array = [100, '200', 300, '400', 500];
+
+    $filtered = Arr::reject($array, function (string|int $value, int $key) {
+        return is_string($value);
+    });
+
+    // [0 => 100, 2 => 300, 4 => 500]
 
 <a name="method-array-set"></a>
 #### `Arr::set()` {.collection-method}
@@ -1032,6 +1082,19 @@ Phương thức cũng chấp nhận các ký tự đại diện sử dụng bằ
 
     // ['Desk 1', 'Desk 2'];
 
+Các biến `{first}` và `{last}` có thể được sử dụng để lấy ra các item đầu tiên hoặc cuối cùng có trong một mảng:
+
+    $flight = [
+        'segments' => [
+            ['from' => 'LHR', 'departure' => '9:00', 'to' => 'IST', 'arrival' => '15:00'],
+            ['from' => 'IST', 'departure' => '16:00', 'to' => 'PKX', 'arrival' => '20:00'],
+        ],
+    ];
+
+    data_get($flight, 'segments.{first}.arrival');
+
+    // 15:00
+
 <a name="method-data-set"></a>
 #### `data_set()` {.collection-method}
 
@@ -1178,15 +1241,37 @@ Hàm `Number::currency` sẽ trả về giá trị tiền tệ của giá trị 
 
     $currency = Number::currency(1000);
 
-    // $1,000
+    // $1,000.00
 
     $currency = Number::currency(1000, in: 'EUR');
 
-    // €1,000
+    // €1,000.00
 
     $currency = Number::currency(1000, in: 'EUR', locale: 'de');
 
-    // 1.000 €
+    // 1.000,00 €
+
+<a name="method-default-currency"></a>
+#### `Number::defaultCurrency()` {.collection-method}
+
+Hàm `Number::defaultCurrency` sẽ trả về loại tiền tệ mặc định đang được sử dụng bởi class `Number`:
+
+    use Illuminate\Support\Number;
+
+    $currency = Number::defaultCurrency();
+
+    // USD
+
+<a name="method-default-locale"></a>
+#### `Number::defaultLocale()` {.collection-method}
+
+Hàm `Number::defaultLocale` sẽ trả về ngôn ngữ mặc định đang được sử dụng bởi class `Number`:
+
+    use Illuminate\Support\Number;
+
+    $locale = Number::defaultLocale();
+
+    // en
 
 <a name="method-number-file-size"></a>
 #### `Number::fileSize()` {.collection-method}
@@ -1268,6 +1353,23 @@ Hàm `Number::ordinal` sẽ trả về số thứ tự của một số:
 
     // 21st
 
+<a name="method-number-pairs"></a>
+#### `Number::pairs()` {.collection-method}
+
+Phương thức `Number::pairs` sẽ tạo ra một mảng gồm các cặp số (với phạm vi nằm trong) dựa trên một phạm vi và giá trị tăng được chỉ định. Phương thức này có thể hữu ích để chia nhỏ một phạm vi số lớn hơn thành các phạm vi con nhỏ hơn, để dễ dàng quản lý cho các tác vụ như pagination hoặc xử lý batching. Phương thức `pairs` sẽ trả về một mảng gồm các mảng, trong đó mỗi mảng con đại diện cho một cặp (phạm vi con) của số:
+
+```php
+use Illuminate\Support\Number;
+
+$result = Number::pairs(25, 10);
+
+// [[1, 10], [11, 20], [21, 25]]
+
+$result = Number::pairs(25, 10, offset: 0);
+
+// [[0, 10], [10, 20], [20, 25]]
+```
+
 <a name="method-number-percentage"></a>
 #### `Number::percentage()` {.collection-method}
 
@@ -1306,7 +1408,6 @@ Hàm `Number::spell` sẽ chuyển số đã cho thành một chuỗi các từ:
 
     // quatre-vingt-huit
 
-
 Tham số `after` cho phép bạn chỉ định một giá trị mà nhỏ hơn số đã được nhập vào sẽ được viết ra:
 
     $number = Number::spell(10, after: 10);
@@ -1326,6 +1427,21 @@ Tham số `until` cho phép bạn chỉ định một giá trị mà lớn hơn 
     $number = Number::spell(10, until: 10);
 
     // 10
+
+<a name="method-number-trim"></a>
+#### `Number::trim()` {.collection-method}
+
+Hàm `Number::trim` sẽ loại bỏ bất kỳ chữ số 0 nào nằm ở cuối sau dấu thập phân của số đã cho:
+
+    use Illuminate\Support\Number;
+
+    $number = Number::trim(12.0);
+
+    // 12
+
+    $number = Number::trim(12.30);
+
+    // 12.3
 
 <a name="method-number-use-locale"></a>
 #### `Number::useLocale()` {.collection-method}
@@ -1351,6 +1467,32 @@ Hàm `Number::withLocale` sẽ chạy lệnh closure đã cho bằng cách sử 
 
     $number = Number::withLocale('de', function () {
         return Number::format(1500);
+    });
+
+<a name="method-number-use-currency"></a>
+#### `Number::useCurrency()` {.collection-method}
+
+Hàm `Number::useCurrency` sẽ set loại tiền tệ global mặc định cho số, điều này sẽ ảnh hưởng đến cách định dạng tiền tệ trong các lần gọi tiếp theo tới các phương thức của class `Number`:
+
+    use Illuminate\Support\Number;
+
+    /**
+     * Bootstrap any application services.
+     */
+    public function boot(): void
+    {
+        Number::useCurrency('GBP');
+    }
+
+<a name="method-number-with-currency"></a>
+#### `Number::withCurrency()` {.collection-method}
+
+Hàm `Number::withCurrency` sẽ chạy lệnh closure đã cho bằng loại tiền tệ đã được chỉ định và sau đó khôi phục loại tiền tệ trước đó sau khi lệnh callback đã được chạy xong:
+
+    use Illuminate\Support\Number;
+
+    $number = Number::withCurrency('GBP', function () {
+        // ...
     });
 
 <a name="paths"></a>
@@ -1532,7 +1674,7 @@ Nếu không có đường dẫn nào được cung cấp, một instance `Illum
 <a name="method-abort"></a>
 #### `abort()` {.collection-method}
 
-Hàm `abort` sẽ đưa ra một [exception HTTP](/docs/{{version}}/errors#http-exceptions) được tạo bởi [exception handler](/docs/{{version}}/errors#the-exception-handler):
+Hàm `abort` sẽ đưa ra một [exception HTTP](/docs/{{version}}/errors#http-exceptions) được tạo bởi [exception handler](/docs/{{version}}/errors#handling-exceptions):
 
     abort(403);
 
@@ -1667,6 +1809,21 @@ Bạn có thể set các biến cấu hình trong thời gian chạy bằng các
 
     config(['app.debug' => true]);
 
+<a name="method-context"></a>
+#### `context()` {.collection-method}
+
+Hàm `context` sẽ lấy giá trị từ [context hiện tại](/docs/{{version}}/context). Một giá trị mặc định có thể được chỉ định và sẽ được trả về nếu khóa của context đó không tồn tại:
+
+    $value = context('trace_id');
+
+    $value = context('trace_id', $default);
+
+Bạn có thể set giá trị của context bằng cách truyền vào một mảng gồm các cặp key và value:
+
+    use Illuminate\Support\Str;
+
+    context(['trace_id' => Str::uuid()->toString()]);
+
 <a name="method-cookie"></a>
 #### `cookie()` {.collection-method}
 
@@ -1774,7 +1931,7 @@ Hàm `fake` sẽ resolve một [Faker](https://github.com/FakerPHP/Faker) từ c
 @endfor
 ```
 
-Mặc định, hàm `fake` sẽ sử dụng tùy chọn cấu hình `app.faker_locale` trong file cấu hình `config/app.php` của bạn; tuy nhiên, bạn cũng có thể chỉ định ngôn ngữ này bằng cách truyền nó tới hàm `fake`. Mỗi ngôn ngữ sẽ được resolve ra một instance riêng biệt:
+Mặc định, hàm `fake` sẽ sử dụng tùy chọn cấu hình `app.faker_locale` trong file cấu hình `config/app.php` của bạn. Thông thường, tùy chọn cấu hình này sẽ được set thông qua biến môi trường `APP_FAKER_LOCALE`. Bạn cũng có thể chỉ định ngôn ngữ này bằng cách truyền nó tới hàm `fake`. Mỗi ngôn ngữ sẽ được resolve ra một instance riêng biệt:
 
     fake('nl_NL')->name()
 
@@ -1809,6 +1966,19 @@ Một mảng dữ liệu theo ngữ cảnh cũng có thể được truyền cho
 
     info('User login attempt failed.', ['id' => $user->id]);
 
+<a name="method-literal"></a>
+#### `literal()` {.collection-method}
+
+Hàm `literal` sẽ tạo ra một instance [stdClass](https://www.php.net/manual/en/class.stdclass.php) mới với các tham số đã cho là các thuộc tính của instance mới được tạo ra:
+
+    $obj = literal(
+        name: 'Joe',
+        languages: ['PHP', 'Ruby'],
+    );
+
+    $obj->name; // 'Joe'
+    $obj->languages; // ['PHP', 'Ruby']
+
 <a name="method-logger"></a>
 #### `logger()` {.collection-method}
 
@@ -1820,7 +1990,7 @@ Một mảng dữ liệu theo ngữ cảnh cũng có thể được truyền cho
 
     logger('User has logged in.', ['id' => $user->id]);
 
-Một instance [logger](/docs/{{version}}/errors#logging) sẽ được trả về nếu không có giá trị nào được truyền vào cho hàm:
+Một instance [logger](/docs/{{version}}/logging) sẽ được trả về nếu không có giá trị nào được truyền vào cho hàm:
 
     logger()->error('You are not allowed here.');
 
@@ -1857,6 +2027,45 @@ Vì "giá trị mặc định" được cung cấp làm tham số thứ hai cho 
 
     {{ old('name', $user) }}
 
+<a name="method-once"></a>
+#### `once()` {.collection-method}
+
+Hàm `once` sẽ chạy một callback đã cho và lưu kết quả vào bộ nhớ cache trong suốt thời gian của request. Bất kỳ lời gọi tiếp theo nào đến hàm `once` với cùng một callback sẽ trả về kết quả đã được lưu trong bộ nhớ cache trước đó:
+
+    function random(): int
+    {
+        return once(function () {
+            return random_int(1, 1000);
+        });
+    }
+
+    random(); // 123
+    random(); // 123 (cached result)
+    random(); // 123 (cached result)
+
+Khi hàm `once` được chạy bên trong một instance đối tượng, thì kết quả được cache sẽ là instance của đối tượng đó:
+
+```php
+<?php
+
+class NumberService
+{
+    public function all(): array
+    {
+        return once(fn () => [1, 2, 3]);
+    }
+}
+
+$service = new NumberService;
+
+$service->all();
+$service->all(); // (cached result)
+
+$secondService = new NumberService;
+
+$secondService->all();
+$secondService->all(); // (cached result)
+```
 <a name="method-optional"></a>
 #### `optional()` {.collection-method}
 
@@ -1893,7 +2102,7 @@ Hàm `redirect` sẽ trả về một [response HTTP chuyển hướng](/docs/{{
 <a name="method-report"></a>
 #### `report()` {.collection-method}
 
-Hàm `report` sẽ report một exception bằng cách sử dụng [exception handler](/docs/{{version}}/errors#the-exception-handler) của bạn:
+Hàm `report` sẽ report một exception bằng cách sử dụng [exception handler](/docs/{{version}}/errors#handling-exceptions) của bạn:
 
     report($e);
 
@@ -1904,7 +2113,7 @@ Hàm `report` cũng sẽ chấp nhận một chuỗi làm tham số đầu vào.
 <a name="method-report-if"></a>
 #### `report_if()` {.collection-method}
 
-Hàm `report_if` sẽ report ra một ngoại lệ bằng cách sử dụng [exception handler](/docs/{{version}}/errors#the-exception-handler) của bạn nếu điều kiện đã cho là `true`:
+Hàm `report_if` sẽ report ra một ngoại lệ bằng cách sử dụng [exception handler](/docs/{{version}}/errors#handling-exceptions) của bạn nếu điều kiện đã cho là `true`:
 
     report_if($shouldReport, $e);
 
@@ -1913,7 +2122,7 @@ Hàm `report_if` sẽ report ra một ngoại lệ bằng cách sử dụng [exc
 <a name="method-report-unless"></a>
 #### `report_unless()` {.collection-method}
 
-Hàm `report_unless` sẽ report ra một ngoại lệ bằng cách sử dụng [exception handler](/docs/{{version}}/errors#the-exception-handler) của bạn nếu điều kiện đã cho là `false`:
+Hàm `report_unless` sẽ report ra một ngoại lệ bằng cách sử dụng [exception handler](/docs/{{version}}/errors#handling-exceptions) của bạn nếu điều kiện đã cho là `false`:
 
     report_unless($reportingDisabled, $e);
 
@@ -1931,7 +2140,7 @@ Hàm `request` trả về instance [request](/docs/{{version}}/requests) hiện 
 <a name="method-rescue"></a>
 #### `rescue()` {.collection-method}
 
-Hàm `rescue` sẽ thực thi closure đã cho và catch bất kỳ exception nào xảy ra trong quá trình thực thi. Tất cả các exception bị catch sẽ được gửi đến [exception handler](/docs/{{version}}/errors#the-exception-handler) của bạn; tuy nhiên, request sẽ tiếp tục xử lý:
+Hàm `rescue` sẽ thực thi closure đã cho và catch bất kỳ exception nào xảy ra trong quá trình thực thi. Tất cả các exception bị catch sẽ được gửi đến [exception handler](/docs/{{version}}/errors#handling-exceptions) của bạn; tuy nhiên, request sẽ tiếp tục xử lý:
 
     return rescue(function () {
         return $this->method();
@@ -2166,6 +2375,23 @@ Hàm `with` sẽ trả về giá trị được cho. Nếu một closure đượ
 
     // 5
 
+<a name="method-when"></a>
+#### `when()` {.collection-method}
+
+Hàm `when` sẽ trả về giá trị đã cho nếu một điều kiện được xác định là `true`. Và ngược lại nếu là `false`, thì giá trị `null` sẽ được trả về. Nếu một closure được truyền vào làm tham số thứ hai của hàm, thì closure đó sẽ được thực thi và giá trị trả về của closure đó sẽ được trả về:
+
+    $value = when(true, 'Hello World');
+
+    $value = when(true, fn () => 'Hello World');
+
+Hàm `when` sẽ chủ yếu hữu dụng cho việc hiển thị có điều kiện các thuộc tính HTML:
+
+```blade
+<div {!! when($condition, 'wire:poll="calculate"') !!}>
+    ...
+</div>
+```
+
 <a name="other-utilities"></a>
 ## Các class hữu ích khác
 
@@ -2214,6 +2440,108 @@ $now = Carbon::now();
 ```
 
 Để thảo luận kỹ hơn về Carbon và các tính năng của nó, vui lòng tham khảo [tài liệu chính thức của Carbon](https://carbon.nesbot.com/docs/).
+
+<a name="deferred-functions"></a>
+### Phương thức chạy sau
+
+> [!WARNING]
+> Các phương thức chạy sau hiện đang trong giai đoạn thử nghiệm trong lúc đó chúng tôi sẽ thu thập phản hồi từ cộng đồng.
+
+Trong khi [queued jobs](/docs/{{version}}/queues) của Laravel cho phép bạn đưa queue các task để xử lý background, thỉnh thoảng bạn có thể có những tác vụ đơn giản mà bạn muốn trì hoãn mà không cần cấu hình hoặc duy trì một queue worker chạy dài hạn.
+
+Các phương thức chạy sau cho phép bạn trì hoãn việc chạy một closure cho đến sau khi response HTTP đã được gửi đến người dùng, giúp ứng dụng của bạn luôn nhanh và phản hồi tốt. Để trì hoãn việc chạy một closure, bạn chỉ cần truyền closure đó vào hàm `Illuminate\Support\defer`:
+
+```php
+use App\Services\Metrics;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
+use function Illuminate\Support\defer;
+
+Route::post('/orders', function (Request $request) {
+    // Create order...
+
+    defer(fn () => Metrics::reportOrder($order));
+
+    return $order;
+});
+```
+
+Mặc định, các phương thức chạy sau này sẽ chỉ được thực hiện nếu response HTTP, lệnh Artisan hoặc job trong queue trả về thành công. Điều này có nghĩa là các phương thức này sẽ không được chạy nếu một request mà có response HTTP là `4xx` hoặc `5xx`. Nếu bạn muốn một phương thức này luôn được thực hiện, thì bạn có thể nối thêm phương thức `always` vào sau phương thức chạy sau của bạn:
+
+```php
+defer(fn () => Metrics::reportOrder($order))->always();
+```
+
+<a name="cancelling-deferred-functions"></a>
+#### Cancelling Deferred Functions
+
+Nếu bạn cần hủy một phương thức chạy sau trước khi nó được thực hiện, thì bạn có thể sử dụng phương thức `forget` để hủy phương thức đó bằng tên của nó. Để đặt tên cho một phương thức chạy sau, hãy cung cấp tham số thứ hai cho hàm `Illuminate\Support\defer`:
+
+```php
+defer(fn () => Metrics::report(), 'reportMetrics');
+
+defer()->forget('reportMetrics');
+```
+
+<a name="deferred-function-compatibility"></a>
+#### Deferred Function Compatibility
+
+Nếu bạn nâng cấp lên Laravel 11.x từ một ứng dụng Laravel 10.x và cấu trúc ứng dụng của bạn vẫn chứa file `app/Http/Kernel.php`, thì bạn nên thêm middleware `InvokeDeferredCallbacks` vào đầu thuộc tính `$middleware` của kernel:
+
+```php
+protected $middleware = [
+    \Illuminate\Foundation\Http\Middleware\InvokeDeferredCallbacks::class, // [tl! add]
+    \App\Http\Middleware\TrustProxies::class,
+    // ...
+];
+```
+
+<a name="disabling-deferred-functions-in-tests"></a>
+#### Disabling Deferred Functions in Tests
+
+Khi viết các bài test, bạn có thể cần vô hiệu hóa các phương thức chạy sau. Bạn có thể gọi `withoutDefer` trong bài test của bạn để hướng dẫn Laravel chạy ngay tất cả các phương thức chạy sau mà không cần đợi khi response gửi về người dùng:
+
+```php tab=Pest
+test('without defer', function () {
+    $this->withoutDefer();
+
+    // ...
+});
+```
+
+```php tab=PHPUnit
+use Tests\TestCase;
+
+class ExampleTest extends TestCase
+{
+    public function test_without_defer(): void
+    {
+        $this->withoutDefer();
+
+        // ...
+    }
+}
+```
+
+Nếu bạn muốn vô hiệu hóa các phương thức chạy sau cho tất cả các bài test trong một test case, bạn có thể gọi phương thức `withoutDefer` từ phương thức `setUp` trên base class `TestCase` của bạn:
+
+```php
+<?php
+
+namespace Tests;
+
+use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
+
+abstract class TestCase extends BaseTestCase
+{
+    protected function setUp(): void// [tl! add:start]
+    {
+        parent::setUp();
+
+        $this->withoutDefer();
+    }// [tl! add:end]
+}
+```
 
 <a name="lottery"></a>
 ### Lottery
@@ -2266,19 +2594,19 @@ use App\Models\User;
 use Illuminate\Support\Facades\Pipeline;
 
 $user = Pipeline::send($user)
-            ->through([
-                function (User $user, Closure $next) {
-                    // ...
+    ->through([
+        function (User $user, Closure $next) {
+            // ...
 
-                    return $next($user);
-                },
-                function (User $user, Closure $next) {
-                    // ...
+            return $next($user);
+        },
+        function (User $user, Closure $next) {
+            // ...
 
-                    return $next($user);
-                },
-            ])
-            ->then(fn (User $user) => $user);
+            return $next($user);
+        },
+    ])
+    ->then(fn (User $user) => $user);
 ```
 
 Như bạn có thể thấy, mỗi invokable class hoặc closure có thể được gọi trong pipeline cùng với việc được cung cấp input cho các invokable class hoặc closure đó và cuối cùng là closure `$next`. Việc gọi closure `$next` sẽ gọi callable tiếp theo trong pipeline. Như bạn có thể thấy, điều này rất giống với [middleware](/docs/{{version}}/middleware).
@@ -2289,12 +2617,12 @@ Tất nhiên, như đã thảo luận trước đó, bạn không bị giới h�
 
 ```php
 $user = Pipeline::send($user)
-            ->through([
-                GenerateProfilePhoto::class,
-                ActivateSubscription::class,
-                SendWelcomeEmail::class,
-            ])
-            ->then(fn (User $user) => $user);
+    ->through([
+        GenerateProfilePhoto::class,
+        ActivateSubscription::class,
+        SendWelcomeEmail::class,
+    ])
+    ->then(fn (User $user) => $user);
 ```
 
 <a name="sleep"></a>
@@ -2313,6 +2641,12 @@ Class `Sleep` của Laravel là một class wrapper nhẹ cho các hàm `sleep` 
     }
 
 Class `Sleep` cung cấp nhiều phương thức khác nhau cho phép bạn làm việc với các đơn vị thời gian khác nhau:
+
+    // Return a value after sleeping...
+    $result = Sleep::for(1)->second()->then(fn () => 1 + 1);
+
+    // Sleep while a given value is true...
+    Sleep::for(1)->second()->while(fn () => shouldKeepSleeping());
 
     // Pause execution for 90 seconds...
     Sleep::for(1.5)->minutes();
@@ -2356,29 +2690,55 @@ Khi kiểm tra các code mà sử dụng class `Sleep` hoặc các hàm sleep g�
 
 Thông thường, việc kiểm tra code này sẽ mất _ít nhất_ một giây để chờ sleep. May mắn thay, class `Sleep` cho phép chúng ta "fake" thời gian sleep để bài kiểm tra của bạn vẫn chạy được nhanh:
 
-    public function test_it_waits_until_ready()
-    {
-        Sleep::fake();
+```php tab=Pest
+it('waits until ready', function () {
+    Sleep::fake();
 
-        // ...
-    }
+    // ...
+});
+```
+
+```php tab=PHPUnit
+public function test_it_waits_until_ready()
+{
+    Sleep::fake();
+
+    // ...
+}
+```
 
 Khi fake class `Sleep`, việc tạm dừng để sleep thực tế sẽ bị bỏ qua, dẫn đến bài kiểm tra của chúng ta nhanh hơn đáng kể.
 
 Sau khi class `Sleep` đã được fake, bạn có thể đưa ra các kiểm tra cho các "sleep" dự kiến ​​đáng lẽ phải xảy ra. Để minh họa điều này, hãy tưởng tượng chúng ta đang thử nghiệm code tạm dừng thực thi ba lần, với mỗi lần tạm dừng tăng thêm một giây. Sử dụng phương thức `assertSequence`, chúng ta có thể kiểm tra code của chúng ta đã "sleep" trong khoảng thời gian thích hợp trong khi vẫn giữ cho bài kiểm tra của chúng ta được nhanh:
 
-    public function test_it_checks_if_ready_four_times()
-    {
-        Sleep::fake();
+```php tab=Pest
+it('checks if ready three times', function () {
+    Sleep::fake();
 
-        // ...
+    // ...
 
-        Sleep::assertSequence([
-            Sleep::for(1)->second(),
-            Sleep::for(2)->seconds(),
-            Sleep::for(3)->seconds(),
-        ]);
-    }
+    Sleep::assertSequence([
+        Sleep::for(1)->second(),
+        Sleep::for(2)->seconds(),
+        Sleep::for(3)->seconds(),
+    ]);
+}
+```
+
+```php tab=PHPUnit
+public function test_it_checks_if_ready_three_times()
+{
+    Sleep::fake();
+
+    // ...
+
+    Sleep::assertSequence([
+        Sleep::for(1)->second(),
+        Sleep::for(2)->seconds(),
+        Sleep::for(3)->seconds(),
+    ]);
+}
+```
 
 Tất nhiên, class `Sleep` cung cấp nhiều kiểm tra khác mà bạn có thể sử dụng khi testing:
 
@@ -2414,4 +2774,35 @@ Sleep::whenFakingSleep(function (Duration $duration) {
 });
 ```
 
+Việc di chuyển thời gian là một yêu cầu rất phổ biến trong các bài test, nên phương thức `fake` chấp nhận một tham số `syncWithCarbon` để giữ cho Carbon được đồng bộ khi sleep trong bài test:
+
+```php
+Sleep::fake(syncWithCarbon: true);
+
+$start = now();
+
+Sleep::for(1)->second();
+
+$start->diffForHumans(); // 1 second ago
+```
+
 Laravel sử dụng class `Sleep` ở bên trong bất cứ khi nào code cần tạm dừng thực thi. Ví dụ, helper [`retry`](#method-retry) sử dụng class `Sleep` để chờ cho đến khi một hành động nào đó được thực hiện lại, cho phép cải thiện khả năng kiểm tra khi sử dụng helper này.
+
+<a name="timebox"></a>
+### Timebox
+
+Class `Timebox` của Laravel sẽ đảm bảo rằng các callback được cung cấp sẽ luôn mất một khoảng thời gian cố định để thực thi, ngay cả khi trong quá trình thực thi thực tế của nó được hoàn thành sớm hơn. Điều này đặc biệt hữu ích cho các hoạt động mã hóa và kiểm tra xác thực người dùng, nơi mà kẻ tấn công có thể khai thác sự khác biệt về thời gian thực thi để suy ra thông tin nhạy cảm.
+
+Nếu quá trình thực thi vượt quá thời gian cố định, thì `Timebox` sẽ không còn tác dụng. Tùy thuộc vào nhà phát triển mà có thể chọn ra một khoảng thời gian đủ dài làm thời gian cố định trong đó có tính cả đến các trường hợp xấu nhất.
+
+Phương thức `call` sẽ chấp nhận một closure và giới hạn thời gian tính bằng micro giây, sau khi thực thi closure thì nó sẽ chờ cho đến khi đạt đến giới hạn thời gian:
+
+```php
+use Illuminate\Support\Timebox;
+
+(new Timebox)->call(function ($timebox) {
+    // ...
+}, microseconds: 10000);
+```
+
+Nếu một exception được đưa ra trong closure, thì class này sẽ tuân theo độ trễ đã định và đưa ra exception sau độ trễ đó.

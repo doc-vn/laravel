@@ -1,10 +1,11 @@
 # Events
 
 - [Giới thiệu](#introduction)
+- [Tạo Event và Listener](#generating-events-and-listeners)
 - [Đăng ký Event và Listener](#registering-events-and-listeners)
-    - [Tạo Event và Listener](#generating-events-and-listeners)
-    - [Đăng ký Event thủ công](#manually-registering-events)
     - [Event Discovery](#event-discovery)
+    - [Đăng ký Event thủ công](#manually-registering-events)
+    - [Closure Listeners](#closure-listeners)
 - [Khai báo Event](#defining-events)
 - [Khai báo Listener](#defining-listeners)
 - [Queued Event Listener](#queued-event-listeners)
@@ -27,38 +28,10 @@ Các event của Laravel cung cấp một pattern observer implementation đơn 
 
 Các event đóng vai trò là một cách tuyệt vời để tách các khía cạnh khác nhau của application, vì một event có thể có nhiều listener mà không phụ thuộc vào lẫn nhau. Ví dụ: bạn có thể muốn gửi thông báo đến Slack cho người dùng của bạn mỗi khi đơn hàng đã được giao. Thay vì ghép code xử lý đơn đặt hàng với code thông báo của Slack, bạn có thể đưa ra một event `App\Events\OrderShipped`, mà listener có thể nhận và dùng để gửi một thông báo đến Slack.
 
-<a name="registering-events-and-listeners"></a>
-## Đăng ký Event và Listener
-
-`App\Providers\EventServiceProvider` đi kèm trong application Laravel cung cấp một cách đăng ký dễ dàng cho tất cả các listener event trong application của bạn. Thuộc tính `listen` chứa một mảng gồm các event (là các key) và listener (là các giá trị). Bạn có thể thêm nhiều event vào mảng này khi application của bạn yêu cầu. Ví dụ: hãy thêm một event `OrderShipped` như sau:
-
-    use App\Events\OrderShipped;
-    use App\Listeners\SendShipmentNotification;
-
-    /**
-     * The event listener mappings for the application.
-     *
-     * @var array<class-string, array<int, class-string>>
-     */
-    protected $listen = [
-        OrderShipped::class => [
-            SendShipmentNotification::class,
-        ],
-    ];
-
-> [!NOTE]
-> Lệnh `event:list` có thể được sử dụng để hiển thị danh sách tất cả các event và listener đã được đăng ký bởi ứng dụng của bạn.
-
 <a name="generating-events-and-listeners"></a>
-### Tạo Event và Listener
+## Tạo Event và Listener
 
-Tất nhiên, việc tạo bằng tay các file cho các event và listener này là rất công kềnh. Thay vào đó, hãy thêm listener và event của nó vào trong `EventServiceProvider` của bạn và sử dụng lệnh Artisan `event:generate`. Lệnh này sẽ tạo ra bất kỳ các event hoặc các listener nào được liệt kê trong mảng `EventServiceProvider` mà chưa tồn tại:
-
-```shell
-php artisan event:generate
-```
-
-Ngoài ra, bạn có thể sử dụng các lệnh Artisan `make:event` và `make:listener` để tạo các event và listener riêng lẻ:
+Để tạo một event và một listener nhanh chóng, bạn có thể sử dụng lệnh Artisan `make:event` và `make:listener`:
 
 ```shell
 php artisan make:event PodcastProcessed
@@ -66,17 +39,80 @@ php artisan make:event PodcastProcessed
 php artisan make:listener SendPodcastNotification --event=PodcastProcessed
 ```
 
+Bạn cũng có thể gọi lệnh Artisan `make:event` và `make:listener` mà không cần thêm tham số. Khi bạn làm như vậy, Laravel sẽ tự động yêu cầu bạn nhập thêm tên class và khi bạn tạo thì một listener, thì event mà listener đó sẽ listen cũng sẽ được yêu cầu:
+
+```shell
+php artisan make:event
+
+php artisan make:listener
+```
+
+<a name="registering-events-and-listeners"></a>
+## Registering Events and Listeners
+
+<a name="event-discovery"></a>
+### Event Discovery
+
+Laravel sẽ tự động tìm và đăng ký các event listener của bạn bằng cách scan thư mục `Listeners` có trong application của bạn. Khi Laravel tìm thấy bất kỳ phương thức của class listener nào mà bắt đầu bằng `handle` hoặc `__invoke`, thì Laravel sẽ đăng ký các phương thức đó như các event listener cho event được khai báo trong signature của phương thức:
+
+    use App\Events\PodcastProcessed;
+
+    class SendPodcastNotification
+    {
+        /**
+         * Handle the given event.
+         */
+        public function handle(PodcastProcessed $event): void
+        {
+            // ...
+        }
+    }
+
+Bạn có thể listen nhiều event cùng một lúc bằng cách sử dụng kiểu union của PHP:
+
+    /**
+     * Handle the given event.
+     */
+    public function handle(PodcastProcessed|PodcastPublished $event): void
+    {
+        // ...
+    }
+
+Nếu bạn định lưu các listener của bạn trong một thư mục khác hoặc trong nhiều thư mục, bạn có thể hướng dẫn Laravel scan các thư mục đó bằng cách sử dụng phương thức `withEvents` có trong file `bootstrap/app.php` của ứng dụng:
+
+
+    ->withEvents(discover: [
+        __DIR__.'/../app/Domain/Orders/Listeners',
+    ])
+
+Bạn có thể scan các listener trong nhiều thư mục cùng mức bằng cách sử dụng ký tự `*` làm ký tự đại diện:
+
+    ->withEvents(discover: [
+        __DIR__.'/../app/Domain/*/Listeners',
+    ])
+
+Lệnh `event:list` có thể được dùng để liệt kê ra tất cả các listener đã được đăng ký có trong ứng dụng của bạn:
+
+```shell
+php artisan event:list
+```
+
+<a name="event-discovery-in-production"></a>
+#### Event Discovery in Production
+
+Để tăng tốc ứng dụng của bạn, bạn nên cache lại một manifest của tất cả các listener của ứng dụng bằng cách sử dụng lệnh Artisan `optimize` hoặc `event:cache`. Thông thường, lệnh này nên được chạy như một phần của [quy trình triển khai](/docs/{{version}}/deployment#optimization) ứng dụng của bạn. Manifest này sẽ được framework sử dụng để tăng tốc quá trình đăng ký event. Lệnh `event:clear` có thể được sử dụng để hủy bộ nhớ cache của event.
+
 <a name="manually-registering-events"></a>
 ### Đăng ký Event thủ công
 
-Thông thường, các event nên được đăng ký thông qua `EventServiceProvider` vào mảng `$listen`; tuy nhiên, bạn cũng có thể đăng ký các event listener dựa trên class hoặc closure bằng cách đưa nó vào trong phương thức `boot` của `EventServiceProvider`:
+Sử dụng facade `Event`, bạn có thể tự đăng ký các event và listener tương ứng của chúng trong phương thức `boot` của `AppServiceProvider` trong ứng dụng của bạn:
 
-    use App\Events\PodcastProcessed;
-    use App\Listeners\SendPodcastNotification;
+    use App\Domain\Orders\Events\PodcastProcessed;
+    use App\Domain\Orders\Listeners\SendPodcastNotification;
     use Illuminate\Support\Facades\Event;
 
     /**
-     * Register any other events for your application.
+     * Bootstrap any application services.
      */
     public function boot(): void
     {
@@ -84,7 +120,27 @@ Thông thường, các event nên được đăng ký thông qua `EventServicePr
             PodcastProcessed::class,
             SendPodcastNotification::class,
         );
+    }
 
+Lệnh `event:list` có thể được dùng để liệt kê ra tất cả các listener đã được đăng ký có trong ứng dụng của bạn:
+
+```shell
+php artisan event:list
+```
+
+<a name="closure-listeners"></a>
+### Closure Listeners
+
+Thông thường, các listener được định nghĩa dưới dạng class; tuy nhiên, bạn cũng có thể tự đăng ký các listener dựa trên closure có trong phương thức `boot` của `AppServiceProvider` trong ứng dụng của bạn:
+
+    use App\Events\PodcastProcessed;
+    use Illuminate\Support\Facades\Event;
+
+    /**
+     * Bootstrap any application services.
+     */
+    public function boot(): void
+    {
         Event::listen(function (PodcastProcessed $event) {
             // ...
         });
@@ -100,7 +156,7 @@ Khi đăng ký event listener dựa trên closure, bạn có thể bọc listene
     use Illuminate\Support\Facades\Event;
 
     /**
-     * Register any other events for your application.
+     * Bootstrap any application services.
      */
     public function boot(): void
     {
@@ -131,60 +187,11 @@ Nếu bạn muốn xử lý các lỗi nonymous queued listener, bạn có thể
 <a name="wildcard-event-listeners"></a>
 #### Wildcard Event Listeners
 
-Bạn thậm chí có thể đăng ký listener bằng cách sử dụng ký tự đại diện `*` làm tham số, cho phép bạn nhận được nhiều event trên cùng một listener. Và nó nhận tên event là tham số đầu tiên và toàn bộ mảng dữ liệu event là tham số thứ hai:
+Bạn cũng có thể đăng ký listener bằng cách sử dụng ký tự `*` làm tham số đại diện, cho phép bạn nhận được nhiều event trên cùng một listener. Và nó nhận tên event là tham số đầu tiên và toàn bộ mảng dữ liệu event là tham số thứ hai:
 
     Event::listen('event.*', function (string $eventName, array $data) {
         // ...
     });
-
-<a name="event-discovery"></a>
-### Event Discovery
-
-Thay vì phải đăng ký các event và listener theo cách thủ công trong mảng `$listen` của `EventServiceProvider`, bạn có thể bật tính năng event discovery. Khi tính năng event discovery được bật, Laravel sẽ tự động tìm kiếm và đăng ký các event, listener của bạn bằng cách quét thư mục `Listeners` của ứng dụng của bạn. Ngoài ra, mọi event được liệt kê trong `EventServiceProvider` vẫn sẽ được đăng ký.
-
-Laravel sẽ tìm các event listener bằng cách quét các class listener dùng class động của PHP. Khi Laravel tìm thấy bất kỳ phương thức class listener nào bắt đầu bằng `handle` hoặc `__invoke`, Laravel sẽ đăng ký các phương thức đó làm event listener cho các event được khai báo trong signature của phương thức:
-
-    use App\Events\PodcastProcessed;
-
-    class SendPodcastNotification
-    {
-        /**
-         * Handle the given event.
-         */
-        public function handle(PodcastProcessed $event): void
-        {
-            // ...
-        }
-    }
-
-Mặc định tính năng event discovery sẽ bị tắt, nhưng bạn có thể bật tính năng này bằng cách ghi đè phương thức `shouldDiscoverEvents` của file `EventServiceProvider` trong ứng dụng của bạn:
-
-    /**
-     * Determine if events and listeners should be automatically discovered.
-     */
-    public function shouldDiscoverEvents(): bool
-    {
-        return true;
-    }
-
-Mặc định, tất cả các class listener trong thư mục `app/Listeners` của ứng dụng của bạn sẽ được quét. Nếu bạn muốn định nghĩa thêm các thư mục để quét, bạn có thể ghi đè phương thức `discoverEventsWithin` trong file `EventServiceProvider` của bạn:
-
-    /**
-     * Get the listener directories that should be used to discover events.
-     *
-     * @return array<int, string>
-     */
-    protected function discoverEventsWithin(): array
-    {
-        return [
-            $this->app->path('Listeners'),
-        ];
-    }
-
-<a name="event-discovery-in-production"></a>
-#### Event Discovery In Production
-
-Trong bản production, bạn có thể không muốn framework quét tất cả các listener của bạn trong mọi request. Do đó, trong quá trình deploy, bạn nên chạy lệnh Artisan `event:cache` để lưu cache một file gồm danh sách tất cả các event và listener có trong ứng dụng của bạn. Danh sách này sẽ được framework sử dụng để tăng tốc trong quá trình đăng ký event. Lệnh `event:clear` có thể được sử dụng để hủy bỏ file cache này.
 
 <a name="defining-events"></a>
 ## Khai báo Event
@@ -217,7 +224,7 @@ Như bạn có thể thấy, event class này không chứa code logic. Nó là 
 <a name="defining-listeners"></a>
 ## Khai báo Listener
 
-Tiếp theo, chúng ta hãy xem một listener mẫu cho một event. Listener của event sẽ nhận vào một instance event trong phương thức `handle`. Lệnh Artisan `event:generate` và `make:listener` sẽ tự động import class event và khai báo nó vào trong phương thức `handle`. Trong phương thức `handle`, bạn có thể thực hiện bất kỳ hành động nào cần thiết để xử lý event:
+Tiếp theo, chúng ta hãy xem một listener mẫu cho một event. Listener của event sẽ nhận vào một instance event trong phương thức `handle`. Lệnh Artisan `make:listener`, khi được gọi với tùy chọn `--event`, sẽ tự động import class event và khai báo nó vào trong phương thức `handle`. Trong phương thức `handle`, bạn có thể thực hiện bất kỳ hành động nào cần thiết để xử lý event:
 
     <?php
 
@@ -230,10 +237,7 @@ Tiếp theo, chúng ta hãy xem một listener mẫu cho một event. Listener c
         /**
          * Create the event listener.
          */
-        public function __construct()
-        {
-            // ...
-        }
+        public function __construct() {}
 
         /**
          * Handle the event.
@@ -257,7 +261,7 @@ Thỉnh thoảng, bạn có thể muốn ngừng việc truyền một event đ�
 
 Queueing listener có thể có lợi nếu listener của bạn thực hiện một nhiệm vụ mà không cần phải phản hồi ngay lập tức như việc gửi email hoặc tạo một HTTP request. Trước khi dùng queued listener, hãy đảm bảo là bạn đã [cấu hình queue](/docs/{{version}}/queues) và chạy một queue worker trên server hoặc môi trường develop của bạn.
 
-Để khai báo một listener sẽ được queue, hãy thêm interface `ShouldQueue` vào class listener. Listener được tạo bởi lệnh Artisan `event:generate` và `make:listener` sẽ khai báo sẵn interface này và import nó vào namespace hiện tại, vì vậy bạn có thể sử dụng nó ngay lập tức:
+Để khai báo một listener sẽ được queue, hãy thêm interface `ShouldQueue` vào class listener. Listener được tạo bởi lệnh Artisan `make:listener` sẽ khai báo sẵn interface này và import nó vào namespace hiện tại, vì vậy bạn có thể sử dụng nó ngay lập tức:
 
     <?php
 
@@ -338,7 +342,7 @@ Nếu bạn muốn định nghĩa một listener connection của queue, tên qu
 <a name="conditionally-queueing-listeners"></a>
 #### Conditionally Queueing Listeners
 
-Thỉnh thoảng, bạn có thể cần phải xác định xem một listener có nên được queue hay không dựa vào một số dữ liệu chỉ có trong lúc runtime. Để thực hiện điều này, phương thức `shouldQueue` có thể được thêm vào trong listener để xác định xem listener này có nên được queue hay không. Nếu phương thức `shouldQueue` trả về `false`, listener sẽ không được thực thi:
+Thỉnh thoảng, bạn có thể cần phải xác định xem một listener có nên được queue hay không dựa vào một số dữ liệu chỉ có trong lúc runtime. Để thực hiện điều này, phương thức `shouldQueue` có thể được thêm vào trong listener để xác định xem listener này có nên được queue hay không. Nếu phương thức `shouldQueue` trả về `false`, listener sẽ không được queue:
 
     <?php
 
@@ -399,17 +403,16 @@ Nếu bạn cần tự truy cập các phương thức `delete` và `release` c�
 
 Khi các queued listener được gửi đi trong các database transaction, chúng có thể được xử lý bởi queue trước khi database transaction được thực hiện. Khi điều này xảy ra, bất kỳ cập nhật nào bạn đã thực hiện đối với model hoặc record cơ sở dữ liệu trong quá trình database transaction có thể chưa được lưu vào trong cơ sở dữ liệu. Ngoài ra, bất kỳ model hoặc record cơ sở dữ liệu nào được tạo trong transaction cũng có thể không tồn tại trong cơ sở dữ liệu. Nếu listener của bạn phụ thuộc vào các model này, các lỗi không mong muốn có thể xảy ra khi xử lý các job được gửi đi từ queued listener.
 
-Nếu tùy chọn `after_commit` trong cấu hình queue connection được set thành `false`, thì bạn vẫn có thể cho biết một queued listener sẽ được gửi đi sau khi tất cả các database transaction đã được thực hiện bằng cách implement một interface `ShouldHandleEventsAfterCommit` trên class listener:
+Nếu tùy chọn `after_commit` trong cấu hình queue connection được set thành `false`, thì bạn vẫn có thể cho biết một queued listener sẽ được gửi đi sau khi tất cả các database transaction đã được thực hiện bằng cách implement một interface `ShouldQueueAfterCommit` trên class listener:
 
     <?php
 
     namespace App\Listeners;
 
-    use Illuminate\Contracts\Events\ShouldHandleEventsAfterCommit;
-    use Illuminate\Contracts\Queue\ShouldQueue;
+    use Illuminate\Contracts\Queue\ShouldQueueAfterCommit;
     use Illuminate\Queue\InteractsWithQueue;
 
-    class SendShipmentNotification implements ShouldQueue, ShouldHandleEventsAfterCommit
+    class SendShipmentNotification implements ShouldQueueAfterCommit
     {
         use InteractsWithQueue;
     }
@@ -489,6 +492,40 @@ Là một giải pháp thay thế cho việc xác định số lần mà một l
     public function retryUntil(): DateTime
     {
         return now()->addMinutes(5);
+    }
+
+<a name="specifying-queued-listener-backoff"></a>
+#### Specifying Queued Listener Backoff
+
+Nếu bạn muốn cấu hình số giây mà Laravel sẽ đợi trước khi thử lại một listener bị exception, bạn có thể làm như vậy bằng cách định nghĩa thuộc tính `backoff` trên class listener của bạn:
+
+    /**
+     * The number of seconds to wait before retrying the queued listener.
+     *
+     * @var int
+     */
+    public $backoff = 3;
+
+Nếu bạn muốn yêu cầu một logic phức tạp hơn để xác định thời gian backoff của listener, bạn có thể định nghĩa một phương thức `backoff` trên class listener của bạn:
+
+    /**
+     * Calculate the number of seconds to wait before retrying the queued listener.
+     */
+    public function backoff(): int
+    {
+        return 3;
+    }
+
+Bạn có thể dễ dàng cấu hình "backoff" theo cấp số nhân bằng cách trả về một mảng các giá trị backoff từ phương thức `backoff`. Trong ví dụ này, độ trễ thử lại sẽ là 1 giây cho lần thử lại đầu tiên, và 5 giây cho lần thử lại thứ hai, và 10 giây cho lần thử lại thứ ba và 10 giây cho các lần thử lại tiếp theo nếu còn nhiều lần thử khác:
+
+    /**
+     * Calculate the number of seconds to wait before retrying the queued listener.
+     *
+     * @return array<int, int>
+     */
+    public function backoff(): array
+    {
+        return [1, 5, 10];
     }
 
 <a name="dispatching-events"></a>
@@ -645,76 +682,95 @@ Nếu các phương thức event listener của bạn được định nghĩa tr
 <a name="registering-event-subscribers"></a>
 ### Đăng ký Event Subscriber
 
-Sau khi đã tạo xong subscriber, bạn có thể đăng ký nó với event dispatcher. Bạn có thể đăng ký subscriber bằng cách sử dụng thuộc tính `$subscribe` trong `EventServiceProvider`. Ví dụ: hãy thêm `UserEventSubscriber` vào trong danh sách:
+Sau khi đã tạo xong subscriber, Laravel sẽ tự động đăng ký các phương thức handler có trong subscriber nếu chúng tuân thủ các [quy ước discovery event](#event-discovery) của Laravel. Nếu không phải vậy, bạn có thể đăng ký subscriber của bạn theo cách của bạn bằng cách sử dụng phương thức `subscribe` của facade `Event`. Thông thường, việc này nên được thực hiện trong phương thức `boot` của `AppServiceProvider` của ứng dụng:
 
     <?php
 
     namespace App\Providers;
 
     use App\Listeners\UserEventSubscriber;
-    use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
+    use Illuminate\Support\Facades\Event;
+    use Illuminate\Support\ServiceProvider;
 
-    class EventServiceProvider extends ServiceProvider
+    class AppServiceProvider extends ServiceProvider
     {
         /**
-         * The event listener mappings for the application.
-         *
-         * @var array
+         * Bootstrap any application services.
          */
-        protected $listen = [
-            // ...
-        ];
-
-        /**
-         * The subscriber classes to register.
-         *
-         * @var array
-         */
-        protected $subscribe = [
-            UserEventSubscriber::class,
-        ];
+        public function boot(): void
+        {
+            Event::subscribe(UserEventSubscriber::class);
+        }
     }
 
 <a name="testing"></a>
 ## Testing
 
-Khi test code gửi event, bạn có thể muốn hướng dẫn Laravel không thực hiện listener của event, vì code của listener có thể được kiểm tra trực tiếp và riêng biệt với code gửi event. Tất nhiên, để kiểm tra listener, bạn có thể khởi tạo một instance listener và gọi phương thức `handle` trực tiếp trong bài test của bạn.
+Khi test code gửi event, bạn có thể muốn hướng dẫn Laravel không thực hiện event listener, vì code của listener có thể được kiểm tra trực tiếp và riêng biệt với code gửi event. Tất nhiên, để kiểm tra listener, bạn có thể khởi tạo một instance listener và gọi phương thức `handle` trực tiếp trong bài test của bạn.
 
 Bằng cách sử dụng phương thức `fake` của facade `Event`, bạn có thể ngăn listener được chạy, và chạy code đang được kiểm tra và sau đó xác nhận event nào đã được ứng dụng của bạn gửi bằng các phương thức `assertDispatched`, `assertNotDispatched` và `assertNothingDispatched`:
 
-    <?php
+```php tab=Pest
+<?php
 
-    namespace Tests\Feature;
+use App\Events\OrderFailedToShip;
+use App\Events\OrderShipped;
+use Illuminate\Support\Facades\Event;
 
-    use App\Events\OrderFailedToShip;
-    use App\Events\OrderShipped;
-    use Illuminate\Support\Facades\Event;
-    use Tests\TestCase;
+test('orders can be shipped', function () {
+    Event::fake();
 
-    class ExampleTest extends TestCase
+    // Perform order shipping...
+
+    // Assert that an event was dispatched...
+    Event::assertDispatched(OrderShipped::class);
+
+    // Assert an event was dispatched twice...
+    Event::assertDispatched(OrderShipped::class, 2);
+
+    // Assert an event was not dispatched...
+    Event::assertNotDispatched(OrderFailedToShip::class);
+
+    // Assert that no events were dispatched...
+    Event::assertNothingDispatched();
+});
+```
+
+```php tab=PHPUnit
+<?php
+
+namespace Tests\Feature;
+
+use App\Events\OrderFailedToShip;
+use App\Events\OrderShipped;
+use Illuminate\Support\Facades\Event;
+use Tests\TestCase;
+
+class ExampleTest extends TestCase
+{
+    /**
+     * Test order shipping.
+     */
+    public function test_orders_can_be_shipped(): void
     {
-        /**
-         * Test order shipping.
-         */
-        public function test_orders_can_be_shipped(): void
-        {
-            Event::fake();
+        Event::fake();
 
-            // Perform order shipping...
+        // Perform order shipping...
 
-            // Assert that an event was dispatched...
-            Event::assertDispatched(OrderShipped::class);
+        // Assert that an event was dispatched...
+        Event::assertDispatched(OrderShipped::class);
 
-            // Assert an event was dispatched twice...
-            Event::assertDispatched(OrderShipped::class, 2);
+        // Assert an event was dispatched twice...
+        Event::assertDispatched(OrderShipped::class, 2);
 
-            // Assert an event was not dispatched...
-            Event::assertNotDispatched(OrderFailedToShip::class);
+        // Assert an event was not dispatched...
+        Event::assertNotDispatched(OrderFailedToShip::class);
 
-            // Assert that no events were dispatched...
-            Event::assertNothingDispatched();
-        }
+        // Assert that no events were dispatched...
+        Event::assertNothingDispatched();
     }
+}
+```
 
 Bạn có thể truyền một closure cho các phương thức `assertDispatched` hoặc `assertNotDispatched` để yêu cầu một event đã được gửi đi và pass qua "bài kiểm tra" đã cho. Nếu có ít nhất một event đã được gửi đi và pass qua bài kiểm tra đã cho thì yêu cầu sẽ thành công:
 
@@ -737,22 +793,39 @@ Nếu bạn chỉ muốn yêu cầu listener của một event đang nhận mộ
 
 Nếu bạn chỉ muốn làm fake một listener event cho một tập hợp event cụ thể, bạn có thể truyền chúng cho phương thức `fake` hoặc `fakeFor`:
 
-    /**
-     * Test order process.
-     */
-    public function test_orders_can_be_processed(): void
-    {
-        Event::fake([
-            OrderCreated::class,
-        ]);
+```php tab=Pest
+test('orders can be processed', function () {
+    Event::fake([
+        OrderCreated::class,
+    ]);
 
-        $order = Order::factory()->create();
+    $order = Order::factory()->create();
 
-        Event::assertDispatched(OrderCreated::class);
+    Event::assertDispatched(OrderCreated::class);
 
-        // Other events are dispatched as normal...
-        $order->update([...]);
-    }
+    // Other events are dispatched as normal...
+    $order->update([...]);
+});
+```
+
+```php tab=PHPUnit
+/**
+ * Test order process.
+ */
+public function test_orders_can_be_processed(): void
+{
+    Event::fake([
+        OrderCreated::class,
+    ]);
+
+    $order = Order::factory()->create();
+
+    Event::assertDispatched(OrderCreated::class);
+
+    // Other events are dispatched as normal...
+    $order->update([...]);
+}
+```
 
 Bạn có thể fake tất cả các event ngoại trừ một tập hợp các event được chỉ định bằng phương thức `except`:
 
@@ -765,31 +838,54 @@ Bạn có thể fake tất cả các event ngoại trừ một tập hợp các 
 
 Nếu bạn chỉ muốn fake listener event cho một phần bài test của bạn, bạn có thể sử dụng phương thức `fakeFor`:
 
-    <?php
+```php tab=Pest
+<?php
 
-    namespace Tests\Feature;
+use App\Events\OrderCreated;
+use App\Models\Order;
+use Illuminate\Support\Facades\Event;
 
-    use App\Events\OrderCreated;
-    use App\Models\Order;
-    use Illuminate\Support\Facades\Event;
-    use Tests\TestCase;
+test('orders can be processed', function () {
+    $order = Event::fakeFor(function () {
+        $order = Order::factory()->create();
 
-    class ExampleTest extends TestCase
+        Event::assertDispatched(OrderCreated::class);
+
+        return $order;
+    });
+
+    // Events are dispatched as normal and observers will run ...
+    $order->update([...]);
+});
+```
+
+```php tab=PHPUnit
+<?php
+
+namespace Tests\Feature;
+
+use App\Events\OrderCreated;
+use App\Models\Order;
+use Illuminate\Support\Facades\Event;
+use Tests\TestCase;
+
+class ExampleTest extends TestCase
+{
+    /**
+     * Test order process.
+     */
+    public function test_orders_can_be_processed(): void
     {
-        /**
-         * Test order process.
-         */
-        public function test_orders_can_be_processed(): void
-        {
-            $order = Event::fakeFor(function () {
-                $order = Order::factory()->create();
+        $order = Event::fakeFor(function () {
+            $order = Order::factory()->create();
 
-                Event::assertDispatched(OrderCreated::class);
+            Event::assertDispatched(OrderCreated::class);
 
-                return $order;
-            });
+            return $order;
+        });
 
-            // Events are dispatched as normal and observers will run ...
-            $order->update([...]);
-        }
+        // Events are dispatched as normal and observers will run ...
+        $order->update([...]);
     }
+}
+```

@@ -14,9 +14,9 @@ Các service provider là trung tâm của tất cả quá trình khởi động
 
 Nhưng, "bootstrapped" nghĩa là gì? Nói chung, ý của chúng tôi có nghĩa là **đăng ký** những thứ, bao gồm cả đăng ký liên kết service container, event listener, middleware và thậm chí là cả các route. Các Service provider là trung tâm để cấu hình application của bạn.
 
-Nếu bạn mở file `config/app.php` đi cùng với Laravel, bạn sẽ thấy một mảng các `providers`. Đây là tất cả các class service provider sẽ được load cho application của bạn. Mặc định, một tập hợp các service provider core của Laravel được liệt kê trong mảng này. Các provider này khởi động các thành phần của Laravel core, chẳng hạn như mailer, queue, cache và các thành phần khác. Nhiều trong số này là các provider "hoãn", nghĩa là nó sẽ không được load trong mọi request, mà chỉ khi các service này thực sự cần thiết nó mới được load.
+Laravel sử dụng nhiều service provider nội bộ để khởi động các service cốt lõi của nó, chẳng hạn như mailer, queue, cache và các thành phần khác. Nhiều trong số này là các provider "hoãn", nghĩa là nó sẽ không được load trong mọi request, mà chỉ khi các service này thực sự cần thiết nó mới được load.
 
-Trong phần tổng quan này, bạn sẽ học cách viết các service provider của riêng bạn và đăng ký chúng với application Laravel.
+Tất cả các service provider do người dùng định nghĩa đều được đăng ký trong file `bootstrap/providers.php`. Trong tài liệu này, bạn sẽ học cách viết các service provider của riêng bạn và đăng ký chúng với application Laravel.
 
 > [!NOTE]
 > Nếu bạn muốn tìm hiểu thêm về cách Laravel xử lý các request và hoạt động nội bộ trong Laravel, hãy xem tài liệu của chúng tôi về Laravel [vòng đời request](/docs/{{version}}/lifecycle).
@@ -26,7 +26,7 @@ Trong phần tổng quan này, bạn sẽ học cách viết các service provid
 
 Tất cả các service provider đều được extend từ class `Illuminate\Support\ServiceProvider`. Hầu hết các service provider đều chứa một phương thức `register` và một phương thức `boot`. Trong phương thức `register`, bạn **chỉ nên liên kết vào [service container](/docs/{{version}}/container)**. Bạn đừng bao giờ đăng ký bất kỳ event listener, routes hoặc bất kỳ phần chức năng nào khác vào trong phương thức `register`.
 
-Artisan CLI có thể tạo một provider mới thông qua lệnh `make:provider`:
+Artisan CLI có thể tạo một provider mới thông qua lệnh `make:provider`. Laravel sẽ tự động đăng ký provider mới của bạn vào file `bootstrap/providers.php` của application của bạn:
 
 ```shell
 php artisan make:provider RiakServiceProvider
@@ -145,15 +145,22 @@ Bạn có thể viết khai báo phụ thuộc vào trong phương thức `boot`
 <a name="registering-providers"></a>
 ## Đăng ký Providers
 
-Tất cả các service provider được đăng ký trong file cấu hình `config/app.php`. File này chứa một mảng các `providers` nơi mà bạn có thể liệt kê tên class của các service provider của bạn. Mặc định, một nhóm các service provider core của Laravel đã được đăng ký ở trong mảng này. Mặc định, các provider này sẽ khởi động các thành phần core của Laravel, chẳng hạn như mailer, queue, cache, và các thành phần khác.
+Tất cả các service provider được đăng ký trong file cấu hình `bootstrap/providers.php`. File này trả về một mảng chứa các tên class của các service provider của application của bạn:
 
-Để đăng ký provider của bạn, hãy thêm nó vào mảng:
+    <?php
 
-    'providers' => ServiceProvider::defaultProviders()->merge([
-        // Other Service Providers
+    return [
+        App\Providers\AppServiceProvider::class,
+    ];
 
-        App\Providers\ComposerServiceProvider::class,
-    ])->toArray(),
+Khi bạn gọi lệnh Artisan `make:provider`, Laravel sẽ tự động thêm provider được tạo vào file `bootstrap/providers.php`. Tuy nhiên, nếu bạn đã tạo class provider rồi, thì bạn nên tự thêm class provider vào mảng:
+
+    <?php
+
+    return [
+        App\Providers\AppServiceProvider::class,
+        App\Providers\ComposerServiceProvider::class, // [tl! add]
+    ];
 
 <a name="deferred-providers"></a>
 ## Các Provider hoãn

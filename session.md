@@ -24,9 +24,9 @@ Laravel có nhiều session backend khác nhau và có thể được truy cập
 <a name="configuration"></a>
 ### Cấu hình
 
-File cấu hình cho session của application của bạn sẽ được lưu tại `config/session.php`. Bạn hãy xem qua các tùy chọn có sẵn cho bạn trong file này. Mặc định, Laravel sẽ cấu hình sử dụng session driver là `file`, nó sẽ hoạt động tốt cho nhiều application. Nếu ứng dụng của bạn được load balance trên nhiều máy chủ web, bạn nên chọn một store tập trung mà tất cả các máy chủ đều có thể truy cập được, chẳng hạn như Redis hoặc một cơ sở dữ liệu.
+File cấu hình cho session của application của bạn sẽ được lưu tại `config/session.php`. Bạn hãy xem qua các tùy chọn có sẵn cho bạn trong file này. Mặc định, Laravel sẽ cấu hình sử dụng session driver là `database`.
 
-Tham số `driver` sẽ khai báo nơi mà dữ liệu của session sẽ được lưu trữ cho mỗi request. Mặc định, Laravel đã có sẵn một số driver:
+Tham số `driver` sẽ khai báo nơi mà dữ liệu của session sẽ được lưu trữ cho mỗi request. Laravel cung cấp cho bạn nhiều driver khác nhau:
 
 <div class="content-list" markdown="1">
 
@@ -48,24 +48,10 @@ Tham số `driver` sẽ khai báo nơi mà dữ liệu của session sẽ đư�
 <a name="database"></a>
 #### Database
 
-Khi sử dụng session driver `database`, bạn sẽ cần tạo một bảng để chứa các record session. Dưới đây là một ví dụ khai báo `Schema` cho bảng có thể tìm thấy bên dưới:
-
-    use Illuminate\Database\Schema\Blueprint;
-    use Illuminate\Support\Facades\Schema;
-
-    Schema::create('sessions', function (Blueprint $table) {
-        $table->string('id')->primary();
-        $table->foreignId('user_id')->nullable()->index();
-        $table->string('ip_address', 45)->nullable();
-        $table->text('user_agent')->nullable();
-        $table->text('payload');
-        $table->integer('last_activity')->index();
-    });
-
-Bạn có thể dùng lệnh Artisan `session:table` để tạo file migration đó. Để tìm hiểu thêm về việc migration cơ sở dữ liệu, bạn có thể tham khảo [tài liệu migration](/docs/{{version}}/migrations):
+Khi sử dụng session driver `database`, bạn sẽ cần đảm bảo là bạn có một bảng cơ sở dữ liệu để chứa thông tin session. Thông thường, bảng này đã có trong file [migration cơ sở dữ liệu](/docs/{{version}}/migrations) mặc định `0001_01_01_000000_create_users_table.php` của Laravel; tuy nhiên, nếu bất kỳ lý do gì bạn không có bảng `sessions` đó, bạn có thể sử dụng lệnh Artisan `make:session-table` để tạo migration này:
 
 ```shell
-php artisan session:table
+php artisan make:session-table
 
 php artisan migrate
 ```
@@ -76,7 +62,7 @@ php artisan migrate
 Trước khi sử dụng session Redis cùng với Laravel, bạn sẽ cần phải cài đặt extension của PHP thông qua PECL hoặc cài đặt package `predis/predis` (~1.0) thông qua Composer. Để biết thêm thông tin về cách cấu hình Redis, hãy tham khảo [tài liệu Redis](/docs/{{version}}/redis#configuration) của Laravel.
 
 > [!NOTE]
-> Trong file cấu hình `session` sẽ có tùy chọn `connection` để có thể được sử dụng để định nghĩa kết nối Redis nào mà có thể được sử dụng bởi session.
+> Biến môi trường `SESSION_CONNECTION`, hoặc tùy chọn `connection` trong file cấu hình `session.php`, có thể được sử dụng để chỉ định kết nối Redis sẽ được sử dụng để lưu trữ session.
 
 <a name="interacting-with-the-session"></a>
 ## Tương tác với session
@@ -259,7 +245,7 @@ Nếu bạn cần tạo lại ID session và xóa tất cả các dữ liệu ra
 ## Chặn session
 
 > [!WARNING]
-> Để sử dụng tính năng chặn session, ứng dụng của bạn phải sử dụng một driver cache mà hỗ trợ [atomic locks](/docs/{{version}}/cache#atomic-locks). Hiện tại, những driver cache đó là các driver `memcached`, `dynamicodb`, `redis`, `database`, `file`, và `array` . Ngoài ra, bạn không thể sử dụng driver session `cookie`.
+> Để sử dụng tính năng chặn session, ứng dụng của bạn phải sử dụng một driver cache mà hỗ trợ [atomic locks](/docs/{{version}}/cache#atomic-locks). Hiện tại, những driver cache đó là các driver `memcached`, `dynamicodb`, `redis`, `mongodb` (bao gồm cả package `mongodb/laravel-mongodb` official), `database`, `file`, và `array` . Ngoài ra, bạn không thể sử dụng driver session `cookie`.
 
 Mặc định, Laravel cho phép các request sử dụng cùng một session để chạy đồng thời. Vì vậy, ví dụ: nếu bạn sử dụng thư viện JavaScript HTTP để thực hiện hai request HTTP tới ứng dụng của bạn cùng một lúc, thì cả hai sẽ thực thi đồng thời. Đối với nhiều ứng dụng, đây không phải là vấn đề; tuy nhiên, mất dữ liệu session cũng có thể xảy ra trong một phần hiếm các ứng dụng khi thực hiện request đồng thời đến hai điểm khác nhau trong cùng một ứng dụng, mà cả hai điểm đó đều có cùng chức năng ghi dữ liệu vào session.
 
@@ -267,11 +253,11 @@ Mặc định, Laravel cho phép các request sử dụng cùng một session đ
 
     Route::post('/profile', function () {
         // ...
-    })->block($lockSeconds = 10, $waitSeconds = 10)
+    })->block($lockSeconds = 10, $waitSeconds = 10);
 
     Route::post('/order', function () {
         // ...
-    })->block($lockSeconds = 10, $waitSeconds = 10)
+    })->block($lockSeconds = 10, $waitSeconds = 10);
 
 Phương thức `block` chấp nhận hai tham số tùy chọn. Tham số đầu tiên được phương thức `block` chấp nhận là số giây tối đa mà session lock sẽ được giữ trước khi nó được giải phóng. Tất nhiên, nếu request kết thúc trước thời điểm này, thì lock này sẽ được giải phóng sớm hơn.
 
@@ -281,7 +267,7 @@ Nếu cả hai tham số này đều không được truyền vào, thì lock s�
 
     Route::post('/profile', function () {
         // ...
-    })->block()
+    })->block();
 
 <a name="adding-custom-session-drivers"></a>
 ## Thêm tuỳ chỉnh Session Drivers
@@ -305,10 +291,9 @@ Nếu không có driver session nào phù hợp với nhu cầu ứng dụng c�
         public function gc($lifetime) {}
     }
 
-> [!NOTE]
-> Laravel sẽ không định nghĩa một thư mục để chứa các extension cho bạn. Bạn có thể tự do lưu extension của bạn vào bất kỳ nơi nào mà bạn thích. Trong ví dụ này, chúng tôi đã tạo một thư mục `Extensions` để chứa `MongoSessionHandler`.
+Vì Laravel không cung cấp một thư mục mặc định để lưu các extension cho bạn. Bạn có thể tự do lưu extension của bạn vào bất kỳ nơi nào mà bạn thích. Trong ví dụ này, chúng tôi đã tạo một thư mục `Extensions` để chứa `MongoSessionHandler`.
 
-Vì mục đích của những phương thức này là không dễ hiểu, chúng ta hãy nhanh chóng xem những gì mà mỗi phương thức làm:
+Vì mục đích của những phương thức này là không dễ hiểu, đây là một overview về mục đích của mỗi phương thức:
 
 <div class="content-list" markdown="1">
 
@@ -357,4 +342,4 @@ Khi driver của bạn đã được thực hiện xong, bạn đã sẵn sàng 
         }
     }
 
-Khi driver session đã được đăng ký, bạn có thể sử dụng driver `mongo` trong file cấu hình `config/session.php` của bạn.
+Khi driver session đã được đăng ký, bạn có thể chỉ định driver `mongo` làm driver session của ứng dụng bằng cách sử dụng biến môi trường `SESSION_DRIVER` hoặc trong file cấu hình `config/session.php` của ứng dụng.

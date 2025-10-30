@@ -7,6 +7,8 @@
     - [Presets](#presets)
     - [Rules](#rules)
     - [Loại trừ file hoặc folder](#excluding-files-or-folders)
+- [Continuous Integration](#continuous-integration)
+    - [GitHub Actions](#running-tests-on-github-actions)
 
 <a name="introduction"></a>
 ## Giới thiệu
@@ -47,16 +49,28 @@ Pint sẽ hiển thị một danh sách đầy đủ tất cả các file mà n�
 ./vendor/bin/pint -v
 ```
 
-Nếu bạn muốn Pint chỉ kiểm tra các lỗi code style của bạn mà không muốn thay đổi các file, bạn có thể sử dụng tùy chọn `--test`:
+Nếu bạn muốn Pint chỉ kiểm tra các lỗi code style của bạn mà không muốn thay đổi các file, bạn có thể sử dụng tùy chọn `--test`. Pint sẽ trả về exit code không phải là 0 nếu có lỗi code style nào được tìm thấy:
 
 ```shell
 ./vendor/bin/pint --test
+```
+
+Nếu bạn muốn Pint chỉ sửa các file khác với branch được cung cấp trong Git, bạn có thể sử dụng tùy chọn `--diff=[branch]`. Điều này có thể được sử dụng hiệu quả trong môi trường CI của bạn (như GitHub actions) để tiết kiệm thời gian bằng cách chỉ kiểm tra các file mới hoặc đã sửa trước đó:
+
+```shell
+./vendor/bin/pint --diff=main
 ```
 
 Nếu bạn muốn Pint chỉ sửa các file có thay đổi chưa được commit vào Git, bạn có thể sử dụng tùy chọn `--dirty`:
 
 ```shell
 ./vendor/bin/pint --dirty
+```
+
+Nếu bạn muốn Pint sửa bất kỳ file nào có lỗi code style nhưng vẫn trả về exit code khác 0 nếu có bất kỳ lỗi nào được sửa, bạn có thể sử dụng tùy chọn `--repair`:
+
+```shell
+./vendor/bin/pint --repair
 ```
 
 <a name="configuring-pint"></a>
@@ -73,7 +87,7 @@ Như đã đề cập trước đó, Pint không yêu cầu bất kỳ cấu hì
 Ngoài ra, nếu bạn muốn sử dụng `pint.json` từ một thư mục cụ thể, bạn có thể cung cấp tùy chọn `--config` khi gọi Pint:
 
 ```shell
-pint --config vendor/my-company/coding-style/pint.json
+./vendor/bin/pint --config vendor/my-company/coding-style/pint.json
 ```
 
 <a name="presets"></a>
@@ -82,7 +96,7 @@ pint --config vendor/my-company/coding-style/pint.json
 Presets định nghĩa một tập hợp các quy tắc có thể được sử dụng để sửa các vấn đề về coding style trong code của bạn. Mặc định, Pint sử dụng cài đặt có sẵn `laravel`, cài đặt này sửa các vấn đề bằng cách tuân theo coding style ​​của Laravel. Tuy nhiên, bạn cũng có thể chỉ định một cài đặt có sẵn khác bằng cách cung cấp tùy chọn `--preset` cho Pint:
 
 ```shell
-pint --preset psr12
+./vendor/bin/pint --preset psr12
 ```
 
 Nếu bạn muốn, bạn cũng có thể thiết lập cài đặt có sẵn vào trong file `pint.json` của project:
@@ -93,24 +107,24 @@ Nếu bạn muốn, bạn cũng có thể thiết lập cài đặt có sẵn v�
 }
 ```
 
-Các cài đặt có sẵn hiện được Pint hỗ trợ là: `laravel`, `per`, `psr12` và `symfony`.
+Các cài đặt có sẵn hiện được Pint hỗ trợ là: `laravel`, `per`, `psr12`, `symfony`, và `empty`.
 
 <a name="rules"></a>
 ### Rules
 
 Quy tắc là hướng dẫn về style mà Pint sẽ sử dụng để sửa các vấn đề về code style trong code của bạn. Như đã đề cập ở trên, các cài đặt có sẵn là các nhóm quy tắc được định nghĩa trước, hoàn hảo cho hầu hết các dự án PHP, vì vậy bạn thường không cần phải lo lắng về các quy tắc riêng mà chúng chứa.
 
-Tuy nhiên, nếu bạn muốn, bạn có thể enable hoặc disable các quy tắc riêng đó trong file `pint.json` của bạn:
+Tuy nhiên, nếu bạn muốn, bạn có thể enable hoặc disable các quy tắc riêng đó trong file `pint.json` của bạn hoặc sử dụng preset `empty` và định nghĩa các quy tắc từ đầu:
 
 ```json
 {
     "preset": "laravel",
     "rules": {
         "simplified_null_return": true,
-        "braces": false,
-        "new_with_braces": {
-            "anonymous_class": false,
-            "named_class": false
+        "array_indentation": false,
+        "new_with_parentheses": {
+            "anonymous_class": true,
+            "named_class": true
         }
     }
 }
@@ -148,4 +162,47 @@ Nếu bạn muốn bỏ qua một file bằng cách cung cấp đường dẫn �
         "path/to/excluded-file.php"
     ]
 }
+```
+
+
+<a name="continuous-integration"></a>
+## Continuous Integration
+
+<a name="running-tests-on-github-actions"></a>
+### GitHub Actions
+
+Để tự động sửa project của bạn bằng Laravel Pint, bạn có thể cấu hình [GitHub Actions](https://github.com/features/actions) để chạy Pint bất cứ khi nào có code mới được push lên GitHub. Đầu tiên, hãy đảm bảo cấp "quyền Read và write" cho các workflow trong GitHub tại **Settings > Actions > General > Workflow permissions**. Sau đó, bạn hãy tạo một file `.github/workflows/lint.yml` với nội dung sau:
+
+```yaml
+name: Fix Code Style
+
+on: [push]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        php: [8.4]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: json, dom, curl, libxml, mbstring
+          coverage: none
+
+      - name: Install Pint
+        run: composer global require laravel/pint
+
+      - name: Run Pint
+        run: pint
+
+      - name: Commit linted files
+        uses: stefanzweifel/git-auto-commit-action@v5
 ```

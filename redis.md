@@ -20,7 +20,7 @@ Trước khi sử dụng Redis cho Laravel, chúng tôi khuyến khích bạn c�
 Nếu bạn không thể cài đặt extension PhpRedis, bạn có thể cài đặt package `predis/predis` thông qua Composer. Predis là một client Redis được viết hoàn toàn bằng PHP và nó không yêu cầu cài thêm bất kỳ extension nào:
 
 ```shell
-composer require predis/predis
+composer require predis/predis:^2.0
 ```
 
 <a name="configuration"></a>
@@ -32,18 +32,27 @@ Bạn có thể cấu hình cài đặt Redis của ứng dụng thông qua file
 
         'client' => env('REDIS_CLIENT', 'phpredis'),
 
+        'options' => [
+            'cluster' => env('REDIS_CLUSTER', 'redis'),
+            'prefix' => env('REDIS_PREFIX', Str::slug(env('APP_NAME', 'laravel'), '_').'_database_'),
+        ],
+
         'default' => [
+            'url' => env('REDIS_URL'),
             'host' => env('REDIS_HOST', '127.0.0.1'),
+            'username' => env('REDIS_USERNAME'),
             'password' => env('REDIS_PASSWORD'),
-            'port' => env('REDIS_PORT', 6379),
-            'database' => env('REDIS_DB', 0),
+            'port' => env('REDIS_PORT', '6379'),
+            'database' => env('REDIS_DB', '0'),
         ],
 
         'cache' => [
+            'url' => env('REDIS_URL'),
             'host' => env('REDIS_HOST', '127.0.0.1'),
+            'username' => env('REDIS_USERNAME'),
             'password' => env('REDIS_PASSWORD'),
-            'port' => env('REDIS_PORT', 6379),
-            'database' => env('REDIS_CACHE_DB', 1),
+            'port' => env('REDIS_PORT', '6379'),
+            'database' => env('REDIS_CACHE_DB', '1'),
         ],
 
     ],
@@ -53,6 +62,11 @@ Mỗi một server Redis được định nghĩa trong file cấu hình của b�
     'redis' => [
 
         'client' => env('REDIS_CLIENT', 'phpredis'),
+
+        'options' => [
+            'cluster' => env('REDIS_CLUSTER', 'redis'),
+            'prefix' => env('REDIS_PREFIX', Str::slug(env('APP_NAME', 'laravel'), '_').'_database_'),
+        ],
 
         'default' => [
             'url' => 'tcp://127.0.0.1:6379?database=0',
@@ -69,18 +83,14 @@ Mỗi một server Redis được định nghĩa trong file cấu hình của b�
 
 Mặc định, các Redis client sẽ sử dụng scheme `tcp` khi kết nối với Redis server của bạn; tuy nhiên, bạn có thể sử dụng mã hóa TLS / SSL bằng cách chỉ định một tùy chọn cấu hình `scheme` trong mảng cấu hình của Redis server của bạn:
 
-    'redis' => [
-
-        'client' => env('REDIS_CLIENT', 'phpredis'),
-
-        'default' => [
-            'scheme' => 'tls',
-            'host' => env('REDIS_HOST', '127.0.0.1'),
-            'password' => env('REDIS_PASSWORD'),
-            'port' => env('REDIS_PORT', 6379),
-            'database' => env('REDIS_DB', 0),
-        ],
-
+    'default' => [
+        'scheme' => 'tls',
+        'url' => env('REDIS_URL'),
+        'host' => env('REDIS_HOST', '127.0.0.1'),
+        'username' => env('REDIS_USERNAME'),
+        'password' => env('REDIS_PASSWORD'),
+        'port' => env('REDIS_PORT', '6379'),
+        'database' => env('REDIS_DB', '0'),
     ],
 
 <a name="clusters"></a>
@@ -88,39 +98,46 @@ Mặc định, các Redis client sẽ sử dụng scheme `tcp` khi kết nối v
 
 Nếu application của bạn đang sử dụng một cụm server Redis, bạn nên định nghĩa các cụm này bằng một key là `clusters` trong file cấu hình Redis của bạn. Mặc định, khóa cấu hình này không tồn tại, do đó bạn sẽ cần tạo nó trong file cấu hình `config/database.php` của ứng dụng:
 
-    'redis' => [
-
-        'client' => env('REDIS_CLIENT', 'phpredis'),
-
-        'clusters' => [
-            'default' => [
-                [
-                    'host' => env('REDIS_HOST', 'localhost'),
-                    'password' => env('REDIS_PASSWORD'),
-                    'port' => env('REDIS_PORT', 6379),
-                    'database' => 0,
-                ],
-            ],
-        ],
-
-    ],
-
-Mặc định, các cụm này sẽ thực hiện client-side sharding trên các node của bạn, cho phép bạn gộp các node lại và tạo ra một lượng lớn RAM nhất có thể. Tuy nhiên, client-side sharding không xử lý được khi bị thất bại; do đó, nó chủ yếu phù hợp cho việc cache tạm thời các dữ liệu mà có sẵn từ một primary data store khác.
-
-Nếu bạn muốn sử dụng cụm Redis thay vì client-side sharding, bạn có thể chỉ định điều này bằng cách set giá trị cấu hình `options.cluster` thành `redis` trong file cấu hình `config/database.php` của ứng dụng của bạn:
-
-    'redis' => [
+    redis' => [
 
         'client' => env('REDIS_CLIENT', 'phpredis'),
 
         'options' => [
             'cluster' => env('REDIS_CLUSTER', 'redis'),
+            'prefix' => env('REDIS_PREFIX', Str::slug(env('APP_NAME', 'laravel'), '_').'_database_'),
         ],
+
+        'clusters' => [
+            'default' => [
+                [
+                    'url' => env('REDIS_URL'),
+                    'host' => env('REDIS_HOST', '127.0.0.1'),
+                    'username' => env('REDIS_USERNAME'),
+                    'password' => env('REDIS_PASSWORD'),
+                    'port' => env('REDIS_PORT', '6379'),
+                    'database' => env('REDIS_DB', '0'),
+                ],
+            ],
+        ],
+
+        // ...
+    ],
+
+Mặc định, Laravel sẽ sử dụng native Redis clustering vì giá trị cấu hình `options.cluster` được set thành `redis`. Redis clustering là một tùy chọn mặc định tuyệt vời, bởi vì nó xử lý failover một cách linh hoạt.
+
+Laravel cũng hỗ trợ client-side sharding khi sử dụng Predis. Tuy nhiên, client-side sharding không xử lý được khi bị thất bại; do đó, nó chủ yếu phù hợp cho việc cache tạm thời các dữ liệu mà có sẵn từ một primary data store khác.
+
+Nếu bạn muốn sử dụng client-side sharding thay vì native Redis clustering, bạn có thể xoá giá trị cấu hình `options.cluster` trong file cấu hình `config/database.php` của ứng dụng của bạn:
+
+    'redis' => [
+
+        'client' => env('REDIS_CLIENT', 'phpredis'),
 
         'clusters' => [
             // ...
         ],
 
+        // ...
     ],
 
 <a name="predis"></a>
@@ -135,24 +152,17 @@ Nếu bạn muốn ứng dụng của bạn tương tác với Redis thông qua 
         // ...
     ],
 
-Ngoài các tùy chọn cấu hình server mặc định như là `host`, `port`, `database`, và `password`, Predis còn hỗ trợ thêm các [tham số kết nối](https://github.com/nrk/predis/wiki/Connection-Parameters) có thể định nghĩa cho mỗi server Redis của bạn. Để sử dụng thêm các tùy chọn cấu hình này, hãy thêm chúng vào cấu hình server Redis của bạn trong file cấu hình `config/database.php` của application của bạn:
+Ngoài các tùy chọn cấu hình mặc định, Predis còn hỗ trợ thêm các [tham số kết nối](https://github.com/nrk/predis/wiki/Connection-Parameters) có thể định nghĩa cho mỗi server Redis của bạn. Để sử dụng thêm các tùy chọn cấu hình này, hãy thêm chúng vào cấu hình server Redis của bạn trong file cấu hình `config/database.php` của application của bạn:
 
     'default' => [
-        'host' => env('REDIS_HOST', 'localhost'),
+        'url' => env('REDIS_URL'),
+        'host' => env('REDIS_HOST', '127.0.0.1'),
+        'username' => env('REDIS_USERNAME'),
         'password' => env('REDIS_PASSWORD'),
-        'port' => env('REDIS_PORT', 6379),
-        'database' => 0,
+        'port' => env('REDIS_PORT', '6379'),
+        'database' => env('REDIS_DB', '0'),
         'read_write_timeout' => 60,
     ],
-
-<a name="the-redis-facade-alias"></a>
-#### The Redis Facade Alias
-
-File cấu hình `config/app.php` của Laravel chứa một mảng `aliases` định nghĩa tất cả các alias của class sẽ được framework đăng ký. Mặc định, sẽ không có alias `Redis` vì nó xung đột với class tên `Redis` do extension PhpRedis cung cấp. Nếu bạn đang sử dụng Predis client và muốn thêm alias `Redis`, bạn có thể thêm alias này vào trong mảng `aliases` trong file cấu hình `config/app.php` của ứng dụng của bạn:
-
-    'aliases' => Facade::defaultAliases()->merge([
-        'Redis' => Illuminate\Support\Facades\Redis::class,
-    ])->toArray(),
 
 <a name="phpredis"></a>
 ### PhpRedis
@@ -163,16 +173,18 @@ Mặc định, Laravel sẽ sử dụng extension PhpRedis để giao tiếp v�
 
         'client' => env('REDIS_CLIENT', 'phpredis'),
 
-        // Rest of Redis configuration...
+        // ...
     ],
 
-Ngoài các tham số kết nối mặc định `scheme`, `host`, `port`, `database`, và `password`, PhpRedis cũng hỗ trợ thêm các tham số kết nối bổ sung như sau: `name`, `persistent`, `persistent_id`, `prefix`, `read_timeout`, `retry_interval`, `timeout`, và `context`. Bạn có thể thêm bất kỳ tùy chọn nào vào cấu hình server Redis của bạn trong file cấu hình `config/database.php`:
+Ngoài các tùy chọn cấu hình mặc định, PhpRedis cũng hỗ trợ thêm các tham số kết nối bổ sung như sau: `name`, `persistent`, `persistent_id`, `prefix`, `read_timeout`, `retry_interval`, `max_retries`, `backoff_algorithm`, `backoff_base`, `backoff_cap`, `timeout`, và `context`. Bạn có thể thêm bất kỳ tùy chọn nào vào cấu hình server Redis của bạn trong file cấu hình `config/database.php`:
 
     'default' => [
-        'host' => env('REDIS_HOST', 'localhost'),
+        'url' => env('REDIS_URL'),
+        'host' => env('REDIS_HOST', '127.0.0.1'),
+        'username' => env('REDIS_USERNAME'),
         'password' => env('REDIS_PASSWORD'),
-        'port' => env('REDIS_PORT', 6379),
-        'database' => 0,
+        'port' => env('REDIS_PORT', '6379'),
+        'database' => env('REDIS_DB', '0'),
         'read_timeout' => 60,
         'context' => [
             // 'auth' => ['username', 'secret'],
@@ -190,11 +202,13 @@ Extension PhpRedis cũng có thể được cấu hình để sử dụng nhiề
         'client' => env('REDIS_CLIENT', 'phpredis'),
 
         'options' => [
+            'cluster' => env('REDIS_CLUSTER', 'redis'),
+            'prefix' => env('REDIS_PREFIX', Str::slug(env('APP_NAME', 'laravel'), '_').'_database_'),
             'serializer' => Redis::SERIALIZER_MSGPACK,
             'compression' => Redis::COMPRESSION_LZ4,
         ],
 
-        // Rest of Redis configuration...
+        // ...
     ],
 
 Các serializers được hỗ trợ hiện tại là: `Redis::SERIALIZER_NONE` (mặc định), `Redis::SERIALIZER_PHP`, `Redis::SERIALIZER_JSON`, `Redis::SERIALIZER_IGBINARY` và `Redis::SERIALIZER_MSGPACK`.

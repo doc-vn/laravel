@@ -35,7 +35,7 @@
     - [Subscription số lượng lớn](#subscription-quantity)
     - [Subscription với nhiều sản phẩm](#subscriptions-with-multiple-products)
     - [Nhiều giá cho subscription](#multiple-subscriptions)
-    - [Thanh toán theo số liệu](#metered-billing)
+    - [Thanh toán theo mức độ sử dụng](#usage-based-billing)
     - [Thuế của Subscription](#subscription-taxes)
     - [Subscription cố định ngày](#subscription-anchor-date)
     - [Huỷ Subscription](#cancelling-subscriptions)
@@ -200,9 +200,6 @@ Sau khi chức năng tính thuế đã được bật, mọi đăng ký mới v�
 
 Để chức năng này hoạt động bình thường, chi tiết thanh toán của khách hàng, chẳng hạn như tên, địa chỉ và mã số thuế của khách hàng, cần phải được đồng bộ với Stripe. Bạn có thể sử dụng các phương thức [đồng bộ hóa dữ liệu khách hàng](#syncing-customer-data-with-stripe) và [Tax ID](#tax-ids) do Cashier cung cấp để thực hiện việc này.
 
-> [!WARNING]
-> Không thể tính thuế cho [các khoản phí đơn lẻ](#single-charges) hoặc [các thanh toán một lần](#single-charge-checkouts).
-
 <a name="logging"></a>
 ### Logging
 
@@ -266,8 +263,8 @@ Việc cung cấp thanh toán sản phẩm và subscription thông qua ứng d�
         ]);
     })->name('checkout');
 
-    Route::view('checkout.success')->name('checkout-success');
-    Route::view('checkout.cancel')->name('checkout-cancel');
+    Route::view('/checkout/success', 'checkout.success')->name('checkout-success');
+    Route::view('/checkout/cancel', 'checkout.cancel')->name('checkout-cancel');
 
 Như bạn có thể thấy trong ví dụ trên, chúng ta sẽ sử dụng phương thức `checkout` do Cashier cung cấp để chuyển hướng khách hàng đến Stripe Checkout với một "mã giá" nhất định. Khi sử dụng Stripe, "giá" ám chỉ [giá đã được định nghĩa cho các sản phẩm cụ thể](https://stripe.com/docs/products-prices/how-products-and-prices-work).
 
@@ -845,8 +842,8 @@ Về thời gian khách hàng phải thanh toán hóa đơn trước khi gói đ
 Nếu muốn set [số lượng](https://stripe.com/docs/billing/subscriptions/quantities) cụ thể cho gói subscription, bạn nên gọi phương thức `quantity` trên subscription builder trước khi tạo subscription:
 
     $user->newSubscription('default', 'price_monthly')
-         ->quantity(5)
-         ->create($paymentMethod);
+        ->quantity(5)
+        ->create($paymentMethod);
 
 <a name="additional-details"></a>
 #### Additional Details
@@ -865,14 +862,14 @@ Nếu bạn muốn thêm chi tiết về các tùy chọn [customer](https://str
 Nếu bạn muốn áp dụng phiếu giảm giá khi tạo subscription, bạn có thể sử dụng phương thức `withCoupon`:
 
     $user->newSubscription('default', 'price_monthly')
-         ->withCoupon('code')
-         ->create($paymentMethod);
+        ->withCoupon('code')
+        ->create($paymentMethod);
 
 Hoặc, nếu bạn muốn áp dụng [mã khuyến mại Stripe](https://stripe.com/docs/billing/subscriptions/discounts/codes), bạn có thể sử dụng phương thức `withPromotionCode`:
 
     $user->newSubscription('default', 'price_monthly')
-         ->withPromotionCode('promo_code_id')
-         ->create($paymentMethod);
+        ->withPromotionCode('promo_code_id')
+        ->create($paymentMethod);
 
 ID mã khuyến mại đã cho phải là ID của API Stripe được gán cho mã khuyến mại chứ không phải mã khuyến mại dành cho khách hàng. Nếu bạn cần tìm ID mã khuyến mãi dựa theo mã khuyến mãi mà khách hàng nhập vào, bạn có thể sử dụng phương thức `findPromotionCode`:
 
@@ -966,7 +963,7 @@ Phương thức `subscribed` cũng là một cách tuyệt vời cho một [rout
         {
             if ($request->user() && ! $request->user()->subscribed('default')) {
                 // This user is not a paying customer...
-                return redirect('billing');
+                return redirect('/billing');
             }
 
             return $next($request);
@@ -1107,8 +1104,8 @@ Nếu customer đang trong thời gian dùng thử, thì thời gian dùng thử
 Nếu bạn muốn thay đổi prices và hủy tất cả các price dùng thử mà customer hiện đang sử dụng, bạn có thể gọi phương thức `skipTrial`:
 
     $user->subscription('default')
-            ->skipTrial()
-            ->swap('price_yearly');
+        ->skipTrial()
+        ->swap('price_yearly');
 
 Nếu bạn muốn thay đổi prices và lập hóa đơn ngay cho customer thay vì đợi đến chu kỳ thanh toán tiếp theo của họ, bạn có thể sử dụng phương pháp `swapAndInvoice`:
 
@@ -1240,8 +1237,8 @@ Nếu bạn muốn thay đổi một giá duy nhất trên một subscription, b
     $user = User::find(1);
 
     $user->subscription('default')
-            ->findItemOrFail('price_basic')
-            ->swap('price_pro');
+        ->findItemOrFail('price_basic')
+        ->swap('price_pro');
 
 <a name="proration"></a>
 #### Proration
@@ -1312,12 +1309,12 @@ Tất nhiên, bạn cũng có thể hủy đăng ký:
 
     $user->subscription('swimming')->cancel();
 
-<a name="metered-billing"></a>
-### Thanh toán theo số liệu
+<a name="usage-based-billing"></a>
+### Thanh toán theo mức độ sử dụng
 
-[Thanh toán theo số liệu](https://stripe.com/docs/billing/subscriptions/metered-billing) cho phép bạn tính phí khách hàng dựa trên một mức sử dụng sản phẩm của bạn trong một chu kỳ thanh toán. Ví dụ: bạn có thể tính phí khách hàng dựa trên số lượng tin nhắn văn bản hoặc email mà họ đã gửi mỗi tháng.
+[Thanh toán theo mức độ sử dụng](https://stripe.com/docs/billing/subscriptions/usage-based-billing) cho phép bạn tính phí khách hàng dựa trên một mức sử dụng sản phẩm của bạn trong một chu kỳ thanh toán. Ví dụ: bạn có thể tính phí khách hàng dựa trên số lượng tin nhắn văn bản hoặc email mà họ đã gửi mỗi tháng.
 
-Để bắt đầu sử dụng thanh toán theo số liệu, trước tiên bạn cần tạo ra một sản phẩm mới trong bảng điều khiển Stripe của bạn với giá đo lường. Sau đó, sử dụng `meteredPrice` để thêm ID của giá đo lường vào đăng ký của khách hàng:
+Để bắt đầu sử dụng thanh toán theo mức độ sử dụng, trước tiên bạn cần tạo ra một sản phẩm mới trong bảng điều khiển Stripe của bạn cùng với một [billing model dựa trên mức sử dụng](https://docs.stripe.com/billing/subscriptions/usage-based/implementation-guide) và một [bộ đo](https://docs.stripe.com/billing/subscriptions/usage-based/recording-usage#configure-meter). Sau khi tạo bộ đo, hãy lưu tên event và ID bộ đo, những thông tin bạn sẽ cần để báo cáo và lấy ra mức sử dụng. Sau đó, sử dụng phương thức `meteredPrice` để thêm ID của giá đo lường vào đăng ký của khách hàng:
 
     use Illuminate\Http\Request;
 
@@ -1332,9 +1329,9 @@ Tất nhiên, bạn cũng có thể hủy đăng ký:
 Bạn cũng có thể bắt đầu subscription theo đo lường thông qua [Stripe Checkout](#checkout):
 
     $checkout = Auth::user()
-            ->newSubscription('default', [])
-            ->meteredPrice('price_metered')
-            ->checkout();
+        ->newSubscription('default', [])
+        ->meteredPrice('price_metered')
+        ->checkout();
 
     return view('your-checkout-view', [
         'checkout' => $checkout,
@@ -1343,54 +1340,33 @@ Bạn cũng có thể bắt đầu subscription theo đo lường thông qua [St
 <a name="reporting-usage"></a>
 #### Reporting Usage
 
-Khi khách hàng của bạn sử dụng ứng dụng của bạn, bạn sẽ báo cáo việc sử dụng của họ cho Stripe biết để Stripe có thể được lập hóa đơn một cách chính xác. Để tăng mức sử dụng của subscription được đo, bạn có thể sử dụng phương thức `reportUsage`:
+Khi khách hàng của bạn sử dụng ứng dụng của bạn, bạn sẽ báo cáo việc sử dụng của họ cho Stripe biết để Stripe có thể được lập hóa đơn một cách chính xác. Để báo cáo mức sử dụng của một event, bạn có thể sử dụng phương thức `reportMeterEvent` trên model `Billable` của bạn:
 
     $user = User::find(1);
 
-    $user->subscription('default')->reportUsage();
+    $user->reportMeterEvent('emails-sent');
 
 Mặc định, "số lượng sử dụng" sẽ là 1 và được thêm vào trong thời hạn thanh toán. Ngoài ra, bạn có thể truyền thêm một lượng cụ thể "mức độ sử dụng" vào mức sử dụng của khách hàng trong thời hạn thanh toán:
 
     $user = User::find(1);
 
-    $user->subscription('default')->reportUsage(15);
+    $user->reportMeterEvent('emails-sent', quantity: 15);
 
-Nếu ứng dụng của bạn cho phép nhiều giá vào một đăng ký, thì bạn sẽ cần sử dụng phương thức `reportUsageFor` để chỉ định mức giá nào mà bạn muốn báo cáo mức độ sử dụng:
-
-    $user = User::find(1);
-
-    $user->subscription('default')->reportUsageFor('price_metered', 15);
-
-Thỉnh thoảng, bạn có thể cần cập nhật mức sử dụng mà bạn đã báo cáo trước đó. Để thực hiện điều này, bạn có thể truyền một timestamp hoặc một instance của `DateTimeInterface` làm tham số thứ hai cho `reportUsage`. Khi làm như vậy, Stripe sẽ cập nhật mức độ sử dụng được báo cáo tại thời điểm đó. Bạn có thể tiếp tục cập nhật các record báo cáo sử dụng trước đó vì ngày và giờ vẫn ở trong thời hạn thanh toán hiện tại:
+Để lấy ra một bản tóm tắt event của khách hàng cho một bộ đo nhất định, bạn có thể sử dụng phương thức `meterEventSummaries` của instance `Billable`:
 
     $user = User::find(1);
 
-    $user->subscription('default')->reportUsage(5, $timestamp);
+    $meterUsage = $user->meterEventSummaries($meterId);
 
-<a name="retrieving-usage-records"></a>
-#### Retrieving Usage Records
+    $meterUsage->first()->aggregated_value // 10
 
-Để lấy ra các mức sử dụng trước đó của khách hàng, bạn có thể sử dụng phương thức `usageRecords` của một instance subscription:
+Bạn hãy tham khảo thêm [tài liệu về object tóm tắt event](https://docs.stripe.com/api/billing/meter-event_summary/object) của Stripe để biết thêm thông tin chi tiết của object này.
 
-    $user = User::find(1);
-
-    $usageRecords = $user->subscription('default')->usageRecords();
-
-Nếu ứng dụng của bạn cho phép nhiều giá vào một đăng ký, thì bạn có thể sử dụng phương thức `usageRecordsFor` để chỉ định mức giá đo lường nào mà bạn muốn lấy ra các record sử dụng:
+Để [liệt kê ra tất cả các bộ đo](https://docs.stripe.com/api/billing/meter/list), bạn có thể sử dụng phương thức `meters` của instance `Billable`:
 
     $user = User::find(1);
 
-    $usageRecords = $user->subscription('default')->usageRecordsFor('price_metered');
-
-Các phương thức `usageRecords` và `usageRecordsFor` sẽ trả về một instance Collection có chứa một mảng kết hợp của các record sử dụng. Bạn có thể lặp mảng này để hiển thị tổng mức sử dụng của khách hàng:
-
-    @foreach ($usageRecords as $usageRecord)
-        - Period Starting: {{ $usageRecord['period']['start'] }}
-        - Period Ending: {{ $usageRecord['period']['end'] }}
-        - Total Usage: {{ $usageRecord['total_usage'] }}
-    @endforeach
-
-Để tham khảo đầy đủ về tất cả dữ liệu sử dụng được trả về và cách sử dụng phân trang dựa trên con trỏ của Stripe, vui lòng tham khảo [tài liệu API chính thức của Stripe](https://stripe.com/docs/api/usage_records/subscription_item_summary_list).
+    $user->meters();
 
 <a name="subscription-taxes"></a>
 ### Thuế của Subscription
@@ -1465,8 +1441,8 @@ Mặc định, ngày cố định thanh toán là ngày đã tạo ra subscripti
         $anchor = Carbon::parse('first day of next month');
 
         $request->user()->newSubscription('default', 'price_monthly')
-                    ->anchorBillingCycleOn($anchor->startOfDay())
-                    ->create($request->paymentMethodId);
+            ->anchorBillingCycleOn($anchor->startOfDay())
+            ->create($request->paymentMethodId);
 
         // ...
     });
@@ -1531,8 +1507,8 @@ Nếu bạn muốn cung cấp thời gian dùng thử cho khách hàng của b�
 
     Route::post('/user/subscribe', function (Request $request) {
         $request->user()->newSubscription('default', 'price_monthly')
-                    ->trialDays(10)
-                    ->create($request->paymentMethodId);
+            ->trialDays(10)
+            ->create($request->paymentMethodId);
 
         // ...
     });
@@ -1547,8 +1523,8 @@ Phương thức `trialUntil` cho phép bạn cung cấp một instance `DateTime
     use Carbon\Carbon;
 
     $user->newSubscription('default', 'price_monthly')
-                ->trialUntil(Carbon::now()->addDays(10))
-                ->create($paymentMethod);
+        ->trialUntil(Carbon::now()->addDays(10))
+        ->create($paymentMethod);
 
 Bạn có thể xác định xem người dùng hiện tại có đang trong thời gian dùng thử hay không bằng cách sử dụng phương thức `onTrial` trên instance người dùng hoặc phương thức `onTrial` trên instance subscription. Hai ví dụ dưới đây có kết quả tương đương:
 
@@ -1688,11 +1664,13 @@ php artisan cashier:webhook --disabled
 <a name="webhooks-csrf-protection"></a>
 #### Webhooks & CSRF Protection
 
-Vì các webhook của Stripe cần bỏ qua bước [bảo vệ CSRF](/docs/{{version}}/csrf) của Laravel, nên bạn hãy chắc chắn là đã khai báo URI của Stripe là một ngoại lệ trong middleware `App\Http\Middleware\VerifyCsrfToken` của bạn hoặc bạn có thể khai báo route này ra khỏi group middleware `web`:
+Vì các webhook của Stripe cần bỏ qua bước [bảo vệ CSRF](/docs/{{version}}/csrf) của Laravel, bạn nên đảm bảo Laravel sẽ không thử validate CSRF token cho các webhook mà được Stripe gửi đến. Để thực hiện việc này, bạn nên bỏ `stripe/*` khỏi cơ chế bảo vệ CSRF trong file `bootstrap/app.php` của ứng dụng:
 
-    protected $except = [
-        'stripe/*',
-    ];
+    ->withMiddleware(function (Middleware $middleware) {
+        $middleware->validateCsrfTokens(except: [
+            'stripe/*',
+        ]);
+    })
 
 <a name="defining-webhook-event-handlers"></a>
 ### Định nghĩa xử lý event Webhook
@@ -1721,25 +1699,6 @@ Cả hai sự kiện này đều chứa toàn bộ payload của webhook Stripe.
                 // Handle the incoming event...
             }
         }
-    }
-
-Khi listener của bạn đã được định nghĩa, bạn có thể đăng ký nó trong `EventServiceProvider` của ứng dụng:
-
-    <?php
-
-    namespace App\Providers;
-
-    use App\Listeners\StripeEventListener;
-    use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
-    use Laravel\Cashier\Events\WebhookReceived;
-
-    class EventServiceProvider extends ServiceProvider
-    {
-        protected $listen = [
-            WebhookReceived::class => [
-                StripeEventListener::class,
-            ],
-        ];
     }
 
 <a name="verifying-webhook-signatures"></a>
@@ -1923,7 +1882,7 @@ Bạn có thể truyền một mảng giá cho phương thức `previewInvoice` 
 
 Trước khi tạo file hóa đơn PDF, bạn nên sử dụng Composer để cài đặt thư viện Dompdf, đây là thư viện tạo hóa đơn pdf mặc định của Cashier:
 
-```php
+```shell
 composer require dompdf/dompdf
 ```
 
@@ -2172,7 +2131,7 @@ Một là, bạn có thể chuyển hướng khách hàng của bạn đến tra
 
     try {
         $subscription = $user->newSubscription('default', 'price_monthly')
-                                ->create($paymentMethod);
+            ->create($paymentMethod);
     } catch (IncompletePayment $exception) {
         return redirect()->route(
             'cashier.payment',
@@ -2298,7 +2257,7 @@ Bạn có thể gọi phương thức `stripe` trên class `Cashier` nếu bạn
 <a name="testing"></a>
 ## Testing
 
-Khi testing một ứng dụng sử dụng Cashier, bạn có thể cần mô phỏng các request HTTP thực tế đối với API của Stripe; tuy nhiên, điều này đòi hỏi bạn phải thực hiện lại một phần hành vi của chính Cashier. Do đó, chúng tôi khuyên bạn nên cho phép các bài test của bạn được chạm vào các API Stripe thực tế. Mặc dù điều này sẽ chậm hơn, nhưng nó sẽ cung cấp thêm niềm tin rằng ứng dụng của bạn đang hoạt động như mong đợi và bất kỳ bài test chậm nào cũng có thể được lưu vào trong một group testing PHPUnit của riêng nó.
+Khi testing một ứng dụng sử dụng Cashier, bạn có thể cần mô phỏng các request HTTP thực tế đối với API của Stripe; tuy nhiên, điều này đòi hỏi bạn phải thực hiện lại một phần hành vi của chính Cashier. Do đó, chúng tôi khuyên bạn nên cho phép các bài test của bạn được gọi vào các API Stripe thực tế. Mặc dù điều này sẽ chậm hơn, nhưng nó sẽ cung cấp thêm niềm tin rằng ứng dụng của bạn đang hoạt động như mong đợi và bất kỳ bài test chậm nào cũng có thể được lưu vào trong một group testing PHPUnit hoặc Pest của riêng nó.
 
 Khi testing, hãy nhớ rằng bản thân Cashier đã có sẵn một bộ test case tuyệt vời, vì vậy bạn chỉ nên tập trung vào việc test các luồng subscription và thanh toán của ứng dụng của riêng bạn chứ không phải test mọi hành vi cơ bản của Cashier.
 

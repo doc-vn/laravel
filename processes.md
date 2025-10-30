@@ -22,7 +22,7 @@
 <a name="introduction"></a>
 ## Giới thiệu
 
-Laravel cung cấp một API tối giản, rõ ràng xoay quanh [component Symfony Process](https://symfony.com/doc/current/components/process.html), cho phép bạn dễ dàng gọi các process bên ngoài từ ứng dụng Laravel của bạn. Các tính năng process của Laravel tập trung vào các trường hợp sử dụng phổ biến nhất và mang lại trải nghiệm tuyệt vời cho nhà phát triển.
+Laravel cung cấp một API tối giản, rõ ràng xoay quanh [component Symfony Process](https://symfony.com/doc/7.0/components/process.html), cho phép bạn dễ dàng gọi các process bên ngoài từ ứng dụng Laravel của bạn. Các tính năng process của Laravel tập trung vào các trường hợp sử dụng phổ biến nhất và mang lại trải nghiệm tuyệt vời cho nhà phát triển.
 
 <a name="invoking-processes"></a>
 ## Gọi Processes
@@ -64,7 +64,6 @@ $result = Process::run('ls -la')->throwIf($condition);
 ### Process Options
 
 Tất nhiên, bạn có thể cần tùy chỉnh hành vi của một process trước khi gọi nó. May mắn thay, Laravel cho phép bạn tinh chỉnh nhiều tính năng của process, chẳng hạn như thư mục làm việc, thời gian chờ và biến môi trường.
-
 
 <a name="working-directory-path"></a>
 #### Working Directory Path
@@ -112,16 +111,16 @@ Biến môi trường có thể được cung cấp cho process thông qua phư�
 
 ```php
 $result = Process::forever()
-            ->env(['IMPORT_PATH' => __DIR__])
-            ->run('bash import.sh');
+    ->env(['IMPORT_PATH' => __DIR__])
+    ->run('bash import.sh');
 ```
 
 Nếu bạn muốn xóa một biến môi trường được kế thừa ra khỏi process được gọi, bạn có thể cung cấp biến môi trường đó với giá trị `false`:
 
 ```php
 $result = Process::forever()
-            ->env(['LOAD_PATH' => false])
-            ->run('bash import.sh');
+    ->env(['LOAD_PATH' => false])
+    ->run('bash import.sh');
 ```
 
 <a name="tty-mode"></a>
@@ -292,6 +291,16 @@ $process = Process::start('bash import.sh', function (string $type, string $outp
 $result = $process->wait();
 ```
 
+Thay vì đợi cho đến khi process kết thúc, bạn có thể sử dụng phương thức `waitUntil` để ngừng đợi dựa trên output của process. Laravel sẽ ngừng đợi process kết thúc cho đến khi closure được truyền cho phương thức `waitUntil` trả về `true`:
+
+```php
+$process = Process::start('bash import.sh');
+
+$process->waitUntil(function (string $type, string $output) {
+    return $output === 'Ready...';
+});
+```
+
 <a name="concurrent-processes"></a>
 ## Processes đồng thời
 
@@ -395,7 +404,30 @@ Route::get('/import', function () {
 
 Khi testing route này, chúng ta có thể hướng dẫn Laravel trả về một kết quả process thành công giả cho mỗi process được gọi bằng cách gọi phương thức `fake` trên facade `Process` mà không có tham số. Ngoài ra, chúng ta thậm chí có thể [kiểm tra](#available-assertions) một process nhất định đã được "chạy":
 
-```php
+```php tab=Pest
+<?php
+
+use Illuminate\Process\PendingProcess;
+use Illuminate\Contracts\Process\ProcessResult;
+use Illuminate\Support\Facades\Process;
+
+test('process is invoked', function () {
+    Process::fake();
+
+    $response = $this->get('/import');
+
+    // Simple process assertion...
+    Process::assertRan('bash import.sh');
+
+    // Or, inspecting the process configuration...
+    Process::assertRan(function (PendingProcess $process, ProcessResult $result) {
+        return $process->command === 'bash import.sh' &&
+               $process->timeout === 60;
+    });
+});
+```
+
+```php tab=PHPUnit
 <?php
 
 namespace Tests\Feature;
@@ -472,8 +504,8 @@ Nếu code của bạn đang kiểm tra việc gọi nhiều process trong cùng
 ```php
 Process::fake([
     'ls *' => Process::sequence()
-                ->push(Process::result('First invocation'))
-                ->push(Process::result('Second invocation')),
+        ->push(Process::result('First invocation'))
+        ->push(Process::result('Second invocation')),
 ]);
 ```
 
@@ -505,11 +537,11 @@ Route::get('/import', function () {
 ```php
 Process::fake([
     'bash import.sh' => Process::describe()
-            ->output('First line of standard output')
-            ->errorOutput('First line of error output')
-            ->output('Second line of standard output')
-            ->exitCode(0)
-            ->iterations(3),
+        ->output('First line of standard output')
+        ->errorOutput('First line of error output')
+        ->output('Second line of standard output')
+        ->exitCode(0)
+        ->iterations(3),
 ]);
 ```
 

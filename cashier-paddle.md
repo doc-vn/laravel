@@ -257,7 +257,7 @@ Như bạn có thể thấy trong ví dụ trên, khi người dùng bắt đầ
 
 Tất nhiên, bạn có thể muốn đánh dấu đơn hàng là đã "hoàn tất" sau khi khách hàng đã hoàn tất quy trình thanh toán. Để thực hiện việc này, bạn có thể listen các webhook được Paddle gửi đi và được Cashier đưa ra thông qua các event để lưu trữ thông tin đơn hàng vào trong cơ sở dữ liệu của bạn.
 
-Để bắt đầu, hãy listen event `TransactionCompleted` được Cashier gửi. Thông thường, bạn nên đăng ký listen event này trong phương thức `boot` của một trong các service provider của ứng dụng:
+Để bắt đầu, hãy listen event `TransactionCompleted` được Cashier gửi. Thông thường, bạn nên đăng ký listen event này trong phương thức `boot` của `AppServiceProvider` trong ứng dụng của bạn:
 
     use App\Listeners\CompleteOrder;
     use Illuminate\Support\Facades\Event;
@@ -276,8 +276,8 @@ Trong ví dụ này, listener `CompleteOrder` có thể sẽ trông như sau:
     namespace App\Listeners;
 
     use App\Models\Order;
-    use Laravel\Cashier\Cashier;
-    use Laravel\Cashier\Events\TransactionCompleted;
+    use Laravel\Paddle\Cashier;
+    use Laravel\Paddle\Events\TransactionCompleted;
 
     class CompleteOrder
     {
@@ -444,7 +444,7 @@ Cashier đã chứa một [component Blade](/docs/{{version}}/blade#components) 
 Mặc định, điều này sẽ hiển thị một widget mặc định của Paddle. Bạn có thể tùy chỉnh widget này bằng cách thêm [thuộc tính mà được Paddle hỗ trợ](https://developer.paddle.com/paddlejs/html-data-attributes) như thuộc tính `data-theme='light'` vào component:
 
 ```html
-<x-paddle-button :url="$payLink" class="px-8 py-4" data-theme="light">
+<x-paddle-button :checkout="$checkout" class="px-8 py-4" data-theme="light">
     Subscribe
 </x-paddle-button>
 ```
@@ -558,7 +558,7 @@ Thỉnh thoảng, bạn có thể cần tạo một checkout session cho ngườ
     use Laravel\Paddle\Checkout;
 
     Route::get('/buy', function (Request $request) {
-        $checkout = Checkout::guest('pri_34567')
+        $checkout = Checkout::guest(['pri_34567'])
             ->returnTo(route('home'));
 
         return view('billing', ['checkout' => $checkout]);
@@ -579,7 +579,7 @@ Paddle cho phép bạn tùy chỉnh giá dựa trên mỗi đơn vị tiền t�
 
     use Laravel\Paddle\Cashier;
 
-    $prices = Cashier::productPrices(['pri_123', 'pri_456'], ['address' => [
+    $prices = Cashier::previewPrices(['pri_123', 'pri_456'], ['address' => [
         'country_code' => 'BE',
         'postal_code' => '1234',
     ]]);
@@ -599,7 +599,7 @@ Bạn cũng có thể hiển thị giá thực (không bao gồm thuế) và hi�
 ```blade
 <ul>
     @foreach ($prices as $price)
-        <li>{{ $price->product_title }} - {{ $price->subtotal() }} (+ {{ $price->tax() }} tax)</li>
+        <li>{{ $price->product['name'] }} - {{ $price->subtotal() }} (+ {{ $price->tax() }} tax)</li>
     @endforeach
 </ul>
 ```
@@ -669,7 +669,7 @@ Các giá trị mặc định này sẽ được sử dụng cho mọi hành đ�
 
 Bạn có thể lấy ra một khách hàng dựa theo ID khách hàng Paddle của họ thông qua phương thức `Cashier::findBilable`. Phương thức này sẽ trả về một instance của billable model:
 
-    use Laravel\Cashier\Cashier;
+    use Laravel\Paddle\Cashier;
 
     $user = Cashier::findBillable($customerId);
 
@@ -703,7 +703,7 @@ Một instance của `Laravel\Paddle\Customer` sẽ được trả về. Sau khi
 
 Tham số đầu tiên được cung cấp cho phương thức `subscribe` là một giá cụ thể mà người dùng đang đăng ký. Giá này phải tương ứng với mã giá có trong Paddle. Phương thức `returnTo` sẽ chấp nhận một URL mà người dùng của bạn sẽ được chuyển đến sau khi họ hoàn tất thanh toán. Tham số thứ hai được truyền vào cho phương thức `subscribe` phải là tên "type" của subscription. Nếu ứng dụng của bạn chỉ cung cấp một loại subscription duy nhất, bạn có thể gọi nó là `default` hoặc `primary`. Type subscription này chỉ dành cho việc sử dụng ứng dụng nội bộ và không nhằm mục đích hiển thị cho người dùng. Ngoài ra, nó cũng không được chứa các khoảng trắng và nó không được thay đổi sau khi tạo subscription.
 
-Bạn cũng có thể cung cấp một mảng meta data tùy chỉnh cho một subscription bằng phương thức `customData`:
+Bạn cũng có thể cung cấp một mảng metadata tùy chỉnh cho một subscription bằng phương thức `customData`:
 
     $checkout = $request->user()->subscribe($premium = 12345, 'default')
         ->customData(['key' => 'value'])
@@ -722,7 +722,7 @@ Sau khi người dùng hoàn tất quá trình thanh toán của họ, webhook `
 <a name="checking-subscription-status"></a>
 ### Kiểm tra trạng thái Subscription
 
-Sau khi người dùng subscription vào ứng dụng của bạn, bạn có thể kiểm tra trạng thái subscription của họ bằng nhiều phương thức tiện lợi khác nhau. Đầu tiên, phương thức `subscribed` sẽ trả về `true` nếu người dùng có subscription tồn tại, ngay cả khi subscription hiện tại đang trong thời gian dùng thử:
+Sau khi người dùng subscription vào ứng dụng của bạn, bạn có thể kiểm tra trạng thái subscription của họ bằng nhiều phương thức tiện lợi khác nhau. Đầu tiên, phương thức `subscribed` sẽ trả về `true` nếu người dùng có một subscription tồn tại, ngay cả khi subscription này đang trong thời gian dùng thử:
 
     if ($user->subscribed()) {
         // ...
@@ -755,7 +755,7 @@ Phương thức `subscribed` cũng là một ví dụ tốt cho một [route mid
         {
             if ($request->user() && ! $request->user()->subscribed()) {
                 // This user is not a paying customer...
-                return redirect('billing');
+                return redirect('/billing');
             }
 
             return $next($request);
@@ -1081,8 +1081,9 @@ Nếu bạn muốn cung cấp thời gian dùng thử cho khách hàng của b�
     use Illuminate\Http\Request;
 
     Route::get('/user/subscribe', function (Request $request) {
-        $checkout = $request->user()->subscribe('pri_monthly')
-                    ->returnTo(route('home'));
+        $checkout = $request->user()
+            ->subscribe('pri_monthly')
+            ->returnTo(route('home'));
 
         return view('billing', ['checkout' => $checkout]);
     });
@@ -1147,7 +1148,8 @@ Khi bạn đã sẵn sàng tạo một subscription thực sự cho người dù
     use Illuminate\Http\Request;
 
     Route::get('/user/subscribe', function (Request $request) {
-        $checkout = $user->subscribe('pri_monthly')
+        $checkout = $request->user()
+            ->subscribe('pri_monthly')
             ->returnTo(route('home'));
 
         return view('billing', ['checkout' => $checkout]);
@@ -1170,7 +1172,7 @@ Bạn có thể sử dụng phương thức `onGenericTrial` nếu bạn muốn 
 
 Bạn có thể gia hạn thời gian dùng thử hiện tại trên một subscription bằng cách sử dụng phương thức `extendTrial` và chỉ định thời điểm kết thúc của gói dùng thử:
 
-    $user->subsription()->extendTrial(now()->addDays(5));
+    $user->subscription()->extendTrial(now()->addDays(5));
 
 Hoặc, bạn có thể kích hoạt ngay đăng ký bằng cách kết thúc thời gian dùng thử thông qua phương thức `activate` trên subscription:
 
@@ -1199,11 +1201,13 @@ Mặc định, controller này sẽ tự động xử lý việc hủy đăng k�
 <a name="webhooks-csrf-protection"></a>
 #### Webhooks và CSRF Protection
 
-Vì các webhook của Paddle cần bỏ qua bước [bảo vệ CSRF](/docs/{{version}}/csrf) của Laravel, nên bạn hãy chắc chắn là đã khai báo URI của Paddle là một ngoại lệ trong middleware `App\Http\Middleware\VerifyCsrfToken` của bạn hoặc bạn có thể khai báo route này ra khỏi group middleware `web`:
+Vì các webhook của Paddle cần được bỏ qua bước [bảo vệ CSRF](/docs/{{version}}/csrf) của Laravel, bạn nên đảm bảo Laravel sẽ không thử xác minh mã token CSRF cho các webhooks Paddle đang được gửi đến ứng dụng của bạn. Để thực hiện việc này, bạn nên loại trừ `paddle/*` ra khỏi chế độ bảo vệ CSRF trong file `bootstrap/app.php` của ứng dụng:
 
-    protected $except = [
-        'paddle/*',
-    ];
+    ->withMiddleware(function (Middleware $middleware) {
+        $middleware->validateCsrfTokens(except: [
+            'paddle/*',
+        ]);
+    })
 
 <a name="webhooks-local-development"></a>
 #### Webhooks và Local Development
@@ -1218,7 +1222,7 @@ Cashier sẽ tự động xử lý hủy subscription nếu như các lần tr�
 - `Laravel\Paddle\Events\WebhookReceived`
 - `Laravel\Paddle\Events\WebhookHandled`
 
-Cả hai event đều chứa toàn bộ payload của webhook Paddle. Ví dụ: nếu bạn muốn xử lý webhook `transaction_billed`, thì bạn có thể đăng ký [listener](/docs/{{version}}/events#defining-listeners) sẽ xử lý event đó:
+Cả hai event đều chứa toàn bộ payload của webhook Paddle. Ví dụ: nếu bạn muốn xử lý webhook `transaction.billed`, thì bạn có thể đăng ký [listener](/docs/{{version}}/events#defining-listeners) sẽ xử lý event đó:
 
     <?php
 
@@ -1233,29 +1237,10 @@ Cả hai event đều chứa toàn bộ payload của webhook Paddle. Ví dụ: 
          */
         public function handle(WebhookReceived $event): void
         {
-            if ($event->payload['alert_name'] === 'transaction_billed') {
+            if ($event->payload['event_type'] === 'transaction.billed') {
                 // Handle the incoming event...
             }
         }
-    }
-
-Khi listener của bạn đã được định nghĩa xong, bạn có thể đăng ký nó trong `EventServiceProvider` của ứng dụng:
-
-    <?php
-
-    namespace App\Providers;
-
-    use App\Listeners\PaddleEventListener;
-    use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
-    use Laravel\Paddle\Events\WebhookReceived;
-
-    class EventServiceProvider extends ServiceProvider
-    {
-        protected $listen = [
-            WebhookReceived::class => [
-                PaddleEventListener::class,
-            ],
-        ];
     }
 
 Cashier cũng phát ra các event dành riêng cho các loại webhook đã nhận. Ngoài toàn bộ payload từ Paddle, chúng cũng chứa các model đã được sử dụng để xử lý webhook, chẳng hạn như billable model, subscription hoặc receipt:
@@ -1389,7 +1374,7 @@ Khi liệt kê các transaction cho một khách hàng, bạn có thể sử d�
 Route `download-invoice` có thể trông như sau:
 
     use Illuminate\Http\Request;
-    use Laravel\Cashier\Transaction;
+    use Laravel\Paddle\Transaction;
 
     Route::get('/download-invoice/{transaction}', function (Request $request, Transaction $transaction) {
         return $transaction->redirectToInvoicePdf();

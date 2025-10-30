@@ -4,7 +4,6 @@
     - [Fortify là gì?](#what-is-fortify)
     - [Khi nào dùng Fortify?](#when-should-i-use-fortify)
 - [Cài đặt](#installation)
-    - [Fortify Service Provider](#the-fortify-service-provider)
     - [Fortify Features](#fortify-features)
     - [Disabling Views](#disabling-views)
 - [Authentication](#authentication)
@@ -75,10 +74,10 @@ Nếu bạn đang thử xây dựng phần xác thực cho một ứng dụng c�
 composer require laravel/fortify
 ```
 
-Tiếp theo, export resource của Fortify bằng lệnh `vendor:publish`:
+Tiếp theo, export resource của Fortify bằng lệnh Artisan `fortify:install`:
 
 ```shell
-php artisan vendor:publish --provider="Laravel\Fortify\FortifyServiceProvider"
+php artisan fortify:install
 ```
 
 Lệnh này sẽ export các action của Fortify vào trong thư mục `app/Actions` của bạn, thư mục này sẽ được tạo nếu nó không tồn tại. Ngoài ra, file cấu hình `FortifyServiceProvider` và tất cả các file migration cơ sở dữ liệu cần thiết khác cũng sẽ được export.
@@ -88,13 +87,6 @@ Tiếp theo, bạn nên migrate cơ sở dữ liệu của bạn:
 ```shell
 php artisan migrate
 ```
-
-<a name="the-fortify-service-provider"></a>
-### Fortify Service Provider
-
-Lệnh `vendor:publish` được thảo luận ở trên cũng sẽ export class `App\Providers\FortifyServiceProvider`. Bạn nên đảm bảo là class này sẽ được đăng ký trong mảng `providers` của file cấu hình `config/app.php` của ứng dụng.
-
-Service provider của Fortify sẽ đăng ký các action mà Fortify đã được export và hướng dẫn Fortify sử dụng các action khi các tác vụ tương ứng với các action đó được thực thi bởi Fortify.
 
 <a name="fortify-features"></a>
 ### Fortify Features
@@ -197,21 +189,33 @@ Ví dụ bên dưới sẽ chứa một định nghĩa hệ thống mặc địn
 
 ```php
 use Laravel\Fortify\Actions\AttemptToAuthenticate;
+use Laravel\Fortify\Actions\CanonicalizeUsername;
 use Laravel\Fortify\Actions\EnsureLoginIsNotThrottled;
 use Laravel\Fortify\Actions\PrepareAuthenticatedSession;
 use Laravel\Fortify\Actions\RedirectIfTwoFactorAuthenticatable;
+use Laravel\Fortify\Features;
 use Laravel\Fortify\Fortify;
 use Illuminate\Http\Request;
 
 Fortify::authenticateThrough(function (Request $request) {
     return array_filter([
             config('fortify.limiters.login') ? null : EnsureLoginIsNotThrottled::class,
+            config('fortify.lowercase_usernames') ? CanonicalizeUsername::class : null,
             Features::enabled(Features::twoFactorAuthentication()) ? RedirectIfTwoFactorAuthenticatable::class : null,
             AttemptToAuthenticate::class,
             PrepareAuthenticatedSession::class,
     ]);
 });
 ```
+
+#### Authentication Throttling
+
+Mặc định, Fortify sẽ giới hạn số lần thử authentication bằng cách sử dụng middleware `EnsureLoginIsNotThrottled`. Middleware này sẽ giới hạn các lần thử authentication theo sự kết hợp giữa tên người dùng và địa chỉ IP.
+
+Một số ứng dụng có thể yêu cầu một cách tiếp cận khác để giới hạn số lần thử authentication, chẳng hạn như giới hạn theo địa chỉ IP. Do đó, Fortify cho phép bạn chỉ định [rate limiter](/docs/{{version}}/routing#rate-limiting) của riêng bạn thông qua tùy chọn cấu hình `fortify.limiters.login`. Tất nhiên, tùy chọn cấu hình này nằm trong file cấu hình `config/fortify.php` của ứng dụng của bạn.
+
+> [!NOTE]
+> Việc sử dụng kết hợp giữa các điều tiết, [xác thực hai yếu tố](/docs/{{version}}/fortify#two-factor-authentication), và tường lửa ứng dụng web (WAF) sẽ cung cấp khả năng bảo vệ mạnh mẽ nhất cho người dùng ứng dụng của bạn.
 
 <a name="customizing-authentication-redirects"></a>
 ### Tuỳ biến Redirect
@@ -532,7 +536,7 @@ Nếu việc gửi lại link này thành công, Fortify sẽ chuyển hướng 
 <a name="protecting-routes"></a>
 ### Bảo vệ route
 
-Để chỉ định một route hoặc một nhóm route sẽ yêu cầu người dùng phải xác minh địa chỉ email của họ, bạn nên gán middleware `verified` được tích hợp sẵn trong Laravel vào route. Middleware này được đăng ký trong class `App\Http\Kernel` của ứng dụng của bạn:
+Để chỉ định một route hoặc một nhóm route sẽ yêu cầu người dùng phải xác minh địa chỉ email của họ, bạn nên gán middleware `verified` được tích hợp sẵn trong Laravel vào route. Alias middleware `verified` đã được Laravel tự động đăng ký và đóng vai trò là alias cho middleware `Illuminate\Auth\Middleware\EnsureEmailIsVerified`:
 
 ```php
 Route::get('/dashboard', function () {

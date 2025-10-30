@@ -11,13 +11,13 @@
 <a name="introduction"></a>
 ## Giới thiệu
 
-Laravel được xây dựng với mục đích để test. Thực tế là, Laravel đã mặc định hỗ trợ việc test với PHPUnit và một file `phpunit.xml` đã được cài đặt sẵn trong application của bạn. Framework này cũng có các phương thức trợ giúp thuận tiện cho phép bạn test application của bạn.
+Laravel được xây dựng với mục đích để test. Thực tế là, Laravel đã mặc định hỗ trợ việc test với [Pest](https://pestphp.com) và [PHPUnit](https://phpunit.de) và một file `phpunit.xml` đã được cài đặt sẵn trong application của bạn. Framework này cũng có các phương thức trợ giúp thuận tiện cho phép bạn test application của bạn.
 
 Mặc định, thư mục `tests` của application sẽ chứa hai thư mục: `Feature` và `Unit`. Các test unit là các bài test tập trung vào một phần rất nhỏ, tách biệt hoàn toàn trong code của bạn. Thực tế là, hầu hết các bài test unit có thể tập trung vào duy nhất một phương thức. Các bài test trong thư mục test "Unit" sẽ không khởi động ứng dụng Laravel của bạn và do đó sẽ không thể truy cập được vào cơ sở dữ liệu của ứng dụng hoặc các service khác của framework .
 
 Feature test cũng có thể test được một phần lớn hơn code của bạn, chứa cả cách mà một số đối tượng tương tác với nhau hoặc thậm chí là một HTTP request được gửi tới một JSON endpoint. **Nói chung, hầu hết các bài test của bạn phải là bài feature test. Loại test này sẽ mang lại sự tự tin cao nhất cho toàn bộ hệ thống của bạn đang hoạt động như dự kiến.**
 
-Một file `exampleTest.php` mẫu cũng đã được cung cấp sẵn ở trong hai thư mục test `Feature` và `Unit`. Sau khi bạn đã cài đặt một application Laravel mới, bạn hãy chạy `vendor/bin/phpunit` hoặc `php artisan test` trên cửa sổ dòng lệnh để chạy bài test của bạn.
+Một file `exampleTest.php` mẫu cũng đã được cung cấp sẵn ở trong hai thư mục test `Feature` và `Unit`. Sau khi bạn đã cài đặt một application Laravel mới, bạn hãy chạy `vendor/bin/pest`, `vendor/bin/phpunit`, hoặc `php artisan test` trên cửa sổ dòng lệnh để chạy bài test của bạn.
 
 <a name="environment"></a>
 ## Environment
@@ -29,12 +29,7 @@ Bạn có thể tự do định nghĩa các giá trị cấu hình khác cho mô
 <a name="the-env-testing-environment-file"></a>
 #### The `.env.testing` Environment File
 
-Ngoài ra, bạn có thể tạo file `.env.testing` trong thư mục gốc của project của bạn. File này sẽ được dùng để thay thế file `.env` khi chạy các bài test PHPUnit hoặc chạy các lệnh Artisan với tùy chọn `--env=testing`.
-
-<a name="the-creates-application-trait"></a>
-#### The `CreatesApplication` Trait
-
-Laravel có chứa một trait `CreatesApplication` được áp dụng cho class `TestCase` base trong ứng dụng của bạn. Trait này chứa phương thức `createApplication` để khởi động ứng dụng Laravel trước khi chạy bài test của bạn. Điều quan trọng là bạn phải để trait này ở vị trí ở đầu vì có một số tính năng, chẳng hạn như tính năng test song song của Laravel, phụ thuộc vào nó.
+Ngoài ra, bạn có thể tạo file `.env.testing` trong thư mục gốc của project của bạn. File này sẽ được dùng để thay thế file `.env` khi chạy các bài test Pest và PHPUnit hoặc chạy các lệnh Artisan với tùy chọn `--env=testing`.
 
 <a name="creating-tests"></a>
 ## Tạo testcase
@@ -51,34 +46,37 @@ Nếu bạn muốn tạo một bài test trong thư mục `tests/Unit`, bạn c�
 php artisan make:test UserTest --unit
 ```
 
-Nếu muốn tạo một bài test [Pest PHP](https://pestphp.com), bạn có thể cung cấp tùy chọn `--pest` cho lệnh `make:test`:
-
-```shell
-php artisan make:test UserTest --pest
-php artisan make:test UserTest --unit --pest
-```
-
 > [!NOTE]
 > Các stub của test có thể được tùy chỉnh bằng cách sử dụng [export stub](/docs/{{version}}/artisan#stub-customization).
 
-Khi file test đã được tạo xong, bạn có thể định nghĩa các phương thức test như khi sử dụng với [PHPUnit](https://phpunit.de). Để chạy test của bạn, hãy chạy lệnh `vendor/bin/phpunit` hoặc lệnh `php artisan test` từ terminal của bạn:
+Khi file test đã được tạo xong, bạn có thể định nghĩa các bài test như khi sử dụng với Pest hoặc PHPUnit. Để chạy test của bạn, hãy chạy lệnh `vendor/bin/pest`, `vendor/bin/phpunit`, hoặc lệnh `php artisan test` từ terminal của bạn:
 
-    <?php
+```php tab=Pest
+<?php
 
-    namespace Tests\Unit;
+test('basic', function () {
+    expect(true)->toBeTrue();
+});
+```
 
-    use PHPUnit\Framework\TestCase;
+```php tab=PHPUnit
+<?php
 
-    class ExampleTest extends TestCase
+namespace Tests\Unit;
+
+use PHPUnit\Framework\TestCase;
+
+class ExampleTest extends TestCase
+{
+    /**
+     * A basic test example.
+     */
+    public function test_basic_test(): void
     {
-        /**
-         * A basic test example.
-         */
-        public function test_basic_test(): void
-        {
-            $this->assertTrue(true);
-        }
+        $this->assertTrue(true);
     }
+}
+```
 
 > [!WARNING]
 > Nếu bạn định nghĩa một phương thức `setUp` / `tearDown` của riêng bạn trong một test class, hãy nhớ gọi các phương thức `parent::setUp()` / `parent::tearDown()` tương ứng ở trong class parent. Thông thường, bạn nên gọi `parent::setUp()` khi bắt đầu phương thức `setUp` của riêng bạn và phương thức `parent::tearDown()` khi kết thúc phương thức `tearDown`.
@@ -86,19 +84,23 @@ Khi file test đã được tạo xong, bạn có thể định nghĩa các phư
 <a name="running-tests"></a>
 ## Chạy testcase
 
-Như đã đề cập trước đó, khi bạn đã viết xong bài test, bạn có thể chạy chúng bằng cách sử dụng `phpunit`:
+Như đã đề cập trước đó, khi bạn đã viết xong bài test, bạn có thể chạy chúng bằng cách sử dụng `pest` hoặc `phpunit`:
 
-```shell
+```shell tab=Pest
+./vendor/bin/pest
+```
+
+```shell tab=PHPUnit
 ./vendor/bin/phpunit
 ```
 
-Ngoài lệnh `phpunit`, bạn có thể sử dụng lệnh Artisan `test` để chạy các bài test của bạn. Artisan test runner cung cấp các báo cáo test chi tiết để dễ dàng phát triển và gỡ lỗi:
+Ngoài lệnh `pest` hoặc `phpunit`, bạn có thể sử dụng lệnh Artisan `test` để chạy các bài test của bạn. Artisan test runner cung cấp các báo cáo test chi tiết để dễ dàng phát triển và gỡ lỗi:
 
 ```shell
 php artisan test
 ```
 
-Bất kỳ tham số nào mà có thể được truyền vào cho lệnh `phpunit` thì cũng có thể được truyền vào cho lệnh Artisan `test`:
+Bất kỳ tham số nào mà có thể được truyền vào cho lệnh `pest` hoặc `phpunit` thì cũng có thể được truyền vào cho lệnh Artisan `test`:
 
 ```shell
 php artisan test --testsuite=Feature --stop-on-failure
@@ -107,7 +109,7 @@ php artisan test --testsuite=Feature --stop-on-failure
 <a name="running-tests-in-parallel"></a>
 ### Chạy testcase đồng thời
 
-Mặc định, Laravel và PHPUnit thực hiện các bài test của bạn theo thứ tự trong một process duy nhất. Tuy nhiên, bạn có thể giảm đáng kể lượng thời gian cần thiết để chạy các bài test bằng cách chạy các bài test đó đồng thời trên nhiều process. Để bắt đầu, bạn nên cài đặt package Composer `brianium/paratest` dưới dạng library của "dev". Sau đó, thêm tùy chọn `--parallel` khi chạy lệnh Artisan `test`:
+Mặc định, Laravel và Pest / PHPUnit thực hiện các bài test của bạn theo thứ tự trong một process duy nhất. Tuy nhiên, bạn có thể giảm đáng kể lượng thời gian cần thiết để chạy các bài test bằng cách chạy các bài test đó đồng thời trên nhiều process. Để bắt đầu, bạn nên cài đặt package Composer `brianium/paratest` dưới dạng library của "dev". Sau đó, thêm tùy chọn `--parallel` khi chạy lệnh Artisan `test`:
 
 ```shell
 composer require brianium/paratest --dev
@@ -122,7 +124,7 @@ php artisan test --parallel --processes=4
 ```
 
 > [!WARNING]
-> Khi chạy test đồng thời, một số tùy chọn PHPUnit (chẳng hạn như `--do-not-cache-result`) có thể không khả dụng.
+> Khi chạy test đồng thời, một số tùy chọn Pest / PHPUnit (chẳng hạn như `--do-not-cache-result`) có thể không khả dụng.
 
 <a name="parallel-testing-and-databases"></a>
 #### Parallel Testing và Databases

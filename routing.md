@@ -1,9 +1,11 @@
 # Routing
 
 - [Routing cở bản](#basic-routing)
+    - [Các file Route mặc định](#the-default-route-files)
     - [Chuyển hướng Route](#redirect-routes)
     - [View Routes](#view-routes)
-    - [Danh sách Route](#the-route-list)
+    - [Danh sách Route của bạn](#listing-your-routes)
+    - [Routing Customization](#routing-customization)
 - [Route Parameters](#route-parameters)
     - [Required Parameters](#required-parameters)
     - [Optional Parameters](#parameters-optional-parameters)
@@ -40,9 +42,9 @@ Các route cơ bản của Laravel chấp nhận một URI và một closure, cu
     });
 
 <a name="the-default-route-files"></a>
-#### Các file Route mặc định
+### Các file Route mặc định
 
-Tất cả các route của Laravel được định nghĩa trong các file route, và được lưu trong thư mục `routes`. Các file này được tự động load bởi `App\Providers\RouteServiceProvider` của application của bạn. File `routes/web.php` định nghĩa các route dành cho giao diện web của bạn. Các route này sẽ được gán với nhóm middleware `web`, cung cấp các tính năng như trạng thái session và bảo vệ CSRF. Các route trong `routes/api.php` là các route không có trạng thái và được gán với nhóm middleware `api`.
+Tất cả các route của Laravel được định nghĩa trong các file route, và được lưu trong thư mục `routes`. Các file này được tự động load bởi Laravel bằng cách sử dụng cấu hình được chỉ định trong file `bootstrap/app.php` của ứng dụng bạn. File `routes/web.php` định nghĩa các route dành cho giao diện web của bạn. Các route này sẽ được gán với [group middleware](/docs/{{version}}/middleware#laravels-default-middleware-groups) `web`, cung cấp các tính năng như trạng thái session và bảo vệ CSRF.
 
 Đối với hầu hết các application, bạn sẽ bắt đầu bằng cách định nghĩa các route trong file `routes/web.php`. Các route đã được tạo trong file `routes/web.php` có thể được truy cập bằng cách nhập URL của route đó vào trong trình duyệt web của bạn. Ví dụ: bạn có thể truy cập vào route sau bằng cách nhập url là `http://example.com/user` trong trình duyệt web của bạn:
 
@@ -50,7 +52,28 @@ Tất cả các route của Laravel được định nghĩa trong các file rout
 
     Route::get('/user', [UserController::class, 'index']);
 
-Các route được định nghĩa trong file `routes/api.php` sẽ nằm trong một nhóm route bởi `RouteServiceProvider`. Trong nhóm này, tiền tố URI `/api` sẽ được tự động áp dụng, do đó bạn không cần phải tự làm cho mỗi route có trong file. Bạn có thể sửa đổi tiền tố và các tùy chọn khác cho nhóm route này bằng cách sửa đổi trong class `RouteServiceProvider` của bạn.
+<a name="api-routes"></a>
+#### API Routes
+
+Nếu ứng dụng của bạn cũng cung cấp một API stateless, bạn có thể bật routing API bằng cách sử dụng lệnh Artisan `install:api`:
+
+```shell
+php artisan install:api
+```
+
+Lệnh `install:api` sẽ cài đặt [Laravel Sanctum](/docs/{{version}}/sanctum), cung cấp một cơ chế bảo vệ xác thực token API mạnh mẽ nhưng đơn giản, có thể được sử dụng để xác thực các ứng dụng API của bên thứ ba, SPA hoặc ứng dụng di động. Ngoài ra, lệnh `install:api` còn tạo ra file `routes/api.php`:
+
+    Route::get('/user', function (Request $request) {
+        return $request->user();
+    })->middleware('auth:sanctum');
+
+Các route có trong `routes/api.php` là stateless và được gán vào [group middleware](/docs/{{version}}/middleware#laravels-default-middleware-groups) `api`. Ngoài ra, prefix URI `/api` được tự động áp dụng cho các route này, vì vậy bạn không cần phải tự áp dụng cho từng route có trong file. Bạn có thể thay đổi prefix này bằng cách sửa file `bootstrap/app.php` của ứng dụng:
+
+    ->withRouting(
+        api: __DIR__.'/../routes/api.php',
+        apiPrefix: 'api/admin',
+        // ...
+    )
 
 <a name="available-router-methods"></a>
 #### Router Method có sẵn
@@ -128,8 +151,8 @@ Nếu route của bạn chỉ cần trả về một [view](/docs/{{version}}/vi
 > [!WARNING]
 > Khi sử dụng tham số route trong view route, các tham số sau sẽ được Laravel dùng sẵn và không thể sử dụng: `view`, `data`, `status`, và `headers`.
 
-<a name="the-route-list"></a>
-### Danh sách Route
+<a name="listing-your-routes"></a>
+### Danh sách Route của bạn
 
 Lệnh Artisan `route:list` có thể dễ dàng cung cấp một cách tổng quan về tất cả các route được ứng dụng của bạn định nghĩa:
 
@@ -162,6 +185,62 @@ Tương tự như vậy, bạn cũng có thể bảo Laravel chỉ hiển thị 
 
 ```shell
 php artisan route:list --only-vendor
+```
+
+<a name="routing-customization"></a>
+### Routing Customization
+
+Mặc định, các route của ứng dụng của bạn được cấu hình và load bởi file `bootstrap/app.php`:
+
+```php
+<?php
+
+use Illuminate\Foundation\Application;
+
+return Application::configure(basePath: dirname(__DIR__))
+    ->withRouting(
+        web: __DIR__.'/../routes/web.php',
+        commands: __DIR__.'/../routes/console.php',
+        health: '/up',
+    )->create();
+```
+
+Tuy nhiên, thỉnh thoảng bạn có thể muốn định nghĩa một file hoàn toàn mới để chứa một tập hợp các route của ứng dụng. Để thực hiện điều này, bạn có thể cung cấp một closure `then` cho phương thức `withRouting`. Trong closure này, bạn có thể đăng ký thêm bất kỳ route nào cần thiết cho ứng dụng của bạn:
+
+
+```php
+use Illuminate\Support\Facades\Route;
+
+->withRouting(
+    web: __DIR__.'/../routes/web.php',
+    commands: __DIR__.'/../routes/console.php',
+    health: '/up',
+    then: function () {
+        Route::middleware('api')
+            ->prefix('webhooks')
+            ->name('webhooks.')
+            ->group(base_path('routes/webhooks.php'));
+    },
+)
+```
+
+Hoặc, bạn thậm chí có thể kiểm soát hoàn toàn việc đăng ký route bằng cách cung cấp một closure `using` cho phương thức `withRouting`. Khi tham số này được truyền vào, không có route HTTP nào sẽ được framework đăng ký và bạn có trách nhiệm tự đăng ký tất cả các route:
+
+
+```php
+use Illuminate\Support\Facades\Route;
+
+->withRouting(
+    commands: __DIR__.'/../routes/console.php',
+    using: function () {
+        Route::middleware('api')
+            ->prefix('api')
+            ->group(base_path('routes/api.php'));
+
+        Route::middleware('web')
+            ->group(base_path('routes/web.php'));
+    },
+)
 ```
 
 <a name="route-parameters"></a>
@@ -240,22 +319,28 @@ Bạn có thể hạn chế định dạng của các tham số route của bạ
     })->whereUuid('id');
 
     Route::get('/user/{id}', function (string $id) {
-        //
+        // ...
     })->whereUlid('id');
 
     Route::get('/category/{category}', function (string $category) {
         // ...
     })->whereIn('category', ['movie', 'song', 'painting']);
 
+    Route::get('/category/{category}', function (string $category) {
+        // ...
+    })->whereIn('category', CategoryEnum::cases());
+
 Nếu request đến không khớp với các ràng buộc pattern của route, thì response HTTP 404 sẽ được trả về.
 
 <a name="parameters-global-constraints"></a>
 #### Ràng buộc Global
 
-Nếu bạn muốn một tham số route luôn bị ràng buộc bởi một biểu thức chính quy định, bạn có thể sử dụng phương thức `pattern`. Bạn có thể định nghĩa các pattern này trong phương thức `boot` của `App\Providers\RouteServiceProvider`:
+Nếu bạn muốn một tham số route luôn bị ràng buộc bởi một biểu thức chính quy định, bạn có thể sử dụng phương thức `pattern`. Bạn có thể định nghĩa các pattern này trong phương thức `boot` của class `App\Providers\AppServiceProvider` trong ứng dụng của bạn:
+
+    use Illuminate\Support\Facades\Route;
 
     /**
-     * Define your route model bindings, pattern filters, etc.
+     * Bootstrap any application services.
      */
     public function boot(): void
     {
@@ -396,7 +481,7 @@ Nếu một nhóm các route đều sử dụng cùng một [controller](/docs/{
 Nhóm route cũng có thể được sử dụng để xử lý các route dành riêng cho tên miền phụ. Tên miền phụ có thể được định nghĩa thông qua tham số route giống như URI route, cho phép bạn lấy một phần tên miền phụ để sử dụng trong route hoặc trong controller của bạn. Tên miền phụ có thể được chỉ định bằng cách gọi phương thức `domain` ở trước định nghĩa nhóm route:
 
     Route::domain('{account}.example.com')->group(function () {
-        Route::get('user/{id}', function (string $account, string $id) {
+        Route::get('/user/{id}', function (string $account, string $id) {
             // ...
         });
     });
@@ -537,10 +622,10 @@ Thông thường, response HTTP 404 sẽ được tạo nếu không tìm thấy
     use Illuminate\Support\Facades\Redirect;
 
     Route::get('/locations/{location:slug}', [LocationsController::class, 'show'])
-            ->name('locations.view')
-            ->missing(function (Request $request) {
-                return Redirect::route('locations.index');
-            });
+        ->name('locations.view')
+        ->missing(function (Request $request) {
+            return Redirect::route('locations.index');
+        });
 
 <a name="implicit-enum-binding"></a>
 ### Liên kết ngầm Enum
@@ -573,19 +658,17 @@ Route::get('/categories/{category}', function (Category $category) {
 <a name="explicit-binding"></a>
 ### Liên kết rõ ràng
 
-Bạn không nhất thiết phải sử dụng liên kết ngầm của laravel, cái mà dựa vào quy ước đặt tên. Bạn cũng có thể định nghĩa rõ ràng cách mà các tham số route tương ứng với các model. Để đăng ký một liên kết rõ ràng, hãy sử dụng phương thức `model` trong router để định nghĩa một class với một tham số đã cho. Bạn nên định nghĩa các liên kết model rõ ràng của bạn ở đầu phương thức `boot` của class` RouteServiceProvider` của bạn:
+Bạn không nhất thiết phải sử dụng liên kết ngầm của laravel, cái mà dựa vào quy ước đặt tên. Bạn cũng có thể định nghĩa rõ ràng cách mà các tham số route tương ứng với các model. Để đăng ký một liên kết rõ ràng, hãy sử dụng phương thức `model` trong router để định nghĩa một class với một tham số đã cho. Bạn nên định nghĩa các liên kết model rõ ràng của bạn ở đầu phương thức `boot` của class` AppServiceProvider` của bạn:
 
     use App\Models\User;
     use Illuminate\Support\Facades\Route;
 
     /**
-     * Define your route model bindings, pattern filters, etc.
+     * Bootstrap any application services.
      */
     public function boot(): void
     {
         Route::model('user', User::class);
-
-        // ...
     }
 
 Tiếp theo, hãy định nghĩa một route chứa tham số `{user}`:
@@ -603,21 +686,19 @@ Nếu không tìm thấy model instance phù hợp trong cơ sở dữ liệu, p
 <a name="customizing-the-resolution-logic"></a>
 #### Tuỳ chỉnh logic phụ thuộc
 
-Nếu bạn muốn định nghĩa một tuỳ chỉnh logic cho liên kết model của bạn, bạn có thể sử dụng phương thức `Route::bind`. Closure của bạn sẽ được truyền đến phương thức `bind` và nhận vào giá trị của tham số URI, sau đó sẽ trả về một instance của class, và sẽ được inject vào trong route trước đó. Một lần nữa, việc tùy chỉnh này sẽ diễn ra trong phương thức `boot` của `RouteServiceProvider` trong ứng dụng của bạn:
+Nếu bạn muốn định nghĩa một tuỳ chỉnh logic cho liên kết model của bạn, bạn có thể sử dụng phương thức `Route::bind`. Closure của bạn sẽ được truyền đến phương thức `bind` và nhận vào giá trị của tham số URI, sau đó sẽ trả về một instance của class, và sẽ được inject vào trong route trước đó. Một lần nữa, việc tùy chỉnh này sẽ diễn ra trong phương thức `boot` của `AppServiceProvider` trong ứng dụng của bạn:
 
     use App\Models\User;
     use Illuminate\Support\Facades\Route;
 
     /**
-     * Define your route model bindings, pattern filters, etc.
+     * Bootstrap any application services.
      */
     public function boot(): void
     {
         Route::bind('user', function (string $value) {
             return User::where('name', $value)->firstOrFail();
         });
-
-        // ...
     }
 
 Ngoài ra, bạn có thể ghi đè phương thức `resolveRouteBinding` trên model Eloquent của bạn. Phương thức này sẽ nhận vào giá trị phân đoạn của tham số URI và sẽ trả về một instance của class sẽ được đưa vào route:
@@ -658,9 +739,6 @@ Sử dụng phương thức `Route::fallback`, bạn có thể định nghĩa m�
         // ...
     });
 
-> [!WARNING]
-> Route dự phòng phải luôn là route cuối cùng được đăng ký bởi application của bạn.
-
 <a name="rate-limiting"></a>
 ## Rate Limiting
 
@@ -669,7 +747,7 @@ Sử dụng phương thức `Route::fallback`, bạn có thể định nghĩa m�
 
 Laravel có chứa các service giới hạn tỷ lệ mạnh mẽ và có thể tùy chỉnh mà bạn có thể sử dụng để hạn chế lưu lượng truy cập cho một route hoặc một nhóm route nhất định. Để bắt đầu, bạn nên định nghĩa cấu hình giới hạn tỷ lệ đáp ứng nhu cầu của ứng dụng.
 
-Thông thường, giới hạn tỷ lệ đã được định nghĩa trong phương thức `boot` của class `App\Providers\RouteServiceProvider` trong ứng dụng của bạn. Trên thực tế, class này đã chứa sẵn một định nghĩa giới hạn tỷ lệ đã được áp dụng cho các route trong file `routes/api.php` trong ứng dụng của bạn:
+Giới hạn tỷ lệ có thể được định nghĩa trong phương thức `boot` của class `App\Providers\AppServiceProvider` trong ứng dụng của bạn:
 
 ```php
 use Illuminate\Cache\RateLimiting\Limit;
@@ -677,15 +755,13 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
 
 /**
- * Define your route model bindings, pattern filters, and other route configuration.
+ * Bootstrap any application services.
  */
 protected function boot(): void
 {
     RateLimiter::for('api', function (Request $request) {
         return Limit::perMinute(60)->by($request->user()?->id ?: $request->ip());
     });
-
-    // ...
 }
 ```
 
@@ -696,15 +772,13 @@ Giới hạn tỷ lệ được định nghĩa bằng phương thức `for` củ
     use Illuminate\Support\Facades\RateLimiter;
 
     /**
-     * Define your route model bindings, pattern filters, and other route configuration.
+     * Bootstrap any application services.
      */
     protected function boot(): void
     {
         RateLimiter::for('global', function (Request $request) {
             return Limit::perMinute(1000);
         });
-
-        // ...
     }
 
 Nếu request gửi đến vượt quá giới hạn tỷ lệ đã chỉ định, Laravel sẽ tự động trả về response có mã trạng thái HTTP 429. Nếu bạn muốn định nghĩa một response khác của riêng bạn sẽ được trả về theo giới hạn tỷ lệ, bạn có thể sử dụng phương thức `response`:
@@ -719,8 +793,8 @@ Vì lệnh callback của giới hạn tỷ lệ sẽ nhận vào một instance
 
     RateLimiter::for('uploads', function (Request $request) {
         return $request->user()->vipCustomer()
-                    ? Limit::none()
-                    : Limit::perMinute(100);
+            ? Limit::none()
+            : Limit::perMinute(100);
     });
 
 <a name="segmenting-rate-limits"></a>
@@ -730,16 +804,16 @@ Thỉnh thoảng bạn có thể muốn phân giới hạn tỷ lệ theo một 
 
     RateLimiter::for('uploads', function (Request $request) {
         return $request->user()->vipCustomer()
-                    ? Limit::none()
-                    : Limit::perMinute(100)->by($request->ip());
+            ? Limit::none()
+            : Limit::perMinute(100)->by($request->ip());
     });
 
 Hãy minh họa tính năng này bằng một ví dụ khác, chúng ta có thể giới hạn quyền truy cập vào route ở mức 100 lần mỗi phút cho mỗi ID người dùng được xác thực hoặc 10 lần mỗi phút cho mỗi địa chỉ IP đối với người chưa đăng nhập:
 
     RateLimiter::for('uploads', function (Request $request) {
         return $request->user()
-                    ? Limit::perMinute(100)->by($request->user()->id)
-                    : Limit::perMinute(10)->by($request->ip());
+            ? Limit::perMinute(100)->by($request->user()->id)
+            : Limit::perMinute(10)->by($request->ip());
     });
 
 <a name="multiple-rate-limits"></a>
@@ -751,6 +825,15 @@ Nếu cần, bạn có thể trả về một mảng giới hạn tỷ lệ cho 
         return [
             Limit::perMinute(500),
             Limit::perMinute(3)->by($request->input('email')),
+        ];
+    });
+
+Nếu bạn đang gán nhiều giới hạn tỷ lệ được chia ra bởi các giá trị `by` giống hệt nhau, bạn nên đảm bảo rằng mỗi giá trị `by` là duy nhất. Cách dễ nhất để đạt được điều này là thêm prefix vào các giá trị được cung cấp cho phương thức `by`:
+
+    RateLimiter::for('uploads', function (Request $request) {
+        return [
+            Limit::perMinute(10)->by('minute:'.$request->user()->id),
+            Limit::perDay(1000)->by('day:'.$request->user()->id),
         ];
     });
 
@@ -772,9 +855,12 @@ Giới hạn tỷ lệ có thể được gắn vào các route hoặc một nh�
 <a name="throttling-with-redis"></a>
 #### Throttling With Redis
 
-Thông thường, middleware `throttle` được ánh xạ tới class `Illuminate\Routing\Middleware\ThrottleRequests`. Ánh xạ này được định nghĩa trong file HTTP kernelHTTP kernel của ứng dụng của bạn (`App\Http\Kernel`). Tuy nhiên, nếu bạn đang sử dụng Redis làm driver cache của ứng dụng, bạn có thể muốn thay đổi ánh xạ này để sử dụng class `Illuminate\Routing\Middleware\ThrottleRequestsWithRedis`. Class này hiệu quả hơn trong việc quản lý giới hạn tỷ lệ bằng Redis:
+Mặc định, middleware `throttle` được ánh xạ tới class `Illuminate\Routing\Middleware\ThrottleRequests`. Tuy nhiên, nếu bạn đang sử dụng Redis làm driver cache của ứng dụng, bạn có thể muốn hướng dẫn Laravel sử dụng Redis để quản lý giới hạn tỷ lệ. Để làm như vậy, bạn nên sử dụng phương thức `throttleWithRedis` trong file `bootstrap/app.php` của ứng dụng. Phương thức này sẽ ánh xạ middleware `throttle` tới class middleware `Illuminate\Routing\Middleware\ThrottleRequestsWithRedis`:
 
-    'throttle' => \Illuminate\Routing\Middleware\ThrottleRequestsWithRedis::class,
+    ->withMiddleware(function (Middleware $middleware) {
+        $middleware->throttleWithRedis();
+        // ...
+    })
 
 <a name="form-method-spoofing"></a>
 ## Form Method giả
@@ -809,7 +895,15 @@ Bạn có thể tham khảo tài liệu API cho [class facade Route](https://lar
 <a name="cors"></a>
 ## Cross-Origin Resource Sharing (CORS)
 
-Laravel có thể tự động respond các CORS `OPTIONS` HTTP request với các giá trị mà bạn đã cấu hình. Tất cả các cài đặt CORS có thể được cấu hình trong file cấu hình `config/cors.php` của application. Mặc định, các `OPTIONS` request sẽ được tự động xử lý bởi [middleware](/docs/{{version}}/middleware) `HandleCors` nằm theo trong stack global middleware của bạn. Stack global middleware của bạn nằm trong file HTTP kernel của ứng dụng (`App\Http\Kernel`).
+Laravel có thể tự động phản hồi các request HTTP CORS `OPTIONS` với các giá trị mà bạn đã cấu hình. Các request `OPTIONS` sẽ được tự động xử lý bởi [middleware](/docs/{{version}}/middleware) `HandleCors` và sẽ được tự động thêm vào middleware stack global cho ứng dụng của bạn.
+
+Thỉnh thoảng, bạn có thể cần tùy biến các giá trị cấu hình CORS cho ứng dụng của bạn. Bạn có thể làm như vậy bằng cách export file cấu hình `cors` bằng lệnh Artisan `config:publish`:
+
+```shell
+php artisan config:publish cors
+```
+
+Lệnh này sẽ lưu file cấu hình `cors.php` trong thư mục `config` của ứng dụng của bạn.
 
 > [!NOTE]
 > Để biết thêm thông tin về CORS và header CORS, vui lòng tham khảo [tài liệu web MDN về CORS](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS#The_HTTP_response_headers).

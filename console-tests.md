@@ -15,13 +15,21 @@ Ngoài việc đơn giản hóa cách kiểm tra HTTP, Laravel cung cấp một 
 
 Để bắt đầu, hãy khám phá cách kiểm tra liên quan đến exit code của lệnh Artisan. Để thực hiện điều này, chúng ta sẽ sử dụng phương thức `artisan` để gọi một lệnh Artisan từ bài test của chúng ta. Sau đó, chúng ta sẽ sử dụng phương thức `assertExitCode` để kiểm tra xem lệnh đã chạy xong với một exit code nhất định:
 
-    /**
-     * Test a console command.
-     */
-    public function test_console_command(): void
-    {
-        $this->artisan('inspire')->assertExitCode(0);
-    }
+```php tab=Pest
+test('console command', function () {
+    $this->artisan('inspire')->assertExitCode(0);
+});
+```
+
+```php tab=PHPUnit
+/**
+ * Test a console command.
+ */
+public function test_console_command(): void
+{
+    $this->artisan('inspire')->assertExitCode(0);
+}
+```
 
 Bạn có thể sử dụng phương thức `assertNotExitCode` để kiểm tra rằng lệnh đã thoát với một exit code nhất định:
 
@@ -50,22 +58,107 @@ Laravel cho phép bạn dễ dàng "mô phỏng" cách nhập của người dù
         $this->line('Your name is '.$name.' and you program in '.$language.'.');
     });
 
-Bạn có thể kiểm tra lệnh này bằng cách sử dụng bài test dưới đây, bài test này sử dụng các phương thức `expectsQuestion`, `expectsOutput`, `doesntExpectOutput`, `expectsOutputToContain`, `doesntExpectOutputToContain`, và `assertExitCode`:
+Bạn có thể kiểm tra lệnh này bằng cách sử dụng bài test dưới đây:
 
-    /**
-     * Test a console command.
-     */
-    public function test_console_command(): void
-    {
-        $this->artisan('question')
-             ->expectsQuestion('What is your name?', 'Taylor Otwell')
-             ->expectsQuestion('Which language do you prefer?', 'PHP')
-             ->expectsOutput('Your name is Taylor Otwell and you prefer PHP.')
-             ->doesntExpectOutput('Your name is Taylor Otwell and you prefer Ruby.')
-             ->expectsOutputToContain('Taylor Otwell')
-             ->doesntExpectOutputToContain('you prefer Ruby')
-             ->assertExitCode(0);
-    }
+```php tab=Pest
+test('console command', function () {
+    $this->artisan('question')
+        ->expectsQuestion('What is your name?', 'Taylor Otwell')
+        ->expectsQuestion('Which language do you prefer?', 'PHP')
+        ->expectsOutput('Your name is Taylor Otwell and you prefer PHP.')
+        ->doesntExpectOutput('Your name is Taylor Otwell and you prefer Ruby.')
+        ->assertExitCode(0);
+});
+```
+
+```php tab=PHPUnit
+/**
+ * Test a console command.
+ */
+public function test_console_command(): void
+{
+    $this->artisan('question')
+        ->expectsQuestion('What is your name?', 'Taylor Otwell')
+        ->expectsQuestion('Which language do you prefer?', 'PHP')
+        ->expectsOutput('Your name is Taylor Otwell and you prefer PHP.')
+        ->doesntExpectOutput('Your name is Taylor Otwell and you prefer Ruby.')
+        ->assertExitCode(0);
+}
+```
+
+Nếu bạn đang sử dụng các hàm `search` hoặc `multisearch` do [Laravel Prompts](/docs/{{version}}/prompts) cung cấp, bạn có thể sử dụng kiểm tra `expectsSearch` để mô phỏng dữ liệu input, kết quả tìm kiếm và lựa chọn của người dùng:
+
+```php tab=Pest
+test('console command', function () {
+    $this->artisan('example')
+        ->expectsSearch('What is your name?', search: 'Tay', answers: [
+            'Taylor Otwell',
+            'Taylor Swift',
+            'Darian Taylor'
+        ], answer: 'Taylor Otwell')
+        ->assertExitCode(0);
+});
+```
+
+```php tab=PHPUnit
+/**
+ * Test a console command.
+ */
+public function test_console_command(): void
+{
+    $this->artisan('example')
+        ->expectsSearch('What is your name?', search: 'Tay', answers: [
+            'Taylor Otwell',
+            'Taylor Swift',
+            'Darian Taylor'
+        ], answer: 'Taylor Otwell')
+        ->assertExitCode(0);
+}
+```
+
+Bạn cũng có thể kiểm tra lệnh console sẽ không tạo ra bất kỳ output nào bằng phương thức `doesntExpectOutput`:
+
+```php tab=Pest
+test('console command', function () {
+    $this->artisan('example')
+        ->doesntExpectOutput()
+        ->assertExitCode(0);
+});
+```
+
+```php tab=PHPUnit
+/**
+ * Test a console command.
+ */
+public function test_console_command(): void
+{
+    $this->artisan('example')
+            ->doesntExpectOutput()
+            ->assertExitCode(0);
+}
+```
+
+Các phương thức `expectsOutputToContain` và `doesntExpectOutputToContain` có thể được sử dụng để đưa ra các kiểm tra đối với một phần output:
+
+```php tab=Pest
+test('console command', function () {
+    $this->artisan('example')
+        ->expectsOutputToContain('Taylor')
+        ->assertExitCode(0);
+});
+```
+
+```php tab=PHPUnit
+/**
+ * Test a console command.
+ */
+public function test_console_command(): void
+{
+    $this->artisan('example')
+            ->expectsOutputToContain('Taylor')
+            ->assertExitCode(0);
+}
+```
 
 <a name="confirmation-expectations"></a>
 #### Confirmation Expectations
@@ -95,16 +188,28 @@ Nếu lệnh của bạn hiển thị một bảng thông tin bằng cách sử 
 
 Mặc định, các event `Illuminate\Console\Events\CommandStarting` và `Illuminate\Console\Events\CommandFinished` sẽ không được gửi đi khi đang chạy test cho ứng dụng của bạn. Tuy nhiên, bạn có thể kích hoạt các event này cho một class test case nhất định bằng cách thêm trait `Illuminate\Foundation\Testing\WithConsoleEvents` vào class:
 
-    <?php
+```php tab=Pest
+<?php
 
-    namespace Tests\Feature;
+use Illuminate\Foundation\Testing\WithConsoleEvents;
 
-    use Illuminate\Foundation\Testing\WithConsoleEvents;
-    use Tests\TestCase;
+uses(WithConsoleEvents::class);
 
-    class ConsoleEventTest extends TestCase
-    {
-        use WithConsoleEvents;
+// ...
+```
 
-        // ...
-    }
+```php tab=PHPUnit
+<?php
+
+namespace Tests\Feature;
+
+use Illuminate\Foundation\Testing\WithConsoleEvents;
+use Tests\TestCase;
+
+class ConsoleEventTest extends TestCase
+{
+    use WithConsoleEvents;
+
+    // ...
+}
+```

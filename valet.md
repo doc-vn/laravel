@@ -23,7 +23,7 @@
 ## Giới thiệu
 
 > [!NOTE]
-> Bạn đang tìm một cách dễ dàng hơn để phát triển ứng dụng Laravel trên macOS? Hãy xem [Laravel Herd](https://herd.laravel.com). Herd bao gồm mọi thứ bạn cần để bắt đầu phát triển Laravel, bao gồm cả Valet, PHP và Composer.
+> Bạn đang tìm một cách dễ dàng hơn để phát triển ứng dụng Laravel trên macOS hoặc Windows? Hãy xem [Laravel Herd](https://herd.laravel.com). Herd bao gồm mọi thứ bạn cần để bắt đầu phát triển Laravel, bao gồm cả Valet, PHP và Composer.
 
 [Laravel Valet](https://github.com/laravel/valet) là một môi trường phát triển cho người dùng macOS. Laravel Valet sẽ cấu hình máy Mac của bạn chạy [Nginx](https://www.nginx.com/) ở background mỗi khi máy khởi động. Sau đó, dùng [DnsMasq](https://en.wikipedia.org/wiki/Dnsmasq), Valet sẽ chuyển tất cả các request đến domain `*.test` vào site mà bạn đã cài đặt ở local.
 
@@ -109,7 +109,7 @@ Valet sẽ tự động khởi động các service cần thiết mỗi khi máy
 Valet cho phép bạn chuyển đổi các phiên bản PHP khác nhau bằng lệnh `valet use php@version`. Valet sẽ cài đặt phiên bản PHP được chỉ định thông qua Homebrew nếu nó chưa được cài đặt:
 
 ```shell
-valet use php@8.1
+valet use php@8.2
 
 valet use php
 ```
@@ -117,7 +117,7 @@ valet use php
 Bạn cũng có thể tạo file `.valetrc` trong thư mục root của dự án. File `.valetrc` phải chứa phiên bản PHP mà trang web của bạn sử dụng:
 
 ```shell
-php=php@8.1
+php=php@8.2
 ```
 
 Khi file này đã được tạo, bạn có thể chỉ cần chạy lệnh `valet use` và lệnh này sẽ xác định phiên bản PHP mặc định của trang web bằng cách đọc file trên.
@@ -465,19 +465,19 @@ Nếu bạn muốn định nghĩa một Valet driver tùy chỉnh cho một appl
 
 <div class="overflow-auto">
 
-Lệnh  | Mô tả
-------------- | -------------
-`valet list` | Hiển thị danh sách tất cả các lệnh của Valet.
-`valet diagnose` | Sẽ đưa ra thông tin diagnostics để hỗ trợ gỡ lỗi Valet.
-`valet directory-listing` | Dùng để định nghĩa hành vi liệt kê thư mục. Mặc định là "off" và hiển thị ra trang 404 cho các thư mục.
-`valet forget` | Chạy lệnh này từ một thư mục đã được park để xóa thư mục đó ra khỏi danh sách thư mục đã được park.
-`valet log` | Xem danh sách các file log được ghi bởi các service của Valet.
-`valet paths` | Xem tất cả các đường dẫn đã được park.
-`valet restart` | Khởi động lại daemon Valet.
-`valet start` | Khởi động daemon Valet.
-`valet stop` | Dừng daemon Valet.
-`valet trust` | Thêm quyền sudoer cho Brew và Valet để chạy các lệnh Valet mà không cần hỏi password của bạn.
-`valet uninstall` | Gỡ cài đặt Valet: hiển thị hướng dẫn gỡ cài đặt. Truyền thêm tuỳ chọn `--force` để bắt xóa tất cả các resource của Valet.
+| Lệnh | Mô tả |
+| --- | --- |
+| `valet list` | Hiển thị danh sách tất cả các lệnh của Valet. |
+| `valet diagnose` | Sẽ đưa ra thông tin diagnostics để hỗ trợ gỡ lỗi Valet. |
+| `valet directory-listing` | Dùng để định nghĩa hành vi liệt kê thư mục. Mặc định là "off" và hiển thị ra trang 404 cho các thư mục. |
+| `valet forget` | Chạy lệnh này từ một thư mục đã được park để xóa thư mục đó ra khỏi danh sách thư mục đã được park. |
+| `valet log` | Xem danh sách các file log được ghi bởi các service của Valet. |
+| `valet paths` | Xem tất cả các đường dẫn đã được park. |
+| `valet restart` | Khởi động lại daemon Valet. |
+| `valet start` | Khởi động daemon Valet. |
+| `valet stop` | Dừng daemon Valet. |
+| `valet trust` | Thêm quyền sudoer cho Brew và Valet để chạy các lệnh Valet mà không cần hỏi password của bạn. |
+| `valet uninstall` | Gỡ cài đặt Valet: hiển thị hướng dẫn gỡ cài đặt. Truyền thêm tuỳ chọn `--force` để bắt xóa tất cả các resource của Valet. |
 
 </div>
 

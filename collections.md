@@ -94,12 +94,15 @@ Trong phần lớn tài liệu collection còn lại này, chúng ta sẽ thảo
 
 <div class="collection-method-list" markdown="1">
 
+[after](#method-after)
 [all](#method-all)
 [average](#method-average)
 [avg](#method-avg)
+[before](#method-before)
 [chunk](#method-chunk)
 [chunkWhile](#method-chunkwhile)
 [collapse](#method-collapse)
+[collapseWithKeys](#method-collapsewithkeys)
 [collect](#method-collect)
 [combine](#method-combine)
 [concat](#method-concat)
@@ -139,7 +142,9 @@ Trong phần lớn tài liệu collection còn lại này, chúng ta sẽ thảo
 [hasAny](#method-hasany)
 [implode](#method-implode)
 [intersect](#method-intersect)
+[intersectUsing](#method-intersectusing)
 [intersectAssoc](#method-intersectAssoc)
+[intersectAssocUsing](#method-intersectassocusing)
 [intersectByKeys](#method-intersectbykeys)
 [isEmpty](#method-isempty)
 [isNotEmpty](#method-isnotempty)
@@ -161,6 +166,7 @@ Trong phần lớn tài liệu collection còn lại này, chúng ta sẽ thảo
 [mergeRecursive](#method-mergerecursive)
 [min](#method-min)
 [mode](#method-mode)
+[multiply](#method-multiply)
 [nth](#method-nth)
 [only](#method-only)
 [pad](#method-pad)
@@ -255,8 +261,37 @@ Trong phần lớn tài liệu collection còn lại này, chúng ta sẽ thảo
     }
 </style>
 
+<a name="method-after"></a>
+#### `after()` {.collection-method .first-collection-method}
+
+Phương thức `after` sẽ trả về item sau item đã cho. `null` sẽ được trả về nếu item đã cho không được tìm thấy hoặc là item cuối cùng:
+
+    $collection = collect([1, 2, 3, 4, 5]);
+
+    $collection->after(3);
+
+    // 4
+
+    $collection->after(5);
+
+    // null
+
+Phương thức này sẽ tìm kiếm item đã cho bằng phép so sánh "lỏng lẻo", nghĩa là một chuỗi có giá trị integer sẽ được coi là bằng với một số integer có cùng giá trị. Để sử dụng so sánh "nghiêm ngặt", bạn có thể cung cấp tham số `strict` cho phương thức:
+
+    collect([2, 4, 6, 8])->after('4', strict: true);
+
+    // null
+
+Ngoài ra, bạn có thể cung cấp closure của bạn để tìm ra item đầu tiên pass qua được "truth test" đã cho:
+
+    collect([2, 4, 6, 8])->after(function (int $item, int $key) {
+        return $item > 5;
+    });
+
+    // 8
+
 <a name="method-all"></a>
-#### `all()` {.collection-method .first-collection-method}
+#### `all()` {.collection-method}
 
 Phương thức `all` sẽ trả về một mảng được biểu thị bởi collection:
 
@@ -287,6 +322,31 @@ Phương thức `avg` trả về [giá trị trung bình](https://en.wikipedia.o
 
     // 2
 
+<a name="method-before"></a>
+#### `before()` {.collection-method}
+
+Phương thức `before` sẽ ngược lại với phương thức [`after`](#method-after). Phương thức này trả về item đứng trước item đã cho. `null` được trả về nếu item đã cho không được tìm thấy hoặc là item đầu tiên:
+
+    $collection = collect([1, 2, 3, 4, 5]);
+
+    $collection->before(3);
+
+    // 2
+
+    $collection->before(1);
+
+    // null
+
+    collect([2, 4, 6, 8])->before('4', strict: true);
+
+    // null
+
+    collect([2, 4, 6, 8])->before(function (int $item, int $key) {
+        return $item > 5;
+    });
+
+    // 4
+
 <a name="method-chunk"></a>
 #### `chunk()` {.collection-method}
 
@@ -300,7 +360,7 @@ Phương thức `chunk` chia collection thành nhiều collection nhỏ hơn v�
 
     // [[1, 2, 3, 4], [5, 6, 7]]
 
-Phương thức này đặc biệt hữu ích trong [views](/docs/{{version}}/views) khi làm việc với các hệ thống grid như [Bootstrap](https://getbootstrap.com/docs/4.1/layout/grid/). Ví dụ, hãy tưởng tượng bạn có một collection các model [Eloquent](/docs/{{version}}/eloquent) mà bạn muốn hiển thị trong một grid:
+Phương thức này đặc biệt hữu ích trong [views](/docs/{{version}}/views) khi làm việc với các hệ thống grid như [Bootstrap](https://getbootstrap.com/docs/5.3/layout/grid/). Ví dụ, hãy tưởng tượng bạn có một collection các model [Eloquent](/docs/{{version}}/eloquent) mà bạn muốn hiển thị trong một grid:
 
 ```blade
 @foreach ($products->chunk(3) as $chunk)
@@ -343,6 +403,28 @@ Phương thức `collapse` sẽ thu gọn một tập hợp các mảng nhỏ th
     $collapsed->all();
 
     // [1, 2, 3, 4, 5, 6, 7, 8, 9]
+
+<a name="method-collapsewithkeys"></a>
+#### `collapseWithKeys()` {.collection-method}
+
+Phương thức `collapseWithKeys` sẽ làm phẳng hàng một collection các mảng hoặc collection thành một collection duy nhất và giữ nguyên các khóa:
+
+    $collection = collect([
+      ['first'  => collect([1, 2, 3])],
+      ['second' => [4, 5, 6]],
+      ['third'  => collect([7, 8, 9])]
+    ]);
+
+
+    $collapsed = $collection->collapseWithKeys();
+
+    $collapsed->all();
+
+    // [
+    //     'first'  => [1, 2, 3],
+    //     'second' => [4, 5, 6],
+    //     'third'  => [7, 8, 9],
+    // ]
 
 <a name="method-collect"></a>
 #### `collect()` {.collection-method}
@@ -1015,14 +1097,18 @@ Phương thức `forget` sẽ xóa một item ra khỏi collection bằng key c�
 
     $collection = collect(['name' => 'taylor', 'framework' => 'laravel']);
 
+    / Forget a single key...
     $collection->forget('name');
-
-    $collection->all();
 
     // ['framework' => 'laravel']
 
+    // Forget multiple keys...
+    $collection->forget(['name', 'framework']);
+
+    // []
+
 > [!WARNING]
-> Không giống như hầu hết các phương thức collection khác, `forget` không trả về một collection mới; mà nó sẽ sửa trực tiếp lên collection mà nó được gọi.
+> Không giống như hầu hết các phương thức collection khác, `forget` không trả về một collection mới; mà nó sẽ sửa trực tiếp và trả về collection mà nó được gọi.
 
 <a name="method-forpage"></a>
 #### `forPage()` {.collection-method}
@@ -1227,6 +1313,21 @@ Phương thức `intersect` sẽ loại bỏ bất kỳ value nào ra khỏi col
 > [!NOTE]
 > Hành vi của phương thức này được thay đổi khi sử dụng [Eloquent Collections](/docs/{{version}}/eloquent-collections#method-intersect).
 
+<a name="method-intersectusing"></a>
+#### `intersectUsing()` {.collection-method}
+
+Phương thức `intersectUsing` sẽ xóa bất kỳ giá trị nào ra khỏi collection gốc mà không có trong `array` hoặc collection đã cho. Phương thức này sẽ sử dụng một hàm callback để so sánh các giá trị. Collection kết quả sẽ giữ nguyên các khóa của collection gốc:
+
+    $collection = collect(['Desk', 'Sofa', 'Chair']);
+
+    $intersect = $collection->intersectUsing(['desk', 'chair', 'bookcase'], function ($a, $b) {
+        return strcasecmp($a, $b);
+    });
+
+    $intersect->all();
+
+    // [0 => 'Desk', 2 => 'Chair']
+
 <a name="method-intersectAssoc"></a>
 #### `intersectAssoc()` {.collection-method}
 
@@ -1247,6 +1348,29 @@ Phương thức `intersectAssoc` sẽ so sánh collection với một collection
     $intersect->all();
 
     // ['size' => 'M']
+
+<a name="method-intersectassocusing"></a>
+#### `intersectAssocUsing()` {.collection-method}
+
+Phương thức `intersectAssocUsing` sẽ so sánh collection gốc với một collection hoặc một `array` khác và sẽ trả về các cặp key và value có trong cả hai collection đó, phương thức này sử dụng lệnh callback để so sánh và xác định cho cả key và value:
+
+    $collection = collect([
+        'color' => 'red',
+        'Size' => 'M',
+        'material' => 'cotton',
+    ]);
+
+    $intersect = $collection->intersectAssocUsing([
+        'color' => 'blue',
+        'size' => 'M',
+        'material' => 'polyester',
+    ], function ($a, $b) {
+        return strcasecmp($a, $b);
+    });
+
+    $intersect->all();
+
+    // ['Size' => 'M']
 
 <a name="method-intersectbykeys"></a>
 #### `intersectByKeys()` {.collection-method}
@@ -1427,7 +1551,7 @@ Phương thức `mapInto()` sẽ lặp qua collectionp, và tạo một instance
          * Create a new currency instance.
          */
         function __construct(
-            public string $code
+            public string $code,
         ) {}
     }
 
@@ -1633,6 +1757,29 @@ Phương thức `mode` sẽ trả về [giá trị yếu vị](https://vi.wikipe
 
     // [1, 2]
 
+<a name="method-multiply"></a>
+#### `multiply()` {.collection-method}
+
+Phương thức `multiply` sẽ tạo ra số lượng bản sao được chỉ định với tất cả các item có trong collection:
+
+```php
+$users = collect([
+    ['name' => 'User #1', 'email' => 'user1@example.com'],
+    ['name' => 'User #2', 'email' => 'user2@example.com'],
+])->multiply(3);
+
+/*
+    [
+        ['name' => 'User #1', 'email' => 'user1@example.com'],
+        ['name' => 'User #2', 'email' => 'user2@example.com'],
+        ['name' => 'User #1', 'email' => 'user1@example.com'],
+        ['name' => 'User #2', 'email' => 'user2@example.com'],
+        ['name' => 'User #1', 'email' => 'user1@example.com'],
+        ['name' => 'User #2', 'email' => 'user2@example.com'],
+    ]
+*/
+```
+
 <a name="method-nth"></a>
 #### `nth()` {.collection-method}
 
@@ -1758,7 +1905,7 @@ Phương thức `pipeInto` sẽ tạo một instance mới của class đã cho 
          * Create a new ResourceCollection instance.
          */
         public function __construct(
-          public Collection $collection,
+            public Collection $collection,
         ) {}
     }
 
@@ -2131,7 +2278,7 @@ Phương thức `search` sẽ tìm kiếm trong collection với một giá tr�
 
 Việc tìm kiếm được thực hiện bằng cách sử dụng so sánh "lỏng lẻo", nghĩa là một chuỗi có giá trị integer sẽ được coi là bằng với một số integer có cùng giá trị. Để sử dụng so sánh "nghiêm ngặt", hãy truyền vào một giá trị `true` làm tham số thứ hai cho phương thức:
 
-    collect([2, 4, 6, 8])->search('4', $strict = true);
+    collect([2, 4, 6, 8])->search('4', strict: true);
 
     // false
 
@@ -2220,7 +2367,7 @@ Phương thức `skip` sẽ trả về một collection mới, với số lượ
 <a name="method-skipuntil"></a>
 #### `skipUntil()` {.collection-method}
 
-Phương thức `skipUntil` sẽ bỏ qua các item từ collection cho đến khi lệnh callback trả về giá trị `true` và sau đó nó sẽ trả về các item còn lại có trong collection như một instance collection mới:
+Phương thức `skipUntil` sẽ bỏ qua các item từ collection khi lệnh callback trả về giá trị `false`. Khi hàm callback trả về `true`, tất cả các item còn lại có trong collection sẽ được trả về dưới dạng một collection mới:
 
     $collection = collect([1, 2, 3, 4]);
 
@@ -2248,7 +2395,7 @@ Bạn cũng có thể truyền một giá trị đơn giản cho phương thức
 <a name="method-skipwhile"></a>
 #### `skipWhile()` {.collection-method}
 
-Phương thức `skipWhile` sẽ bỏ qua các item từ collection cho đến khi lệnh callback trả về giá trị `true` và thậm chí cả giá trị true đó, sau đó trả về các item còn lại có trong collection như một instance collection mới:
+Phương thức `skipWhile` sẽ bỏ qua các item từ collection cho đến khi lệnh callback trả về giá trị `true`. Khi hàm callback trả về `false`, tất cả các item còn lại có trong collection sẽ được trả về dưới dạng một collection mới:
 
     $collection = collect([1, 2, 3, 4]);
 
@@ -2437,31 +2584,7 @@ Ngoài ra, bạn có thể truyền vào một closure của bạn để xác đ
         ]
     */
 
-Nếu bạn muốn sắp xếp collection của bạn theo nhiều thuộc tính, bạn có thể truyền một mảng các thuộc tính mà bạn muốn sắp xếp vào phương thức:
-
-    $collection = collect([
-        ['name' => 'Taylor Otwell', 'age' => 34],
-        ['name' => 'Abigail Otwell', 'age' => 30],
-        ['name' => 'Taylor Otwell', 'age' => 36],
-        ['name' => 'Abigail Otwell', 'age' => 32],
-    ]);
-
-    $sorted = $collection->sortBy(['name', 'age']);
-
-    $sorted->values()->all();
-
-    /*
-        [
-            ['name' => 'Abigail Otwell', 'age' => 30],
-            ['name' => 'Abigail Otwell', 'age' => 32],
-            ['name' => 'Taylor Otwell', 'age' => 34],
-            ['name' => 'Taylor Otwell', 'age' => 36],
-        ]
-    */
-
-
-
-Khi sắp xếp nhiều thuộc tính và có các thứ tự sắp xếp khác nhau, bạn có thể truyền một mảng các thao tác sắp xếp vào phương thức `sortBy`. Mỗi thao tác sắp xếp phải là một mảng chứa các thuộc tính mà bạn muốn sắp xếp và hướng sắp xếp mà bạn mong muốn:
+Nếu bạn muốn sắp xếp collection của bạn theo nhiều thuộc tính, bạn có thể truyền một mảng các thao tác sắp xếp vào phương thức `sortBy`. Mỗi thao tác sắp xếp phải là một mảng chứa các thuộc tính mà bạn muốn sắp xếp và hướng sắp xếp mà bạn mong muốn:
 
     $collection = collect([
         ['name' => 'Taylor Otwell', 'age' => 34],
@@ -3378,7 +3501,6 @@ Phương thức `whereNull` sẽ trả về các item từ collection với mộ
         ]
     */
 
-
 <a name="method-wrap"></a>
 #### `wrap()` {.collection-method}
 
@@ -3688,6 +3810,22 @@ Trong khi phương thức `each` gọi lệnh callback đã cho cho từng item 
     // 1
     // 2
     // 3
+
+<a name="method-throttle"></a>
+#### `throttle()` {.collection-method}
+
+Phương thức `throttle` sẽ điều tiết lazy collection sao cho mỗi giá trị được trả về sau một số giây xác định. Phương thức này đặc biệt hữu ích cho các trường hợp bạn đang tương tác với các API bên ngoài mà có giới hạn tốc độ gửi các request:
+
+```php
+use App\Models\User;
+
+User::where('vip', true)
+    ->cursor()
+    ->throttle(seconds: 1)
+    ->each(function (User $user) {
+        // Call external API...
+    });
+```
 
 <a name="method-remember"></a>
 #### `remember()` {.collection-method}

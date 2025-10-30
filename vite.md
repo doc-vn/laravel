@@ -18,6 +18,7 @@
   - [Processing Static Assets với Vite](#blade-processing-static-assets)
   - [Refreshing On Save](#blade-refreshing-on-save)
   - [Aliases](#blade-aliases)
+- [Tải trước Asset](#asset-prefetching)
 - [Tuỳ biến Base URLs](#custom-base-urls)
 - [Environment Variables](#environment-variables)
 - [Disabling Vite In Tests](#disabling-vite-in-tests)
@@ -27,6 +28,7 @@
   - [Subresource Integrity (SRI)](#subresource-integrity-sri)
   - [Arbitrary Attributes](#arbitrary-attributes)
 - [Tuỳ biến nâng cao](#advanced-customization)
+  - [Dev Server Cross-Origin Resource Sharing (CORS)](#cors)
   - [Correcting Dev Server URLs](#correcting-dev-server-urls)
 
 <a name="introduction"></a>
@@ -201,7 +203,7 @@ Nếu những thay đổi trong file của bạn không được phản ánh tro
 Khi đã cấu hình các đầu vào Vite, bạn có thể tham chiếu chúng trong lệnh Blade `@vite()` mà bạn đã thêm vào `<head>` của template gốc của ứng dụng:
 
 ```blade
-<!doctype html>
+<!DOCTYPE html>
 <head>
     {{-- ... --}}
 
@@ -212,7 +214,7 @@ Khi đã cấu hình các đầu vào Vite, bạn có thể tham chiếu chúng 
 Nếu bạn import CSS thông qua JavaScript, bạn chỉ cần đưa đầu nhập JavaScript vào:
 
 ```blade
-<!doctype html>
+<!DOCTYPE html>
 <head>
     {{-- ... --}}
 
@@ -239,9 +241,7 @@ Nếu cần, bạn cũng có thể chỉ định đường dẫn build các asse
 Thỉnh thoảng bạn có thể cần phải thêm một nội dung raw của asset thay vì link đến một URL version của asset. Ví dụ: bạn có thể cần thêm nội dung asset trực tiếp vào trong trang HTML của bạn khi truyền nội dung HTML đến PDF generator. Bạn có thể xuất nội dung của asset Vite bằng phương thức `content` do facade `Vite` cung cấp:
 
 ```blade
-@php
-use Illuminate\Support\Facades\Vite;
-@endphp
+@use('Illuminate\Support\Facades\Vite')
 
 <!doctype html>
 <head>
@@ -400,12 +400,14 @@ import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 createInertiaApp({
   resolve: (name) => resolvePageComponent(`./Pages/${name}.vue`, import.meta.glob('./Pages/**/*.vue')),
   setup({ el, App, props, plugin }) {
-    return createApp({ render: () => h(App, props) })
+    createApp({ render: () => h(App, props) })
       .use(plugin)
       .mount(el)
   },
 });
 ```
+
+Nếu bạn đang sử dụng tính năng code splitting của Vite với Inertia, chúng tôi khuyên bạn nên cấu hình [asset prefetching](#asset-prefetching).
 
 > [!NOTE]
 > [Bộ công cụ khởi tạo](/docs/{{version}}/starter-kits) của Laravel đã chứa cấu hình Laravel, Inertia và Vite phù hợp. Hãy xem [Laravel Breeze](/docs/{{version}}/starter-kits#breeze-and-inertia) để biết cách nhanh nhất để bắt đầu với Laravel, Inertia và Vite.
@@ -413,7 +415,7 @@ createInertiaApp({
 <a name="url-processing"></a>
 ### URL Processing
 
-Khi sử dụng Vite và tham chiếu asset trong HTML, CSS hoặc JS của ứng dụng, có một số lưu ý cần cân nhắc. Đầu tiên, nếu bạn tham chiếu asset bằng đường dẫn tuyệt đối, Vite sẽ không chứa asset vào trong bản build; do đó, bạn nên đảm bảo rằng asset có sẵn trong thư mục public của bạn.
+Khi sử dụng Vite và tham chiếu asset trong HTML, CSS hoặc JS của ứng dụng, có một số lưu ý cần cân nhắc. Đầu tiên, nếu bạn tham chiếu asset bằng đường dẫn tuyệt đối, Vite sẽ không chứa asset vào trong bản build; do đó, bạn nên đảm bảo rằng asset có sẵn trong thư mục public của bạn. Bạn nên tránh sử dụng đường dẫn tuyệt đối khi sử dụng một [CSS entrypoint chuyên dụng](#configuring-vite) bởi vì, trong quá trình phát triển, các trình duyệt sẽ cố gắng load các đường dẫn này từ server develop của Vite, nơi CSS được lưu trữ, thay vì từ thư mục public của bạn.
 
 Khi tham chiếu đường dẫn asset tương đối, bạn nên nhớ rằng đường dẫn là tương đối tới file mà chúng được tham chiếu. Bất kỳ asset nào được tham chiếu thông qua đường dẫn tương đối sẽ được Vite viết lại, version hóa và đóng gói.
 
@@ -501,6 +503,7 @@ export default defineConfig({
 
 Khi tùy chọn `refresh` là `true`, thì việc save file trong các thư mục sau sẽ kích hoạt trình duyệt sẽ thực hiện việc refresh toàn bộ trang trong khi bạn đang chạy `npm run dev`:
 
+- `app/Livewire/**`
 - `app/View/Components/**`
 - `lang/**`
 - `resources/lang/**`
@@ -563,6 +566,75 @@ Sau khi macro đã được định nghĩa xong, nó có thể được gọi n�
 <img src="{{ Vite::image('logo.png') }}" alt="Laravel Logo">
 ```
 
+<a name="asset-prefetching"></a>
+## Tải trước Asset
+
+Khi xây dựng một SPA bằng tính năng code splitting của Vite, các asset cần thiết sẽ được lấy ra trên mỗi lần chuyển trang. Hành vi này có thể dẫn đến việc render UI bị chậm trễ. Nếu đây là vấn đề đối với frontend framework mà bạn chọn, Laravel cung cấp khả năng load trước các asset JavaScript và CSS của ứng dụng ngay trong lần load trang đầu tiên.
+
+Bạn có thể hướng dẫn Laravel chủ động load trước các asset của bạn bằng cách gọi phương thức `Vite::prefetch` trong phương thức `boot` của một [service provider](/docs/{{version}}/providers):
+
+```php
+<?php
+
+namespace App\Providers;
+
+use Illuminate\Support\Facades\Vite;
+use Illuminate\Support\ServiceProvider;
+
+class AppServiceProvider extends ServiceProvider
+{
+    /**
+     * Register any application services.
+     */
+    public function register(): void
+    {
+        // ...
+    }
+
+    /**
+     * Bootstrap any application services.
+     */
+    public function boot(): void
+    {
+        Vite::prefetch(concurrency: 3);
+    }
+}
+```
+
+Trong ví dụ trên, các asset sẽ được load trước với tối đa `3` lượt chạy đồng thời trên mỗi lần load trang. Bạn có thể thay đổi số lượng đồng thời này để phù hợp với nhu cầu của ứng dụng hoặc không chỉ định giới hạn đồng thời nếu ứng dụng cần tải xuống tất cả các asset cùng một lúc:
+
+```php
+/**
+ * Bootstrap any application services.
+ */
+public function boot(): void
+{
+    Vite::prefetch();
+}
+```
+
+Mặc định, việc load trước sẽ bắt đầu khi event [page _load_](https://developer.mozilla.org/en-US/docs/Web/API/Window/load_event) được kích hoạt. Nếu bạn muốn tùy chỉnh thời điểm bắt đầu load trước, bạn có thể chỉ định một event mà Vite sẽ lắng nghe:
+
+```php
+/**
+ * Bootstrap any application services.
+ */
+public function boot(): void
+{
+    Vite::prefetch(event: 'vite:prefetch');
+}
+```
+
+Với đoạn code ở trên, việc load trước sẽ bắt đầu khi bạn kích hoạt event `vite:prefetch` trên object `window`. Ví dụ, bạn có thể bắt đầu việc load trước sau ba giây kể từ khi trang được load:
+
+```html
+<script>
+    addEventListener('load', () => setTimeout(() => {
+        dispatchEvent(new Event('vite:prefetch'))
+    }, 3000))
+</script>
+```
+
 <a name="custom-base-urls"></a>
 ## Tuỳ biến Base URLs
 
@@ -602,12 +674,20 @@ Vite của Laravel sẽ cố gắng resolve các asset của bạn khi chạy te
 
 Nếu bạn muốn mock Vite trong quá trình test, bạn có thể gọi phương thức `withoutVite`, phương thức này có sẵn cho bất kỳ class test nào được extend từ class `TestCase` của Laravel:
 
-```php
+```php tab=Pest
+test('without vite example', function () {
+    $this->withoutVite();
+
+    // ...
+});
+```
+
+```php tab=PHPUnit
 use Tests\TestCase;
 
 class ExampleTest extends TestCase
 {
-    public function test_without_vite_example()
+    public function test_without_vite_example(): void
     {
         $this->withoutVite();
 
@@ -627,8 +707,6 @@ use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 
 abstract class TestCase extends BaseTestCase
 {
-    use CreatesApplication;
-
     protected function setUp(): void// [tl! add:start]
     {
         parent::setUp();
@@ -848,6 +926,72 @@ export default defineConfig({
     build: {
       manifest: 'assets.json', // Customize the manifest filename...
     },
+});
+```
+
+<a name="cors"></a>
+### Dev Server Cross-Origin Resource Sharing (CORS)
+
+Nếu bạn đang gặp phải các vấn đề về Cross-Origin Resource Sharing (CORS) trong trình duyệt khi load các asset từ server dev Vite, bạn có thể cần phải cấp quyền truy cập cho origin tùy chỉnh của bạn vào server dev. Vite kết hợp với plugin Laravel cho phép các origin sau mà không cần cấu hình gì thêm:
+
+- `::1`
+- `127.0.0.1`
+- `localhost`
+- `*.test`
+- `*.localhost`
+- `APP_URL` trong file `.env` của project
+
+Cách dễ nhất để cho phép một origin tùy chỉnh cho project của bạn là đảm bảo rằng biến môi trường `APP_URL` của ứng dụng khớp với origin mà bạn đang truy cập trong trình duyệt. Ví dụ: nếu bạn đang truy cập `https://my-app.laravel`, thì bạn nên cập nhật file `.env` của bạn là địa chỉ trên:
+
+```env
+APP_URL=https://my-app.laravel
+```
+
+Nếu bạn cần quyền kiểm soát chi tiết hơn đối với các origin, chẳng hạn như hỗ trợ nhiều origin, bạn nên sử dụng [cấu hình server CORS mặc định linh hoạt và toàn diện của Vite](https://vite.dev/config/server-options.html#server-cors). Ví dụ: bạn có thể chỉ định nhiều origin trong tùy chọn cấu hình `server.cors.origin` ở file `vite.config.js` của project:
+
+```js
+import { defineConfig } from 'vite';
+import laravel from 'laravel-vite-plugin';
+
+export default defineConfig({
+    plugins: [
+        laravel({
+            input: 'resources/js/app.js',
+            refresh: true,
+        }),
+    ],
+    server: {  // [tl! add]
+        cors: {  // [tl! add]
+            origin: [  // [tl! add]
+                'https://backend.laravel',  // [tl! add]
+                'http://admin.laravel:8566',  // [tl! add]
+            ],  // [tl! add]
+        },  // [tl! add]
+    },  // [tl! add]
+});
+```
+
+Bạn cũng có thể thêm các pattern regex, điều này có thể hữu ích nếu bạn muốn cho phép tất cả các origin cho một top-level domain nhất định, chẳng hạn như `*.laravel`:
+
+```js
+import { defineConfig } from 'vite';
+import laravel from 'laravel-vite-plugin';
+
+export default defineConfig({
+    plugins: [
+        laravel({
+            input: 'resources/js/app.js',
+            refresh: true,
+        }),
+    ],
+    server: {  // [tl! add]
+        cors: {  // [tl! add]
+            origin: [ // [tl! add]
+                // Supports: SCHEME://DOMAIN.laravel[:PORT] [tl! add]
+                /^https?:\/\/.*\.laravel(:\d+)?$/, //[tl! add]
+            ], // [tl! add]
+        }, // [tl! add]
+    }, // [tl! add]
 });
 ```
 

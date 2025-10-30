@@ -2,14 +2,14 @@
 
 - [Cấu trúc phiên bản](#versioning-scheme)
 - [Chính sách hỗ trợ](#support-policy)
-- [Laravel 10](#laravel-10)
+- [Laravel 11](#laravel-11)
 
 <a name="versioning-scheme"></a>
 ## Cấu trúc phiên bản
 
 Laravel và các package khác của nó tuân theo [Phiên bản Semantic](https://semver.org). Các phiên bản được phát hành chính thức của framework được phát hành một năm một lần (~Q1), trong khi các bản phát hành nhỏ hơn và các bản sửa lỗi có thể được phát hành thường xuyên hơn, có thể là mỗi tuần. Các bản phát hành nhỏ và các bản sửa lỗi sẽ **không bao giờ** chứa các thay đổi mà có thể dẫn đến hệ thống của bạn bị lỗi.
 
-Khi sủ dụng framework Laravel hoặc các component của nó từ application của bạn hoặc từ package, bạn phải luôn luôn sử dụng một ràng buộc phiên bản, chẳng hạn như là `^10.0`, Vì các bản phát hành chính thức của Laravel có thể chứa các thay đổi mà có thể làm hệ thống của bạn bị lỗi. Tuy nhiên, chúng tôi sẽ cố gắng đảm bảo rằng: bạn có thể cập nhật lên bản phát hành chính thức trong một ngày hoặc ít hơn.
+Khi sủ dụng framework Laravel hoặc các component của nó từ application của bạn hoặc từ package, bạn phải luôn luôn sử dụng một ràng buộc phiên bản, chẳng hạn như là `^11.0`, Vì các bản phát hành chính thức của Laravel có thể chứa các thay đổi mà có thể làm hệ thống của bạn bị lỗi. Tuy nhiên, chúng tôi sẽ cố gắng đảm bảo rằng: bạn có thể cập nhật lên bản phát hành chính thức trong một ngày hoặc ít hơn.
 
 <a name="named-arguments"></a>
 #### Named Arguments
@@ -25,10 +25,10 @@ Khi sủ dụng framework Laravel hoặc các component của nó từ applicati
 
 | Version | PHP (*) | Release | Bug Fixes Until | Security Fixes Until |
 | --- | --- | --- | --- | --- |
-| 8 | 7.3 - 8.1 | ngày 8 tháng 9 năm 2020 | ngày 26 tháng 7 năm 2022 | ngày 24 tháng 1 năm 2023 |
 | 9 | 8.0 - 8.2 | ngày 8 tháng 2 năm 2022 | ngày 8 tháng 8 năm 2023 | ngày 6 tháng 2 năm 2024 |
 | 10 | 8.1 - 8.3 | ngày 14 tháng 2 năm 2023 | ngày 6 tháng 8 năm 2024 | ngày 4 tháng 2 năm 2025 |
 | 11 | 8.2 - 8.4 | ngày 12 tháng 3 năm 2024 | ngày 3 tháng 9 năm 2025 | ngày 12 tháng 3 năm 2026 |
+| 12 | 8.2 - 8.4 | 24 tháng 2 năm 2025 | 13 tháng 8 năm 2026 | 24 tháng 2 năm 2027 |
 
 </div>
 
@@ -45,151 +45,331 @@ Khi sủ dụng framework Laravel hoặc các component của nó từ applicati
 
 (*) Supported PHP versions
 
-<a name="laravel-10"></a>
-## Laravel 10
+<a name="laravel-11"></a>
+## Laravel 11
 
-Như bạn có thể biết, Laravel đã chuyển sang phát hành theo năm từ bản phát hành Laravel 8. Trước đây, các phiên bản chính được phát hành sau mỗi 6 tháng. Sự chuyển đổi này nhằm mục đích giảm bớt gánh nặng bảo trì cho cộng đồng và thách thức nhóm phát triển của chúng tôi cung cấp các tính năng mới tuyệt vời, mạnh mẽ mà không giới thiệu các thay đổi nghiêm trọng. Do đó, chúng tôi đã cung cấp nhiều tính năng mạnh mẽ cho Laravel 9 mà không phá vỡ khả năng tương thích ngược.
-
-Do đó, cam kết cung cấp những tính năng mới tuyệt vời trong bản phát hành hiện tại nên có thể sẽ khiến các bản phát hành "chính" trong tương lai chủ yếu được sử dụng cho các công việc "bảo trì" như nâng cấp các library, có thể được thấy trong các release note này.
-
-Laravel 10 vẫn sẽ tiếp tục những cải tiến được thực hiện trong Laravel 9.x bằng cách giới thiệu thêm các kiểu tham số và cách trả về của chúng cho tất cả các phương thức có trong ứng dụng, cũng như tất cả các file được sử dụng để tạo các class trong toàn bộ framework. Ngoài ra, một class trừu tượng mới, thân thiện với nhà phát triển cũng đã được giới thiệu để khởi động và tương tác với các process bên ngoài. Hơn nữa, Laravel Pennant cũng đã được giới thiệu để cung cấp một phương pháp tuyệt vời để quản lý các "feature flags" có trong ứng dụng.
+Laravel 11 tiếp tục những cải tiến đã có trong Laravel 10.x bằng cách giới thiệu cấu trúc ứng dụng tinh giản hơn, giới hạn tỷ lệ theo từng giây, health routing, rotation encryption key, nâng cấp queue testing, transport mail [Resend](https://resend.com), tích hợp validator Prompt, các lệnh Artisan mới, và nhiều hơn nữa. Ngoài ra, Laravel Reverb, một máy chủ WebSocket chính thức của chúng tôi có khả năng mở rộng, đã được giới thiệu để cung cấp các tính năng thời gian thực mạnh mẽ cho ứng dụng của bạn.
 
 <a name="php-8"></a>
-### PHP 8.1
+### PHP 8.2
 
-Laravel 10.x sẽ yêu cầu phiên bản PHP thấp nhất là 8.1.
+Laravel 11.x yêu cầu phiên bản PHP tối thiểu là 8.2.
 
-<a name="types"></a>
-### Types
+<a name="structure"></a>
+### Streamlined Application Structure
 
-_Application skeleton và stub type-hint được đóng góp bởi [Nuno Maduro](https://github.com/nunomaduro)_.
+_Cấu trúc tinh giản hơn của ứng dụng Laravel được phát triển bởi [Taylor Otwell](https://github.com/taylorotwell) và [Nuno Maduro](https://github.com/nunomaduro)_.
 
-Trong lần phát hành đầu tiên, Laravel đã tận dụng tất cả các tính năng gợi ý kiểu dữ liệu có sẵn trong PHP tại thời điểm đó. Tuy nhiên, nhiều tính năng mới đã được bổ sung vào PHP trong những năm gần đây, bao gồm cả các gợi ý kiểu dữ liệu nguyên thủy, kiểu trả về và kiểu mix.
+Laravel 11 giới thiệu một cấu trúc ứng dụng tinh giản cho các ứng dụng Laravel **mới**, mà không yêu cầu bất kỳ thay đổi nào đối với các ứng dụng hiện có. Cấu trúc ứng dụng mới nhằm cung cấp một trải nghiệm tinh gọn, hiện đại hơn, trong khi vẫn giữ lại nhiều khái niệm mà các nhà phát triển Laravel đã quen thuộc. Dưới đây chúng ta sẽ thảo luận về những điểm nổi bật của cấu trúc ứng dụng mới của Laravel.
 
-Laravel 10.x đã cập nhật toàn diện bộ framework và tất cả các file mà được framework sử dụng để thêm các tham số và các kiểu dữ liệu trả về vào tất cả các khai báo của phương thức. Ngoài ra, thông tin gợi ý theo kiểu "doc block" do không cần thiết nên đã bị xóa bỏ.
+#### The Application Bootstrap File
 
-Thay đổi này hoàn toàn tương thích với các ứng dụng hiện có. Do đó, các ứng dụng hiện có mà không có gợi ý theo kiểu này, thì vẫn sẽ tiếp tục hoạt động bình thường.
-
-<a name="laravel-pennant"></a>
-### Laravel Pennant
-
-_Laravel Pennant được phát triển bởi [Tim MacDonald](https://github.com/timacdonald)_.
-
-Một package mới của chúng tôi, Laravel Pennant, đã được phát hành. Laravel Pennant cung cấp một giải pháp gọn nhẹ, hợp lý để quản lý các feature flag của ứng dụng. Pennant được tích hợp sẵn các driver `array` dùng bộ nhớ để lưu trữ và driver `database` để lưu trữ feature dài hạn.
-
-Các feature có thể được định nghĩa dễ dàng thông qua phương thức `Feature::define`:
+File `bootstrap/app.php` đã được làm mới thành một file cấu hình ứng dụng theo phong cách code-first. Từ file này, giờ đây bạn có thể tùy chỉnh routing, middleware, service providers, xử lý ngoại lệ và nhiều hơn thế cho ứng dụng của bạn. File này sẽ hợp nhất các cài đặt hành vi high-level của ứng dụng mà trước đó nằm rải rác trong cấu trúc file của ứng dụng:
 
 ```php
-use Laravel\Pennant\Feature;
-use Illuminate\Support\Lottery;
+return Application::configure(basePath: dirname(__DIR__))
+    ->withRouting(
+        web: __DIR__.'/../routes/web.php',
+        commands: __DIR__.'/../routes/console.php',
+        health: '/up',
+    )
+    ->withMiddleware(function (Middleware $middleware) {
+        //
+    })
+    ->withExceptions(function (Exceptions $exceptions) {
+        //
+    })->create();
+```
 
-Feature::define('new-onboarding-flow', function () {
-    return Lottery::odds(1, 10);
+<a name="service-providers"></a>
+#### Service Providers
+
+Thay vì cấu trúc ứng dụng Laravel mặc định chứa đến năm service provider, Laravel 11 chỉ chứa một `AppServiceProvider` duy nhất. Chức năng của các service provider còn lại của framework đã được tích hợp vào `bootstrap/app.php`, được xử lý tự động bởi framework, hoặc có thể được viết vào trong `AppServiceProvider` của ứng dụng của bạn.
+
+Ví dụ, tính năng event discovery hiện đã được enable mặc định, giúp loại bỏ phần lớn việc bạn phải đăng ký các event và listener của event. Tuy nhiên, nếu bạn cần đăng ký event một cách thủ công, bạn có thể thực hiện việc đó trong `AppServiceProvider`. Tương tự, các route model binding hoặc authorization gate mà trước đây bạn có thể đã đăng ký trong `AuthServiceProvider` cũng có thể được đăng ký trong `AppServiceProvider`.
+
+<a name="opt-in-routing"></a>
+#### Opt-in API and Broadcast Routing
+
+Mặc định các file route `api.php` và `channels.php` không còn tồn tại nữa, vì nhiều ứng dụng không yêu cầu các file này. Thay vào đó, chúng có thể được tạo ra bằng các lệnh Artisan đơn giản:
+
+```shell
+php artisan install:api
+
+php artisan install:broadcasting
+```
+
+<a name="middleware"></a>
+#### Middleware
+
+Trước đây, các ứng dụng Laravel mới có chứa đến chín middleware. Các middleware này thực hiện nhiều nhiệm vụ khác nhau như xác thực request, trim các chuỗi input và xác thực CSRF token.
+
+Trong Laravel 11, các middleware này đã được chuyển vào bên trong của framework, giúp cấu trúc ứng dụng của bạn gọn nhẹ hơn. Các phương thức mới để tùy chỉnh hành vi của các middleware này đã được thêm vào framework và bạn có thể tùy chỉnh chúng từ file `bootstrap/app.php` của ứng dụng:
+
+```php
+->withMiddleware(function (Middleware $middleware) {
+    $middleware->validateCsrfTokens(
+        except: ['stripe/*']
+    );
+
+    $middleware->web(append: [
+        EnsureUserIsSubscribed::class,
+    ])
+})
+```
+
+Vì tất cả middleware có thể được tùy chỉnh dễ dàng thông qua file `bootstrap/app.php` của ứng dụng, nên nhu cầu về một class HTTP "kernel" đã được loại bỏ.
+
+<a name="scheduling"></a>
+#### Scheduling
+
+Sử dụng facade `Schedule` mới, các scheduled task có thể được định nghĩa trực tiếp vào trong file `routes/console.php` của ứng dụng, giúp loại bỏ nhu cầu về một class console "kernel":
+
+```php
+use Illuminate\Support\Facades\Schedule;
+
+Schedule::command('emails:send')->daily();
+```
+
+<a name="exception-handling"></a>
+#### Exception Handling
+
+Giống như routing và middleware, việc xử lý ngoại lệ giờ đây có thể được tùy chỉnh từ file `bootstrap/app.php` của ứng dụng thay vì một class exception handler, giúp giảm số lượng file có trong một ứng dụng Laravel mới:
+
+```php
+->withExceptions(function (Exceptions $exceptions) {
+    $exceptions->dontReport(MissedFlightException::class);
+
+    $exceptions->report(function (InvalidOrderException $e) {
+        // ...
+    });
+})
+```
+
+<a name="base-controller-class"></a>
+#### Base `Controller` Class
+
+Class controller base có sẵn trong các ứng dụng Laravel mới đã được đơn giản hóa. Nó không còn kế thừa class `Controller` của Laravel, và các trait `AuthorizesRequests` và `ValidatesRequests` cũng đã bị loại bỏ, vì chúng có thể được đưa vào các controller riêng của ứng dụng nếu bạn muốn:
+
+    <?php
+
+    namespace App\Http\Controllers;
+
+    abstract class Controller
+    {
+        //
+    }
+
+<a name="application-defaults"></a>
+#### Application Defaults
+
+Mặc định, các ứng dụng Laravel mới sẽ sử dụng SQLite để lưu cơ sở dữ liệu, cũng như driver `database` cho session, cache và queue của Laravel. Điều này cho phép bạn bắt đầu xây dựng ứng dụng của bạn ngay sau khi tạo một ứng dụng Laravel mới mà không yêu cầu cài đặt gì thêm cho phần mềm hoặc tạo thêm các database migration.
+
+Ngoài ra, theo thời gian, các driver `database` cho các service này của Laravel đã trở nên đủ ổn định để sử dụng production trong nhiều ngữ cảnh ứng dụng; do đó, chúng cung cấp một sự lựa chọn hợp lý và thống nhất cho cả ứng dụng ở môi trường local và production.
+
+<a name="reverb"></a>
+### Laravel Reverb
+
+_Laravel Reverb được phát triển bởi [Joe Dixon](https://github.com/joedixon)_.
+
+[Laravel Reverb](https://reverb.laravel.com) mang đến khả năng giao tiếp WebSocket thời gian thực cực nhanh và có khả năng mở rộng trực tiếp vào ứng dụng Laravel của bạn, đồng thời cung cấp khả năng tích hợp liền mạch với bộ công cụ event broadcasting hiện có của Laravel, chẳng hạn như Laravel Echo.
+
+```shell
+php artisan reverb:start
+```
+
+Ngoài ra, Reverb cũng hỗ trợ mở rộng quy mô lớn theo chiều ngang thông qua khả năng publish và subscribe của Redis, cho phép bạn phân phối lưu lượng WebSocket của bạn trên nhiều máy chủ Reverb backend, tất cả đều hỗ trợ cho một ứng dụng duy nhất có dung lượng cao.
+
+Để biết thêm thông tin về Laravel Reverb, vui lòng tham khảo tài liệu [Reverb](/docs/{{version}}/reverb).
+
+<a name="rate-limiting"></a>
+### Per-Second Rate Limiting
+
+_Per-second rate limiting được đóng góp bởi [Tim MacDonald](https://github.com/timacdonald)_.
+
+Laravel hiện đã hỗ trợ rate limiting "theo giây" cho tất cả các rate limiter, bao gồm cả những rate limiter cho HTTP request và các queued job. Trước đây, các rate limiter của Laravel bị giới hạn ở mức độ "theo phút":
+
+```php
+RateLimiter::for('invoices', function (Request $request) {
+    return Limit::perSecond(1);
 });
 ```
 
-Sau khi một feature đã được định nghĩa xong, bạn có thể dễ dàng xác định xem người dùng hiện tại có quyền truy cập vào feature đó hay không:
+Để biết thêm thông tin về rate limiting trong Laravel, vui lòng tham khảo tài liệu [rate limiting](/docs/{{version}}/routing#rate-limiting).
+
+<a name="health"></a>
+### Health Routing
+
+_Health routing được đóng góp bởi [Taylor Otwell](https://github.com/taylorotwell)_.
+
+Các ứng dụng Laravel 11 mới có chứa một lệnh routing `health`, lệnh này hướng dẫn Laravel định nghĩa một url health-check đơn giản có thể được gọi bởi các dịch vụ giám sát ứng dụng của bên thứ ba hoặc các hệ thống điều phối như Kubernetes. Mặc định, route này sẽ được chạy tại `/up`:
 
 ```php
-if (Feature::active('new-onboarding-flow')) {
-    // ...
-}
+->withRouting(
+    web: __DIR__.'/../routes/web.php',
+    commands: __DIR__.'/../routes/console.php',
+    health: '/up',
+)
 ```
 
-Tất nhiên, để thuận tiện hơn, các lệnh Blade cũng có sẵn:
+Khi các HTTP request được gửi đến route này, Laravel cũng sẽ kích hoạt một event `DiagnosingHealth`, cho phép bạn thực hiện thêm các health check có liên quan đến ứng dụng của bạn.
 
-```blade
-@feature('new-onboarding-flow')
-    <div>
-        <!-- ... -->
-    </div>
-@endfeature
-```
+<a name="encryption"></a>
+### Graceful Encryption Key Rotation
 
-Pennant cung cấp nhiều tính năng và API nâng cao. Để biết thêm thông tin, vui lòng tham khảo [tài liệu Pennant](/docs/{{version}}/pennant).
+_Graceful encryption key rotation được đóng góp bởi [Taylor Otwell](https://github.com/taylorotwell)_.
 
-<a name="process"></a>
-### Process Interaction
+Vì Laravel mã hóa tất cả các cookie, bao gồm cả session cookie của ứng dụng, nên về cơ bản mọi request đến ứng dụng Laravel đều dựa vào mã hóa. Tuy nhiên, vì lý do này, việc rotation encryption key của ứng dụng sẽ khiến tất cả người dùng bị logout ra khỏi ứng dụng. Ngoài ra, việc giải mã dữ liệu đã được mã hóa bằng encryption key trước đó cũng trở nên không thể.
 
-_Layer process abstraction được đóng góp bởi [Nuno Maduro](https://github.com/nunomaduro) và [Taylor Otwell](https://github.com/taylorotwell)_.
+Laravel 11 cho phép bạn định nghĩa các encryption key trước đó của ứng dụng dưới dạng một danh sách được phân tách bằng dấu phẩy thông qua biến môi trường `APP_PREVIOUS_KEYS`.
 
-Laravel 10.x có giới thiệu một layer trừu tượng đẹp đẽ để bắt đầu và tương tác với các process bên ngoài thông qua một facade `Process` mới:
+Khi mã hóa các giá trị, Laravel sẽ luôn sử dụng encryption key "hiện tại", nằm trong biến môi trường `APP_KEY`. Và khi giải mã các giá trị, Laravel trước tiên sẽ thử với encryption key hiện tại. Nếu giải mã thất bại, thì Laravel sẽ thử với tất cả các key trước đó cho đến khi nào một trong các key có thể giải mã được giá trị.
+
+Cách tiếp cận giải mã linh hoạt này cho phép người dùng tiếp tục sử dụng ứng dụng của bạn mà không bị gián đoạn ngay cả khi encryption key của bạn được thay đổi.
+
+Để biết thêm thông tin về mã hóa trong Laravel, vui lòng tham khảo tài liệu [encryption](/docs/{{version}}/encryption).
+
+<a name="automatic-password-rehashing"></a>
+### Automatic Password Rehashing
+
+_Automatic password rehashing được đóng gói bởi [Stephen Rees-Carter](https://github.com/valorin)_.
+
+Thuật toán hashing mật khẩu mặc định của Laravel là bcrypt. "Work factor" cho các hash bcrypt có thể được điều chỉnh thông qua file cấu hình `config/hashing.php` hoặc biến môi trường `BCRYPT_ROUNDS`.
+
+Thông thường, bcrypt work factor nên được tăng dần theo thời gian khi sức mạnh xử lý của CPU hoặc GPU tăng lên. Nếu bạn muốn tăng bcrypt work factor cho ứng dụng của bạn, Laravel giờ đây sẽ tự động rehash lại mật khẩu người dùng một cách mượt mà khi người dùng authenticate trong ứng dụng của bạn.
+
+<a name="prompt-validation"></a>
+### Prompt Validation
+
+_Prompt validator integration được đóng gói bởi [Andrea Marco Sartori](https://github.com/cerbero90)_.
+
+[Laravel Prompts](/docs/{{version}}/prompts) là một package PHP giúp thêm các form đẹp và thân thiện với người dùng vào các ứng dụng command-line của bạn, với các tính năng giống như trình duyệt bao gồm placeholder text và validation.
+
+Laravel Prompts hỗ trợ input validation thông qua closures:
 
 ```php
-use Illuminate\Support\Facades\Process;
-
-$result = Process::run('ls -la');
-
-return $result->output();
+$name = text(
+    label: 'What is your name?',
+    validate: fn (string $value) => match (true) {
+        strlen($value) < 3 => 'The name must be at least 3 characters.',
+        strlen($value) > 255 => 'The name must not exceed 255 characters.',
+        default => null
+    }
+);
 ```
 
-Các process thậm chí có thể được bắt đầu trong một pool, cho phép thực hiện và quản lý các process bất đồng bộ một cách hiệu quả:
+Tuy nhiên, điều này có thể trở nên rườm rà khi xử lý nhiều input hoặc các kịch bản validation phức tạp. Do đó, trong Laravel 11, bạn có thể tận dụng toàn bộ sức mạnh của [validator](/docs/{{version}}/validation) của Laravel khi validate các prompt input:
 
 ```php
-use Illuminate\Process\Pool;
-use Illuminate\Support\Facades\Process;
-
-[$first, $second, $third] = Process::concurrently(function (Pool $pool) {
-    $pool->command('cat first.txt');
-    $pool->command('cat second.txt');
-    $pool->command('cat third.txt');
-});
-
-return $first->output();
+$name = text('What is your name?', validate: [
+    'name' => 'required|min:3|max:255',
+]);
 ```
 
-Ngoài ra, các process có thể được fake để thuận tiện cho việc testing:
+<a name="queue-interaction-testing"></a>
+### Queue Interaction Testing
+
+_Queue interaction testing được đóng gói bởi [Taylor Otwell](https://github.com/taylorotwell)_.
+
+Trước đây, việc kiểm tra xem một queued job đã được release hay chưa, đã delete hay chưa hoặc bị thất bại là một việc khá rườm rà và yêu cầu phải định nghĩa các queue fake và stub tùy biến. Tuy nhiên, trong Laravel 11, bạn có thể dễ dàng kiểm tra các tương tác queue này bằng cách sử dụng phương thức `withFakeQueueInteractions`:
 
 ```php
-Process::fake();
+use App\Jobs\ProcessPodcast;
 
-// ...
+$job = (new ProcessPodcast)->withFakeQueueInteractions();
 
-Process::assertRan('ls -la');
+$job->handle();
+
+$job->assertReleased(delay: 30);
 ```
 
-Để biết thêm thông tin về cách tương tác với các process, vui lòng tham khảo [tài liệu process](/docs/{{version}}/processes).
+Để biết thêm thông tin về việc test queue job, hãy tham khảo tài liệu [queue](/docs/{{version}}/queues#testing).
 
-<a name="test-profiling"></a>
-### Test Profiling
+<a name="new-artisan-commands"></a>
+### New Artisan Commands
 
-_Test profiling được đóng góp bởi [Nuno Maduro](https://github.com/nunomaduro)_.
+_Class creation Artisan commands được đóng gói bởi [Taylor Otwell](https://github.com/taylorotwell)_.
 
-Lệnh `test` của Artisan đã nhận được một tùy chọn `--profile` mới cho phép bạn dễ dàng xác định các bài kiểm tra chạy chậm nhất trong ứng dụng của bạn:
+Các lệnh Artisan mới đã được thêm vào để cho phép tạo nhanh các class, enum, interface và trait:
 
 ```shell
-php artisan test --profile
+php artisan make:class
+php artisan make:enum
+php artisan make:interface
+php artisan make:trait
 ```
 
-Để thuận tiện, các bài kiểm tra chậm nhất sẽ được hiển thị trực tiếp trong output của CLI:
+<a name="model-cast-improvements"></a>
+### Model Casts Improvements
 
-<p align="center">
-    <img width="100%" src="https://user-images.githubusercontent.com/5457236/217328439-d8d983ec-d0fc-4cde-93d9-ae5bccf5df14.png"/>
-</p>
+_Model casts improvements được đóng gói bởi [Nuno Maduro](https://github.com/nunomaduro)_.
 
-<a name="pest-scaffolding"></a>
-### Pest Scaffolding
+Laravel 11 hỗ trợ định nghĩa các cast của model bằng một phương thức thay vì là một thuộc tính. Điều này cho phép định nghĩa các cast một cách linh hoạt và mạch lạc hơn, đặc biệt là khi sử dụng các cast có tham số:
 
-Các dự án Laravel mới có thể tạo cùng với các bài test Pest mặc định. Để chọn tính năng này, hãy cung cấp flag `--pest` khi tạo dự án mới thông qua Laravel installer:
+    /**
+     * Get the attributes that should be cast.
+     *
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'options' => AsCollection::using(OptionCollection::class),
+                      // AsEncryptedCollection::using(OptionCollection::class),
+                      // AsEnumArrayObject::using(OptionEnum::class),
+                      // AsEnumCollection::using(OptionEnum::class),
+        ];
+    }
 
-```shell
-laravel new example-application --pest
-```
+Để biết thêm thông tin về cast attribute, hãy tham khảo tài liệu [Eloquent](/docs/{{version}}/eloquent-mutators#attribute-casting).
 
-<a name="generator-cli-prompts"></a>
-### Generator CLI Prompts
+<a name="the-once-function"></a>
+### The `once` Function
 
-_Generator CLI prompt được đóng góp bởi [Jess Archer](https://github.com/jessarcher)_.
+_The `once` helper được đóng gói bởi [Taylor Otwell](https://github.com/taylorotwell)_ và _[Nuno Maduro](https://github.com/nunomaduro)_.
 
-Để cải thiện trải nghiệm cho nhà phát triển trong framework, tất cả các lệnh `make` được tích hợp sẵn của Laravel sẽ không còn yêu cầu bất kỳ dữ liệu input nào cả. Nếu các lệnh được gọi mà không có dữ liệu input, thì bạn sẽ được nhắc yêu cầu nhập cho các tham số cần thiết:
+Hàm helper `once` sẽ chạy một callback được cung cấp và lưu kết quả vào bộ nhớ RAM trong suốt thời gian của request. Mọi lần gọi tiếp theo đến hàm `once` với cùng một callback sẽ trả về kết quả đã được lưu trước đó:
 
-```shell
-php artisan make:controller
-```
+    function random(): int
+    {
+        return once(function () {
+            return random_int(1, 1000);
+        });
+    }
 
-<a name="horizon-telescope-facelift"></a>
-### Horizon / Telescope Facelift
+    random(); // 123
+    random(); // 123 (cached result)
+    random(); // 123 (cached result)
 
-[Horizon](/docs/{{version}}/horizon) và [Telescope](/docs/{{version}}/telescope) đã được cập nhật với giao diện mới và hiện đại hơn có kiểu chữ mới, khoảng cách và thiết kế được cải thiện:
+Để biết thêm thông tin về hàm helper `once`, hãy tham khảo tài liệu [helpers](/docs/{{version}}/helpers#method-once).
 
-<img src="https://laravel.com/img/docs/horizon-example.png">
+<a name="database-performance"></a>
+### Improved Performance When Testing With In-Memory Databases
+
+_Improved in-memory database testing performance được đóng gói bởi [Anders Jenbo](https://github.com/AJenbo)_
+
+Laravel 11 mang lại sự gia tăng tốc độ đáng kể khi sử dụng cơ sở dữ liệu SQLite `:memory:` trong quá trình testing. Để đạt được điều này, Laravel hiện duy trì một tham chiếu đến đối tượng PDO của PHP và tái sử dụng nó giữa các kết nối, điều này sẽ giúp giảm một nửa tổng thời gian chạy test.
+
+<a name="mariadb"></a>
+### Improved Support for MariaDB
+
+_Improved support for MariaDB được đóng gói bởi [Jonas Staudenmeir](https://github.com/staudenmeir) và [Julius Kiekbusch](https://github.com/Jubeki)_
+
+Laravel 11 cũng hỗ trợ cải tiến cho MariaDB. Trong các phiên bản Laravel trước đây, bạn có thể sử dụng MariaDB thông qua driver MySQL của Laravel. Tuy nhiên, Laravel 11 hiện nay đã chứa một driver MariaDB riêng chuyên cung cấp các cấu hình mặc định tốt hơn cho hệ thống cơ sở dữ liệu này.
+
+Để biết thêm thông tin về các driver cơ sở dữ liệu của Laravel, hãy tham khảo tài liệu [database](/docs/{{version}}/database).
+
+<a name="inspecting-database"></a>
+### Inspecting Databases and Improved Schema Operations
+
+_Improved schema operations and database inspection được đóng gói bởi [Hafez Divandari](https://github.com/hafezdivandari)_
+
+Laravel 11 cung cấp thêm các phương thức dành cho thao tác và kiểm tra schema cơ sở dữ liệu, bao gồm việc sửa, đổi tên và xóa cột một cách trực tiếp. Hơn nữa, các kiểu spatial nâng cao, tên schema non-default và các phương thức native schema cũng được cung cấp để thao tác với bảng, view, cột, index và foreign key:
+
+    use Illuminate\Support\Facades\Schema;
+
+    $tables = Schema::getTables();
+    $views = Schema::getViews();
+    $columns = Schema::getColumns('users');
+    $indexes = Schema::getIndexes('users');
+    $foreignKeys = Schema::getForeignKeys('users');

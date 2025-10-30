@@ -220,10 +220,12 @@ Bạn có thể sử dụng lệnh `@error` [Blade](/docs/{{version}}/blade) đ�
 
 <label for="title">Post Title</label>
 
-<input id="title"
+<input
+    id="title"
     type="text"
     name="title"
-    class="@error('title') is-invalid @enderror">
+    class="@error('title') is-invalid @enderror"
+/>
 
 @error('title')
     <div class="alert alert-danger">{{ $message }}</div>
@@ -254,7 +256,7 @@ Laravel cũng cung cấp một helper global `old`. Nếu bạn đang muốn hi�
 <a name="a-note-on-optional-fields"></a>
 ### Lưu ý về các field tùy chọn
 
-Mặc định, Laravel sẽ chứa hai middleware là: `TrimStrings` và `ConvertEmptyStringsToNull` trong stack middleware global application. Các middleware này sẽ được liệt kê trong stack bởi class `App\Http\Kernel`. Vì thế, bạn sẽ cần phải đánh dấu các trường request "optional" của bạn là `nullable` nếu bạn không muốn validator coi các giá trị `null` của các trường này là không hợp lệ. Ví dụ:
+Mặc định, Laravel sẽ chứa hai middleware là: `TrimStrings` và `ConvertEmptyStringsToNull` trong stack middleware global application. Vì thế, bạn sẽ cần phải đánh dấu các trường request "optional" của bạn là `nullable` nếu bạn không muốn validator coi các giá trị `null` của các trường này là không hợp lệ. Ví dụ:
 
     $request->validate([
         'title' => 'required|unique:posts|max:255',
@@ -311,7 +313,7 @@ Như bạn có thể thấy, phương thức `authorize` sẽ chịu trách nhi�
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, \Illuminate\Contracts\Validation\Rule|array|string>
+     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {
@@ -413,7 +415,7 @@ Bằng cách thêm một thuộc tính `stopOnFirstFailure` vào request class c
 <a name="customizing-the-redirect-location"></a>
 #### Customizing The Redirect Location
 
-Như đã thảo luận trước đó, một response chuyển hướng sẽ được tạo để đưa người dùng quay lại vị trí trước đó của họ khi xác thực form request không thành công. Tuy nhiên, bạn có thể tự do tùy chỉnh hành vi này. Để làm như vậy, hãy định nghĩa một thuộc tính `$redirect` trên form request của bạn:
+Khi xác thực form request không thành công, một response chuyển hướng sẽ được tạo để đưa người dùng quay lại vị trí trước đó của họ. Tuy nhiên, bạn có thể tự do tùy chỉnh hành vi này. Để làm như vậy, hãy định nghĩa một thuộc tính `$redirect` trên form request của bạn:
 
     /**
      * The URI that users should be redirected to if validation fails.
@@ -559,9 +561,9 @@ Nếu bạn không muốn sử dụng phương thức `validate` theo request, b
             ]);
 
             if ($validator->fails()) {
-                return redirect('post/create')
-                            ->withErrors($validator)
-                            ->withInput();
+                return redirect('/post/create')
+                    ->withErrors($validator)
+                    ->withInput();
             }
 
             // Retrieve the validated input...
@@ -611,7 +613,7 @@ Bạn có thể sử dụng phương thức `validateWithBag` để lưu thông 
 
 Nếu bạn có nhiều form trong một trang, bạn có thể muốn đặt tên cho `MessageBag` chứa các lỗi validation, cho phép bạn có thể truy xuất vào các thông báo lỗi cho một form cụ thể. Để đạt được điều này, hãy truyền tên đó làm tham số thứ hai cho phương thức `withErrors`:
 
-    return redirect('register')->withErrors($validator, 'login');
+    return redirect('/register')->withErrors($validator, 'login');
 
 Sau đó, bạn có thể truy cập vào instance `MessageBag` đã được đặt tên từ biến `$errors`:
 
@@ -676,8 +678,7 @@ Sometimes you need to perform additional validation after your initial validatio
         // ...
     }
 
-As noted, the `after` method also accepts an array of callables, which is particularly convenient if your "after validation" logic is encapsulated in invokable classes, which will receive an `Illuminate\Validation\Validator` instance via their `__invoke` method:
-Hãy chú ý rằng, phương thức `after` cũng chấp nhận một mảng các callback, cái 
+Hãy chú ý rằng, phương thức `after` cũng chấp nhận một mảng các callback, which is particularly convenient if your "after validation" logic is encapsulated in invokable classes, which will receive an `Illuminate\Validation\Validator` instance via their `__invoke` method:
 
 ```php
 use App\Validation\ValidateShippingTime;
@@ -862,79 +863,156 @@ Dưới đây là danh sách tất cả các quy tắc validation có sẵn và 
     }
 </style>
 
+#### Booleans
+
 <div class="collection-method-list" markdown="1">
 
 [Accepted](#rule-accepted)
 [Accepted If](#rule-accepted-if)
+[Boolean](#rule-boolean)
+[Declined](#rule-declined)
+[Declined If](#rule-declined-if)
+
+</div>
+
+#### Strings
+
+<div class="collection-method-list" markdown="1">
+
 [Active URL](#rule-active-url)
-[After (Date)](#rule-after)
-[After Or Equal (Date)](#rule-after-or-equal)
 [Alpha](#rule-alpha)
 [Alpha Dash](#rule-alpha-dash)
 [Alpha Numeric](#rule-alpha-num)
-[Array](#rule-array)
 [Ascii](#rule-ascii)
-[Bail](#rule-bail)
-[Before (Date)](#rule-before)
-[Before Or Equal (Date)](#rule-before-or-equal)
-[Between](#rule-between)
-[Boolean](#rule-boolean)
 [Confirmed](#rule-confirmed)
 [Current Password](#rule-current-password)
-[Date](#rule-date)
-[Date Equals](#rule-date-equals)
-[Date Format](#rule-date-format)
-[Decimal](#rule-decimal)
-[Declined](#rule-declined)
-[Declined If](#rule-declined-if)
 [Different](#rule-different)
-[Digits](#rule-digits)
-[Digits Between](#rule-digits-between)
-[Dimensions (Image Files)](#rule-dimensions)
-[Distinct](#rule-distinct)
 [Doesnt Start With](#rule-doesnt-start-with)
 [Doesnt End With](#rule-doesnt-end-with)
 [Email](#rule-email)
 [Ends With](#rule-ends-with)
 [Enum](#rule-enum)
+[Hex Color](#rule-hex-color)
+[In](#rule-in)
+[IP Address](#rule-ip)
+[JSON](#rule-json)
+[Lowercase](#rule-lowercase)
+[MAC Address](#rule-mac)
+[Max](#rule-max)
+[Min](#rule-min)
+[Not In](#rule-not-in)
+[Regular Expression](#rule-regex)
+[Not Regular Expression](#rule-not-regex)
+[Same](#rule-same)
+[Size](#rule-size)
+[Starts With](#rule-starts-with)
+[String](#rule-string)
+[Uppercase](#rule-uppercase)
+[URL](#rule-url)
+[ULID](#rule-ulid)
+[UUID](#rule-uuid)
+
+</div>
+
+#### Numbers
+
+<div class="collection-method-list" markdown="1">
+
+[Between](#rule-between)
+[Decimal](#rule-decimal)
+[Different](#rule-different)
+[Digits](#rule-digits)
+[Digits Between](#rule-digits-between)
+[Greater Than](#rule-gt)
+[Greater Than Or Equal](#rule-gte)
+[Integer](#rule-integer)
+[Less Than](#rule-lt)
+[Less Than Or Equal](#rule-lte)
+[Max](#rule-max)
+[Max Digits](#rule-max-digits)
+[Min](#rule-min)
+[Min Digits](#rule-min-digits)
+[Multiple Of](#rule-multiple-of)
+[Numeric](#rule-numeric)
+[Same](#rule-same)
+[Size](#rule-size)
+
+</div>
+
+#### Arrays
+
+<div class="collection-method-list" markdown="1">
+
+[Array](#rule-array)
+[Between](#rule-between)
+[Contains](#rule-contains)
+[Distinct](#rule-distinct)
+[In Array](#rule-in-array)
+[List](#rule-list)
+[Max](#rule-max)
+[Min](#rule-min)
+[Size](#rule-size)
+
+</div>
+
+#### Dates
+
+<div class="collection-method-list" markdown="1">
+
+[After](#rule-after)
+[After Or Equal](#rule-after-or-equal)
+[Before](#rule-before)
+[Before Or Equal](#rule-before-or-equal)
+[Date](#rule-date)
+[Date Equals](#rule-date-equals)
+[Date Format](#rule-date-format)
+[Different](#rule-different)
+[Timezone](#rule-timezone)
+
+</div>
+
+#### Files
+
+<div class="collection-method-list" markdown="1">
+
+[Between](#rule-between)
+[Dimensions](#rule-dimensions)
+[Extensions](#rule-extensions)
+[File](#rule-file)
+[Image](#rule-image)
+[Max](#rule-max)
+[MIME Types](#rule-mimetypes)
+[MIME Type By File Extension](#rule-mimes)
+[Size](#rule-size)
+
+</div>
+
+#### Database
+
+<div class="collection-method-list" markdown="1">
+
+[Exists](#rule-exists)
+[Unique](#rule-unique)
+
+</div>
+
+#### Utilities
+
+<div class="collection-method-list" markdown="1">
+
+[Bail](#rule-bail)
 [Exclude](#rule-exclude)
 [Exclude If](#rule-exclude-if)
 [Exclude Unless](#rule-exclude-unless)
 [Exclude With](#rule-exclude-with)
 [Exclude Without](#rule-exclude-without)
-[Exists (Database)](#rule-exists)
-[Extensions](#rule-extensions)
-[File](#rule-file)
 [Filled](#rule-filled)
-[Greater Than](#rule-gt)
-[Greater Than Or Equal](#rule-gte)
-[Hex Color](#rule-hex-color)
-[Image (File)](#rule-image)
-[In](#rule-in)
-[In Array](#rule-in-array)
-[Integer](#rule-integer)
-[IP Address](#rule-ip)
-[JSON](#rule-json)
-[Less Than](#rule-lt)
-[Less Than Or Equal](#rule-lte)
-[Lowercase](#rule-lowercase)
-[MAC Address](#rule-mac)
-[Max](#rule-max)
-[Max Digits](#rule-max-digits)
-[MIME Types](#rule-mimetypes)
-[MIME Type By File Extension](#rule-mimes)
-[Min](#rule-min)
-[Min Digits](#rule-min-digits)
 [Missing](#rule-missing)
 [Missing If](#rule-missing-if)
 [Missing Unless](#rule-missing-unless)
 [Missing With](#rule-missing-with)
 [Missing With All](#rule-missing-with-all)
-[Multiple Of](#rule-multiple-of)
-[Not In](#rule-not-in)
-[Not Regex](#rule-not-regex)
 [Nullable](#rule-nullable)
-[Numeric](#rule-numeric)
 [Present](#rule-present)
 [Present If](#rule-present-if)
 [Present Unless](#rule-present-unless)
@@ -944,27 +1022,17 @@ Dưới đây là danh sách tất cả các quy tắc validation có sẵn và 
 [Prohibited If](#rule-prohibited-if)
 [Prohibited Unless](#rule-prohibited-unless)
 [Prohibits](#rule-prohibits)
-[Regular Expression](#rule-regex)
 [Required](#rule-required)
 [Required If](#rule-required-if)
 [Required If Accepted](#rule-required-if-accepted)
+[Required If Declined](#rule-required-if-declined)
 [Required Unless](#rule-required-unless)
 [Required With](#rule-required-with)
 [Required With All](#rule-required-with-all)
 [Required Without](#rule-required-without)
 [Required Without All](#rule-required-without-all)
 [Required Array Keys](#rule-required-array-keys)
-[Same](#rule-same)
-[Size](#rule-size)
 [Sometimes](#validating-when-present)
-[Starts With](#rule-starts-with)
-[String](#rule-string)
-[Timezone](#rule-timezone)
-[Unique (Database)](#rule-unique)
-[Uppercase](#rule-uppercase)
-[URL](#rule-url)
-[ULID](#rule-ulid)
-[UUID](#rule-uuid)
 
 </div>
 
@@ -994,10 +1062,35 @@ Thay vì truyền một chuỗi date được chạy bởi hàm `strtotime`, b�
 
     'finish_date' => 'required|date|after:start_date'
 
+Để thuận tiện, các quy tắc dựa trên date có thể được xây dựng bằng cách sử dụng builder rule `date`:
+
+    use Illuminate\Validation\Rule;
+
+    'start_date' => [
+        'required',
+        Rule::date()->after(today()->addDays(7)),
+    ],
+
+Các phương thức `afterToday` và `todayOrAfter` có thể được sử dụng để diễn đạt một cách trôi chảy hơn, ngày đang validate phải là ngày hiện tại hoặc là một ngày trong tương lai:
+
+    'start_date' => [
+        'required',
+        Rule::date()->afterToday(),
+    ],
+
 <a name="rule-after-or-equal"></a>
 #### after\_or\_equal:_date_
 
 Field được validation phải là một giá trị sau hoặc bằng ngày đã cho. Để biết thêm thông tin, hãy xem quy tắc [after](#rule-after).
+
+Để thuận tiện, các quy tắc dựa trên date có thể được xây dựng bằng cách sử dụng builder rule `date`:
+
+    use Illuminate\Validation\Rule;
+
+    'start_date' => [
+        'required',
+        Rule::date()->afterOrEqual(today()->addDays(7)),
+    ],
 
 <a name="rule-alpha"></a>
 #### alpha
@@ -1076,10 +1169,35 @@ Mặc dù quy tắc `bail` sẽ ngừng validate một field cụ thể khi nó 
 
 Field được validation là một giá trị trước ngày đã cho. Tham số date sẽ được truyền vào hàm `strtotime` của PHP để được chuyển thành instance `DateTime` hợp lệ. Ngoài ra, giống như quy tắc [`after`](#rule-after), tên của một field khác cũng có thể được cung cấp dưới dạng như một giá trị kiểu `date`.
 
+Để thuận tiện, các quy tắc dựa trên date có thể được xây dựng bằng cách sử dụng builder rule `date`:
+
+    use Illuminate\Validation\Rule;
+
+    'start_date' => [
+        'required',
+        Rule::date()->before(today()->subDays(7)),
+    ],
+
+Các phương thức `beforeToday` và `todayOrBefore` có thể được sử dụng để diễn đạt một cách trôi chảy hơn, ngày đang validate phải là ngày hiện tại hoặc là một ngày trong quá khứ:
+
+    'start_date' => [
+        'required',
+        Rule::date()->beforeToday(),
+    ],
+
 <a name="rule-before-or-equal"></a>
 #### before\_or\_equal:_date_
 
 Field được validation là một giá trị trước hoặc bằng với ngày đã cho. Tham số date sẽ được truyền vào hàm `strtotime` của PHP để được chuyển thành instance `DateTime` hợp lệ. Ngoài ra, giống như quy tắc [`after`](#rule-after), tên của một field khác cũng có thể được cung cấp dưới dạng như một giá trị kiểu `date`.
+
+Để thuận tiện, các quy tắc dựa trên date có thể được xây dựng bằng cách sử dụng builder rule `date`:
+
+    use Illuminate\Validation\Rule;
+
+    'start_date' => [
+        'required',
+        Rule::date()->beforeOrEqual(today()->subDays(7)),
+    ],
 
 <a name="rule-between"></a>
 #### between:_min_,_max_
@@ -1095,6 +1213,13 @@ Field được validation phải có thể được cast là boolean. Input đư
 #### confirmed
 
 Field được validation phải có field là `{field}_confirmation`. Ví dụ: nếu field được validation là `password`, thì field `password_confirmation` phải có tồn tại trong input.
+
+Bạn cũng có thể truyền vào một tên field confirmation tùy biến. Ví dụ, `confirmed:repeat_username` sẽ yêu cầu field `repeat_username` phải khớp với field đang được validation.
+
+<a name="rule-contains"></a>
+#### contains:_foo_,_bar_,...
+
+Field được validation phải là một mảng chứa tất cả các giá trị được cung cấp.
 
 <a name="rule-current-password"></a>
 #### current_password
@@ -1117,6 +1242,15 @@ Field được validation phải bằng ngày đã cho. Tham số date sẽ đư
 #### date_format:_format_,...
 
 Field được validation phải khớp với _format_ đã cho. Bạn nên sử dụng **một trong hai** `date` hoặc `date_format` khi validate một field, không dùng cả hai. Quy tắc validation này hỗ trợ tất cả các định dạng mà được hỗ trợ bởi class [DateTime](https://www.php.net/manual/en/class.datetime.php) của PHP.
+
+Để thuận tiện, các quy tắc dựa trên date có thể được xây dựng bằng cách sử dụng builder rule `date`:
+
+    use Illuminate\Validation\Rule;
+
+    'start_date' => [
+        'required',
+        Rule::date()->format('Y-m-d'),
+    ],
 
 <a name="rule-decimal"></a>
 #### decimal:_min_,_max_
@@ -1167,7 +1301,7 @@ Một điều kiện _ratio_ phải được biểu diễn dưới dạng chiề
 
     'avatar' => 'dimensions:ratio=3/2'
 
-Vì quy tắc này yêu cầu một số tham số, nên bạn có thể sử dụng phương thức `Rule::dimensions` để dễ dàng xây dựng các quy tắc:
+Vì quy tắc này yêu cầu một số tham số, nên nó thuận tiện hơn khi sử dụng phương thức `Rule::dimensions` để dễ dàng xây dựng các quy tắc:
 
     use Illuminate\Support\Facades\Validator;
     use Illuminate\Validation\Rule;
@@ -1175,7 +1309,10 @@ Vì quy tắc này yêu cầu một số tham số, nên bạn có thể sử d�
     Validator::make($data, [
         'avatar' => [
             'required',
-            Rule::dimensions()->maxWidth(1000)->maxHeight(500)->ratio(3 / 2),
+            Rule::dimensions()
+                ->maxWidth(1000)
+                ->maxHeight(500)
+                ->ratio(3 / 2),
         ],
     ]);
 
@@ -1215,16 +1352,30 @@ Ví dụ trên sẽ áp dụng validation `RFCValidation` và `DNSCheckValidatio
 
 <div class="content-list" markdown="1">
 
-- `rfc`: `RFCValidation`
-- `strict`: `NoRFCWarningsValidation`
-- `dns`: `DNSCheckValidation`
-- `spoof`: `SpoofCheckValidation`
-- `filter`: `FilterEmailValidation`
-- `filter_unicode`: `FilterEmailValidation::unicode()`
+- `rfc`: `RFCValidation` - Kiểm tra địa chỉ email theo tiêu chuẩn RFC 5322.
+- `strict`: `NoRFCWarningsValidation` - Kiểm tra địa chỉ email theo tiêu chuẩn RFC 5322 và không chấp nhận các dấu chấm ở cuối hoặc nhiều dấu chấm liên tiếp.
+- `dns`: `DNSCheckValidation` - Đảm bảo domain của địa chỉ email phải có record MX hợp lệ.
+- `spoof`: `SpoofCheckValidation` - Đảm bảo địa chỉ email không chứa các ký tự Unicode lừa đảo hoặc các ký tự đồng hình.
+- `filter`: `FilterEmailValidation` - Đảm bảo địa chỉ email hợp lệ theo hàm `filter_var` của PHP.
+- `filter_unicode`: `FilterEmailValidation::unicode()` - Đảm bảo địa chỉ email hợp lệ theo hàm `filter_var` của PHP và cho phép một số ký tự Unicode.
 
 </div>
 
-Validator `filter` sẽ sử dụng hàm `filter_var` của PHP, đi kèm với Laravel và là hành vi validation email mặc định của Laravel trước phiên bản Laravel 5.8.
+Để thuận tiện, các quy tắc validation email có thể được xây dựng bằng cách sử dụng builder rule:
+
+```php
+use Illuminate\Validation\Rule;
+
+$request->validate([
+    'email' => [
+        'required',
+        Rule::email()
+            ->rfcCompliant(strict: false)
+            ->validateMxRecord()
+            ->preventSpoofing()
+    ],
+]);
+```
 
 > [!WARNING]
 > Validator `dns` và `spoof` sẽ yêu cầu extension `intl` của PHP.
@@ -1343,7 +1494,7 @@ Nếu bạn muốn tùy chỉnh truy vấn được thực thi theo quy tắc va
         'email' => [
             'required',
             Rule::exists('staff')->where(function (Builder $query) {
-                return $query->where('account_id', 1);
+                $query->where('account_id', 1);
             }),
         ],
     ]);
@@ -1471,6 +1622,11 @@ Field được validation phải nhỏ hơn hoặc bằng _field_ đã cho. Hai 
 #### lowercase
 
 Field được validation phải là chữ thường.
+
+<a name="rule-list"></a>
+#### list
+
+Field được validation phải là một mảng ở dạng list. Một mảng được coi là một list nếu các key của nó có chứa các số liên tiếp từ 0 đến `count($array) - 1`.
 
 <a name="rule-mac"></a>
 #### mac_address
@@ -1727,6 +1883,11 @@ Nếu bạn muốn tạo một điều kiện phức tạp hơn cho quy tắc `r
 
 Field được validation phải tồn tại và không được trống nếu field _anotherfield_ bằng `"yes"`, `"on"`, `1`, `"1"`, `true` hoặc `"true"`.
 
+<a name="rule-required-if-declined"></a>
+#### required_if_declined:_anotherfield_,...
+
+Field được validation phải tồn tại và không được trống nếu field _anotherfield_ bằng `"no"`, `"off"`, `0`, `"0"`, `false` hoặc `"false"`.
+
 <a name="rule-required-unless"></a>
 #### required_unless:_anotherfield_,_value_,...
 
@@ -1860,6 +2021,16 @@ Bạn có thể khai báo thêm các điều kiện truy vấn bằng cách sử
 
     'email' => Rule::unique('users')->where(fn (Builder $query) => $query->where('account_id', 1))
 
+**Ignoring Soft Deleteded Records in Unique Checks:**
+
+Mặc định, quy tắc `unique` sẽ chứa cả các record đã bị soft delete khi xác định tính duy nhất. Để loại bỏ các record đã bị soft delete ra khỏi việc kiểm tra tính duy nhất, bạn có thể gọi phương thức `withoutTrashed`:
+
+    Rule::unique('users')->withoutTrashed();
+
+Nếu model của bạn sử dụng tên cột khác với tên cột `deleted_at` cho các record đã bị soft delete, bạn có thể cung cấp tên cột đó khi gọi phương thức `withoutTrashed`:
+
+    Rule::unique('users')->withoutTrashed('was_deleted_at');
+
 <a name="rule-uppercase"></a>
 #### uppercase
 
@@ -1886,7 +2057,7 @@ Field được validation phải là [mã định danh duy nhất toàn cầu c�
 <a name="rule-uuid"></a>
 #### uuid
 
-Field được validation phải là một mã định danh (UUID) RFC 4122 (phiên bản 1, 3, 4 hoặc 5).
+Field được validation phải là một mã định danh (UUID) RFC 9562 (phiên bản 1, 3, 4,  5, 6, 7, hoặc 8).
 
 <a name="conditionally-adding-rules"></a>
 ## Thêm điều kiện cho Rule
@@ -1917,7 +2088,7 @@ Ngoài ra, bạn có thể sử dụng quy tắc `exclude_unless` để không k
 
 Trong một số trường hợp, bạn có thể muốn chạy kiểm tra validation đối với một field **chỉ** khi field đó có trong dữ liệu được validate. Để nhanh chóng thực hiện điều này, hãy thêm quy tắc `sometimes` vào danh sách quy tắc của bạn:
 
-    $v = Validator::make($data, [
+    $validator = Validator::make($data, [
         'email' => 'sometimes|required|email',
     ]);
 
@@ -2097,42 +2268,60 @@ Laravel cung cấp nhiều quy tắc validation có thể được sử dụng �
         ],
     ]);
 
-Nếu ứng dụng của bạn chấp nhận hình ảnh do người dùng upload, bạn có thể sử dụng phương thức constructor `image` của rule `File` để chỉ ra file được upload phải là hình ảnh. Ngoài ra, rule `dimensions` cũng có thể được sử dụng để giới hạn kích thước của hình ảnh:
-
-    use Illuminate\Support\Facades\Validator;
-    use Illuminate\Validation\Rule;
-    use Illuminate\Validation\Rules\File;
-
-    Validator::validate($input, [
-        'photo' => [
-            'required',
-            File::image()
-                ->min(1024)
-                ->max(12 * 1024)
-                ->dimensions(Rule::dimensions()->maxWidth(1000)->maxHeight(500)),
-        ],
-    ]);
-
-> [!NOTE]
-> Có thể tìm thêm thông tin về việc validate kích thước hình ảnh này trong [tài liệu về quy tắc kích thước](#rule-dimensions).
-
-<a name="validating-files-file-sizes"></a>
-#### File Sizes
-
-Để thuận tiện, kích thước file tối thiểu và tối đa có thể được chỉ định dưới dạng chuỗi có hậu tố chỉ ra đơn vị kích thước của file. Các hậu tố `kb`, `mb`, `gb` và `tb` đã được hỗ trợ:
-
-```php
-File::image()
-    ->min('1kb')
-    ->max('10mb')
-```
-
 <a name="validating-files-file-types"></a>
-#### File Types
+#### Validating File Types
 
-Mặc dù bạn chỉ cần định nghĩa extension của file khi gọi phương thức `types`, nhưng thực ra phương thức sẽ validate loại MIME của file bằng cách đọc nội dung của file đó và đoán loại MIME của nó. Một danh sách đầy đủ các loại MIME và các extension tương ứng của chúng có thể được tìm thấy tại vị trí sau:
+Mặc dù bạn chỉ cần chỉ định các extension khi gọi phương thức `types`, phương thức này thực sự validate MIME type của file bằng cách đọc nội dung của file và đoán MIME type của nó. Danh sách đầy đủ các MIME type và các extension tương ứng của chúng, bạn có thể tìm thấy tại vị trí sau:
 
 [https://svn.apache.org/repos/asf/httpd/httpd/trunk/docs/conf/mime.types](https://svn.apache.org/repos/asf/httpd/httpd/trunk/docs/conf/mime.types)
+
+<a name="validating-files-file-sizes"></a>
+#### Validating File Sizes
+
+Để thuận tiện, kích thước file tối thiểu và tối đa có thể được chỉ định dưới dạng một chuỗi với hậu tố cho biết đơn vị kích thước của file. Các hậu tố được hỗ trợ là `kb`, `mb`, `gb` và `tb`:
+
+```php
+File::types(['mp3', 'wav'])
+    ->min('1kb')
+    ->max('10mb');
+```
+
+<a name="validating-files-image-files"></a>
+#### Validating Image Files
+
+Để validate các file upload là hình ảnh, bạn có thể sử dụng phương thức `image` của quy tắc `File`. Quy tắc `File::image()` sẽ đảm bảo các file đang được validate là một hình ảnh (jpg, jpeg, png, bmp, gif, svg, hoặc webp):
+
+```php
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\File;
+
+Validator::validate($input, [
+    'photo' => [
+        'required',
+        File::image(),
+    ],
+]);
+```
+
+<a name="validating-files-image-dimensions"></a>
+#### Validating Image Dimensions
+
+Bạn cũng có thể validate kích thước của một hình ảnh. Ví dụ: để validate một hình ảnh được upload lên có chiều rộng tối thiểu là 1000 pixel và chiều cao tối thiểu là 500 pixel, bạn có thể sử dụng quy tắc `dimensions` sau:
+
+```php
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\File;
+
+File::image()->dimensions(
+    Rule::dimensions()
+        ->maxWidth(1000)
+        ->maxHeight(500)
+)
+```
+
+> [!NOTE]
+> Thông tin thêm về việc validate kích thước hình ảnh có thể được tìm thấy trong [tài liệu quy tắc dimension](#rule-dimensions).
 
 <a name="validating-passwords"></a>
 ## Validating Passwords
@@ -2200,8 +2389,8 @@ public function boot(): void
         $rule = Password::min(8);
 
         return $this->app->isProduction()
-                    ? $rule->mixedCase()->uncompromised()
-                    : $rule;
+            ? $rule->mixedCase()->uncompromised()
+            : $rule;
     });
 }
 ```

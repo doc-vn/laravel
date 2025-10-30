@@ -19,13 +19,15 @@ Hầu hết các ứng dụng web hiện đại đều tương tác với cơ s�
 
 <div class="content-list" markdown="1">
 
-- MariaDB 10.10+ ([Version Policy](https://mariadb.org/about/#maintenance-policy))
+- MariaDB 10.3+ ([Version Policy](https://mariadb.org/about/#maintenance-policy))
 - MySQL 5.7+ ([Version Policy](https://en.wikipedia.org/wiki/MySQL#Release_history))
-- PostgreSQL 11.0+ ([Version Policy](https://www.postgresql.org/support/versioning/))
-- SQLite 3.8.8+
+- PostgreSQL 10.0+ ([Version Policy](https://www.postgresql.org/support/versioning/))
+- SQLite 3.26.0+
 - SQL Server 2017+ ([Version Policy](https://docs.microsoft.com/en-us/lifecycle/products/?products=sql-server))
 
 </div>
+
+Ngoài ra, MongoDB còn được hỗ trợ thông qua package `mongodb/laravel-mongodb`, do MongoDB chính thức phát triển. Xem tài liệu [Laravel MongoDB](https://www.mongodb.com/docs/drivers/php/laravel-mongodb/) để biết thêm thông tin.
 
 <a name="configuration"></a>
 ### Cấu hình
@@ -44,11 +46,14 @@ DB_CONNECTION=sqlite
 DB_DATABASE=/absolute/path/to/database.sqlite
 ```
 
-Để enable các ràng buộc khóa ngoại cho các kết nối SQLite, bạn nên set biến môi trường `DB_FOREIGN_KEYS` thành `true`:
+Mặc định, các ràng buộc khóa ngoại sẽ được enable cho các kết nối SQLite. Nếu bạn muốn tắt chúng, bạn nên set biến môi trường `DB_FOREIGN_KEYS` thành `false`:
 
 ```ini
-DB_FOREIGN_KEYS=true
+DB_FOREIGN_KEYS=false
 ```
+
+> [!NOTE]
+> Nếu bạn sử dụng [Laravel installer](/docs/{{version}}/installation#creating-a-laravel-project) để tạo một ứng dụng Laravel mới cùng SQLite làm cơ sở dữ liệu, Laravel sẽ tự động tạo file `database/database.sqlite` và chạy [database migrations](/docs/{{version}}/migrations) mặc định cho bạn.
 
 <a name="mssql-configuration"></a>
 #### Microsoft SQL Server Configuration
@@ -72,7 +77,7 @@ Các URL này thường tuân theo quy ước như sau:
 driver://username:password@host:port/database?options
 ```
 
-Để thuận tiện, Laravel cũng hỗ trợ các URL này như là một giải pháp thay thế cho việc cấu hình cơ sở dữ liệu của bạn với nhiều tùy chọn cấu hình. Nếu có tùy chọn cấu hình `url` (hoặc biến môi trường `DATABASE_URL`), nó sẽ được sử dụng để kết nối cơ sở dữ liệu và thông tin xác thực.
+Để thuận tiện, Laravel cũng hỗ trợ các URL này như là một giải pháp thay thế cho việc cấu hình cơ sở dữ liệu của bạn với nhiều tùy chọn cấu hình. Nếu có tùy chọn cấu hình `url` (hoặc biến môi trường `DB_URL`), nó sẽ được sử dụng để kết nối cơ sở dữ liệu và thông tin xác thực.
 
 <a name="read-and-write-connections"></a>
 ### Đọc và viết thông qua Connection
@@ -94,13 +99,20 @@ Thỉnh thoảng, bạn cũng có thể muốn sử dụng một kết nối ri�
             ],
         ],
         'sticky' => true,
-        'driver' => 'mysql',
-        'database' => 'database',
-        'username' => 'root',
-        'password' => '',
-        'charset' => 'utf8mb4',
-        'collation' => 'utf8mb4_unicode_ci',
+
+        'database' => env('DB_DATABASE', 'laravel'),
+        'username' => env('DB_USERNAME', 'root'),
+        'password' => env('DB_PASSWORD', ''),
+        'unix_socket' => env('DB_SOCKET', ''),
+        'charset' => env('DB_CHARSET', 'utf8mb4'),
+        'collation' => env('DB_COLLATION', 'utf8mb4_unicode_ci'),
         'prefix' => '',
+        'prefix_indexes' => true,
+        'strict' => true,
+        'engine' => null,
+        'options' => extension_loaded('pdo_mysql') ? array_filter([
+            PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
+        ]) : [],
     ],
 
 Lưu ý rằng có ba key đã được thêm vào trong mảng cấu hình là: `read`, `write` và `stick`. Các key `read` và `write` có thể có một mảng các giá trị chứa key duy nhất là: `host`. Còn lại các tùy chọn cơ sở dữ liệu khác cho các kết nối `read` và `write` sẽ được lấy từ trong mảng cấu hình `mysql`.
@@ -281,6 +293,7 @@ Nếu bạn muốn chỉ định một closure được gọi cho mỗi truy v�
                 // $query->sql;
                 // $query->bindings;
                 // $query->time;
+                // $query->toRawSql();
             });
         }
     }
@@ -402,6 +415,20 @@ Nếu bạn muốn chứa thêm số lượng record và view của cơ sở d�
 php artisan db:show --counts --views
 ```
 
+Ngoài ra, bạn cũng có thể sử dụng các phương thức `Schema` sau để kiểm tra cơ sở dữ liệu của bạn:
+
+    use Illuminate\Support\Facades\Schema;
+
+    $tables = Schema::getTables();
+    $views = Schema::getViews();
+    $columns = Schema::getColumns('users');
+    $indexes = Schema::getIndexes('users');
+    $foreignKeys = Schema::getForeignKeys('users');
+
+Nếu bạn muốn kiểm tra một kết nối cơ sở dữ liệu không phải là kết nối mặc định của ứng dụng, bạn có thể sử dụng phương thức `connection`:
+
+    $columns = Schema::connection('sqlite')->getColumns('users');
+
 <a name="table-overview"></a>
 #### Table Overview
 
@@ -422,7 +449,7 @@ Sử dụng lệnh `db:monitor` Artisan, bạn có thể hướng dẫn Laravel 
 php artisan db:monitor --databases=mysql,pgsql --max=100
 ```
 
-Schedule cho lệnh này là không đủ để kích hoạt một thông báo cảnh báo bạn về số lượng kết nối đang được mở bị vượt quá. Khi lệnh gặp cơ sở dữ liệu có số lượng kết nối mở vượt quá ngưỡng của bạn, sự kiện `DatabaseBusy` sẽ được gửi đi. Bạn nên lắng nghe sự kiện này trong `EventServiceProvider` của ứng dụng để gửi thông báo cho bạn hoặc nhóm phát triển của bạn:
+Schedule cho lệnh này là không đủ để kích hoạt một thông báo cảnh báo bạn về số lượng kết nối đang được mở bị vượt quá. Khi lệnh gặp cơ sở dữ liệu có số lượng kết nối mở vượt quá ngưỡng của bạn, sự kiện `DatabaseBusy` sẽ được gửi đi. Bạn nên lắng nghe sự kiện này trong `AppServiceProvider` của ứng dụng để gửi thông báo cho bạn hoặc nhóm phát triển của bạn:
 
 ```php
 use App\Notifications\DatabaseApproachingMaxConnections;
@@ -431,16 +458,16 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Notification;
 
 /**
- * Register any other events for your application.
+ * Bootstrap any application services.
  */
 public function boot(): void
 {
     Event::listen(function (DatabaseBusy $event) {
         Notification::route('mail', 'dev@example.com')
-                ->notify(new DatabaseApproachingMaxConnections(
-                    $event->connectionName,
-                    $event->connections
-                ));
+            ->notify(new DatabaseApproachingMaxConnections(
+                $event->connectionName,
+                $event->connections
+            ));
     });
 }
 ```

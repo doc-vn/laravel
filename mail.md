@@ -36,7 +36,7 @@
 <a name="introduction"></a>
 ## Giới thiệu
 
-Gửi email không cần phải phức tạp. Laravel cung cấp một API đơn giản, gọn gàng dựa trên component [Symfony Mailer](https://symfony.com/doc/6.2/mailer.html). Laravel và Symfony Mailer cung cấp các driver cho việc gửi email như SMTP, Mailgun, Postmark, Amazon SES và `sendmail`, cho phép bạn nhanh chóng bắt đầu gửi mail thông qua dịch vụ trên đám mây hoặc local mà bạn chọn.
+Gửi email không cần phải phức tạp. Laravel cung cấp một API đơn giản, gọn gàng dựa trên component [Symfony Mailer](https://symfony.com/doc/7.0/mailer.html). Laravel và Symfony Mailer cung cấp các driver cho việc gửi email như SMTP, Mailgun, Postmark, Resend, Amazon SES và `sendmail`, cho phép bạn nhanh chóng bắt đầu gửi mail thông qua dịch vụ trên đám mây hoặc local mà bạn chọn.
 
 <a name="configuration"></a>
 ### Cấu hình
@@ -48,7 +48,7 @@ Trong file cấu hình `mail`, bạn sẽ tìm thấy mảng cấu hình `mail`.
 <a name="driver-prerequisites"></a>
 ### Yêu cầu driver / transport
 
-Các driver dựa trên API như Mailgun, Postmark và MailerSend thường đơn giản và nhanh hơn là việc gửi mailthông qua các máy chủ SMTP. Bất cứ khi nào có thể, chúng tôi khuyên bạn nên sử dụng một trong những driver này.
+Các driver dựa trên API như Mailgun, Postmark, Resend, và MailerSend thường đơn giản và nhanh hơn là việc gửi mailthông qua các máy chủ SMTP. Bất cứ khi nào có thể, chúng tôi khuyên bạn nên sử dụng một trong những driver này.
 
 <a name="mailgun-driver"></a>
 #### Mailgun Driver
@@ -59,12 +59,26 @@ Các driver dựa trên API như Mailgun, Postmark và MailerSend thường đơ
 composer require symfony/mailgun-mailer symfony/http-client
 ```
 
-Tiếp theo, set tùy chọn `default` trong file cấu hình `config/mail.php` của bạn thành `mailgun`. Sau khi cấu hình mail mặc định của ứng dụng, hãy kiểm tra file cấu hình `config/services.php` của bạn đã có chứa các tùy chọn sau chưa:
+Tiếp theo, bạn sẽ cần thực hiện hai thay đổi trong file cấu hình `config/mail.php` của bạn. Đầu tiên, set mailer mặc định của bạn thành `mailgun`:
+
+    'default' => env('MAIL_MAILER', 'mailgun'),
+
+Thứ hai, thêm mảng cấu hình sau vào mảng `mailers` của bạn:
 
     'mailgun' => [
         'transport' => 'mailgun',
+        // 'client' => [
+        //     'timeout' => 5,
+        // ],
+    ],
+
+Sau khi cấu hình mailer mặc định cho ứng dụng, hãy thêm các tùy chọn sau vào file cấu hình `config/services.php` của bạn:
+
+    'mailgun' => [
         'domain' => env('MAILGUN_DOMAIN'),
         'secret' => env('MAILGUN_SECRET'),
+        'endpoint' => env('MAILGUN_ENDPOINT', 'api.mailgun.net'),
+        'scheme' => 'https',
     ],
 
 Nếu bạn không sử dụng [Mailgun khu vực](https://documentation.mailgun.com/en/latest/api-intro.html#mailgun-regions) "Hoa Kỳ", thì bạn có thể cần định nghĩa endpoint khu vực của bạn trong file cấu hình `services`:
@@ -73,18 +87,19 @@ Nếu bạn không sử dụng [Mailgun khu vực](https://documentation.mailgun
         'domain' => env('MAILGUN_DOMAIN'),
         'secret' => env('MAILGUN_SECRET'),
         'endpoint' => env('MAILGUN_ENDPOINT', 'api.eu.mailgun.net'),
+        'scheme' => 'https',
     ],
 
 <a name="postmark-driver"></a>
 #### Postmark Driver
 
-Để sử dụng driver Postmark, hãy cài đặt Postmark Mailer transport của Symfony qua Composer:
+Để sử dụng driver [Postmark](https://postmarkapp.com/), hãy cài đặt Postmark Mailer transport của Symfony qua Composer:
 
 ```shell
 composer require symfony/postmark-mailer symfony/http-client
 ```
 
-Tiếp theo, set tùy chọn `default` trong file cấu hình `config/mail.php` trong application của bạn thành `postmark`. Sau khi cấu hình mail mặc định của ứng dụng, hãy đảm bảo rằng file cấu hình `config/services.php` của bạn đã chứa các tùy chọn sau:
+Tiếp theo, set tùy chọn `default` trong file cấu hình `config/mail.php` trong application của bạn thành `postmark`. Sau khi cấu hình mail mặc định của ứng dụng, hãy chắc chắn rằng file cấu hình `config/services.php` của bạn đã chứa các tùy chọn sau:
 
     'postmark' => [
         'token' => env('POSTMARK_TOKEN'),
@@ -95,9 +110,27 @@ Nếu bạn muốn chỉ định một Postmark message stream sẽ được s�
     'postmark' => [
         'transport' => 'postmark',
         'message_stream_id' => env('POSTMARK_MESSAGE_STREAM_ID'),
+        // 'client' => [
+        //     'timeout' => 5,
+        // ],
     ],
 
 Bằng cách này, bạn cũng có thể thiết lập nhiều Postmark mail với các stream message khác nhau.
+
+<a name="resend-driver"></a>
+#### Resend Driver
+
+Để sử dụng driver [Resend](https://resend.com/), hãy cài đặt Resend PHP SDK thông qua Composer:
+
+```shell
+composer require resend/resend-php
+```
+
+Tiếp theo, set tùy chọn `default` trong file cấu hình `config/mail.php` trong application của bạn thành `resend`. Sau khi cấu hình mail mặc định cho ứng dụng, hãy chắc chắn rằng file cấu hình `config/services.php` của bạn đã chứa các tùy chọn sau:
+
+    'resend' => [
+        'key' => env('RESEND_KEY'),
+    ],
 
 <a name="ses-driver"></a>
 #### SES Driver
@@ -125,6 +158,22 @@ Tiếp theo hãy set tùy chọn `default` trong file cấu hình `config/mail.p
         'token' => env('AWS_SESSION_TOKEN'),
     ],
 
+Để tương tác với các [tính năng quản lý subscription](https://docs.aws.amazon.com/ses/latest/dg/sending-email-subscription-management.html) của SES, bạn có thể trả về header `X-Ses-List-Management-Options` trong mảng được trả về bởi phương thức [`headers`](#headers) của một mailable:
+
+```php
+/**
+ * Get the message headers.
+ */
+public function headers(): Headers
+{
+    return new Headers(
+        text: [
+            'X-Ses-List-Management-Options' => 'contactListName=MyContactList;topicName=MyTopic',
+        ],
+    );
+}
+```
+
 Nếu bạn muốn định nghĩa thêm [các tùy chọn](https://docs.aws.amazon.com/aws-sdk-php/v3/api/api-sesv2-2019-09-27.html#sendemail) thì Laravel sẽ truyền các tuỳ chọn đó cho phương thức `SendEmail` của AWS SDK khi gửi email, bạn có thể định nghĩa mảng `options` trong cấu hình `ses` của bạn:
 
     'ses' => [
@@ -150,12 +199,20 @@ composer require mailersend/laravel-driver
 
 Sau khi package được cài đặt, hãy thêm biến môi trường `MAILERSEND_API_KEY` vào file `.env` của ứng dụng. Ngoài ra, biến môi trường `MAIL_MAILER` phải được định nghĩa là `mailersend`:
 
-```shell
+```ini
 MAIL_MAILER=mailersend
 MAIL_FROM_ADDRESS=app@yourdomain.com
 MAIL_FROM_NAME="App Name"
 
 MAILERSEND_API_KEY=your-api-key
+```
+
+Tiếp theo, hãy thêm MailerSend vào mảng `mailers` trong file cấu hình `config/mail.php` của ứng dụng của bạn:
+
+```php
+'mailersend' => [
+    'transport' => 'mailersend',
+],
 ```
 
 Để tìm hiểu thêm về MailerSend, bao gồm cả cách sử dụng các template mà họ cung cấp, hãy tham khảo [tài liệu driver MailerSend](https://github.com/mailersend/mailersend-laravel-driver#usage).
@@ -433,8 +490,8 @@ Khi đính kèm một file vào một email, bạn cũng có thể khai báo tê
     {
         return [
             Attachment::fromPath('/path/to/file')
-                    ->as('name.pdf')
-                    ->withMime('application/pdf'),
+                ->as('name.pdf')
+                ->withMime('application/pdf'),
         ];
     }
 
@@ -466,8 +523,8 @@ Tất nhiên, bạn cũng có thể chỉ định tên file đính kèm và lo�
     {
         return [
             Attachment::fromStorage('/path/to/file')
-                    ->as('name.pdf')
-                    ->withMime('application/pdf'),
+                ->as('name.pdf')
+                ->withMime('application/pdf'),
         ];
     }
 
@@ -482,8 +539,8 @@ Phương thức `fromStorageDisk` có thể được sử dụng nếu bạn mu�
     {
         return [
             Attachment::fromStorageDisk('s3', '/path/to/file')
-                    ->as('name.pdf')
-                    ->withMime('application/pdf'),
+                ->as('name.pdf')
+                ->withMime('application/pdf'),
         ];
     }
 
@@ -501,7 +558,7 @@ Phương thức đính kèm `fromData` có thể được sử dụng để đí
     {
         return [
             Attachment::fromData(fn () => $this->pdf, 'Report.pdf')
-                    ->withMime('application/pdf'),
+                ->withMime('application/pdf'),
         ];
     }
 
@@ -587,8 +644,8 @@ Ngoài ra, bạn có thể tạo các instance đính kèm thông qua dữ liệ
 Laravel cũng cung cấp các phương thức bổ sung mà bạn có thể sử dụng để tùy chỉnh file đính kèm của bạn. Ví dụ, bạn có thể sử dụng các phương thức `as` và `withMime` để tùy chỉnh tên file và loại MIME:
 
     return Attachment::fromPath('/path/to/file')
-            ->as('Photo Name')
-            ->withMime('image/jpeg');
+        ->as('Photo Name')
+        ->withMime('image/jpeg');
 
 <a name="headers"></a>
 ### Headers
@@ -636,7 +693,7 @@ Một số nhà cung cấp dịch vụ email của bên thứ ba như Mailgun v�
         );
     }
 
-Nếu ứng dụng của bạn đang sử dụng driver Mailgun, bạn có thể tham khảo tài liệu của Mailgun để biết thêm thông tin về [tags](https://documentation.mailgun.com/en/latest/user_manual.html#tagging-1) và [metadata](https://documentation.mailgun.com/en/latest/user_manual.html#attaching-data-to-messages). Tương tự như vậy, bạn cũng có thể tham khảo tài liệu của Postmark để biết thêm thông tin về hỗ trợ của họ đối với [tags](https://postmarkapp.com/blog/tags-support-for-smtp) và [metadata](https://postmarkapp.com/support/article/1125-custom-metadata-faq).
+Nếu ứng dụng của bạn đang sử dụng driver Mailgun, bạn có thể tham khảo tài liệu của Mailgun để biết thêm thông tin về [tags](https://documentation.mailgun.com/docs/mailgun/user-manual/tracking-messages/#tagging) và [metadata](https://documentation.mailgun.com/docs/mailgun/user-manual/tracking-messages/#attaching-data-to-messages). Tương tự như vậy, bạn cũng có thể tham khảo tài liệu của Postmark để biết thêm thông tin về hỗ trợ của họ đối với [tags](https://postmarkapp.com/blog/tags-support-for-smtp) và [metadata](https://postmarkapp.com/support/article/1125-custom-metadata-faq).
 
 Nếu ứng dụng của bạn sử dụng Amazon SES để gửi email, bạn nên sử dụng phương thức `metadata` để đính kèm ["tags" SES](https://docs.aws.amazon.com/ses/latest/APIReference/API_MessageTag.html) vào tin nhắn.
 
@@ -746,10 +803,10 @@ Component table cho phép bạn chuyển đổi một bảng Markdown thành m�
 
 ```blade
 <x-mail::table>
-| Laravel       | Table         | Example  |
-| ------------- |:-------------:| --------:|
-| Col 2 is      | Centered      | $10      |
-| Col 3 is      | Right-Aligned | $20      |
+| Laravel       | Table         | Example       |
+| ------------- | :-----------: | ------------: |
+| Col 2 is      | Centered      | $10           |
+| Col 3 is      | Right-Aligned | $20           |
 </x-mail::table>
 ```
 
@@ -828,8 +885,8 @@ Bạn không bị giới hạn chỉ trong khai báo người nhận "to" khi g�
 Mặc định, Laravel sẽ gửi email bằng cách sử dụng mailer mà được cấu hình làm mailer `default` trong file cấu hình` mail` trong application của bạn. Tuy nhiên, bạn có thể sử dụng phương thức `mailer` để gửi một message với một cấu hình mailer cụ thể:
 
     Mail::mailer('postmark')
-            ->to($request->user())
-            ->send(new OrderShipped($order));
+        ->to($request->user())
+        ->send(new OrderShipped($order));
 
 <a name="queueing-mail"></a>
 ### Queueing Mail
@@ -862,8 +919,8 @@ Nếu bạn muốn delay việc gửi thư email trong queue, bạn có thể s�
 Vì tất cả các class mailable mà được tạo bằng lệnh `make:mail` đều có sử dụng trait `Illuminate\Bus\Queueable`, nên bạn có thể gọi các phương thức `onQueue` và `onConnection` trong bất kỳ class mailable nào, cho phép bạn khai báo tên kết nối và tên queue sẽ cần khi gửi mail:
 
     $message = (new OrderShipped($order))
-                    ->onConnection('sqs')
-                    ->onQueue('emails');
+        ->onConnection('sqs')
+        ->onQueue('emails');
 
     Mail::to($request->user())
         ->cc($moreUsers)
@@ -986,37 +1043,72 @@ Laravel cung cấp nhiều phương thức khác nhau để kiểm tra cấu tr�
 
 Như bạn có thể mong đợi, các kiểm tra "HTML" sẽ yêu cầu phiên bản HTML của mailable có thể chứa một chuỗi nhất định, trong khi các kiểm tra "text" sẽ yêu cầu phiên bản text của mailable phải chứa một chuỗi nhất định:
 
-    use App\Mail\InvoicePaid;
-    use App\Models\User;
+```php tab=Pest
+use App\Mail\InvoicePaid;
+use App\Models\User;
 
-    public function test_mailable_content(): void
-    {
-        $user = User::factory()->create();
+test('mailable content', function () {
+    $user = User::factory()->create();
 
-        $mailable = new InvoicePaid($user);
+    $mailable = new InvoicePaid($user);
 
-        $mailable->assertFrom('jeffrey@example.com');
-        $mailable->assertTo('taylor@example.com');
-        $mailable->assertHasCc('abigail@example.com');
-        $mailable->assertHasBcc('victoria@example.com');
-        $mailable->assertHasReplyTo('tyler@example.com');
-        $mailable->assertHasSubject('Invoice Paid');
-        $mailable->assertHasTag('example-tag');
-        $mailable->assertHasMetadata('key', 'value');
+    $mailable->assertFrom('jeffrey@example.com');
+    $mailable->assertTo('taylor@example.com');
+    $mailable->assertHasCc('abigail@example.com');
+    $mailable->assertHasBcc('victoria@example.com');
+    $mailable->assertHasReplyTo('tyler@example.com');
+    $mailable->assertHasSubject('Invoice Paid');
+    $mailable->assertHasTag('example-tag');
+    $mailable->assertHasMetadata('key', 'value');
 
-        $mailable->assertSeeInHtml($user->email);
-        $mailable->assertSeeInHtml('Invoice Paid');
-        $mailable->assertSeeInOrderInHtml(['Invoice Paid', 'Thanks']);
+    $mailable->assertSeeInHtml($user->email);
+    $mailable->assertSeeInHtml('Invoice Paid');
+    $mailable->assertSeeInOrderInHtml(['Invoice Paid', 'Thanks']);
 
-        $mailable->assertSeeInText($user->email);
-        $mailable->assertSeeInOrderInText(['Invoice Paid', 'Thanks']);
+    $mailable->assertSeeInText($user->email);
+    $mailable->assertSeeInOrderInText(['Invoice Paid', 'Thanks']);
 
-        $mailable->assertHasAttachment('/path/to/file');
-        $mailable->assertHasAttachment(Attachment::fromPath('/path/to/file'));
-        $mailable->assertHasAttachedData($pdfData, 'name.pdf', ['mime' => 'application/pdf']);
-        $mailable->assertHasAttachmentFromStorage('/path/to/file', 'name.pdf', ['mime' => 'application/pdf']);
-        $mailable->assertHasAttachmentFromStorageDisk('s3', '/path/to/file', 'name.pdf', ['mime' => 'application/pdf']);
-    }
+    $mailable->assertHasAttachment('/path/to/file');
+    $mailable->assertHasAttachment(Attachment::fromPath('/path/to/file'));
+    $mailable->assertHasAttachedData($pdfData, 'name.pdf', ['mime' => 'application/pdf']);
+    $mailable->assertHasAttachmentFromStorage('/path/to/file', 'name.pdf', ['mime' => 'application/pdf']);
+    $mailable->assertHasAttachmentFromStorageDisk('s3', '/path/to/file', 'name.pdf', ['mime' => 'application/pdf']);
+});
+```
+
+```php tab=PHPUnit
+use App\Mail\InvoicePaid;
+use App\Models\User;
+
+public function test_mailable_content(): void
+{
+    $user = User::factory()->create();
+
+    $mailable = new InvoicePaid($user);
+
+    $mailable->assertFrom('jeffrey@example.com');
+    $mailable->assertTo('taylor@example.com');
+    $mailable->assertHasCc('abigail@example.com');
+    $mailable->assertHasBcc('victoria@example.com');
+    $mailable->assertHasReplyTo('tyler@example.com');
+    $mailable->assertHasSubject('Invoice Paid');
+    $mailable->assertHasTag('example-tag');
+    $mailable->assertHasMetadata('key', 'value');
+
+    $mailable->assertSeeInHtml($user->email);
+    $mailable->assertSeeInHtml('Invoice Paid');
+    $mailable->assertSeeInOrderInHtml(['Invoice Paid', 'Thanks']);
+
+    $mailable->assertSeeInText($user->email);
+    $mailable->assertSeeInOrderInText(['Invoice Paid', 'Thanks']);
+
+    $mailable->assertHasAttachment('/path/to/file');
+    $mailable->assertHasAttachment(Attachment::fromPath('/path/to/file'));
+    $mailable->assertHasAttachedData($pdfData, 'name.pdf', ['mime' => 'application/pdf']);
+    $mailable->assertHasAttachmentFromStorage('/path/to/file', 'name.pdf', ['mime' => 'application/pdf']);
+    $mailable->assertHasAttachmentFromStorageDisk('s3', '/path/to/file', 'name.pdf', ['mime' => 'application/pdf']);
+}
+```
 
 <a name="testing-mailable-sending"></a>
 ### Test gửi mail
@@ -1025,38 +1117,80 @@ Chúng tôi khuyên bạn nên kiểm tra nội dung mailable một cách riêng
 
 Bạn có thể sử dụng phương thức `fake` của facade `Mail` để ngăn không cho mail được gửi đi. Sau khi đã gọi phương thức `fake` của facade `Mail`, bạn có thể kiểm tra các mailables đã được gửi đến người dùng hay chưa hay thậm chí kiểm tra dữ liệu mà các mailables đã nhận được:
 
-    <?php
+```php tab=Pest
+<?php
 
-    namespace Tests\Feature;
+use App\Mail\OrderShipped;
+use Illuminate\Support\Facades\Mail;
 
-    use App\Mail\OrderShipped;
-    use Illuminate\Support\Facades\Mail;
-    use Tests\TestCase;
+test('orders can be shipped', function () {
+    Mail::fake();
 
-    class ExampleTest extends TestCase
+    // Perform order shipping...
+
+    // Assert that no mailables were sent...
+    Mail::assertNothingSent();
+
+    // Assert that a mailable was sent...
+    Mail::assertSent(OrderShipped::class);
+
+    // Assert a mailable was sent twice...
+    Mail::assertSent(OrderShipped::class, 2);
+
+    // Assert a mailable was sent to an email address...
+    Mail::assertSent(OrderShipped::class, 'example@laravel.com');
+
+    // Assert a mailable was sent to multiple email addresses...
+    Mail::assertSent(OrderShipped::class, ['example@laravel.com', '...']);
+
+    // Assert a mailable was not sent...
+    Mail::assertNotSent(AnotherMailable::class);
+
+    // Assert 3 total mailables were sent...
+    Mail::assertSentCount(3);
+});
+```
+
+```php tab=PHPUnit
+<?php
+
+namespace Tests\Feature;
+
+use App\Mail\OrderShipped;
+use Illuminate\Support\Facades\Mail;
+use Tests\TestCase;
+
+class ExampleTest extends TestCase
+{
+    public function test_orders_can_be_shipped(): void
     {
-        public function test_orders_can_be_shipped(): void
-        {
-            Mail::fake();
+        Mail::fake();
 
-            // Perform order shipping...
+        // Perform order shipping...
 
-            // Assert that no mailables were sent...
-            Mail::assertNothingSent();
+        // Assert that no mailables were sent...
+        Mail::assertNothingSent();
 
-            // Assert that a mailable was sent...
-            Mail::assertSent(OrderShipped::class);
+        // Assert that a mailable was sent...
+        Mail::assertSent(OrderShipped::class);
 
-            // Assert a mailable was sent twice...
-            Mail::assertSent(OrderShipped::class, 2);
+        // Assert a mailable was sent twice...
+        Mail::assertSent(OrderShipped::class, 2);
 
-            // Assert a mailable was not sent...
-            Mail::assertNotSent(AnotherMailable::class);
+        // Assert a mailable was sent to an email address...
+        Mail::assertSent(OrderShipped::class, 'example@laravel.com');
 
-            // Assert 3 total mailables were sent...
-            Mail::assertSentCount(3);
-        }
+        // Assert a mailable was sent to multiple email addresses...
+        Mail::assertSent(OrderShipped::class, ['example@laravel.com', '...']);
+
+        // Assert a mailable was not sent...
+        Mail::assertNotSent(AnotherMailable::class);
+
+        // Assert 3 total mailables were sent...
+        Mail::assertSentCount(3);
     }
+}
+```
 
 Nếu bạn đang queue mail lại để gửi ở background, bạn nên sử dụng phương thức `assertQueued` thay vì `assertSent`:
 
@@ -1089,8 +1223,8 @@ Instance mailable cũng có chứa một số phương thức hữu ích để k
     Mail::assertSent(OrderShipped::class, function (OrderShipped $mail) {
         return $mail->hasAttachment(
             Attachment::fromPath('/path/to/file')
-                    ->as('name.pdf')
-                    ->withMime('application/pdf')
+                ->as('name.pdf')
+                ->withMime('application/pdf')
         );
     });
 
@@ -1151,27 +1285,21 @@ Cuối cùng, bạn có thể chỉ định một địa chỉ "to" global bằn
 <a name="events"></a>
 ## Events
 
-Laravel sẽ tạo hai event trong quá trình gửi mail. Event `MessageSending` sẽ được kích hoạt trước khi một message được gửi, trong khi event `MessageSent` sẽ được kích hoạt sau khi message đã được gửi. Hãy nhớ rằng, những event này được kích hoạt khi thư đang được *gửi*, chứ không phải là khi nó đã được queue. Bạn có thể đăng ký nhiều listener event cho event này trong service provider `App\Providers\EventServiceProvider`:
+Laravel sẽ gửi hai event khi gửi mail. Event `MessageSending` sẽ được gửi trước khi một message được gửi, trong khi event `MessageSent` sẽ được gửi sau khi message đã được gửi. Hãy nhớ rằng, những event này được gửi khi thư đang được *gửi*, chứ không phải là khi nó đã được queue. Bạn có thể tạo [event listener](/docs/{{version}}/events) cho các event này trong ứng dụng của bạn:
 
-    use App\Listeners\LogSendingMessage;
-    use App\Listeners\LogSentMessage;
     use Illuminate\Mail\Events\MessageSending;
-    use Illuminate\Mail\Events\MessageSent;
+    // use Illuminate\Mail\Events\MessageSent;
 
-    /**
-     * The event listener mappings for the application.
-     *
-     * @var array
-     */
-    protected $listen = [
-        MessageSending::class => [
-            LogSendingMessage::class,
-        ],
-
-        MessageSent::class => [
-            LogSentMessage::class,
-        ],
-    ];
+    class LogMessage
+    {
+        /**
+         * Handle the given event.
+         */
+        public function handle(MessageSending $event): void
+        {
+            // ...
+        }
+    }
 
 <a name="custom-transports"></a>
 ## Tuỳ chỉnh transports

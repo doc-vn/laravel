@@ -53,10 +53,7 @@ php artisan octane:install
 <a name="frankenphp"></a>
 ### FrankenPHP
 
-> [!WARNING]
-> Tích hợp Octane của FrankenPHP hiện đang trong giai đoạn thử nghiệm nên bạn cần thận trong việc sử dụng nó trong trong môi trường production.
-
-[FrankenPHP](https://frankenphp.dev) là một máy chủ ứng dụng PHP, được viết bằng GO, hỗ trợ các tính năng web hiện đại như early hint và Zstandard compression. Khi bạn cài đặt Octane và chọn FrankenPHP làm máy chủ của bạn, Octane sẽ tự động download và cài đặt FrankenPHP cho bạn.
+[FrankenPHP](https://frankenphp.dev) là một máy chủ ứng dụng PHP, được viết bằng Go, hỗ trợ các tính năng web hiện đại như early hint, Brotli, và Zstandard compression. Khi bạn cài đặt Octane và chọn FrankenPHP làm máy chủ của bạn, Octane sẽ tự động download và cài đặt FrankenPHP cho bạn.
 
 <a name="frankenphp-via-laravel-sail"></a>
 #### FrankenPHP via Laravel Sail
@@ -81,8 +78,8 @@ Cuối cùng, hãy thêm một biến môi trường `SUPERVISOR_PHP_COMMAND` v�
 services:
   laravel.test:
     environment:
-      SUPERVISOR_PHP_COMMAND: "/usr/bin/php -d variables_order=EGPCS /var/www/html/artisan octane:start --server=frankenphp --host=0.0.0.0 --admin-port=2019 --port=80" # [tl! add]
-XDG_CONFIG_HOME:  /var/www/html/config # [tl! add]
+      SUPERVISOR_PHP_COMMAND: "/usr/bin/php -d variables_order=EGPCS /var/www/html/artisan octane:start --server=frankenphp --host=0.0.0.0 --admin-port=2019 --port='${APP_PORT:-80}'" # [tl! add]
+      XDG_CONFIG_HOME:  /var/www/html/config # [tl! add]
       XDG_DATA_HOME:  /var/www/html/data # [tl! add]
 ```
 
@@ -131,12 +128,14 @@ services:
   frankenphp:
     build:
       context: .
-    entrypoint: php artisan octane:frankenphp --max-requests=1
+    entrypoint: php artisan octane:frankenphp --workers=1 --max-requests=1
     ports:
       - "8000:8000"
     volumes:
       - .:/app
 ```
+
+Nếu tùy chọn `--log-level` được truyền vào lệnh `php artisan octane:start`, Octane sẽ sử dụng logger gốc của FrankenPHP và, trừ khi được cấu hình khác, sẽ tạo ra các log dạng JSON.
 
 Bạn có thể tham khảo [tài liệu chính thức của FrankenPHP](https://frankenphp.dev/docs/docker/) để biết thêm thông tin chi tiết về cách chạy FrankenPHP cùng với Docker.
 
@@ -171,7 +170,7 @@ Sau đó, hãy thêm một biến môi trường `SUPERVISOR_PHP_COMMAND` vào �
 services:
   laravel.test:
     environment:
-      SUPERVISOR_PHP_COMMAND: "/usr/bin/php -d variables_order=EGPCS /var/www/html/artisan octane:start --server=roadrunner --host=0.0.0.0 --rpc-port=6001 --port=80" # [tl! add]
+      SUPERVISOR_PHP_COMMAND: "/usr/bin/php -d variables_order=EGPCS /var/www/html/artisan octane:start --server=roadrunner --host=0.0.0.0 --rpc-port=6001 --port='${APP_PORT:-80}'" # [tl! add]
 ```
 
 Cuối cùng, hãy đảm bảo rằng file binary `rr` có quyền chạy và build image Sail của bạn:
@@ -216,7 +215,7 @@ Ngoài ra, bạn có thể phát triển ứng dụng Octane dựa trên Swoole 
 services:
   laravel.test:
     environment:
-      SUPERVISOR_PHP_COMMAND: "/usr/bin/php -d variables_order=EGPCS /var/www/html/artisan octane:start --server=swoole --host=0.0.0.0 --port=80" # [tl! add]
+      SUPERVISOR_PHP_COMMAND: "/usr/bin/php -d variables_order=EGPCS /var/www/html/artisan octane:start --server=swoole --host=0.0.0.0 --port='${APP_PORT:-80}'" # [tl! add]
 ```
 
 Cuối cùng, build image Sail của bạn:
@@ -590,15 +589,15 @@ Trong ví dụ này, chúng ta sẽ đăng ký một closure được gọi sau 
 
 ```php
 Octane::tick('simple-ticker', fn () => ray('Ticking...'))
-        ->seconds(10);
+    ->seconds(10);
 ```
 
 Sử dụng phương thức `immediate`, bạn có thể bảo Octane gọi ngay callback tick khi máy chủ Octane được khởi động lần đầu và cứ sau N giây sau đó:
 
 ```php
 Octane::tick('simple-ticker', fn () => ray('Ticking...'))
-        ->seconds(10)
-        ->immediate();
+    ->seconds(10)
+    ->immediate();
 ```
 
 <a name="the-octane-cache"></a>

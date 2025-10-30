@@ -43,8 +43,12 @@ Laravel có chứa nhiều hàm khác nhau để thao tác với các giá trị
 [Str::betweenFirst](#method-str-between-first)
 [Str::camel](#method-camel-case)
 [Str::charAt](#method-char-at)
+[Str::chopStart](#method-str-chop-start)
+[Str::chopEnd](#method-str-chop-end)
 [Str::contains](#method-str-contains)
 [Str::containsAll](#method-str-contains-all)
+[Str::doesntContain](#method-str-doesnt-contain)
+[Str::deduplicate](#method-deduplicate)
 [Str::endsWith](#method-ends-with)
 [Str::excerpt](#method-excerpt)
 [Str::finish](#method-str-finish)
@@ -96,7 +100,10 @@ Laravel có chứa nhiều hàm khác nhau để thao tác với các giá trị
 [Str::take](#method-take)
 [Str::title](#method-title-case)
 [Str::toBase64](#method-str-to-base64)
-[Str::toHtmlString](#method-str-to-html-string)
+[Str::transliterate](#method-str-transliterate)
+[Str::trim](#method-str-trim)
+[Str::ltrim](#method-str-ltrim)
+[Str::rtrim](#method-str-rtrim)
 [Str::ucfirst](#method-str-ucfirst)
 [Str::ucsplit](#method-str-ucsplit)
 [Str::upper](#method-str-upper)
@@ -131,12 +138,15 @@ Laravel có chứa nhiều hàm khác nhau để thao tác với các giá trị
 [camel](#method-fluent-str-camel)
 [charAt](#method-fluent-str-char-at)
 [classBasename](#method-fluent-str-class-basename)
+[chopStart](#method-fluent-str-chop-start)
+[chopEnd](#method-fluent-str-chop-end)
 [contains](#method-fluent-str-contains)
 [containsAll](#method-fluent-str-contains-all)
+[deduplicate](#method-fluent-str-deduplicate)
 [dirname](#method-fluent-str-dirname)
 [endsWith](#method-fluent-str-ends-with)
-[excerpt](#method-fluent-str-excerpt)
 [exactly](#method-fluent-str-exactly)
+[excerpt](#method-fluent-str-excerpt)
 [explode](#method-fluent-str-explode)
 [finish](#method-fluent-str-finish)
 [headline](#method-fluent-str-headline)
@@ -154,7 +164,6 @@ Laravel có chứa nhiều hàm khác nhau để thao tác với các giá trị
 [length](#method-fluent-str-length)
 [limit](#method-fluent-str-limit)
 [lower](#method-fluent-str-lower)
-[ltrim](#method-fluent-str-ltrim)
 [markdown](#method-fluent-str-markdown)
 [mask](#method-fluent-str-mask)
 [match](#method-fluent-str-match)
@@ -177,7 +186,6 @@ Laravel có chứa nhiều hàm khác nhau để thao tác với các giá trị
 [replaceMatches](#method-fluent-str-replace-matches)
 [replaceStart](#method-fluent-str-replace-start)
 [replaceEnd](#method-fluent-str-replace-end)
-[rtrim](#method-fluent-str-rtrim)
 [scan](#method-fluent-str-scan)
 [singular](#method-fluent-str-singular)
 [slug](#method-fluent-str-slug)
@@ -196,7 +204,11 @@ Laravel có chứa nhiều hàm khác nhau để thao tác với các giá trị
 [test](#method-fluent-str-test)
 [title](#method-fluent-str-title)
 [toBase64](#method-fluent-str-to-base64)
+[toHtmlString](#method-fluent-str-to-html-string)
+[transliterate](#method-fluent-str-transliterate)
 [trim](#method-fluent-str-trim)
+[ltrim](#method-fluent-str-ltrim)
+[rtrim](#method-fluent-str-rtrim)
 [ucfirst](#method-fluent-str-ucfirst)
 [ucsplit](#method-fluent-str-ucsplit)
 [unwrap](#method-fluent-str-unwrap)
@@ -217,6 +229,7 @@ Laravel có chứa nhiều hàm khác nhau để thao tác với các giá trị
 [whenTest](#method-fluent-str-when-test)
 [wordCount](#method-fluent-str-word-count)
 [words](#method-fluent-str-words)
+[wrap](#method-fluent-str-wrap)
 
 </div>
 
@@ -373,10 +386,48 @@ Hàm `Str::charAt` sẽ trả về một ký tự tại vị trí được chỉ
 
     // 's'
 
+<a name="method-str-chop-start"></a>
+#### `Str::chopStart()` {.collection-method}
+
+Hàm `Str::chopStart` sẽ xóa giá trị đã cho chỉ khi giá trị đó xuất hiện ở đầu chuỗi:
+
+    use Illuminate\Support\Str;
+
+    $url = Str::chopStart('https://laravel.com', 'https://');
+
+    // 'laravel.com'
+
+Bạn cũng có thể truyền vào một mảng làm tham số thứ hai. Nếu chuỗi bắt đầu với bất kỳ giá trị nào có trong mảng thì giá trị đó sẽ bị xóa khỏi chuỗi:
+
+    use Illuminate\Support\Str;
+
+    $url = Str::chopStart('http://laravel.com', ['https://', 'http://']);
+
+    // 'laravel.com'
+
+<a name="method-str-chop-end"></a>
+#### `Str::chopEnd()` {.collection-method}
+
+Hàm `Str::chopEnd` sẽ xóa giá trị đã cho chỉ khi giá trị đó xuất hiện ở cuối chuỗi:
+
+    use Illuminate\Support\Str;
+
+    $url = Str::chopEnd('app/Models/Photograph.php', '.php');
+
+    // 'app/Models/Photograph'
+
+Bạn cũng có thể truyền vào một mảng làm tham số thứ hai. Nếu chuỗi kết thúc với bất kỳ giá trị nào có trong mảng thì giá trị đó sẽ bị xóa khỏi chuỗi:
+
+    use Illuminate\Support\Str;
+
+    $url = Str::chopEnd('laravel.com/index.php', ['/index.html', '/index.php']);
+
+    // 'laravel.com'
+
 <a name="method-str-contains"></a>
 #### `Str::contains()` {.collection-method}
 
-Hàm `Str::contains` sẽ xác định xem chuỗi đã cho có chứa giá trị đã cho hay không. Phương thức này phân biệt chữ hoa và chữ thường:
+Hàm `Str::contains` sẽ xác định xem chuỗi đã cho có chứa giá trị đã cho hay không. Mặc định, phương thức này phân biệt chữ hoa và chữ thường:
 
     use Illuminate\Support\Str;
 
@@ -392,6 +443,14 @@ Bạn cũng có thể truyền vào một mảng các giá trị để xác đ�
 
     // true
 
+Bạn có thể disable phân biệt chữ hoa và chữ thường bằng cách set tham số `ignoreCase` thành `true`:
+
+    use Illuminate\Support\Str;
+
+    $contains = Str::contains('This is my name', 'MY', ignoreCase: true);
+
+    // true
+
 <a name="method-str-contains-all"></a>
 #### `Str::containsAll()` {.collection-method}
 
@@ -403,6 +462,60 @@ Hàm `Str::containsAll` sẽ xác định xem string đã cho có chứa tất c
 
     // true
 
+Bạn có thể disable phân biệt chữ hoa và chữ thường bằng cách set tham số `ignoreCase` thành `true`:
+
+    use Illuminate\Support\Str;
+
+    $containsAll = Str::containsAll('This is my name', ['MY', 'NAME'], ignoreCase: true);
+
+    // true
+
+<a name="method-str-doesnt-contain"></a>
+#### `Str::doesntContain()` {.collection-method}
+
+Hàm `Str::doesntContain` sẽ xác định chuỗi đã cho sẽ không chứa giá trị đã cho. Mặc định, phương thức này phân biệt chữ hoa và chữ thường:
+
+    use Illuminate\Support\Str;
+
+    $doesntContain = Str::doesntContain('This is name', 'my');
+
+    // true
+
+Bạn cũng có thể truyền vào một mảng các giá trị để xác định chuỗi đã cho không chứa bất kỳ giá trị nào có trong mảng:
+
+    use Illuminate\Support\Str;
+
+    $doesntContain = Str::doesntContain('This is name', ['my', 'foo']);
+
+    // true
+
+Bạn có thể disable phân biệt chữ hoa và chữ thường bằng cách set tham số `ignoreCase` thành `true`:
+
+    use Illuminate\Support\Str;
+
+    $doesntContain = Str::doesntContain('This is name', 'MY', ignoreCase: true);
+
+    // true
+
+<a name="method-deduplicate"></a>
+#### `Str::deduplicate()` {.collection-method}
+
+Hàm `Str::deduplicate` sẽ thay thế các ký tự liên tiếp giống nhau bằng một ký tự duy nhất trong một chuỗi đã cho. Mặc định, phương thức này loại bỏ các khoảng trắng trùng nhau:
+
+    use Illuminate\Support\Str;
+
+    $result = Str::deduplicate('The   Laravel   Framework');
+
+    // The Laravel Framework
+
+Bạn có thể chỉ định một ký tự khác để thay thế bằng cách truyền nó vào làm tham số thứ hai của phương thức:
+
+    use Illuminate\Support\Str;
+
+    $result = Str::deduplicate('The---Laravel---Framework', '-');
+
+    // The-Laravel-Framework
+
 <a name="method-ends-with"></a>
 #### `Str::endsWith()` {.collection-method}
 
@@ -413,7 +526,6 @@ Hàm `Str::endsWith` sẽ kiểm tra chuỗi đã cho có kết thúc bằng gi�
     $result = Str::endsWith('This is my name', 'name');
 
     // true
-
 
 Bạn cũng có thể truyền một mảng các giá trị để kiểm tra xem chuỗi đã cho có kết thúc bằng các giá trị có trong số các giá trị đã cho hay không in the array:
 
@@ -521,6 +633,14 @@ Hàm `Str::is` sẽ xác định xem một chuỗi đã cho có khớp với m�
     $matches = Str::is('baz*', 'foobar');
 
     // false
+
+Bạn có thể disable phân biệt chữ hoa và chữ thường bằng cách set tham số `ignoreCase` thành `true`:
+
+    use Illuminate\Support\Str;
+
+    $matches = Str::is('*.jpg', 'photo.JPG', ignoreCase: true);
+
+    // true
 
 <a name="method-str-is-ascii"></a>
 #### `Str::isAscii()` {.collection-method}
@@ -651,11 +771,15 @@ Hàm `Str::limit` sẽ cắt ngắn chuỗi đã cho đến độ dài nhất đ
 
 Bạn có thể truyền một tham số thứ ba vào phương thức để thay đổi chuỗi sẽ được nối vào cuối chuỗi bị cắt ngắn:
 
-    use Illuminate\Support\Str;
-
     $truncated = Str::limit('The quick brown fox jumps over the lazy dog', 20, ' (...)');
 
     // The quick brown fox (...)
+
+Nếu bạn muốn giữ nguyên các từ hoàn chỉnh khi cắt ngắn chuỗi, bạn có thể sử dụng tham số `preserveWords`. Khi tham số này là `true`, thì chuỗi sẽ được cắt ngắn đến từ hoàn chỉnh gần nhất:
+
+    $truncated = Str::limit('The quick brown fox', 12, preserveWords: true);
+
+    // The quick...
 
 <a name="method-str-lower"></a>
 #### `Str::lower()` {.collection-method}
@@ -909,11 +1033,11 @@ Hàm `Str::replace` sẽ thay thế một chuỗi trong chuỗi:
 
     use Illuminate\Support\Str;
 
-    $string = 'Laravel 8.x';
+    $string = 'Laravel 10.x';
 
-    $replaced = Str::replace('8.x', '9.x', $string);
+    $replaced = Str::replace('10.x', '11.x', $string);
 
-    // Laravel 9.x
+    // Laravel 11.x
 
 Phương thức `replace` cũng chấp nhận tham số `caseSensitive`. Mặc định, phương thức `replace` sẽ phân biệt chữ hoa và chữ thường:
 
@@ -1197,14 +1321,49 @@ Hàm `Str::toBase64` sẽ chuyển chuỗi đã cho thành Base64:
 
     // TGFyYXZlbA==
 
-<a name="method-str-to-html-string"></a>
-#### `Str::toHtmlString()` {.collection-method}
+<a name="method-str-transliterate"></a>
+#### `Str::transliterate()` {.collection-method}
 
-Hàm `Str::toHtmlString` sẽ chuyển một instance chuỗi thành một instance của `Illuminate\Support\HtmlString`, để có thể được hiển thị trong các template Blade:
+Hàm `Str::transliterate` sẽ cố gắng chuyển một chuỗi đã cho thành dạng ASCII gần nhất của nó:
 
     use Illuminate\Support\Str;
 
-    $htmlString = Str::of('Nuno Maduro')->toHtmlString();
+    $email = Str::transliterate('ⓣⓔⓢⓣ@ⓛⓐⓡⓐⓥⓔⓛ.ⓒⓞⓜ');
+
+    // 'test@laravel.com'
+
+<a name="method-str-trim"></a>
+#### `Str::trim()` {.collection-method}
+
+Hàm `Str::trim` sẽ loại bỏ khoảng trắng (hoặc các ký tự khác) ra khỏi đầu và cuối của chuỗi đã cho. Không giống như hàm `trim` có sẵn của PHP, hàm `Str::trim` cũng sẽ loại bỏ các ký tự khoảng trắng unicode:
+
+    use Illuminate\Support\Str;
+
+    $string = Str::trim(' foo bar ');
+
+    // 'foo bar'
+
+<a name="method-str-ltrim"></a>
+#### `Str::ltrim()` {.collection-method}
+
+Hàm `Str::ltrim` sẽ loại bỏ khoảng trắng (hoặc các ký tự khác) ra khỏi đầu của chuỗi đã cho. Không giống như hàm `ltrim` có sẵn của PHP, hàm `Str::ltrim` cũng sẽ loại bỏ các ký tự khoảng trắng unicode:
+
+    use Illuminate\Support\Str;
+
+    $string = Str::ltrim('  foo bar  ');
+
+    // 'foo bar  '
+
+<a name="method-str-rtrim"></a>
+#### `Str::rtrim()` {.collection-method}
+
+Hàm `Str::rtrim` sẽ loại bỏ khoảng trắng (hoặc các ký tự khác) ra khỏi cuối của chuỗi đã cho. Không giống như hàm `rtrim` có sẵn của PHP, hàm `Str::rtrim` cũng sẽ loại bỏ các ký tự khoảng trắng unicode:
+
+    use Illuminate\Support\Str;
+
+    $string = Str::rtrim('  foo bar  ');
+
+    // '  foo bar'
 
 <a name="method-str-ucfirst"></a>
 #### `Str::ucfirst()` {.collection-method}
@@ -1550,10 +1709,48 @@ Hàm `classBasename` sẽ trả về tên class của class đã cho mà namespa
 
     // 'Baz'
 
+<a name="method-fluent-str-chop-start"></a>
+#### `chopStart` {.collection-method}
+
+Hàm `chopStart` sẽ xóa đi giá trị đầu tiên chỉ định nếu giá trị đó xuất hiện ở đầu của chuỗi:
+
+    use Illuminate\Support\Str;
+
+    $url = Str::of('https://laravel.com')->chopStart('https://');
+
+    // 'laravel.com'
+
+Bạn cũng có thể truyền vào một mảng. Nếu chuỗi bắt đầu với bất kỳ giá trị nào có trong mảng thì giá trị đó sẽ bị xóa khỏi chuỗi:
+
+    use Illuminate\Support\Str;
+
+    $url = Str::of('http://laravel.com')->chopStart(['https://', 'http://']);
+
+    // 'laravel.com'
+
+<a name="method-fluent-str-chop-end"></a>
+#### `chopEnd` {.collection-method}
+
+Hàm `chopEnd` sẽ xóa đi giá trị cuối cùng chỉ định nếu giá trị đó xuất hiện ở cuối của chuỗi:
+
+    use Illuminate\Support\Str;
+
+    $url = Str::of('https://laravel.com')->chopEnd('.com');
+
+    // 'https://laravel'
+
+Bạn cũng có thể truyền vào một mảng. Nếu chuỗi kết thúc với bất kỳ giá trị nào có trong mảng thì giá trị đó sẽ bị xóa khỏi chuỗi:
+
+    use Illuminate\Support\Str;
+
+    $url = Str::of('http://laravel.com')->chopEnd(['.com', '.io']);
+
+    // 'http://laravel'
+
 <a name="method-fluent-str-contains"></a>
 #### `contains` {.collection-method}
 
-Hàm `contains` sẽ xác định xem chuỗi đã cho có chứa giá trị đã cho hay không. Phương thức này sẽ phân biệt chữ hoa chữ thường:
+Hàm `contains` sẽ xác định xem chuỗi đã cho có chứa giá trị đã cho hay không. Mặc định, phương thức này sẽ phân biệt chữ hoa chữ thường:
 
     use Illuminate\Support\Str;
 
@@ -1569,6 +1766,14 @@ Bạn cũng có thể truyền một mảng giá trị để xác định xem ch
 
     // true
 
+Bạn có thể tắt tính phân biệt chữ hoa chữ thường bằng cách đặt tham số `ignoreCase` thành `true`:
+
+    use Illuminate\Support\Str;
+
+    $contains = Str::of('This is my name')->contains('MY', ignoreCase: true);
+
+    // true
+
 <a name="method-fluent-str-contains-all"></a>
 #### `containsAll` {.collection-method}
 
@@ -1579,6 +1784,33 @@ Hàm `containsAll` sẽ xác định xem chuỗi đã cho có chứa tất cả 
     $containsAll = Str::of('This is my name')->containsAll(['my', 'name']);
 
     // true
+
+Bạn có thể tắt tính phân biệt chữ hoa chữ thường bằng cách đặt tham số `ignoreCase` thành `true`:
+
+    use Illuminate\Support\Str;
+
+    $containsAll = Str::of('This is my name')->containsAll(['MY', 'NAME'], ignoreCase: true);
+
+    // true
+
+<a name="method-fluent-str-deduplicate"></a>
+#### `deduplicate` {.collection-method}
+
+Hàm `deduplicate` sẽ thay thế các ký tự trùng lặp liên tiếp trong chuỗi đã cho thành một ký tự duy nhất. Mặc định, hàm `deduplicate` sẽ loại bỏ các khoảng trắng trùng lặp:
+
+    use Illuminate\Support\Str;
+
+    $result = Str::of('The   Laravel   Framework')->deduplicate();
+
+    // The Laravel Framework
+
+Bạn có thể chỉ định một ký tự khác để loại bỏ bằng cách truyền nó vào như tham số thứ hai:
+
+    use Illuminate\Support\Str;
+
+    $result = Str::of('The---Laravel---Framework')->deduplicate('-');
+
+    // The-Laravel-Framework
 
 <a name="method-fluent-str-dirname"></a>
 #### `dirname` {.collection-method}
@@ -1591,39 +1823,13 @@ Hàm `dirname` sẽ trả về phần thư mục cha của chuỗi đã cho:
 
     // '/foo/bar'
 
-Nếu cần, bạn có thể chỉ định thêm số lượng cấp của thư mục mà bạn muốn cắt ra khỏi chuỗi:
+Nếu cần, bạn có thể chỉ định số level cấp của thư mục mà bạn muốn loại bỏ ra khỏi chuỗi:
 
     use Illuminate\Support\Str;
 
     $string = Str::of('/foo/bar/baz')->dirname(2);
 
     // '/foo'
-
-<a name="method-fluent-str-excerpt"></a>
-#### `excerpt` {.collection-method}
-
-Hàm `excerpt` sẽ lấy ra một đoạn đầu tiên từ một chuỗi mà khớp với chuỗi đã cho:
-
-    use Illuminate\Support\Str;
-
-    $excerpt = Str::of('This is my name')->excerpt('my', [
-        'radius' => 3
-    ]);
-
-    // '...is my na...'
-
-Tùy chọn `radius` có giá trị mặc định là `100`, cho phép bạn định nghĩa số lượng ký tự sẽ xuất hiện ở mỗi bên của chuỗi đã được lấy ra.
-
-Ngoài ra, bạn có thể sử dụng tùy chọn `omission` để thay đổi chuỗi sẽ được thêm vào trước hoặc sau chuỗi đã được lấy ra:
-
-    use Illuminate\Support\Str;
-
-    $excerpt = Str::of('This is my name')->excerpt('name', [
-        'radius' => 3,
-        'omission' => '(...) '
-    ]);
-
-    // '(...) my name'
 
 <a name="method-fluent-str-ends-with"></a>
 #### `endsWith` {.collection-method}
@@ -1658,6 +1864,32 @@ Hàm `exactly` sẽ xác định xem chuỗi đã cho có khớp với một chu
     $result = Str::of('Laravel')->exactly('Laravel');
 
     // true
+
+<a name="method-fluent-str-excerpt"></a>
+#### `excerpt` {.collection-method}
+
+Hàm `excerpt` sẽ lấy ra một đoạn đầu tiên từ một chuỗi mà khớp với chuỗi đã cho:
+
+    use Illuminate\Support\Str;
+
+    $excerpt = Str::of('This is my name')->excerpt('my', [
+        'radius' => 3
+    ]);
+
+    // '...is my na...'
+
+Tùy chọn `radius` có giá trị mặc định là `100`, cho phép bạn định nghĩa số lượng ký tự sẽ xuất hiện ở mỗi bên của chuỗi đã được lấy ra.
+
+Ngoài ra, bạn có thể sử dụng tùy chọn `omission` để thay đổi chuỗi sẽ được thêm vào trước hoặc sau chuỗi đã được lấy ra:
+
+    use Illuminate\Support\Str;
+
+    $excerpt = Str::of('This is my name')->excerpt('name', [
+        'radius' => 3,
+        'omission' => '(...) '
+    ]);
+
+    // '(...) my name'
 
 <a name="method-fluent-str-explode"></a>
 #### `explode` {.collection-method}
@@ -1774,7 +2006,6 @@ Hàm `isEmpty` sẽ xác định xem chuỗi đã cho có trống hay không:
 
 Hàm `isNotEmpty` sẽ xác định xem chuỗi đã cho không trống đúng không:
 
-
     use Illuminate\Support\Str;
 
     $result = Str::of('  ')->trim()->isNotEmpty();
@@ -1875,7 +2106,6 @@ Hàm `lcfirst` sẽ trả về chuỗi đã cho với ký tự đầu tiên đư
 
     // foo Bar
 
-
 <a name="method-fluent-str-length"></a>
 #### `length` {.collection-method}
 
@@ -1900,11 +2130,15 @@ Hàm `limit` sẽ cắt chuỗi đã cho đến một độ dài nhất định:
 
 Bạn cũng có thể truyền thêm một tham số thứ hai để nối vào cuối chuỗi đã bị cắt:
 
-    use Illuminate\Support\Str;
-
     $truncated = Str::of('The quick brown fox jumps over the lazy dog')->limit(20, ' (...)');
 
     // The quick brown fox (...)
+
+Nếu bạn muốn giữ nguyên các từ hoàn chỉnh khi cắt chuỗi, bạn có thể sử dụng tham số `preserveWords`. Khi tham số này được đặt thành `true`, chuỗi sẽ được cắt đến vị trí gần nhất của từ hoàn chỉnh:
+
+    $truncated = Str::of('The quick brown fox')->limit(12, preserveWords: true);
+
+    // The quick...
 
 <a name="method-fluent-str-lower"></a>
 #### `lower` {.collection-method}
@@ -1916,21 +2150,6 @@ Hàm `lower` sẽ chuyển đổi chuỗi đã cho thành chữ thường:
     $result = Str::of('LARAVEL')->lower();
 
     // 'laravel'
-
-<a name="method-fluent-str-ltrim"></a>
-#### `ltrim` {.collection-method}
-
-Hàm `ltrim` sẽ cắt bên trái của chuỗi đã cho:
-
-    use Illuminate\Support\Str;
-
-    $string = Str::of('  Laravel  ')->ltrim();
-
-    // 'Laravel  '
-
-    $string = Str::of('/Laravel/')->ltrim('/');
-
-    // 'Laravel/'
 
 <a name="method-fluent-str-markdown"></a>
 #### `markdown` {.collection-method}
@@ -2009,7 +2228,7 @@ Hàm `matchAll` sẽ trả về một collection chứa các phần của một 
 
     // collect(['bar', 'bar'])
 
-Nếu bạn chỉ định một nhóm vào trong biểu thức, Laravel sẽ trả về một collection phù hợp của nhóm đó:
+Nếu bạn chỉ định một nhóm vào trong biểu thức, Laravel sẽ trả về một collection đầu tiên phù hợp với nhóm đó:
 
     use Illuminate\Support\Str;
 
@@ -2291,21 +2510,6 @@ Hàm `replaceEnd` sẽ chỉ thay thế phần tử cuối cùng của chuỗi �
 
     // Hello World
 
-<a name="method-fluent-str-rtrim"></a>
-#### `rtrim` {.collection-method}
-
-Hàm `rtrim` sẽ cắt bên phải của chuỗi đã cho:
-
-    use Illuminate\Support\Str;
-
-    $string = Str::of('  Laravel  ')->rtrim();
-
-    // '  Laravel'
-
-    $string = Str::of('/Laravel/')->rtrim('/');
-
-    // '/Laravel'
-
 <a name="method-fluent-str-scan"></a>
 #### `scan` {.collection-method}
 
@@ -2524,7 +2728,7 @@ Hàm `title` sẽ chuyển một chuỗi đã cho thành dạng `Title Case`:
     // A Nice Title Uses The Correct Case
 
 <a name="method-fluent-str-to-base64"></a>
-#### `toBase64()` {.collection-method}
+#### `toBase64` {.collection-method}
 
 Hàm `toBase64` sẽ chuyển chuỗi đã cho thành Base64:
 
@@ -2534,10 +2738,30 @@ Hàm `toBase64` sẽ chuyển chuỗi đã cho thành Base64:
 
     // TGFyYXZlbA==
 
+<a name="method-fluent-str-to-html-string"></a>
+#### `toHtmlString` {.collection-method}
+
+Hàm `toHtmlString` sẽ chuyển chuỗi đã cho thành một instance của `Illuminate\Support\HtmlString`, chuỗi này sẽ không bị loại bỏ ký tự đặc biệt khi được hiển thị trong các template Blade:
+
+    use Illuminate\Support\Str;
+
+    $htmlString = Str::of('Nuno Maduro')->toHtmlString();
+
+<a name="method-fluent-str-transliterate"></a>
+#### `transliterate` {.collection-method}
+
+Hàm `transliterate` sẽ cố gắng chuyển một chuỗi đã cho thành dạng ASCII gần nhất của nó:
+
+    use Illuminate\Support\Str;
+
+    $email = Str::of('ⓣⓔⓢⓣ@ⓛⓐⓡⓐⓥⓔⓛ.ⓒⓞⓜ')->transliterate()
+
+    // 'test@laravel.com'
+
 <a name="method-fluent-str-trim"></a>
 #### `trim` {.collection-method}
 
-Hàm `trim` sẽ cắt chuỗi đã cho:
+Hàm `trim` sẽ cắt chuỗi đã cho. Không giống như hàm `trim` có sẵn của PHP, hàm `trim` của Laravel cũng sẽ loại bỏ các ký tự khoảng trắng unicode:
 
     use Illuminate\Support\Str;
 
@@ -2548,6 +2772,36 @@ Hàm `trim` sẽ cắt chuỗi đã cho:
     $string = Str::of('/Laravel/')->trim('/');
 
     // 'Laravel'
+
+<a name="method-fluent-str-ltrim"></a>
+#### `ltrim` {.collection-method}
+
+Hàm `ltrim` cắt chuỗi đã cho từ phía trái. Không giống như hàm `ltrim` có sẵn của PHP, hàm `ltrim` của Laravel cũng sẽ loại bỏ các ký tự khoảng trắng unicode:
+
+    use Illuminate\Support\Str;
+
+    $string = Str::of('  Laravel  ')->ltrim();
+
+    // 'Laravel  '
+
+    $string = Str::of('/Laravel/')->ltrim('/');
+
+    // 'Laravel/'
+
+<a name="method-fluent-str-rtrim"></a>
+#### `rtrim` {.collection-method}
+
+Hàm `rtrim` cắt chuỗi đã cho từ phía phải. Không giống như hàm `rtrim` có sẵn của PHP, hàm `rtrim` của Laravel cũng sẽ loại bỏ các ký tự khoảng trắng unicode:
+
+    use Illuminate\Support\Str;
+
+    $string = Str::of('  Laravel  ')->rtrim();
+
+    // '  Laravel'
+
+    $string = Str::of('/Laravel/')->rtrim('/');
+
+    // '/Laravel'
 
 <a name="method-fluent-str-ucfirst"></a>
 #### `ucfirst` {.collection-method}
@@ -2606,9 +2860,9 @@ Hàm `when` sẽ gọi Closure nếu một điều kiện đã cho là `đúng`.
     use Illuminate\Support\Stringable;
 
     $string = Str::of('Taylor')
-                    ->when(true, function (Stringable $string) {
-                        return $string->append(' Otwell');
-                    });
+        ->when(true, function (Stringable $string) {
+            return $string->append(' Otwell');
+        });
 
     // 'Taylor Otwell'
 
@@ -2623,9 +2877,9 @@ Hàm `whenContains` sẽ gọi closure đã cho nếu chuỗi chứa giá trị 
     use Illuminate\Support\Stringable;
 
     $string = Str::of('tony stark')
-                ->whenContains('tony', function (Stringable $string) {
-                    return $string->title();
-                });
+        ->whenContains('tony', function (Stringable $string) {
+            return $string->title();
+        });
 
     // 'Tony Stark'
 
@@ -2637,9 +2891,9 @@ Bạn cũng có thể truyền một mảng các giá trị để xác định x
     use Illuminate\Support\Stringable;
 
     $string = Str::of('tony stark')
-                ->whenContains(['tony', 'hulk'], function (Stringable $string) {
-                    return $string->title();
-                });
+        ->whenContains(['tony', 'hulk'], function (Stringable $string) {
+            return $string->title();
+        });
 
     // Tony Stark
 
@@ -2652,9 +2906,9 @@ Hàm `whenContainsAll` sẽ gọi closure nếu chuỗi chứa tất cả các c
     use Illuminate\Support\Stringable;
 
     $string = Str::of('tony stark')
-                    ->whenContainsAll(['tony', 'stark'], function (Stringable $string) {
-                        return $string->title();
-                    });
+        ->whenContainsAll(['tony', 'stark'], function (Stringable $string) {
+            return $string->title();
+        });
 
     // 'Tony Stark'
 
@@ -2834,3 +3088,18 @@ Hàm `words` sẽ giới hạn số lượng từ trong một chuỗi. Nếu c�
     $string = Str::of('Perfectly balanced, as all things should be.')->words(3, ' >>>');
 
     // Perfectly balanced, as >>>
+
+<a name="method-fluent-str-wrap"></a>
+#### `wrap` {.collection-method}
+
+Hàm `wrap` sẽ bao bọc chuỗi đã cho bằng một chuỗi khác hoặc bằng một cặp chuỗi khác:
+
+    use Illuminate\Support\Str;
+
+    Str::of('Laravel')->wrap('"');
+
+    // "Laravel"
+
+    Str::of('is')->wrap(before: 'This ', after: ' Laravel!');
+
+    // This is Laravel!

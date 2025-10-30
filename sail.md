@@ -3,6 +3,7 @@
 - [Giới thiệu](#introduction)
 - [Cài đặt và setup](#installation)
     - [Cài đặt Sail vào trong application hiện tại](#installing-sail-into-existing-applications)
+    - [Building lại Sail Images](#rebuilding-sail-images)
     - [Cấu hình một shell alias](#configuring-a-shell-alias)
 - [Starting và Stopping Sail](#starting-and-stopping-sail)
 - [Chạy commands](#executing-sail-commands)
@@ -12,7 +13,9 @@
     - [Chạy Node và NPM Commands](#executing-node-npm-commands)
 - [Tương tác với Databases](#interacting-with-sail-databases)
     - [MySQL](#mysql)
+    - [MongoDB](#mongodb)
     - [Redis](#redis)
+    - [Valkey](#valkey)
     - [Meilisearch](#meilisearch)
     - [Typesense](#typesense)
 - [File Storage](#file-storage)
@@ -82,6 +85,19 @@ Nếu muốn phát triển trong một [Devcontainer](https://code.visualstudio.
 
 ```shell
 php artisan sail:install --devcontainer
+```
+
+<a name="rebuilding-sail-images"></a>
+### Building lại Sail Images
+
+Thỉnh thoảng bạn có thể muốn build lại hoàn toàn các image Sail của bạn để đảm bảo tất cả các package và phần mềm của image đều được cập nhật. Bạn có thể thực hiện điều này bằng cách sử dụng lệnh `build`:
+
+```shell
+docker compose down -v
+
+sail build --no-cache
+
+sail up
 ```
 
 <a name="configuring-a-shell-alias"></a>
@@ -161,9 +177,9 @@ sail php script.php
 <a name="executing-composer-commands"></a>
 ### Chạy Composer Commands
 
-Các lệnh của Composer có thể được chạy bằng lệnh `composer`. Container ứng dụng của Laravel Sail đã có bản cài đặt Composer version 2.x:
+Các lệnh của Composer có thể được chạy bằng lệnh `composer`. Container ứng dụng của Laravel Sail đã có sẵn bản cài đặt Composer:
 
-```nothing
+```shell
 sail composer require laravel/sanctum
 ```
 
@@ -179,11 +195,11 @@ docker run --rm \
     -u "$(id -u):$(id -g)" \
     -v "$(pwd):/var/www/html" \
     -w /var/www/html \
-    laravelsail/php83-composer:latest \
+    laravelsail/php84-composer:latest \
     composer install --ignore-platform-reqs
 ```
 
-Khi sử dụng image `laravelsail/phpXX-composer`, bạn nên sử dụng cùng một phiên bản PHP mà bạn đang định sử dụng cho ứng dụng của bạn (`80`, `81`, `82`, hoặc `83`).
+Khi sử dụng image `laravelsail/phpXX-composer`, bạn nên sử dụng cùng một phiên bản PHP mà bạn đang định sử dụng cho ứng dụng của bạn (`80`, `81`, `82`, `83`, hoặc `84`).
 
 <a name="executing-artisan-commands"></a>
 ### Chạy Artisan Commands
@@ -225,17 +241,41 @@ Sau khi khởi động container, bạn có thể kết nối với instance MyS
 
 Để kết nối đến cơ sở dữ liệu MySQL của ứng dụng từ máy local, bạn có thể sử dụng ứng dụng quản lý cơ sở dữ liệu như [TablePlus](https://tableplus.com). Mặc định, cơ sở dữ liệu MySQL có thể truy cập được tại `localhost` cổng 3306 và thông tin xác thực truy cập tương ứng với các giá trị của biến môi trường `DB_USERNAME` và `DB_PASSWORD`. Hoặc, bạn có thể kết nối với tư cách là người dùng `root`, cũng sử dụng giá trị của biến môi trường `DB_PASSWORD` làm mật khẩu.
 
+<a name="mongodb"></a>
+### MongoDB
+
+Nếu bạn chọn cài đặt service [MongoDB](https://www.mongodb.com/) khi cài đặt Sail, file `docker-compose.yml` của ứng dụng của bạn có chứa sẵn một mục cho container [MongoDB Atlas Local](https://www.mongodb.com/docs/atlas/cli/current/atlas-cli-local-cloud/) cung cấp cơ sở dữ liệu document MongoDB với các tính năng của Atlas như [Search Indexes](https://www.mongodb.com/docs/atlas/atlas-search/). Container này sử dụng một [Docker volume](https://docs.docker.com/storage/volumes/) để dữ liệu có thể được lưu trữ trong cơ sở dữ liệu của bạn được duy trì ngay cả khi dừng và khởi động lại các container của bạn.
+
+Sau khi bạn đã khởi động các container của bạn, bạn có thể kết nối đến instance MongoDB trong ứng dụng của bạn bằng cách set biến môi trường `MONGODB_URI` trong file `.env` của ứng dụng thành `mongodb://mongodb:27017`. Mặc định, xác thực sẽ bị tắt disable, nhưng bạn có thể set các biến môi trường `MONGODB_USERNAME` và `MONGODB_PASSWORD` để enable xác thực trước khi khởi động container `mongodb`. Sau đó, thêm thông tin xác thực vào chuỗi kết nối:
+
+```ini
+MONGODB_USERNAME=user
+MONGODB_PASSWORD=laravel
+MONGODB_URI=mongodb://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@mongodb:27017
+```
+
+Để tích hợp MongoDB liền mạch với ứng dụng của bạn, bạn có thể cài đặt [package chính thức do MongoDB cung cấp](https://www.mongodb.com/docs/drivers/php/laravel-mongodb/).
+
+Để kết nối với cơ sở dữ liệu MongoDB của ứng dụng từ máy local của bạn, bạn có thể sử dụng ứng dụng như [Compass](https://www.mongodb.com/products/tools/compass). Mặc định, cơ sở dữ liệu MongoDB có thể truy cập được tại `localhost` cổng `27017`.
+
 <a name="redis"></a>
 ### Redis
 
-File `docker-compose.yml` của ứng dụng của bạn cũng chứa một mục cho container [Redis](https://redis.io). Container này sử dụng một [Docker volume](https://docs.docker.com/storage/volumes/) để lưu trữ dữ liệu Redis của bạn và nó sẽ được duy trì ngay cả khi dừng hoặc khởi động lại container của bạn. Sau khi khởi động container, bạn có thể kết nối với instance Redis trong ứng dụng của bạn bằng cách set biến môi trường `REDIS_HOST` trong file `.env` của ứng dụng thành `redis`.
+File `docker-compose.yml` của ứng dụng của bạn cũng chứa một mục cho container [Redis](https://redis.io). Container này sử dụng một [Docker volume](https://docs.docker.com/storage/volumes/) để lưu trữ dữ liệu instance Redis của bạn và nó sẽ được duy trì ngay cả khi dừng hoặc khởi động lại container của bạn. Sau khi khởi động container, bạn có thể kết nối với instance Redis trong ứng dụng của bạn bằng cách set biến môi trường `REDIS_HOST` trong file `.env` của ứng dụng thành `redis`.
 
 Để kết nối đến cơ sở dữ liệu Redis của ứng dụng từ máy local, bạn có thể sử dụng ứng dụng quản lý cơ sở dữ liệu như [TablePlus](https://tableplus.com). Mặc định, cơ sở dữ liệu Redis có thể truy cập được tại `localhost` cổng 6379.
+
+<a name="valkey"></a>
+### Valkey
+
+Nếu bạn chọn cài đặt service Valkey khi cài đặt Sail, file `docker-compose.yml` của ứng dụng của bạn sẽ chứa một mục cho [Valkey](https://valkey.io/). Container này sử dụng một [Docker volume](https://docs.docker.com/storage/volumes/) để dữ liệu được lưu trữ trong instance Valkey của bạn và được duy trì ngay cả khi dừng và khởi động lại các container của bạn. Bạn có thể kết nối với container này trong ứng dụng của bạn bằng cách set biến môi trường `REDIS_HOST` trong file `.env` của ứng dụng thành `valkey`.
+
+Để kết nối đến cơ sở dữ liệu Valkey của ứng dụng từ máy local của bạn, bạn có thể sử dụng ứng dụng quản lý cơ sở dữ liệu như [TablePlus](https://tableplus.com). Mặc định, cơ sở dữ liệu Valkey có thể truy cập được tại `localhost` cổng 6379.
 
 <a name="meilisearch"></a>
 ### Meilisearch
 
-Nếu bạn chọn cài đặt service [Meilisearch](https://www.meilisearch.com) khi cài đặt Sail, file `docker-compose.yml` của ứng dụng của bạn sẽ chứa một mục cho công cụ tìm kiếm mạnh mẽ này [tương thích](https://github.com/meilisearch/meilisearch-laravel-scout) với [Laravel Scout](/docs/{{version}}/scout). Sau khi khởi động container, bạn có thể kết nối đến instance Meilisearch trong ứng dụng của bạn bằng cách set biến môi trường `MEILISEARCH_HOST` thành `http://meilisearch:7700`.
+Nếu bạn chọn cài đặt service [Meilisearch](https://www.meilisearch.com) khi cài đặt Sail, file `docker-compose.yml` của ứng dụng của bạn sẽ chứa một mục cho công cụ tìm kiếm mạnh mẽ này, nó đã được [tích hợp](https://github.com/meilisearch/meilisearch-laravel-scout) sẵn trong [Laravel Scout](/docs/{{version}}/scout). Sau khi khởi động container, bạn có thể kết nối đến instance Meilisearch trong ứng dụng của bạn bằng cách set biến môi trường `MEILISEARCH_HOST` thành `http://meilisearch:7700`.
 
 Từ máy local của bạn, bạn có thể truy cập vào trang admin dựa trên web của Meilisearch bằng cách vào `http://localhost:7700` trong trình duyệt web của bạn.
 
@@ -284,7 +324,7 @@ Bạn có thể tạo bucket thông qua bảng điều khiển của MinIO tại
 <a name="running-tests"></a>
 ## Running Tests
 
-Laravel mặc định cung cấp khả năng testing tuyệt vời và bạn có thể sử dụng lệnh `test` của Sail để chạy các [bài kiểm tra tính năng hoặc unit test](/docs/{{version}}/testing) cho ứng dụng của bạn. Bất kỳ tùy chọn CLI nào mà được PHPUnit chấp nhận cũng có thể được truyền cho lệnh `test`:
+Laravel mặc định cung cấp khả năng testing tuyệt vời và bạn có thể sử dụng lệnh `test` của Sail để chạy các [bài kiểm tra tính năng hoặc unit test](/docs/{{version}}/testing) cho ứng dụng của bạn. Bất kỳ tùy chọn CLI nào mà được Pest / PHPUnit chấp nhận cũng có thể được truyền cho lệnh `test`:
 
 ```shell
 sail test
@@ -338,11 +378,11 @@ sail dusk
 <a name="selenium-on-apple-silicon"></a>
 #### Selenium On Apple Silicon
 
-Nếu máy local của bạn dùng chip Apple Silicon, service `selenium` của bạn phải được sử dụng image `seleniarm/standalone-chromium`:
+Nếu máy local của bạn dùng chip Apple Silicon, service `selenium` của bạn phải được sử dụng image `selenium/standalone-chromium`:
 
 ```yaml
 selenium:
-    image: 'seleniarm/standalone-chromium'
+    image: 'selenium/standalone-chromium'
     extra_hosts:
         - 'host.docker.internal:host-gateway'
     volumes:
@@ -384,9 +424,12 @@ sail tinker
 <a name="sail-php-versions"></a>
 ## PHP Versions
 
-Sail hiện hỗ trợ chạy ứng dụng của bạn thông qua PHP 8.3, 8.2, 8.1, hoặc PHP 8.0. Phiên bản PHP mặc định được Sail sử dụng hiện tại là PHP 8.3. Để thay đổi phiên bản PHP được sử dụng để chạy ứng dụng của bạn, bạn nên cập nhật định nghĩa `build` của container `laravel.test` trong file `docker-compose.yml` của ứng dụng:
+Sail hiện hỗ trợ chạy ứng dụng của bạn thông qua PHP 8.4, 8.3, 8.2, 8.1, hoặc PHP 8.0. Phiên bản PHP mặc định được Sail sử dụng hiện tại là PHP 8.4. Để thay đổi phiên bản PHP được sử dụng để chạy ứng dụng của bạn, bạn nên cập nhật định nghĩa `build` của container `laravel.test` trong file `docker-compose.yml` của ứng dụng:
 
 ```yaml
+# PHP 8.4
+context: ./vendor/laravel/sail/runtimes/8.4
+
 # PHP 8.3
 context: ./vendor/laravel/sail/runtimes/8.3
 
@@ -403,7 +446,7 @@ context: ./vendor/laravel/sail/runtimes/8.0
 Ngoài ra, bạn có thể muốn cập nhật tên `image` của bạn để phản ánh phiên bản PHP đang được ứng dụng của bạn sử dụng. Tùy chọn này cũng được định nghĩa trong file `docker-compose.yml` trong ứng dụng của bạn:
 
 ```yaml
-image: sail-8.1/app
+image: sail-8.2/app
 ```
 
 Sau khi cập nhật file `docker-compose.yml` của ứng dụng, bạn nên build lại image container của bạn:
@@ -443,14 +486,11 @@ Thỉnh thoảng, bạn có thể cần share trang web của bạn để cho ng
 sail share
 ```
 
-Khi chia sẻ trang web của bạn thông qua lệnh `share`, bạn nên cấu hình các proxy đáng tin cậy của ứng dụng của bạn trong middleware `TrustProxies`. Nếu không, các helper tạo URL như `url` và `route` sẽ không thể xác định HTTP host chính xác sẽ được sử dụng trong quá trình tạo URL:
+Khi chia sẻ trang web của bạn thông qua lệnh `share`, bạn nên cấu hình các proxy đáng tin cậy của ứng dụng của bạn dùng phương thức middleware `trustProxies` trong file `bootstrap/app.php` của ứng dụng của bạn. Nếu không, các helper tạo URL như `url` và `route` sẽ không thể xác định HTTP host chính xác sẽ được sử dụng trong quá trình tạo URL:
 
-    /**
-     * The trusted proxies for this application.
-     *
-     * @var array|string|null
-     */
-    protected $proxies = '*';
+    ->withMiddleware(function (Middleware $middleware) {
+        $middleware->trustProxies(at: '*');
+    })
 
 Nếu bạn muốn chọn subdomain cho trang web được chia sẻ của bạn, bạn có thể cung cấp tùy chọn `subdomain` khi chạy lệnh `share`:
 
@@ -464,26 +504,49 @@ sail share --subdomain=my-sail-site
 <a name="debugging-with-xdebug"></a>
 ## Debugging With Xdebug
 
-Cấu hình Docker của Laravel Sail có hỗ trợ cho [Xdebug](https://xdebug.org/), một trình debug phổ biến và mạnh mẽ cho PHP. Để bật Xdebug, bạn cần thêm một vài biến vào file `.env` của ứng dụng để [cấu hình Xdebug](https://xdebug.org/docs/step_debug#mode). Để bật Xdebug, bạn phải set (các) chế độ thích hợp trước khi khởi động Sail:
+Cấu hình Docker của Laravel Sail có hỗ trợ cho [Xdebug](https://xdebug.org/), một trình debug phổ biến và mạnh mẽ cho PHP. Để bật Xdebug, đảm bảo bạn đã [export cấu hình Sail của bạn](#sail-customization). Sau đó, thêm các biến sau vào file `.env` của ứng dụng để cấu hình Xdebug:
 
 ```ini
 SAIL_XDEBUG_MODE=develop,debug,coverage
 ```
 
-#### Linux Host IP Configuration
-
-Bên trong, biến môi trường `XDEBUG_CONFIG` sẽ được định nghĩa là `client_host=host.docker.internal` để Xdebug sẽ được cấu hình đúng cho Mac và Windows (WSL2). Nếu máy local của bạn đang chạy Linux, bạn nên đảm bảo là bạn đang chạy Docker Engine 17.06.0+ và Compose 1.16.0+. Nếu không, bạn sẽ cần định nghĩa thủ công biến môi trường này như ở bên dưới.
-
-Trước tiên, bạn nên xác định chính xác địa chỉ IP máy chủ để thêm vào biến môi trường bằng cách chạy lệnh sau. Thông thường, `<container-name>` phải là tên của container chạy ứng dụng của bạn và thường kết thúc bằng `_laravel.test_1`:
-
-```shell
-docker inspect -f {{range.NetworkSettings.Networks}}{{.Gateway}}{{end}} <container-name>
-```
-
-Khi bạn đã có được chính xác địa chỉ IP máy chủ, bạn nên định nghĩa biến `SAIL_XDEBUG_CONFIG` trong file `.env` của ứng dụng của bạn:
+Tiếp theo, đảm bảo rằng file `php.ini` đã export của bạn có chứa cấu hình sau để Xdebug được kích hoạt ở các chế độ đã chỉ định:
 
 ```ini
-SAIL_XDEBUG_CONFIG="client_host=<host-ip-address>"
+[xdebug]
+xdebug.mode=${XDEBUG_MODE}
+```
+
+Sau khi bạn sửa file `php.ini`, hãy nhớ build lại Docker images của bạn để các thay đổi của bạn cho file `php.ini` có hiệu lực ngay lập tức:
+
+```shell
+sail build --no-cache
+```
+
+#### Linux Host IP Configuration
+
+Bên trong, biến môi trường `XDEBUG_CONFIG` sẽ được định nghĩa là `client_host=host.docker.internal` để Xdebug sẽ được cấu hình đúng cho Mac và Windows (WSL2). Nếu máy local của bạn đang chạy Linux và đang sử dụng Docker 20.10+, thì `host.docker.internal` sẽ có sẵn và không cần bạn phải cấu hình.
+
+Đối với các phiên bản Docker cũ hơn 20.10, `host.docker.internal` không được hỗ trợ trên Linux và bạn sẽ cần tự định nghĩa IP của host. Để làm điều này, hãy cấu hình một IP tĩnh cho container của bạn bằng cách định nghĩa một network tùy chỉnh trong file `docker-compose.yml` của bạn:
+
+```yaml
+networks:
+  custom_network:
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
+services:
+  laravel.test:
+    networks:
+      custom_network:
+        ipv4_address: 172.20.0.2
+```
+
+Khi bạn đã set địa chỉ static IP, bạn nên định nghĩa biến SAIL_XDEBUG_CONFIG trong file .env của ứng dụng của bạn:
+
+```ini
+SAIL_XDEBUG_CONFIG="client_host=172.20.0.2"
 ```
 
 <a name="xdebug-cli-usage"></a>

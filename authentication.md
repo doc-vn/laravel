@@ -25,6 +25,7 @@
 - [Thêm tuỳ biến user provider](#adding-custom-user-providers)
     - [User Provider Contract](#the-user-provider-contract)
     - [Authenticatable Contract](#the-authenticatable-contract)
+- [Tự động rehash mật khẩu](#automatic-password-rehashing)
 - [Social Authentication](/docs/{{version}}/socialite)
 - [Event](#events)
 
@@ -52,7 +53,9 @@ Bạn muốn bắt đầu nhanh không? Cài đặt [laravel application starter
 <a name="introduction-database-considerations"></a>
 ### Database Considerations
 
-Mặc định, Laravel có chứa một [Eloquent model](/docs/{{version}}/eloquent) `App\Models\User` trong thư mục `app/Models` của bạn. Model này sẽ được sử dụng mặc định với driver Eloquent authentication. Nhưng nếu application của bạn không muốn sử dụng Eloquent, bạn có thể sử dụng provider `database` authentication của Laravel.
+Mặc định, Laravel có chứa một [Eloquent model](/docs/{{version}}/eloquent) `App\Models\User` trong thư mục `app/Models` của bạn. Model này sẽ được sử dụng mặc định với driver Eloquent authentication.
+
+Nhưng nếu application của bạn không muốn sử dụng Eloquent, bạn có thể sử dụng provider `database` authentication của Laravel. Nếu ứng dụng của bạn đang sử dụng MongoDB, hãy xem [tài liệu xác thực người dùng Laravel](https://www.mongodb.com/docs/drivers/php/laravel-mongodb/current/user-authentication/) chính thức của MongoDB.
 
 Khi xây dựng cơ sở dữ liệu cho model `App\Models\User`, bạn hãy đảm bảo rằng cột mật khẩu có độ dài ít nhất là 60 ký tự. Dĩ nhiên, migration bảng `users` có trong một ứng dụng Laravel mới đã tạo cột mật khẩu đó vượt qua độ dài này.
 
@@ -181,7 +184,7 @@ Ngoài ra, khi người dùng đã được authenticate, bạn có thể truy c
 <a name="protecting-routes"></a>
 ### Bảo vệ route
 
-[Route middleware](/docs/{{version}}/middleware) có thể được sử dụng để chỉ cho phép những người dùng đã được authenticate mới có thể truy cập vào một route cụ thể. Laravel có sẵn middleware `auth`, tham chiếu tới class `Illuminate\Auth\Middleware\Authenticate`. Và vì middleware `auth` này đã được đăng ký sẵn trong HTTP kernel của ứng dụng của bạn, nên tất cả những gì bạn cần làm là gắn middleware này vào định nghĩa route của bạn:
+[Route middleware](/docs/{{version}}/middleware) có thể được sử dụng để chỉ cho phép những người dùng đã được authenticate mới có thể truy cập vào một route cụ thể. Laravel đã có sẵn middleware `auth` là một [middleware alias](/docs/{{version}}/middleware#middleware-aliases) của class `Illuminate\Auth\Middleware\Authenticate`. Và vì middleware `auth` này đã được alias ở bên trong Laravel, nên tất cả những gì bạn cần làm là gắn middleware đó vào định nghĩa route của bạn:
 
     Route::get('/flights', function () {
         // Only authenticated users may access this route...
@@ -190,17 +193,16 @@ Ngoài ra, khi người dùng đã được authenticate, bạn có thể truy c
 <a name="redirecting-unauthenticated-users"></a>
 #### Chuyển hướng người dùng chưa authentication
 
-Khi middleware `auth` phát hiện người dùng chưa được xác thực, nó sẽ gửi về response JSON `401` hoặc, nếu request không phải là request AJAX, thì nó sẽ chuyển hướng người dùng tới [route mà đã được đặt tên là](/docs/{{version}}/routing#named-routes) `login`. Bạn có thể sửa hành động này bằng cách cập nhật phương thức `redirectTo` trong file `app/Http/Middleware/Authenticate.php` của ứng dụng của bạn:
+Khi middleware `auth` phát hiện người dùng chưa được xác thực, nó sẽ gửi về response JSON `401` hoặc, nếu request không phải là dạng request AJAX, nó sẽ chuyển hướng người dùng tới [route mà đã được đặt tên là](/docs/{{version}}/routing#named-routes) `login`. Bạn có thể sửa hành động này bằng cách dùng phương thức `redirectGuestsTo` trong file `bootstrap/app.php` của ứng dụng của bạn::
 
     use Illuminate\Http\Request;
 
-    /**
-     * Get the path the user should be redirected to.
-     */
-    protected function redirectTo(Request $request): string
-    {
-        return route('login');
-    }
+    ->withMiddleware(function (Middleware $middleware) {
+        $middleware->redirectGuestsTo('/login');
+
+        // Using a closure...
+        $middleware->redirectGuestsTo(fn (Request $request) => route('login'));
+    })
 
 <a name="specifying-a-guard"></a>
 #### Chỉ định một guard
@@ -360,9 +362,9 @@ Nếu cần, bạn có thể chỉ định một guard xác thực trước khi 
 
     Auth::loginUsingId(1);
 
-Bạn có thể truyền một giá trị boolean làm tham số thứ hai cho phương thức `loginUsingId`. Giá trị này sẽ cho biết liệu chức năng "remember me" có được dùng tring session xác thực này hay không. Hãy nhớ rằng, điều này có nghĩa là session sẽ được xác thực vô thời hạn hoặc cho đến khi người dùng đăng xuất khỏi ứng dụng theo cách thủ công:
+Bạn có thể truyền một giá trị boolean cho tham số `remember` của phương thức `loginUsingId`. Giá trị này sẽ cho biết liệu chức năng "remember me" có được dùng tring session xác thực này hay không. Hãy nhớ rằng, điều này có nghĩa là session sẽ được xác thực vô thời hạn hoặc cho đến khi người dùng đăng xuất khỏi ứng dụng theo cách thủ công:
 
-    Auth::loginUsingId(1, $remember = true);
+    Auth::loginUsingId(1, remember: true);
 
 <a name="authenticate-a-user-once"></a>
 #### Authenticate A User Once
@@ -458,7 +460,7 @@ Ngoài việc gọi phương thức `logout`, bạn nên vô hiệu hóa session
 
 Laravel cũng cung cấp các cơ chế để vô hiệu hoá session và "đăng xuất" người dùng ra khỏi các thiết bị khác của họ mà không vô hiệu hoá session hiện tại của họ. Tính năng này thường được sử dụng khi người dùng đang thay đổi hoặc cập nhật lại mật khẩu của họ và bạn muốn làm mất hiệu lực các session trên các thiết bị khác trong khi vẫn giữ xác thực trên thiết bị hiện tại.
 
-Trước khi bắt đầu, bạn nên đảm bảo là middleware `Illuminate\Session\Middleware\AuthenticateSession` đã được thêm vào các route mà sẽ thực hiện xác thực session. Thông thường, bạn nên để middleware này trên các định nghĩa của các route group để có thể áp dụng nó cho nhiều route trong ứng dụng của bạn. Mặc định, middleware `AuthenticateSession` có thể được gắn vào một route bằng cách sử dụng bí danh middleware route `auth.session` như được định nghĩa trong kernel HTTP trong ứng dụng của bạn:
+Trước khi bắt đầu, bạn nên đảm bảo là middleware `Illuminate\Session\Middleware\AuthenticateSession` đã được thêm vào các route mà sẽ thực hiện xác thực session. Thông thường, bạn nên để middleware này trên các định nghĩa của các route group để có thể áp dụng nó cho nhiều route trong ứng dụng của bạn. Mặc định, middleware `AuthenticateSession` có thể được gắn vào một route bằng cách sử dụng [middleware alias](/docs/{{version}}/middleware#middleware-aliases) `auth.session`:
 
     Route::middleware(['auth', 'auth.session'])->group(function () {
         Route::get('/', function () {
@@ -540,7 +542,7 @@ Bạn nên đảm bảo rằng bất kỳ route nào thực hiện hành động
 <a name="adding-custom-guards"></a>
 ## Thêm tuỳ biến guard
 
-Bạn có thể định nghĩa các guard authentication của riêng bạn bằng cách sử dụng phương thức `extend` trên facade `Auth`. Bạn nên gọi tới phương thức `extend` trong một [service provider](/docs/{{version}}/providers). Vì Laravel đã có sẵn một `AuthServiceProvider`, nên chúng ta có thể đặt code đó vào trong provider này:
+Bạn có thể định nghĩa các guard authentication của riêng bạn bằng cách sử dụng phương thức `extend` trên facade `Auth`. Bạn nên gọi tới phương thức `extend` trong một [service provider](/docs/{{version}}/providers). Vì Laravel đã có sẵn một `AppServiceProvider`, nên chúng ta có thể đặt code đó vào trong provider này:
 
     <?php
 
@@ -548,13 +550,15 @@ Bạn có thể định nghĩa các guard authentication của riêng bạn bằ
 
     use App\Services\Auth\JwtGuard;
     use Illuminate\Contracts\Foundation\Application;
-    use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
     use Illuminate\Support\Facades\Auth;
+    use Illuminate\Support\ServiceProvider;
 
-    class AuthServiceProvider extends ServiceProvider
+    class AppServiceProvider extends ServiceProvider
     {
+        // ...
+
         /**
-         * Register any application authentication / authorization services.
+         * Bootstrap any application services.
          */
         public function boot(): void
         {
@@ -580,14 +584,14 @@ Như bạn có thể thấy trong ví dụ trên, hàm callback được truyề
 
 Cách đơn giản nhất để làm một hệ thống xác thực tùy biến dựa trên HTTP request là sử dụng phương thức `Auth::viaRequest`. Phương thức này sẽ cho phép bạn nhanh chóng định nghĩa quy trình xác thực của bạn bằng một closure duy nhất.
 
-Để bắt đầu, hãy gọi phương thức `Auth::viaRequest` trong hàm `boot` của class `AuthServiceProvider`. Phương thức `viaRequest` sẽ chấp nhận tên của authentication driver làm tham số đầu tiên của nó. Tên này có thể là bất kỳ chuỗi nào mà mô tả guard tùy biến của bạn. Tham số thứ hai được truyền cho phương thức sẽ là một closure nhận vào một HTTP request và sẽ trả về một instance người dùng hoặc nếu xác thực không thành công, thì sẽ là `null`:
+Để bắt đầu, hãy gọi phương thức `Auth::viaRequest` trong hàm `boot` của class `AppServiceProvider` trong ứng dụng của bạn. Phương thức `viaRequest` sẽ chấp nhận tên của authentication driver làm tham số đầu tiên của nó. Tên này có thể là bất kỳ chuỗi nào mà mô tả guard tùy biến của bạn. Tham số thứ hai được truyền cho phương thức sẽ là một closure nhận vào một HTTP request và sẽ trả về một instance người dùng hoặc nếu xác thực không thành công, thì sẽ là `null`:
 
     use App\Models\User;
     use Illuminate\Http\Request;
     use Illuminate\Support\Facades\Auth;
 
     /**
-     * Register any application authentication / authorization services.
+     * Bootstrap any application services.
      */
     public function boot(): void
     {
@@ -621,13 +625,15 @@ Nếu bạn không sử dụng cơ sở dữ liệu quan hệ để lưu trữ t
 
     use App\Extensions\MongoUserProvider;
     use Illuminate\Contracts\Foundation\Application;
-    use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
     use Illuminate\Support\Facades\Auth;
+    use Illuminate\Support\ServiceProvider;
 
-    class AuthServiceProvider extends ServiceProvider
+    class AppServiceProvider extends ServiceProvider
     {
+        // ...
+
         /**
-         * Register any application authentication / authorization services.
+         * Bootstrap any application services.
          */
         public function boot(): void
         {
@@ -674,6 +680,7 @@ Chúng ta hãy xem contract `Illuminate\Contracts\Auth\UserProvider`:
         public function updateRememberToken(Authenticatable $user, $token);
         public function retrieveByCredentials(array $credentials);
         public function validateCredentials(Authenticatable $user, array $credentials);
+        public function rehashPasswordIfRequired(Authenticatable $user, array $credentials, bool $force = false);
     }
 
 Hàm `retrieveById` sẽ nhận một khóa đại diện cho người dùng, chẳng hạn như ID tự động tăng trong cơ sở dữ liệu MySQL. Implementation `Authenticatable` sẽ dựa vào ID để lấy ra và trả về thông qua phương thức của nó.
@@ -685,6 +692,8 @@ Phương thức `updateRememberToken` sẽ cập nhật `remember_token` của i
 Phương thức `retrieveByCredentials` sẽ nhận một mảng thông tin đăng nhập được truyền vào phương thức `Auth::attempt` khi xác thực vào application. Phương thức này sẽ "truy vấn" bộ lưu trữ bên dưới để lấy ra người dùng khớp với các thông tin đăng nhập. Thông thường, phương thức này sẽ chạy một truy vấn với điều kiện "where" tìm kiếm record người dùng mà có "username" khớp với giá trị của `$credentials['username']`. Phương thức này sẽ trả về một đối tượng đã được implementation `Authenticatable`. **Phương thức này không nên thực hiện bất kỳ hành động authentication hoặc validation mật khẩu nào.**
 
 Phương thức `validateCredentials` sẽ so sánh `$user` đã nhận với `$credentials` của người dùng để authenticate. Ví dụ, phương thức này will typically sử dụng phương thức `Hash::check` để so sánh giá trị của `$user->getAuthPassword()` với giá trị của `$credentials['password']`. Phương thức này sẽ trả về giá trị `true` hoặc `false` cho biết mật khẩu có hợp lệ hay không.
+
+Phương thức `rehashPasswordIfRequired` sẽ rehash lại mật khẩu của `$user` đã cho nếu được yêu cầu và hỗ trợ. Ví dụ: phương thức này thường sẽ sử dụng phương thức `Hash::needsRehash` để xác định xem một giá trị `$credentials['password']` có cần phải rehash lại hay không. Nếu mật khẩu cần được rehash lại, thì phương thức này nên sử dụng phương thức `Hash::make` để hash lại mật khẩu và cập nhật record của user trong cơ sở dữ liệu.
 
 <a name="the-authenticatable-contract"></a>
 ### Authenticatable Contract
@@ -699,56 +708,56 @@ Sau khi chúng ta đã khám phá các phương thức trên `UserProvider`, bâ
     {
         public function getAuthIdentifierName();
         public function getAuthIdentifier();
+        public function getAuthPasswordName();
         public function getAuthPassword();
         public function getRememberToken();
         public function setRememberToken($value);
         public function getRememberTokenName();
     }
 
-Interface này rất đơn giản. Phương thức `getAuthIdentifierName` sẽ trả về tên của field "primary key" và phương thức `getAuthIdentifier` sẽ trả về giá trị của field đó. Khi sử dụng một back-end của MySQL, đây có thể là khóa chính tự động tăng được gán với một record người dùng. Phương thức `getAuthPassword` sẽ trả lại mật khẩu đã hash của người dùng.
+Interface này rất đơn giản. Phương thức `getAuthIdentifierName` sẽ trả về tên của cột "primary key" và phương thức `getAuthIdentifier` sẽ trả về giá trị của cột đó. Khi sử dụng một back-end của MySQL, đây có thể là khóa chính tự động tăng được gán với một record người dùng. Phương thức `getAuthPasswordName` sẽ trả về tên cột mật khẩu của người dùng. Phương thức `getAuthPassword` sẽ trả về mật khẩu đã được hash của người dùng.
 
 Interface này cho phép hệ thống authentication hoạt động với bất kỳ class "user" nào, bất kể nó là ORM hay lớp lưu trữ trừu tượng nào mà bạn đang sử dụng. Mặc định, Laravel đã chứa một class `App\Models\User` trong thư mục `app/Models` và đã implement sẵn interface này, vì vậy bạn có thể tham khảo class này để biết thêm về các implementation này.
+
+<a name="automatic-password-rehashing"></a>
+## Tự động rehash mật khẩu
+
+Thuật toán hash mật khẩu mặc định của Laravel là bcrypt. Bạn có thể điều chỉnh "work factor" cho thuật toán bcrypt thông qua file cấu hình `config/hashing.php` của ứng dụng hoặc biến môi trường `BCRYPT_ROUNDS`.
+
+Thông thường, bcrypt work factor sẽ được tăng theo thời gian thực khi mà sức mạnh xử lý của CPU và GPU tăng lên. Nếu bạn tăng bcrypt work factor cho ứng dụng của bạn, Laravel sẽ tự động rehash lại mật khẩu người dùng và khi họ xác thực bằng ứng dụng của bạn thông qua bộ khởi động ứng dụng của Laravel hoặc khi bạn [xác thực người dùng theo cách thủ công](#authenticating-users) của mình thông qua phương thức `attempt`.
+
+Thông thường, việc tự động rehash lại mật khẩu sẽ không làm gián đoạn ứng dụng của bạn; tuy nhiên, bạn có thể disable hành vi này bằng cách export file cấu hình `hashing`:
+
+```shell
+php artisan config:publish hashing
+```
+
+Khi file cấu hình đã được export, bạn có thể set giá trị cấu hình `rehash_on_login` thành `false`:
+
+```php
+'rehash_on_login' => false,
+```
 
 <a name="events"></a>
 ## Event
 
-Laravel gửi nhiều [events](/docs/{{version}}/events) khác nhau trong quá trình authentication. Bạn có thể gắn listener vào các event này trong `EventServiceProvider` của bạn:
+Laravel gửi nhiều [event](/docs/{{version}}/events) khác nhau trong quá trình authentication. Bạn có thể [định nghĩa các listener](/docs/{{version}}/events) cho bất kỳ event nào dưới đây:
 
-    /**
-     * The event listener mappings for the application.
-     *
-     * @var array
-     */
-    protected $listen = [
-        'Illuminate\Auth\Event\Registered' => [
-            'App\Listeners\LogRegisteredUser',
-        ],
+<div class="overflow-auto">
 
-        'Illuminate\Auth\Event\Attempting' => [
-            'App\Listeners\LogAuthenticationAttempt',
-        ],
+| Event Name |
+| --- |
+| `Illuminate\Auth\Events\Registered` |
+| `Illuminate\Auth\Events\Attempting` |
+| `Illuminate\Auth\Events\Authenticated` |
+| `Illuminate\Auth\Events\Login` |
+| `Illuminate\Auth\Events\Failed` |
+| `Illuminate\Auth\Events\Validated` |
+| `Illuminate\Auth\Events\Verified` |
+| `Illuminate\Auth\Events\Logout` |
+| `Illuminate\Auth\Events\CurrentDeviceLogout` |
+| `Illuminate\Auth\Events\OtherDeviceLogout` |
+| `Illuminate\Auth\Events\Lockout` |
+| `Illuminate\Auth\Events\PasswordReset` |
 
-        'Illuminate\Auth\Events\Authenticated' => [
-            'App\Listeners\LogAuthenticated',
-        ],
-
-        'Illuminate\Auth\Events\Login' => [
-            'App\Listeners\LogSuccessfulLogin',
-        ],
-
-        'Illuminate\Auth\Events\Failed' => [
-            'App\Listeners\LogFailedLogin',
-        ],
-
-        'Illuminate\Auth\Events\Logout' => [
-            'App\Listeners\LogSuccessfulLogout',
-        ],
-
-        'Illuminate\Auth\Events\Lockout' => [
-            'App\Listeners\LogLockout',
-        ],
-
-        'Illuminate\Auth\Events\PasswordReset' => [
-            'App\Listeners\LogPasswordReset',
-        ],
-    ];
+</div>

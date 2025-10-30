@@ -70,9 +70,9 @@ Ví dụ: hãy tạo 50 người dùng và mỗi người dùng đó có một q
     public function run(): void
     {
         User::factory()
-                ->count(50)
-                ->hasPosts(1)
-                ->create();
+            ->count(50)
+            ->hasPosts(1)
+            ->create();
     }
 
 <a name="calling-additional-seeders"></a>

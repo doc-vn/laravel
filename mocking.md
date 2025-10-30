@@ -18,19 +18,36 @@ Mặc định, Laravel cung cấp các phương thức helper để làm giả c
 
 Khi giả một đối tượng sẽ được tích hợp vào ứng dụng của bạn thông qua [service container](/docs/{{version}}/container) của Laravel, bạn sẽ cần phải liên kết instance giả của bạn vào container dưới dạng liên kết `instance`. Điều này sẽ hướng dẫn container sử dụng instance đối tượng được làm giả của bạn thay vì khởi tạo chính đối tượng đó:
 
-    use App\Service;
-    use Mockery;
-    use Mockery\MockInterface;
+```php tab=Pest
+use App\Service;
+use Mockery;
+use Mockery\MockInterface;
 
-    public function test_something_can_be_mocked(): void
-    {
-        $this->instance(
-            Service::class,
-            Mockery::mock(Service::class, function (MockInterface $mock) {
-                $mock->shouldReceive('process')->once();
-            })
-        );
-    }
+test('something can be mocked', function () {
+    $this->instance(
+        Service::class,
+        Mockery::mock(Service::class, function (MockInterface $mock) {
+            $mock->shouldReceive('process')->once();
+        })
+    );
+});
+```
+
+```php tab=PHPUnit
+use App\Service;
+use Mockery;
+use Mockery\MockInterface;
+
+public function test_something_can_be_mocked(): void
+{
+    $this->instance(
+        Service::class,
+        Mockery::mock(Service::class, function (MockInterface $mock) {
+            $mock->shouldReceive('process')->once();
+        })
+    );
+}
+```
 
 Để làm cho việc này thuận tiện hơn, bạn có thể sử dụng phương thức `mock` được cung cấp bởi class test case của Laravel. Trong ví dụ ở dưới đây sẽ tương đương với ví dụ ở trên:
 
@@ -88,27 +105,46 @@ Không giống như các phương thức static call truyền thống, [facades]
 
 Chúng ta có thể làm giả việc gọi đến facade `Cache` bằng cách sử dụng phương thức `shouldReceive`, nó sẽ trả về một instance giả của [Mockery](https://github.com/padraic/mockery). Vì các facade được resolve và quản lý bởi [service container](/docs/{{version}}/container), nên chúng có khả năng test cao hơn nhiều so với một class static thông thường. Ví dụ: chúng ta hãy làm giả việc gọi đến phương thức `get` của facade `Cache`:
 
-    <?php
+```php tab=Pest
+<?php
 
-    namespace Tests\Feature;
+use Illuminate\Support\Facades\Cache;
 
-    use Illuminate\Support\Facades\Cache;
-    use Tests\TestCase;
+test('get index', function () {
+    Cache::shouldReceive('get')
+        ->once()
+        ->with('key')
+        ->andReturn('value');
 
-    class UserControllerTest extends TestCase
+    $response = $this->get('/users');
+
+    // ...
+});
+```
+
+```php tab=PHPUnit
+<?php
+
+namespace Tests\Feature;
+
+use Illuminate\Support\Facades\Cache;
+use Tests\TestCase;
+
+class UserControllerTest extends TestCase
+{
+    public function test_get_index(): void
     {
-        public function test_get_index(): void
-        {
-            Cache::shouldReceive('get')
-                        ->once()
-                        ->with('key')
-                        ->andReturn('value');
+        Cache::shouldReceive('get')
+            ->once()
+            ->with('key')
+            ->andReturn('value');
 
-            $response = $this->get('/users');
+        $response = $this->get('/users');
 
-            // ...
-        }
+        // ...
     }
+}
+```
 
 > [!WARNING]
 > Bạn không nên làm giả facade `Request`. Thay vào đó, hãy truyền input mà bạn mong muốn vào [phương thức của HTTP helper](/docs/{{version}}/http-tests), chẳng hạn như `get` và `post` khi chạy test của bạn. Tương tự như vậy, thay vì làm giả facade `Config`, hãy gọi phương thức `Config::set` trong các test của bạn.
@@ -118,46 +154,86 @@ Chúng ta có thể làm giả việc gọi đến facade `Cache` bằng cách s
 
 Nếu bạn muốn [spy](http://docs.mockery.io/en/latest/reference/spies.html) trên một facade, bạn có thể gọi phương thức `spy` trên facade tương ứng. Spy cũng giống như những mock; tuy nhiên, spy sẽ ghi lại mọi tương tác giữa spy và code đang được kiểm tra, cho phép bạn đưa ra yêu cầu sau khi code được chạy xong:
 
-    use Illuminate\Support\Facades\Cache;
+```php tab=Pest
+<?php
 
-    public function test_values_are_be_stored_in_cache(): void
-    {
-        Cache::spy();
+use Illuminate\Support\Facades\Cache;
 
-        $response = $this->get('/');
+test('values are be stored in cache', function () {
+    Cache::spy();
 
-        $response->assertStatus(200);
+    $response = $this->get('/');
 
-        Cache::shouldHaveReceived('put')->once()->with('name', 'Taylor', 10);
-    }
+    $response->assertStatus(200);
+
+    Cache::shouldHaveReceived('put')->once()->with('name', 'Taylor', 10);
+});
+```
+
+```php tab=PHPUnit
+use Illuminate\Support\Facades\Cache;
+
+public function test_values_are_be_stored_in_cache(): void
+{
+    Cache::spy();
+
+    $response = $this->get('/');
+
+    $response->assertStatus(200);
+
+    Cache::shouldHaveReceived('put')->once()->with('name', 'Taylor', 10);
+}
+```
 
 <a name="interacting-with-time"></a>
 ## Tương tác với Time
 
 Khi kiểm tra, đôi khi bạn có thể cần sửa thời gian được trả về bởi helper, chẳng hạn như `now` hoặc `Illuminate\Support\Carbon::now()`. Rất may, class kiểm tra cơ bản của Laravel đã chứa các helper cho phép bạn thao tác với thời gian hiện tại:
 
-    use Illuminate\Support\Carbon;
+```php tab=Pest
+test('time can be manipulated', function () {
+    // Travel into the future...
+    $this->travel(5)->milliseconds();
+    $this->travel(5)->seconds();
+    $this->travel(5)->minutes();
+    $this->travel(5)->hours();
+    $this->travel(5)->days();
+    $this->travel(5)->weeks();
+    $this->travel(5)->years();
 
-    public function test_time_can_be_manipulated(): void
-    {
-        // Travel into the future...
-        $this->travel(5)->milliseconds();
-        $this->travel(5)->seconds();
-        $this->travel(5)->minutes();
-        $this->travel(5)->hours();
-        $this->travel(5)->days();
-        $this->travel(5)->weeks();
-        $this->travel(5)->years();
+    // Travel into the past...
+    $this->travel(-5)->hours();
 
-        // Travel into the past...
-        $this->travel(-5)->hours();
+    // Travel to an explicit time...
+    $this->travelTo(now()->subHours(6));
 
-        // Travel to an explicit time...
-        $this->travelTo(now()->subHours(6));
+    // Return back to the present time...
+    $this->travelBack();
+});
+```
 
-        // Return back to the present time...
-        $this->travelBack();
-    }
+```php tab=PHPUnit
+public function test_time_can_be_manipulated(): void
+{
+    // Travel into the future...
+    $this->travel(5)->milliseconds();
+    $this->travel(5)->seconds();
+    $this->travel(5)->minutes();
+    $this->travel(5)->hours();
+    $this->travel(5)->days();
+    $this->travel(5)->weeks();
+    $this->travel(5)->years();
+
+    // Travel into the past...
+    $this->travel(-5)->hours();
+
+    // Travel to an explicit time...
+    $this->travelTo(now()->subHours(6));
+
+    // Return back to the present time...
+    $this->travelBack();
+}
+```
 
 Bạn cũng có thể cung cấp một closure cho các phương thức di chuyển thời gian. Closure sẽ được gọi với thời gian đã được chỉ định. Sau khi closure được chạy, thời gian sẽ tiếp tục trở về bình thường:
 
@@ -185,13 +261,27 @@ Phương thức `freezeTime` có thể được sử dụng để giữ thời g
 
 Như bạn có thể thấy, tất cả các phương thức được thảo luận ở trên chủ yếu hữu ích để kiểm tra hành động của ứng dụng mà nhạy cảm với thời gian, chẳng hạn như khóa các bài đăng không hoạt động trên một diễn đàn:
 
-    use App\Models\Thread;
+```php tab=Pest
+use App\Models\Thread;
 
-    public function test_forum_threads_lock_after_one_week_of_inactivity()
-    {
-        $thread = Thread::factory()->create();
+test('forum threads lock after one week of inactivity', function () {
+    $thread = Thread::factory()->create();
 
-        $this->travel(1)->week();
+    $this->travel(1)->week();
 
-        $this->assertTrue($thread->isLockedByInactivity());
-    }
+    expect($thread->isLockedByInactivity())->toBeTrue();
+});
+```
+
+```php tab=PHPUnit
+use App\Models\Thread;
+
+public function test_forum_threads_lock_after_one_week_of_inactivity()
+{
+    $thread = Thread::factory()->create();
+
+    $this->travel(1)->week();
+
+    $this->assertTrue($thread->isLockedByInactivity());
+}
+```

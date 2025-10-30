@@ -18,6 +18,7 @@
     - [Comments](#comments)
 - [Components](#components)
     - [Hiển thị Component](#rendering-components)
+    - [Index Components](#index-components)
     - [Truyền dữ liệu tới Component](#passing-data-to-components)
     - [Thuộc tính Component](#component-attributes)
     - [Reserved Keywords](#reserved-keywords)
@@ -423,18 +424,22 @@ Nếu bạn đang ở trong một vòng lặp lồng nhau, bạn có thể truy 
 
 Biến `$loop` cũng chứa nhiều thuộc tính hữu ích khác:
 
+<div class="overflow-auto">
+
 | Property           | Description                                                                  |
-|--------------------|------------------------------------------------------------------------------|
-`$loop->index`       |  Index của vòng lặp hiện tại (bắt đầu từ 0).                                 |
-`$loop->iteration`   |  Vòng lặp hiện tại (bắt đầu từ 1).                                           |
-`$loop->remaining`   |  Các lần lặp còn lại trong vòng lặp.                                         |
-`$loop->count`       |  Tổng số item trong mảng đang được lặp lại.                                  |
-`$loop->first`       |  Đây có phải là lần lặp đầu tiên của vòng lặp hay không.                     |
-`$loop->last`        |  Đây có phải là lần lặp cuối cùng của vòng lặp hay không.                    |
-`$loop->even`        |  Đây có phải là lần lặp chẵn của vòng lặp hay không.                         |
-`$loop->odd`         |  Đây có phải là lần lặp lẻ của vòng lặp hay không.                           |
-`$loop->depth`       |  Mức lồng của vòng lặp hiện tại.                                             |
-`$loop->parent`      |  Khi ở trong một vòng lặp lồng nhau, biến này là biến của vòng lặp ngoài.    |
+| ------------------ | ---------------------------------------------------------------------------- |
+| `$loop->index`     |  Index của vòng lặp hiện tại (bắt đầu từ 0).                                 |
+| `$loop->iteration` |  Vòng lặp hiện tại (bắt đầu từ 1).                                           |
+| `$loop->remaining` |  Các lần lặp còn lại trong vòng lặp.                                         |
+| `$loop->count`     |  Tổng số item trong mảng đang được lặp lại.                                  |
+| `$loop->first`     |  Đây có phải là lần lặp đầu tiên của vòng lặp hay không.                     |
+| `$loop->last`      |  Đây có phải là lần lặp cuối cùng của vòng lặp hay không.                    |
+| `$loop->even`      |  Đây có phải là lần lặp chẵn của vòng lặp hay không.                         |
+| `$loop->odd`       |  Đây có phải là lần lặp lẻ của vòng lặp hay không.                           |
+| `$loop->depth`     |  Mức lồng của vòng lặp hiện tại.                                             |
+| `$loop->parent`    |  Khi ở trong một vòng lặp lồng nhau, biến này là biến của vòng lặp ngoài.    |
+
+</div>
 
 <a name="conditional-classes"></a>
 ### Class điều kiện và styles
@@ -478,10 +483,12 @@ Tương tự như vậy, lệnh `@style` có thể được sử dụng để th
 Để thuận tiện, bạn có thể sử dụng lệnh `@checked` để dễ dàng chỉ ra nếu một input checkbox HTML nhất định được "checked". Lệnh này sẽ `checked` nếu điều kiện được cung cấp là `true`:
 
 ```blade
-<input type="checkbox"
-        name="active"
-        value="active"
-        @checked(old('active', $user->active)) />
+<input
+    type="checkbox"
+    name="active"
+    value="active"
+    @checked(old('active', $user->active))
+/>
 ```
 
 Tương tự như vậy, lệnh `@selected` có thể được sử dụng để chỉ ra liệu một select nhất định có nên được "chọn" hay không:
@@ -505,19 +512,23 @@ Ngoài ra, lệnh `@disabled` có thể được sử dụng để chỉ ra li�
 Hơn nữa, lệnh `@readonly` có thể được sử dụng để chỉ ra liệu một phần tử nhất định có ở trạng thái "readonly" hay không:
 
 ```blade
-<input type="email"
-        name="email"
-        value="email@laravel.com"
-        @readonly($user->isNotAdmin()) />
+<input
+    type="email"
+    name="email"
+    value="email@laravel.com"
+    @readonly($user->isNotAdmin())
+/>
 ```
 
 Ngoài ra, lệnh `@required` có thể được sử dụng để chỉ ra liệu một phần tử nhất định có cần "required" hay không:
 
 ```blade
-<input type="text"
-        name="title"
-        value="title"
-        @required($user->isAdmin()) />
+<input
+    type="text"
+    name="title"
+    value="title"
+    @required($user->isAdmin())
+/>
 ```
 
 <a name="including-subviews"></a>
@@ -746,6 +757,26 @@ Nếu muốn render component của bạn theo một điều kiện nào đó, b
         return Str::length($this->message) > 0;
     }
 
+<a name="index-components"></a>
+### Index Components
+
+Thỉnh thoảng các component là một phần của một nhóm các component và bạn có thể muốn nhóm các component liên quan vào trong một thư mục duy nhất. Ví dụ, hãy tưởng tượng bạn có một component "card" với cấu trúc class sau:
+
+```none
+App\Views\Components\Card\Card
+App\Views\Components\Card\Header
+App\Views\Components\Card\Body
+```
+
+Vì component root `Card` được lồng trong thư mục `Card`, bạn có thể mong muốn là bạn sẽ cần render component thông qua tag `<x-card.card>`. Tuy nhiên, vì tên file của component giống với tên thư mục của component đó, nên Laravel sẽ tự động giả định là component đó là component "root" và cho phép bạn render ra component mà không cần bạn phải lặp lại tên thư mục `card`:
+
+```blade
+<x-card>
+    <x-card.header>...</x-card.header>
+    <x-card.body>...</x-card.body>
+</x-card>
+```
+
 <a name="passing-data-to-components"></a>
 ### Truyền dữ liệu tới Components
 
@@ -865,7 +896,7 @@ Bạn có thể thực thi phương thức này từ trong component template c�
 <a name="using-attributes-slots-within-component-class"></a>
 #### Accessing Attributes và Slots Within Component Classes
 
-Các Blade component cũng cho phép bạn truy cập vào tên component, thuộc tính và slot bên trong phương thức render của class. Tuy nhiên, để truy cập vào các dữ liệu này, bạn nên trả về một Closure từ phương thức `render` của component của bạn. Closure sẽ nhận vào một mảng `$data` làm tham số duy nhất của nó. Mảng này sẽ chứa một số phần tử cung cấp thông tin về component:
+Các Blade component cũng cho phép bạn truy cập vào tên component, thuộc tính và slot bên trong phương thức render của class. Tuy nhiên, để truy cập vào các dữ liệu này, bạn nên trả về một Closure từ phương thức `render` của component của bạn:
 
     use Closure;
 
@@ -874,14 +905,23 @@ Các Blade component cũng cho phép bạn truy cập vào tên component, thu�
      */
     public function render(): Closure
     {
-        return function (array $data) {
-            // $data['componentName'];
-            // $data['attributes'];
-            // $data['slot'];
-
-            return '<div>Components content</div>';
+        return function () {
+            return '<div {{ $attributes }}>Components content</div>';
         };
     }
+
+Closure được trả về bởi phương thức `render` của component của bạn cũng có thể nhận vào một mảng `$data` làm tham số duy nhất của nó. Mảng này sẽ chứa một số phần tử cung cấp thông tin về component:
+
+    return function (array $data) {
+        // $data['componentName'];
+        // $data['attributes'];
+        // $data['slot'];
+
+        return '<div {{ $attributes }}>Components content</div>';
+    }
+
+> [!WARNING]
+> Các phần tử trong mảng `$data` không bao giờ được nhúng trực tiếp vào chuỗi Blade được trả về bởi phương thức `render` của bạn, vì làm như vậy có thể cho phép chạy code từ xa thông qua thuộc tính content độc hại.
 
 Tên `componentName` sẽ là tên được sử dụng trong thẻ HTML sau tiền tố `x-`. Vì vậy, `componentName` của `<x-alert />` sẽ là `alert`. Phần tử `attributes` sẽ chứa tất cả các thuộc tính có trong thẻ HTML. Phần tử `slot` là một instance `Illuminate\Support\HtmlString` với nội dung là của slot trong component.
 
@@ -1355,10 +1395,10 @@ Cấu trúc thư mục này cho phép bạn hiển thị component accordion và
 
 Tuy nhiên, để hiển thị component accordion thông qua `x-accordion`, chúng ta buộc phải đặt template của component "index" vào trong thư mục `resources/views/components` thay vì lồng nó vào trong thư mục `accordion` với các template liên quan khác đến accordion.
 
-Rất may, Blade cho phép bạn đặt file `index.blade.php` vào trong thư mục template của component. Khi có template `index.blade.php` cho component, nó sẽ được hiển thị dưới dạng "gốc" của component. Vì vậy, chúng ta có thể tiếp tục sử dụng cùng một cú pháp Blade được đưa ra trong ví dụ trên; tuy nhiên, chúng ta sẽ điều chỉnh cấu trúc thư mục của mình như sau:
+Rất may, Blade cho phép bạn đặt tên file giống với tên thư mục của component trong chính thư mục của component đó. Khi template này tồn tại, nó có thể được hiển thị dưới dạng phần tử "root" của component ngay cả khi nó được lồng trong một thư mục. Vì vậy, chúng ta có thể tiếp tục sử dụng cùng một cú pháp Blade được đưa ra trong ví dụ trên; tuy nhiên, chúng ta sẽ điều chỉnh cấu trúc thư mục của mình như sau:
 
 ```none
-/resources/views/components/accordion/index.blade.php
+/resources/views/components/accordion/accordion.blade.php
 /resources/views/components/accordion/item.blade.php
 ```
 
@@ -1493,7 +1533,7 @@ Khi component `layout` đã được định nghĩa, chúng ta có thể tạo v
 
 <x-layout>
     @foreach ($tasks as $task)
-        {{ $task }}
+        <div>{{ $task }}</div>
     @endforeach
 </x-layout>
 ```
@@ -1509,7 +1549,7 @@ Hãy nhớ rằng, mặc định, nội dung được thêm vào một component
     </x-slot>
 
     @foreach ($tasks as $task)
-        {{ $task }}
+        <div>{{ $task }}</div>
     @endforeach
 </x-layout>
 ```
@@ -1628,9 +1668,11 @@ Lệnh `@error` có thể được sử dụng để nhanh chóng kiểm tra xem
 
 <label for="title">Post Title</label>
 
-<input id="title"
+<input
+    id="title"
     type="text"
-    class="@error('title') is-invalid @enderror">
+    class="@error('title') is-invalid @enderror"
+/>
 
 @error('title')
     <div class="alert alert-danger">{{ $message }}</div>
@@ -1644,9 +1686,11 @@ Do lệnh `@error` sẽ được biên dịch thành câu lệnh "if", nên bạ
 
 <label for="email">Email address</label>
 
-<input id="email"
+<input
+    id="email"
     type="email"
-    class="@error('email') is-invalid @else is-valid @enderror">
+    class="@error('email') is-invalid @else is-valid @enderror"
+/>
 ```
 
 Bạn có thể truyền [tên của một error bag cụ thể](/docs/{{version}}/validation#named-error-bags) làm tham số thứ hai cho lệnh `@error` để lấy ra thông báo lỗi validation trên các trang chứa nhiều form:
@@ -1656,9 +1700,11 @@ Bạn có thể truyền [tên của một error bag cụ thể](/docs/{{version
 
 <label for="email">Email address</label>
 
-<input id="email"
+<input
+    id="email"
     type="email"
-    class="@error('email', 'login') is-invalid @enderror">
+    class="@error('email', 'login') is-invalid @enderror"
+/>
 
 @error('email', 'login')
     <div class="alert alert-danger">{{ $message }}</div>

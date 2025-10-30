@@ -23,12 +23,6 @@
 
 Laravel cung cấp một API nhỏ, rõ ràng dựa trên thư viện [Guzzle HTTP client](http://docs.guzzlephp.org/en/stable/), cho phép bạn nhanh chóng thực hiện các HTTP request giao tiếp với các ứng dụng web khác. API này tập trung vào các trường hợp sử dụng phổ biến và giúp tăng trải nghiệm tuyệt vời dành cho nhà phát triển.
 
-Trước khi bắt đầu, bạn nên đảm bảo là bạn đã cài đặt package Guzzle vào trong ứng dụng của bạn. Mặc định, Laravel đã chứa thư viện này. Tuy nhiên, nếu trước đó bạn đã gỡ package này ra rồi, thì bạn có thể cài đặt lại package này qua Composer:
-
-```shell
-composer require guzzlehttp/guzzle
-```
-
 <a name="making-requests"></a>
 ## Tạo Request
 
@@ -41,9 +35,10 @@ composer require guzzlehttp/guzzle
 Phương thức `get` sẽ trả về một instance của `Illuminate\Http\Client\Response` và cung cấp nhiều phương thức có thể được sử dụng để kiểm tra response:
 
     $response->body() : string;
-    $response->json($key = null, $default = null) : array|mixed;
+    $response->json($key = null, $default = null) : mixed;
     $response->object() : object;
     $response->collect($key = null) : Illuminate\Support\Collection;
+    $response->resource() : resource;
     $response->status() : int;
     $response->successful() : bool;
     $response->redirect(): bool;
@@ -84,7 +79,7 @@ HTTP client cũng cho phép bạn khởi tạo các URL request bằng cách s�
 Http::withUrlParameters([
     'endpoint' => 'https://laravel.com',
     'page' => 'docs',
-    'version' => '9.x',
+    'version' => '11.x',
     'topic' => 'validation',
 ])->get('{+endpoint}/{page}/{version}/{topic}');
 ```
@@ -342,6 +337,16 @@ Nếu bạn muốn thực hiện một số logic bổ sung trước khi đưa r
         // ...
     })->json();
 
+Mặc định, các message của `RequestException` sẽ bị cắt ngắn xuống 120 ký tự khi được ghi log hoặc report. Để tùy chỉnh hoặc tắt hành vi này, bạn có thể sử dụng các phương thức `truncateRequestExceptionsAt` và `dontTruncateRequestExceptions` khi cấu hình exception handling cho ứng dụng trong file `bootstrap/app.php` của bạn:
+
+    ->withExceptions(function (Exceptions $exceptions) {
+        // Truncate request exception messages to 240 characters...
+        $exceptions->truncateRequestExceptionsAt(240);
+
+        // Disable request exception message truncation...
+        $exceptions->dontTruncateRequestExceptions();
+    })
+
 <a name="guzzle-middleware"></a>
 ### Guzzle Middleware
 
@@ -391,11 +396,31 @@ Http::globalResponseMiddleware(fn ($response) => $response->withHeader(
 <a name="guzzle-options"></a>
 ### Guzzle Options
 
-Bạn có thể chỉ định thêm các [tuỳ chọn Guzzle request](http://docs.guzzlephp.org/en/stable/request-options.html) bằng cách sử dụng phương thức `withOptions`. Phương thức `withOptions` sẽ chấp nhận một mảng gồm các cặp khóa và giá trị:
+Bạn có thể chỉ định thêm các [tuỳ chọn Guzzle request](http://docs.guzzlephp.org/en/stable/request-options.html) cho một request đi bằng cách sử dụng phương thức `withOptions`. Phương thức `withOptions` sẽ chấp nhận một mảng gồm các cặp khóa và giá trị:
 
     $response = Http::withOptions([
         'debug' => true,
     ])->get('http://example.com/users');
+
+<a name="global-options"></a>
+#### Global Options
+
+Để cấu hình các tùy chọn mặc định cho mọi request được gửi đi, bạn có thể sử dụng phương thức `globalOptions`. Thông thường, phương thức này nên được gọi từ phương thức `boot` của `AppServiceProvider` trong ứng dụng của bạn:
+
+
+```php
+use Illuminate\Support\Facades\Http;
+
+/**
+ * Bootstrap any application services.
+ */
+public function boot(): void
+{
+    Http::globalOptions([
+        'allow_redirects' => false,
+    ]);
+}
+```
 
 <a name="concurrent-requests"></a>
 ## Request đồng thời
@@ -516,6 +541,23 @@ Nếu bạn muốn chỉ định một pattern URL dự phòng sẽ được dù
         '*' => Http::response('Hello World', 200, ['Headers']),
     ]);
 
+Để thuận tiện, các response dạng chuỗi, JSON hoặc rỗng có thể được tạo bằng cách cung cấp một chuỗi, mảng hoặc một số nguyên làm response:
+
+    Http::fake([
+        'google.com/*' => 'Hello World',
+        'github.com/*' => ['foo' => 'bar'],
+        'chatgpt.com/*' => 200,
+    ]);
+
+<a name="faking-connection-exceptions"></a>
+#### Faking Connection Exceptions
+
+Thỉnh thoảng, bạn có thể cần test hành vi của ứng dụng nếu HTTP client gặp phải một exception `Illuminate\Http\Client\ConnectionException` khi cố gắng thực hiện một request. Bạn có thể hướng dẫn HTTP client đưa ra một exception kết nối bằng cách sử dụng phương thức `failedConnection`:
+
+    Http::fake([
+        'github.com/*' => Http::failedConnection(),
+    ]);
+
 <a name="faking-response-sequences"></a>
 #### Faking Response Sequences
 
@@ -524,9 +566,9 @@ Nếu bạn muốn chỉ định một pattern URL dự phòng sẽ được dù
     Http::fake([
         // Stub a series of responses for GitHub endpoints...
         'github.com/*' => Http::sequence()
-                                ->push('Hello World', 200)
-                                ->push(['foo' => 'bar'], 200)
-                                ->pushStatus(404),
+            ->push('Hello World', 200)
+            ->push(['foo' => 'bar'], 200)
+            ->pushStatus(404),
     ]);
 
 Khi tất cả các response trong một trình tự response đã được sử dụng xong, thì bất kỳ request nào khác sẽ khiến trình tự response sẽ đưa ra một ngoại lệ. Nếu bạn muốn chỉ định một response mặc định sẽ được trả về khi một trình chạy xong, bạn có thể sử dụng phương thức `whenEmpty`:
@@ -534,25 +576,25 @@ Khi tất cả các response trong một trình tự response đã được sử
     Http::fake([
         // Stub a series of responses for GitHub endpoints...
         'github.com/*' => Http::sequence()
-                                ->push('Hello World', 200)
-                                ->push(['foo' => 'bar'], 200)
-                                ->whenEmpty(Http::response()),
+            ->push('Hello World', 200)
+            ->push(['foo' => 'bar'], 200)
+            ->whenEmpty(Http::response()),
     ]);
 
 Nếu bạn muốn fake một trình tự response nhưng không muốn chỉ định pattern URL nào sẽ được làm fake, bạn có thể sử dụng phương thức `Http::fakeSequence`:
 
     Http::fakeSequence()
-            ->push('Hello World', 200)
-            ->whenEmpty(Http::response());
+        ->push('Hello World', 200)
+        ->whenEmpty(Http::response());
 
 <a name="fake-callback"></a>
 #### Fake Callback
 
-Nếu bạn yêu cầu một logic phức tạp hơn để xác định response nào sẽ trả về cho một số endpoint nhất định, bạn có thể truyền vào một lệnh closure cho phương thức `fake`. Lệnh closure này sẽ nhận vào một instance của `Illuminate\Http\Client\Request` và một mảng các tùy chọn. The closure sẽ trả về một instance response. Trong closure của bạn, bạn có thể thực hiện bất kỳ logic nào cần thiết để xác định loại response nào sẽ trả về:
+Nếu bạn yêu cầu một logic phức tạp hơn để xác định response nào sẽ trả về cho một số endpoint nhất định, bạn có thể truyền vào một lệnh closure cho phương thức `fake`. Lệnh closure này sẽ nhận vào một instance của `Illuminate\Http\Client\Request` và sẽ trả về một instance response. Trong closure của bạn, bạn có thể thực hiện bất kỳ logic nào cần thiết để xác định loại response nào sẽ trả về:
 
     use Illuminate\Http\Client\Request;
 
-    Http::fake(function (Request $request, array $options) {
+    Http::fake(function (Request $request) {
         return Http::response('Hello World', 200);
     });
 
@@ -673,21 +715,17 @@ $recorded = Http::recorded(function (Request $request, Response $response) {
 
 Laravel kích hoạt ba event trong quá trình gửi request HTTP. Event `RequestSending` sẽ được kích hoạt trước khi request được gửi đi, trong khi event `ResponseReceived` sẽ được kích hoạt sau khi nhận được phản hồi cho một request nhất định. Và event `ConnectionFailed` sẽ được kích hoạt nếu không nhận được phản hồi nào cho một request nhất định.
 
-Cả hai event `RequestSending` và `ConnectionFailed` đều chứa thuộc tính public `$request` mà bạn có thể sử dụng để kiểm tra instance `Illuminate\Http\Client\Request`. Tương tự, event `ResponseReceived` cũng chứa thuộc tính `$request` cũng như thuộc tính `$response` có thể được sử dụng để kiểm tra instance `Illuminate\Http\Client\Response`. Bạn cũng có thể đăng ký event listener cho event này trong service provider `App\Providers\EventServiceProvider` của bạn:
+Cả hai event `RequestSending` và `ConnectionFailed` đều chứa thuộc tính public `$request` mà bạn có thể sử dụng để kiểm tra instance `Illuminate\Http\Client\Request`. Tương tự, event `ResponseReceived` cũng chứa thuộc tính `$request` cũng như thuộc tính `$response` có thể được sử dụng để kiểm tra instance `Illuminate\Http\Client\Response`. Bạn cũng có thể tạo [event listeners](/docs/{{version}}/events) cho những event này trong ứng dụng của bạn:
 
-    /**
-     * The event listener mappings for the application.
-     *
-     * @var array
-     */
-    protected $listen = [
-        'Illuminate\Http\Client\Events\RequestSending' => [
-            'App\Listeners\LogRequestSending',
-        ],
-        'Illuminate\Http\Client\Events\ResponseReceived' => [
-            'App\Listeners\LogResponseReceived',
-        ],
-        'Illuminate\Http\Client\Events\ConnectionFailed' => [
-            'App\Listeners\LogConnectionFailed',
-        ],
-    ];
+    use Illuminate\Http\Client\Events\RequestSending;
+
+    class LogRequest
+    {
+        /**
+         * Handle the given event.
+         */
+        public function handle(RequestSending $event): void
+        {
+            // $event->request ...
+        }
+    }
