@@ -22,7 +22,17 @@
 
 Laravel cung cấp một API rất dễ hiểu để thực hiện các HTTP request đến application của bạn và kiểm tra response. Ví dụ, hãy xem một bài test chức năng mẫu được định nghĩa ở dưới đây:
 
-```php
+```php tab=Pest
+<?php
+
+test('the application returns a successful response', function () {
+    $response = $this->get('/');
+
+    $response->assertStatus(200);
+});
+```
+
+```php tab=PHPUnit
 <?php
 
 namespace Tests\Feature;
@@ -52,24 +62,36 @@ Phương thức `get` tạo một request `GET` vào application, trong khi phư
 
 Thay vì trả về một instance `Illuminate\Http\Response`, các phương thức test request này trả về một instance `Illuminate\Testing\TestResponse`, cung cấp [nhiều câu lệnh kiểm tra hữu ích](#available-assertions) cho phép bạn kiểm tra response ứng dụng của bạn:
 
-    <?php
+```php tab=Pest
+<?php
 
-    namespace Tests\Feature;
+test('basic request', function () {
+    $response = $this->get('/');
 
-    use Tests\TestCase;
+    $response->assertStatus(200);
+});
+```
 
-    class ExampleTest extends TestCase
+```php tab=PHPUnit
+<?php
+
+namespace Tests\Feature;
+
+use Tests\TestCase;
+
+class ExampleTest extends TestCase
+{
+    /**
+     * A basic test example.
+     */
+    public function test_a_basic_request(): void
     {
-        /**
-         * A basic test example.
-         */
-        public function test_a_basic_request(): void
-        {
-            $response = $this->get('/');
+        $response = $this->get('/');
 
-            $response->assertStatus(200);
-        }
+        $response->assertStatus(200);
     }
+}
+```
 
 Nói chung, mỗi bài test của bạn chỉ nên đưa ra một yêu cầu kiểm tra cho ứng dụng của bạn. Hành vi không mong muốn có thể xảy ra nếu cho nhiều yêu cầu kiểm tra cho một bài test.
 
@@ -81,90 +103,157 @@ Nói chung, mỗi bài test của bạn chỉ nên đưa ra một yêu cầu ki�
 
 Bạn có thể sử dụng phương thức `withHeaders` để tùy biến các header của request trước khi nó được gửi đến application. Phương thức này cho phép bạn thêm bất kỳ header nào bạn muốn vào trong request:
 
-    <?php
+```php tab=Pest
+<?php
 
-    namespace Tests\Feature;
+test('interacting with headers', function () {
+    $response = $this->withHeaders([
+        'X-Header' => 'Value',
+    ])->post('/user', ['name' => 'Sally']);
 
-    use Tests\TestCase;
+    $response->assertStatus(201);
+});
+```
 
-    class ExampleTest extends TestCase
+```php tab=PHPUnit
+<?php
+
+namespace Tests\Feature;
+
+use Tests\TestCase;
+
+class ExampleTest extends TestCase
+{
+    /**
+     * A basic functional test example.
+     */
+    public function test_interacting_with_headers(): void
     {
-        /**
-         * A basic functional test example.
-         */
-        public function test_interacting_with_headers(): void
-        {
-            $response = $this->withHeaders([
-                'X-Header' => 'Value',
-            ])->post('/user', ['name' => 'Sally']);
+        $response = $this->withHeaders([
+            'X-Header' => 'Value',
+        ])->post('/user', ['name' => 'Sally']);
 
-            $response->assertStatus(201);
-        }
+        $response->assertStatus(201);
     }
+}
+```
 
 <a name="cookies"></a>
 ### Cookies
 
 Bạn có thể sử dụng phương thức `withCookie` hoặc `withCookies` để set giá trị của cookie trước khi tạo ra một request. Phương thức `withCookie` chấp nhận tên của cookie và một giá trị làm tham số thứ hai của nó, trong khi phương thức` withCookies` chấp nhận một mảng các cặp tên và giá trị:
 
-    <?php
+```php tab=Pest
+<?php
 
-    namespace Tests\Feature;
+test('interacting with cookies', function () {
+    $response = $this->withCookie('color', 'blue')->get('/');
 
-    use Tests\TestCase;
+    $response = $this->withCookies([
+        'color' => 'blue',
+        'name' => 'Taylor',
+    ])->get('/');
 
-    class ExampleTest extends TestCase
+    //
+});
+```
+
+```php tab=PHPUnit
+<?php
+
+namespace Tests\Feature;
+
+use Tests\TestCase;
+
+class ExampleTest extends TestCase
+{
+    public function test_interacting_with_cookies(): void
     {
-        public function test_interacting_with_cookies(): void
-        {
-            $response = $this->withCookie('color', 'blue')->get('/');
+        $response = $this->withCookie('color', 'blue')->get('/');
 
-            $response = $this->withCookies([
-                'color' => 'blue',
-                'name' => 'Taylor',
-            ])->get('/');
-        }
+        $response = $this->withCookies([
+            'color' => 'blue',
+            'name' => 'Taylor',
+        ])->get('/');
+
+        //
     }
+}
+```
 
 <a name="session-and-authentication"></a>
 ### Session / Authentication
 
 Laravel cũng cung cấp một số helper để làm việc với session trong quá trình test HTTP. Đầu tiên, bạn có thể set dữ liệu session thành một mảng nhất định bằng phương thức `withSession`. Điều này hữu ích để load session với dữ liệu đã có trước, trước khi gửi request cho application của bạn:
 
-    <?php
+```php tab=Pest
+<?php
 
-    namespace Tests\Feature;
+test('interacting with the session', function () {
+    $response = $this->withSession(['banned' => false])->get('/');
 
-    use Tests\TestCase;
+    //
+});
+```
 
-    class ExampleTest extends TestCase
+```php tab=PHPUnit
+<?php
+
+namespace Tests\Feature;
+
+use Tests\TestCase;
+
+class ExampleTest extends TestCase
+{
+    public function test_interacting_with_the_session(): void
     {
-        public function test_interacting_with_the_session(): void
-        {
-            $response = $this->withSession(['banned' => false])->get('/');
-        }
+        $response = $this->withSession(['banned' => false])->get('/');
+
+        //
     }
+}
+```
 
 Cách dùng chủ yếu của session là để duy trì trạng thái người dùng đã được xác thực. Phương thức helper `actingAs` sẽ cung cấp một cách đơn giản để xác thực một người dùng. Ví dụ: chúng ta có thể sử dụng một [model factory](/docs/{{version}}/eloquent-factories) để tạo và xác thực một người dùng:
 
-    <?php
+```php tab=Pest
+<?php
 
-    namespace Tests\Feature;
+use App\Models\User;
 
-    use App\Models\User;
-    use Tests\TestCase;
+test('an action that requires authentication', function () {
+    $user = User::factory()->create();
 
-    class ExampleTest extends TestCase
+    $response = $this->actingAs($user)
+        ->withSession(['banned' => false])
+        ->get('/');
+
+    //
+});
+```
+
+```php tab=PHPUnit
+<?php
+
+namespace Tests\Feature;
+
+use App\Models\User;
+use Tests\TestCase;
+
+class ExampleTest extends TestCase
+{
+    public function test_an_action_that_requires_authentication(): void
     {
-        public function test_an_action_that_requires_authentication(): void
-        {
-            $user = User::factory()->create();
+        $user = User::factory()->create();
 
-            $response = $this->actingAs($user)
-                             ->withSession(['banned' => false])
-                             ->get('/');
-        }
+        $response = $this->actingAs($user)
+            ->withSession(['banned' => false])
+            ->get('/');
+
+        //
     }
+}
+```
 
 Bạn cũng có thể khai báo guard nào sẽ được sử dụng để xác thực người dùng bằng cách truyền tên guard làm tham số thứ hai cho phương thức `actingAs`. Guard được cung cấp cho phương thức `actingAs` cũng sẽ trở thành guard mặc định trong suốt thời gian test:
 
@@ -175,58 +264,151 @@ Bạn cũng có thể khai báo guard nào sẽ được sử dụng để xác 
 
 Sau khi tạo ra một bài test request cho ứng dụng của bạn, các phương thức `dump`, `dumpHeaders`, và `dumpSession` có thể được sử dụng để kiểm tra và debug nội dung response:
 
-    <?php
+```php tab=Pest
+<?php
 
-    namespace Tests\Feature;
+test('basic test', function () {
+    $response = $this->get('/');
 
-    use Tests\TestCase;
+    $response->dumpHeaders();
 
-    class ExampleTest extends TestCase
+    $response->dumpSession();
+
+    $response->dump();
+});
+```
+
+```php tab=PHPUnit
+<?php
+
+namespace Tests\Feature;
+
+use Tests\TestCase;
+
+class ExampleTest extends TestCase
+{
+    /**
+     * A basic test example.
+     */
+    public function test_basic_test(): void
     {
-        /**
-         * A basic test example.
-         */
-        public function test_basic_test(): void
-        {
-            $response = $this->get('/');
+        $response = $this->get('/');
 
-            $response->dumpHeaders();
+        $response->dumpHeaders();
 
-            $response->dumpSession();
+        $response->dumpSession();
 
-            $response->dump();
-        }
+        $response->dump();
     }
+}
+```
 
-Ngoài ra, bạn có thể sử dụng các phương thức `dd`, `ddHeaders` và `ddSession` để dump ra các thông tin về response và sau đó dừng chạy chương trình:
+Ngoài ra, bạn có thể sử dụng các phương thức `dd`, `ddHeaders`, `ddSession` và `ddJson` để dump ra các thông tin về response và sau đó dừng chạy chương trình:
 
-    <?php
+```php tab=Pest
+<?php
 
-    namespace Tests\Feature;
+test('basic test', function () {
+    $response = $this->get('/');
 
-    use Tests\TestCase;
+    $response->ddHeaders();
+    $response->ddSession();
+    $response->ddJson();
+    $response->dd();
+});
+```
 
-    class ExampleTest extends TestCase
+```php tab=PHPUnit
+<?php
+
+namespace Tests\Feature;
+
+use Tests\TestCase;
+
+class ExampleTest extends TestCase
+{
+    /**
+     * A basic test example.
+     */
+    public function test_basic_test(): void
     {
-        /**
-         * A basic test example.
-         */
-        public function test_basic_test(): void
-        {
-            $response = $this->get('/');
+        $response = $this->get('/');
 
-            $response->ddHeaders();
+        $response->ddHeaders();
 
-            $response->ddSession();
+        $response->ddSession();
 
-            $response->dd();
-        }
+        $response->dd();
     }
+}
+```
 
 <a name="exception-handling"></a>
 ### Exception Handling
 
-Thỉnh thoảng bạn có thể muốn kiểm tra xem ứng dụng của bạn có đang xảy ra một ngoại lệ nào đó hay không. Để đảm bảo ngoại lệ này không bị xử lý bởi exception handler của Laravel, bạn có thể gọi phương thức `withoutExceptionHandling` trước khi thực hiện request của bạn:
+Thỉnh thoảng bạn có thể cần kiểm tra xem ứng dụng của bạn có đang xảy ra một ngoại lệ nào đó hay không. Để thực hiện điều này, bạn có thể "fake" exception handler thông qua facade `Exceptions`. Sau khi exception handler đã được giả lập, bạn có thể sử dụng các phương thức `assertReported` và `assertNotReported` để kiểm tra các exception đã được đưa ra trong quá trình request:
+
+```php tab=Pest
+<?php
+
+use App\Exceptions\InvalidOrderException;
+use Illuminate\Support\Facades\Exceptions;
+
+test('exception is thrown', function () {
+    Exceptions::fake();
+
+    $response = $this->get('/order/1');
+
+    // Assert an exception was thrown...
+    Exceptions::assertReported(InvalidOrderException::class);
+
+    // Assert against the exception...
+    Exceptions::assertReported(function (InvalidOrderException $e) {
+        return $e->getMessage() === 'The order was invalid.';
+    });
+});
+```
+
+```php tab=PHPUnit
+<?php
+
+namespace Tests\Feature;
+
+use App\Exceptions\InvalidOrderException;
+use Illuminate\Support\Facades\Exceptions;
+use Tests\TestCase;
+
+class ExampleTest extends TestCase
+{
+    /**
+     * A basic test example.
+     */
+    public function test_exception_is_thrown(): void
+    {
+        Exceptions::fake();
+
+        $response = $this->get('/');
+
+        // Assert an exception was thrown...
+        Exceptions::assertReported(InvalidOrderException::class);
+
+        // Assert against the exception...
+        Exceptions::assertReported(function (InvalidOrderException $e) {
+            return $e->getMessage() === 'The order was invalid.';
+        });
+    }
+}
+```
+
+Các phương thức `assertNotReported` và `assertNothingReported` có thể được sử dụng để yêu cầu một ngoại lệ nhất định không được đưa ra trong quá trình request hoặc không có ngoại lệ nào được đưa ra cả:
+
+```php
+Exceptions::assertNotReported(InvalidOrderException::class);
+
+Exceptions::assertNothingReported();
+```
+
+Bạn có thể vô hiệu hóa hoàn toàn việc xử lý ngoại lệ cho một request cụ thể bằng cách gọi phương thức `withoutExceptionHandling` trước khi thực hiện request của bạn:
 
     $response = $this->withoutExceptionHandling()->get('/');
 
@@ -243,94 +425,156 @@ $this->assertThrows(
 );
 ```
 
+Nếu bạn muốn kiểm tra và xác nhận một ngoại lệ nhất định được tạo ra, bạn có thể cung cấp một closure làm tham số thứ hai cho phương thức `assertThrows`:
+
+```php
+$this->assertThrows(
+    fn () => (new ProcessOrder)->execute(),
+    fn (OrderInvalid $e) => $e->orderId() === 123;
+);
+```
+
 <a name="testing-json-apis"></a>
 ## Test JSON API
 
 Laravel cũng cung cấp một số helper để kiểm tra API JSON và response của chúng. Ví dụ, các phương thức `json`, `getJson`, `postJson`, `putJson`, `patchJson`, `deleteJson`, và `optionJson` có thể được sử dụng để đưa vào các JSON request với các method HTTP khác nhau. Bạn cũng có thể dễ dàng truyền dữ liệu và các header cho các phương thức này. Để bắt đầu, hãy viết một bài test để thực hiện một request `POST` đến `/api/user` và xác nhận rằng dữ liệu JSON mà bạn mong muốn sẽ trả về:
 
-    <?php
+```php tab=Pest
+<?php
 
-    namespace Tests\Feature;
+test('making an api request', function () {
+    $response = $this->postJson('/api/user', ['name' => 'Sally']);
 
-    use Tests\TestCase;
+    $response
+        ->assertStatus(201)
+        ->assertJson([
+            'created' => true,
+        ]);
+});
+```
 
-    class ExampleTest extends TestCase
+```php tab=PHPUnit
+<?php
+
+namespace Tests\Feature;
+
+use Tests\TestCase;
+
+class ExampleTest extends TestCase
+{
+    /**
+     * A basic functional test example.
+     */
+    public function test_making_an_api_request(): void
     {
-        /**
-         * A basic functional test example.
-         */
-        public function test_making_an_api_request(): void
-        {
-            $response = $this->postJson('/api/user', ['name' => 'Sally']);
+        $response = $this->postJson('/api/user', ['name' => 'Sally']);
 
-            $response
-                ->assertStatus(201)
-                ->assertJson([
-                    'created' => true,
-                ]);
-        }
+        $response
+            ->assertStatus(201)
+            ->assertJson([
+                'created' => true,
+            ]);
     }
+}
+```
 
 Ngoài ra, dữ liệu JSON response có thể được truy cập dưới dạng như là một biến trong mảng trên response, giúp bạn thuận tiện kiểm tra các giá trị được trả về trong JSON response:
 
-    $this->assertTrue($response['created']);
+```php tab=Pest
+expect($response['created'])->toBeTrue();
+```
+
+```php tab=PHPUnit
+$this->assertTrue($response['created']);
+```
 
 > [!NOTE]
-> Phương thức `assertJson` sẽ chuyển response thành một mảng và sử dụng `PHPUnit::assertArraySubset` để kiểm tra mảng đó có tồn tại trong response JSON mà được application trả về hay không. Vì vậy, nếu có các thuộc tính khác trong response JSON, bài test này vẫn sẽ được pass miễn là có đoạn đã cho.
+> Phương thức `assertJson` sẽ chuyển response thành một mảng để kiểm tra mảng đó có tồn tại trong response JSON mà được application trả về hay không. Vì vậy, nếu có các thuộc tính khác trong response JSON, bài test này vẫn sẽ được pass miễn là có đoạn đã cho.
 
 <a name="verifying-exact-match"></a>
 #### Asserting Exact JSON Matches
 
 Như đã đề cập trước đó, phương thức `assertJson` có thể được sử dụng để kiểm tra một đoạn JSON có tồn tại trong một JSON response hay không. Nếu bạn muốn kiểm tra một mảng đã cho là **giống chính xác** với một response JSON mà được application của bạn trả về, bạn nên sử dụng phương thức `assertExactJson`:
 
-    <?php
+```php tab=Pest
+<?php
 
-    namespace Tests\Feature;
+test('asserting an exact json match', function () {
+    $response = $this->postJson('/user', ['name' => 'Sally']);
 
-    use Tests\TestCase;
+    $response
+        ->assertStatus(201)
+        ->assertExactJson([
+            'created' => true,
+        ]);
+});
 
-    class ExampleTest extends TestCase
+```
+
+```php tab=PHPUnit
+<?php
+
+namespace Tests\Feature;
+
+use Tests\TestCase;
+
+class ExampleTest extends TestCase
+{
+    /**
+     * A basic functional test example.
+     */
+    public function test_asserting_an_exact_json_match(): void
     {
-        /**
-         * A basic functional test example.
-         */
-        public function test_asserting_an_exact_json_match(): void
-        {
-            $response = $this->postJson('/user', ['name' => 'Sally']);
+        $response = $this->postJson('/user', ['name' => 'Sally']);
 
-            $response
-                ->assertStatus(201)
-                ->assertExactJson([
-                    'created' => true,
-                ]);
-        }
+        $response
+            ->assertStatus(201)
+            ->assertExactJson([
+                'created' => true,
+            ]);
     }
+}
+```
 
 <a name="verifying-json-paths"></a>
 #### Asserting On JSON Paths
 
 Nếu bạn muốn kiểm tra rằng response JSON phải chứa một dữ liệu nhất định tại một đường dẫn cụ thể, bạn nên sử dụng phương thức `assertJsonPath`:
 
-    <?php
+```php tab=Pest
+<?php
 
-    namespace Tests\Feature;
+test('asserting a json path value', function () {
+    $response = $this->postJson('/user', ['name' => 'Sally']);
 
-    use Tests\TestCase;
+    $response
+        ->assertStatus(201)
+        ->assertJsonPath('team.owner.name', 'Darian');
+});
+```
 
-    class ExampleTest extends TestCase
+```php tab=PHPUnit
+<?php
+
+namespace Tests\Feature;
+
+use Tests\TestCase;
+
+class ExampleTest extends TestCase
+{
+    /**
+     * A basic functional test example.
+     */
+    public function test_asserting_a_json_paths_value(): void
     {
-        /**
-         * A basic functional test example.
-         */
-        public function test_asserting_a_json_paths_value(): void
-        {
-            $response = $this->postJson('/user', ['name' => 'Sally']);
+        $response = $this->postJson('/user', ['name' => 'Sally']);
 
-            $response
-                ->assertStatus(201)
-                ->assertJsonPath('team.owner.name', 'Darian');
-        }
+        $response
+            ->assertStatus(201)
+            ->assertJsonPath('team.owner.name', 'Darian');
     }
+}
+```
 
 Phương thức `assertJsonPath` cũng sẽ chấp nhận một closure, có thể được sử dụng để xác định xem bài kiểm tra này có pass hay không:
 
@@ -341,25 +585,45 @@ Phương thức `assertJsonPath` cũng sẽ chấp nhận một closure, có th�
 
 Laravel cũng cung cấp một cách hay để kiểm tra dễ dàng các JSON response trong ứng dụng của bạn. Để bắt đầu, hãy truyền một closure cho phương thức `assertJson`. Closure này sẽ được gọi bằng một instance của `Illuminate\Testing\Fluent\AssertableJson`, instance này có thể được sử dụng để đưa ra các yêu cầu đối với JSON được ứng dụng của bạn trả về. Phương thức `where` có thể được sử dụng để đưa ra các yêu cầu đối với một thuộc tính cụ thể trong chuỗi JSON, trong khi phương thức `missing` có thể được sử dụng để yêu cầu một thuộc tính không tồn tại trong JSON:
 
-    use Illuminate\Testing\Fluent\AssertableJson;
+```php tab=Pest
+use Illuminate\Testing\Fluent\AssertableJson;
 
-    /**
-     * A basic functional test example.
-     */
-    public function test_fluent_json(): void
-    {
-        $response = $this->getJson('/users/1');
+test('fluent json', function () {
+    $response = $this->getJson('/users/1');
 
-        $response
-            ->assertJson(fn (AssertableJson $json) =>
-                $json->where('id', 1)
-                     ->where('name', 'Victoria Faith')
-                     ->where('email', fn (string $email) => str($email)->is('victoria@gmail.com'))
-                     ->whereNot('status', 'pending')
-                     ->missing('password')
-                     ->etc()
-            );
-    }
+    $response
+        ->assertJson(fn (AssertableJson $json) =>
+            $json->where('id', 1)
+                ->where('name', 'Victoria Faith')
+                ->where('email', fn (string $email) => str($email)->is('victoria@gmail.com'))
+                ->whereNot('status', 'pending')
+                ->missing('password')
+                ->etc()
+        );
+});
+```
+
+```php tab=PHPUnit
+use Illuminate\Testing\Fluent\AssertableJson;
+
+/**
+ * A basic functional test example.
+ */
+public function test_fluent_json(): void
+{
+    $response = $this->getJson('/users/1');
+
+    $response
+        ->assertJson(fn (AssertableJson $json) =>
+            $json->where('id', 1)
+                ->where('name', 'Victoria Faith')
+                ->where('email', fn (string $email) => str($email)->is('victoria@gmail.com'))
+                ->whereNot('status', 'pending')
+                ->missing('password')
+                ->etc()
+        );
+}
+```
 
 #### Understanding The `etc` Method
 
@@ -376,21 +640,21 @@ Tuy nhiên, bạn nên lưu ý rằng việc không thêm phương thức `etc` 
 
     $response->assertJson(fn (AssertableJson $json) =>
         $json->has('data')
-             ->missing('message')
+            ->missing('message')
     );
 
 Ngoài ra, phương thức `hasAll` và `missingAll` cho phép yêu cầu tồn tại hoặc không tồn tại của nhiều thuộc tính cùng một lúc:
 
     $response->assertJson(fn (AssertableJson $json) =>
         $json->hasAll(['status', 'data'])
-             ->missingAll(['message', 'code'])
+            ->missingAll(['message', 'code'])
     );
 
 Bạn có thể sử dụng phương thức `hasAny` để xác định xem có tồn tại ít nhất một thuộc tính trong danh sách các thuộc tính nhất định hay không:
 
     $response->assertJson(fn (AssertableJson $json) =>
         $json->has('status')
-             ->hasAny('data', 'message', 'code')
+            ->hasAny('data', 'message', 'code')
     );
 
 <a name="asserting-against-json-collections"></a>
@@ -407,13 +671,13 @@ Trong những trường hợp như thế này, chúng ta có thể sử dụng p
     $response
         ->assertJson(fn (AssertableJson $json) =>
             $json->has(3)
-                 ->first(fn (AssertableJson $json) =>
+                ->first(fn (AssertableJson $json) =>
                     $json->where('id', 1)
-                         ->where('name', 'Victoria Faith')
-                         ->where('email', fn (string $email) => str($email)->is('victoria@gmail.com'))
-                         ->missing('password')
-                         ->etc()
-                 )
+                        ->where('name', 'Victoria Faith')
+                        ->where('email', fn (string $email) => str($email)->is('victoria@gmail.com'))
+                        ->missing('password')
+                        ->etc()
+                )
         );
 
 <a name="scoping-json-collection-assertions"></a>
@@ -433,14 +697,14 @@ Khi kiểm tra các route này, bạn có thể sử dụng phương thức `has
     $response
         ->assertJson(fn (AssertableJson $json) =>
             $json->has('meta')
-                 ->has('users', 3)
-                 ->has('users.0', fn (AssertableJson $json) =>
+                ->has('users', 3)
+                ->has('users.0', fn (AssertableJson $json) =>
                     $json->where('id', 1)
-                         ->where('name', 'Victoria Faith')
-                         ->where('email', fn (string $email) => str($email)->is('victoria@gmail.com'))
-                         ->missing('password')
-                         ->etc()
-                 )
+                        ->where('name', 'Victoria Faith')
+                        ->where('email', fn (string $email) => str($email)->is('victoria@gmail.com'))
+                        ->missing('password')
+                        ->etc()
+                )
         );
 
 Tuy nhiên, thay vì thực hiện hai lệnh gọi riêng biệt đến phương thức `has` để yêu cầu cho collection `users`, bạn có thể thực hiện một lệnh gọi duy nhất cung cấp một closure bằng tham số thứ ba. Khi làm như vậy, closure sẽ tự động được gọi và nằm trong phạm vi của mục đầu tiên có trong collection:
@@ -448,13 +712,13 @@ Tuy nhiên, thay vì thực hiện hai lệnh gọi riêng biệt đến phươn
     $response
         ->assertJson(fn (AssertableJson $json) =>
             $json->has('meta')
-                 ->has('users', 3, fn (AssertableJson $json) =>
+                ->has('users', 3, fn (AssertableJson $json) =>
                     $json->where('id', 1)
-                         ->where('name', 'Victoria Faith')
-                         ->where('email', fn (string $email) => str($email)->is('victoria@gmail.com'))
-                         ->missing('password')
-                         ->etc()
-                 )
+                        ->where('name', 'Victoria Faith')
+                        ->where('email', fn (string $email) => str($email)->is('victoria@gmail.com'))
+                        ->missing('password')
+                        ->etc()
+                )
         );
 
 <a name="asserting-json-types"></a>
@@ -464,7 +728,7 @@ Bạn có thể chỉ muốn yêu cầu các thuộc tính có trong JSON respon
 
     $response->assertJson(fn (AssertableJson $json) =>
         $json->whereType('id', 'integer')
-             ->whereAllType([
+            ->whereAllType([
                 'users.0.name' => 'string',
                 'meta' => 'array'
             ])
@@ -474,7 +738,7 @@ Bạn có thể chỉ định nhiều loại bằng cách sử dụng ký tự `
 
     $response->assertJson(fn (AssertableJson $json) =>
         $json->whereType('name', 'string|null')
-             ->whereType('id', ['string', 'integer'])
+            ->whereType('id', ['string', 'integer'])
     );
 
 Phương thức `whereType` và `whereAllType` sẽ nhận dạng các loại sau: `string`, `integer`, `double`, `boolean`, `array` và `null`.
@@ -484,29 +748,50 @@ Phương thức `whereType` và `whereAllType` sẽ nhận dạng các loại sa
 
 Class `Illuminate\Http\UploadedFile` cung cấp một phương thức `fake` có thể được sử dụng để tạo ra các file giả hoặc hình ảnh giả để test. Nó kết hợp cùng với phương thức `fake` của facade `Storage`, sẽ đơn giản hóa rất nhiều cho việc test các file upload. Ví dụ: bạn có thể kết hợp hai chức năng này để dễ dàng test cho một form upload avatar:
 
-    <?php
+```php tab=Pest
+<?php
 
-    namespace Tests\Feature;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 
-    use Illuminate\Http\UploadedFile;
-    use Illuminate\Support\Facades\Storage;
-    use Tests\TestCase;
+test('avatars can be uploaded', function () {
+    Storage::fake('avatars');
 
-    class ExampleTest extends TestCase
+    $file = UploadedFile::fake()->image('avatar.jpg');
+
+    $response = $this->post('/avatar', [
+        'avatar' => $file,
+    ]);
+
+    Storage::disk('avatars')->assertExists($file->hashName());
+});
+```
+
+```php tab=PHPUnit
+<?php
+
+namespace Tests\Feature;
+
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
+use Tests\TestCase;
+
+class ExampleTest extends TestCase
+{
+    public function test_avatars_can_be_uploaded(): void
     {
-        public function test_avatars_can_be_uploaded(): void
-        {
-            Storage::fake('avatars');
+        Storage::fake('avatars');
 
-            $file = UploadedFile::fake()->image('avatar.jpg');
+        $file = UploadedFile::fake()->image('avatar.jpg');
 
-            $response = $this->post('/avatar', [
-                'avatar' => $file,
-            ]);
+        $response = $this->post('/avatar', [
+            'avatar' => $file,
+        ]);
 
-            Storage::disk('avatars')->assertExists($file->hashName());
-        }
+        Storage::disk('avatars')->assertExists($file->hashName());
     }
+}
+```
 
 Nếu bạn muốn yêu cầu một file nhất định sẽ không tồn tại, bạn có thể sử dụng phương thức `assertMissing` được cung cấp bởi facade `Storage`:
 
@@ -538,21 +823,33 @@ Nếu cần, bạn có thể truyền thêm tham số `$mimeType` vào phương 
 
 Laravel cũng cho phép bạn render ra một view mà không cần thực hiện một request HTTP cho ứng dụng. Để thực hiện điều này, bạn có thể gọi phương thức `view` trong bài test của bạn. Phương thức `view` sẽ chấp nhận một tên view và một mảng dữ liệu tùy chọn. Phương thức này sẽ trả về một instance của `Illuminate\Testing\TestView`, phương thức này cung cấp một số phương thức để đưa ra các yêu cầu một cách thuận lợi hơn về nội dung của view:
 
-    <?php
+```php tab=Pest
+<?php
 
-    namespace Tests\Feature;
+test('a welcome view can be rendered', function () {
+    $view = $this->view('welcome', ['name' => 'Taylor']);
 
-    use Tests\TestCase;
+    $view->assertSee('Taylor');
+});
+```
 
-    class ExampleTest extends TestCase
+```php tab=PHPUnit
+<?php
+
+namespace Tests\Feature;
+
+use Tests\TestCase;
+
+class ExampleTest extends TestCase
+{
+    public function test_a_welcome_view_can_be_rendered(): void
     {
-        public function test_a_welcome_view_can_be_rendered(): void
-        {
-            $view = $this->view('welcome', ['name' => 'Taylor']);
+        $view = $this->view('welcome', ['name' => 'Taylor']);
 
-            $view->assertSee('Taylor');
-        }
+        $view->assertSee('Taylor');
     }
+}
+```
 
 Class `TestView` sẽ cung cấp các phương thức các yêu cầu sau: `assertSee`, `assertSeeInOrder`, `assertSeeText`, `assertSeeTextInOrder`, `assertDontSee` và `assertDontSeeText`.
 
@@ -624,6 +921,7 @@ Class `Illuminate\Testing\TestResponse` của Laravel cung cấp nhiều phươn
 [assertDontSeeText](#assert-dont-see-text)
 [assertDownload](#assert-download)
 [assertExactJson](#assert-exact-json)
+[assertExactJsonStructure](#assert-exact-json-structure)
 [assertForbidden](#assert-forbidden)
 [assertFound](#assert-found)
 [assertGone](#assert-gone)
@@ -648,6 +946,7 @@ Class `Illuminate\Testing\TestResponse` của Laravel cung cấp nhiều phươn
 [assertMovedPermanently](#assert-moved-permanently)
 [assertContent](#assert-content)
 [assertNoContent](#assert-no-content)
+[assertStreamed](#assert-streamed)
 [assertStreamedContent](#assert-streamed-content)
 [assertNotFound](#assert-not-found)
 [assertOk](#assert-ok)
@@ -775,6 +1074,15 @@ Yêu cầu response phải chứa kết quả khớp chính xác với dữ li�
 
     $response->assertExactJson(array $data);
 
+<a name="assert-exact-json-structure"></a>
+#### assertExactJsonStructure
+
+Yêu cầu response phải chứa kết quả khớp chính xác với cấu trúc JSON đã cho:
+
+    $response->assertExactJsonStructure(array $data);
+
+Phương thức này là một biến thể so sánh nghiêm ngặt hơn của [assertJsonStructure](#assert-json-structure). Khác với `assertJsonStructure`, phương thức này sẽ thất bại nếu response chứa bất kỳ khóa nào không có trong cấu trúc JSON mong đợi.
+
 <a name="assert-forbidden"></a>
 #### assertForbidden
 
@@ -824,7 +1132,7 @@ Yêu cầu response phải chứa dữ liệu JSON đã cho:
 
     $response->assertJson(array $data, $strict = false);
 
-Phương thức `assertJson` sẽ chuyển đổi response thành một mảng và sử dụng `PHPUnit::assertArraySubset` để xác minh mảng đã cho có tồn tại trong response JSON được ứng dụng trả về hay không. Vì vậy, nếu có các thuộc tính khác có trong response JSON, thì bài test này sẽ vẫn pass miễn là có phần đã cho.
+Phương thức `assertJson` sẽ chuyển đổi response thành một mảng để xác minh mảng đã cho có tồn tại trong response JSON được ứng dụng trả về hay không. Vì vậy, nếu có các thuộc tính khác có trong response JSON, thì bài test này sẽ vẫn pass miễn là có phần đã cho.
 
 <a name="assert-json-count"></a>
 #### assertJsonCount
@@ -1037,6 +1345,13 @@ Yêu cầu response content khớp với một chuỗi đã cho:
 Yêu cầu response có HTTP status code đã cho và không có content:
 
     $response->assertNoContent($status = 204);
+
+<a name="assert-streamed"></a>
+#### assertStreamed
+
+Yêu cầu response phải là một streamed response:
+
+    $response->assertStreamed();
 
 <a name="assert-streamed-content"></a>
 #### assertStreamedContent
@@ -1327,7 +1642,13 @@ Việc truyền một closure làm tham số thứ hai cho phương thức `asse
 
 Ngoài ra, view data có thể truy cập được dưới dạng các biến của mảng trong response, cho phép bạn thuận tiện kiểm tra nó:
 
-    $this->assertEquals('Taylor', $response['name']);
+```php tab=Pest
+expect($response['name'])->toBe('Taylor');
+```
+
+```php tab=PHPUnit
+$this->assertEquals('Taylor', $response['name']);
+```
 
 <a name="assert-view-has-all"></a>
 #### assertViewHasAll

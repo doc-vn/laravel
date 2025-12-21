@@ -12,14 +12,14 @@
 Laravel có chứa một abstraction giới hạn tỷ lệ dễ sử dụng, kết hợp với [cache](cache) của ứng dụng của bạn, cung cấp một cách dễ dàng để giới hạn bất kỳ hành động nào trong một khoảng thời gian nhất định.
 
 > [!NOTE]
-> Nếu bạn quan tâm đến việc giới hạn tỷ lệ các request HTTP, vui lòng tham khảo [tài liệu về middleware giới hạn tỷ lệ](routing#rate-limiting).
+> Nếu bạn quan tâm đến việc giới hạn tỷ lệ các request HTTP, vui lòng tham khảo [tài liệu về middleware giới hạn tỷ lệ](/docs/{{version}}/routing#rate-limiting).
 
 <a name="cache-configuration"></a>
 ### Cấu hình Cache
 
 Thông thường, bộ giới hạn tỷ lệ sẽ sử dụng bộ nhớ cache mặc định của bạn như bạn đã được định nghĩa bởi khóa `default` trong file cấu hình `cache` của ứng dụng của bạn. Tuy nhiên, bạn có thể chỉ định driver cache nào mà bộ giới hạn tỷ lệ sẽ sử dụng bằng cách định nghĩa khóa `limiter` trong file cấu hình `cache` của ứng dụng của bạn:
 
-    'default' => 'memcached',
+    'default' => env('CACHE_STORE', 'database'),
 
     'limiter' => 'redis',
 

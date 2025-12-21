@@ -8,6 +8,7 @@
     - [Một trong nhiều](#has-one-of-many)
     - [Quan hệ thông qua liên kết một](#has-one-through)
     - [Quan hệ thông qua liên kết nhiều](#has-many-through)
+- [Ràng buộc quan hệ](#scoped-relationships)
 - [Nhiều - Nhiều](#many-to-many)
     - [Lấy cột trong bảng trung gian](#retrieving-intermediate-table-columns)
     - [Lọc bảng trung gian](#filtering-queries-via-intermediate-table-columns)
@@ -70,7 +71,7 @@ Nhưng, trước khi đi sâu vào việc sử dụng các quan hệ, hãy tìm 
 <a name="one-to-one"></a>
 ### Một - Một
 
-Một quan hệ một-một là một type of database relationship rất cơ bản. Ví dụ, một model `User` có thể có quan hệ với một model `Phone`. Để định nghĩa quan hệ này, chúng ta sẽ set một phương thức `phone` trên model `User`. Phương thức `phone` này sẽ gọi phương thức `hasOne` và trả về chính phương thức đó. Phương thức `hasOne` sẽ có sẵn trong model của bạn thông qua class `Illuminate\Database\Eloquent\Model` của model:
+Một quan hệ một-một là một loại quan hệ cơ sở dữ liệu rất cơ bản. Ví dụ, một model `User` có thể có quan hệ với một model `Phone`. Để định nghĩa quan hệ này, chúng ta sẽ set một phương thức `phone` trên model `User`. Phương thức `phone` này sẽ gọi phương thức `hasOne` và trả về chính phương thức đó. Phương thức `hasOne` sẽ có sẵn trong model của bạn thông qua class `Illuminate\Database\Eloquent\Model` của model:
 
     <?php
 
@@ -185,14 +186,61 @@ Khi phương thức quan hệ đã được định nghĩa xong, bạn có thể
 Vì tất cả các quan hệ cũng đóng vai trò như là một query builder, nên bạn có thể thêm các ràng buộc cho the relationship query bằng cách gọi phương thức `comments` và tiếp tục thêm các điều kiện vào trong truy vấn:
 
     $comment = Post::find(1)->comments()
-                        ->where('title', 'foo')
-                        ->first();
+        ->where('title', 'foo')
+        ->first();
 
 Giống như phương thức `hasOne`, bạn cũng có thể ghi đè các khóa ngoại và khóa chính bằng cách truyền thêm các tham số bổ sung cho phương thức `hasMany`:
 
     return $this->hasMany(Comment::class, 'foreign_key');
 
     return $this->hasMany(Comment::class, 'foreign_key', 'local_key');
+
+<a name="automatically-hydrating-parent-models-on-children"></a>
+#### Automatically Hydrating Parent Models on Children
+
+Ngay cả khi sử dụng eager loading cho Eloquent, vấn đề truy vấn "N + 1" vẫn có thể tồn tại nếu bạn cố gắng truy cập vào model cha từ model con trong khi lặp các model con:
+
+```php
+$posts = Post::with('comments')->get();
+
+foreach ($posts as $post) {
+    foreach ($post->comments as $comment) {
+        echo $comment->post->title;
+    }
+}
+```
+
+Trong ví dụ trên, một vấn đề truy vấn "N + 1" đã được tạo ra vì mặc dù các comment đã được eager load cho mọi model `Post`, nhưng Eloquent không tự động chuyển model cha là `Post` cho mỗi model con là `Comment`.
+
+Nếu bạn muốn Eloquent tự động chuyển các model cha vào cho các model con, bạn có thể gọi phương thức `chaperone` khi định nghĩa quan hệ `hasMany` cho mối quan hệ này:
+
+    <?php
+
+    namespace App\Models;
+
+    use Illuminate\Database\Eloquent\Model;
+    use Illuminate\Database\Eloquent\Relations\HasMany;
+
+    class Post extends Model
+    {
+        /**
+         * Get the comments for the blog post.
+         */
+        public function comments(): HasMany
+        {
+            return $this->hasMany(Comment::class)->chaperone();
+        }
+    }
+
+Hoặc, nếu bạn muốn tự động chuyển model cha vào model con khi chạy, bạn có thể gọi model `chaperone` khi eager loading quan hệ:
+
+```php
+use App\Models\Post;
+
+$posts = Post::with([
+    'comments' => fn ($comments) => $comments->chaperone(),
+])->get();
+```
 
 <a name="one-to-many-inverse"></a>
 ### Một - Nhiều (Ngược lại) / Belongs To
@@ -565,6 +613,53 @@ return $this->through('environments')->has('deployments');
 return $this->throughEnvironments()->hasDeployments();
 ```
 
+<a name="scoped-relationships"></a>
+### Ràng buộc quan hệ
+
+Việc thêm các phương thức bổ sung vào các model để ràng buộc các quan hệ là một điều thường gặp. Ví dụ: bạn có thể thêm phương thức `featuredPosts` vào model `User` để ràng buộc quan hệ `posts` bằng một mệnh đề `where` nhất định:
+
+    <?php
+
+    namespace App\Models;
+
+    use Illuminate\Database\Eloquent\Model;
+    use Illuminate\Database\Eloquent\Relations\HasMany;
+
+    class User extends Model
+    {
+        /**
+         * Get the user's posts.
+         */
+        public function posts(): HasMany
+        {
+            return $this->hasMany(Post::class)->latest();
+        }
+
+        /**
+         * Get the user's featured posts.
+         */
+        public function featuredPosts(): HasMany
+        {
+            return $this->posts()->where('featured', true);
+        }
+    }
+
+Tuy nhiên, nếu bạn cố gắng tạo một model thông qua phương thức `featuredPosts`, thì thuộc tính `featured` của model đó sẽ không được set thành `true`. Nếu bạn muốn tạo các model thông qua các phương thức `featuredPosts` và cũng chỉ định luôn các thuộc tính cần thêm vào tất cả các model được tạo ra thông qua quan hệ đó, thì bạn có thể sử dụng phương thức `withAttributes` khi tạo truy vấn quan hệ:
+
+    /**
+     * Get the user's featured posts.
+     */
+    public function featuredPosts(): HasMany
+    {
+        return $this->posts()->withAttributes(['featured' => true]);
+    }
+
+Phương thức `withAttributes` sẽ thêm các ràng buộc mệnh đề `where` vào truy vấn bằng cách sử dụng các thuộc tính đã cho và cũng sẽ thêm các thuộc tính đó vào bất kỳ model nào được tạo ra thông qua phương thức quan hệ:
+
+    $post = $user->featuredPosts()->create(['title' => 'Featured Post']);
+
+    $post->featured; // true
+
 <a name="many-to-many"></a>
 ## Nhiều - Nhiều
 
@@ -693,8 +788,8 @@ Như đã lưu ý trước đó, các thuộc tính từ bảng trung gian có t
 Ví dụ: nếu application của bạn chứa user có thể subscribe podcast, bạn có thể có một quan hệ nhiều-nhiều giữa user và podcast. Nếu đây là trường hợp đó, bạn có thể muốn đổi tên truy cập vào bảng trung gian của bạn thành `subscription` thay vì `pivot`. Điều này có thể được thực hiện bằng cách sử dụng phương thức `as` khi định nghĩa quan hệ của bạn:
 
     return $this->belongsToMany(Podcast::class)
-                    ->as('subscription')
-                    ->withTimestamps();
+        ->as('subscription')
+        ->withTimestamps();
 
 Khi điều này được thực hiện xong, bạn có thể truy cập vào dữ liệu của bảng trung gian bằng tên tùy biến:
 
@@ -710,29 +805,34 @@ Khi điều này được thực hiện xong, bạn có thể truy cập vào d�
 Bạn cũng có thể lọc các kết quả được trả về bởi `belongsToMany` bằng cách sử dụng các phương thức `wherePivot`, `wherePivotIn`, `wherePivotNotIn`, `wherePivotBetween`, `wherePivotNotBetween`, `wherePivotNull`, và `wherePivotNotNull khi định nghĩa quan hệ:
 
     return $this->belongsToMany(Role::class)
-                    ->wherePivot('approved', 1);
+        ->wherePivot('approved', 1);
 
     return $this->belongsToMany(Role::class)
-                    ->wherePivotIn('priority', [1, 2]);
+        ->wherePivotIn('priority', [1, 2]);
 
     return $this->belongsToMany(Role::class)
-                    ->wherePivotNotIn('priority', [1, 2]);
+        ->wherePivotNotIn('priority', [1, 2]);
 
     return $this->belongsToMany(Podcast::class)
-                    ->as('subscriptions')
-                    ->wherePivotBetween('created_at', ['2020-01-01 00:00:00', '2020-12-31 00:00:00']);
+        ->as('subscriptions')
+        ->wherePivotBetween('created_at', ['2020-01-01 00:00:00', '2020-12-31 00:00:00']);
 
     return $this->belongsToMany(Podcast::class)
-                    ->as('subscriptions')
-                    ->wherePivotNotBetween('created_at', ['2020-01-01 00:00:00', '2020-12-31 00:00:00']);
+        ->as('subscriptions')
+        ->wherePivotNotBetween('created_at', ['2020-01-01 00:00:00', '2020-12-31 00:00:00']);
 
     return $this->belongsToMany(Podcast::class)
-                    ->as('subscriptions')
-                    ->wherePivotNull('expired_at');
+        ->as('subscriptions')
+        ->wherePivotNull('expired_at');
 
     return $this->belongsToMany(Podcast::class)
-                    ->as('subscriptions')
-                    ->wherePivotNotNull('expired_at');
+        ->as('subscriptions')
+        ->wherePivotNotNull('expired_at');
+
+`wherePivot` sẽ chỉ thêm một ràng buộc mệnh đề where vào truy vấn, và không thêm giá trị được chỉ định khi tạo model mới thông qua quan hệ đã được định nghĩa. Nếu bạn vừa cần truy vấn và cũng vừa cần tạo model với một giá trị pivot cụ thể, bạn có thể sử dụng phương thức `withPivotValue`:
+
+    return $this->belongsToMany(Role::class)
+            ->withPivotValue('approved', 1);
 
 <a name="ordering-queries-via-intermediate-table-columns"></a>
 ### Sắp xếp thông qua bảng trung gian
@@ -1008,6 +1108,46 @@ Bạn cũng có thể lấy ra cha của một quan hệ đa hình từ một mo
 
 Quan hệ `commentable` trên model `Comment` sẽ trả về một instance `Post` hoặc `Video`, tùy thuộc vào loại model là cha của comment.
 
+<a name="polymorphic-automatically-hydrating-parent-models-on-children"></a>
+#### Automatically Hydrating Parent Models on Children
+
+Ngay cả khi sử dụng eager loading cho Eloquent, vấn đề truy vấn "N + 1" vẫn có thể tồn tại nếu bạn cố gắng truy cập vào model cha từ model con trong khi lặp các model con:
+
+```php
+$posts = Post::with('comments')->get();
+
+foreach ($posts as $post) {
+    foreach ($post->comments as $comment) {
+        echo $comment->commentable->title;
+    }
+}
+```
+
+Trong ví dụ trên, một vấn đề truy vấn "N + 1" đã được tạo ra vì mặc dù các comment đã được eager load cho mọi model `Post`, nhưng Eloquent không tự động chuyển model cha là `Post` cho mỗi model con là `Comment`.
+
+Nếu bạn muốn Eloquent tự động chuyển các model cha vào cho các model con, bạn có thể gọi phương thức `chaperone` khi định nghĩa quan hệ `morphMany` cho mối quan hệ này:
+
+    class Post extends Model
+    {
+        /**
+         * Get all of the post's comments.
+         */
+        public function comments(): MorphMany
+        {
+            return $this->morphMany(Comment::class, 'commentable')->chaperone();
+        }
+    }
+
+Hoặc, nếu bạn muốn tự động chuyển model cha vào model con khi chạy, bạn có thể gọi model `chaperone` khi eager loading quan hệ:
+
+```php
+use App\Models\Post;
+
+$posts = Post::with([
+    'comments' => fn ($comments) => $comments->chaperone(),
+])->get();
+```
+
 <a name="one-of-many-polymorphic-relations"></a>
 ### Một trong nhiều (Polymorphic)
 
@@ -1267,11 +1407,11 @@ Trong hầu hết các trường hợp, bạn nên sử dụng [nhóm logic](/do
     use Illuminate\Database\Eloquent\Builder;
 
     $user->posts()
-            ->where(function (Builder $query) {
-                return $query->where('active', 1)
-                             ->orWhere('votes', '>=', 100);
-            })
-            ->get();
+        ->where(function (Builder $query) {
+            return $query->where('active', 1)
+                ->orWhere('votes', '>=', 100);
+        })
+        ->get();
 
 Ví dụ trên sẽ tạo ra SQL sau. Lưu ý rằng nhóm logic đã nhóm các ràng buộc và truy vấn tới một người dùng cụ thể:
 
@@ -1415,6 +1555,12 @@ Bạn có thể sử dụng ký hiệu "dấu chấm" để thực hiện truy v
         }
     )->get();
 
+Thỉnh thoảng bạn có thể muốn truy vấn vào các phần tử con của một quan hệ "morph to" của phần tử cha. Bạn có thể thực hiện việc này bằng cách sử dụng các phương thức `whereMorphedTo` và `whereNotMorphedTo`, các phương thức này sẽ tự động xác định kiểu ánh xạ morph phù hợp cho model đã cho. Các phương thức này chấp nhận tên của quan hệ `morphTo` làm tham số đầu tiên và model cha tương ứng làm tham số thứ hai:
+
+    $comments = Comment::whereMorphedTo('commentable', $post)
+        ->orWhereMorphedTo('commentable', $video)
+        ->get();
+
 <a name="querying-all-morph-to-related-models"></a>
 #### Querying All Related Models
 
@@ -1488,8 +1634,8 @@ Nếu bạn cần set thêm các ràng buộc truy vấn cho các truy vấn đ�
 Nếu bạn đang kết hợp `withCount` với câu lệnh `select`, hãy đảm bảo là bạn đang gọi phương thức `withCount` sau phương thức `select`:
 
     $posts = Post::select(['title', 'body'])
-                    ->withCount('comments')
-                    ->get();
+        ->withCount('comments')
+        ->get();
 
 <a name="other-aggregate-functions"></a>
 ### Các hàm tính toán khác
@@ -1521,8 +1667,8 @@ Giống như phương thức `loadCount`, các phiên bản load sau của các 
 Nếu bạn đang kết hợp các phương thức tính toán này với câu lệnh `select`, hãy đảm bảo là bạ đang gọi các phương thức tính toán này sau phương thức `select`:
 
     $posts = Post::select(['title', 'body'])
-                    ->withExists('comments')
-                    ->get();
+        ->withExists('comments')
+        ->get();
 
 <a name="counting-related-models-on-morph-to-relationships"></a>
 ### Đếm model quan hệ trên quan hệ đa hình
@@ -1738,9 +1884,6 @@ Trong ví dụ này, Eloquent sẽ chỉ eager load các post mà trong đó c�
     $users = User::with(['posts' => function (Builder $query) {
         $query->orderBy('created_at', 'desc');
     }])->get();
-
-> [!WARNING]
-> Phương thức query builder `limit` và `take` có thể không sử dụng được khi bạn đang eager loading.
 
 <a name="constraining-eager-loading-of-morph-to-relationships"></a>
 #### Constraining Eager Loading Of `morphTo` Relationships

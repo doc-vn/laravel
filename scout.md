@@ -147,9 +147,9 @@ TYPESENSE_API_KEY=masterKey
 TYPESENSE_HOST=localhost
 ```
 
-Nếu cần, bạn cũng có thể chỉ định cổng, đường dẫn và giao thức trong cài đặt của bạn:
+Nếu bạn đang sử dụng [Laravel Sail](/docs/{{version}}/sail), bạn có thể cần điều chỉnh biến môi trường `TYPESENSE_HOST` để giống với tên container Docker. Bạn cũng có thể tùy chọn chỉ định cổng, đường dẫn và giao thức trong cài đặt của bạn:
 
-```env
+```ini
 TYPESENSE_PORT=8108
 TYPESENSE_PATH=
 TYPESENSE_PROTOCOL=http
@@ -280,6 +280,49 @@ Một số công cụ tìm kiếm như Meilisearch sẽ chỉ thực hiện các
             'price' => (float) $this->price,
         ];
     }
+
+<a name="configuring-indexes-for-algolia"></a>
+#### Configuring Index Settings (Algolia)
+
+Thỉnh thoảng bạn có thể muốn cấu hình thêm các cài đặt trên các index Algolia của bạn. Mặc dù bạn có thể quản lý các cài đặt này thông qua giao diện người dùng của Algolia, nhưng đôi khi việc quản lý trạng thái của cấu hình index trực tiếp từ file cấu hình `config/scout.php` của ứng dụng cũng sẽ hiệu quả hơn.
+
+Cách tiếp cận này cho phép bạn deploy các cài đặt thông qua quy trình deploy tự động của ứng dụng, tránh việc cấu hình thủ công và đảm bảo tính nhất quán trên nhiều môi trường. Bạn có thể cấu hình các thuộc tính filterable, ranking, faceting hoặc [bất kỳ cài đặt nào khác được hỗ trợ](https://www.algolia.com/doc/rest-api/search/#tag/Indices/operation/setSettings).
+
+Để bắt đầu, thêm các cài đặt cho mỗi index trong file cấu hình `config/scout.php` của ứng dụng:
+
+```php
+use App\Models\User;
+use App\Models\Flight;
+
+'algolia' => [
+    'id' => env('ALGOLIA_APP_ID', ''),
+    'secret' => env('ALGOLIA_SECRET', ''),
+    'index-settings' => [
+        User::class => [
+            'searchableAttributes' => ['id', 'name', 'email'],
+            'attributesForFaceting'=> ['filterOnly(email)'],
+            // Other settings fields...
+        ],
+        Flight::class => [
+            'searchableAttributes'=> ['id', 'destination'],
+        ],
+    ],
+],
+```
+
+Nếu model cơ bản của một index nhất định có thể bị soft delete và được chứa trong mảng `index-settings`, Scout sẽ tự động hỗ trợ phân loại trên các model đã bị soft delete trên index đó. Nếu bạn không có thuộc tính phân loại nào khác để định nghĩa cho một index model có thể bị soft delete, bạn có thể chỉ cần thêm một mục trống vào mảng `index-settings` cho model đó:
+
+```php
+'index-settings' => [
+    Flight::class => []
+],
+```
+
+Sau khi cấu hình xong các cài đặt index của ứng dụng, bạn phải chạy lại lệnh Artisan `scout:sync-index-settings`. Lệnh này sẽ thông báo cho Algolia về các cài đặt index hiện tại của bạn. Để thuận tiện, bạn có thể muốn đưa lệnh này vào quy trình deploy của bạn:
+
+```shell
+php artisan scout:sync-index-settings
+```
 
 <a name="configuring-filterable-data-for-meilisearch"></a>
 #### Configuring Filterable Data và Index Settings (Meilisearch)
@@ -591,9 +634,13 @@ Nếu bạn muốn xóa bản ghi search index cho tất cả các model trong m
 
     $user->orders()->unsearchable();
 
-Hoặc, nếu bạn đã có một collection các model Eloquent trong bộ nhớ, bạn có thể gọi phương thức `unsearchable` trên instance collection để xóa các instance model ra khỏi index tương ứng của chúng:
+Hoặc, nếu bạn đã có một collection các model Eloquent trong bộ nhớ, bạn có thể gọi phương thức `unsearchable` trên instance collection để xóa các instance model ra khỏi index tìm kiếm của chúng:
 
     $orders->unsearchable();
+
+Để xóa tất cả các record model ra khỏi index tìm kiếm của chúng, bạn có thể gọi phương thức `removeAllFromSearch`:
+
+    Order::removeAllFromSearch();
 
 <a name="pausing-indexing"></a>
 ### Pausing Indexing

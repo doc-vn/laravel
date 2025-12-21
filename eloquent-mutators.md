@@ -196,9 +196,9 @@ protected function address(): Attribute
 <a name="attribute-casting"></a>
 ## Attribute Casting
 
-Casting thuộc tính cung cấp chức năng tương tự như accessor và mutator mà không yêu cầu bạn phải định nghĩa thêm bất kỳ phương thức nào trên model của bạn. Thay vào đó, thuộc tính `$casts` của model của bạn phải cung cấp một phương thức để chuyển đổi các thuộc tính thành các loại dữ liệu phổ biến.
+Casting thuộc tính cung cấp chức năng tương tự như accessor và mutator mà không yêu cầu bạn phải định nghĩa thêm bất kỳ phương thức nào trên model của bạn. Thay vào đó, phương thức `casts` của model của bạn phải cung cấp một cách thuận tiện để chuyển đổi các thuộc tính thành các loại dữ liệu phổ biến.
 
-Thuộc tính `$casts` phải là một mảng trong đó khóa là tên của thuộc tính được cast và giá trị là loại mà bạn muốn cast. Các loại cast được hỗ trợ là:
+Phương thức `casts` sẽ trả về một mảng trong đó khóa là tên của thuộc tính được cast và giá trị là loại mà bạn muốn cast. Các loại cast được hỗ trợ là:
 
 <div class="content-list" markdown="1">
 
@@ -237,13 +237,16 @@ Thuộc tính `$casts` phải là một mảng trong đó khóa là tên của t
     class User extends Model
     {
         /**
-         * The attributes that should be cast.
+         * Get the attributes that should be cast.
          *
-         * @var array
+         * @return array<string, string>
          */
-        protected $casts = [
-            'is_admin' => 'boolean',
-        ];
+        protected function casts(): array
+        {
+            return [
+                'is_admin' => 'boolean',
+            ];
+        }
     }
 
 Sau khi định nghĩa cast xong, thuộc tính `is_admin` sẽ luôn được cast thành boolean khi bạn truy cập vào nó, ngay cả khi giá trị của nó được lưu trong cơ sở dữ liệu là dưới dạng số nguyên:
@@ -279,13 +282,16 @@ Bạn có thể sử dụng class cast `Illuminate\Database\Eloquent\Casts\AsStr
     class User extends Model
     {
         /**
-         * The attributes that should be cast.
+         * Get the attributes that should be cast.
          *
-         * @var array
+         * @return array<string, string>
          */
-        protected $casts = [
-            'directory' => AsStringable::class,
-        ];
+        protected function casts(): array
+        {
+            return [
+                'directory' => AsStringable::class,
+            ];
+        }
     }
 
 <a name="array-and-json-casting"></a>
@@ -302,13 +308,16 @@ Cast `array` đặc biệt hữu ích khi làm việc với các cột được 
     class User extends Model
     {
         /**
-         * The attributes that should be cast.
+         * Get the attributes that should be cast.
          *
-         * @var array
+         * @return array<string, string>
          */
-        protected $casts = [
-            'options' => 'array',
-        ];
+        protected function casts(): array
+        {
+            return [
+                'options' => 'array',
+            ];
+        }
     }
 
 Sau khi đã định nghĩa xong cast, bạn có thể truy cập vào thuộc tính `options` và nó sẽ tự động được phân giải hoá hóa từ JSON thành một mảng PHP. Khi bạn set giá trị cho thuộc tính `options`, thì mảng đã cho sẽ tự động được chuyển hóa trở lại thành JSON để lưu trữ:
@@ -345,26 +354,32 @@ Mặc dù cast `array` là đủ cho nhiều ứng dụng, nhưng nó có một 
     use Illuminate\Database\Eloquent\Casts\AsArrayObject;
 
     /**
-     * The attributes that should be cast.
+     * Get the attributes that should be cast.
      *
-     * @var array
+     * @return array<string, string>
      */
-    protected $casts = [
-        'options' => AsArrayObject::class,
-    ];
+    protected function casts(): array
+    {
+        return [
+            'options' => AsArrayObject::class,
+        ];
+    }
 
 Tương tự, Laravel cũng cung cấp một cast `AsCollection` để cast các thuộc tính JSON của bạn thành một instance [Collection](/docs/{{version}}/collections) của Laravel:
 
     use Illuminate\Database\Eloquent\Casts\AsCollection;
 
     /**
-     * The attributes that should be cast.
+     * Get the attributes that should be cast.
      *
-     * @var array
+     * @return array<string, string>
      */
-    protected $casts = [
-        'options' => AsCollection::class,
-    ];
+    protected function casts(): array
+    {
+        return [
+            'options' => AsCollection::class,
+        ];
+    }
 
 Nếu bạn muốn cast`AsCollection` cho một instance custom collection class thay cho một base collection class của Laravel, bạn có thể cung cấp collection class name đó dưới một tham số case:
 
@@ -372,29 +387,35 @@ Nếu bạn muốn cast`AsCollection` cho một instance custom collection class
     use Illuminate\Database\Eloquent\Casts\AsCollection;
 
     /**
-     * The attributes that should be cast.
+     * Get the attributes that should be cast.
      *
-     * @var array
+     * @return array<string, string>
      */
-    protected $casts = [
-        'options' => AsCollection::class.':'.OptionCollection::class,
-    ];
+    protected function casts(): array
+    {
+        return [
+            'options' => AsCollection::using(OptionCollection::class),
+        ];
+    }
 
 <a name="date-casting"></a>
 ### Date Casting
 
-Mặc định, Eloquent sẽ cast các field `created_at` và `updated_at` sang các instance của [Carbon](https://github.com/briannesbitt/Carbon), được extend từ class `DateTime` của PHP và cung cấp nhiều phương thức hữu ích. Bạn có thể cast thêm các thuộc tính date này bằng cách định nghĩa thêm các cast date bổ sung vào trong mảng thuộc tính `$casts` của model của bạn. Thông thường, date nên được cast bằng cách sử dụng các loại cast là: `datetime` hoặc `immutable_datetime`.
+Mặc định, Eloquent sẽ cast các field `created_at` và `updated_at` sang các instance của [Carbon](https://github.com/briannesbitt/Carbon), được extend từ class `DateTime` của PHP và cung cấp nhiều phương thức hữu ích. Bạn có thể cast thêm các thuộc tính date này bằng cách định nghĩa thêm các cast date bổ sung vào trong phương thức `casts` của model của bạn. Thông thường, date nên được cast bằng cách sử dụng các loại cast là: `datetime` hoặc `immutable_datetime`.
 
 Khi định nghĩa các kiểu cast `date` hoặc `datetime`, bạn cũng có thể chỉ định định dạng của date đó. Định dạng này sẽ được sử dụng khi [model được chuyển đổi thành mảng hoặc JSON](/docs/{{version}}/eloquent-serialization):
 
     /**
-     * The attributes that should be cast.
+     * Get the attributes that should be cast.
      *
-     * @var array
+     * @return array<string, string>
      */
-    protected $casts = [
-        'created_at' => 'datetime:Y-m-d',
-    ];
+    protected function casts(): array
+    {
+        return [
+            'created_at' => 'datetime:Y-m-d',
+        ];
+    }
 
 Khi một cột được cast dưới dạng là một ngày, bạn có set đặt giá trị của thuộc tính model tương ứng thành các kiểu: một UNIX timestamp, chuỗi ngày (`Y-m-d`), chuỗi ngày và giờ hoặc instance `DateTime` hoặc `Carbon`. Các giá trị của ngày sẽ được chuyển đổi và lưu trữ chính xác trong cơ sở dữ liệu của bạn.
 
@@ -422,23 +443,26 @@ Bạn có thể tùy chỉnh định dạng mặc định của việc chuyển 
 
 Mặc định, các cast `date` và `datetime` sẽ chuyển đổi các ngày thành các chuỗi ngày UTC ISO-8601 (`YYYY-MM-DDTHH:MM:SS.uuuuuuZ`), bất kể múi giờ được chỉ định trong tùy chọn cấu hình `timezone` của ứng dụng của bạn là gì. Bạn được khuyến khích luôn sử dụng định dạng chuyển đổi này, và cũng như cách lưu trữ ngày trong cơ sở dữ liệu bằng cách không thay đổi tùy chọn cấu hình `timezone` của ứng dụng mặc định là giá trị `UTC`. Việc sử dụng múi giờ UTC một cách nhất quán trong toàn bộ ứng dụng của bạn sẽ mang lại mức độ tương tác tối đa với các thư viện thao tác ngày khác được viết bằng PHP hoặc JavaScript.
 
-Nếu một định dạng tùy chỉnh được áp dụng cho kiểu `date` hoặc `datetime`, chẳng hạn như `datetime:Y-m-d H:i:s`, thì múi giờ bên trong instance Carbon sẽ được sử dụng trong quá trình chuyển đổi ngày. Thông thường, đây sẽ là múi giờ được chỉ định trong tùy chọn cấu hình `timezone` của ứng dụng của bạn.
+Nếu một định dạng tùy chỉnh được áp dụng cho kiểu `date` hoặc `datetime`, chẳng hạn như `datetime:Y-m-d H:i:s`, thì múi giờ bên trong instance Carbon sẽ được sử dụng trong quá trình chuyển đổi ngày. Thông thường, đây sẽ là múi giờ được chỉ định trong tùy chọn cấu hình `timezone` của ứng dụng của bạn. Tuy nhiên, điều quan trọng cần lưu ý ở đây là các cột `timestamp` như `created_at` và `updated_at` sẽ không bị ảnh hưởng bởi hành vi này và luôn được định dạng theo múi giờ UTC, bất kể cài đặt múi giờ của ứng dụng là gì.
 
 <a name="enum-casting"></a>
 ### Enum Casting
 
-Eloquent cũng cho phép bạn cast các giá trị thuộc tính của bạn sang PHP [Enums](https://www.php.net/manual/en/language.enumerations.backed.php). Để thực hiện điều này, bạn có thể chỉ định thuộc tính và enum mà bạn muốn truyền vào trong mảng thuộc tính `$casts` của model:
+Eloquent cũng cho phép bạn cast các giá trị thuộc tính của bạn sang PHP [Enums](https://www.php.net/manual/en/language.enumerations.backed.php). Để thực hiện điều này, bạn có thể chỉ định thuộc tính và enum mà bạn muốn truyền vào trong phương thức `casts` của model:
 
     use App\Enums\ServerStatus;
 
     /**
-     * The attributes that should be cast.
+     * Get the attributes that should be cast.
      *
-     * @var array
+     * @return array<string, string>
      */
-    protected $casts = [
-        'status' => ServerStatus::class,
-    ];
+    protected function casts(): array
+    {
+        return [
+            'status' => ServerStatus::class,
+        ];
+    }
 
 Khi bạn đã định nghĩa xong kiểu cast trong model của bạn, thuộc tính được chỉ định sẽ tự động được cast đến một enum hoặc một enum chuyển qua khi bạn tương tác với thuộc tính:
 
@@ -457,13 +481,16 @@ Thỉnh thoảng bạn có thể cần model của bạn lưu một mảng các 
     use Illuminate\Database\Eloquent\Casts\AsEnumCollection;
 
     /**
-     * The attributes that should be cast.
+     * Get the attributes that should be cast.
      *
-     * @var array
+     * @return array<string, string>
      */
-    protected $casts = [
-        'statuses' => AsEnumCollection::class.':'.ServerStatus::class,
-    ];
+    protected function casts(): array
+    {
+        return [
+            'statuses' => AsEnumCollection::of(ServerStatus::class),
+        ];
+    }
 
 <a name="encrypted-casting"></a>
 ### Encrypted Casting
@@ -488,7 +515,7 @@ Thỉnh thoảng, bạn có thể cần áp dụng cast kiểu trong khi thực 
     $users = User::select([
         'users.*',
         'last_posted_at' => Post::selectRaw('MAX(created_at)')
-                ->whereColumn('user_id', 'users.id')
+            ->whereColumn('user_id', 'users.id')
     ])->get();
 
 Thuộc tính `last_posted_at` trên kết quả của truy vấn này sẽ là một chuỗi. Và sẽ thật tuyệt nếu chúng ta có thể áp dụng kiểu cast `datetime` cho thuộc tính này khi thực hiện truy vấn. Rất may, chúng ta có thể thực hiện việc này bằng cách sử dụng phương thức `withCasts`:
@@ -496,7 +523,7 @@ Thuộc tính `last_posted_at` trên kết quả của truy vấn này sẽ là 
     $users = User::select([
         'users.*',
         'last_posted_at' => Post::selectRaw('MAX(created_at)')
-                ->whereColumn('user_id', 'users.id')
+            ->whereColumn('user_id', 'users.id')
     ])->withCasts([
         'last_posted_at' => 'datetime'
     ])->get();
@@ -555,13 +582,16 @@ Khi bạn đã định nghĩa xong một kiểu cast tùy chỉnh, bạn có th�
     class User extends Model
     {
         /**
-         * The attributes that should be cast.
+         * Get the attributes that should be cast.
          *
-         * @var array
+         * @return array<string, string>
          */
-        protected $casts = [
-            'options' => Json::class,
-        ];
+        protected function casts(): array
+        {
+            return [
+                'options' => Json::class,
+            ];
+        }
     }
 
 <a name="value-object-casting"></a>
@@ -697,8 +727,8 @@ Một ví dụ cơ bản về class cast inbound là cast một giá trị "hash
         public function set(Model $model, string $key, mixed $value, array $attributes): string
         {
             return is_null($this->algorithm)
-                        ? bcrypt($value)
-                        : hash($this->algorithm, $value);
+                ? bcrypt($value)
+                : hash($this->algorithm, $value);
         }
     }
 
@@ -708,13 +738,16 @@ Một ví dụ cơ bản về class cast inbound là cast một giá trị "hash
 Khi gắn một cast tùy chỉnh vào một model, các tham số cast có thể được chỉ định bằng cách tách chúng ra khỏi tên class bằng ký tự `:` và phân cách bằng dấu phẩy cho nhiều tham số khác nhau. Các tham số này sẽ được truyền cho hàm khởi tạo của class cast:
 
     /**
-     * The attributes that should be cast.
+     * Get the attributes that should be cast.
      *
-     * @var array
+     * @return array<string, string>
      */
-    protected $casts = [
-        'secret' => Hash::class.':sha256',
-    ];
+    protected function casts(): array
+    {
+        return [
+            'secret' => Hash::class.':sha256',
+        ];
+    }
 
 <a name="castables"></a>
 ### Castables
@@ -723,9 +756,12 @@ Bạn có thể muốn cho phép các giá trị của đối tượng trong ứ
 
     use App\ValueObjects\Address;
 
-    protected $casts = [
-        'address' => Address::class,
-    ];
+    protected function casts(): array
+    {
+        return [
+            'address' => Address::class,
+        ];
+    }
 
 Các đối tượng implement interface `Castable` phải định nghĩa một phương thức `castUsing` trả về tên class của class caster tùy chỉnh chịu trách nhiệm cast đến và đi từ class `Castable`:
 
@@ -749,13 +785,16 @@ Các đối tượng implement interface `Castable` phải định nghĩa một 
         }
     }
 
-Khi sử dụng các class `Castable`, bạn vẫn có thể truyền các tham số trong định nghĩa `$casts`. Các tham số này sẽ được truyền đến phương thức `castUsing`:
+Khi sử dụng các class `Castable`, bạn vẫn có thể truyền các tham số trong định nghĩa phương thức `casts`. Các tham số này sẽ được truyền đến phương thức `castUsing`:
 
     use App\ValueObjects\Address;
 
-    protected $casts = [
-        'address' => Address::class.':argument',
-    ];
+    protected function casts(): array
+    {
+        return [
+            'address' => Address::class.':argument',
+        ];
+    }
 
 <a name="anonymous-cast-classes"></a>
 #### Castables & Anonymous Cast Classes

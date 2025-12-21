@@ -71,7 +71,7 @@ php artisan schema:dump --database=testing --prune
 Bạn nên commit file schema của cơ sở dữ liệu của bạn vào trong source control để các nhà phát triển mới khác ở trong team của bạn có thể nhanh chóng tạo ra cơ sở dữ liệu cho ứng dụng của bạn.
 
 > [!WARNING]
-> Tính năng dồn migration này, hiện tại sẽ chỉ có khả dụng cho cơ sở dữ liệu MySQL, PostgreSQL và SQLite, sử dụng command-line của cơ sở dữ liệu bên phía client.
+> Tính năng dồn migration này, hiện tại sẽ chỉ có khả dụng cho cơ sở dữ liệu MariaDB, MySQL, PostgreSQL và SQLite, sử dụng command-line của cơ sở dữ liệu bên phía client.
 
 <a name="migration-structure"></a>
 ## Cấu trúc Migration
@@ -190,9 +190,9 @@ php artisan migrate:rollback --step=5
 
 Bạn có thể roll back lại một "batch" migrations cụ thể bằng cách cung cấp tùy chọn `batch` cho lệnh `rollback`, trong đó tùy chọn `batch` tương ứng với giá trị batch trong bảng cơ sở dữ liệu `migrations` của ứng dụng. Ví dụ, lệnh sau sẽ roll back lại tất cả các migrations trong batch thứ ba:
 
- ```shell
- php artisan migrate:rollback --batch=3
- ```
+```shell
+php artisan migrate:rollback --batch=3
+```
 
 Nếu bạn muốn xem các câu lệnh SQL sẽ được thực thi bởi quá trình migration mà không muốn chạy chúng, bạn có thể cung cấp flag `--pretend` cho lệnh `migrate:rollback`:
 
@@ -267,7 +267,7 @@ Khi tạo bảng, bạn có thể sử dụng bất kỳ [column methods](#creat
 <a name="determining-table-column-existence"></a>
 #### Determining Table / Column Existence
 
-Bạn có thể xác định sự tồn tại của một bảng hoặc một cột bằng các phương thức `hasTable` và `hasColumn`:
+Bạn có thể xác định sự tồn tại của một bảng, một cột, hoặc một index bằng các phương thức `hasTable`, `hasColumn`, và `hasIndex`:
 
     if (Schema::hasTable('users')) {
         // The "users" table exists...
@@ -275,6 +275,10 @@ Bạn có thể xác định sự tồn tại của một bảng hoặc một c�
 
     if (Schema::hasColumn('users', 'email')) {
         // The "users" table exists and has an "email" column...
+    }
+
+    if (Schema::hasIndex('users', ['email'], 'unique')) {
+        // The "users" table exists and has a unique index on the "email" column...
     }
 
 <a name="database-connection-table-options"></a>
@@ -286,19 +290,19 @@ Nếu bạn muốn thực hiện một schema trên một kết nối cơ sở d
         $table->id();
     });
 
-Ngoài ra, có một số thuộc tính và phương thức khác có thể được sử dụng để định nghĩa các khía cạnh khác của việc tạo bảng. Thuộc tính `engine` có thể được sử dụng để chỉ định storage engine của bảng đó khi sử dụng MySQL:
+Ngoài ra, có một số thuộc tính và phương thức khác có thể được sử dụng để định nghĩa các khía cạnh khác của việc tạo bảng. Thuộc tính `engine` có thể được sử dụng để chỉ định storage engine của bảng đó khi sử dụng MariaDB hoặc MySQL:
 
     Schema::create('users', function (Blueprint $table) {
-        $table->engine = 'InnoDB';
+        $table->engine('InnoDB');
 
         // ...
     });
 
-Thuộc tính `charset` và `collation` có thể được sử dụng để chỉ định character set và collation cho bảng được tạo khi sử dụng MySQL:
+Thuộc tính `charset` và `collation` có thể được sử dụng để chỉ định character set và collation cho bảng được tạo khi sử dụng MariaDB hoặc MySQL:
 
     Schema::create('users', function (Blueprint $table) {
-        $table->charset = 'utf8mb4';
-        $table->collation = 'utf8mb4_unicode_ci';
+        $table->charset('utf8mb4');
+        $table->collation('utf8mb4_unicode_ci');
 
         // ...
     });
@@ -311,7 +315,7 @@ Phương thức `temporary` có thể được sử dụng để chỉ ra rằng
         // ...
     });
 
-Nếu bạn muốn thêm một "comment" vào bảng cơ sở dữ liệu, bạn có thể gọi phương thức `comment` trên instance table. Comment trên table hiện chỉ được hỗ trợ trong MySQL và Postgres:
+Nếu bạn muốn thêm một "comment" vào bảng cơ sở dữ liệu, bạn có thể gọi phương thức `comment` trên instance table. Comment trên table hiện chỉ được hỗ trợ trong MariaDB, MySQL, và PostgreSQL:
 
     Schema::create('calculations', function (Blueprint $table) {
         $table->comment('Business calculations');
@@ -392,76 +396,142 @@ Schema builder blueprint cung cấp nhiều phương thức tương ứng với 
     }
 </style>
 
+<a name="booleans-method-list"></a>
+#### Boolean Types
+
+<div class="collection-method-list" markdown="1">
+
+[boolean](#column-method-boolean)
+
+</div>
+
+<a name="strings-and-texts-method-list"></a>
+#### String & Text Types
+
+<div class="collection-method-list" markdown="1">
+
+[char](#column-method-char)
+[longText](#column-method-longText)
+[mediumText](#column-method-mediumText)
+[string](#column-method-string)
+[text](#column-method-text)
+[tinyText](#column-method-tinyText)
+
+</div>
+
+<a name="numbers--method-list"></a>
+#### Numeric Types
+
 <div class="collection-method-list" markdown="1">
 
 [bigIncrements](#column-method-bigIncrements)
 [bigInteger](#column-method-bigInteger)
-[binary](#column-method-binary)
-[boolean](#column-method-boolean)
-[char](#column-method-char)
-[dateTimeTz](#column-method-dateTimeTz)
-[dateTime](#column-method-dateTime)
-[date](#column-method-date)
 [decimal](#column-method-decimal)
 [double](#column-method-double)
-[enum](#column-method-enum)
 [float](#column-method-float)
-[foreignId](#column-method-foreignId)
-[foreignIdFor](#column-method-foreignIdFor)
-[foreignUlid](#column-method-foreignUlid)
-[foreignUuid](#column-method-foreignUuid)
-[geometryCollection](#column-method-geometryCollection)
-[geometry](#column-method-geometry)
 [id](#column-method-id)
 [increments](#column-method-increments)
 [integer](#column-method-integer)
-[ipAddress](#column-method-ipAddress)
-[json](#column-method-json)
-[jsonb](#column-method-jsonb)
-[lineString](#column-method-lineString)
-[longText](#column-method-longText)
-[macAddress](#column-method-macAddress)
 [mediumIncrements](#column-method-mediumIncrements)
 [mediumInteger](#column-method-mediumInteger)
-[mediumText](#column-method-mediumText)
-[morphs](#column-method-morphs)
-[multiLineString](#column-method-multiLineString)
-[multiPoint](#column-method-multiPoint)
-[multiPolygon](#column-method-multiPolygon)
-[nullableMorphs](#column-method-nullableMorphs)
-[nullableTimestamps](#column-method-nullableTimestamps)
-[nullableUlidMorphs](#column-method-nullableUlidMorphs)
-[nullableUuidMorphs](#column-method-nullableUuidMorphs)
-[point](#column-method-point)
-[polygon](#column-method-polygon)
-[rememberToken](#column-method-rememberToken)
-[set](#column-method-set)
 [smallIncrements](#column-method-smallIncrements)
 [smallInteger](#column-method-smallInteger)
-[softDeletesTz](#column-method-softDeletesTz)
-[softDeletes](#column-method-softDeletes)
-[string](#column-method-string)
-[text](#column-method-text)
-[timeTz](#column-method-timeTz)
-[time](#column-method-time)
-[timestampTz](#column-method-timestampTz)
-[timestamp](#column-method-timestamp)
-[timestampsTz](#column-method-timestampsTz)
-[timestamps](#column-method-timestamps)
 [tinyIncrements](#column-method-tinyIncrements)
 [tinyInteger](#column-method-tinyInteger)
-[tinyText](#column-method-tinyText)
 [unsignedBigInteger](#column-method-unsignedBigInteger)
-[unsignedDecimal](#column-method-unsignedDecimal)
 [unsignedInteger](#column-method-unsignedInteger)
 [unsignedMediumInteger](#column-method-unsignedMediumInteger)
 [unsignedSmallInteger](#column-method-unsignedSmallInteger)
 [unsignedTinyInteger](#column-method-unsignedTinyInteger)
-[ulidMorphs](#column-method-ulidMorphs)
-[uuidMorphs](#column-method-uuidMorphs)
-[ulid](#column-method-ulid)
-[uuid](#column-method-uuid)
+
+</div>
+
+<a name="dates-and-times-method-list"></a>
+#### Date & Time Types
+
+<div class="collection-method-list" markdown="1">
+
+[dateTime](#column-method-dateTime)
+[dateTimeTz](#column-method-dateTimeTz)
+[date](#column-method-date)
+[time](#column-method-time)
+[timeTz](#column-method-timeTz)
+[timestamp](#column-method-timestamp)
+[timestamps](#column-method-timestamps)
+[timestampsTz](#column-method-timestampsTz)
+[softDeletes](#column-method-softDeletes)
+[softDeletesTz](#column-method-softDeletesTz)
 [year](#column-method-year)
+
+</div>
+
+<a name="binaries-method-list"></a>
+#### Binary Types
+
+<div class="collection-method-list" markdown="1">
+
+[binary](#column-method-binary)
+
+</div>
+
+<a name="object-and-jsons-method-list"></a>
+#### Object & Json Types
+
+<div class="collection-method-list" markdown="1">
+
+[json](#column-method-json)
+[jsonb](#column-method-jsonb)
+
+</div>
+
+<a name="uuids-and-ulids-method-list"></a>
+#### UUID & ULID Types
+
+<div class="collection-method-list" markdown="1">
+
+[ulid](#column-method-ulid)
+[ulidMorphs](#column-method-ulidMorphs)
+[uuid](#column-method-uuid)
+[uuidMorphs](#column-method-uuidMorphs)
+[nullableUlidMorphs](#column-method-nullableUlidMorphs)
+[nullableUuidMorphs](#column-method-nullableUuidMorphs)
+
+</div>
+
+<a name="spatials-method-list"></a>
+#### Spatial Types
+
+<div class="collection-method-list" markdown="1">
+
+[geography](#column-method-geography)
+[geometry](#column-method-geometry)
+
+</div>
+
+#### Relationship Types
+
+<div class="collection-method-list" markdown="1">
+
+[foreignId](#column-method-foreignId)
+[foreignIdFor](#column-method-foreignIdFor)
+[foreignUlid](#column-method-foreignUlid)
+[foreignUuid](#column-method-foreignUuid)
+[morphs](#column-method-morphs)
+[nullableMorphs](#column-method-nullableMorphs)
+
+</div>
+
+<a name="spacifics-method-list"></a>
+#### Specialty Types
+
+<div class="collection-method-list" markdown="1">
+
+[enum](#column-method-enum)
+[set](#column-method-set)
+[macAddress](#column-method-macAddress)
+[ipAddress](#column-method-ipAddress)
+[rememberToken](#column-method-rememberToken)
+[vector](#column-method-vector)
 
 </div>
 
@@ -486,6 +556,12 @@ Phương thức `binary` sẽ tạo một cột tương ứng với `BLOB`:
 
     $table->binary('photo');
 
+Khi sử dụng MySQL, MariaDB hoặc SQL Server, bạn có thể truyền các tham số `length` và `fixed` để tạo ra các cột tương đương `VARBINARY` hoặc `BINARY`:
+
+    $table->binary('data', length: 16); // VARBINARY(16)
+
+    $table->binary('data', length: 16, fixed: true); // BINARY(16)
+
 <a name="column-method-boolean"></a>
 #### `boolean()` {.collection-method}
 
@@ -498,21 +574,21 @@ Phương thức `boolean` sẽ tạo một cột tương ứng với `BOOLEAN`:
 
 Phương thức `char` sẽ tạo một một cột tương ứng với `CHAR` và độ dài nhất định:
 
-    $table->char('name', 100);
+    $table->char('name', length: 100);
 
 <a name="column-method-dateTimeTz"></a>
 #### `dateTimeTz()` {.collection-method}
 
-Phương thức `dateTimeTz` sẽ tạo một cột tương ứng với `DATETIME` (cùng timezone) với độ chính xác (tổng chữ số):
+Phương thức `dateTimeTz` sẽ tạo một cột tương ứng với `DATETIME` (cùng timezone) với một tuỳ chọn độ chính xác của giây tính đến hàng phân số phía sau dấu chấm:
 
-    $table->dateTimeTz('created_at', $precision = 0);
+    $table->dateTimeTz('created_at', precision: 0);
 
 <a name="column-method-dateTime"></a>
 #### `dateTime()` {.collection-method}
 
-Phương thức `dateTime` sẽ tạo một cột tương ứng với `DATETIME` và độ chính xác (tổng chữ số):
+Phương thức `dateTime` sẽ tạo một cột tương ứng với `DATETIME` và một tuỳ chọn độ chính xác của giây tính đến hàng phân số phía sau dấu chấm:
 
-    $table->dateTime('created_at', $precision = 0);
+    $table->dateTime('created_at', precision: 0);
 
 <a name="column-method-date"></a>
 #### `date()` {.collection-method}
@@ -526,14 +602,14 @@ Phương thức `date` sẽ tạo một cột tương ứng với `DATE`:
 
 Phương thức `decimal` sẽ tạo một cột tương ứng với `DECIMAL` và độ chính xác (tổng chữ số) và độ dài (chữ số thập phân):
 
-    $table->decimal('amount', $precision = 8, $scale = 2);
+    $table->decimal('amount', total: 8, places: 2);
 
 <a name="column-method-double"></a>
 #### `double()` {.collection-method}
 
-Phương thức `double` sẽ tạo một cột tương ứng với `DOUBLE` và độ chính xác (tổng chữ số) và độ dài (chữ số thập phân):
+Phương thức `double` sẽ tạo một cột tương ứng với `DOUBLE`:
 
-    $table->double('amount', 8, 2);
+    $table->double('amount');
 
 <a name="column-method-enum"></a>
 #### `enum()` {.collection-method}
@@ -545,9 +621,9 @@ Phương thức `enum` sẽ tạo một cột tương ứng với `ENUM` và cá
 <a name="column-method-float"></a>
 #### `float()` {.collection-method}
 
-Phương thức `float` sẽ tạo một cột tương ứng với `FLOAT` và độ chính xác (tổng chữ số) và độ dài (chữ số thập phân):
+Phương thức `float` sẽ tạo một cột tương ứng với `FLOAT` và độ chính xác:
 
-    $table->float('amount', 8, 2);
+    $table->float('amount', precision: 53);
 
 <a name="column-method-foreignId"></a>
 #### `foreignId()` {.collection-method}
@@ -577,19 +653,25 @@ Phương thức `foreignUuid` sẽ tạo một cột tương ứng với `UUID`:
 
     $table->foreignUuid('user_id');
 
-<a name="column-method-geometryCollection"></a>
-#### `geometryCollection()` {.collection-method}
+<a name="column-method-geography"></a>
+#### `geography()` {.collection-method}
 
-Phương thức `geometryCollection` sẽ tạo một cột tương ứng với `GEOMETRYCOLLECTION`:
+Phương thức `geography` sẽ tạo một cột tương ứng với `GEOGRAPHY` với kiểu không gian và SRID (Spatial Reference System Identifier) đã cho:
 
-    $table->geometryCollection('positions');
+    $table->geography('coordinates', subtype: 'point', srid: 4326);
+
+> [!NOTE]
+> Việc hỗ trợ cho các kiểu dữ liệu không gian phụ thuộc vào driver cơ sở dữ liệu của bạn. Vui lòng tham khảo tài liệu của cơ sở dữ liệu của bạn. Nếu ứng dụng của bạn đang sử dụng cơ sở dữ liệu PostgreSQL, bạn phải cài đặt extension [PostGIS](https://postgis.net) trước khi có thể sử dụng phương thức `geography`.
 
 <a name="column-method-geometry"></a>
 #### `geometry()` {.collection-method}
 
-Phương thức `geometry` sẽ tạo một cột tương ứng với `GEOMETRY`:
+Phương thức `geometry` sẽ tạo một cột tương ứng với `GEOMETRY` với kiểu không gian và SRID (Spatial Reference System Identifier) đã cho:
 
-    $table->geometry('positions');
+    $table->geometry('positions', subtype: 'point', srid: 0);
+
+> [!NOTE]
+> Việc hỗ trợ cho các kiểu dữ liệu không gian phụ thuộc vào driver cơ sở dữ liệu của bạn. Vui lòng tham khảo tài liệu của cơ sở dữ liệu của bạn. Nếu ứng dụng của bạn đang sử dụng cơ sở dữ liệu PostgreSQL, bạn phải cài đặt extension [PostGIS](https://postgis.net) trước khi có thể sử dụng phương thức `geometry`.
 
 <a name="column-method-id"></a>
 #### `id()` {.collection-method}
@@ -619,7 +701,7 @@ Phương thức `ipAddress` sẽ tạo một cột tương ứng với `VARCHAR`
 
     $table->ipAddress('visitor');
 
-Khi sử dụng Postgres, cột `INET` sẽ được tạo.
+Khi sử dụng PostgreSQL, cột `INET` sẽ được tạo.
 
 <a name="column-method-json"></a>
 #### `json()` {.collection-method}
@@ -628,6 +710,8 @@ Phương thức `json` sẽ tạo một cột tương ứng với `JSON`:
 
     $table->json('options');
 
+Khi sử dụng SQLite, một cột `TEXT` sẽ được tạo.
+
 <a name="column-method-jsonb"></a>
 #### `jsonb()` {.collection-method}
 
@@ -635,12 +719,7 @@ Phương thức `jsonb` sẽ tạo một cột tương ứng với `JSONB`:
 
     $table->jsonb('options');
 
-<a name="column-method-lineString"></a>
-#### `lineString()` {.collection-method}
-
-Phương thức `lineString` sẽ tạo một cột tương ứng với `LINESTRING`:
-
-    $table->lineString('positions');
+Khi sử dụng SQLite, một cột `TEXT` sẽ được tạo.
 
 <a name="column-method-longText"></a>
 #### `longText()` {.collection-method}
@@ -648,6 +727,10 @@ Phương thức `lineString` sẽ tạo một cột tương ứng với `LINESTR
 Phương thức `longText` sẽ tạo một cột tương ứng với `LONGTEXT`:
 
     $table->longText('description');
+
+Khi sử dụng MySQL hoặc MariaDB, bạn có thể áp dụng bộ ký tự `binary` cho cột để tạo ra một cột tương đương `LONGBLOB`:
+
+    $table->longText('data')->charset('binary'); // LONGBLOB
 
 <a name="column-method-macAddress"></a>
 #### `macAddress()` {.collection-method}
@@ -677,6 +760,10 @@ Phương thức `mediumText` sẽ tạo một cột tương ứng với `MEDIUMT
 
     $table->mediumText('description');
 
+Khi sử dụng MySQL hoặc MariaDB, bạn có thể áp dụng bộ ký tự `binary` cho cột để tạo ra một cột tương đương `MEDIUMBLOB`:
+
+    $table->mediumText('data')->charset('binary'); // MEDIUMBLOB
+
 <a name="column-method-morphs"></a>
 #### `morphs()` {.collection-method}
 
@@ -685,34 +772,6 @@ Phương thức `morphs` là một phương thức rất tiện lợi, nó sẽ 
 Mục đích phương thức này là nhằm sử dụng khi định nghĩa các cột cần thiết cho [quan hệ đa hình](/docs/{{version}}/eloquent-relationships). Trong ví dụ dưới, các cột `taggable_id` và `taggable_type` sẽ được tạo:
 
     $table->morphs('taggable');
-
-<a name="column-method-multiLineString"></a>
-#### `multiLineString()` {.collection-method}
-
-Phương thức `multiLineString` sẽ tạo một cột tương ứng với `MULTILINESTRING`:
-
-    $table->multiLineString('positions');
-
-<a name="column-method-multiPoint"></a>
-#### `multiPoint()` {.collection-method}
-
-Phương thức `multiPoint` sẽ tạo một cột tương ứng với `MULTIPOINT`:
-
-    $table->multiPoint('positions');
-
-<a name="column-method-multiPolygon"></a>
-#### `multiPolygon()` {.collection-method}
-
-Phương thức `multiPolygon` sẽ tạo một cột tương ứng với `MULTIPOLYGON`:
-
-    $table->multiPolygon('positions');
-
-<a name="column-method-nullableTimestamps"></a>
-#### `nullableTimestamps()` {.collection-method}
-
-Phương thức `nullableTimestamps` là lối tắt của phương thức [timestamps](#column-method-timestamps):
-
-    $table->nullableTimestamps(0);
 
 <a name="column-method-nullableMorphs"></a>
 #### `nullableMorphs()` {.collection-method}
@@ -734,20 +793,6 @@ Phương thức này tương tự như phương thức [ulidMorphs](#column-meth
 Phương thức này tương tự như phương thức [uuidMorphs](#column-method-uuidMorphs); tuy nhiên, các cột được tạo sẽ có giá trị "nullable":
 
     $table->nullableUuidMorphs('taggable');
-
-<a name="column-method-point"></a>
-#### `point()` {.collection-method}
-
-Phương thức `point` sẽ tạo một cột tương ứng với `POINT`:
-
-    $table->point('position');
-
-<a name="column-method-polygon"></a>
-#### `polygon()` {.collection-method}
-
-Phương thức `polygon` sẽ tạo một cột tương ứng với `POLYGON`:
-
-    $table->polygon('position');
 
 <a name="column-method-rememberToken"></a>
 #### `rememberToken()` {.collection-method}
@@ -780,23 +825,23 @@ Phương thức `smallInteger` sẽ tạo một cột tương ứng với `SMALL
 <a name="column-method-softDeletesTz"></a>
 #### `softDeletesTz()` {.collection-method}
 
-Phương thức `softDeletesTz` sẽ thêm một cột tương ứng với `deleted_at` `TIMESTAMP` (cùng timezone) và có thể nullable cùng độ chính xác (tổng chữ số). Cột này nhằm mục đích để lưu trữ timestamp `deleted_at` sẽ cần thiết cho chức năng "soft delete" của Eloquent:
+Phương thức `softDeletesTz` sẽ thêm một cột tương ứng với `deleted_at` `TIMESTAMP` (cùng timezone) và có thể nullable cùng độ chính xác giây tính đến hàng phân số phía sau dấu chấm. Cột này nhằm mục đích để lưu trữ timestamp `deleted_at` sẽ cần thiết cho chức năng "soft delete" của Eloquent:
 
     $table->softDeletesTz($column = 'deleted_at', $precision = 0);
 
 <a name="column-method-softDeletes"></a>
 #### `softDeletes()` {.collection-method}
 
-Phương thức `softDeletes` sẽ thêm một cột tương ứng với `deleted_at` `TIMESTAMP` và có thể nullable cùng độ chính xác (tổng chữ số). Cột này nhằm mục đích để lưu trữ timestamp `deleted_at` sẽ cần thiết cho chức năng "soft delete" của Eloquent:
+Phương thức `softDeletes` sẽ thêm một cột tương ứng với `deleted_at` `TIMESTAMP` và có thể nullable cùng độ chính xác giây tính đến hàng phân số phía sau dấu chấm. Cột này nhằm mục đích để lưu trữ timestamp `deleted_at` sẽ cần thiết cho chức năng "soft delete" của Eloquent:
 
-    $table->softDeletes($column = 'deleted_at', $precision = 0);
+    $table->softDeletes('deleted_at', precision: 0);
 
 <a name="column-method-string"></a>
 #### `string()` {.collection-method}
 
 Phương thức `string` sẽ tạo một cột tương ứng với `VARCHAR` và độ dài cho trước:
 
-    $table->string('name', 100);
+    $table->string('name', length: 100);
 
 <a name="column-method-text"></a>
 #### `text()` {.collection-method}
@@ -805,47 +850,51 @@ Phương thức `text` sẽ tạo một cột tương ứng với `TEXT`:
 
     $table->text('description');
 
+Khi sử dụng MySQL hoặc MariaDB, bạn có thể áp dụng bộ ký tự `binary` cho cột để tạo ra một cột tương đương `BLOB`:
+
+    $table->text('data')->charset('binary'); // BLOB
+
 <a name="column-method-timeTz"></a>
 #### `timeTz()` {.collection-method}
 
-Phương thức `timeTz` sẽ tạo cột tương ứng với `TIME` (cùng timezone) với độ chính xác (tổng chữ số):
+Phương thức `timeTz` sẽ tạo cột tương ứng với `TIME` (cùng timezone) với độ chính xác giây tính đến hàng phân số phía sau dấu chấm:
 
-    $table->timeTz('sunrise', $precision = 0);
+    $table->timeTz('sunrise', precision: 0);
 
 <a name="column-method-time"></a>
 #### `time()` {.collection-method}
 
-Phương thức `timeTz` sẽ tạo cột tương ứng với `TIME` với độ chính xác (tổng chữ số):
+Phương thức `time` sẽ tạo cột tương ứng với `TIME` với độ chính xác giây tính đến hàng phân số phía sau dấu chấm:
 
-    $table->time('sunrise', $precision = 0);
+    $table->time('sunrise', precision: 0);
 
 <a name="column-method-timestampTz"></a>
 #### `timestampTz()` {.collection-method}
 
-Phương thức `timestampTz` sẽ tạo cột tương ứng với `TIMESTAMP` (cùng timezone) với độ chính xác (tổng chữ số):
+Phương thức `timestampTz` sẽ tạo cột tương ứng với `TIMESTAMP` (cùng timezone) với độ chính xác giây tính đến hàng phân số phía sau dấu chấm:
 
-    $table->timestampTz('added_at', $precision = 0);
+    $table->timestampTz('added_at', precision: 0);
 
 <a name="column-method-timestamp"></a>
 #### `timestamp()` {.collection-method}
 
-Phương thức `timestampTz` sẽ tạo cột tương ứng với `TIMESTAMP` với độ chính xác (tổng chữ số):
+Phương thức `timestamp` sẽ tạo cột tương ứng với `TIMESTAMP` với độ chính xác giây tính đến hàng phân số phía sau dấu chấm:
 
-    $table->timestamp('added_at', $precision = 0);
+    $table->timestamp('added_at', precision: 0);
 
 <a name="column-method-timestampsTz"></a>
 #### `timestampsTz()` {.collection-method}
 
-Phương thức `timestampTz` sẽ tạo các cột `created_at` và `updated_at` `TIMESTAMP` (cùng timezone) với độ chính xác (tổng chữ số):
+Phương thức `timestampsTz` sẽ tạo các cột `created_at` và `updated_at` `TIMESTAMP` (cùng timezone) với độ chính xác giây tính đến hàng phân số phía sau dấu chấm:
 
-    $table->timestampsTz($precision = 0);
+    $table->timestampsTz(precision: 0);
 
 <a name="column-method-timestamps"></a>
 #### `timestamps()` {.collection-method}
 
-Phương thức `timestampTz` sẽ tạo các cột `created_at` và `updated_at` `TIMESTAMP` với độ chính xác (tổng chữ số):
+Phương thức `timestamps` sẽ tạo các cột `created_at` và `updated_at` `TIMESTAMP` với độ chính xác giây tính đến hàng phân số phía sau dấu chấm:
 
-    $table->timestamps($precision = 0);
+    $table->timestamps(precision: 0);
 
 <a name="column-method-tinyIncrements"></a>
 #### `tinyIncrements()` {.collection-method}
@@ -868,19 +917,16 @@ Phương thức `tinyText` sẽ tạo một cột tương ứng với `TINYTEXT`
 
     $table->tinyText('notes');
 
+Khi sử dụng MySQL hoặc MariaDB, bạn có thể áp dụng bộ ký tự `binary` cho cột để tạo ra một cột tương đương `TINYBLOB`:
+
+    $table->tinyText('data')->charset('binary'); // TINYBLOB
+
 <a name="column-method-unsignedBigInteger"></a>
 #### `unsignedBigInteger()` {.collection-method}
 
 Phương thức `unsignedBigInteger` sẽ tạo một cột tương ứng với `UNSIGNED BIGINT`:
 
     $table->unsignedBigInteger('votes');
-
-<a name="column-method-unsignedDecimal"></a>
-#### `unsignedDecimal()` {.collection-method}
-
-Phương thức `unsignedDecimal` sẽ tạo một cột tương ứng với `UNSIGNED DECIMAL` và độ chính xác (tổng chữ số) và độ dài (chữ số thập phân):
-
-    $table->unsignedDecimal('amount', $precision = 8, $scale = 2);
 
 <a name="column-method-unsignedInteger"></a>
 #### `unsignedInteger()` {.collection-method}
@@ -942,6 +988,13 @@ Phương thức `uuid` sẽ tạo một cột tương ứng với `UUID`:
 
     $table->uuid('id');
 
+<a name="column-method-vector"></a>
+#### `vector()` {.collection-method}
+
+Phương thức `vector` sẽ tạo một cột tương ứng với `vector`:
+
+    $table->vector('embedding', dimensions: 100);
+
 <a name="column-method-year"></a>
 #### `year()` {.collection-method}
 
@@ -963,26 +1016,29 @@ Ngoài các loại cột được liệt kê ở trên, có một số "modifier
 
 Bảng dưới đây sẽ chứa tất cả các column modifier có sẵn. Danh sách này không bao gồm [index modifiers](#creating-indexes):
 
-Modifier  |  Mô tả
---------  |  -----------
-`->after('column')`  |  Set một column vào "sau" một column khác (MySQL).
-`->autoIncrement()`  |  Set một cột kiểu INTEGER là tự động tăng (primary key).
-`->charset('utf8mb4')`  |  Khai báo character set cho cột (MySQL).
-`->collation('utf8mb4_unicode_ci')`  |  Khai báo collation cho cột (MySQL/PostgreSQL/SQL Server).
-`->comment('my comment')`  |  Thêm comment vào một column (MySQL/PostgreSQL).
-`->default($value)`  |  Khai báo giá trị "default" cho cột.
-`->first()`  |  Set một column vào vị trí "đầu tiên" trong table (MySQL).
-`->from($integer)`  |  Set giá trị bắt đầu của field tự động tăng (MySQL / PostgreSQL).
-`->invisible()`  |  Làm cho cột "ẩn" đi đối với các truy vấn `SELECT *` (MySQL).
-`->nullable($value = true)`  |  Cho phép giá trị mặc định là NULL khi tạo bản ghi mới.
-`->storedAs($expression)`  |  Tạo một cột lấy data từ cột khác lưu vào chính nó (MySQL / PostgreSQL).
-`->unsigned()`  |  Set một cột kiểu INTEGER là luôn dương (MySQL).
-`->useCurrent()`  |  Set cột TIMESTAMP dùng CURRENT_TIMESTAMP làm giá trị mặc định.
-`->useCurrentOnUpdate()`  |  Set cột TIMESTAMP dùng CURRENT_TIMESTAMP khi bản ghi được cập nhật.
-`->virtualAs($expression)`  |  Tạo một cột lấy data từ cột khác nhưng không được lưu trữ (MySQL / PostgreSQL / SQLite).
-`->generatedAs($expression)`  |  Tạo một cột identity với tùy chọn tăng dần được chỉ định (PostgreSQL).
-`->always()`  |  Định nghĩa mức độ ưu tiên của các giá trị tăng dần so với giá trị đầu vào cho một cột identity (PostgreSQL).
-`->isGeometry()`  |  Set cột thành `geometry` - loại mặc định là `geography` (PostgreSQL).
+div class="overflow-auto">
+
+| Modifier                            | Description                                                                                                       |
+| ----------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| `->autoIncrement()`                 | Set một cột kiểu `INTEGER` là tự động tăng (primary key).                                                         |
+| `->after('column')`                 | Set một column vào "sau" một column khác (MariaDB / MySQL).                                                       |
+| `->charset('utf8mb4')`              | Khai báo character set cho cột (MariaDB / MySQL).                                                                 |
+| `->collation('utf8mb4_unicode_ci')` | Khai báo collation cho cột.                                                                                       |
+| `->comment('my comment')`           | Thêm comment vào một column (MariaDB / MySQL / PostgreSQL).                                                       |
+| `->default($value)`                 | Khai báo giá trị "default" cho cột.                                                                               |
+| `->first()`                         | Set một column vào vị trí "đầu tiên" trong table (MariaDB / MySQL).                                               |
+| `->from($integer)`                  | Set giá trị bắt đầu của field tự động tăng (MariaDB / MySQL / PostgreSQL).                                        |
+| `->invisible()`                     | Làm cho cột "ẩn" đi đối với các truy vấn `SELECT *` (MariaDB / MySQL).                                            |
+| `->nullable($value = true)`         | Cho phép giá trị mặc định là `NULL` khi tạo bản ghi mới.                                                          |
+| `->storedAs($expression)`           | Tạo một cột lấy data từ cột khác lưu vào chính nó (MariaDB / MySQL / PostgreSQL / SQLite).                        |
+| `->unsigned()`                      | Set một cột kiểu `INTEGER` là `UNSIGNED` (MariaDB / MySQL).                                                       |
+| `->useCurrent()`                    | Set cột `TIMESTAMP` dùng `CURRENT_TIMESTAMP` làm giá trị mặc định.                                                |
+| `->useCurrentOnUpdate()`            | Set cột `TIMESTAMP` dùng `CURRENT_TIMESTAMP` khi bản ghi được cập nhật (MariaDB / MySQL).                         |
+| `->virtualAs($expression)`          | Tạo một cột lấy data từ cột khác nhưng không được lưu trữ (MariaDB / MySQL / SQLite).                             |
+| `->generatedAs($expression)`        | Tạo một cột identity với tùy chọn tăng dần được chỉ định (PostgreSQL).                                            |
+| `->always()`                        | Định nghĩa mức độ ưu tiên của các giá trị tăng dần so với giá trị đầu vào cho một cột identity (PostgreSQL).      |
+
+</div>
 
 <a name="default-expressions"></a>
 #### Default Expressions
@@ -1017,7 +1073,7 @@ Modifier `default` sẽ chấp nhận một giá trị hoặc một instance `Il
 <a name="column-order"></a>
 #### Column Order
 
-Khi sử dụng cơ sở dữ liệu MySQL, phương thức `after` có thể được sử dụng để thêm các cột vào phía sau một cột hiện có trong schema:
+Khi sử dụng cơ sở dữ liệu MariaDB hoặc MySQL, phương thức `after` có thể được sử dụng để thêm các cột vào phía sau một cột hiện có trong schema:
 
     $table->after('password', function (Blueprint $table) {
         $table->string('address_line1');
@@ -1040,27 +1096,15 @@ Khi sửa một cột, bạn phải ghi lại tất cả các modifier mà bạn
         $table->integer('votes')->unsigned()->default(1)->comment('my comment')->change();
     });
 
-<a name="modifying-columns-on-sqlite"></a>
-#### Modifying Columns on SQLite
-
-Nếu ứng dụng của bạn đang sử dụng cơ sở dữ liệu SQLite, bạn phải cài đặt package `doctrine/dbal` bằng Composer package manager trước khi sửa một cột. Thư viện Doctrine DBAL được sử dụng để xác định trạng thái hiện tại của cột và để tạo ra các truy vấn SQL cần thiết để thực hiện các yêu cầu thay đổi cột của bạn:
-
-    composer require doctrine/dbal
-
-Nếu bạn muốn sửa các cột đã được tạo bằng phương thức `timestamp`, bạn cũng phải thêm cấu hình sau vào file cấu hình `config/database.php` của ứng dụng của bạn:
+Phương thức `change` sẽ không thay đổi các index của cột. Do đó, bạn có thể sử dụng các bộ điều chỉnh index modifier để thêm hoặc xóa một index khi sửa cột:
 
 ```php
-use Illuminate\Database\DBAL\TimestampType;
+// Add an index...
+$table->bigIncrements('id')->primary()->change();
 
-'dbal' => [
-    'types' => [
-        'timestamp' => TimestampType::class,
-    ],
-],
+// Drop an index...
+$table->char('postal_code', 10)->unique(false)->change();
 ```
-
-> [!WARNING]
-> Các loại cột sau mới có thể thay đổi: `bigInteger`, `binary`, `boolean`, `char`, `date`, `dateTime`, `dateTimeTz`, `decimal`, `double`, `integer`, `json`, `longText`, `mediumText`, `smallInteger`, `string`, `text`, `time`, `tinyText`, `unsignedBigInteger`, `unsignedInteger`, `unsignedSmallInteger`, `ulid`, và `uuid`.
 
 <a name="renaming-columns"></a>
 ### Sửa tên Column
@@ -1070,19 +1114,6 @@ use Illuminate\Database\DBAL\TimestampType;
     Schema::table('users', function (Blueprint $table) {
         $table->renameColumn('from', 'to');
     });
-
-<a name="renaming-columns-on-legacy-databases"></a>
-#### Sửa tên Column On Legacy Databases
-
-Nếu bạn đang chạy cơ sở dữ liệu mà cũ hơn một trong những bản phát hành sau, bạn sẽ phải đảm bảo là bạn đã cài đặt thư viện `doctrine/dbal` thông qua trình quản lý package Composer trước khi đổi tên cột:
-
-<div class="content-list" markdown="1">
-
-- MySQL < `8.0.3`
-- MariaDB < `10.5.2`
-- SQLite < `3.25.0`
-
-</div>
 
 <a name="dropping-columns"></a>
 ### Xoá Column
@@ -1099,24 +1130,23 @@ Bạn có thể xóa nhiều cột từ một bảng bằng cách truyền một
         $table->dropColumn(['votes', 'avatar', 'location']);
     });
 
-<a name="dropping-columns-on-legacy-databases"></a>
-#### Dropping Columns On Legacy Databases
-
-Nếu bạn đang chạy phiên bản SQLite cũ hơn phiên bản `3.35.0`, thì bạn phải cài đặt package `doctrine/dbal` thông qua trình quản lý package Composer trước khi có thể sử dụng phương thức `dropColumn`. Việc xóa hoặc sửa nhiều cột trong một lần migration khi sử dụng package này sẽ không được hỗ trợ.
-
 <a name="available-command-aliases"></a>
 #### Available Command Aliases
 
 Laravel cung cấp một số phương thức thuận tiện liên quan đến việc xoá các cột phổ biến. Mỗi phương thức này được mô tả trong bảng dưới đây:
 
-Command  |  Description
--------  |  -----------
-`$table->dropMorphs('morphable');`  |  Xoá cột `morphable_id` và cột `morphable_type`.
-`$table->dropRememberToken();`  |  Xoá cột `remember_token`.
-`$table->dropSoftDeletes();`  |  Xoá cột `deleted_at`.
-`$table->dropSoftDeletesTz();`  |  Lối tắt của phương thức `dropSoftDeletes()`.
-`$table->dropTimestamps();`  |  Xoá cột `created_at` và `updated_at`.
-`$table->dropTimestampsTz();` |  Lối tắt của phương thức `dropTimestamps()`.
+<div class="overflow-auto">
+
+| Command                             | Description                                           |
+| ----------------------------------- | ----------------------------------------------------- |
+| `$table->dropMorphs('morphable');`  | Xoá cột `morphable_id` và cột `morphable_type`.       |
+| `$table->dropRememberToken();`      | Xoá cột `remember_token`.                             |
+| `$table->dropSoftDeletes();`        | Xoá cột `deleted_at`.                                 |
+| `$table->dropSoftDeletesTz();`      | Lối tắt của phương thức `dropSoftDeletes()`.          |
+| `$table->dropTimestamps();`         | Xoá cột `created_at` và `updated_at`.                 |
+| `$table->dropTimestampsTz();`       | Lối tắt của phương thức `dropTimestamps()`.           |
+
+</div>
 
 <a name="indexes"></a>
 ## Index
@@ -1150,32 +1180,19 @@ Khi tạo một index, Laravel sẽ tự động tạo tên index dựa trên t�
 
 Class schema builder blueprint của Laravel sẽ cung cấp các phương thức khác nhau để tạo ra từng loại index mà được Laravel hỗ trợ. Mỗi phương thức của index chấp nhận một tham số thứ hai tùy chọn để chỉ định tên của index. Nếu bỏ qua tuỳ chọn này, thì tên sẽ được lấy từ tên của (các) bảng và các cột để sử dụng cho index, cũng như loại index. Các phương thức tạo index sẽ được mô tả trong bảng dưới đây:
 
-Command  |  Description
--------  |  -----------
-`$table->primary('id');`  |  Thêm một primary key.
-`$table->primary(['id', 'parent_id']);`  |  Thêm key hỗn hợp.
-`$table->unique('email');`  |  Thêm một unique index.
-`$table->index('state');`  |  Thêm một index.
-`$table->fullText('body');`  |  Thêm một full text index (MySQL/PostgreSQL).
-`$table->fullText('body')->language('english');`  |  Thêm một full text index của một ngôn ngữ cụ thể (PostgreSQL).
-`$table->spatialIndex('location');`  |  Thêm một spatial index. (trừ SQLite).
+<div class="overflow-auto">
 
-<a name="index-lengths-mysql-mariadb"></a>
-#### Index Lengths và MySQL / MariaDB
+| Command                                          | Description                                                    |
+| ------------------------------------------------ | -------------------------------------------------------------- |
+| `$table->primary('id');`                         | Thêm một primary key.                                          |
+| `$table->primary(['id', 'parent_id']);`          | Thêm key hỗn hợp.                                              |
+| `$table->unique('email');`                       | Thêm một unique index.                                         |
+| `$table->index('state');`                        | Thêm một index.                                                |
+| `$table->fullText('body');`                      | Thêm một full text index (MariaDB / MySQL / PostgreSQL).       |
+| `$table->fullText('body')->language('english');` | Thêm một full text index của một ngôn ngữ cụ thể (PostgreSQL). |
+| `$table->spatialIndex('location');`              | Thêm một spatial index. (trừ SQLite).                          |
 
-Mặc định, Laravel sử dụng ký tự mặc định là `utf8mb4`, hỗ trợ lưu trữ cả "biểu tượng cảm xúc" trong cơ sở dữ liệu. Nếu bạn đang chạy phiên bản MySQL cũ hơn phiên bản 5.7.7 hoặc MariaDB cũ hơn phiên bản 10.2.2, bạn có thể cần phải tự cấu hình độ dài mặc định của chuỗi được tạo bởi migration, để MySQL tạo index cho chúng. Bạn có thể cấu hình độ dài mặc định của chuỗi bằng cách gọi phương thức `Schema::defaultStringLength` trong phương thức `boot` của class `AppServiceProvider` của bạn:
-
-    use Illuminate\Support\Facades\Schema;
-
-    /**
-     * Bootstrap any application services.
-     */
-    public function boot(): void
-    {
-        Schema::defaultStringLength(191);
-    }
-
-Ngoài ra, bạn có thể kích hoạt tùy chọn `innodb_large_prefix` cho cơ sở dữ liệu của bạn. Tham khảo tài liệu của cơ sở dữ liệu của bạn để biết thêm hướng dẫn về cách bật tùy chọn này.
+</div>
 
 <a name="renaming-indexes"></a>
 ### Đổi tên Index
@@ -1184,21 +1201,22 @@ Ngoài ra, bạn có thể kích hoạt tùy chọn `innodb_large_prefix` cho c�
 
     $table->renameIndex('from', 'to')
 
-> [!WARNING]
-> Nếu ứng dụng của bạn sử dụng cơ sở dữ liệu SQLite, bạn phải cài đặt package `doctrine/dbal` thông qua trình quản lý package Composer trước khi có thể sử dụng phương thức `renameIndex`.
-
 <a name="dropping-indexes"></a>
 ### Xoá Index
 
 Để xóa một index, bạn có thể khai báo một tên index. Mặc định, Laravel sẽ tự động gán một tên index dựa trên tên bảng và tên cột của index và loại index. Dưới đây là một số ví dụ:
 
-Command  |  Description
--------  |  -----------
-`$table->dropPrimary('users_id_primary');`  |  Xoá một primary key từ bảng "users".
-`$table->dropUnique('users_email_unique');`  |  Xoá một unique index từ bảng "users".
-`$table->dropIndex('geo_state_index');`  |  Xoá một index từ bảng "geo" table.
-`$table->dropFullText('posts_body_fulltext');`  |  Drop a full text index from the "posts" table.
-`$table->dropSpatialIndex('geo_location_spatialindex');`  |  Xoá một spatial index từ bảng "geo" (trừ SQLite).
+<div class="overflow-auto">
+
+| Command                                                  | Description                                                 |
+| -------------------------------------------------------- | ----------------------------------------------------------- |
+| `$table->dropPrimary('users_id_primary');`               |  Xoá một primary key từ bảng "users".                       |
+| `$table->dropUnique('users_email_unique');`              |  Xoá một unique index từ bảng "users".                      |
+| `$table->dropIndex('geo_state_index');`                  |  Xoá một index từ bảng "geo" table.                         |
+| `$table->dropFullText('posts_body_fulltext');`           |  Xoá một full text index từ bảng "posts".                   |
+| `$table->dropSpatialIndex('geo_location_spatialindex');` |  Xoá một spatial index từ bảng "geo" (trừ SQLite).          |
+
+</div>
 
 Nếu bạn truyền một mảng gồm các cột vào trong một phương thức xoá index, thì quy ước tên index sẽ được tạo dựa trên tên bảng, tên cột, và loại index:
 
@@ -1237,26 +1255,32 @@ Phương thức `foreignId` sẽ tạo một cột tương ứng với `UNSIGNED
 Bạn cũng có thể khai báo hành động mong muốn cho các thuộc tính của ràng buộc "khi xóa" hoặc "khi cập nhật":
 
     $table->foreignId('user_id')
-          ->constrained()
-          ->onUpdate('cascade')
-          ->onDelete('cascade');
+        ->constrained()
+        ->onUpdate('cascade')
+        ->onDelete('cascade');
 
 Một cú pháp thay thế, hàm ý cũng được cung cấp cho những hành động này:
 
+<div class="overflow-auto">
+
 | Method                        | Description                                       |
-|-------------------------------|---------------------------------------------------|
+| ----------------------------- | ------------------------------------------------- |
 | `$table->cascadeOnUpdate();`  | Cập nhật theo.                                    |
 | `$table->restrictOnUpdate();` | Hạn chế cập nhật theo.                            |
+| `$table->nullOnUpdate();`     | Khi cập nhật sẽ set giá trị khoá ngoại thành null.|
 | `$table->noActionOnUpdate();` | Không action khi update.                          |
 | `$table->cascadeOnDelete();`  | Xoá theo.                                         |
 | `$table->restrictOnDelete();` | Hạn chế xoá theo.                                 |
 | `$table->nullOnDelete();`     | Set khoá ngoại là null, nếu khoá chính bị xoá.    |
+| `$table->noActionOnDelete();` | Sẽ chặn việc xóa nếu tồn tại các records con.     |
+
+</div>
 
 Bất kỳ [các sửa đổi bổ sung cho cột](#column-modifiers) sẽ đều phải được gọi trước phương thức `constrained`:
 
     $table->foreignId('user_id')
-          ->nullable()
-          ->constrained();
+        ->nullable()
+        ->constrained();
 
 <a name="dropping-foreign-keys"></a>
 #### Dropping Foreign Keys
@@ -1283,18 +1307,23 @@ Bạn có thể bật hoặc tắt các ràng buộc khóa ngoại trong migrati
     });
 
 > [!WARNING]
-> Mặc định, SQLite sẽ vô hiệu hóa các ràng buộc khóa ngoại. Khi sử dụng SQLite, bạn hãy chắc chắn rằng là [đã bật hỗ trợ khóa ngoại](/docs/{{version}}/database#configuration) trong cấu hình cơ sở dữ liệu của bạn trước khi tạo chúng trong quá trình migration của bạn. Ngoài ra, SQLite chỉ hỗ trợ khóa ngoại khi tạo bảng và [không hỗ trợ khi bảng bị thay đổi](https://www.sqlite.org/omitted.html).
+> Mặc định, SQLite sẽ vô hiệu hóa các ràng buộc khóa ngoại. Khi sử dụng SQLite, bạn hãy chắc chắn rằng là [đã bật hỗ trợ khóa ngoại](/docs/{{version}}/database#configuration) trong cấu hình cơ sở dữ liệu của bạn trước khi tạo chúng trong quá trình migration của bạn.
 
 <a name="events"></a>
 ## Events
 
 Để thuận tiện, mỗi thao tác migration sẽ gửi một [event](/docs/{{version}}/events). Tất cả các event sau đây đều được extend từ class `Illuminate\Database\Events\MigrationEvent`:
 
- Class | Description
--------|-------
-| `Illuminate\Database\Events\MigrationsStarted` | Một tập hợp các file migration sắp được thực hiện. |
-| `Illuminate\Database\Events\MigrationsEnded` | Một tập hợp các file migration đã thực hiện xong. |
-| `Illuminate\Database\Events\MigrationStarted` | Một file migration sắp được thực hiện. |
-| `Illuminate\Database\Events\MigrationEnded` | Một file migration đã thực hiện xong. |
-| `Illuminate\Database\Events\SchemaDumped` | A database schema dump has completed. |
-| `Illuminate\Database\Events\SchemaLoaded` | An existing database schema dump has loaded. |
+<div class="overflow-auto">
+
+| Class                                            | Description                                      |
+| ------------------------------------------------ | ------------------------------------------------ |
+| `Illuminate\Database\Events\MigrationsStarted`   | Một tập hợp các file migration sắp được thực hiện.   |
+| `Illuminate\Database\Events\MigrationsEnded`     | Một tập hợp các file migration đã thực hiện xong.    |
+| `Illuminate\Database\Events\MigrationStarted`    | Một file migration sắp được thực hiện.      |
+| `Illuminate\Database\Events\MigrationEnded`      | Một file migration đã thực hiện xong.       |
+| `Illuminate\Database\Events\NoPendingMigrations` | Một lệnh migration không tìm thấy bất kỳ migration nào đang chờ xử lý. |
+| `Illuminate\Database\Events\SchemaDumped`        | Một bản sao schema cơ sở dữ liệu đã hoàn thành. |
+| `Illuminate\Database\Events\SchemaLoaded`        | Một bản sao schema cơ sở dữ liệu đã được load. |
+
+</div>

@@ -32,13 +32,15 @@ Nếu bạn mới làm quen với Laravel, vui lòng tham gia [Laravel Bootcamp]
 <a name="laravel-breeze-installation"></a>
 ### Cài đặt
 
-Trước tiên, bạn nên [tạo một ứng dụng Laravel mới](/docs/{{version}}/installation), cấu hình cơ sở dữ liệu và chạy [migration cơ sở dữ liệu](/docs/{{version}}/migrations). Khi bạn đã tạo xong một ứng dụng Laravel mới, bạn có thể cài đặt Laravel Breeze bằng Composer:
+Trước tiên, bạn nên [tạo một ứng dụng Laravel mới](/docs/{{version}}/installation). Nếu bạn tạo ứng dụng của bạn bằng [Laravel installer](/docs/{{version}}/installation#creating-a-laravel-project), bạn sẽ được hỏi về cài đặt Laravel Breeze trong quá trình cài đặt. Nếu không, bạn sẽ cần phải làm theo hướng dẫn cài đặt bên dưới.
+
+Nếu bạn đã tạo ứng dụng của bạn mà không có starter kit, bạn có thể tự cài đặt Laravel Breeze bằng Composer:
 
 ```shell
 composer require laravel/breeze --dev
 ```
 
-Sau khi Composer đã cài đặt xong package Laravel Breeze, bạn có thể chạy lệnh Artisan `breeze:install`. Lệnh này sẽ export ra các view xác thực, route, controller và các resource khác cho ứng dụng của bạn. Laravel Breeze sẽ export tất cả các code của nó vào ứng dụng của bạn để bạn có toàn quyền kiểm soát và hiển thị các tính năng cũng như cách triển khai của nó.
+Sau khi Composer đã cài đặt xong package Laravel Breeze, bạn nên chạy lệnh Artisan `breeze:install`. Lệnh này sẽ export ra các view xác thực, route, controller và các resource khác cho ứng dụng của bạn. Laravel Breeze sẽ export tất cả các code của nó vào ứng dụng của bạn để bạn có toàn quyền kiểm soát và hiển thị các tính năng cũng như cách triển khai của nó.
 
 Lệnh `breeze:install` sẽ nhắc bạn chọn stack frontend và framework testing:
 

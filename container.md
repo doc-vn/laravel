@@ -6,7 +6,8 @@
 - [Liên kết](#binding)
     - [Liên kết cơ bản](#binding-basics)
     - [Liên kết Interfaces tới Implementations](#binding-interfaces-to-implementations)
-    - [Liên kết bối cảnh](#contextual-binding)
+    - [Liên kết theo ngữ cảnh](#contextual-binding)
+    - [Thuộc tính ngữ cảnh](#contextual-attributes)
     - [Liên kết kiểu dữ liệu đơn giản](#binding-primitives)
     - [Liên kết nhiều loại](#binding-typed-variadics)
     - [Thẻ](#tagging)
@@ -16,6 +17,7 @@
     - [Automatic Injection](#automatic-injection)
 - [Khởi động hàm và injection](#method-invocation-and-injection)
 - [Container Event](#container-events)
+    - [Liên kết lại](#rebinding)
 - [PSR-11](#psr-11)
 
 <a name="introduction"></a>
@@ -29,32 +31,30 @@ Hãy xem một ví dụ đơn giản:
 
     namespace App\Http\Controllers;
 
-    use App\Http\Controllers\Controller;
-    use App\Repositories\UserRepository;
-    use App\Models\User;
+    use App\Services\AppleMusic;
     use Illuminate\View\View;
 
-    class UserController extends Controller
+    class PodcastController extends Controller
     {
         /**
          * Create a new controller instance.
          */
         public function __construct(
-            protected UserRepository $users,
+            protected AppleMusic $apple,
         ) {}
 
         /**
-         * Show the profile for the given user.
+         * Show information about the given podcast.
          */
         public function show(string $id): View
         {
-            $user = $this->users->find($id);
-
-            return view('user.profile', ['user' => $user]);
+            return view('podcasts.show', [
+                'podcast' => $this->apple->findPodcast($id)
+            ]);
         }
     }
 
-Trong ví dụ trên, `UserController` sẽ cần lấy user từ một data source. Vì vậy, chúng ta sẽ **tích hợp** một service có thể lấy user. Theo ngữ cảnh này, trong class `UserRepository` của chúng ta có thể sử dụng [Eloquent](/docs/{{version}}/eloquent) để lấy thông tin user trực tiếp từ database. Tuy nhiên, vì repository đã được tích hợp, nên chúng ta có thể dễ dàng chuyển việc đó với một implementation khác. Và chúng ta cũng có thể dễ dàng "làm giả", hoặc tạo một implementation giả của `UserRepository` khi test application của chúng ta.
+Trong ví dụ trên, `PodcastController` sẽ cần lấy ra podcast từ một nguồn dữ liệu như Apple Music. Vì vậy, chúng ta sẽ **tích hợp** một service có khả năng lấy ra podcast. Vì service đã được tích hợp, chúng ta có thể dễ dàng làm "giả" hoặc tạo một implementation giả của service `AppleMusic` khi kiểm tra ứng dụng.
 
 Hiểu sâu về Laravel service container sẽ một điều cần thiết để tạo một application lớn, mạnh mẽ, cũng như phát triển phần lõi của Laravel.
 
@@ -171,6 +171,12 @@ Phương thức `scoped` sẽ liên kết một class hoặc một interface và
         return new Transistor($app->make(PodcastParser::class));
     });
 
+Bạn có thể sử dụng phương thức `scopedIf` để đăng ký một liên kết scoped container nếu liên kết đó chưa được đăng ký cho loại đã cho:
+
+    $this->app->scopedIf(Transistor::class, function (Application $app) {
+        return new Transistor($app->make(PodcastParser::class));
+    });
+
 <a name="binding-instances"></a>
 #### Liên kết instances
 
@@ -201,7 +207,7 @@ Câu lệnh trên sẽ nói với container rằng nó cần tích hợp `RedisE
      * Create a new class instance.
      */
     public function __construct(
-        protected EventPusher $pusher
+        protected EventPusher $pusher,
     ) {}
 
 <a name="contextual-binding"></a>
@@ -216,16 +222,128 @@ Thỉnh thoảng bạn cũng có thể có hai class sử dụng chung một int
     use Illuminate\Support\Facades\Storage;
 
     $this->app->when(PhotoController::class)
-              ->needs(Filesystem::class)
-              ->give(function () {
-                  return Storage::disk('local');
-              });
+        ->needs(Filesystem::class)
+        ->give(function () {
+            return Storage::disk('local');
+        });
 
     $this->app->when([VideoController::class, UploadController::class])
-              ->needs(Filesystem::class)
-              ->give(function () {
-                  return Storage::disk('s3');
-              });
+        ->needs(Filesystem::class)
+        ->give(function () {
+            return Storage::disk('s3');
+        });
+
+<a name="contextual-attributes"></a>
+### Thuộc tính ngữ cảnh
+
+Vì liên kết theo ngữ cảnh thường được sử dụng để tích hợp vào các triển khai driver hoặc giá trị cấu hình, Laravel cung cấp nhiều thuộc tính liên kết theo ngữ cảnh cho phép tích hợp các loại giá trị này mà không cần bạn phải tự định nghĩa các liên kết theo ngữ cảnh trong service provider của bạn.
+
+Ví dụ, thuộc tính `Storage` có thể được sử dụng để tích hợp một [storage disk](/docs/{{version}}/filesystem) cụ thể:
+
+```php
+<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Container\Attributes\Storage;
+use Illuminate\Contracts\Filesystem\Filesystem;
+
+class PhotoController extends Controller
+{
+    public function __construct(
+        #[Storage('local')] protected Filesystem $filesystem
+    )
+    {
+        // ...
+    }
+}
+```
+
+Ngoài thuộc tính `Storage`, Laravel còn cung cấp các thuộc tính `Auth`, `Cache`, `Config`, `DB`, `Log`, `RouteParameter` và [`Tag`](#tagging):
+
+```php
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Photo;
+use Illuminate\Container\Attributes\Auth;
+use Illuminate\Container\Attributes\Cache;
+use Illuminate\Container\Attributes\Config;
+use Illuminate\Container\Attributes\DB;
+use Illuminate\Container\Attributes\Log;
+use Illuminate\Container\Attributes\RouteParameter;
+use Illuminate\Container\Attributes\Tag;
+use Illuminate\Contracts\Auth\Guard;
+use Illuminate\Contracts\Cache\Repository;
+use Illuminate\Database\Connection;
+use Psr\Log\LoggerInterface;
+
+class PhotoController extends Controller
+{
+    public function __construct(
+        #[Auth('web')] protected Guard $auth,
+        #[Cache('redis')] protected Repository $cache,
+        #[Config('app.timezone')] protected string $timezone,
+        #[DB('mysql')] protected Connection $connection,
+        #[Log('daily')] protected LoggerInterface $log,
+        #[RouteParameter('photo')] protected Photo $photo,
+        #[Tag('reports')] protected iterable $reports,
+    )
+    {
+        // ...
+    }
+}
+```
+
+Hơn nữa, Laravel cũng cung cấp thuộc tính `CurrentUser` để đưa người dùng hiện tại vào một route hoặc một class nhất định:
+
+```php
+use App\Models\User;
+use Illuminate\Container\Attributes\CurrentUser;
+
+Route::get('/user', function (#[CurrentUser] User $user) {
+    return $user;
+})->middleware('auth');
+```
+
+<a name="defining-custom-attributes"></a>
+#### Defining Custom Attributes
+
+Bạn có thể tạo các thuộc tính ngữ cảnh của bạn bằng cách implement contract `Illuminate\Contracts\Container\ContextualAttribute`. Container sẽ gọi phương thức `resolve` của thuộc tính, phương thức này sẽ resolve ra giá trị cần được đưa vào class bằng cách sử dụng thuộc tính. Trong ví dụ dưới đây, chúng ta sẽ implement lại thuộc tính `Config` có sẵn của Laravel:
+
+```php
+<?php
+
+namespace App\Attributes;
+
+use Attribute;
+use Illuminate\Contracts\Container\Container;
+use Illuminate\Contracts\Container\ContextualAttribute;
+
+#[Attribute(Attribute::TARGET_PARAMETER)]
+class Config implements ContextualAttribute
+{
+    /**
+     * Create a new attribute instance.
+     */
+    public function __construct(public string $key, public mixed $default = null)
+    {
+    }
+
+    /**
+     * Resolve the configuration value.
+     *
+     * @param  self  $attribute
+     * @param  \Illuminate\Contracts\Container\Container  $container
+     * @return mixed
+     */
+    public static function resolve(self $attribute, Container $container)
+    {
+        return $container->make('config')->get($attribute->key, $attribute->default);
+    }
+}
+```
 
 <a name="binding-primitives"></a>
 ### Liên kết kiểu dữ liệu đơn giản
@@ -235,8 +353,8 @@ Thỉnh thoảng, bạn có một class nhận vào một số các class tích 
     use App\Http\Controllers\UserController;
 
     $this->app->when(UserController::class)
-              ->needs('$variableName')
-              ->give($value);
+        ->needs('$variableName')
+        ->give($value);
 
 Thỉnh thoảng một class có thể gắn vào một mảng các instance đã được [gắn tag](#tagging). Sử dụng phương thức `giveTagged`, bạn có thể dễ dàng gắn tất cả các liên kết container này với tag đó:
 
@@ -283,24 +401,24 @@ Nếu bạn cần inject một giá trị từ một trong các file cấu hình
 Sử dụng liên kết theo ngữ cảnh đó, bạn có thể resolve sự phụ thuộc này bằng cách cung cấp phương thức `give` với một closure trả về một mảng các instance `Filter`:
 
     $this->app->when(Firewall::class)
-              ->needs(Filter::class)
-              ->give(function (Application $app) {
-                    return [
-                        $app->make(NullFilter::class),
-                        $app->make(ProfanityFilter::class),
-                        $app->make(TooLongFilter::class),
-                    ];
-              });
+        ->needs(Filter::class)
+        ->give(function (Application $app) {
+              return [
+                  $app->make(NullFilter::class),
+                  $app->make(ProfanityFilter::class),
+                  $app->make(TooLongFilter::class),
+              ];
+        });
 
 Để thuận tiện, bạn cũng có thể chỉ cần cung cấp một mảng tên class để container resolve bất cứ khi nào `Firewall` cần các instances `Filter`:
 
     $this->app->when(Firewall::class)
-              ->needs(Filter::class)
-              ->give([
-                  NullFilter::class,
-                  ProfanityFilter::class,
-                  TooLongFilter::class,
-              ]);
+        ->needs(Filter::class)
+        ->give([
+            NullFilter::class,
+            ProfanityFilter::class,
+            TooLongFilter::class,
+        ]);
 
 <a name="variadic-tag-dependencies"></a>
 #### Variadic Tag Dependencies
@@ -382,7 +500,7 @@ Nếu bạn muốn instance container Laravel cũng được inject vào class m
      * Create a new class instance.
      */
     public function __construct(
-        protected Container $container
+        protected Container $container,
     ) {}
 
 <a name="automatic-injection"></a>
@@ -390,32 +508,29 @@ Nếu bạn muốn instance container Laravel cũng được inject vào class m
 
 Ngoài ra, và rất quan trọng, bạn có thể khai báo sự phụ thuộc vào trong hàm khởi tạo để nó có thể được resolve bởi container, như ở trong [controllers](/docs/{{version}}/controllers), [event listeners](/docs/{{version}}/events), [middleware](/docs/{{version}}/middleware), và nhiều lớp khác. Ngoài ra, bạn có thể khai báo phụ thuộc ở trong phương thức `handle` của [queued job](/docs/{{version}}/queues). Trong thực tế, đây là cách mà hầu hết các đối tượng của bạn sẽ được resolve bằng container.
 
-Ví dụ: bạn có thể khai báo một repository của bạn trong hàm khởi tạo của một controller. Repository đó sẽ tự động được resolve và đưa vào trong class:
+Ví dụ: bạn có thể khai báo một service của bạn trong hàm khởi tạo của một controller. Service đó sẽ tự động được resolve và đưa vào trong class:
 
     <?php
 
     namespace App\Http\Controllers;
 
-    use App\Repositories\UserRepository;
-    use App\Models\User;
+    use App\Services\AppleMusic;
 
-    class UserController extends Controller
+    class PodcastController extends Controller
     {
         /**
          * Create a new controller instance.
          */
         public function __construct(
-            protected UserRepository $users,
+            protected AppleMusic $apple,
         ) {}
 
         /**
-         * Show the user with the given ID.
+         * Show information about the given podcast.
          */
-        public function show(string $id): User
+        public function show(string $id): Podcast
         {
-            $user = $this->users->findOrFail($id);
-
-            return $user;
+            return $this->apple->findPodcast($id);
         }
     }
 
@@ -428,14 +543,14 @@ Thỉnh thoảng, bạn có thể muốn gọi một phương thức trên một
 
     namespace App;
 
-    use App\Repositories\UserRepository;
+    use App\Services\AppleMusic;
 
-    class UserReport
+    class PodcastStats
     {
         /**
-         * Generate a new user report.
+         * Generate a new podcast stats report.
          */
-        public function generate(UserRepository $repository): array
+        public function generate(AppleMusic $apple): array
         {
             return [
                 // ...
@@ -445,17 +560,17 @@ Thỉnh thoảng, bạn có thể muốn gọi một phương thức trên một
 
 Bạn có thể gọi phương thức `generate` thông qua container như sau:
 
-    use App\UserReport;
+    use App\PodcastStats;
     use Illuminate\Support\Facades\App;
 
-    $report = App::call([new UserReport, 'generate']);
+    $stats = App::call([new PodcastStats, 'generate']);
 
 Phương thức `call` sẽ chấp nhận bất kỳ PHP callable nào. Phương thức `call` của container thậm chí có thể được sử dụng để gọi một closure trong khi đang tự động inject các phụ thuộc của nó:
 
-    use App\Repositories\UserRepository;
+    use App\Services\AppleMusic;
     use Illuminate\Support\Facades\App;
 
-    $result = App::call(function (UserRepository $repository) {
+    $result = App::call(function (AppleMusic $apple) {
         // ...
     });
 
@@ -477,6 +592,28 @@ Service container sẽ kích hoạt một event mỗi khi nó resolve một đ�
 
 Như bạn có thể thấy, đối tượng đang được resolve sẽ được truyền vào một hàm callback, cho phép bạn đặt thêm bất kỳ thuộc tính nào vào trong đối tượng trước khi nó được trả về cho người resolve nó.
 
+<a name="rebinding"></a>
+### Liên kết lại
+
+Phương thức `rebinding` cho phép bạn listen thời điểm một service được liên kết lại với container, nó tương đương với việc một service được đăng ký lại hoặc bị ghi đè sau lần liên kết đầu tiên. Điều này có thể hữu ích khi bạn cần cập nhật các phụ thuộc hoặc sửa hành vi mỗi khi một liên kết nào đó được cập nhật:
+
+    use App\Contracts\PodcastPublisher;
+    use App\Services\SpotifyPublisher;
+    use App\Services\TransistorPublisher;
+    use Illuminate\Contracts\Foundation\Application;
+
+    $this->app->bind(PodcastPublisher::class, SpotifyPublisher::class);
+
+    $this->app->rebinding(
+        PodcastPublisher::class,
+        function (Application $app, PodcastPublisher $newInstance) {
+            //
+        },
+    );
+
+    // New binding will trigger rebinding closure...
+    $this->app->bind(PodcastPublisher::class, TransistorPublisher::class);
+
 <a name="psr-11"></a>
 ## PSR-11
 
@@ -491,4 +628,4 @@ Service container của Laravel là một implement của một interface [PSR-1
         // ...
     });
 
-Một ngoại lệ sẽ được đưa ra nếu định dang đã cho không thể resolve được. Ngoại lệ này sẽ là một instance của `Psr\Container\NotFoundExceptionInterface` nếu định dang này không bị ràng buộc. Nếu định dang này bị ràng buộc nhưng không thể resolve được, thì một instance của `Psr\Container\ContainerExceptionInterface` sẽ được đưa ra.
+Một ngoại lệ sẽ được đưa ra nếu định dạng đã cho không thể resolve được. Ngoại lệ này sẽ là một instance của `Psr\Container\NotFoundExceptionInterface` nếu định dạng này không bị liên kết. Nếu định dạng này bị liên kết nhưng không thể resolve được, thì một instance của `Psr\Container\ContainerExceptionInterface` sẽ được đưa ra.

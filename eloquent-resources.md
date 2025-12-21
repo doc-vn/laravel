@@ -675,7 +675,7 @@ Nếu bảng trung gian của bạn đang sử dụng một tên accessor khác 
 <a name="adding-meta-data"></a>
 ### Thêm Meta Data
 
-Một số tiêu chuẩn API JSON sẽ yêu cầu thêm dữ liệu meta vào các response của resource và resource collection của bạn. Điều này thường chứa những thông tin như `links` đến resource hoặc resource quan hệ hoặc dữ liệu meta về chính resource đó. Nếu bạn cần trả về thêm dữ liệu meta cho một resource, hãy cho nó vào phương thức `toArray` của bạn. Ví dụ: bạn có thể chứa thông tin `link` khi chuyển đổi một resource collection:
+Một số tiêu chuẩn API JSON sẽ yêu cầu thêm dữ liệu meta vào các response của resource và resource collection của bạn. Điều này thường chứa những thông tin như `links` đến resource hoặc resource quan hệ hoặc dữ liệu meta về chính resource đó. Nếu bạn cần trả về thêm dữ liệu meta cho một resource, hãy cho nó vào phương thức `toArray` của bạn. Ví dụ: bạn có thể chứa thông tin `links` khi chuyển đổi một resource collection:
 
     /**
      * Transform the resource into an array.
@@ -738,9 +738,9 @@ Thỉnh thoảng bạn có thể chỉ muốn thêm một số dữ liệu meta 
 Bạn cũng có thể thêm dữ liệu khi khởi tạo một instance resource trong route hoặc controller của bạn. Phương thức `additional`, có sẵn trên tất cả các resource, chấp nhận một mảng dữ liệu cần được thêm vào response resource:
 
     return (new UserCollection(User::all()->load('roles')))
-                    ->additional(['meta' => [
-                        'key' => 'value',
-                    ]]);
+        ->additional(['meta' => [
+            'key' => 'value',
+        ]]);
 
 <a name="resource-responses"></a>
 ## Resource Responses
@@ -761,8 +761,8 @@ Tuy nhiên, thỉnh thoảng bạn có thể cần tùy biến HTTP response tr�
 
     Route::get('/user', function () {
         return (new UserResource(User::find(1)))
-                    ->response()
-                    ->header('X-Value', 'True');
+            ->response()
+            ->header('X-Value', 'True');
     });
 
 Ngoài ra, bạn cũng có thể định nghĩa một phương thức `withResponse` vào trong chính resource của bạn. Phương thức này sẽ được gọi khi resource được trả về là resource ngoài cùng nhất trong một response:

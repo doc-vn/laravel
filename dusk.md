@@ -153,19 +153,33 @@ Hầu hết các bài test mà bạn viết sẽ tương tác với các trang m
 
 Trait `DatabaseMigrations` sẽ chạy migration cơ sở dữ liệu của bạn trước mỗi bài test. Tuy nhiên, việc loại bỏ và tạo lại các bảng cơ sở dữ liệu của bạn cho mỗi bài test thường chậm hơn so với việc truncate các bảng:
 
-    <?php
+```php tab=Pest
+<?php
 
-    namespace Tests\Browser;
+use Illuminate\Foundation\Testing\DatabaseMigrations;
+use Laravel\Dusk\Browser;
 
-    use App\Models\User;
-    use Illuminate\Foundation\Testing\DatabaseMigrations;
-    use Laravel\Dusk\Chrome;
-    use Tests\DuskTestCase;
+uses(DatabaseMigrations::class);
 
-    class ExampleTest extends DuskTestCase
-    {
-        use DatabaseMigrations;
-    }
+//
+```
+
+```php tab=PHPUnit
+<?php
+
+namespace Tests\Browser;
+
+use Illuminate\Foundation\Testing\DatabaseMigrations;
+use Laravel\Dusk\Browser;
+use Tests\DuskTestCase;
+
+class ExampleTest extends DuskTestCase
+{
+    use DatabaseMigrations;
+
+    //
+}
+```
 
 > [!WARNING]
 > Cơ sở dữ liệu SQLite có thể không được sử dụng khi chạy các bài test Dusk. Vì trình duyệt chạy trong một process riêng của nó và nó sẽ không thể truy cập được vào file cơ sở dữ liệu của các process khác.
@@ -173,29 +187,41 @@ Trait `DatabaseMigrations` sẽ chạy migration cơ sở dữ liệu của bạ
 <a name="reset-truncation"></a>
 #### Using Database Truncation
 
-Trước khi sử dụng trait `DatabaseTruncation`, bạn phải cài đặt package `doctrine/dbal` bằng trình quản lý package Composer:
-
-```shell
-composer require --dev doctrine/dbal
-```
-
 Trait `DatabaseTruncation` sẽ migrate cơ sở dữ liệu của bạn trong lần kiểm tra đầu tiên để đảm bảo các bảng cơ sở dữ liệu của bạn được tạo đúng cách. Tuy nhiên, trong các thử nghiệm tiếp theo, các bảng của cơ sở dữ liệu sẽ bị truncate - giúp tăng tốc độ khi chạy lại tất cả các migration cơ sở dữ liệu của bạn:
 
-    <?php
+```php tab=Pest
+<?php
 
-    namespace Tests\Browser;
+use Illuminate\Foundation\Testing\DatabaseTruncation;
+use Laravel\Dusk\Browser;
 
-    use App\Models\User;
-    use Illuminate\Foundation\Testing\DatabaseTruncation;
-    use Laravel\Dusk\Chrome;
-    use Tests\DuskTestCase;
+uses(DatabaseTruncation::class);
 
-    class ExampleTest extends DuskTestCase
-    {
-        use DatabaseTruncation;
-    }
+//
+```
+
+```php tab=PHPUnit
+<?php
+
+namespace Tests\Browser;
+
+use App\Models\User;
+use Illuminate\Foundation\Testing\DatabaseTruncation;
+use Laravel\Dusk\Browser;
+use Tests\DuskTestCase;
+
+class ExampleTest extends DuskTestCase
+{
+    use DatabaseTruncation;
+
+    //
+}
+```
 
 Mặc định, trait này sẽ truncate tất cả các bảng ngoại trừ bảng `migrations`. Nếu bạn muốn tùy chỉnh các bảng cần được truncate, bạn có thể định nghĩa thuộc tính `$tablesToTruncate` trên test class của bạn:
+
+> [!NOTE]
+> Nếu bạn đang sử dụng Pest, bạn nên định nghĩa các thuộc tính hoặc các phương thức trên class base `DuskTestCase` hoặc trên bất kỳ class nào mà file test của bạn extend.
 
     /**
      * Indicates which tables should be truncated.
@@ -255,7 +281,7 @@ Khi bạn chạy lệnh `dusk`, nếu bạn gặp lỗi ở chỗ cuối cùng, 
 php artisan dusk:fails
 ```
 
-Lệnh `dusk` chấp nhận tất cả các tham số mà PHPUnit test chấp nhận, chẳng hạn như cho phép bạn chỉ chạy các bài test cho một [group](https://docs.phpunit.de/en/10.5/annotations.html#group) nhất định, vv...:
+Lệnh `dusk` chấp nhận tất cả các tham số mà Pest hoặc PHPUnit test chấp nhận, chẳng hạn như cho phép bạn chỉ chạy các bài test cho một [group](https://docs.phpunit.de/en/10.5/annotations.html#group) nhất định, vv...:
 
 ```shell
 php artisan dusk --group=foo
@@ -308,38 +334,63 @@ Khi chạy test, Dusk sẽ back-up file `.env` gốc của bạn và đổi tên
 
 Để bắt đầu, hãy viết một bài test để kiểm tra xem chúng ta có thể đăng nhập vào ứng dụng của chúng ta hay không. Sau khi đã tạo xong bài test, chúng ta có thể sửa nó để điều hướng đến trang đăng nhập, và sau đó nhập một số thông tin đăng nhập và nhấp vào nút "Đăng nhập". Để tạo một instance browser, bạn có thể gọi phương thức `browse` từ trong bài test Dusk của bạn:
 
-    <?php
+```php tab=Pest
+<?php
 
-    namespace Tests\Browser;
+use App\Models\User;
+use Illuminate\Foundation\Testing\DatabaseMigrations;
+use Laravel\Dusk\Browser;
 
-    use App\Models\User;
-    use Illuminate\Foundation\Testing\DatabaseMigrations;
-    use Laravel\Dusk\Browser;
-    use Laravel\Dusk\Chrome;
-    use Tests\DuskTestCase;
+uses(DatabaseMigrations::class);
 
-    class ExampleTest extends DuskTestCase
+test('basic example', function () {
+    $user = User::factory()->create([
+        'email' => 'taylor@laravel.com',
+    ]);
+
+    $this->browse(function (Browser $browser) use ($user) {
+        $browser->visit('/login')
+            ->type('email', $user->email)
+            ->type('password', 'password')
+            ->press('Login')
+            ->assertPathIs('/home');
+    });
+});
+```
+
+```php tab=PHPUnit
+<?php
+
+namespace Tests\Browser;
+
+use App\Models\User;
+use Illuminate\Foundation\Testing\DatabaseMigrations;
+use Laravel\Dusk\Browser;
+use Tests\DuskTestCase;
+
+class ExampleTest extends DuskTestCase
+{
+    use DatabaseMigrations;
+
+    /**
+     * A basic browser test example.
+     */
+    public function test_basic_example(): void
     {
-        use DatabaseMigrations;
+        $user = User::factory()->create([
+            'email' => 'taylor@laravel.com',
+        ]);
 
-        /**
-         * A basic browser test example.
-         */
-        public function test_basic_example(): void
-        {
-            $user = User::factory()->create([
-                'email' => 'taylor@laravel.com',
-            ]);
-
-            $this->browse(function (Browser $browser) use ($user) {
-                $browser->visit('/login')
-                        ->type('email', $user->email)
-                        ->type('password', 'password')
-                        ->press('Login')
-                        ->assertPathIs('/home');
-            });
-        }
+        $this->browse(function (Browser $browser) use ($user) {
+            $browser->visit('/login')
+                ->type('email', $user->email)
+                ->type('password', 'password')
+                ->press('Login')
+                ->assertPathIs('/home');
+        });
     }
+}
+```
 
 Như bạn có thể thấy trong ví dụ trên, phương thức `browse` chấp nhận một closure. Một instance browser sẽ tự động được truyền vào closure đó và nó là đối tượng chính để tương tác và đưa ra các yêu cầu đối với application của bạn.
 
@@ -350,17 +401,17 @@ Thỉnh thoảng bạn có thể cần chạy nhiều trình duyệt trong cùng
 
     $this->browse(function (Browser $first, Browser $second) {
         $first->loginAs(User::find(1))
-              ->visit('/home')
-              ->waitForText('Message');
+            ->visit('/home')
+            ->waitForText('Message');
 
         $second->loginAs(User::find(2))
-               ->visit('/home')
-               ->waitForText('Message')
-               ->type('message', 'Hey Taylor')
-               ->press('Send');
+            ->visit('/home')
+            ->waitForText('Message')
+            ->type('message', 'Hey Taylor')
+            ->press('Send');
 
         $first->waitForText('Hey Taylor')
-              ->assertSee('Jeffrey Way');
+            ->assertSee('Jeffrey Way');
     });
 
 <a name="navigation"></a>
@@ -372,7 +423,7 @@ Phương thức `visit` có thể được sử dụng để điều hướng đ
 
 Bạn có thể sử dụng phương thức `visitRoute` để điều hướng đến [một route đã được đặt tên](/docs/{{version}}/routing#named-routes):
 
-    $browser->visitRoute('login');
+    $browser->visitRoute($routeName, $parameters);
 
 Bạn có thể điều hướng "back" và "forward" bằng cách sử dụng các phương thức `back` và `forward`:
 
@@ -438,8 +489,8 @@ Phương thức `macro` chấp nhận một tên làm tham số đầu tiên và
 
     $this->browse(function (Browser $browser) use ($user) {
         $browser->visit('/pay')
-                ->scrollToElement('#credit-card-details')
-                ->assertSee('Enter Credit Card Details');
+            ->scrollToElement('#credit-card-details')
+            ->assertSee('Enter Credit Card Details');
     });
 
 <a name="authentication"></a>
@@ -452,7 +503,7 @@ Thông thường, bạn sẽ cần test các trang mà cần được authentica
 
     $this->browse(function (Browser $browser) {
         $browser->loginAs(User::find(1))
-              ->visit('/home');
+            ->visit('/home');
     });
 
 > [!WARNING]
@@ -501,6 +552,10 @@ Bạn có thể sử dụng phương thức `screenshot` để chụp một scre
 Phương thức `ResponseScreenshots` có thể được sử dụng để chụp lại một loạt ảnh chụp màn hình ở nhiều điểm dừng khác nhau:
 
     $browser->responsiveScreenshots('filename');
+
+Phương thức `screenshotElement` có thể được sử dụng để chụp màn hình một element cụ thể trên trang:
+
+    $browser->screenshotElement('#selector', 'filename');
 
 <a name="storing-console-output-to-disk"></a>
 ### Lưu output của console vào disk
@@ -595,7 +650,7 @@ Lưu ý rằng, phương thức này chấp nhận một tham số nếu cần, 
 Để nối text vào một field mà không xóa nội dung của nó đi, bạn có thể sử dụng phương thức `append`:
 
     $browser->type('tags', 'foo')
-            ->append('tags', ', bar, baz');
+        ->append('tags', ', bar, baz');
 
 Bạn có thể xóa giá trị của một input bằng phương thức `clear`:
 
@@ -610,7 +665,7 @@ Bạn có thể hướng dẫn Dusk nhập văn bản chậm bằng phương th�
 Bạn có thể sử dụng phương thức `appendSlowly` để nối văn bản một cách từ từ:
 
     $browser->type('tags', 'foo')
-            ->appendSlowly('tags', ', bar, baz');
+        ->appendSlowly('tags', ', bar, baz');
 
 <a name="dropdowns"></a>
 #### Dropdowns
@@ -795,8 +850,8 @@ Phương thức `clickAndHold` có thể được sử dụng để mô phỏng 
     $browser->clickAndHold('.selector');
 
     $browser->clickAndHold()
-            ->pause(1000)
-            ->releaseMouse();
+        ->pause(1000)
+        ->releaseMouse();
 
 Phương thức `controlClick` có thể được sử dụng để mô phỏng một sự kiện `ctrl+click` trên trình duyệt:
 
@@ -859,9 +914,9 @@ Nếu bạn cần tương tác với một element trong một iframe, bạn có
 
     $browser->withinFrame('#credit-card-details', function ($browser) {
         $browser->type('input[name="cardnumber"]', '4242424242424242')
-            ->type('input[name="exp-date"]', '12/24')
-            ->type('input[name="cvc"]', '123');
-        })->press('Pay');
+            ->type('input[name="exp-date"]', '1224')
+            ->type('input[name="cvc"]', '123')
+            ->press('Pay');
     });
 
 <a name="scoping-selectors"></a>
@@ -958,7 +1013,7 @@ Hoặc, bạn có thể đợi cho đến khi một element khớp với một s
 
     $browser->whenAvailable('.modal', function (Browser $modal) {
         $modal->assertSee('Hello World')
-              ->press('OK');
+            ->press('OK');
     });
 
 <a name="waiting-for-text"></a>
@@ -1032,7 +1087,7 @@ Nếu bạn cần đợi một trang load lại sau khi thực hiện một hàn
 Vì nhu cầu đợi load lại trang thường xảy ra sau khi nhấp vào một nút nào đó, nên bạn có thể sử dụng phương thức `clickAndWaitForReload` để thực hiện nó:
 
     $browser->clickAndWaitForReload('.selector')
-            ->assertSee('something');
+        ->assertSee('something');
 
 <a name="waiting-on-javascript-expressions"></a>
 #### Waiting On JavaScript Expressions
@@ -1097,7 +1152,7 @@ Nhiều phương thức "chờ" trong Dusk được dựa trên phương thức 
 Đôi khi bạn không thể nhấp vào một phần tử vì nó nằm ngoài vùng xem của trình duyệt. Phương thức `scrollIntoView` sẽ cuộn cửa sổ trình duyệt cho đến khi phần tử đó nằm trong vùng có thể xem được của trình duyệt:
 
     $browser->scrollIntoView('.selector')
-            ->click('.selector');
+        ->click('.selector');
 
 <a name="available-assertions"></a>
 ## Assertion có sẵn
@@ -1129,6 +1184,8 @@ Dusk cung cấp nhiều yêu cầu kiểm tra mà bạn có thể đưa ra đố
 [assertPortIs](#assert-port-is)
 [assertPortIsNot](#assert-port-is-not)
 [assertPathBeginsWith](#assert-path-begins-with)
+[assertPathEndsWith](#assert-path-ends-with)
+[assertPathContains](#assert-path-contains)
 [assertPathIs](#assert-path-is)
 [assertPathIsNot](#assert-path-is-not)
 [assertRouteIs](#assert-route-is)
@@ -1170,6 +1227,7 @@ Dusk cung cấp nhiều yêu cầu kiểm tra mà bạn có thể đưa ra đố
 [assertValue](#assert-value)
 [assertValueIsNot](#assert-value-is-not)
 [assertAttribute](#assert-attribute)
+[assertAttributeMissing](#assert-attribute-missing)
 [assertAttributeContains](#assert-attribute-contains)
 [assertAttributeDoesntContain](#assert-attribute-doesnt-contain)
 [assertAriaAttribute](#assert-aria-attribute)
@@ -1266,6 +1324,20 @@ Yêu cầu port của URL hiện tại không phải port đã cho:
 Yêu cầu path của URL hiện tại phải bắt đầu từ path đã cho:
 
     $browser->assertPathBeginsWith('/home');
+
+<a name="assert-path-ends-with"></a>
+#### assertPathEndsWith
+
+Yêu cầu path URL hiện tại kết thúc bằng path đã cho:
+
+    $browser->assertPathEndsWith('/home');
+
+<a name="assert-path-contains"></a>
+#### assertPathContains
+
+Yêu cầu path URL hiện tại có chứa path đã cho:
+
+    $browser->assertPathContains('/home');
 
 <a name="assert-path-is"></a>
 #### assertPathIs
@@ -1559,6 +1631,14 @@ Yêu cầu element giống với selector đã cho có giá trị thuộc tính 
 
     $browser->assertAttribute($selector, $attribute, $value);
 
+<a name="assert-attribute-missing"></a>
+#### assertAttributeMissing
+
+Yêu cầu element giống với selector đã cho không có thuộc tính đã được cung cấp:
+
+    $browser->assertAttributeMissing($selector, $attribute);
+
+
 <a name="assert-attribute-contains"></a>
 #### assertAttributeContains
 
@@ -1732,16 +1812,27 @@ Dusk thậm chí còn cho phép bạn đưa ra các assertion về trạng thái
 
 Bạn có thể assert trạng thái của component Vue như sau:
 
-    /**
-     * A basic Vue test example.
-     */
-    public function test_vue(): void
-    {
-        $this->browse(function (Browser $browser) {
-            $browser->visit('/')
-                    ->assertVue('user.name', 'Taylor', '@profile-component');
-        });
-    }
+```php tab=Pest
+test('vue', function () {
+    $this->browse(function (Browser $browser) {
+        $browser->visit('/')
+            ->assertVue('user.name', 'Taylor', '@profile-component');
+    });
+});
+```
+
+```php tab=PHPUnit
+/**
+ * A basic Vue test example.
+ */
+public function test_vue(): void
+{
+    $this->browse(function (Browser $browser) {
+        $browser->visit('/')
+            ->assertVue('user.name', 'Taylor', '@profile-component');
+    });
+}
+```
 
 <a name="assert-vue-is-not"></a>
 #### assertVueIsNot
@@ -1873,6 +1964,7 @@ Ngoài các phương thức mặc định được định nghĩa trên các tra
     namespace Tests\Browser\Pages;
 
     use Laravel\Dusk\Browser;
+    use Laravel\Dusk\Page;
 
     class Dashboard extends Page
     {
@@ -1884,8 +1976,8 @@ Ngoài các phương thức mặc định được định nghĩa trên các tra
         public function createPlaylist(Browser $browser, string $name): void
         {
             $browser->type('name', $name)
-                    ->check('share')
-                    ->press('Create Playlist');
+                ->check('share')
+                ->press('Create Playlist');
         }
     }
 
@@ -1957,15 +2049,15 @@ Như câu lệnh ở trên, một "date picker" có thể là một ví dụ m�
         public function selectDate(Browser $browser, int $year, int $month, int $day): void
         {
             $browser->click('@date-field')
-                    ->within('@year-list', function (Browser $browser) use ($year) {
-                        $browser->click($year);
-                    })
-                    ->within('@month-list', function (Browser $browser) use ($month) {
-                        $browser->click($month);
-                    })
-                    ->within('@day-list', function (Browser $browser) use ($day) {
-                        $browser->click($day);
-                    });
+                ->within('@year-list', function (Browser $browser) use ($year) {
+                    $browser->click($year);
+                })
+                ->within('@month-list', function (Browser $browser) use ($month) {
+                    $browser->click($month);
+                })
+                ->within('@day-list', function (Browser $browser) use ($day) {
+                    $browser->click($day);
+                });
         }
     }
 
@@ -1974,31 +2066,53 @@ Như câu lệnh ở trên, một "date picker" có thể là một ví dụ m�
 
 Khi component đã được định nghĩa xong, chúng ta có thể dễ dàng chọn một ngày trong date picker, từ bất kỳ bài test nào. Và, nếu chúng ta cần thay đổi logic chọn ngày, chúng ta chỉ cần cập nhật component:
 
-    <?php
+```php tab=Pest
+<?php
 
-    namespace Tests\Browser;
+use Illuminate\Foundation\Testing\DatabaseMigrations;
+use Laravel\Dusk\Browser;
+use Tests\Browser\Components\DatePicker;
 
-    use Illuminate\Foundation\Testing\DatabaseMigrations;
-    use Laravel\Dusk\Browser;
-    use Tests\Browser\Components\DatePicker;
-    use Tests\DuskTestCase;
+uses(DatabaseMigrations::class);
 
-    class ExampleTest extends DuskTestCase
+test('basic example', function () {
+    $this->browse(function (Browser $browser) {
+        $browser->visit('/')
+            ->within(new DatePicker, function (Browser $browser) {
+                $browser->selectDate(2019, 1, 30);
+            })
+            ->assertSee('January');
+    });
+});
+```
+
+```php tab=PHPUnit
+<?php
+
+namespace Tests\Browser;
+
+use Illuminate\Foundation\Testing\DatabaseMigrations;
+use Laravel\Dusk\Browser;
+use Tests\Browser\Components\DatePicker;
+use Tests\DuskTestCase;
+
+class ExampleTest extends DuskTestCase
+{
+    /**
+     * A basic component test example.
+     */
+    public function test_basic_example(): void
     {
-        /**
-         * A basic component test example.
-         */
-        public function test_basic_example(): void
-        {
-            $this->browse(function (Browser $browser) {
-                $browser->visit('/')
-                        ->within(new DatePicker, function (Browser $browser) {
-                            $browser->selectDate(2019, 1, 30);
-                        })
-                        ->assertSee('January');
-            });
-        }
+        $this->browse(function (Browser $browser) {
+            $browser->visit('/')
+                ->within(new DatePicker, function (Browser $browser) {
+                    $browser->selectDate(2019, 1, 30);
+                })
+                ->assertSee('January');
+        });
     }
+}
+```
 
 <a name="continuous-integration"></a>
 ## Test tích hợp
@@ -2016,11 +2130,11 @@ Khi component đã được định nghĩa xong, chúng ta có thể dễ dàng 
         "test": {
           "buildpacks": [
             { "url": "heroku/php" },
-            { "url": "https://github.com/heroku/heroku-buildpack-google-chrome" }
+            { "url": "https://github.com/heroku/heroku-buildpack-chrome-for-testing" }
           ],
           "scripts": {
             "test-setup": "cp .env.testing .env",
-            "test": "nohup bash -c './vendor/laravel/dusk/bin/chromedriver-linux > /dev/null 2>&1 &' && nohup bash -c 'php artisan serve --no-reload > /dev/null 2>&1 &' && php artisan dusk"
+            "test": "nohup bash -c './vendor/laravel/dusk/bin/chromedriver-linux --port=9515 > /dev/null 2>&1 &' && nohup bash -c 'php artisan serve --no-reload > /dev/null 2>&1 &' && php artisan dusk"
           }
         }
       }
@@ -2035,7 +2149,7 @@ Khi component đã được định nghĩa xong, chúng ta có thể dễ dàng 
 language: php
 
 php:
-  - 7.3
+  - 8.2
 
 addons:
   chrome: stable
@@ -2086,20 +2200,20 @@ jobs:
       - name: Upgrade Chrome Driver
         run: php artisan dusk:chrome-driver --detect
       - name: Start Chrome Driver
-        run: ./vendor/laravel/dusk/bin/chromedriver-linux &
+        run: ./vendor/laravel/dusk/bin/chromedriver-linux --port=9515 &
       - name: Run Laravel Server
         run: php artisan serve --no-reload &
       - name: Run Dusk Tests
         run: php artisan dusk
       - name: Upload Screenshots
         if: failure()
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: screenshots
           path: tests/Browser/screenshots
       - name: Upload Console Logs
         if: failure()
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: console
           path: tests/Browser/console

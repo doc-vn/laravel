@@ -2,6 +2,7 @@
 
 - [Giới thiệu](#introduction)
 - [Cấu hình](#configuration)
+    - [Thay đổi key encrytion](#gracefully-rotating-encryption-keys)
 - [Dùng Encrypter](#using-the-encrypter)
 
 <a name="introduction"></a>
@@ -13,6 +14,22 @@ Các service mã hóa của Laravel cung cấp một giao diện đơn giản, t
 ## Cấu hình
 
 Trước khi sử dụng encrypter của Laravel, bạn phải set tùy chọn cấu hình `key` trong file cấu hình `config/app.php` của bạn. Giá trị cấu hình này được điều khiển bởi biến môi trường `APP_KEY`. Bạn nên sử dụng lệnh `php artisan key:generate` để tạo giá trị cho biến này vì lệnh `key:generate` sẽ sử dụng hàm tạo byte ngẫu nhiên an toàn của PHP để tạo khóa an toàn bằng mật mã cho ứng dụng của bạn. Thông thường, giá trị của biến môi trường `APP_KEY` sẽ được tạo cho bạn trong quá trình [cài đặt Laravel](/docs/{{version}}/installation).
+
+<a name="gracefully-rotating-encryption-keys"></a>
+### Thay đổi key encrytion
+
+Nếu bạn thay đổi key encrytion của ứng dụng, tất cả các session người dùng đã xác thực sẽ bị đăng xuất khỏi ứng dụng. Điều này là do mọi cookie, bao gồm cả cookie session, đều được Laravel mã hóa. Ngoài ra, bạn cũng sẽ không thể giải mã bất kỳ dữ liệu nào đã được mã hóa bằng key encrytion trước đó nữa.
+
+Để giảm thiểu vấn đề này, Laravel cho phép bạn liệt kê các key encrytion trước đó trong biến môi trường `APP_PREVIOUS_KEYS` của ứng dụng. Biến này có thể chứa danh sách tất cả các key encrytion trước đó của bạn, phân tách bằng dấu phẩy:
+
+```ini
+APP_KEY="base64:J63qRTDLub5NuZvP+kb8YIorGS6qFYHKVo6u7179stY="
+APP_PREVIOUS_KEYS="base64:2nLsGFGzyoae2ax3EF2Lyq/hH6QghBGLIq5uL+Gp8/w="
+```
+
+Khi bạn thiết lập biến môi trường này, Laravel sẽ luôn sử dụng key encrytion "hiện tại" khi mã hóa giá trị. Tuy nhiên, khi giải mã giá trị, thì Laravel sẽ thử khóa hiện tại trước, và nếu giải mã không thành công bằng khóa hiện tại, thì Laravel sẽ thử tất cả các khóa trước đó cho đến khi một trong các khóa đó có thể giải mã giá trị.
+
+Phương án giải mã an toàn này cho phép người dùng tiếp tục sử dụng ứng dụng mà không bị gián đoạn ngay cả khi key encrytion của bạn bị thay đổi.
 
 <a name="using-the-encrypter"></a>
 ## Dùng Encrypter

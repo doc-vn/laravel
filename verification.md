@@ -39,7 +39,7 @@ Trước khi bắt đầu, hãy kiểm tra model `App\Models\User` của bạn �
         // ...
     }
 
-Khi interface này đã được thêm vào model của bạn, thì những người dùng đăng ký mới sẽ được tự động gửi một email có chứa link xác minh email. Như bạn có thể thấy hãy kiểm tra `App\Providers\EventServiceProvider` của application của bạn, Laravel đã chứa sẵn một [listener](/docs/{{version}}/events) `SendEmailVerificationNotification` gắn với một event `Illuminate\Auth\Events\Registered`. Event listener này sẽ gửi link xác minh email cho người dùng.
+Khi interface này đã được thêm vào model của bạn, thì những người dùng đăng ký mới sẽ được tự động gửi một email có chứa link xác minh email. Điều này diễn ra một cách liền mạch vì Laravel đã tự động đăng ký [listener](/docs/{{version}}/events) `Illuminate\Auth\Listeners\SendEmailVerificationNotification` cho event `Illuminate\Auth\Events\Registered`.
 
 Nếu bạn đang tự làm form đăng ký trong ứng dụng của bạn mà không sử dụng [bộ khởi tạo](/docs/{{version}}/starter-kits), thì bạn nên đảm bảo là bạn đang gửi event `Illuminate\Auth\Events\Registered` sau khi đăng ký người dùng thành công:
 
@@ -50,11 +50,7 @@ Nếu bạn đang tự làm form đăng ký trong ứng dụng của bạn mà k
 <a name="database-preparation"></a>
 ### Chuẩn bị cơ sở dữ liệu
 
-Tiếp theo, bảng `users` của bạn phải chứa cột `email_verified_at` để lưu ngày giờ mà địa chỉ email của người dùng được xác minh. Mặc định, migration của bảng `user` tồn tại trong framework Laravel đã chứa cột này. Vì vậy, tất cả những gì bạn cần làm là chạy migration cơ sở dữ liệu của bạn:
-
-```shell
-php artisan migrate
-```
+Tiếp theo, bảng `users` của bạn phải chứa cột `email_verified_at` để lưu ngày giờ mà địa chỉ email của người dùng được xác minh. Thông thường, điều này đã có trong migration cơ sở dữ liệu mặc định `0001_01_01_000000_create_users_table.php` của Laravel.
 
 <a name="verification-routing"></a>
 ## Routing
@@ -112,7 +108,7 @@ Thỉnh thoảng người dùng có thể nhấn nhầm chỗ hoặc vô tình x
 <a name="protecting-routes"></a>
 ### Bảo vệ Route
 
-[Route middleware](/docs/{{version}}/middleware) có thể được sử dụng để chỉ cho phép những người dùng mà đã xác minh được truy cập vào một route nhất định. Laravel cung cấp sẵn một middleware alias `verified`, là một alias cho class `Illuminate\Auth\Middleware\EnsureEmailIsVerified`. Vì middleware này đã được đăng ký trong HTTP kernel của ứng dụng của bạn, nên tất cả những gì bạn cần là gắn middleware này vào một định nghĩa route. Thông thường, middleware này sẽ được gắn với middleware `auth`:
+[Route middleware](/docs/{{version}}/middleware) có thể được sử dụng để chỉ cho phép những người dùng mà đã xác minh được truy cập vào một route nhất định. Laravel đã có sẵn một [middleware alias](/docs/{{version}}/middleware#middleware-aliases) `verified`, là một alias cho class middleware `Illuminate\Auth\Middleware\EnsureEmailIsVerified`. Vì alias này đã được tự động đăng ký trong HTTP kernel bởi Laravel, nên tất cả những gì bạn cần là gắn middleware `verified` vào một định nghĩa route. Thông thường, middleware này sẽ được gắn với middleware `auth`:
 
     Route::get('/profile', function () {
         // Only verified users may access this route...
@@ -128,13 +124,13 @@ Nếu người dùng chưa được xác minh email mà cố gắng truy cập v
 
 Mặc dù thông báo xác minh email mặc định phải đáp ứng tất cản các yêu cầu của hầu hết các ứng dụng, nhưng Laravel cho phép bạn tùy chỉnh cách tạo email xác minh.
 
-Để bắt đầu, hãy truyền một closure tới phương thức `toMailUsing` được cung cấp bởi notification `Illuminate\Auth\Notifications\VerifyEmail`. Closure sẽ nhận vào instance model notifiable đang nhận notification và một link email verification mà người dùng phải truy cập để xác minh địa chỉ email của họ. Closure sẽ trả về một instance của `Illuminate\Notifications\Messages\MailMessage`. Thông thường, bạn nên gọi phương thức `toMailUsing` từ phương thức `boot` của class `App\Providers\AuthServiceProvider` trong ứng dụng của bạn:
+Để bắt đầu, hãy truyền một closure tới phương thức `toMailUsing` được cung cấp bởi notification `Illuminate\Auth\Notifications\VerifyEmail`. Closure sẽ nhận vào instance model notifiable đang nhận notification và một link email verification mà người dùng phải truy cập để xác minh địa chỉ email của họ. Closure sẽ trả về một instance của `Illuminate\Notifications\Messages\MailMessage`. Thông thường, bạn nên gọi phương thức `toMailUsing` từ phương thức `boot` của class `AppServiceProvider` trong ứng dụng của bạn:
 
     use Illuminate\Auth\Notifications\VerifyEmail;
     use Illuminate\Notifications\Messages\MailMessage;
 
     /**
-     * Register any authentication / authorization services.
+     * Bootstrap any application services.
      */
     public function boot(): void
     {
@@ -154,18 +150,4 @@ Mặc dù thông báo xác minh email mặc định phải đáp ứng tất c�
 <a name="events"></a>
 ## Event
 
-Khi sử dụng [bộ khởi tạo ứng dụng của Laravel](/docs/{{version}}/starter-kits), Laravel sẽ gửi các [events](/docs/{{version}}/events) trong quá trình xác nhận email. Nếu bạn đang tự xử lý việc xác minh email cho ứng dụng của bạn, bạn có thể gửi các sự kiện này theo cách thủ công sau khi quá trình xác minh hoàn tất. Bạn có thể gắn listener vào các event này trong `EventServiceProvider` của application của bạn:
-
-    use App\Listeners\LogVerifiedUser;
-    use Illuminate\Auth\Events\Verified;
-
-    /**
-     * The event listener mappings for the application.
-     *
-     * @var array
-     */
-    protected $listen = [
-        Verified::class => [
-            LogVerifiedUser::class,
-        ],
-    ];
+Khi sử dụng [bộ khởi tạo ứng dụng của Laravel](/docs/{{version}}/starter-kits), Laravel sẽ gửi một [events](/docs/{{version}}/events) `Illuminate\Auth\Events\Verified` trong quá trình xác nhận email. Nếu bạn đang tự xử lý việc xác minh email cho ứng dụng của bạn, bạn có thể gửi các sự kiện này theo cách thủ công sau khi quá trình xác minh hoàn tất.

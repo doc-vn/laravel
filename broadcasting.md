@@ -6,7 +6,6 @@
     - [Reverb](#reverb)
     - [Pusher Channels](#pusher-channels)
     - [Ably](#ably)
-    - [Open Source Alternatives](#open-source-alternatives)
 - [Cài đặt phía Client](#client-side-installation)
     - [Reverb](#client-reverb)
     - [Pusher Channels](#client-pusher-channels)
@@ -20,12 +19,12 @@
     - [Broadcast Condition](#broadcast-conditions)
     - [Broadcasting và Database Transactions](#broadcasting-and-database-transactions)
 - [Authorizing Channel](#authorizing-channels)
-    - [Định nghĩa Authorization Route](#defining-authorization-routes)
     - [Định nghĩa Authorization Callback](#defining-authorization-callbacks)
     - [Định nghĩa Channel Class](#defining-channel-classes)
 - [Broadcasting Event](#broadcasting-events)
     - [Only To Others](#only-to-others)
     - [Tuỳ chỉnh Connection](#customizing-the-connection)
+    - [Event ẩn](#anonymous-events)
 - [Nhận Broadcast](#receiving-broadcasts)
     - [Listening cho Event](#listening-for-events)
     - [Rời một Channel](#leaving-a-channel)
@@ -69,28 +68,35 @@ Broadcasting event được thực hiện bởi một driver broadcasting server
 <a name="configuration"></a>
 ### Cấu hình
 
-Tất cả các cấu hình event broadcasting của application đều được lưu trữ trong file cấu hình `config/broadcasting.php`. Mặc định, Laravel hỗ trợ một số broadcast driver: [Pusher Channels](https://pusher.com/channels), [Redis](/docs/{{version}}/redis), và driver `log` dành cho lúc phát triển và lúc gỡ lỗi. Ngoài ra, driver `null` cũng được cung cấp cho phép bạn tắt hoàn toàn broadcasting trong khi test. Một số cấu hình mẫu cũng sẽ được cung cấp trong file cấu hình `config/broadcasting.php`.
+Tất cả các cấu hình event broadcasting của application đều được lưu trữ trong file cấu hình `config/broadcasting.php`. Đừng lo lắng nếu thư mục này không tồn tại trong ứng dụng của bạn; nó sẽ được tạo ra khi bạn chạy lệnh Artisan `install:broadcasting`.
 
-<a name="broadcast-service-provider"></a>
-#### Broadcast Service Provider
+Mặc định, Laravel hỗ trợ một số broadcast driver: [Laravel Reverb](/docs/{{version}}/reverb), [Pusher Channels](https://pusher.com/channels), [Ably](https://ably.com), và driver `log` dành cho lúc phát triển và lúc gỡ lỗi. Ngoài ra, driver `null` cũng được cung cấp cho phép bạn tắt broadcasting trong khi test. Một số cấu hình mẫu cũng sẽ được cung cấp trong file cấu hình `config/broadcasting.php`.
 
-Trước khi broadcasting bất kỳ event nào, đầu tiên bạn sẽ cần phải đăng ký `App\Providers\BroadcastServiceProvider`. Trong một application Laravel mới, bạn chỉ cần bỏ comment provider này trong mảng `providers` của file cấu hình `config/app.php`. `BroadcastServiceProvider` này sẽ chứa một số code cho phép bạn đăng ký các route authorization broadcasting và các callback của chúng.
+<a name="installation"></a>
+#### Installation
+
+Mặc định, broadcasting không được bật trong các ứng dụng Laravel mới. Bạn có thể bật broadcasting bằng lệnh Artisan `install:broadcasting`:
+
+```shell
+php artisan install:broadcasting
+```
+Lệnh `install:broadcasting` sẽ tạo file cấu hình `config/broadcasting.php`. Ngoài ra, lệnh này cũng sẽ tạo ra file `routes/channels.php`, nơi mà bạn có thể đăng ký các route broadcast authorization và các callback của chúng.
 
 <a name="queue-configuration"></a>
 #### Queue Configuration
 
-Bạn cũng sẽ cần cấu hình và chạy một [queue worker](/docs/{{version}}/queues). Tất cả việc broadcasting event sẽ được thực hiện thông qua các queued job để thời gian phản hồi của ứng dụng của bạn không bị ảnh hưởng nghiêm trọng bởi các event đang được broadcast.
+Trước khi broadcast bất kỳ event nào, đầu tiên bạn nên cấu hình và chạy một [queue worker](/docs/{{version}}/queues). Tất cả việc broadcasting event sẽ được thực hiện thông qua các queued job để thời gian phản hồi của ứng dụng của bạn không bị ảnh hưởng nghiêm trọng bởi các event đang được broadcast.
 
 <a name="reverb"></a>
 ### Reverb
 
-Bạn có thể cài đặt Reverb bằng trình quản lý package Composer:
+Khi chạy lệnh `install:broadcasting`, bạn sẽ được nhắc là cần cài đặt [Laravel Reverb](/docs/{{version}}/reverb). Tất nhiên, bạn cũng có thể cài đặt Reverb bằng trình quản lý package Composer.
 
 ```sh
 composer require laravel/reverb
 ```
 
-Sau khi package được cài đặt xong, bạn có thể chạy lệnh cài đặt của Reverb để export ra cấu hình, cập nhật cấu hình broadcasting của ứng dụng và thêm các biến môi trường cần thiết của Reverb:
+Sau khi package được cài đặt xong, bạn có thể chạy lệnh cài đặt của Reverb để export ra cấu hình, thêm các biến môi trường cần thiết của Reverb, và enable broadcast trong ứng dụng của bạn:
 
 ```sh
 php artisan reverb:install
@@ -107,29 +113,27 @@ Nếu bạn có kế hoạch broadcast các event của bạn bằng cách sử 
 composer require pusher/pusher-php-server
 ```
 
-Tiếp theo, bạn nên cấu hình thông tin đăng nhập Pusher Channel của bạn trong file cấu hình `config/broadcasting.php`. Một ví dụ về cấu hình Pusher Channel đã được chứa trong file này, cho phép bạn nhanh chóng chỉ định khóa, secret và ID ứng dụng của bạn. Thông thường, các giá trị này phải được set thông qua [biến môi trường](/docs/{{version}}/configuration#environment-configuration) `PUSHER_APP_KEY`, `PUSHER_APP_SECRET` và `PUSHER_APP_ID`:
+Tiếp theo, bạn nên cấu hình thông tin đăng nhập Pusher Channel của bạn trong file cấu hình `config/broadcasting.php`. Một ví dụ về cấu hình Pusher Channel đã được chứa trong file này, cho phép bạn nhanh chóng chỉ định khóa, secret và ID ứng dụng của bạn. Thông thường, bạn nên cấu hình thông tin xác thực Pusher Channels trong file `.env` của ứng dụng:
 
 ```ini
-PUSHER_APP_ID=your-pusher-app-id
-PUSHER_APP_KEY=your-pusher-key
-PUSHER_APP_SECRET=your-pusher-secret
-PUSHER_APP_CLUSTER=mt1
+PUSHER_APP_ID="your-pusher-app-id"
+PUSHER_APP_KEY="your-pusher-key"
+PUSHER_APP_SECRET="your-pusher-secret"
+PUSHER_HOST=
+PUSHER_PORT=443
+PUSHER_SCHEME="https"
+PUSHER_APP_CLUSTER="mt1"
 ```
 
 Cấu hình `pusher` của file `config/broadcasting.php` cũng cho phép bạn chỉ định thêm các `options` được hỗ trợ bởi Channel, chẳng hạn như cluster.
 
-Tiếp theo, bạn sẽ cần thay đổi driver broadcast của bạn thành `pusher` trong file `.env` của bạn:
+Sau đó, set biến môi trường `BROADCAST_CONNECTION` thành `pusher` trong file `.env` của ứng dụng:
 
 ```ini
-BROADCAST_DRIVER=pusher
+BROADCAST_CONNECTION=pusher
 ```
 
 Cuối cùng, bạn đã sẵn sàng để cài đặt và cấu hình [Laravel Echo](#client-side-installation) và sẽ nhận các broadcast event ở phía client.
-
-<a name="pusher-compatible-open-source-alternatives"></a>
-#### Open Source Pusher Alternatives
-
-[soketi](https://docs.soketi.app/) cung cấp một server WebSocket tương thích với Pusher cho Laravel, cho phép bạn tận dụng toàn bộ sức mạnh của Laravel Broadcasting mà không cần các nhà cung cấp WebSocket thương mại. Để biết thêm thông tin về cách cài đặt và hướng dẫn sử dụng package mã nguồn mở cho broadcasting, vui lòng tham khảo tài liệu của chúng tôi về [các lựa chọn thay thế mã nguồn mở](#open-source-alternatives).
 
 <a name="ably"></a>
 ### Ably
@@ -149,21 +153,13 @@ Tiếp theo, bạn nên cấu hình thông tin đăng nhập Ably của bạn tr
 ABLY_KEY=your-ably-key
 ```
 
-Tiếp theo, bạn sẽ cần thay đổi driver broadcast của bạn thành `ably` trong file `.env` của bạn:
+Sau đó, set biến môi trường `BROADCAST_CONNECTION` thành `ably` trong file `.env` của ứng dụng:
 
 ```ini
-BROADCAST_DRIVER=ably
+BROADCAST_CONNECTION=ably
 ```
 
 Cuối cùng, bạn đã sẵn sàng để cài đặt và cấu hình [Laravel Echo](#client-side-installation) và sẽ nhận các broadcast event ở phía client.
-
-<a name="open-source-alternatives"></a>
-### Open Source Alternatives
-
-<a name="open-source-alternatives-node"></a>
-#### Node
-
-[Soketi](https://github.com/soketi/soketi) là một máy chủ WebSocket tương thích với Pusher, dựa trên Node và dành cho Laravel. Về cơ bản, Soketi sử dụng µWebSockets.js để có tốc độ và khả năng mở rộng cực cao. Package này cho phép bạn tận dụng toàn bộ sức mạnh của Laravel Broadcasting mà không cần phải nhà cung cấp WebSocket thương mại. Để biết thêm thông tin về cách cài đặt và sử dụng package này, vui lòng tham khảo [tài liệu chính thức](https://docs.soketi.app/) của nó.
 
 <a name="client-side-installation"></a>
 ## Cài đặt phía Client
@@ -208,18 +204,20 @@ npm run build
 <a name="client-pusher-channels"></a>
 ### Pusher Channels
 
-[Laravel Echo](https://github.com/laravel/echo) là một thư viện JavaScript giúp bạn dễ dàng đăng ký channel và lắng nghe các event do các driver broadcasting server-side của bạn. Bạn có thể cài đặt Echo thông qua trình quản lý package NPM. Trong ví dụ này, chúng ta cũng sẽ cài đặt package `pusher-js` vì chúng ta sẽ sử dụng driver broadcaster Pusher Channel:
+[Laravel Echo](https://github.com/laravel/echo) là một thư viện JavaScript giúp bạn dễ dàng đăng ký channel và lắng nghe các event do các driver broadcasting server-side của bạn. Echo cũng tận dụng package NPM `pusher-js` để triển khai giao thức Pusher cho các đăng ký, channel và tin nhắn thông qua WebSocket.
+
+Lệnh `install:broadcasting` của Artisan sẽ tự động cài đặt các package `laravel-echo` và `pusher-js` cho bạn; tuy nhiên, bạn cũng có thể tự cài đặt các package này thông qua NPM:
 
 ```shell
 npm install --save-dev laravel-echo pusher-js
 ```
 
-Sau khi cài đặt Echo, bạn đã sẵn sàng tạo một instance Echo mới trong JavaScript của ứng dụng. Một nơi tuyệt vời để làm điều này là ở dưới cùng của file `resources/js/bootstrap.js` đã được chứa trong Laravel framework. Mặc định, một cấu hình Echo ví dụ đã được chứa trong file này - bạn chỉ cần bỏ comment nó:
+Sau khi cài đặt Echo, bạn đã sẵn sàng tạo một instance Echo mới trong JavaScript của ứng dụng. Lệnh `install:broadcasting` tạo một file cấu hình Echo tại `resources/js/echo.js`; tuy nhiên, cấu hình mặc định trong file này dành cho Laravel Reverb. Bạn có thể copy cấu hình bên dưới để chuyển cấu hình sang Pusher:
 
 ```js
 import Echo from 'laravel-echo';
-import Pusher from 'pusher-js';
 
+import Pusher from 'pusher-js';
 window.Pusher = Pusher;
 
 window.Echo = new Echo({
@@ -230,7 +228,26 @@ window.Echo = new Echo({
 });
 ```
 
-Khi bạn đã bỏ comment và điều chỉnh cấu hình Echo theo nhu cầu của bạn, bạn có thể biên dịch các asset của ứng dụng:
+Tiếp theo, bạn nên định nghĩa các giá trị cho các biến môi trường Pusher trong file `.env` của ứng dụng. Nếu các biến này chưa có trong file `.env`, bạn nên thêm chúng vào:
+
+```ini
+PUSHER_APP_ID="your-pusher-app-id"
+PUSHER_APP_KEY="your-pusher-key"
+PUSHER_APP_SECRET="your-pusher-secret"
+PUSHER_HOST=
+PUSHER_PORT=443
+PUSHER_SCHEME="https"
+PUSHER_APP_CLUSTER="mt1"
+
+VITE_APP_NAME="${APP_NAME}"
+VITE_PUSHER_APP_KEY="${PUSHER_APP_KEY}"
+VITE_PUSHER_HOST="${PUSHER_HOST}"
+VITE_PUSHER_PORT="${PUSHER_PORT}"
+VITE_PUSHER_SCHEME="${PUSHER_SCHEME}"
+VITE_PUSHER_APP_CLUSTER="${PUSHER_APP_CLUSTER}"
+```
+
+Sau khi bạn đã điều chỉnh cấu hình Echo theo nhu cầu của ứng dụng bạn cần, bạn có thể biên dịch các asset của ứng dụng:
 
 ```shell
 npm run build
@@ -265,9 +282,9 @@ window.Echo = new Echo({
 > [!NOTE]
 > Tài liệu dưới đây sẽ thảo luận về cách dùng Ably trong chế độ "tương thích với Pusher". Tuy nhiên, Ably team rất khuyến khích bạn và duy trì một broadcaster, một Echo client có thể tận dụng tối đa các khả năng độc đáo do Ably cung cấp. Để biết thêm thông tin về cách sử dụng các driver được Ably cung cấp, vui lòng [tham khảo tài liệu về broadcaster Laravel của Ably](https://github.com/ably/laravel-broadcaster).
 
-[Laravel Echo](https://github.com/laravel/echo) là một thư viện JavaScript giúp bạn dễ dàng đăng ký channel và lắng nghe các event do các driver broadcasting server-side của bạn. Bạn có thể cài đặt Echo thông qua trình quản lý package NPM. Trong ví dụ này, chúng ta cũng sẽ cài đặt package `pusher-js`.
+[Laravel Echo](https://github.com/laravel/echo) là một thư viện JavaScript giúp bạn dễ dàng đăng ký channel và lắng nghe các event do các driver broadcasting server-side của bạn. Echo cũng tận dụng package NPM `pusher-js` để triển khai giao thức Pusher cho các đăng ký, channel và các message WebSocket.
 
-Bạn có thể thắc mắc tại sao chúng tôi lại cài đặt thư viện JavaScript `pusher-js` mặc dù chúng tôi đang sử dụng Ably để broadcast các event của bạn. Rất may, Ably đã chứa chế độ tương thích với Pusher cho phép chúng ta sử dụng giao thức Pusher khi lắng nghe các event trong ứng dụng client-side của chúng ta:
+Lệnh `install:broadcasting` Artisan sẽ tự động cài đặt các package `laravel-echo` và `pusher-js` cho bạn; tuy nhiên, bạn cũng có thể tự cài đặt các package này thông qua NPM:
 
 ```shell
 npm install --save-dev laravel-echo pusher-js
@@ -275,12 +292,12 @@ npm install --save-dev laravel-echo pusher-js
 
 **Trước khi tiếp tục, bạn nên bật hỗ trợ giao thức Pusher trong cài đặt ứng dụng Ably của bạn. Bạn có thể bật chức năng này trong phần "Protocol Adapter Settings" trên bảng điều khiển cài đặt của ứng dụng Ably.**
 
-Sau khi cài đặt Echo, bạn đã sẵn sàng tạo một instance Echo mới trong JavaScript của ứng dụng. Một nơi tuyệt vời để làm điều này là ở dưới cùng của file `resources/js/bootstrap.js` đã được chứa trong Laravel framework. Mặc định, một cấu hình Echo ví dụ đã được chứa trong file này; tuy nhiên, cấu hình mặc định trong file `bootstrap.js` là dành cho Pusher. Bạn có thể sao chép cấu hình bên dưới để chuyển cấu hình của bạn sang Ably:
+Sau khi cài đặt Echo, bạn đã sẵn sàng tạo một instance Echo mới trong JavaScript của ứng dụng. Lệnh `install:broadcasting` sẽ tạo file cấu hình Echo tại `resources/js/echo.js`; tuy nhiên, cấu hình mặc định trong file này sẽ dành cho Laravel Reverb. Bạn có thể sao chép cấu hình bên dưới để chuyển cấu hình của bạn sang Ably:
 
 ```js
 import Echo from 'laravel-echo';
-import Pusher from 'pusher-js';
 
+import Pusher from 'pusher-js';
 window.Pusher = Pusher;
 
 window.Echo = new Echo({
@@ -293,9 +310,9 @@ window.Echo = new Echo({
 });
 ```
 
-Lưu ý rằng cấu hình Ably Echo của chúng ta đang tham chiếu đến biến môi trường `VITE_ABLY_PUBLIC_KEY`. Giá trị của biến này phải là khóa công khai Ably của bạn. Khóa công khai của bạn là một phần của khóa Ably xuất hiện trước ký tự `:`.
+Bạn có thể đã nhận thấy cấu hình Ably Echo của chúng ta đang tham chiếu đến biến môi trường `VITE_ABLY_PUBLIC_KEY`. Giá trị của biến này phải là khóa công khai Ably của bạn. Khóa công khai của bạn là một phần của khóa Ably xuất hiện trước ký tự `:`.
 
-Khi bạn đã bỏ comment và điều chỉnh cấu hình Echo theo nhu cầu của bạn, bạn có thể biên dịch các asset của ứng dụng:
+Khi bạn đã điều chỉnh cấu hình Echo theo nhu cầu của bạn, bạn có thể biên dịch các asset của ứng dụng:
 
 ```shell
 npm run dev
@@ -310,9 +327,6 @@ npm run dev
 Broadcasting event của Laravel cho phép bạn broadcast các event Laravel ở phía máy chủ của bạn tới các application ở JavaScript bên phía client bằng cách sử dụng các phương pháp tiếp cận dựa trên các driver WebSockets. Hiện tại, Laravel hỗ trợ [Pusher Channels](https://pusher.com/channels) và driver [Ably](https://ably.com). Các event có thể được sử dụng dễ dàng ở phía client bằng cách sử dụng package Javascript [Laravel Echo](#client-side-installation).
 
 Các event được broadcast qua các "channels", có thể chỉ định là công khai hoặc là riêng tư. Bất kỳ client nào truy cập vào application của bạn đều có thể đăng ký channel công khai mà không cần bất kỳ authentication hoặc authorization nào; tuy nhiên, để đăng ký channel private, người dùng phải được authentication và authorization để listen trên channel đó.
-
-> [!NOTE]
-> Nếu bạn muốn sử dụng một open source để thay thế cho Pusher, hãy xem thử [các lựa chọn package thay thế nguồn mở](#open-source-alternatives).
 
 <a name="using-example-application"></a>
 ### Sử dụng một application mẫu
@@ -579,63 +593,14 @@ Nếu tùy chọn cấu hình `after_commit` của queue connection của bạn 
 <a name="authorizing-channels"></a>
 ## Authorizing Channels
 
-Các channel private sẽ yêu cầu bạn authorize rằng người dùng hiện tại đang được authenticate có thể có listen trên channel private này hay không. Điều này có thể được thực hiện bằng cách tạo một HTTP request đến application Laravel của bạn với tên channel và sau đó application của bạn có thể xác định xem người dùng đó có thể listen trên channel đó hay không. Khi sử dụng [Laravel Echo](#client-side-installation), thì HTTP request authorize này sẽ được tạo ra tự động; tuy nhiên, bạn sẽ cần định nghĩa thêm các route để respond lại các request này.
+Các channel private sẽ yêu cầu bạn authorize rằng người dùng hiện tại đang được authenticate có thể có listen trên channel private này hay không. Điều này có thể được thực hiện bằng cách tạo một HTTP request đến application Laravel của bạn với tên channel và sau đó application của bạn có thể xác định xem người dùng đó có thể listen trên channel đó hay không. Khi sử dụng [Laravel Echo](#client-side-installation), thì HTTP request authorize này sẽ được tạo ra tự động.
 
-<a name="defining-authorization-routes"></a>
-### Định nghĩa Authorization Route
-
-Rất may, Laravel đã giúp việc định nghĩa các route này một cách dễ dàng. Trong class `App\Providers\BroadcastServiceProvider` mà đi cùng với application Laravel, bạn sẽ thấy nó gọi đến một phương thức `Broadcast::routes`. Phương thức này sẽ đăng ký route `/broadcasting/auth` để xử lý các authorization request:
-
-    Broadcast::routes();
-
-Phương thức `Broadcast::routes` sẽ tự động đăng ký route của nó vào trong group middleware `web`; tuy nhiên, bạn có thể truyền một mảng các thuộc tính của route đó vào phương thức này nếu bạn muốn tùy chỉnh các thuộc tính đó:
-
-    Broadcast::routes($attributes);
-
-<a name="customizing-the-authorization-endpoint"></a>
-#### Tuỳ biến điểm cuối để Authorization
-
-Mặc định, Echo sẽ sử dụng điểm cuối `/broadcasting/auth` để authorize quyền truy cập vào channel. Tuy nhiên, bạn có thể chỉ định điểm cuối authorize của riêng bạn bằng cách thêm tùy chọn cấu hình `authEndpoint` cho instance Echo của bạn:
-
-```js
-window.Echo = new Echo({
-    broadcaster: 'pusher',
-    // ...
-    authEndpoint: '/custom/endpoint/auth'
-});
-```
-
-<a name="customizing-the-authorization-request"></a>
-#### Customizing The Authorization Request
-
-Bạn có thể tùy chỉnh cách Laravel Echo thực hiện các authorization request bằng cách cung cấp môt tùy chỉnh authorizer khi khởi tạo Echo:
-
-```js
-window.Echo = new Echo({
-    // ...
-    authorizer: (channel, options) => {
-        return {
-            authorize: (socketId, callback) => {
-                axios.post('/api/broadcasting/auth', {
-                    socket_id: socketId,
-                    channel_name: channel.name
-                })
-                .then(response => {
-                    callback(null, response.data);
-                })
-                .catch(error => {
-                    callback(error);
-                });
-            }
-        };
-    },
-})
-```
+Khi enable broadcast, Laravel sẽ tự động đăng ký route `/broadcasting/auth` để xử lý các request xác thực. Route `/broadcasting/auth` sẽ được tự động đặt nằm trong nhóm middleware `web`.
 
 <a name="defining-authorization-callbacks"></a>
 ### Định nghĩa Authorization Callback
 
-Tiếp theo, chúng ta cần định nghĩa các logic sẽ được determine if the currently authenticated user can listen to a given channel. Điều này sẽ được thực hiện trong file `routes/channels.php` đi kèm với application. Trong file này, bạn có thể sử dụng phương thức `Broadcast::channel` để đăng ký các callback authorization channel:
+Tiếp theo, chúng ta cần định nghĩa các logic sẽ được determine if the currently authenticated user can listen to a given channel. Điều này sẽ được thực hiện trong file `routes/channels.php` được tạo ra bởi lệnh Artisan `install:broadcasting`. Trong file này, bạn có thể sử dụng phương thức `Broadcast::channel` để đăng ký các callback authorization channel:
 
     use App\Models\User;
 
@@ -706,10 +671,7 @@ Cuối cùng, bạn có thể viết các logic cấp quyền cho channel của 
         /**
          * Create a new channel instance.
          */
-        public function __construct()
-        {
-            // ...
-        }
+        public function __construct() {}
 
         /**
          * Authenticate the user's access to the channel.
@@ -758,7 +720,7 @@ Tuy nhiên, hãy nhớ rằng chúng ta đang broadcast một event tạo task. 
 <a name="only-to-others-configuration"></a>
 #### Cấu hình
 
-Khi bạn khởi tạo một instance Laravel Echo, một ID socket cũng sẽ được khởi tạo. Nếu bạn đang sử dụng một global instance [Axios](https://github.com/mzabriskie/axios) để thực hiện các request HTTP từ ứng dụng JavaScript của bạn, thì ID socket đó sẽ được tự động đính kèm vào mọi request gửi đi dưới dạng một `X-Socket-ID` header. Sau đó, khi bạn gọi phương thức `toOthers`, Laravel sẽ lấy ID socket từ header và hướng dẫn broadcaster sẽ không broadcast đến bất kỳ kết nối nào mà trùng với ID socket đó.
+Khi bạn khởi tạo một instance Laravel Echo, một ID socket cũng sẽ được khởi tạo. Nếu bạn đang sử dụng một global instance [Axios](https://github.com/axios/axios) để thực hiện các request HTTP từ ứng dụng JavaScript của bạn, thì ID socket đó sẽ được tự động đính kèm vào mọi request gửi đi dưới dạng một `X-Socket-ID` header. Sau đó, khi bạn gọi phương thức `toOthers`, Laravel sẽ lấy ID socket từ header và hướng dẫn broadcaster sẽ không broadcast đến bất kỳ kết nối nào mà trùng với ID socket đó.
 
 Nếu bạn không sử dụng một global Axios instance, bạn sẽ cần phải tự cấu hình JavaScript của bạn để gửi header `X-Socket-ID` với tất cả các request gửi đi. Bạn có thể lấy ra ID socket bằng phương thức `Echo.socketId`:
 
@@ -801,6 +763,65 @@ Ngoài ra, bạn có thể chỉ định kết nối broadcast của event bằn
             $this->broadcastVia('pusher');
         }
     }
+
+<a name="anonymous-events"></a>
+### Event ẩn
+
+Thỉnh thoảng, bạn có thể muốn broadcast một event đơn giản đến frontend của người dùng mà không cần thiết phải tạo một class event chuyên dụng. Để đáp ứng điều này, facade `Broadcast` cho phép bạn broadcast một "event ẩn":
+
+```php
+Broadcast::on('orders.'.$order->id)->send();
+```
+
+Ví dụ trên sẽ broadcast ra một event sau:
+
+```json
+{
+    "event": "AnonymousEvent",
+    "data": "[]",
+    "channel": "orders.1"
+}
+```
+
+Sử dụng phương thức `as` và `with`, bạn có thể tùy chỉnh tên và dữ liệu của event:
+
+```php
+Broadcast::on('orders.'.$order->id)
+    ->as('OrderPlaced')
+    ->with($order)
+    ->send();
+```
+
+Ví dụ trên sẽ broadcast ra một event như sau:
+
+```json
+{
+    "event": "OrderPlaced",
+    "data": "{ id: 1, total: 100 }",
+    "channel": "orders.1"
+}
+```
+
+Nếu bạn muốn broadcast ra event ẩn trên một channel riêng tư hoặc một channel presence, thì bạn có thể sử dụng phương thức `private` và `presence`:
+
+```php
+Broadcast::private('orders.'.$order->id)->send();
+Broadcast::presence('channels.'.$channel->id)->send();
+```
+
+Broadcast một event ẩn bằng phương thức `send` sẽ gửi một event đến [queue](/docs/{{version}}/queues) của ứng dụng để xử lý. Tuy nhiên, nếu bạn muốn broadcast event ngay mà không cần queue, bạn có thể sử dụng phương thức `sendNow`:
+
+```php
+Broadcast::on('orders.'.$order->id)->sendNow();
+```
+
+Để broadcast một event tới tất cả người đăng ký channel ngoại trừ người dùng hiện tại, bạn có thể gọi phương thức `toOthers`:
+
+```php
+Broadcast::on('orders.'.$order->id)
+    ->toOthers()
+    ->send();
+```
 
 <a name="receiving-broadcasts"></a>
 ## Receiving Broadcasts

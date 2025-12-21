@@ -4,14 +4,16 @@
 - [Yêu cầu server](#server-requirements)
 - [Cấu hình server](#server-configuration)
     - [Nginx](#nginx)
+    - [FrankenPHP](#frankenphp)
+    - [Quyền thư mục](#directory-permissions)
 - [Tối ưu](#optimization)
-    - [Tối ưu autoloader](#autoloader-optimization)
     - [Lưu cache file config](#optimizing-configuration-loading)
     - [Lưu cache event](#caching-events)
     - [Lưu cache route](#optimizing-route-loading)
     - [Lưu cache view](#optimizing-view-loading)
 - [Chế độ debug](#debug-mode)
-- [Easy Deployment With Forge / Vapor](#deploying-with-forge-or-vapor)
+- [Route trạng thái](#the-health-route)
+- [Dễ dàng triển khai với Forge và Vapor](#deploying-with-forge-or-vapor)
 
 <a name="introduction"></a>
 ## Giới thiệu
@@ -25,7 +27,7 @@ Laravel framework có một số yêu cầu về hệ thống. Bạn nên đảm
 
 <div class="content-list" markdown="1">
 
-- PHP >= 8.1
+- PHP >= 8.2
 - Ctype PHP Extension
 - cURL PHP Extension
 - DOM PHP Extension
@@ -75,10 +77,11 @@ server {
 
     error_page 404 /index.php;
 
-    location ~ \.php$ {
+    location ~ ^/index\.php(/|$) {
         fastcgi_pass unix:/var/run/php/php8.2-fpm.sock;
         fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
         include fastcgi_params;
+        fastcgi_hide_header X-Powered-By;
     }
 
     location ~ /\.(?!well-known).* {
@@ -87,20 +90,38 @@ server {
 }
 ```
 
+<a name="frankenphp"></a>
+### FrankenPHP
+
+[FrankenPHP](https://frankenphp.dev/) cũng có thể được sử dụng để chạy các ứng dụng Laravel của bạn. FrankenPHP là một server ứng dụng PHP hiện đại được viết bằng ngôn ngữ Go. Để chạy một ứng dụng Laravel PHP bằng FrankenPHP, bạn chỉ cần gọi lệnh `php-server` của nó:
+
+```shell
+frankenphp php-server -r public/
+```
+
+Để tận dụng các tính năng mạnh mẽ hơn được FrankenPHP hỗ trợ, chẳng hạn như tích hợp [Laravel Octane](/docs/{{version}}/octane), HTTP/3, modern compression hoặc khả năng đóng gói các ứng dụng Laravel dưới dạng các file nhị phân độc lập, vui lòng tham khảo [tài liệu Laravel](https://frankenphp.dev/docs/laravel/) của FrankenPHP.
+
+<a name="directory-permissions"></a>
+### Quyền thư mục
+
+Laravel sẽ cần ghi vào các thư mục `bootstrap/cache` và `storage`, vì vậy bạn phải đảm bảo process server web có quyền ghi vào các thư mục này.
+
 <a name="optimization"></a>
 ## Tối ưu
 
-<a name="autoloader-optimization"></a>
-### Tối ưu autoloader
-
-Khi deploy application vào production, hãy chắc chắn là bạn đã tối ưu hoá class autoloader map của Composer, để Composer có thể nhanh chóng tìm thấy file thích hợp cho một class:
+Khi triển khai ứng dụng lên môi trường production, có nhiều file cần được lưu cache, như cấu hình, event, route và view. Laravel cung cấp một lệnh Artisan `optimize` tiện lợi, cho phép bạn lưu cache tất cả các file này. Lệnh này thường được gọi như một phần của quy trình deploy ứng dụng:
 
 ```shell
-composer install --optimize-autoloader --no-dev
+php artisan optimize
 ```
 
-> [!NOTE]
->  Ngoài việc tối ưu autoloader, bạn cũng nên chắc chắn là luôn có file `composer.lock` trong project source code của bạn. Các library trong project của bạn có thể cài đặt nhanh hơn khi mà có file `composer.lock` này.
+Phương thức `optimize:clear` có thể được sử dụng để xóa tất cả các file bộ nhớ cache được tạo bởi lệnh `optimize` cũng như tất cả các khóa trong driver bộ nhớ cache mặc định:
+
+```shell
+php artisan optimize:clear
+```
+
+Trong tài liệu sau đây, chúng ta sẽ thảo luận về từng lệnh tối ưu hóa chi tiết được thực hiện bởi lệnh `optimize`.
 
 <a name="optimizing-configuration-loading"></a>
 ### Lưu cache file config
@@ -119,7 +140,7 @@ Lệnh này sẽ nối tất cả các file config của Laravel thành một fi
 <a name="caching-events"></a>
 ### Lưu cache event
 
-Nếu ứng dụng của bạn đang sử dụng [event discovery](/docs/{{version}}/events#event-discovery), bạn nên lưu cache event của ứng dụng vào các mapping listener trong quá trình deploy. Điều này có thể thực hiện được bằng cách gọi lệnh Artisan `event:cache` trong quá trình deploy:
+Bạn nên lưu cache auto-discovered event của ứng dụng vào các mapping listener trong quá trình deploy. Điều này có thể thực hiện được bằng cách gọi lệnh Artisan `event:cache` trong quá trình deploy:
 
 ```shell
 php artisan event:cache
@@ -150,13 +171,29 @@ Lệnh này biên dịch tất cả các view Blade của bạn để chúng kh�
 <a name="debug-mode"></a>
 ## Chế độ debug
 
-Tùy chọn debug trong file cấu hình config/app.php của bạn sẽ xác định lượng thông tin lỗi sẽ thực sự được hiển thị cho người dùng. Mặc định, tùy chọn này được set để ưu tiên giá trị của biến môi trường `APP_DEBUG`, được lưu trong file .env trong application của bạn.
+Tùy chọn debug trong file cấu hình `config/app.php` của bạn sẽ xác định lượng thông tin lỗi sẽ thực sự được hiển thị cho người dùng. Mặc định, tùy chọn này được set để ưu tiên giá trị của biến môi trường `APP_DEBUG`, được lưu trong file .env trong application của bạn.
 
 > [!WARNING]
 > **Trong môi trường production của bạn, giá trị này phải luôn là `false`. Nếu biến `APP_DEBUG` được set thành `true` trong quá trình production, bạn có nguy cơ bị lộ các giá trị cấu hình nhạy cảm cho người dùng ứng dụng của bạn.**
 
+<a name="the-health-route"></a>
+## Route trạng thái
+
+Laravel có sẵn một route kiểm tra trạng thái có thể được sử dụng để theo dõi trạng thái ứng dụng của bạn. Trong môi trường production, route này có thể được sử dụng để báo cáo trạng thái ứng dụng cho hệ thống giám sát thời gian hoạt động, bộ cân bằng tải hoặc hệ thống điều phối như Kubernetes.
+
+Mặc định, route kiểm tra trạng thái được chạy tại `/up` và sẽ trả về response HTTP 200 nếu ứng dụng đã khởi động mà không có bất kỳ ngoại lệ nào. Nếu không, response HTTP 500 sẽ được trả về. Bạn có thể cấu hình URI cho route này trong file `bootstrap/app` của ứng dụng:
+
+    ->withRouting(
+        web: __DIR__.'/../routes/web.php',
+        commands: __DIR__.'/../routes/console.php',
+        health: '/up', // [tl! remove]
+        health: '/status', // [tl! add]
+    )
+
+Khi các request HTTP được gửi đến route này, Laravel cũng sẽ gửi một event `Illuminate\Foundation\Events\DiagnosingHealth`, cho phép bạn thực hiện các kiểm tra trạng thái bổ sung liên quan đến ứng dụng. Trong [listener](/docs/{{version}}/events) của event này, bạn có thể kiểm tra trạng thái cơ sở dữ liệu hoặc bộ nhớ cache của ứng dụng. Nếu phát hiện sự cố với ứng dụng, bạn chỉ cần đưa ra một ngoại lệ từ listener.
+
 <a name="deploying-with-forge-or-vapor"></a>
-## Easy Deployment With Forge / Vapor
+## Dễ dàng triển khai với Forge và Vapor
 
 <a name="laravel-forge"></a>
 #### Laravel Forge

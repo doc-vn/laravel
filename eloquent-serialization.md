@@ -61,7 +61,7 @@ Ngoài ra, bạn có thể cast một model hoặc một collection thành một
 
 Vì các model và các collection sẽ được chuyển đổi thành dạng JSON khi bị cast thành một chuỗi, nên bạn có thể trả về các đối tượng Eloquent trực tiếp từ các route hoặc các controller của application của bạn. Laravel sẽ tự động chuyển hóa các model và collection Eloquent của bạn thành JSON khi chúng được trả về từ các route hoặc controller:
 
-    Route::get('users', function () {
+    Route::get('/users', function () {
         return User::all();
     });
 
@@ -84,9 +84,9 @@ Thỉnh thoảng bạn cũng có thể muốn giới hạn các thuộc tính, c
     class User extends Model
     {
         /**
-         * The attributes that should be hidden for arrays.
+         * The attributes that should be hidden for serialization.
          *
-         * @var array
+         * @var array<string>
          */
         protected $hidden = ['password'];
     }
@@ -204,7 +204,10 @@ Bạn có thể tùy chỉnh định dạng chuyển đổi mặc định bằng
 
 Bạn có thể tùy chỉnh định dạng chuyển đổi của từng thuộc tính date trong Eloquent bằng cách chỉ định định dạng date trong [khai báo](/docs/{{version}}/eloquent-mutators#attribute-casting) của model đó:
 
-    protected $casts = [
-        'birthday' => 'date:Y-m-d',
-        'joined_at' => 'datetime:Y-m-d H:00',
-    ];
+    protected function casts(): array
+    {
+        return [
+            'birthday' => 'date:Y-m-d',
+            'joined_at' => 'datetime:Y-m-d H:00',
+        ];
+    }

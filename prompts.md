@@ -4,6 +4,7 @@
 - [Cài đặt](#installation)
 - [Hàm có sẵn](#available-prompts)
     - [Text](#text)
+    - [Textarea](#textarea)
     - [Password](#password)
     - [Confirm](#confirm)
     - [Select](#select)
@@ -12,10 +13,13 @@
     - [Search](#search)
     - [Multi-search](#multisearch)
     - [Pause](#pause)
+- [Chuyển đổi input trước khi validate](#transforming-input-before-validation)
+- [Forms](#forms)
 - [Thông tin messages](#informational-messages)
 - [Tables](#tables)
 - [Spin](#spin)
 - [Progress Bar](#progress)
+- [Clear terminal](#clear)
 - [Cài đặt cho Terminal](#terminal-considerations)
 - [Môi trường không hỗ trợ và cách dự phòng](#fallbacks)
 
@@ -106,6 +110,84 @@ $name = text(
 
 Closure đó sẽ nhận vào giá trị mà đã được nhập vào và trả về một error message hoặc một giá trị `null` nếu validation được pass.
 
+Ngoài ra, bạn có thể tận dụng sức mạnh của [validator](/docs/{{version}}/validation) trong Laravel. Để làm như vậy, hãy cung cấp một mảng gồm tên thuộc tính và các quy tắc xác thực mà bạn mong muốn cho tham số `validate`:
+
+```php
+$name = text(
+    label: 'What is your name?',
+    validate: ['name' => 'required|max:255|unique:users']
+);
+```
+
+<a name="textarea"></a>
+### Textarea
+
+Hàm `textarea` sẽ hiển thị cho người dùng một câu hỏi, chấp nhận câu trả lời của họ thông qua một textarea gồm nhiều dòng, và sau đó trả về kết quả đó:
+
+```php
+use function Laravel\Prompts\textarea;
+
+$story = textarea('Tell me a story.');
+```
+
+Bạn có thể gợi ý câu trả lời, hoặc một giá trị mặc định, và một thông tin gợi ý:
+
+```php
+$story = textarea(
+    label: 'Tell me a story.',
+    placeholder: 'This is a story about...',
+    hint: 'This will be displayed on your profile.'
+);
+```
+
+<a name="textarea-required"></a>
+#### Required Values
+
+Nếu bạn yêu cầu một giá trị phải được nhập vào, bạn có thể truyền tham số `required`:
+
+```php
+$story = textarea(
+    label: 'Tell me a story.',
+    required: true
+);
+```
+
+Nếu bạn muốn tuỳ chỉnh một validation message, bạn cũng có thể truyền thêm vào một chuỗi string:
+
+```php
+$story = textarea(
+    label: 'Tell me a story.',
+    required: 'A story is required.'
+);
+```
+
+<a name="textarea-validation"></a>
+#### Additional Validation
+
+Cuối cùng, nếu bạn muốn thực hiện thêm các logic validation, bạn có thể truyền vào một closure cho tham số `validate`:
+
+```php
+$story = textarea(
+    label: 'Tell me a story.',
+    validate: fn (string $value) => match (true) {
+        strlen($value) < 250 => 'The story must be at least 250 characters.',
+        strlen($value) > 10000 => 'The story must not exceed 10,000 characters.',
+        default => null
+    }
+);
+```
+
+Closure đó sẽ nhận vào giá trị mà đã được nhập vào và trả về một error message hoặc một giá trị `null` nếu validation được pass.
+
+Ngoài ra, bạn có thể tận dụng sức mạnh của [validator](/docs/{{version}}/validation) trong Laravel. Để làm như vậy, hãy cung cấp một mảng gồm tên thuộc tính và các quy tắc xác thực mà bạn mong muốn cho tham số `validate`:
+
+```php
+$story = textarea(
+    label: 'Tell me a story.',
+    validate: ['story' => 'required|max:10000']
+);
+```
+
 <a name="password"></a>
 ### Password
 
@@ -165,6 +247,15 @@ $password = password(
 
 Closure đó sẽ nhận vào giá trị mà đã được nhập vào và trả về một error message hoặc một giá trị `null` nếu validation được pass.
 
+Ngoài ra, bạn có thể tận dụng sức mạnh của [validator](/docs/{{version}}/validation) trong Laravel. Để làm như vậy, hãy cung cấp một mảng gồm tên thuộc tính và các quy tắc xác thực mà bạn mong muốn cho tham số `validate`:
+
+```php
+$password = password(
+    label: 'What is your password?',
+    validate: ['password' => 'min:8']
+);
+```
+
 <a name="confirm"></a>
 ### Confirm
 
@@ -218,8 +309,8 @@ Nếu bạn cần người dùng chọn một trong những lựa chọn có s�
 use function Laravel\Prompts\select;
 
 $role = select(
-    'What role should the user have?',
-    ['Member', 'Contributor', 'Owner'],
+    label: 'What role should the user have?',
+    options: ['Member', 'Contributor', 'Owner']
 );
 ```
 
@@ -242,7 +333,7 @@ $role = select(
     options: [
         'member' => 'Member',
         'contributor' => 'Contributor',
-        'owner' => 'Owner'
+        'owner' => 'Owner',
     ],
     default: 'owner'
 );
@@ -259,7 +350,7 @@ $role = select(
 ```
 
 <a name="select-validation"></a>
-#### Validation
+#### Additional Validation
 
 Không giống như những hàm khác, hàm `select` sẽ không chấp nhận tham số `required` bởi vì bạn không thể không chọn gì cả. Tuy nhiên, bạn có thể truyền một closure vào tham số `validate` nếu bạn cần hiển thị một tùy chọn nhưng không muốn nó được chọn:
 
@@ -269,7 +360,7 @@ $role = select(
     options: [
         'member' => 'Member',
         'contributor' => 'Contributor',
-        'owner' => 'Owner'
+        'owner' => 'Owner',
     ],
     validate: fn (string $value) =>
         $value === 'owner' && User::where('role', 'owner')->exists()
@@ -289,8 +380,8 @@ Nếu bạn cần người dùng có thể chọn nhiều lựa chọn, bạn c�
 use function Laravel\Prompts\multiselect;
 
 $permissions = multiselect(
-    'What permissions should be assigned?',
-    ['Read', 'Create', 'Update', 'Delete']
+    label: 'What permissions should be assigned?',
+    options: ['Read', 'Create', 'Update', 'Delete']
 );
 ```
 
@@ -309,14 +400,14 @@ $permissions = multiselect(
 
 Bạn cũng có thể truyền vào một mảng con cho tham số `options` để trả về các khóa của lựa chọn thay vì giá trị của chúng:
 
-```
+```php
 $permissions = multiselect(
     label: 'What permissions should be assigned?',
     options: [
         'read' => 'Read',
         'create' => 'Create',
         'update' => 'Update',
-        'delete' => 'Delete'
+        'delete' => 'Delete',
     ],
     default: ['read', 'create']
 );
@@ -341,7 +432,7 @@ Mặc định, người dùng có thể không chọn gì hoặc chọn nhiều 
 $categories = multiselect(
     label: 'What categories should be assigned?',
     options: Category::pluck('name', 'id'),
-    required: true,
+    required: true
 );
 ```
 
@@ -351,23 +442,23 @@ Nếu bạn muốn tùy chỉnh các validation message, bạn có thể cung c�
 $categories = multiselect(
     label: 'What categories should be assigned?',
     options: Category::pluck('name', 'id'),
-    required: 'You must select at least one category',
+    required: 'You must select at least one category'
 );
 ```
 
 <a name="multiselect-validation"></a>
-#### Validation
+#### Additional Validation
 
 Bạn có thể truyền một closure vào tham số `validate` nếu bạn cần hiển thị một lựa chọn nhưng không muốn người dùng chọn lựa chọn đó:
 
-```
+```php
 $permissions = multiselect(
     label: 'What permissions should the user have?',
     options: [
         'read' => 'Read',
         'create' => 'Create',
         'update' => 'Update',
-        'delete' => 'Delete'
+        'delete' => 'Delete',
     ],
     validate: fn (array $values) => ! in_array('read', $values)
         ? 'All users require the read permission.'
@@ -392,8 +483,8 @@ Ngoài ra, bạn có thể truyền một closure làm tham số thứ hai cho h
 
 ```php
 $name = suggest(
-    'What is your name?',
-    fn ($value) => collect(['Taylor', 'Dayle'])
+    label: 'What is your name?',
+    options: fn ($value) => collect(['Taylor', 'Dayle'])
         ->filter(fn ($name) => Str::contains($name, $value, ignoreCase: true))
 )
 ```
@@ -452,6 +543,16 @@ $name = suggest(
 
 Closure đó sẽ nhận vào giá trị mà đã được nhập vào và trả về một error message hoặc một giá trị `null` nếu validation được pass.
 
+Ngoài ra, bạn có thể tận dụng sức mạnh của [validator](/docs/{{version}}/validation) trong Laravel. Để làm như vậy, hãy cung cấp một mảng gồm tên thuộc tính và các quy tắc xác thực mà bạn mong muốn cho tham số `validate`:
+
+```php
+$name = suggest(
+    label: 'What is your name?',
+    options: ['Taylor', 'Dayle'],
+    validate: ['name' => 'required|min:3|max:255']
+);
+```
+
 <a name="search"></a>
 ### Search
 
@@ -461,14 +562,28 @@ Nếu bạn có nhiều tùy chọn để người dùng lựa chọn, thì hàm
 use function Laravel\Prompts\search;
 
 $id = search(
-    'Search for the user that should receive the mail',
-    fn (string $value) => strlen($value) > 0
-        ? User::where('name', 'like', "%{$value}%")->pluck('name', 'id')->all()
+    label: 'Search for the user that should receive the mail',
+    options: fn (string $value) => strlen($value) > 0
+        ? User::whereLike('name', "%{$value}%")->pluck('name', 'id')->all()
         : []
 );
 ```
 
 Hàm closure sẽ nhận một text đã được người dùng nhập vào và trả về một mảng các tùy chọn. Nếu bạn trả về một mảng gồm khoá và giá trị, thì khóa của tùy chọn sẽ được trả về, nếu không, giá trị của tuỳ chọn sẽ được trả về.
+
+Khi filter một mảng mà bạn muốn trả về giá trị, thì bạn nên sử dụng hàm `array_values` hoặc phương thức `values` của Collection để đảm bảo mảng đó sẽ không bị trở thành mảng gồm key-value:
+
+```php
+$names = collect(['Taylor', 'Abigail']);
+
+$selected = search(
+    label: 'Search for the user that should receive the mail',
+    options: fn (string $value) => $names
+        ->filter(fn ($name) => Str::contains($name, $value, ignoreCase: true))
+        ->values()
+        ->all(),
+);
+```
 
 Bạn cũng thể thêm text gợi ý câu trả lời và thông tin gợi ý:
 
@@ -477,7 +592,7 @@ $id = search(
     label: 'Search for the user that should receive the mail',
     placeholder: 'E.g. Taylor Otwell',
     options: fn (string $value) => strlen($value) > 0
-        ? User::where('name', 'like', "%{$value}%")->pluck('name', 'id')->all()
+        ? User::whereLike('name', "%{$value}%")->pluck('name', 'id')->all()
         : [],
     hint: 'The user will receive an email immediately.'
 );
@@ -489,14 +604,14 @@ Sẽ có năm lựa chọn được hiển thị trước khi danh sách lựa c
 $id = search(
     label: 'Search for the user that should receive the mail',
     options: fn (string $value) => strlen($value) > 0
-        ? User::where('name', 'like', "%{$value}%")->pluck('name', 'id')->all()
+        ? User::whereLike('name', "%{$value}%")->pluck('name', 'id')->all()
         : [],
     scroll: 10
 );
 ```
 
 <a name="search-validation"></a>
-#### Validation
+#### Additional Validation
 
 Nếu bạn muốn thực hiện thêm các logic validation, bạn có thể truyền một closure vào tham số `validate`:
 
@@ -504,7 +619,7 @@ Nếu bạn muốn thực hiện thêm các logic validation, bạn có thể tr
 $id = search(
     label: 'Search for the user that should receive the mail',
     options: fn (string $value) => strlen($value) > 0
-        ? User::where('name', 'like', "%{$value}%")->pluck('name', 'id')->all()
+        ? User::whereLike('name', "%{$value}%")->pluck('name', 'id')->all()
         : [],
     validate: function (int|string $value) {
         $user = User::findOrFail($value);
@@ -529,12 +644,26 @@ use function Laravel\Prompts\multisearch;
 $ids = multisearch(
     'Search for the users that should receive the mail',
     fn (string $value) => strlen($value) > 0
-        ? User::where('name', 'like', "%{$value}%")->pluck('name', 'id')->all()
+        ? User::whereLike('name', "%{$value}%")->pluck('name', 'id')->all()
         : []
 );
 ```
 
 Hàm closure sẽ nhận vào text đã được người dùng nhập và trả về một mảng các tùy chọn. Nếu bạn trả về một mảng gồm khoá và giá trị, thì các khóa của tùy chọn được chọn sẽ được trả về; nếu không, thì giá trị của chúng sẽ được trả về.
+
+Khi filter một mảng mà bạn muốn trả về giá trị, thì bạn nên sử dụng hàm `array_values` hoặc phương thức `values` của Collection để đảm bảo mảng đó sẽ không bị trở thành mảng gồm key-value:
+
+```php
+$names = collect(['Taylor', 'Abigail']);
+
+$selected = multisearch(
+    label: 'Search for the users that should receive the mail',
+    options: fn (string $value) => $names
+        ->filter(fn ($name) => Str::contains($name, $value, ignoreCase: true))
+        ->values()
+        ->all(),
+);
+```
 
 Bạn cũng thể thêm text gợi ý câu trả lời và thông tin gợi ý:
 
@@ -543,7 +672,7 @@ $ids = multisearch(
     label: 'Search for the users that should receive the mail',
     placeholder: 'E.g. Taylor Otwell',
     options: fn (string $value) => strlen($value) > 0
-        ? User::where('name', 'like', "%{$value}%")->pluck('name', 'id')->all()
+        ? User::whereLike('name', "%{$value}%")->pluck('name', 'id')->all()
         : [],
     hint: 'The user will receive an email immediately.'
 );
@@ -555,7 +684,7 @@ Sẽ có năm lựa chọn được hiển thị trước khi danh sách lựa c
 $ids = multisearch(
     label: 'Search for the users that should receive the mail',
     options: fn (string $value) => strlen($value) > 0
-        ? User::where('name', 'like', "%{$value}%")->pluck('name', 'id')->all()
+        ? User::whereLike('name', "%{$value}%")->pluck('name', 'id')->all()
         : [],
     scroll: 10
 );
@@ -568,11 +697,11 @@ Mặc định, người dùng có thể không chọn gì hoặc chọn nhiều 
 
 ```php
 $ids = multisearch(
-    'Search for the users that should receive the mail',
-    fn (string $value) => strlen($value) > 0
-        ? User::where('name', 'like', "%{$value}%")->pluck('name', 'id')->all()
+    label: 'Search for the users that should receive the mail',
+    options: fn (string $value) => strlen($value) > 0
+        ? User::whereLike('name', "%{$value}%")->pluck('name', 'id')->all()
         : [],
-    required: true,
+    required: true
 );
 ```
 
@@ -580,16 +709,16 @@ Nếu bạn muốn tuỳ chỉnh một validation message, bạn cũng có thể
 
 ```php
 $ids = multisearch(
-    'Search for the users that should receive the mail',
-    fn (string $value) => strlen($value) > 0
-        ? User::where('name', 'like', "%{$value}%")->pluck('name', 'id')->all()
+    label: 'Search for the users that should receive the mail',
+    options: fn (string $value) => strlen($value) > 0
+        ? User::whereLike('name', "%{$value}%")->pluck('name', 'id')->all()
         : [],
     required: 'You must select at least one user.'
 );
 ```
 
 <a name="multisearch-validation"></a>
-#### Validation
+#### Additional Validation
 
 Nếu bạn muốn thực hiện thêm các logic validation, bạn có thể truyền một closure vào tham số `validate`:
 
@@ -597,10 +726,10 @@ Nếu bạn muốn thực hiện thêm các logic validation, bạn có thể tr
 $ids = multisearch(
     label: 'Search for the users that should receive the mail',
     options: fn (string $value) => strlen($value) > 0
-        ? User::where('name', 'like', "%{$value}%")->pluck('name', 'id')->all()
+        ? User::whereLike('name', "%{$value}%")->pluck('name', 'id')->all()
         : [],
     validate: function (array $values) {
-        $optedOut = User::where('name', 'like', '%a%')->findMany($values);
+        $optedOut = User::whereLike('name', '%a%')->findMany($values);
 
         if ($optedOut->isNotEmpty()) {
             return $optedOut->pluck('name')->join(', ', ', and ').' have opted out.';
@@ -620,6 +749,78 @@ Hàm `pause` có thể được sử dụng để hiển thị các text thông 
 use function Laravel\Prompts\pause;
 
 pause('Press ENTER to continue.');
+```
+
+<a name="transforming-input-before-validation"></a>
+## Chuyển đổi input trước khi validate
+
+Thỉnh thoảng bạn có thể muốn chuyển đổi input của prompt trước khi quá trình validate được diễn ra. Ví dụ, bạn có thể muốn loại bỏ khoảng trắng ra khỏi bất kỳ chuỗi nào được cung cấp. Để thực hiện điều này, nhiều hàm prompt cung cấp một tham số `transform`, chấp nhận một closure:
+
+```php
+$name = text(
+    label: 'What is your name?',
+    transform: fn (string $value) => trim($value),
+    validate: fn (string $value) => match (true) {
+        strlen($value) < 3 => 'The name must be at least 3 characters.',
+        strlen($value) > 255 => 'The name must not exceed 255 characters.',
+        default => null
+    }
+);
+```
+
+<a name="forms"></a>
+## Forms
+
+Thông thường, bạn sẽ có nhiều prompt được hiển thị theo một trình tự nhất định để thu thập thông tin trước khi thực hiện các hành động. Bạn có thể sử dụng hàm `form` để tạo một group các prompt để người dùng nhập vào:
+
+```php
+use function Laravel\Prompts\form;
+
+$responses = form()
+    ->text('What is your name?', required: true)
+    ->password('What is your password?', validate: ['password' => 'min:8'])
+    ->confirm('Do you accept the terms?')
+    ->submit();
+```
+
+Phương thức `submit` sẽ trả về một mảng được đánh số chứa tất cả các phản hồi từ các prompt của form. Tuy nhiên, bạn có thể cung cấp một tên cho mỗi prompt thông qua tham số `name`. Khi một tên được cung cấp, thì phản hồi của prompt sẽ chứa cái tên đó và có thể truy cập được thông qua tên đó:
+
+```php
+use App\Models\User;
+use function Laravel\Prompts\form;
+
+$responses = form()
+    ->text('What is your name?', required: true, name: 'name')
+    ->password(
+        label: 'What is your password?',
+        validate: ['password' => 'min:8'],
+        name: 'password'
+    )
+    ->confirm('Do you accept the terms?')
+    ->submit();
+
+User::create([
+    'name' => $responses['name'],
+    'password' => $responses['password'],
+]);
+```
+
+Lợi ích chính của việc sử dụng hàm `form` là người dùng có thể quay lại các prompt trước đó có trong form bằng cách sử dụng `CTRL + U`. Điều này cho phép người dùng sửa hoặc thay đổi các lựa chọn mà không cần phải hủy và trả lời lại toàn bộ form.
+
+Nếu bạn cần kiểm soát chi tiết hơn đối với một prompt có trong form, bạn có thể gọi phương thức `add` thay vì gọi trực tiếp một trong các hàm prompt. Phương thức `add` sẽ chứa tất cả các phản hồi trước đó mà người dùng đã cung cấp:
+
+```php
+use function Laravel\Prompts\form;
+use function Laravel\Prompts\outro;
+
+$responses = form()
+    ->text('What is your name?', required: true, name: 'name')
+    ->add(function ($responses) {
+        return text("How old are you, {$responses['name']}?");
+    }, name: 'age')
+    ->submit();
+
+outro("Your name is {$responses['name']} and you are {$responses['age']} years old.");
 ```
 
 <a name="informational-messages"></a>
@@ -642,8 +843,8 @@ Hàm `table` sẽ giúp bạn dễ dàng hiển thị các hàng, cột dữ li�
 use function Laravel\Prompts\table;
 
 table(
-    ['Name', 'Email'],
-    User::all(['name', 'email'])
+    headers: ['Name', 'Email'],
+    rows: User::all(['name', 'email'])->toArray()
 );
 ```
 
@@ -656,8 +857,8 @@ Hàm `spin` sẽ hiển thị một spinner cùng với một thông báo tùy c
 use function Laravel\Prompts\spin;
 
 $response = spin(
-    fn () => Http::get('http://example.com'),
-    'Fetching response...'
+    message: 'Fetching response...',
+    callback: fn () => Http::get('http://example.com')
 );
 ```
 
@@ -675,13 +876,13 @@ use function Laravel\Prompts\progress;
 $users = progress(
     label: 'Updating users',
     steps: User::all(),
-    callback: fn ($user) => $this->performTask($user),
+    callback: fn ($user) => $this->performTask($user)
 );
 ```
 
 Hàm `progress` hoạt động giống như một hàm map và sẽ trả về một mảng chứa giá trị được trả về của mỗi lần lặp lệnh callback của bạn.
 
-Hàm callback cũng có thể chấp nhận instance `\Laravel\Prompts\Progress`, cho phép bạn sửa label và gợi ý ở mỗi lần lặp lại:
+Hàm callback cũng có thể chấp nhận instance `Laravel\Prompts\Progress`, cho phép bạn sửa label và gợi ý ở mỗi lần lặp lại:
 
 ```php
 $users = progress(
@@ -694,7 +895,7 @@ $users = progress(
 
         return $this->performTask($user);
     },
-    hint: 'This may take some time.',
+    hint: 'This may take some time.'
 );
 ```
 
@@ -716,6 +917,17 @@ foreach ($users as $user) {
 $progress->finish();
 ```
 
+<a name="clear"></a>
+## Clear terminal
+
+Hàm `clear` có thể được sử dụng để làm sạch terminal của người dùng:
+
+```
+use function Laravel\Prompts\clear;
+
+clear();
+```
+
 <a name="terminal-considerations"></a>
 ## Cài đặt cho Terminal
 
@@ -734,7 +946,7 @@ Nếu độ dài của bất kỳ label, tùy chọn hoặc validation message n
 
 Laravel Prompts hỗ trợ macOS, Linux và Windows cùng với WSL. Do những hạn chế trong phiên bản PHP dành cho Windows, hiện tại không thể sử dụng Laravel Prompts trên Windows mà không có WSL.
 
-Vì lý do này, Laravel Prompts hỗ trợ việc triển khai thay thế như [Symfony Console Question Helper](https://symfony.com/doc/current/components/console/helpers/questionhelper.html).
+Vì lý do này, Laravel Prompts hỗ trợ việc triển khai thay thế như [Symfony Console Question Helper](https://symfony.com/doc/7.0/components/console/helpers/questionhelper.html).
 
 > [!NOTE]
 > Khi sử dụng Laravel Prompts với framework Laravel, các phương án dự phòng cho từng prompt đã được cấu hình sẵn cho bạn và sẽ tự động được kích hoạt trong các môi trường không được hỗ trợ.
@@ -766,7 +978,9 @@ TextPrompt::fallbackUsing(function (TextPrompt $prompt) use ($input, $output) {
     $question = (new Question($prompt->label, $prompt->default ?: null))
         ->setValidator(function ($answer) use ($prompt) {
             if ($prompt->required && $answer === null) {
-                throw new \RuntimeException(is_string($prompt->required) ? $prompt->required : 'Required.');
+                throw new \RuntimeException(
+                    is_string($prompt->required) ? $prompt->required : 'Required.'
+                );
             }
 
             if ($prompt->validate) {

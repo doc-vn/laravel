@@ -13,7 +13,7 @@
     - [Lệnh where](#where-clauses)
     - [Lệnh where or](#or-where-clauses)
     - [Lệnh where not](#where-not-clauses)
-    - [Lệnh Where any và Where all](#where-any-all-clauses)
+    - [Lệnh Where any, Where all và Where none](#where-any-all-none-clauses)
     - [Lệnh where cho json](#json-where-clauses)
     - [Lệnh where khác](#additional-where-clauses)
     - [Logic nhóm](#logical-grouping)
@@ -95,6 +95,10 @@ Nếu bạn chỉ cần lấy ra một hàng từ một bảng cơ sở dữ li�
 
     return $user->email;
 
+Nếu bạn muốn lấy ra một hàng duy nhất từ một bảng cơ sở dữ liệu, nhưng cũng muốn đưa ra một exception `Illuminate\Database\RecordNotFoundException` nếu không tìm thấy hàng đó, thì bạn có thể sử dụng phương thức `firstOrFail`. Nếu exception `RecordNotFoundException` không được đưa ra, thì một response HTTP 404 sẽ được tự động gửi lại cho client:
+
+    $user = DB::table('users')->where('name', 'John')->firstOrFail();
+
 Nếu bạn không cần lấy ra toàn bộ giá trị của một hàng, bạn có thể lấy ra một giá trị của một bản ghi bằng cách sủ dụng phương thức `value`. Phương thức này sẽ trả về giá trị của cột mà bạn đã khai báo:
 
     $email = DB::table('users')->where('name', 'John')->value('email');
@@ -157,6 +161,20 @@ Nếu bạn đang cập nhật bản ghi cơ sở dữ liệu trong khi chunking
             }
         });
 
+Vì các phương thức `chunkById` và `lazyById` sẽ thêm các điều kiện "where" riêng của chúng vào trong truy vấn đang được thực thi, nên bạn nên [nhóm logic](#logical-grouping) các điều kiện của riêng bạn vào trong một closure:
+
+```php
+DB::table('users')->where(function ($query) {
+    $query->where('credits', 1)->orWhere('credits', 2);
+})->chunkById(100, function (Collection $users) {
+    foreach ($users as $user) {
+        DB::table('users')
+            ->where('id', $user->id)
+            ->update(['credits' => 3]);
+    }
+});
+```
+
 > [!WARNING]
 > Khi cập nhật hoặc xóa các bản ghi bên trong lệnh callback của phương thức chunk, bất kỳ thay đổi nào đối với các khóa chính hoặc khóa ngoại đều có thể ảnh hưởng đến kết quả truy vấn của phương thức chunk. Điều này có thể dẫn đến việc một số bản ghi sẽ không được đưa vào bên trong kết quả chunk.
 
@@ -201,8 +219,8 @@ Query builder cũng cung cấp nhiều phương thức để lấy các giá tr�
 Dĩ nhiên, bạn có thể kết hợp các phương thức này với các câu lệnh khác để tinh chỉnh cách tính giá trị thống kê của bạn:
 
     $price = DB::table('orders')
-                    ->where('finalized', 1)
-                    ->avg('price');
+        ->where('finalized', 1)
+        ->avg('price');
 
 <a name="determining-if-records-exist"></a>
 #### Determining If Records Exist
@@ -228,8 +246,8 @@ Không phải lúc nào bạn cũng muốn select tất cả các cột từ b�
     use Illuminate\Support\Facades\DB;
 
     $users = DB::table('users')
-                ->select('name', 'email as user_email')
-                ->get();
+        ->select('name', 'email as user_email')
+        ->get();
 
 Phương thức `distinct` cho phép bạn bắt query sẽ phải trả về các kết quả khác nhau:
 
@@ -247,10 +265,10 @@ Nếu bạn đã có một instance query builder và bạn muốn thêm một c
 Thỉnh thoảng bạn có thể cần chèn một chuỗi tùy ý vào trong một query. Để tạo một chuỗi biểu thức raw như vậy, bạn có thể sử dụng phương thức `raw` được cung cấp bởi facade `DB`:
 
     $users = DB::table('users')
-                 ->select(DB::raw('count(*) as user_count, status'))
-                 ->where('status', '<>', 1)
-                 ->groupBy('status')
-                 ->get();
+        ->select(DB::raw('count(*) as user_count, status'))
+        ->where('status', '<>', 1)
+        ->groupBy('status')
+        ->get();
 
 > [!WARNING]
 > Các câu lệnh raw sẽ được đưa vào query dưới dạng là một chuỗi, vì vậy bạn cần phải cực kỳ cẩn thận để tránh tạo ra lỗ hổng SQL injection.
@@ -266,8 +284,8 @@ Thay vì sử dụng phương thức `raw`, bạn cũng có thể sử dụng c�
 Phương thức `selectRaw` có thể được sử dụng thay cho câu lệnh `addSelect(DB::raw(/* ... */))`. Phương thức này chấp nhận một mảng các tùy chọn tham số được truyền vào làm tham số thứ hai của nó:
 
     $orders = DB::table('orders')
-                    ->selectRaw('price * ? as price_with_tax', [1.0825])
-                    ->get();
+        ->selectRaw('price * ? as price_with_tax', [1.0825])
+        ->get();
 
 <a name="whereraw-orwhereraw"></a>
 #### `whereRaw / orWhereRaw`
@@ -275,8 +293,8 @@ Phương thức `selectRaw` có thể được sử dụng thay cho câu lệnh 
 Các phương thức `whereRaw` và `orWhereRaw` có thể được sử dụng để thêm câu lệnh "where" raw vào query của bạn. Các phương thức này chấp nhận một mảng các tùy chọn tham số được truyền vào làm tham số thứ hai của nó:
 
     $orders = DB::table('orders')
-                    ->whereRaw('price > IF(state = "TX", ?, 100)', [200])
-                    ->get();
+        ->whereRaw('price > IF(state = "TX", ?, 100)', [200])
+        ->get();
 
 <a name="havingraw-orhavingraw"></a>
 #### `havingRaw / orHavingRaw`
@@ -284,10 +302,10 @@ Các phương thức `whereRaw` và `orWhereRaw` có thể được sử dụng 
 Các phương thức `havingRaw` và `orHavingRaw` có thể được sử dụng để cung cấp một chuỗi raw làm giá trị của câu lệnh "having". Phương thức này chấp nhận một mảng các tùy chọn tham số được truyền vào làm tham số thứ hai của nó:
 
     $orders = DB::table('orders')
-                    ->select('department', DB::raw('SUM(price) as total_sales'))
-                    ->groupBy('department')
-                    ->havingRaw('SUM(price) > ?', [2500])
-                    ->get();
+        ->select('department', DB::raw('SUM(price) as total_sales'))
+        ->groupBy('department')
+        ->havingRaw('SUM(price) > ?', [2500])
+        ->get();
 
 <a name="orderbyraw"></a>
 #### `orderByRaw`
@@ -295,8 +313,8 @@ Các phương thức `havingRaw` và `orHavingRaw` có thể được sử dụn
 Phương thức `orderByRaw` có thể được sử dụng để cung cấp một chuỗi raw làm giá trị của câu lệnh "order by":
 
     $orders = DB::table('orders')
-                    ->orderByRaw('updated_at - created_at DESC')
-                    ->get();
+        ->orderByRaw('updated_at - created_at DESC')
+        ->get();
 
 <a name="groupbyraw"></a>
 ### `groupByRaw`
@@ -304,9 +322,9 @@ Phương thức `orderByRaw` có thể được sử dụng để cung cấp m�
 Phương thức `groupByRaw` có thể được sử dụng để cung cấp một string raw làm giá trị của mệnh đề `group by`:
 
     $orders = DB::table('orders')
-                    ->select('city', 'state')
-                    ->groupByRaw('city, state')
-                    ->get();
+        ->select('city', 'state')
+        ->groupByRaw('city, state')
+        ->get();
 
 <a name="joins"></a>
 ## Join
@@ -319,10 +337,10 @@ Query builder cũng có thể được sử dụng để thêm các câu lệnh 
     use Illuminate\Support\Facades\DB;
 
     $users = DB::table('users')
-                ->join('contacts', 'users.id', '=', 'contacts.user_id')
-                ->join('orders', 'users.id', '=', 'orders.user_id')
-                ->select('users.*', 'contacts.phone', 'orders.price')
-                ->get();
+        ->join('contacts', 'users.id', '=', 'contacts.user_id')
+        ->join('orders', 'users.id', '=', 'orders.user_id')
+        ->select('users.*', 'contacts.phone', 'orders.price')
+        ->get();
 
 <a name="left-join-right-join-clause"></a>
 #### Left Join Clause / Right Join Clause
@@ -330,12 +348,12 @@ Query builder cũng có thể được sử dụng để thêm các câu lệnh 
 Nếu bạn muốn thực hiện "left join" hoặc "right join" thay vì "inner join", hãy sử dụng phương thức `leftJoin` hoặc `rightJoin`. Những phương thức này có cùng tham số với phương thức `join`:
 
     $users = DB::table('users')
-                ->leftJoin('posts', 'users.id', '=', 'posts.user_id')
-                ->get();
+        ->leftJoin('posts', 'users.id', '=', 'posts.user_id')
+        ->get();
 
     $users = DB::table('users')
-                ->rightJoin('posts', 'users.id', '=', 'posts.user_id')
-                ->get();
+        ->rightJoin('posts', 'users.id', '=', 'posts.user_id')
+        ->get();
 
 <a name="cross-join-clause"></a>
 #### Cross Join Clause
@@ -343,8 +361,8 @@ Nếu bạn muốn thực hiện "left join" hoặc "right join" thay vì "inner
 Bạn có thể dùng phương thức `crossJoin` để thực hiện một "cross join". Các cross join sẽ tạo ra một bảng mới có hàng là các hàng của bảng đầu tiên và bảng thứ hai nhân chéo vào nhau:
 
     $sizes = DB::table('sizes')
-                ->crossJoin('colors')
-                ->get();
+        ->crossJoin('colors')
+        ->get();
 
 <a name="advanced-join-clauses"></a>
 #### Advanced Join Clauses
@@ -352,19 +370,19 @@ Bạn có thể dùng phương thức `crossJoin` để thực hiện một "cro
 Bạn cũng có thể khai báo các lệnh join một cách cụ thể hơn. Để bắt đầu, hãy truyền một closure làm tham số thứ hai vào phương thức `join`. closure sẽ nhận vào một instance `Illuminate\Database\Query\JoinClause` cho phép bạn khai báo các điều kiện đối với câu lệnh "join":
 
     DB::table('users')
-            ->join('contacts', function (JoinClause $join) {
-                $join->on('users.id', '=', 'contacts.user_id')->orOn(/* ... */);
-            })
-            ->get();
+        ->join('contacts', function (JoinClause $join) {
+            $join->on('users.id', '=', 'contacts.user_id')->orOn(/* ... */);
+        })
+        ->get();
 
 Nếu bạn muốn sử dụng lệnh "where" trong các lệnh join của bạn, bạn có thể sử dụng các phương thức `where` và `orWhere` được cung cấp trong instance `JoinClause`. Thay vì so sánh hai cột, các phương thức này sẽ so sánh một cột với một giá trị:
 
     DB::table('users')
-            ->join('contacts', function (JoinClause $join) {
-                $join->on('users.id', '=', 'contacts.user_id')
-                     ->where('contacts.user_id', '>', 5);
-            })
-            ->get();
+        ->join('contacts', function (JoinClause $join) {
+            $join->on('users.id', '=', 'contacts.user_id')
+                ->where('contacts.user_id', '>', 5);
+        })
+        ->get();
 
 <a name="subquery-joins"></a>
 #### Subquery Joins
@@ -372,14 +390,14 @@ Nếu bạn muốn sử dụng lệnh "where" trong các lệnh join của bạn
 Bạn có thể sử dụng các phương thức `joinSub`, `leftJoinSub` và `rightJoinSub` để nối một truy vấn với một truy vấn phụ. Mỗi phương thức này nhận vào ba tham số: một là truy vấn phụ, hai là bí danh của nó và ba là một Closure dùng để xác định các cột liên quan. Trong ví dụ này, chúng ta sẽ lấy ra một tập hợp người dùng trong đó mỗi bản ghi người dùng cũng chứa một cột timestamp `created_at` của bài đăng blog gần đây nhất của người dùng:
 
     $latestPosts = DB::table('posts')
-                       ->select('user_id', DB::raw('MAX(created_at) as last_post_created_at'))
-                       ->where('is_published', true)
-                       ->groupBy('user_id');
+        ->select('user_id', DB::raw('MAX(created_at) as last_post_created_at'))
+        ->where('is_published', true)
+        ->groupBy('user_id');
 
     $users = DB::table('users')
-            ->joinSub($latestPosts, 'latest_posts', function (JoinClause $join) {
-                $join->on('users.id', '=', 'latest_posts.user_id');
-            })->get();
+        ->joinSub($latestPosts, 'latest_posts', function (JoinClause $join) {
+            $join->on('users.id', '=', 'latest_posts.user_id');
+        })->get();
 
 <a name="lateral-joins"></a>
 #### Lateral Joins
@@ -392,14 +410,14 @@ Bạn có thể sử dụng các phương thức `joinLateral` và `leftJoinLate
 Trong ví dụ này, chúng ta sẽ lấy một collection người dùng cũng như ba bài đăng gần đây nhất của họ. Mỗi người dùng có thể tạo tối đa ba hàng trong tập kết quả: một hàng cho mỗi bài đăng blog gần đây của họ. Điều kiện join được chỉ định bằng mệnh đề `whereColumn` trong truy vấn con và tham chiếu đến row người dùng hiện tại:
 
     $latestPosts = DB::table('posts')
-                       ->select('id as post_id', 'title as post_title', 'created_at as post_created_at')
-                       ->whereColumn('user_id', 'users.id')
-                       ->orderBy('created_at', 'desc')
-                       ->limit(3);
+        ->select('id as post_id', 'title as post_title', 'created_at as post_created_at')
+        ->whereColumn('user_id', 'users.id')
+        ->orderBy('created_at', 'desc')
+        ->limit(3);
 
     $users = DB::table('users')
-                ->joinLateral($latestPosts, 'latest_posts')
-                ->get();
+        ->joinLateral($latestPosts, 'latest_posts')
+        ->get();
 
 <a name="unions"></a>
 ## Union
@@ -409,12 +427,12 @@ Query builder cũng cung cấp một phương thức tiện lợi để "union" 
     use Illuminate\Support\Facades\DB;
 
     $first = DB::table('users')
-                ->whereNull('first_name');
+        ->whereNull('first_name');
 
     $users = DB::table('users')
-                ->whereNull('last_name')
-                ->union($first)
-                ->get();
+        ->whereNull('last_name')
+        ->union($first)
+        ->get();
 
 Ngoài phương thức `union`, query builder còn cung cấp thêm phương thức `unionAll`. Các truy vấn được kết hợp bằng phương thức `unionAll` sẽ không bị xóa các kết quả lặp nhau. Phương thức `unionAll` có cùng định dạng với phương thức `union`.
 
@@ -429,9 +447,9 @@ Bạn có thể sử dụng phương thức `where` của query builder để th
 Ví dụ: truy vấn sau sẽ lấy ra người dùng mà trong đó giá trị của cột `votes` bằng `100` và giá trị của cột `age` lớn hơn `35`:
 
     $users = DB::table('users')
-                    ->where('votes', '=', 100)
-                    ->where('age', '>', 35)
-                    ->get();
+        ->where('votes', '=', 100)
+        ->where('age', '>', 35)
+        ->get();
 
 Để thuận tiện hơn, nếu bạn muốn kiểm tra giá trị một cột `=` một giá trị nhất định, bạn có thể truyền giá trị đó làm tham số thứ hai cho phương thức `where`. Laravel sẽ sử dụng toán tử `=` trong trường hợp đó:
 
@@ -440,16 +458,16 @@ Ví dụ: truy vấn sau sẽ lấy ra người dùng mà trong đó giá trị 
 Như đã đề ở cập trước đó, bạn có thể sử dụng bất kỳ toán tử nào mà được hệ thống cơ sở dữ liệu của bạn hỗ trợ:
 
     $users = DB::table('users')
-                    ->where('votes', '>=', 100)
-                    ->get();
+        ->where('votes', '>=', 100)
+        ->get();
 
     $users = DB::table('users')
-                    ->where('votes', '<>', 100)
-                    ->get();
+        ->where('votes', '<>', 100)
+        ->get();
 
     $users = DB::table('users')
-                    ->where('name', 'like', 'T%')
-                    ->get();
+        ->where('name', 'like', 'T%')
+        ->get();
 
 Bạn cũng có thể truyền một mảng các điều kiện cho phương thức `where`. Mỗi phần tử của mảng phải là một mảng con chứa ba tham số thường được truyền cho phương thức `where`:
 
@@ -461,25 +479,28 @@ Bạn cũng có thể truyền một mảng các điều kiện cho phương th�
 > [!WARNING]
 > PDO không hỗ trợ truyền tên cột dưới dạng biến. Do đó, bạn không nên cho phép người dùng nhập tên cột mà truy vấn của bạn tham chiếu, bao gồm cả cột "order by".
 
+> [!WARNING]
+> MySQL và MariaDB sẽ tự động cast kiểu chuỗi sang kiểu số nguyên trong các phép so sánh giữa chuỗi và số. Trong quá trình này, các chuỗi không phải là số sẽ tự động chuyển thành `0`, điều này có thể dẫn đến kết quả không mong muốn. Ví dụ, nếu bảng của bạn có cột `secret` với giá trị `aaa` và bạn chạy `User::where('secret', 0)`, hàng đó sẽ được trả về. Để tránh điều này, bạn hãy đảm bảo tất cả các giá trị được cast thành các loại thích hợp trước khi sử dụng chúng trong các câu lệnh truy vấn.
+
 <a name="or-where-clauses"></a>
 ### Lệnh where or
 
 Khi kết hợp phương thức `where` của query builder với nhau, thì các lệnh "where" này sẽ được nối với nhau bằng toán tử `and`. Tuy nhiên, bạn có thể sử dụng phương thức `orWhere` để nối một lệnh vào một truy vấn bằng toán tử `or`. Phương thức `orWhere` chấp nhận các tham số tương tự như phương thức `where`:
 
     $users = DB::table('users')
-                        ->where('votes', '>', 100)
-                        ->orWhere('name', 'John')
-                        ->get();
+        ->where('votes', '>', 100)
+        ->orWhere('name', 'John')
+        ->get();
 
 Nếu bạn cần nhóm một điều kiện "hoặc" trong một dấu ngoặc đơn, bạn có thể truyền một closure làm tham số đầu tiên của phương thức `orWhere`:
 
     $users = DB::table('users')
-                ->where('votes', '>', 100)
-                ->orWhere(function (Builder $query) {
-                    $query->where('name', 'Abigail')
-                          ->where('votes', '>', 50);
-                })
-                ->get();
+        ->where('votes', '>', 100)
+        ->orWhere(function (Builder $query) {
+            $query->where('name', 'Abigail')
+                ->where('votes', '>', 50);
+            })
+        ->get();
 
 Ví dụ trên sẽ tạo ra một câu lệnh SQL như sau:
 
@@ -496,25 +517,25 @@ select * from users where votes > 100 or (name = 'Abigail' and votes > 50)
 Các phương thức `whereNot` và `orWhereNot` có thể được sử dụng để phủ định một nhóm các lệnh nhất định. Ví dụ, truy vấn sau đây bỏ qua các sản phẩm đang được thanh lý hoặc có giá dưới mười:
 
     $products = DB::table('products')
-                    ->whereNot(function (Builder $query) {
-                        $query->where('clearance', true)
-                              ->orWhere('price', '<', 10);
-                    })
-                    ->get();
+        ->whereNot(function (Builder $query) {
+            $query->where('clearance', true)
+                ->orWhere('price', '<', 10);
+            })
+        ->get();
 
-<a name="where-any-all-clauses"></a>
-### Lệnh Where any và Where all
+<a name="where-any-all-none-clauses"></a>
+### Lệnh Where any, Where all và Where none
 
 Thỉnh thoảng bạn có thể cần sử dụng cùng một ràng buộc truy vấn cho nhiều cột. Ví dụ: bạn có thể muốn lấy ra tất cả các bản ghi mà có bất kỳ cột nào có giá trị giống với giá trị được truyền vào toán tử `LIKE`. Bạn có thể thực hiện điều này bằng phương thức `whereAny`:
 
     $users = DB::table('users')
-                ->where('active', true)
-                ->whereAny([
-                    'name',
-                    'email',
-                    'phone',
-                ], 'LIKE', 'Example%')
-                ->get();
+        ->where('active', true)
+        ->whereAny([
+            'name',
+            'email',
+            'phone',
+        ], 'like', 'Example%')
+        ->get();
 
 Truy vấn trên sẽ cho ra kết quả SQL như sau:
 
@@ -531,12 +552,12 @@ WHERE active = true AND (
 Tương tự như vậy, phương thức `whereAll` có thể được sử dụng để lấy ra các bản ghi mà trong đó tất cả các cột được chỉ định đều khớp với một ràng buộc nhất định:
 
     $posts = DB::table('posts')
-                ->where('published', true)
-                ->whereAll([
-                    'title',
-                    'content',
-                ], 'LIKE', '%Laravel%')
-                ->get();
+        ->where('published', true)
+        ->whereAll([
+            'title',
+            'content',
+        ], 'like', '%Laravel%')
+        ->get();
 
 Truy vấn trên sẽ cho ra kết quả SQL như sau:
 
@@ -549,91 +570,121 @@ WHERE published = true AND (
 )
 ```
 
+Phương thức `whereNone` có thể được sử dụng để lấy ra các bản ghi mà không có cột nào khớp với một ràng buộc nhất định:
+
+    $posts = DB::table('albums')
+        ->where('published', true)
+        ->whereNone([
+            'title',
+            'lyrics',
+            'tags',
+        ], 'like', '%explicit%')
+        ->get();
+
+Truy vấn trên sẽ cho ra kết quả SQL như sau:
+
+```sql
+SELECT *
+FROM albums
+WHERE published = true AND NOT (
+    title LIKE '%explicit%' OR
+    lyrics LIKE '%explicit%' OR
+    tags LIKE '%explicit%'
+)
+```
+
 <a name="json-where-clauses"></a>
 ### Lệnh where cho json
 
-Laravel cũng hỗ trợ truy vấn vào các cột loại JSON trên cơ sở dữ liệu. Hiện tại, các cột loại JSON đã được hỗ trợ từ MySQL 5.7+, PostgreSQL, SQL Server 2016, và SQLite 3.39.0 (với [JSON1 extension](https://www.sqlite.org/json1.html)). Để truy vấn vào cột loại JSON, hãy sử dụng toán tử `->`:
+Laravel cũng hỗ trợ truy vấn vào các cột loại JSON trên cơ sở dữ liệu. Hiện tại, các cột loại JSON đã được hỗ trợ từ MariaDB 10.3+, MySQL 8.0+, PostgreSQL 12.0+, SQL Server 2017+, và SQLite 3.39.0+. Để truy vấn vào cột loại JSON, hãy sử dụng toán tử `->`:
 
     $users = DB::table('users')
-                    ->where('preferences->dining->meal', 'salad')
-                    ->get();
+        ->where('preferences->dining->meal', 'salad')
+        ->get();
 
 Bạn có thể sử dụng `whereJsonContains` để truy vấn vào mảng JSON:
 
     $users = DB::table('users')
-                    ->whereJsonContains('options->languages', 'en')
-                    ->get();
+        ->whereJsonContains('options->languages', 'en')
+        ->get();
 
-Nếu ứng dụng của bạn đang sử dụng cơ sở dữ liệu MySQL hoặc PostgreSQL, bạn có thể truyền một mảng giá trị cho phương thức `whereJsonContains`:
+Nếu ứng dụng của bạn đang sử dụng cơ sở dữ liệu MariaDB, MySQL, hoặc PostgreSQL, bạn có thể truyền một mảng giá trị cho phương thức `whereJsonContains`:
 
     $users = DB::table('users')
-                    ->whereJsonContains('options->languages', ['en', 'de'])
-                    ->get();
+        ->whereJsonContains('options->languages', ['en', 'de'])
+        ->get();
 
 Bạn có thể sử dụng phương thức `whereJsonLength` để truy vấn mảng JSON theo độ dài của chúng:
 
     $users = DB::table('users')
-                    ->whereJsonLength('options->languages', 0)
-                    ->get();
+        ->whereJsonLength('options->languages', 0)
+        ->get();
 
     $users = DB::table('users')
-                    ->whereJsonLength('options->languages', '>', 1)
-                    ->get();
+        ->whereJsonLength('options->languages', '>', 1)
+        ->get();
 
 <a name="additional-where-clauses"></a>
 ### Lệnh where khác
 
-**whereBetween / orWhereBetween**
+**whereLike / orWhereLike / whereNotLike / orWhereNotLike**
 
-Phương thức `whereBetween` sẽ kiểm tra giá trị của một cột nằm giữa hai giá trị đã cho:
-
-    $users = DB::table('users')
-                ->whereBetween('votes', [1, 100])
-                ->get();
-
-**whereNotBetween / orWhereNotBetween**
-
-Phương thức `whereNotBetween` sẽ kiểm tra giá trị của một cột nằm ngoài hai giá trị đã cho:
+Phương thức `whereLike` cho phép bạn thêm các mệnh đề "LIKE" vào truy vấn của bạn để khớp với pattern mà bạn mong muốn. Các phương thức này cung cấp một cách độc lập với cơ sở dữ liệu để thực hiện các truy vấn so sánh chuỗi, với khả năng bật, tắt phân biệt giữa chữ hoa, chữ thường. Mặc định, việc so sánh chuỗi không phân biệt chữ hoa chữ thường:
 
     $users = DB::table('users')
-                        ->whereNotBetween('votes', [1, 100])
-                        ->get();
+        ->whereLike('name', '%John%')
+        ->get();
 
-**whereBetweenColumns / whereNotBetweenColumns / orWhereBetweenColumns / orWhereNotBetweenColumns**
+Bạn có thể bật so sánh phân biệt chữ hoa chữ thường thông qua tham số `caseSensitive`:
 
-Phương thức `whereBetweenColumns` sẽ kiểm tra giá trị của một cột nằm giữa hai giá trị của hai cột có trong cùng một hàng của một bảng:
+    $users = DB::table('users')
+        ->whereLike('name', '%John%', caseSensitive: true)
+        ->get();
 
-    $patients = DB::table('patients')
-                           ->whereBetweenColumns('weight', ['minimum_allowed_weight', 'maximum_allowed_weight'])
-                           ->get();
+Phương thức `orWhereLike` cho phép bạn thêm một mệnh đề "or" với điều kiện LIKE:
 
-Phương thức `whereNotBetweenColumns` sẽ kiểm tra giá trị của một cột nằm ngoài hai giá trị của hai cột có trong cùng một hàng của một bảng:
+    $users = DB::table('users')
+        ->where('votes', '>', 100)
+        ->orWhereLike('name', '%John%')
+        ->get();
 
-    $patients = DB::table('patients')
-                           ->whereNotBetweenColumns('weight', ['minimum_allowed_weight', 'maximum_allowed_weight'])
-                           ->get();
+Phương thức `whereNotLike` cho phép bạn thêm các mệnh đề "NOT LIKE" vào truy vấn của bạn:
+
+    $users = DB::table('users')
+        ->whereNotLike('name', '%John%')
+        ->get();
+
+Phương thức `orWhereNotLike` cho phép bạn thêm một mệnh đề "or" với điều kiện NOT LIKE:
+
+    $users = DB::table('users')
+        ->where('votes', '>', 100)
+        ->orWhereNotLike('name', '%John%')
+        ->get();
+
+> [!WARNING]
+> Tùy chọn tìm kiếm phân biệt giữa chữ hoa chữ thường của `whereLike` hiện không được hỗ trợ trên SQL Server.
 
 **whereIn / whereNotIn / orWhereIn / orWhereNotIn**
 
 Phương thức `whereIn` sẽ kiểm tra giá trị của một cột đã cho có được chứa trong mảng các giá trị đã cho hay không:
 
     $users = DB::table('users')
-                        ->whereIn('id', [1, 2, 3])
-                        ->get();
+        ->whereIn('id', [1, 2, 3])
+        ->get();
 
 Phương thức `whereNotIn` sẽ kiểm tra giá trị của một cột đã cho là không tồn tại trong mảng đã cho hay không:
 
     $users = DB::table('users')
-                        ->whereNotIn('id', [1, 2, 3])
-                        ->get();
+        ->whereNotIn('id', [1, 2, 3])
+        ->get();
 
 Bạn cũng có thể cung cấp một đối tượng truy vấn làm tham số thứ hai của phương thức `whereIn`:
 
     $activeUsers = DB::table('users')->select('id')->where('is_active', 1);
 
     $users = DB::table('comments')
-                        ->whereIn('user_id', $activeUsers)
-                        ->get();
+        ->whereIn('user_id', $activeUsers)
+        ->get();
 
 Ví dụ trên sẽ tạo ra câu lệnh SQL như sau:
 
@@ -648,73 +699,149 @@ select * from comments where user_id in (
 > [!WARNING]
 > Nếu bạn đang thêm một mảng integer lớn vào truy vấn của bạn, phương thức `whereIntegerInRaw` hoặc `whereIntegerNotInRaw` có thể được sử dụng để giảm đáng kể mức sử dụng bộ nhớ của bạn.
 
+**whereBetween / orWhereBetween**
+
+Phương thức `whereBetween` sẽ kiểm tra giá trị của một cột nằm giữa hai giá trị đã cho:
+
+    $users = DB::table('users')
+        ->whereBetween('votes', [1, 100])
+        ->get();
+
+**whereNotBetween / orWhereNotBetween**
+
+Phương thức `whereNotBetween` sẽ kiểm tra giá trị của một cột nằm ngoài hai giá trị đã cho:
+
+    $users = DB::table('users')
+        ->whereNotBetween('votes', [1, 100])
+        ->get();
+
+**whereBetweenColumns / whereNotBetweenColumns / orWhereBetweenColumns / orWhereNotBetweenColumns**
+
+Phương thức `whereBetweenColumns` sẽ kiểm tra giá trị của một cột nằm giữa hai giá trị của hai cột có trong cùng một hàng của một bảng:
+
+    $patients = DB::table('patients')
+        ->whereBetweenColumns('weight', ['minimum_allowed_weight', 'maximum_allowed_weight'])
+        ->get();
+
+Phương thức `whereNotBetweenColumns` sẽ kiểm tra giá trị của một cột nằm ngoài hai giá trị của hai cột có trong cùng một hàng của một bảng:
+
+    $patients = DB::table('patients')
+        ->whereNotBetweenColumns('weight', ['minimum_allowed_weight', 'maximum_allowed_weight'])
+        ->get();
+
 **whereNull / whereNotNull / orWhereNull / orWhereNotNull**
 
 Phương thức `whereNull` sẽ kiểm tra giá trị của một cột đã cho là `NULL` hay không:
 
     $users = DB::table('users')
-                        ->whereNull('updated_at')
-                        ->get();
+        ->whereNull('updated_at')
+        ->get();
 
 Phương thức `whereNotNull` sẽ kiểm tra giá trị của một cột đã cho không phải là `NULL`:
 
     $users = DB::table('users')
-                        ->whereNotNull('updated_at')
-                        ->get();
+        ->whereNotNull('updated_at')
+        ->get();
 
 **whereDate / whereMonth / whereDay / whereYear / whereTime**
 
 Phương thức `whereDate` có thể được sử dụng để so sánh giá trị của cột với một ngày:
 
     $users = DB::table('users')
-                    ->whereDate('created_at', '2016-12-31')
-                    ->get();
+        ->whereDate('created_at', '2016-12-31')
+        ->get();
 
 Phương thức `whereMonth` có thể được sử dụng để so sánh giá trị của một cột với một tháng cụ thể:
 
     $users = DB::table('users')
-                    ->whereMonth('created_at', '12')
-                    ->get();
+        ->whereMonth('created_at', '12')
+        ->get();
 
 Phương thức `whereDay` có thể được sử dụng để so sánh giá trị của một cột với một ngày cụ thể trong tháng:
 
     $users = DB::table('users')
-                    ->whereDay('created_at', '31')
-                    ->get();
+        ->whereDay('created_at', '31')
+        ->get();
 
 Phương thức `whereYear` có thể được sử dụng để so sánh giá trị của một cột với một năm cụ thể:
 
     $users = DB::table('users')
-                    ->whereYear('created_at', '2016')
-                    ->get();
+        ->whereYear('created_at', '2016')
+        ->get();
 
 Phương thức `whereTime` có thể được sử dụng để so sánh giá trị của một cột với thời gian cụ thể:
 
     $users = DB::table('users')
-                    ->whereTime('created_at', '=', '11:20:45')
-                    ->get();
+        ->whereTime('created_at', '=', '11:20:45')
+        ->get();
+
+**wherePast / whereFuture / whereToday / whereBeforeToday / whereAfterToday**
+
+Các phương thức `wherePast` và `whereFuture` có thể được sử dụng để xác định xem giá trị của một cột nằm trong quá khứ hoặc tương lai:
+
+    $invoices = DB::table('invoices')
+        ->wherePast('due_at')
+        ->get();
+
+    $invoices = DB::table('invoices')
+        ->whereFuture('due_at')
+        ->get();
+
+Các phương thức `whereNowOrPast` và `whereNowOrFuture` có thể được sử dụng để xác định xem giá trị của một cột nằm trong quá khứ hoặc tương lai, có cả ngày giờ hiện tại:
+
+    $invoices = DB::table('invoices')
+        ->whereNowOrPast('due_at')
+        ->get();
+
+    $invoices = DB::table('invoices')
+        ->whereNowOrFuture('due_at')
+        ->get();
+
+Các phương thức `whereToday`, `whereBeforeToday`, và `whereAfterToday` có thể được dùng để xác định xem giá trị của một cột là ngày hôm nay, ngày hôm qua, hoặc ngày mai, tương ứng:
+
+    $invoices = DB::table('invoices')
+        ->whereToday('due_at')
+        ->get();
+
+    $invoices = DB::table('invoices')
+        ->whereBeforeToday('due_at')
+        ->get();
+
+    $invoices = DB::table('invoices')
+        ->whereAfterToday('due_at')
+        ->get();
+
+Tương tự, các phương thức `whereTodayOrBefore` và `whereTodayOrAfter` có thể được sử dụng để xác định xem giá trị của một cột có phải là ngày hôm trước hoặc ngày hôm sau hay không, có cả ngày hôm nay:
+
+    $invoices = DB::table('invoices')
+        ->whereTodayOrBefore('due_at')
+        ->get();
+
+    $invoices = DB::table('invoices')
+        ->whereTodayOrAfter('due_at')
+        ->get();
 
 **whereColumn / orWhereColumn**
 
 Phương thức `whereColumn` có thể được sử dụng để kiểm tra hai cột có bằng nhau hay không:
 
     $users = DB::table('users')
-                    ->whereColumn('first_name', 'last_name')
-                    ->get();
+        ->whereColumn('first_name', 'last_name')
+        ->get();
 
 Bạn cũng có thể truyền một toán tử so sánh cho phương thức `whereColumn`:
 
     $users = DB::table('users')
-                    ->whereColumn('updated_at', '>', 'created_at')
-                    ->get();
+        ->whereColumn('updated_at', '>', 'created_at')
+        ->get();
 
 Bạn cũng có thể truyền một mảng gồm các cột dành cho so sánh sang phương thức `whereColumn`. Các điều kiện này sẽ được nối bằng toán tử `and`:
 
     $users = DB::table('users')
-                    ->whereColumn([
-                        ['first_name', '=', 'last_name'],
-                        ['updated_at', '>', 'created_at'],
-                    ])->get();
+        ->whereColumn([
+            ['first_name', '=', 'last_name'],
+            ['updated_at', '>', 'created_at'],
+        ])->get();
 
 <a name="logical-grouping"></a>
 ### Logic nhóm
@@ -722,12 +849,12 @@ Bạn cũng có thể truyền một mảng gồm các cột dành cho so sánh 
 Thỉnhh thoảng bạn có thể cần nhóm một số lệnh "where" vào trong một dấu ngoặc đơn để đạt được cách nhóm mà bạn mong muốn cho truy vấn của mình. Trên thực tế, bạn nên luôn nhóm các phương thức `orWhere` trong dấu ngoặc đơn để tránh hành vi truy vấn không mong muốn. Để thực hiện điều này, bạn có thể truyền một closure cho phương thức `where`:
 
     $users = DB::table('users')
-               ->where('name', '=', 'John')
-               ->where(function (Builder $query) {
-                   $query->where('votes', '>', 100)
-                         ->orWhere('title', '=', 'Admin');
-               })
-               ->get();
+        ->where('name', '=', 'John')
+        ->where(function (Builder $query) {
+            $query->where('votes', '>', 100)
+                ->orWhere('title', '=', 'Admin');
+        })
+        ->get();
 
 Như bạn có thể thấy, việc truyền một closure vào phương thức `where` sẽ làm cho query builder bắt đầu tạo ra một nhóm điều kiện. closure sẽ nhận vào một instance query builder mà bạn có thể sử dụng nó để set các điều kiện cần có vào trong nhóm dấu ngoặc đơn. Ví dụ trên sẽ tạo ra SQL như sau:
 
@@ -739,7 +866,7 @@ select * from users where name = 'John' and (votes > 100 or title = 'Admin')
 > Bạn nên nhóm các lệnh `orWhere` lại với nhau để tránh các hành vi không mong muốn khi sử dụng global scope.
 
 <a name="advanced-where-clauses"></a>
-### Lệnh where nâng cao
+## Lệnh where nâng cao
 
 <a name="where-exists-clauses"></a>
 ### Lệnh where exist
@@ -747,22 +874,22 @@ select * from users where name = 'John' and (votes > 100 or title = 'Admin')
 Phương thức `whereExists` cho phép bạn viết các lệnh SQL "where exists". Phương thức `whereExists` chấp nhận một closure, sẽ nhận vào một instance query builder, cho phép bạn định nghĩa thêm query mà sẽ được set vào bên trong lệnh "exists":
 
     $users = DB::table('users')
-               ->whereExists(function (Builder $query) {
-                   $query->select(DB::raw(1))
-                         ->from('orders')
-                         ->whereColumn('orders.user_id', 'users.id');
-               })
-               ->get();
+        ->whereExists(function (Builder $query) {
+            $query->select(DB::raw(1))
+                ->from('orders')
+                ->whereColumn('orders.user_id', 'users.id');
+        })
+        ->get();
 
 Ngoài ra, bạn có thể cung cấp một đối tượng truy vấn cho phương thức `whereExists` thay vì một closure:
 
     $orders = DB::table('orders')
-                    ->select(DB::raw(1))
-                    ->whereColumn('orders.user_id', 'users.id');
+        ->select(DB::raw(1))
+        ->whereColumn('orders.user_id', 'users.id');
 
     $users = DB::table('users')
-                        ->whereExists($orders)
-                        ->get();
+        ->whereExists($orders)
+        ->get();
 
 Cả hai ví dụ trên sẽ tạo ra lệnh SQL như sau:
 
@@ -804,13 +931,13 @@ Hoặc, bạn có thể cần xây dựng một lệnh "where" để so sánh m�
 ### Lệnh where full text
 
 > [!WARNING]
-> Lệnh where full text hiện đang được MySQL và PostgreSQL hỗ trợ.
+> Lệnh where full text hiện đang được MariaDB, MySQL, và PostgreSQL hỗ trợ.
 
-Các phương thức `whereFullText` và `orWhereFullText` có thể được sử dụng để thêm các lệnh "where" full text vào truy vấn cho các cột có [index full text](/docs/{{version}}/migrations#available-index-types). Các phương thức này sẽ được Laravel chuyển thành các câu SQL phù hợp cho hệ thống cơ sở dữ liệu. Ví dụ, một lệnh `MATCH AGAINST` sẽ được tạo cho các ứng dụng sử dụng cơ sở dữ liệu MySQL:
+Các phương thức `whereFullText` và `orWhereFullText` có thể được sử dụng để thêm các lệnh "where" full text vào truy vấn cho các cột có [index full text](/docs/{{version}}/migrations#available-index-types). Các phương thức này sẽ được Laravel chuyển thành các câu SQL phù hợp cho hệ thống cơ sở dữ liệu. Ví dụ, một lệnh `MATCH AGAINST` sẽ được tạo cho các ứng dụng sử dụng cơ sở dữ liệu MariaDB hoặc MySQL:
 
     $users = DB::table('users')
-               ->whereFullText('bio', 'web developer')
-               ->get();
+        ->whereFullText('bio', 'web developer')
+        ->get();
 
 <a name="ordering-grouping-limit-and-offset"></a>
 ## Ordering, Grouping, Limit và Offset
@@ -824,15 +951,15 @@ Các phương thức `whereFullText` và `orWhereFullText` có thể được s�
 Phương thức `orderBy` cho phép bạn sắp xếp kết quả của truy vấn theo một cột nhất định. Tham số đầu tiên được chấp nhận bởi phương thức `orderBy` phải là một tên cột mà bạn muốn sắp xếp, trong khi tham số thứ hai sẽ xác định chiều sắp xếp, có thể là `asc` hoặc `desc`:
 
     $users = DB::table('users')
-                    ->orderBy('name', 'desc')
-                    ->get();
+        ->orderBy('name', 'desc')
+        ->get();
 
 Để sắp xếp theo nhiều cột, bạn có thể đơn giản là gọi `orderBy` nhiều lần nếu cần thiết:
 
     $users = DB::table('users')
-                    ->orderBy('name', 'desc')
-                    ->orderBy('email', 'asc')
-                    ->get();
+        ->orderBy('name', 'desc')
+        ->orderBy('email', 'asc')
+        ->get();
 
 <a name="latest-oldest"></a>
 #### The `latest` và `oldest` Methods
@@ -840,17 +967,17 @@ Phương thức `orderBy` cho phép bạn sắp xếp kết quả của truy v�
 Các phương thức `latest` và `oldest` cho phép bạn dễ dàng sắp xếp kết quả theo ngày. Mặc định, kết quả sẽ được sắp xếp theo cột `created_at` của bảng. Hoặc, bạn có thể truyền vào một tên cột mà bạn muốn sắp xếp theo:
 
     $user = DB::table('users')
-                    ->latest()
-                    ->first();
+        ->latest()
+        ->first();
 
 <a name="random-ordering"></a>
 #### Random Ordering
 
 Phương thức `inRandomOrder` có thể được sử dụng để sắp xếp các kết quả của một truy vấn theo một cách ngẫu nhiên. Ví dụ: bạn có thể sử dụng phương thức này để lấy ra một người dùng ngẫu nhiên:
 
-    $randomUser = DB::table('users')
-                    ->inRandomOrder()
-                    ->first();
+    randomUser = DB::table('users')
+        ->inRandomOrder()
+        ->first();
 
 <a name="removing-existing-orderings"></a>
 #### Removing Existing Orderings
@@ -876,24 +1003,24 @@ Bạn có thể truyền một cột và hướng sắp xếp khi gọi phương
 Như bạn mong đợi, các phương thức `groupBy` và `having` có thể được sử dụng để nhóm các kết quả truy vấn. Tham số của phương thức `having` cũng tương tự như phương thức `where`:
 
     $users = DB::table('users')
-                    ->groupBy('account_id')
-                    ->having('account_id', '>', 100)
-                    ->get();
+        ->groupBy('account_id')
+        ->having('account_id', '>', 100)
+        ->get();
 
 Bạn có thể sử dụng phương thức `havingBetween` để lọc kết quả trong một phạm vi nhất định:
 
     $report = DB::table('orders')
-                    ->selectRaw('count(id) as number_of_orders, customer_id')
-                    ->groupBy('customer_id')
-                    ->havingBetween('number_of_orders', [5, 15])
-                    ->get();
+        ->selectRaw('count(id) as number_of_orders, customer_id')
+        ->groupBy('customer_id')
+        ->havingBetween('number_of_orders', [5, 15])
+        ->get();
 
 Bạn cũng có thể truyền nhiều tham số vào phương thức `groupBy` để nhóm theo nhiều cột:
 
     $users = DB::table('users')
-                    ->groupBy('first_name', 'status')
-                    ->having('account_id', '>', 100)
-                    ->get();
+        ->groupBy('first_name', 'status')
+        ->having('account_id', '>', 100)
+        ->get();
 
 Để tạo thêm nhiều các câu lệnh `having` nâng cao, hãy xem phương thức [`havingRaw`](#raw-methods).
 
@@ -910,22 +1037,22 @@ Bạn có thể sử dụng phương thức `skip` và `take` để giới hạn
 Ngoài ra, bạn có thể sử dụng các phương thức `limit` và `offset`. Các phương thức này có chức năng tương đương với các phương thức `take` và `skip`:
 
     $users = DB::table('users')
-                    ->offset(10)
-                    ->limit(5)
-                    ->get();
+        ->offset(10)
+        ->limit(5)
+        ->get();
 
 <a name="conditional-clauses"></a>
 ## Điều kiện cho lệnh
 
 Thỉnh thoảng bạn cũng có thể muốn một lệnh truy vấn sẽ được áp dụng cho một truy vấn dựa trên một điều kiện nhất định. Chẳng hạn, bạn chỉ có thể muốn áp dụng câu lệnh `where` nếu giá trị input này có xuất hiện trong một HTTP request. Bạn có thể thực hiện điều này bằng cách sử dụng phương thức `when` như sau:
 
-    $role = $request->string('role');
+    $role = $request->input('role');
 
     $users = DB::table('users')
-                    ->when($role, function (Builder $query, string $role) {
-                        $query->where('role_id', $role);
-                    })
-                    ->get();
+        ->when($role, function (Builder $query, string $role) {
+            $query->where('role_id', $role);
+        })
+        ->get();
 
 Phương thức `when` chỉ chạy closure khi tham số đầu tiên là `true`. Nếu tham số đầu tiên là `false`, thì closure sẽ không được chạy. Vì vậy, trong ví dụ trên, closure mà được cung cấp cho phương thức `when` sẽ chỉ được gọi nếu field `role` có trong request đến và có giá trị là `true`.
 
@@ -934,12 +1061,12 @@ Bạn có thể truyền một closure khác làm tham số thứ ba cho phươn
     $sortByVotes = $request->boolean('sort_by_votes');
 
     $users = DB::table('users')
-                    ->when($sortByVotes, function (Builder $query, bool $sortByVotes) {
-                        $query->orderBy('votes');
-                    }, function (Builder $query) {
-                        $query->orderBy('name');
-                    })
-                    ->get();
+        ->when($sortByVotes, function (Builder $query, bool $sortByVotes) {
+            $query->orderBy('votes');
+        }, function (Builder $query) {
+            $query->orderBy('name');
+        })
+        ->get();
 
 <a name="insert-statements"></a>
 ## Insert Statements
@@ -1002,7 +1129,7 @@ Phương thức `upsert` sẽ thêm các bản ghi không tồn tại và cập 
 Trong ví dụ trên, Laravel sẽ cố gắng thêm hai bản ghi. Nếu một bản ghi đã tồn tại với cùng giá trị cột `departure` và `destination`, thì Laravel sẽ cập nhật cột `price` của bản ghi đó.
 
 > [!WARNING]
-> Tất cả các cơ sở dữ liệu ngoại trừ SQL Server đều yêu cầu các cột trong tham số thứ hai của phương thức `upsert` phải ở dạng "primary" hoặc "unique". Ngoài ra, driver cơ sở dữ liệu cũng MySQL bỏ qua tham số thứ hai của phương thức `upsert` và luôn sử dụng các "primary" và "unique" của bảng để phát hiện ra các bản ghi hiện có.
+> Tất cả các cơ sở dữ liệu ngoại trừ SQL Server đều yêu cầu các cột trong tham số thứ hai của phương thức `upsert` phải ở dạng "primary" hoặc "unique". Ngoài ra, driver cơ sở dữ liệu MariaDB và MySQL cũng bỏ qua tham số thứ hai của phương thức `upsert` và luôn sử dụng các "primary" và "unique" của bảng để phát hiện ra các bản ghi hiện có.
 
 <a name="update-statements"></a>
 ## Update Statements
@@ -1010,8 +1137,8 @@ Trong ví dụ trên, Laravel sẽ cố gắng thêm hai bản ghi. Nếu một 
 Ngoài việc thêm các bản ghi vào cơ sở dữ liệu, query builder cũng có thể cập nhật các bản ghi hiện có bằng phương thức `update`. Phương thức `update`, giống như phương thức `insert`, chấp nhận một mảng các cặp cột và giá trị để biết các cột sẽ được cập nhật. Phương thức `update` trả về số lượng row bị ảnh hưởng. Bạn có thể thêm điều kiện vào lệnh `update` bằng cách sử dụng lệnh `where`:
 
     $affected = DB::table('users')
-                  ->where('id', 1)
-                  ->update(['votes' => 1]);
+        ->where('id', 1)
+        ->update(['votes' => 1]);
 
 <a name="update-or-insert"></a>
 #### Cập nhật hoặc thêm
@@ -1026,14 +1153,30 @@ Phương thức `updateOrInsert` sẽ thử tìm một bản ghi trong cơ sở 
             ['votes' => '2']
         );
 
+Bạn có thể truyền một closure vào phương thức `updateOrInsert` để tùy biến các thuộc tính được cập nhật hoặc thêm vào cơ sở dữ liệu dựa vào sự có tồn tại bản ghi nào phù hợp hay không:
+
+```php
+DB::table('users')->updateOrInsert(
+    ['user_id' => $user_id],
+    fn ($exists) => $exists ? [
+        'name' => $data['name'],
+        'email' => $data['email'],
+    ] : [
+        'name' => $data['name'],
+        'email' => $data['email'],
+        'marketable' => true,
+    ],
+);
+```
+
 <a name="updating-json-columns"></a>
 ### Update JSON Column
 
-Khi cập nhật một cột JSON, bạn nên sử dụng cú pháp `->` để cập nhập vào các key thích hợp trong đối tượng JSON. Cách này sẽ hỗ trợ trên MySQL 5.7+ và PostgreSQL 9.5+:
+Khi cập nhật một cột JSON, bạn nên sử dụng cú pháp `->` để cập nhập vào các key thích hợp trong đối tượng JSON. Cách này sẽ hỗ trợ trên MariaDB 10.3+, MySQL 5.7+, và PostgreSQL 9.5+:
 
     $affected = DB::table('users')
-                  ->where('id', 1)
-                  ->update(['options->enabled' => true]);
+        ->where('id', 1)
+        ->update(['options->enabled' => true]);
 
 <a name="increment-and-decrement"></a>
 ### Increment và Decrement
@@ -1068,31 +1211,50 @@ Phương thức `delete` của query builder có thể được sử dụng đ�
 
     $deleted = DB::table('users')->where('votes', '>', 100)->delete();
 
-Nếu bạn muốn truncate toàn bộ bảng, điều này sẽ xóa tất cả các hàng và set lại ID tự động tăng về 0, bạn có thể sử dụng phương thức `truncate`:
-
-    DB::table('users')->truncate();
-
-<a name="table-truncation-and-postgresql"></a>
-#### Table Truncation và PostgreSQL
-
-Khi truncate cơ sở dữ liệu PostgreSQL, tính năng `CASCADE` sẽ được áp dụng. Điều này có nghĩa là tất cả các bản ghi liên quan đến khóa ngoại có trong các bảng khác cũng sẽ bị xóa.
-
 <a name="pessimistic-locking"></a>
 ## Pessimistic Locking
 
 Query builder cũng có chứa một vài phương thức để giúp bạn đạt được trạng thái "pessimistic locking" khi chạy các câu lệnh `select` của bạn. Để chạy câu lệnh với một "shared lock", bạn có thể sử dụng phương thức `sharedLock` trong một query. Shared lock sẽ ngăn các hàng đang được select sẽ không bị sửa cho đến khi transaction của bạn được commit:
 
     DB::table('users')
-            ->where('votes', '>', 100)
-            ->sharedLock()
-            ->get();
+        ->where('votes', '>', 100)
+        ->sharedLock()
+        ->get();
 
 Ngoài ra, bạn có thể sử dụng phương thức `lockForUpdate`. Lock "for update" sẽ ngăn các hàng được select bị sửa hoặc được select bằng một shared lock khác:
 
     DB::table('users')
-            ->where('votes', '>', 100)
+        ->where('votes', '>', 100)
+        ->lockForUpdate()
+        ->get();
+
+Mặc dù không bắt buộc, nhưng bạn nên gói các pessimistic lock vào trong một [transaction](/docs/{{version}}/database#database-transactions). Điều này đảm bảo dữ liệu được lấy ra không bị thay đổi trong cơ sở dữ liệu cho đến khi toàn bộ hành động được hoàn tất. Trong trường hợp xảy ra lỗi, transaction sẽ rollback lại mọi thay đổi và tự động giải phóng các khóa:
+
+    DB::transaction(function () {
+        $sender = DB::table('users')
             ->lockForUpdate()
-            ->get();
+            ->find(1);
+
+        $receiver = DB::table('users')
+            ->lockForUpdate()
+            ->find(2);
+
+        if ($sender->balance < 100) {
+            throw new RuntimeException('Balance too low.');
+        }
+
+        DB::table('users')
+            ->where('id', $sender->id)
+            ->update([
+                'balance' => $sender->balance - 100
+            ]);
+
+        DB::table('users')
+            ->where('id', $receiver->id)
+            ->update([
+                'balance' => $receiver->balance + 100
+            ]);
+    });
 
 <a name="debugging"></a>
 ## Debugging

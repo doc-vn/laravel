@@ -150,6 +150,21 @@ Nếu bạn đang validate một tập hợp dữ liệu input form thông qua P
 >
 ```
 
+Như chúng ta đã thấy, bạn có thể hook vào một event `change` của một input và validate từng input khi người dùng tương tác với chúng; tuy nhiên, bạn có thể cần validate các input mà người dùng chưa tương tác. Điều này phổ biến khi xây dựng một "wizard", nơi bạn muốn validate tất cả các input hiển thị, dù người dùng đã tương tác với chúng hay chưa, trước khi chuyển sang bước tiếp theo.
+
+Để làm điều này với Precognition, bạn nên gọi phương thức `validate` và truyền tên các trường mà bạn muốn validate vào key cấu hình `only`. Bạn có thể xử lý kết quả validate bằng các callback `onSuccess` hoặc `onValidationError`:
+
+```html
+<button
+    type="button"
+    @click="form.validate({
+        only: ['name', 'email', 'phone'],
+        onSuccess: (response) => nextStep(),
+        onValidationError: (response) => /* ... */,
+    })"
+>Next Step</button>
+```
+
 Tất nhiên, bạn cũng có thể chạy code để tương tác lại với response cho việc gửi form. Hàm `submit` của form trả về một Axios request promise. Điều này sẽ cung cấp một cách thuận tiện để bạn có thể truy cập vào payload của response, reset lại các input của form khi gửi thành công hoặc xử lý khi không thành công:
 
 ```js
@@ -247,7 +262,7 @@ export default function Form() {
 
     return (
         <form onSubmit={submit}>
-            <label for="name">Name</label>
+            <label htmlFor="name">Name</label>
             <input
                 id="name"
                 value={form.data.name}
@@ -256,7 +271,7 @@ export default function Form() {
             />
             {form.invalid('name') && <div>{form.errors.name}</div>}
 
-            <label for="email">Email</label>
+            <label htmlFor="email">Email</label>
             <input
                 id="email"
                 value={form.data.email}
@@ -314,12 +329,27 @@ Nếu bạn đang validate một tập hợp dữ liệu input form thông qua P
 <input
     id="avatar"
     type="file"
-    onChange={(e) =>
+    onChange={(e) => {
         form.setData('avatar', e.target.value);
 
         form.forgetError('avatar');
-    }
+    }}
 >
+```
+
+Như chúng ta đã thấy, bạn có thể hook vào event `blur` của một input và validate các input riêng lẻ khi người dùng tương tác với chúng; tuy nhiên, bạn có thể cần validate các input mà người dùng chưa tương tác. Điều này phổ biến khi xây dựng một "wizard", nơi bạn muốn validate tất cả các input hiển thị, dù người dùng đã tương tác với chúng hay chưa, trước khi chuyển sang bước tiếp theo.
+
+Để làm điều này với Precognition, bạn nên gọi phương thức `validate` và truyền tên các trường mà bạn muốn validate vào key cấu hình `only`. Bạn có thể xử lý kết quả validate bằng các callback `onSuccess` hoặc `onValidationError`:
+
+```jsx
+<button
+    type="button"
+    onClick={() => form.validate({
+        only: ['name', 'email', 'phone'],
+        onSuccess: (response) => nextStep(),
+        onValidationError: (response) => /* ... */,
+    })}
+>Next Step</button>
 ```
 
 Tất nhiên, bạn cũng có thể chạy code để tương tác lại với response cho việc gửi form. Hàm `submit` của form trả về một Axios request promise. Điều này sẽ cung cấp một cách thuận tiện để bạn có thể truy cập vào payload của response, reset lại các input của form khi gửi thành công hoặc xử lý khi không thành công:
@@ -501,6 +531,21 @@ Bạn cũng có thể xác định xem dữ liệu input đã được xác th�
 > [!WARNING]
 > Thông tin input của form chỉ được coi là hợp lệ hoặc không hợp lệ sau khi đã thay đổi và nhận được một response validation.
 
+Như chúng ta đã thấy, bạn có thể hook vào event `change` của một input và validate các input riêng lẻ khi người dùng tương tác với chúng; tuy nhiên, bạn có thể cần validate các input mà người dùng chưa tương tác. Điều này phổ biến khi xây dựng một "wizard", nơi bạn muốn validate tất cả các input hiển thị, dù người dùng đã tương tác với chúng hay chưa, trước khi chuyển sang bước tiếp theo.
+
+Để làm điều này với Precognition, bạn nên gọi phương thức `validate` và truyền tên các trường mà bạn muốn validate vào key cấu hình `only`. Bạn có thể xử lý kết quả validate bằng các callback `onSuccess` hoặc `onValidationError`:
+
+```html
+<button
+    type="button"
+    @click="form.validate({
+        only: ['name', 'email', 'phone'],
+        onSuccess: (response) => nextStep(),
+        onValidationError: (response) => /* ... */,
+    })"
+>Next Step</button>
+```
+
 Bạn có thể xác định một request form có đang được xử lý hay không bằng cách kiểm tra thuộc tính `processing` của form:
 
 ```html
@@ -630,7 +675,7 @@ protected function rules()
         'avatar' => [
             ...$this->isPrecognitive() ? [] : ['required'],
             'image',
-            'mimes:jpg,png'
+            'mimes:jpg,png',
             'dimensions:ratio=3/2',
         ],
         // ...
@@ -683,7 +728,20 @@ Nếu bạn muốn thực hiện các precognitive request trong các bài kiể
 
 Ngoài ra, nếu bạn muốn kiểm tra một precognitive request là thành công và không trả về bất kỳ lỗi xác thực nào, bạn có thể sử dụng phương thức `assertSuccessfulPrecognition` trên response:
 
-```php
+```php tab=Pest
+it('validates registration form with precognition', function () {
+    $response = $this->withPrecognition()
+        ->post('/register', [
+            'name' => 'Taylor Otwell',
+        ]);
+
+    $response->assertSuccessfulPrecognition();
+
+    expect(User::count())->toBe(0);
+});
+```
+
+```php tab=PHPUnit
 public function test_it_validates_registration_form_with_precognition()
 {
     $response = $this->withPrecognition()

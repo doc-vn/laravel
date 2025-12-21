@@ -74,6 +74,18 @@ Sau khi cài đặt, tùy chọn cấu hình Horizon chính mà bạn nên xem l
         ],
     ],
 
+Bạn cũng có thể định nghĩa một wildcard (`*`) cho môi trường, wildcard này sẽ được sử dụng khi không tìm thấy môi trường nào phù hợp:
+
+    'environments' => [
+        // ...
+
+        '*' => [
+            'supervisor-1' => [
+                'maxProcesses' => 3,
+            ],
+        ],
+    ],
+
 Khi bạn khởi động Horizon, nó sẽ sử dụng các tùy chọn cấu hình worker process tương ứng với môi trường mà ứng dụng của bạn được chạy. Thông thường, môi trường được xác định bằng giá trị của [biến môi trường](/docs/{{version}}/configuration#determining-the-current-environment) `APP_ENV`. Ví dụ: môi trường Horizon mặc định`local` được cấu hình để bắt đầu với ba worker process và tự động cân bằng số lượng worker process được chỉ định cho mỗi queue. Môi trường `sản xuất` mặc định sẽ được cấu hình để bắt đầu tối đa 10 worker process và tự động cân bằng số lượng worker process được chỉ định cho mỗi queue.
 
 > [!WARNING]
@@ -114,7 +126,7 @@ Horizon cho phép bạn chọn từ ba chiến lược balance: `simple`, `auto`
 
 Chiến lược `auto` sẽ được cấu hình làm cấu hình mặc định, và sẽ điều chỉnh số lượng process worker trên mỗi queue dựa trên khối lượng job hiện tại của queue. Ví dụ: nếu queue `notifications` của bạn có 1.000 job đang chờ trong khi queue `render` của bạn thì trống không làm gì, thì Horizon sẽ phân bổ nhiều worker hơn vào queue `notifications` của bạn cho đến khi queue đó trống.
 
-Khi sử dụng chiến lược `auto`, vì bạn có thể định nghĩa các tùy chọn cấu hình `minProcesses` và `maxProcesses` để kiểm soát số lượng process worker tối thiểu và tối đa mà Horizon sẽ tăng hoặc giảm thành:
+Khi sử dụng chiến lược `auto`, vì bạn có thể định nghĩa các tùy chọn cấu hình `minProcesses` và `maxProcesses` để kiểm soát số lượng process tối thiểu trên mỗi queue và tổng số process worker tối đa mà Horizon có thể mở rộng:
 
     'environments' => [
         'production' => [
@@ -177,7 +189,7 @@ Ngoài ra, job mà bạn muốn tắt có thể implement interface `Laravel\Hor
 
     class ProcessPodcast implements ShouldQueue, Silenced
     {
-        use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+        use Queueable;
 
         // ...
     }
@@ -185,23 +197,7 @@ Ngoài ra, job mà bạn muốn tắt có thể implement interface `Laravel\Hor
 <a name="upgrading"></a>
 #### Cập nhật Horizon
 
-Khi nâng cấp lên phiên bản mới của Horizon, điều quan trọng là bạn phải xem kỹ [hướng dẫn nâng cấp](https://github.com/laravel/horizon/blob/master/UPGRADE.md). Ngoài ra, khi bạn nâng cấp lên bất kỳ phiên bản Horizon mới nào, bạn nên export lại assets của Horizon:
-
-```shell
-php artisan horizon:publish
-```
-
-Để giữ cập nhật các file asset và tránh các sự cố trong tương lai, bạn có thể thêm lệnh `vendor:publish --tag=laravel-assets` vào trong tập lệnh `post-update-cmd` trong file `composer.json` trong application của bạn:
-
-```json
-{
-    "scripts": {
-        "post-update-cmd": [
-            "@php artisan vendor:publish --tag=laravel-assets --ansi --force"
-        ]
-    }
-}
-```
+Khi nâng cấp lên phiên bản mới của Horizon, điều quan trọng là bạn phải xem kỹ [hướng dẫn nâng cấp](https://github.com/laravel/horizon/blob/master/UPGRADE.md).
 
 <a name="running-horizon"></a>
 ## Chạy Horizon
@@ -232,6 +228,12 @@ Bạn có thể kiểm tra trạng thái hiện tại của process Horizon bằ
 
 ```shell
 php artisan horizon:status
+```
+
+Bạn có thể kiểm tra trạng thái hiện tại của một [supervisor](#supervisors) Horizon bằng cách sử dụng lệnh Artisan `horizon:supervisor-status`:
+
+```shell
+php artisan horizon:supervisor-status supervisor-1
 ```
 
 Bạn có thể huỷ process Horizon bằng lệnh Artisan `horizon:terminate`. Tất cả các job đang được xử lý sẽ được hoàn thành và sau đó Horizon sẽ dừng thực hiện:
@@ -311,15 +313,12 @@ Horizon cho phép bạn gán các “tags” cho các job, bao gồm cả mailab
     namespace App\Jobs;
 
     use App\Models\Video;
-    use Illuminate\Bus\Queueable;
     use Illuminate\Contracts\Queue\ShouldQueue;
-    use Illuminate\Foundation\Bus\Dispatchable;
-    use Illuminate\Queue\InteractsWithQueue;
-    use Illuminate\Queue\SerializesModels;
+    use Illuminate\Foundation\Queue\Queueable;
 
     class RenderVideo implements ShouldQueue
     {
-        use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+        use Queueable;
 
         /**
          * Create a new job instance.
@@ -382,7 +381,6 @@ Khi lấy ra các tag cho queued event listener, Horizon sẽ tự động truy�
         }
     }
 
-
 <a name="notifications"></a>
 ## Thông báo
 
@@ -417,15 +415,11 @@ Bạn có thể cài đặt số giây thì sẽ được coi là "chờ lâu" t
 <a name="metrics"></a>
 ## Số liệu
 
-Horizon có chứa một bảng điều khiển cung cấp các thông tin về số liệu job, thời gian chờ và lưu lượng của queue. Để hiển thị bảng điều khiển này, bạn nên cài đặt lệnh Artisan `snapshot` của Horizon chạy năm phút một lần thông qua [scheduler](/docs/{{version}}/scheduling) của application của bạn:
+Horizon có chứa một bảng điều khiển cung cấp các thông tin về số liệu job, thời gian chờ và lưu lượng của queue. Để hiển thị bảng điều khiển này, bạn nên cài đặt lệnh Artisan `snapshot` của Horizon chạy năm phút một lần trong file `routes/console.php` của application của bạn:
 
-    /**
-     * Define the application's command schedule.
-     */
-    protected function schedule(Schedule $schedule): void
-    {
-        $schedule->command('horizon:snapshot')->everyFiveMinutes();
-    }
+    use Illuminate\Support\Facades\Schedule;
+
+    Schedule::command('horizon:snapshot')->everyFiveMinutes();
 
 <a name="deleting-failed-jobs"></a>
 ## Xoá job thất bại
@@ -434,6 +428,12 @@ Nếu bạn muốn xóa một job thất bại, bạn có thể sử dụng lệ
 
 ```shell
 php artisan horizon:forget 5
+```
+
+Nếu bạn muốn xóa tất cả các job bị thất bại, bạn có thể cung cấp tùy chọn `--all` cho lệnh `horizon:forget`:
+
+```shell
+php artisan horizon:forget --all
 ```
 
 <a name="clearing-jobs-from-queues"></a>

@@ -10,6 +10,7 @@
 - [Chạy Server](#running-server)
     - [Debugging](#debugging)
     - [Restarting](#restarting)
+- [Theo dõi](#monitoring)
 - [Chạy Reverb trong Production](#production)
     - [Mở Files](#open-files)
     - [Event Loop](#event-loop)
@@ -21,30 +22,21 @@
 <a name="introduction"></a>
 ## Giới thiệu
 
-[Laravel Reverb](https://github.com/laravel/reverb) mang đến khả năng giao tiếp WebSocket thời gian thực cực nhanh và có khả năng mở rộng trực tiếp đến ứng dụng Laravel của bạn và cung cấp khả năng tích hợp liền mạch với bộ công cụ broadcasting event hiện có của Laravel.
+[Laravel Reverb](https://github.com/laravel/reverb) mang đến khả năng giao tiếp WebSocket thời gian thực cực nhanh và có khả năng mở rộng trực tiếp đến ứng dụng Laravel của bạn và cung cấp khả năng tích hợp liền mạch với [bộ công cụ broadcasting event](/docs/{{version}}/broadcasting) hiện có của Laravel.
 
 <a name="installation"></a>
 ## Cài đặt
 
-> [!WARNING]
-> Laravel Reverb yêu cầu PHP 8.2 trở lên và Laravel 10.47 trở lên.
+Bạn có thể cài đặt Reverb bằng cách sử dụng lệnh Artisan `install:broadcasting`:
 
-Bạn có thể sử dụng trình quản lý package Composer để cài đặt Reverb vào dự án Laravel của bạn:
-
-```sh
-composer require laravel/reverb
 ```
-
-Sau khi package đã được cài đặt xong, bạn có thể chạy lệnh cài đặt của Reverb để export ra cấu hình, thêm các biến môi trường cần thiết của Reverb và bật broadcasting event trong ứng dụng của bạn:
-
-```sh
-php artisan reverb:install
+php artisan install:broadcasting
 ```
 
 <a name="configuration"></a>
 ## Cấu hình
 
-Lệnh `reverb:install` sẽ tự động cấu hình Reverb bằng một tập hợp các tùy chọn mặc định. Nếu bạn muốn thực hiện bất kỳ thay đổi cấu hình nào, bạn có thể thực hiện bằng cách cập nhật các biến môi trường của Reverb hoặc cập nhật file cấu hình `config/reverb.php`.
+Ẩn sau đó, lệnh Artisan `install:broadcasting` sẽ chạy lệnh `reverb:install`, lệnh này sẽ cài đặt Reverb với một bộ tùy chọn cấu hình mặc định. Nếu bạn muốn thực hiện bất kỳ thay đổi cấu hình nào, bạn có thể thực hiện bằng cách cập nhật các biến môi trường của Reverb hoặc cập nhật file cấu hình `config/reverb.php`.
 
 <a name="application-credentials"></a>
 ### Thông tin xác thực
@@ -65,7 +57,7 @@ Bạn cũng có thể định nghĩa các origin mà các client request có th�
 ```php
 'apps' => [
     [
-        'id' => 'my-app-id',
+        'app_id' => 'my-app-id',
         'allowed_origins' => ['laravel.com'],
         // ...
     ]
@@ -164,6 +156,42 @@ Lệnh `reverb:restart` sẽ đảm bảo tất cả các kết nối sẽ đư�
 php artisan reverb:restart
 ```
 
+<a name="monitoring"></a>
+## Theo dõi
+
+Reverb có thể được theo dõi thông qua tích hợp với [Laravel Pulse](/docs/{{version}}/pulse). Bằng cách bật tích hợp Pulse của Reverb, bạn có thể theo dõi số lượng kết nối và message đang được xử lý bởi server của bạn.
+
+Để bật tính năng tích hợp này, trước tiên bạn nên đảm bảo bạn đã [cài đặt Pulse](/docs/{{version}}/pulse#installation). Sau đó, thêm bất kỳ recorder nào của Reverb vào file cấu hình `config/pulse.php` của ứng dụng của bạn:
+
+```php
+use Laravel\Reverb\Pulse\Recorders\ReverbConnections;
+use Laravel\Reverb\Pulse\Recorders\ReverbMessages;
+
+'recorders' => [
+    ReverbConnections::class => [
+        'sample_rate' => 1,
+    ],
+
+    ReverbMessages::class => [
+        'sample_rate' => 1,
+    ],
+
+    ...
+],
+```
+
+Tiếp theo, thêm các card Pulse cho mỗi recorder vào [dashboard Pulse](/docs/{{version}}/pulse#dashboard-customization):
+
+```blade
+<x-pulse>
+    <livewire:reverb.connections cols="full" />
+    <livewire:reverb.messages cols="full" />
+    ...
+</x-pulse>
+```
+
+Connection activity is recorded by polling for new updates on a periodic basis. To ensure this information is rendered correctly on the Pulse dashboard, you must run the `pulse:check` daemon on your Reverb server. If you are running Reverb in a [horizontally scaled](#scaling) configuration, you should only run this daemon on one of your servers.
+
 <a name="production"></a>
 ## Chạy Reverb trong Production
 
@@ -197,15 +225,11 @@ forge        hard  nofile  10000
 <a name="event-loop"></a>
 ### Event Loop
 
-Về cơ bản, Reverb sử dụng vòng lặp event ReactPHP để quản lý các kết nối WebSocket trên máy chủ. Mặc định, vòng lặp event này được hỗ trợ bởi `stream_select`, không yêu cầu thêm bất kỳ extension nào. Tuy nhiên, `stream_select` thường bị giới hạn ở 1.024 file được mở. Do đó, nếu bạn dự định xử lý hơn 1.000 kết nối đồng thời, bạn sẽ cần sử dụng một vòng lặp event thay thế không bị ràng buộc bởi các hạn chế tương tự.
+Về cơ bản, Reverb sử dụng vòng lặp event ReactPHP để quản lý các kết nối WebSocket trên máy chủ. Mặc định, vòng lặp event này được hỗ trợ bởi `stream_select`, không yêu cầu thêm bất kỳ extension nào. Tuy nhiên, `stream_select` thường bị giới hạn ở 1.024 file được mở. Do đó, nếu bạn dự định xử lý hơn 1.000 kết nối đồng thời, bạn sẽ cần sử dụng một vòng lặp event thay thế mà không bị ràng buộc bởi các hạn chế tương tự.
 
-Reverb sẽ tự động chuyển sang các vòng lặp khác được hỗ trợ bởi `ext-event`, `ext-ev` hoặc `ext-uv` khi sẵn sàng. Tất cả các extension PHP này đều có thể cài đặt qua PECL:
+Reverb sẽ tự động chuyển sang các vòng lặp khác được hỗ trợ bởi `ext-uv` khi sẵn sàng. Extension PHP này đều có thể cài đặt qua PECL:
 
 ```sh
-pecl install event
-# or
-pecl install ev
-# or
 pecl install uv
 ```
 
@@ -235,6 +259,9 @@ server {
 }
 ```
 
+> [!WARNING]
+> Reverb sẽ lắng nghe các kết nối WebSocket tại `/app` và xử lý các request API ở `/apps`. Bạn nên đảm bảo máy chủ web xử lý các request của Reverb có thể chạy cho cả hai URI này. Nếu bạn đang sử dụng [Laravel Forge](https://forge.laravel.com) để quản lý máy chủ của bạn, thì mặc định, máy chủ Reverb của bạn sẽ được cấu hình chính xác.
+
 Thông thường, máy chủ web được cấu hình để giới hạn số lượng kết nối được phép nhằm tránh quá tải máy chủ. Để tăng số lượng kết nối được phép trên máy chủ web Nginx lên 10000, các giá trị `worker_rlimit_nofile` và `worker_connections` của file `nginx.conf` sẽ cần được cập nhật:
 
 ```nginx
@@ -258,7 +285,7 @@ Cấu hình trên cho phép tạo tối đa 10000 Nginx worker cho mỗi process
 Các hệ điều hành dựa trên Unix thường sẽ giới hạn số lượng cổng có thể mở trên máy chủ. Bạn có thể xem phạm vi được phép mở thông qua lệnh sau:
 
  ```sh
- cat /proc/sys/net/ipv4/ip_local_port_range
+cat /proc/sys/net/ipv4/ip_local_port_range
 # 32768	60999
 ```
 

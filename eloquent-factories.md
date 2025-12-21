@@ -26,11 +26,20 @@ Khi kiểm tra ứng dụng hoặc seeding cơ sở dữ liệu, bạn có thể
 
     namespace Database\Factories;
 
-    use Illuminate\Support\Str;
     use Illuminate\Database\Eloquent\Factories\Factory;
+    use Illuminate\Support\Facades\Hash;
+    use Illuminate\Support\Str;
 
+    /**
+     * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\User>
+     */
     class UserFactory extends Factory
     {
+        /**
+         * The current password being used by the factory.
+         */
+        protected static ?string $password;
+
         /**
          * Define the model's default state.
          *
@@ -42,9 +51,19 @@ Khi kiểm tra ứng dụng hoặc seeding cơ sở dữ liệu, bạn có thể
                 'name' => fake()->name(),
                 'email' => fake()->unique()->safeEmail(),
                 'email_verified_at' => now(),
-                'password' => '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', // password
+                'password' => static::$password ??= Hash::make('password'),
                 'remember_token' => Str::random(10),
             ];
+        }
+
+        /**
+         * Indicate that the model's email address should be unverified.
+         */
+        public function unverified(): static
+        {
+            return $this->state(fn (array $attributes) => [
+                'email_verified_at' => null,
+            ]);
         }
     }
 
@@ -53,7 +72,7 @@ Như bạn có thể thấy, ở dạng cơ bản nhất, các factory là các 
 Thông qua helper `fake`, các factory có quyền truy cập vào các thư viện PHP của [Faker](https://github.com/FakerPHP/Faker), cho phép bạn tạo các loại dữ liệu ngẫu nhiên khác nhau để thử nghiệm và seeding một cách thuận tiện.
 
 > [!NOTE]
-> Bạn có thể cài đặt ngôn ngữ Faker trong application của bạn bằng cách thêm tùy chọn `faker_locale` vào file cấu hình `config/app.php` của bạn.
+> Bạn có thể thay đổi ngôn ngữ Faker trong application của bạn bằng cách cập nhật tùy chọn `faker_locale` trong file cấu hình `config/app.php` của bạn.
 
 <a name="defining-model-factories"></a>
 ## Định nghĩa model factoy
@@ -76,13 +95,12 @@ Khi mà bạn đã định nghĩa xong các factory của bạn, bạn có thể
 
 Phương thức `factory` của trait `HasFactory` sẽ sử dụng các quy ước đặt tên để xác định các factory thích hợp cho model mà trait được chỉ định. Cụ thể, phương thức sẽ tìm kiếm một factory trong namespace `Database\Factories` và có tên class khớp với tên có hậu tố là `Factory`. Nếu các quy ước này không được áp dụng cho ứng dụng hoặc factory của bạn, bạn có thể ghi đè lên phương thức `newFactory` này trên model của bạn để trả về trực tiếp một instance của factory tương ứng của model:
 
-    use Illuminate\Database\Eloquent\Factories\Factory;
     use Database\Factories\Administration\FlightFactory;
 
     /**
      * Create a new factory instance for the model.
      */
-    protected static function newFactory(): Factory
+    protected static function newFactory()
     {
         return FlightFactory::new();
     }
@@ -249,12 +267,12 @@ Bạn có thể ghi đè các thuộc tính model mặc định của factory c�
     use Illuminate\Database\Eloquent\Factories\Sequence;
 
     $users = User::factory()
-                    ->count(10)
-                    ->state(new Sequence(
-                        ['admin' => 'Y'],
-                        ['admin' => 'N'],
-                    ))
-                    ->create();
+        ->count(10)
+        ->state(new Sequence(
+            ['admin' => 'Y'],
+            ['admin' => 'N'],
+        ))
+        ->create();
 
 Trong ví dụ này, năm người dùng sẽ được tạo với giá trị `admin` là `Y` và năm người dùng sẽ được tạo với giá trị `admin` là `N`.
 
@@ -263,28 +281,28 @@ Nếu cần, bạn có thể thêm một closure vào như một giá trị chu�
     use Illuminate\Database\Eloquent\Factories\Sequence;
 
     $users = User::factory()
-                    ->count(10)
-                    ->state(new Sequence(
-                        fn (Sequence $sequence) => ['role' => UserRoles::all()->random()],
-                    ))
-                    ->create();
+        ->count(10)
+        ->state(new Sequence(
+            fn (Sequence $sequence) => ['role' => UserRoles::all()->random()],
+        ))
+        ->create();
 
 Trong một sequence closure, bạn có thể truy cập vào các thuộc tính `$index` hoặc `$count` trên instance sequence được khai báo trong closure. Thuộc tính `$index` sẽ chứa số lần lặp chuỗi, trong khi thuộc tính `$count` chứa tổng số lần chuỗi sẽ được gọi:
 
     $users = User::factory()
-                    ->count(10)
-                    ->sequence(fn (Sequence $sequence) => ['name' => 'Name '.$sequence->index])
-                    ->create();
+        ->count(10)
+        ->sequence(fn (Sequence $sequence) => ['name' => 'Name '.$sequence->index])
+        ->create();
 
 Để thuận tiện, các sequence cũng có thể được áp dụng bằng phương thức `sequence`, phương thức này chỉ đơn giản là gọi phương thức `state` ở bên trong. Phương thức `sequence` sẽ chấp nhận một closure hoặc một mảng các thuộc tính đã được sắp xếp theo trình tự:
 
     $users = User::factory()
-                    ->count(2)
-                    ->sequence(
-                        ['name' => 'First User'],
-                        ['name' => 'Second User'],
-                    )
-                    ->create();
+        ->count(2)
+        ->sequence(
+            ['name' => 'First User'],
+            ['name' => 'Second User'],
+        )
+        ->create();
 
 <a name="factory-relationships"></a>
 ## Quan hệ trong factory
@@ -298,26 +316,26 @@ Tiếp theo, hãy khám phá việc xây dựng các quan hệ model Eloquent b�
     use App\Models\User;
 
     $user = User::factory()
-                ->has(Post::factory()->count(3))
-                ->create();
+        ->has(Post::factory()->count(3))
+        ->create();
 
 Theo quy ước, khi truyền một model `Post` cho phương thức `has`, Laravel sẽ giả định rằng model `User` sẽ có một phương thức `posts` để định nghĩa quan hệ đó. Nếu cần, bạn có thể chỉ định rõ tên của quan hệ mà bạn muốn thao tác:
 
     $user = User::factory()
-                ->has(Post::factory()->count(3), 'posts')
-                ->create();
+        ->has(Post::factory()->count(3), 'posts')
+        ->create();
 
 Tất nhiên, bạn có thể thực hiện các thao tác state trên các model quan hệ. Ngoài ra, bạn có thể truyền một closure state nếu state của bạn yêu cầu quyền truy cập vào model gốc:
 
     $user = User::factory()
-                ->has(
-                    Post::factory()
-                            ->count(3)
-                            ->state(function (array $attributes, User $user) {
-                                return ['user_type' => $user->type];
-                            })
-                )
-                ->create();
+        ->has(
+            Post::factory()
+                ->count(3)
+                ->state(function (array $attributes, User $user) {
+                    return ['user_type' => $user->type];
+                })
+            )
+        ->create();
 
 <a name="has-many-relationships-using-magic-methods"></a>
 #### Using Magic Methods
@@ -325,24 +343,24 @@ Tất nhiên, bạn có thể thực hiện các thao tác state trên các mode
 Để thuận tiện, bạn có thể sử dụng các phương thức magic factory relationship của Laravel để xây dựng quan hệ. Ví dụ: trong ví dụ sau sẽ sử dụng quy ước để xác định các model có quan hệ sẽ được tạo thông qua phương thức quan hệ `posts` trên model `User`:
 
     $user = User::factory()
-                ->hasPosts(3)
-                ->create();
+        ->hasPosts(3)
+        ->create();
 
 Khi sử dụng các phương thức magic method để tạo các quan hệ của factory, bạn có thể truyền vào một mảng các thuộc tính để ghi đè lên các model quan hệ:
 
     $user = User::factory()
-                ->hasPosts(3, [
-                    'published' => false,
-                ])
-                ->create();
+        ->hasPosts(3, [
+            'published' => false,
+        ])
+        ->create();
 
 Bạn có thể cung cấp một closure dựa trên state transformation nếu thay đổi state của bạn yêu cầu quyền truy cập vào model gốc:
 
     $user = User::factory()
-                ->hasPosts(3, function (array $attributes, User $user) {
-                    return ['user_type' => $user->type];
-                })
-                ->create();
+        ->hasPosts(3, function (array $attributes, User $user) {
+            return ['user_type' => $user->type];
+        })
+        ->create();
 
 <a name="belongs-to-relationships"></a>
 ### Quan hệ thuộc về
@@ -353,20 +371,20 @@ Bây giờ chúng ta sẽ khám phá cách xây dựng quan hệ "nhiều" bằn
     use App\Models\User;
 
     $posts = Post::factory()
-                ->count(3)
-                ->for(User::factory()->state([
-                    'name' => 'Jessica Archer',
-                ]))
-                ->create();
+        ->count(3)
+        ->for(User::factory()->state([
+            'name' => 'Jessica Archer',
+        ]))
+        ->create();
 
 Nếu bạn đã có một instance model gốc sẽ được liên kết với các model bạn đang tạo, bạn có thể truyền instance model đó vào phương thức `for`:
 
     $user = User::factory()->create();
 
     $posts = Post::factory()
-                ->count(3)
-                ->for($user)
-                ->create();
+        ->count(3)
+        ->for($user)
+        ->create();
 
 <a name="belongs-to-relationships-using-magic-methods"></a>
 #### Using Magic Methods
@@ -374,11 +392,11 @@ Nếu bạn đã có một instance model gốc sẽ được liên kết với 
 Để thuận tiện, bạn có thể sử dụng các phương thức magic factory relationship của Laravel để định nghĩa các quan hệ "thuộc về". Ví dụ: trong ví dụ sau sẽ sử dụng quy ước để xác định ba bài đăng sẽ phải thuộc về quan hệ `user` trên model `Post`:
 
     $posts = Post::factory()
-                ->count(3)
-                ->forUser([
-                    'name' => 'Jessica Archer',
-                ])
-                ->create();
+        ->count(3)
+        ->forUser([
+            'name' => 'Jessica Archer',
+        ])
+        ->create();
 
 <a name="many-to-many-relationships"></a>
 ### Quan hệ nhiều - nhiều
@@ -389,8 +407,8 @@ Giống như [quan hệ số nhiều](#has-many-relationships), quan hệ "nhi�
     use App\Models\User;
 
     $user = User::factory()
-                ->has(Role::factory()->count(3))
-                ->create();
+        ->has(Role::factory()->count(3))
+        ->create();
 
 <a name="pivot-table-attributes"></a>
 #### Pivot Table Attributes
@@ -401,33 +419,33 @@ Nếu bạn cần định nghĩa các thuộc tính sẽ được set trên bả
     use App\Models\User;
 
     $user = User::factory()
-                ->hasAttached(
-                    Role::factory()->count(3),
-                    ['active' => true]
-                )
-                ->create();
+        ->hasAttached(
+            Role::factory()->count(3),
+            ['active' => true]
+        )
+        ->create();
 
 Bạn có thể cung cấp một closure dựa trên state transformation nếu thay đổi state của bạn yêu cầu quyền truy cập vào model quan hệ:
 
     $user = User::factory()
-                ->hasAttached(
-                    Role::factory()
-                        ->count(3)
-                        ->state(function (array $attributes, User $user) {
-                            return ['name' => $user->name.' Role'];
-                        }),
-                    ['active' => true]
-                )
-                ->create();
+        ->hasAttached(
+            Role::factory()
+                ->count(3)
+                ->state(function (array $attributes, User $user) {
+                    return ['name' => $user->name.' Role'];
+                }),
+            ['active' => true]
+        )
+        ->create();
 
 Nếu bạn đã có các instance model mà bạn muốn attache vào các model mà bạn đang tạo, bạn có thể truyền các instance model vào phương thức `hasAttached`. Trong ví dụ này, ba quyền giống nhau sẽ được gán cho cả ba người dùng:
 
     $roles = Role::factory()->count(3)->create();
 
     $user = User::factory()
-                ->count(3)
-                ->hasAttached($roles, ['active' => true])
-                ->create();
+        ->count(3)
+        ->hasAttached($roles, ['active' => true])
+        ->create();
 
 <a name="many-to-many-relationships-using-magic-methods"></a>
 #### Using Magic Methods
@@ -435,10 +453,10 @@ Nếu bạn đã có các instance model mà bạn muốn attache vào các mode
 Để thuận tiện, bạn có thể sử dụng các phương thức magic factory relationship của Laravel để định nghĩa quan hệ nhiều-nhiều. Ví dụ: trong ví dụ sau sẽ sử dụng các quy ước để xác định các model quan hệ sẽ được tạo thông qua phương thức quan hệ `roles` trên model `User`:
 
     $user = User::factory()
-                ->hasRoles(1, [
-                    'name' => 'Editor'
-                ])
-                ->create();
+        ->hasRoles(1, [
+            'name' => 'Editor'
+        ])
+        ->create();
 
 <a name="polymorphic-relationships"></a>
 ### Quan hệ đa hình
@@ -467,17 +485,17 @@ Các quan hệ "nhiều-nhiều" (`morphToMany` / `morphedByMany`) đa hình có
     use App\Models\Video;
 
     $videos = Video::factory()
-                ->hasAttached(
-                    Tag::factory()->count(3),
-                    ['public' => true]
-                )
-                ->create();
+        ->hasAttached(
+            Tag::factory()->count(3),
+            ['public' => true]
+        )
+        ->create();
 
 Tất nhiên, phương thức magic `has` cũng có thể được sử dụng để tạo ra các quan hệ "nhiều-nhiều" đa hình:
 
     $videos = Video::factory()
-                ->hasTags(3, ['public' => true])
-                ->create();
+        ->hasTags(3, ['public' => true])
+        ->create();
 
 <a name="defining-relationships-within-factories"></a>
 ### Định nghĩa quan hệ trong factory

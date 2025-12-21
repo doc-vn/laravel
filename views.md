@@ -112,8 +112,8 @@ Khi truyền thông tin theo cách này, dữ liệu phải là một mảng v�
 Để thay thế cho việc truyền một mảng dữ liệu cho hàm helper `view`, bạn có thể sử dụng phương thức `with` để thêm từng phần dữ liệu vào view. Phương thức `with` sẽ trả về một instance của đối tượng view để bạn có thể tiếp tục kết hợp thêm các phương thức khác trước khi trả về view:
 
     return view('greeting')
-                ->with('name', 'Victoria')
-                ->with('occupation', 'Astronaut');
+        ->with('name', 'Victoria')
+        ->with('occupation', 'Astronaut');
 
 <a name="sharing-data-with-all-views"></a>
 ### Chia sẽ dữ liệu với tất cả các view
@@ -150,7 +150,7 @@ Khi truyền thông tin theo cách này, dữ liệu phải là một mảng v�
 
 Các View composer là các callback hoặc là các phương thức class được gọi khi một view được render. Nếu bạn có dữ liệu mà bạn muốn liên kết nó với một view mỗi khi view đó được render, thì một view composer có thể giúp bạn sắp xếp logic đó. View composer có thể tỏ ra đặc biệt hữu ích nếu cùng một view được trả về bởi nhiều route hoặc controller trong ứng dụng của bạn và luôn cần một lượng dữ liệu cụ thể.
 
-Thông thường, view composer sẽ được đăng ký vào trong một trong các [service providers](/docs/{{version}}/providers) của ứng dụng của bạn. Trong ví dụ này, chúng tôi sẽ giả định rằng chúng tôi đã tạo một `App\Providers\ViewServiceProvider` mới để chứa logic này.
+Thông thường, view composer sẽ được đăng ký vào trong một trong các [service providers](/docs/{{version}}/providers) của ứng dụng của bạn. Trong ví dụ này, chúng tôi sẽ giả định là `App\Providers\AppServiceProvider` sẽ chứa logic này.
 
 Chúng tôi sẽ sử dụng phương thức `composer` của facade `View` để đăng ký view composer. Laravel không chứa một thư mục mặc định cho các class dựa trên view composer, nên bạn có thể tổ chức chúng theo cách bạn muốn. Ví dụ: bạn có thể tạo thư mục `app/Http/View/Composers` để chứa tất cả các view composer của ứng dụng của bạn:
 
@@ -163,7 +163,7 @@ Chúng tôi sẽ sử dụng phương thức `composer` của facade `View` đ�
     use Illuminate\Support\ServiceProvider;
     use Illuminate\View\View;
 
-    class ViewServiceProvider extends ServiceProvider
+    class AppServiceProvider extends ServiceProvider
     {
         /**
          * Register any application services.
@@ -191,9 +191,6 @@ Chúng tôi sẽ sử dụng phương thức `composer` của facade `View` đ�
             });
         }
     }
-
-> [!WARNING]
-> Hãy nhớ rằng, nếu bạn tạo một service provider mới để chứa các đăng ký view composer, bạn sẽ cần thêm service provider đó vào mảng `providers` trong file cấu hình `config/app.php`.
 
 Sau khi chúng ta đã đăng ký xong composer, phương thức `compose` của class `App\View\Composers\ProfileComposer` sẽ được thực thi mỗi khi view `profile` được render. Hãy xem một ví dụ về class composer:
 

@@ -86,7 +86,7 @@ php artisan vendor:publish --provider="Laravel\Tinker\TinkerServiceProvider"
 <a name="command-allow-list"></a>
 #### Command Allow List
 
-Tinker có sử dụng một danh sách "allow" để xác định các lệnh Artisan nào được phép chạy. Mặc định, bạn có thể chạy các lệnh `clear-compiled`, `down`, `env`, `inspire`, `migrate`, `optimize`, và `up`. Nếu bạn muốn cho phép thêm các lệnh khác, bạn có thể thêm chúng vào mảng `commands` trong file cấu hình `tinker.php` của bạn:
+Tinker có sử dụng một danh sách "allow" để xác định các lệnh Artisan nào được phép chạy. Mặc định, bạn có thể chạy các lệnh `clear-compiled`, `down`, `env`, `inspire`, `migrate`, `migrate:install`, `up`, và `optimize`. Nếu bạn muốn cho phép thêm các lệnh khác, bạn có thể thêm chúng vào mảng `commands` trong file cấu hình `tinker.php` của bạn:
 
     'commands' => [
         // App\Console\Commands\ExampleCommand::class,
@@ -158,20 +158,25 @@ Chúng ta hãy xem một ví dụ về command. Lưu ý rằng chúng ta có th�
 > [!NOTE]
 > Để code của bạn có thể tái sử dụng tốt hơn, thì cách tốt nhất là giữ cho các command của bạn được "nhẹ" và hãy để các application service hoàn thành nhiệm vụ đó cho bạn. Trong ví dụ dưới trên, hãy chú ý rằng chúng ta sẽ inject một service class để thực hiện một "công việc nặng" như việc gửi e-mail.
 
+<a name="exit-codes"></a>
+#### Exit Codes
+
+Nếu không có gì được trả về từ phương thức `handle` và command sẽ được chạy thành công, và command sẽ exit với exit code là `0`, thể hiện sự thành công. Tuy nhiên, phương thức `handle` có thể tùy ý trả về một số integer để chỉ định exit code của command:
+
+    $this->error('Something went wrong.');
+
+    return 1;
+
+Nếu bạn muốn command "thất bại" từ bất kỳ phương thức nào có trong command, bạn có thể sử dụng phương thức `fail`. Phương thức `fail` sẽ ngay lập tức ngừng chạy command và trả về exit code là `1`:
+
+    $this->fail('Something went wrong.');
+
 <a name="closure-commands"></a>
 ### Closure Command
 
-Các command được tạo dựa trên closure sẽ cung cấp thêm một giải pháp để định nghĩa các command. Giống như cách mà các closure route làm, là tạo thêm một cách định nghĩa cho controller, bạn hãy nghĩ các closure command này như là một cách định nghĩa khác cho các class command, thay vì phải tạo ra một file command mới. Trong phương thức `commands` ở trong file `app/Console/Kernel.php` của bạn, Laravel sẽ load sẵn file `routes/console.php`:
+Các command được tạo dựa trên closure sẽ cung cấp thêm một giải pháp để định nghĩa các command. Giống như cách mà các closure route làm, là tạo thêm một cách định nghĩa cho controller, bạn hãy nghĩ các closure command này như là một cách định nghĩa khác cho các class command, thay vì phải tạo ra một file command mới.
 
-    /**
-     * Register the closure based commands for the application.
-     */
-    protected function commands(): void
-    {
-        require base_path('routes/console.php');
-    }
-
-Mặc dù file này không định nghĩa các HTTP route, nhưng nó định nghĩa các closure dựa theo format của route vào trong application của bạn. Trong file này, bạn có thể định nghĩa tất cả các closure dựa trên lệnh console của bạn bằng phương thức `Artisan::command`. Phương thức `command` chấp nhận hai tham số: một là một [command signature](#defining-input-expectations) và hai là một closure để nhận vào các tham số và các option của command:
+Mặc dù file `routes/console.php` không định nghĩa các HTTP route, nhưng nó định nghĩa các closure dựa theo format của route vào trong application của bạn. Trong file này, bạn có thể định nghĩa tất cả các closure dựa trên lệnh console của bạn bằng phương thức `Artisan::command`. Phương thức `command` chấp nhận hai tham số: một là một [command signature](#defining-input-expectations) và hai là một closure để nhận vào các tham số và các option của command:
 
     Artisan::command('mail:send {user}', function (string $user) {
         $this->info("Sending email to: {$user}!");
@@ -416,9 +421,9 @@ Nếu Laravel cần yêu cầu một tham số bắt buộc từ người dùng,
     /**
      * Prompt for missing input arguments using the returned questions.
      *
-     * @return array
+     * @return array<string, string>
      */
-    protected function promptForMissingArgumentsUsing()
+    protected function promptForMissingArgumentsUsing(): array
     {
         return [
             'user' => 'Which user ID should receive the mail?',
@@ -454,7 +459,6 @@ Tài liệu [Laravel Prompts](/docs/{{version}}/prompts) đã có chứa thêm c
 Nếu bạn muốn nhắc người dùng về chọn lựa hoặc nhập [options](#options), bạn có thể thêm lời nhắc vào trong phương thức `handle` của command. Tuy nhiên, nếu bạn chỉ muốn nhắc người dùng khi họ vừa bị nhắc về các tham số còn thiếu, thì bạn có thể implement phương thức `afterPromptingForMissingArguments`:
 
     use Symfony\Component\Console\Input\InputInterface;
-
     use Symfony\Component\Console\Output\OutputInterface;
     use function Laravel\Prompts\confirm;
 
@@ -462,12 +466,8 @@ Nếu bạn muốn nhắc người dùng về chọn lựa hoặc nhập [option
 
     /**
      * Perform actions after the user was prompted for missing arguments.
-     *
-     * @param  \Symfony\Component\Console\Input\InputInterface  $input
-     * @param  \Symfony\Component\Console\Output\OutputInterface  $output
-     * @return void
      */
-    protected function afterPromptingForMissingArguments(InputInterface $input, OutputInterface $output)
+    protected function afterPromptingForMissingArguments(InputInterface $input, OutputInterface $output): void
     {
         $input->setOption('queue', confirm(
             label: 'Would you like to queue the mail?',
@@ -650,29 +650,26 @@ Thỉnh thoảng, bạn có thể cần kiểm soát nhiều hơn đối với c
     $bar->finish();
 
 > [!NOTE]
-> Để biết các tùy chọn nâng cao, hãy xem [tài liệu component Symfony Progress Bar](https://symfony.com/doc/current/components/console/helpers/progressbar.html).
+> Để biết các tùy chọn nâng cao, hãy xem [tài liệu component Symfony Progress Bar](https://symfony.com/doc/7.0/components/console/helpers/progressbar.html).
 
 <a name="registering-commands"></a>
 ## Đăng ký Command
 
-Tất cả các lệnh console của bạn được đăng ký trong class `App\Console\Kernel` của ứng dụng, là "console kernel" của ứng dụng của bạn. Trong phương thức `commands` của class này, bạn sẽ thấy một lệnh gọi đến phương thức` load` của kernel. Phương thức `load` này sẽ quét thư mục `app/Console/Commands` và đăng ký tất cả các command mà nó chứa với Artisan. Bạn thậm chí có thể thực hiện thêm các cuộc gọi bổ sung để quét thêm các thư mục khác cho các lệnh Artisan:
+Mặc định, Laravel sẽ tự động đăng ký tất cả các command có trong thư mục `app/Console/Commands`. Tuy nhiên, bạn có thể tuỳ chỉnh Laravel sẽ đọc các thư mục khác để tìm command Artisan bằng phương thức `withCommands` trong file `bootstrap/app.php` của ứng dụng của bạn:
 
-    /**
-     * Register the commands for the application.
-     */
-    protected function commands(): void
-    {
-        $this->load(__DIR__.'/Commands');
-        $this->load(__DIR__.'/../Domain/Orders/Commands');
+    ->withCommands([
+        __DIR__.'/../app/Domain/Orders/Commands',
+    ])
 
-        // ...
-    }
+Nếu cần thiết, bạn cũng có thể đăng ký command theo cách thủ công bằng cách cung cấp tên class của command cho phương thức `withCommands`:
 
-Nếu cần thiết, bạn có thể đăng ký các lệnh theo cách thủ công bằng cách thêm tên class của command vào thuộc tính `$commands` trong class `App\Console\Kernel` của bạn. Nếu thuộc tính này chưa được định nghĩa trên kernel của bạn, thì bạn nên tự định nghĩa nó. Khi Artisan khởi động, tất cả các lệnh được liệt kê trong thuộc tính này sẽ được resolve bằng [service container](/docs/{{version}}/container) và được đăng ký với Artisan:
+    use App\Domain\Orders\Commands\SendEmails;
 
-    protected $commands = [
-        Commands\SendEmails::class
-    ];
+    ->withCommands([
+        SendEmails::class,
+    ])
+
+Khi Artisan được khởi động, tất cả các command có trong ứng dụng của bạn sẽ được resolve bởi [service container](/docs/{{version}}/container) và được đăng ký cùng với Artisan.
 
 <a name="programmatically-executing-commands"></a>
 ## Chạy command bên ngoài CLI

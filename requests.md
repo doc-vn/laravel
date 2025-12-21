@@ -306,9 +306,16 @@ Khi gửi các JSON request cho application của bạn, bạn có thể truy c�
 <a name="retrieving-stringable-input-values"></a>
 #### Retrieving Stringable Input Values
 
-Thay vì lấy dữ liệu input của request dưới dạng `string` đơn giản, bạn có thể sử dụng phương thức `string` để lấy dữ liệu request dưới dạng một instance của [`Illuminate\Support\Stringable`](/docs/{{version}}/helpers#fluent-strings):
+Thay vì lấy dữ liệu input của request dưới dạng `string` đơn giản, bạn có thể sử dụng phương thức `string` để lấy dữ liệu request dưới dạng một instance của [`Illuminate\Support\Stringable`](/docs/{{version}}/strings):
 
     $name = $request->string('name')->trim();
+
+<a name="retrieving-integer-input-values"></a>
+#### Retrieving Integer Input Values
+
+Để lấy ra các giá trị input dưới dạng số nguyên, bạn có thể sử dụng phương thức `integer`. Phương thức này sẽ cố gắng cast kiểu giá trị input thành số nguyên. Nếu input không tồn tại hoặc việc cast kiểu thất bại, nó sẽ trả về giá trị mặc định mà bạn chỉ định. Điều này đặc biệt hữu ích cho việc phân trang hoặc các input các số numeric khác:
+
+    $perPage = $request->integer('per_page');
 
 <a name="retrieving-boolean-input-values"></a>
 #### Lấy giá trị input là boolean
@@ -338,6 +345,12 @@ Giá trị input tương ứng với [PHP enums](https://www.php.net/manual/en/l
     use App\Enums\Status;
 
     $status = $request->enum('status', Status::class);
+
+Nếu giá trị input là một mảng các giá trị tương ứng với một PHP enum, bạn có thể sử dụng phương thức `enums` để lấy ra mảng các giá trị dưới dạng là các instance enum:
+
+    use App\Enums\Product;
+
+    $products = $request->enums('products', Product::class);
 
 <a name="retrieving-input-via-dynamic-properties"></a>
 #### Retrieving Input Via Dynamic Properties
@@ -405,6 +418,18 @@ Nếu bạn muốn xác định xem một giá trị có tồn tại trong reque
         // ...
     }
 
+Nếu bạn muốn xác định xem một giá trị có bị thiếu trong request hay không, hoặc là một chuỗi string rỗng, bạn có thể sử dụng phương thức `isNotFilled`:
+
+    if ($request->isNotFilled('name')) {
+        // ...
+    }
+
+Khi được cung cấp một mảng, phương thức `isNotFilled` sẽ xác định xem tất cả các giá trị có trong mảng đó có bị thiếu hoặc rỗng hay không:
+
+    if ($request->isNotFilled(['name', 'email'])) {
+        // ...
+    }
+
 Phương thức `anyFilled` sẽ trả về `true` nếu có giá trị nào đó được chỉ định không phải là chuỗi trống:
 
     if ($request->anyFilled(['name', 'email'])) {
@@ -431,7 +456,7 @@ Closure thứ hai có thể được truyền đến phương thức `whenFilled
         // ...
     }
 
-    $request->whenMissing('name', function (array $input) {
+    $request->whenMissing('name', function () {
         // The "name" value is missing...
     }, function () {
         // The "name" value is present...
@@ -471,11 +496,11 @@ Bạn cũng có thể sử dụng các phương thức `flashOnly` và `flashExc
 
 Vì bạn thường xuyên phải flash input vào session và sau đó chuyển về trang trước đó, bạn có thể dễ dàng đưa những input đó vào chuyển hướng đó bằng cách sử dụng phương thức `withInput`:
 
-    return redirect('form')->withInput();
+    return redirect('/form')->withInput();
 
     return redirect()->route('user.create')->withInput();
 
-    return redirect('form')->withInput(
+    return redirect('/form')->withInput(
         $request->except('password')
     );
 
@@ -503,33 +528,33 @@ Tất cả các cookie được tạo bởi Laravel framework đều được m�
 <a name="input-trimming-and-normalization"></a>
 ## Cắt và chuẩn hoá Input
 
-Mặc định, Laravel sẽ chứa các middleware `App\Http\Middleware\TrimStrings` và `Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull` trong stack middleware global của application. Các middleware trên được liệt kê trong stack bởi class `App\Http\Kernel`. Các middleware này sẽ tự động trim tất cả các field dạng chuỗi trên request, cũng như chuyển đổi bất kỳ field nào đang ở dạng chuỗi trống thành `null`. Điều này cho phép bạn cần không phải lo lắng về những định dạng chuỗi có trong các route và controller của bạn.
+Mặc định, Laravel sẽ chứa các middleware `Illuminate\Foundation\Http\Middleware\TrimStrings` và `Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull` trong stack middleware global của application. Các middleware này sẽ tự động trim tất cả các field dạng chuỗi trên request, cũng như chuyển đổi bất kỳ field nào đang ở dạng chuỗi trống thành `null`. Điều này cho phép bạn cần không phải lo lắng về những định dạng chuỗi có trong các route và controller của bạn.
 
 #### Disabling Input Normalization
 
-Nếu bạn muốn vô hiệu hóa hành vi này cho tất cả các request, bạn có thể xóa chúng ra khỏi stack middleware của application bằng cách xóa chúng ra khỏi thuộc tính `$middleware` của class `App\Http\Kernel` của bạn.
+Nếu bạn muốn vô hiệu hóa hành vi này cho tất cả các request, bạn có thể xóa chúng ra khỏi stack middleware của application bằng cách gọi phương thức `$middleware->remove` trong file `bootstrap/app.php` của application của bạn:
 
-Nếu bạn muốn vô hiệu hóa việc cắt chuỗi và việc chuyển đổi một chuỗi rỗng cho một tập hợp con các requests đến ứng dụng của bạn, bạn có thể sử dụng phương thức `skipWhen` do cả hai middleware này cung cấp. Phương thức này chấp nhận một closure trả về `true` hoặc `false` để chỉ ra rằng liệu có nên bỏ qua chuẩn hóa input đầu vào hay không. Thông thường, phương thức `skipWhen` cũng phải được gọi trong phương thức `boot` của `AppServiceProvider` trong ứng dụng của bạn.
+    use Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull;
+    use Illuminate\Foundation\Http\Middleware\TrimStrings;
 
-```php
-use App\Http\Middleware\TrimStrings;
-use Illuminate\Http\Request;
-use Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull;
+    ->withMiddleware(function (Middleware $middleware) {
+        $middleware->remove([
+            ConvertEmptyStringsToNull::class,
+            TrimStrings::class,
+        ]);
+    })
 
-/**
- * Bootstrap any application services.
- */
-public function boot(): void
-{
-    TrimStrings::skipWhen(function (Request $request) {
-        return $request->is('admin/*');
-    });
+Nếu bạn muốn disable tính năng cắt chuỗi và convert chuỗi rỗng cho một tập hợp các request đến ứng dụng của bạn, bạn có thể sử dụng các phương thức middleware `trimStrings` và `convertEmptyStringsToNull` trong file `bootstrap/app.php` của ứng dụng. Cả hai phương thức đều chấp nhận một mảng các closure, các closure này sẽ trả về `true` hoặc `false` để cho biết liệu việc chuẩn hóa input có nên được bỏ qua hay không:
 
-    ConvertEmptyStringsToNull::skipWhen(function (Request $request) {
-        // ...
-    });
-}
-```
+    ->withMiddleware(function (Middleware $middleware) {
+        $middleware->convertEmptyStringsToNull(except: [
+            fn (Request $request) => $request->is('admin/*'),
+        ]);
+
+        $middleware->trimStrings(except: [
+            fn (Request $request) => $request->is('admin/*'),
+        ]);
+    })
 
 <a name="files"></a>
 ## Files
@@ -599,70 +624,59 @@ Nếu bạn không muốn tên tệp được tự động tạo, bạn có th�
 
 Khi application của bạn đang chạy sau một hệ thống load balancer, mà không dùng chứng chỉ TLS / SSL để kết nối đến server của bạn. Đôi khi bạn sẽ cảm thấy rằng application của bạn sẽ không trả về liên kết HTTPS khi dùng helper `url`. Thông thường, điều này là do application của bạn đang bị chuyển tiếp lưu lượng truy cập từ load balancer vào cổng 80 và không biết rằng nó đang tạo ra các liên kết không an toàn.
 
-Để giải quyết vấn đề này, bạn có thể sử dụng middleware `App\Http\Middleware\TrustProxies` có trong application Laravel của bạn, cho phép bạn nhanh chóng tùy chỉnh các load balancer hoặc các proxy mà application đang sử dụng, mà bạn tin tưởng. Các proxy mà bạn tin tưởng nên được liệt kê dưới dạng một mảng trong thuộc tính `$proxies` của middleware này. Ngoài việc cấu hình proxy tin tưởng, bạn cũng có thể cấu hình proxy `$headers` mà bạn tin tưởng:
+Để giải quyết vấn đề này, bạn có thể enable middleware `Illuminate\Http\Middleware\TrustProxies` có trong application Laravel của bạn, cho phép bạn nhanh chóng tùy chỉnh các load balancer hoặc các proxy mà application đang sử dụng, mà bạn tin tưởng. Các proxy mà bạn tin tưởng nên được chỉ định bằng cách sử dụng phương thức middleware `trustProxies` trong file `bootstrap/app.php` của ứng dụng của bạn:
 
-    <?php
-
-    namespace App\Http\Middleware;
-
-    use Illuminate\Http\Middleware\TrustProxies as Middleware;
-    use Illuminate\Http\Request;
-
-    class TrustProxies extends Middleware
-    {
-        /**
-         * The trusted proxies for this application.
-         *
-         * @var string|array
-         */
-        protected $proxies = [
+    ->withMiddleware(function (Middleware $middleware) {
+        $middleware->trustProxies(at: [
             '192.168.1.1',
-            '192.168.1.2',
-        ];
+            '10.0.0.0/8',
+        ]);
+    })
 
-        /**
-         * The headers that should be used to detect proxies.
-         *
-         * @var int
-         */
-        protected $headers = Request::HEADER_X_FORWARDED_FOR | Request::HEADER_X_FORWARDED_HOST | Request::HEADER_X_FORWARDED_PORT | Request::HEADER_X_FORWARDED_PROTO;
-    }
+Ngoài việc cấu hình các proxy mà bạn tin tưởng, bạn cũng có thể cấu hình các header proxy mà bạn tin tưởng:
+
+    ->withMiddleware(function (Middleware $middleware) {
+        $middleware->trustProxies(headers: Request::HEADER_X_FORWARDED_FOR |
+            Request::HEADER_X_FORWARDED_HOST |
+            Request::HEADER_X_FORWARDED_PORT |
+            Request::HEADER_X_FORWARDED_PROTO |
+            Request::HEADER_X_FORWARDED_AWS_ELB
+        );
+    })
 
 > [!NOTE]
-> Nếu bạn đang sử dụng AWS Elastic Load Balancing, thì giá trị `$headers` của bạn phải là `Request::HEADER_X_FORWARDED_AWS_ELB`. Để biết thêm thông tin về các hằng số có thể được sử dụng trong thuộc tính `$headers`, hãy xem tài liệu của Symfony về [trusting proxies](https://symfony.com/doc/current/deployment/proxies.html).
+> Nếu bạn đang sử dụng AWS Elastic Load Balancing, thì giá trị `$headers` phải là `Request::HEADER_X_FORWARDED_AWS_ELB`. Nếu load balancer của bạn sử dụng chuẩn header `Forwarded` là [RFC 7239](https://www.rfc-editor.org/rfc/rfc7239#section-4), thì giá trị `headers` phải là `Request::HEADER_FORWARDED`. Để biết thêm thông tin về các hằng số có thể được sử dụng trong giá trị `$headers` này, hãy xem tài liệu của Symfony về [trusting proxies](https://symfony.com/doc/7.0/deployment/proxies.html).
 
 <a name="trusting-all-proxies"></a>
 #### Trusting tất cả Proxies
 
 Nếu bạn đang sử dụng Amazon AWS hoặc các "cloud" khác cung cấp load balancer, bạn có thể không biết địa chỉ IP thật sự của load balancer. Trong trường hợp này, bạn có thể sử dụng `*` để trust tất cả các proxy:
 
-    /**
-     * The trusted proxies for this application.
-     *
-     * @var string|array
-     */
-    protected $proxies = '*';
+    ->withMiddleware(function (Middleware $middleware) {
+        $middleware->trustProxies(at: '*');
+    })
 
 <a name="configuring-trusted-hosts"></a>
 ## Cấu hình Trusted Hosts
 
 Mặc định, Laravel sẽ respond tất cả các request mà nó nhận được bất kể nội dung của header `Host` của request HTTP đó là gì. Ngoài ra, giá trị của header `Host` sẽ được sử dụng khi tạo URL cho ứng dụng của bạn trong khi web request.
 
-Thông thường, bạn nên cấu hình máy chủ web của bạn, chẳng hạn như Nginx hoặc Apache, để chỉ gửi request đến ứng dụng giống với một host name nhất định. Tuy nhiên, nếu bạn không có khả năng tùy chỉnh trực tiếp máy chủ web của bạn và cần hướng dẫn Laravel chỉ phản hồi với một số host name nhất định, bạn có thể làm như vậy bằng cách bật middleware `App\Http\Middleware\TrustHosts` trong ứng dụng của bạn.
+Thông thường, bạn nên cấu hình máy chủ web của bạn, chẳng hạn như Nginx hoặc Apache, để chỉ gửi request đến ứng dụng giống với một hostname nhất định. Tuy nhiên, nếu bạn không có khả năng tùy chỉnh trực tiếp máy chủ web của bạn và cần hướng dẫn Laravel chỉ phản hồi với một số hostname nhất định, bạn có thể làm như vậy bằng cách bật middleware `Illuminate\Http\Middleware\TrustHosts` trong ứng dụng của bạn.
 
-Middleware `TrustHosts` đã được khai báo có sẵn trong stack `$middleware` trong ứng dụng của bạn; tuy nhiên, bạn cần uncomment để nó hoạt động. Trong phương thức `hosts` của middleware này, bạn có thể chỉ định host name mà ứng dụng của bạn sẽ respond. Các request đến với các giá trị header `Host` khác sẽ bị từ chối:
+Để kích hoạt middleware `TrustHosts`, bạn nên gọi phương thức middleware `trustHosts` trong file `bootstrap/app.php` của ứng dụng của bạn. Sử dụng tham số `at` của phương thức này, bạn có thể chỉ định hostname mà ứng dụng của bạn sẽ phản hồi. Các request đến với các header `Host` khác sẽ bị từ chối:
 
-    /**
-     * Get the host patterns that should be trusted.
-     *
-     * @return array<int, string>
-     */
-    public function hosts(): array
-    {
-        return [
-            'laravel.test',
-            $this->allSubdomainsOfApplicationUrl(),
-        ];
-    }
+    ->withMiddleware(function (Middleware $middleware) {
+        $middleware->trustHosts(at: ['laravel.test']);
+    })
 
-Phương thức helper `allSubdomainsOfApplicationUrl` sẽ trả về một biểu thức chính quy khớp với tất cả các subdomain của giá trị đã được cấu hình `app.url` trong ứng dụng của bạn. Phương thức helper này cung cấp một cách thuận tiện để cho phép tất cả các subdomain của ứng dụng của bạn khi bạn xây dựng một ứng dụng sử dụng wildcard subdomain.
+Mặc định, các request đến từ subdomain của URL ứng dụng cũng sẽ được tự động tin tưởng. Nếu bạn muốn tắt hành vi này, bạn có thể sử dụng tham số `subdomains`:
+
+    ->withMiddleware(function (Middleware $middleware) {
+        $middleware->trustHosts(at: ['laravel.test'], subdomains: false);
+    })
+
+Nếu bạn cần truy cập vào các file cấu hình hoặc cơ sở dữ liệu của ứng dụng để xác định các host đáng tin cậy của bạn, bạn có thể cung cấp một closure cho tham số `at`:
+
+    ->withMiddleware(function (Middleware $middleware) {
+        $middleware->trustHosts(at: fn () => config('app.trusted_hosts'));
+    })

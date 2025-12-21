@@ -33,16 +33,9 @@
 ## Cài đăt
 
 > [!WARNING]
-> Hiện tại việc lưu trữ của Pulse sẽ yêu cầu cơ sở dữ liệu MySQL hoặc PostgreSQL. Nếu bạn đang sử dụng một cơ sở dữ liệu khác, bạn sẽ cần một cơ sở dữ liệu MySQL hoặc PostgreSQL riêng cho việc lưu trữ dữ liệu Pulse của bạn.
+> Hiện tại việc lưu trữ của Pulse sẽ yêu cầu cơ sở dữ liệu MySQL, MariaDB, hoặc PostgreSQL. Nếu bạn đang sử dụng một cơ sở dữ liệu khác, bạn sẽ cần một cơ sở dữ liệu MySQL, MariaDB, hoặc PostgreSQL riêng cho việc lưu trữ dữ liệu Pulse của bạn.
 
-Vì Pulse hiện đang ở giai đoạn thử nghiệm nên bạn có thể cần điều chỉnh file `composer.json` của ứng dụng để cho phép cài đặt các bản phát hành beta:
-
-```json
-"minimum-stability": "beta",
-"prefer-stable": true
-```
-
-Sau đó, bạn có thể sử dụng trình quản lý package Composer để cài đặt Pulse vào dự án Laravel của bạn:
+Bạn có thể cài đặt Pulse bằng trình quản lý package Composer:
 
 ```sh
 composer require laravel/pulse
@@ -80,14 +73,14 @@ php artisan vendor:publish --tag=pulse-config
 <a name="dashboard-authorization"></a>
 ### Quyền
 
-Bảng điều khiển của Pulse có thể được truy cập thông qua đường dẫn `/pulse`. Mặc định, bạn chỉ có thể truy cập vào bảng điều khiển này trong môi trường `local`, vì vậy bạn sẽ cần cấu hình quyền cho môi trường production của bạn bằng cách tùy chỉnh authorization gate `'viewPulse'`. Bạn có thể thực hiện việc này trong file `app/Providers/AuthServiceProvider.php` của ứng dụng:
+Bảng điều khiển của Pulse có thể được truy cập thông qua đường dẫn `/pulse`. Mặc định, bạn chỉ có thể truy cập vào bảng điều khiển này trong môi trường `local`, vì vậy bạn sẽ cần cấu hình quyền cho môi trường production của bạn bằng cách tùy chỉnh authorization gate `'viewPulse'`. Bạn có thể thực hiện việc này trong file `app/Providers/AppServiceProvider.php` của ứng dụng:
 
 ```php
 use App\Models\User;
 use Illuminate\Support\Facades\Gate;
 
 /**
- * Register any authentication / authorization services.
+ * Bootstrap any application services.
  */
 public function boot(): void
 {
@@ -176,6 +169,12 @@ public function boot(): void
 
 Card `<livewire:pulse.servers />` sẽ hiển thị mức độ sử dụng tài nguyên của tất cả các server đang chạy lệnh `pulse:check`. Vui lòng tham khảo tài liệu liên quan đến [servers recorder](#servers-recorder) để biết thêm thông tin về báo cáo tài nguyên hệ thống.
 
+Nếu bạn thay thế một server trong cơ sở hạ tầng của bạn, bạn có thể muốn không hiển thị những server không hoạt động trong bảng điều khiển Pulse sau một khoảng thời gian nhất định. Bạn có thể thực hiện điều này bằng cách sử dụng thuộc tính `ignore-after`, thuộc tính này chấp nhận số giây mà sau đó các server không hoạt động sẽ bị xóa ra khỏi bảng điều khiển Pulse. Ngoài ra, bạn có thể cung cấp một chuỗi định dạng thời gian, chẳng hạn như `1 hour` hoặc `3 days and 1 hour`:
+
+```blade
+<livewire:pulse.servers ignore-after="3 hours" />
+```
+
 <a name="application-usage-card"></a>
 #### Application Usage
 
@@ -220,6 +219,12 @@ Card `<livewire:pulse.slow-jobs />` sẽ hiển thị các queued job trong ứn
 Card `<livewire:pulse.slow-queries />` sẽ hiển thị các truy vấn cơ sở dữ liệu trong ứng dụng của bạn mà chạy quá thời gian đã cấu hình, mặc định là 1000ms.
 
 Mặc định, các truy vấn chậm sẽ được nhóm dựa trên truy vấn SQL (không có ràng buộc) và vị trí xảy ra truy vấn, nhưng bạn có thể chọn không ghi lại vị trí của truy vấn nếu bạn chỉ muốn nhóm theo truy vấn SQL.
+
+Nếu bạn gặp phải các vấn đề liên quan đến hiệu suất hiển thị highlight cho các truy vấn SQL quá lớn, bạn có thể tắt tính năng highlight này bằng cách thêm thuộc tính `without-highlighting`:
+
+```blade
+<livewire:pulse.slow-queries without-highlighting />
+```
 
 Xem tài liệu [slow queries recorder](#slow-queries-recorder) để biết thêm thông tin chi tiết.
 
@@ -304,6 +309,20 @@ Recorder `SlowJobs` sẽ ghi lại thông tin về các slow job xảy ra trong 
 
 Bạn có thể tùy ý điều chỉnh ngưỡng mà job sẽ được coi là slow job, [tỷ lệ lấy mẫu](#sampling), và các jobs pattern sẽ bị bỏ qua.
 
+Bạn có thể có một số job mà bạn mong muốn sẽ mất nhiều thời gian hơn so với những job khác. Trong những trường hợp đó, bạn có thể cấu hình ngưỡng cho từng loại job:
+
+```php
+Recorders\SlowJobs::class => [
+    // ...
+    'threshold' => [
+        '#^App\\Jobs\\GenerateYearlyReports$#' => 5000,
+        'default' => env('PULSE_SLOW_JOBS_THRESHOLD', 1000),
+    ],
+],
+```
+
+If no regular expression patterns match the job's classname, then the `'default'` value will be used.
+
 <a name="slow-outgoing-requests-recorder"></a>
 #### Slow Outgoing Requests
 
@@ -311,10 +330,24 @@ Recorder `SlowOutgoingRequests` sẽ ghi lại thông tin về các request HTTP
 
 Bạn có thể tùy ý điều chỉnh ngưỡng mà request gửi đi sẽ bị coi là chậm, [tỷ lệ lấy mẫu](#sampling) và các pattern URL sẽ bị bỏ qua.
 
+Bạn có thể có một số request gửi đi mà bạn mong muốn sẽ mất nhiều thời gian nhiều hơn so với những loại khác. Trong những trường hợp đó, bạn có thể cấu hình ngưỡng theo từng loại request:
+
+```php
+Recorders\SlowOutgoingRequests::class => [
+    // ...
+    'threshold' => [
+        '#backup.zip$#' => 5000,
+        'default' => env('PULSE_SLOW_OUTGOING_REQUESTS_THRESHOLD', 1000),
+    ],
+],
+```
+
+Nếu không có pattern nào khớp với URL của request, thì giá trị `'default'` sẽ được sử dụng.
+
 Bạn cũng có thể cấu hình nhóm của URL để các URL tương tự nhau được nhóm thành một mục duy nhất. Ví dụ: bạn có thể muốn xóa ID ra khỏi đường dẫn URL hoặc chỉ nhóm theo tên miền. Các nhóm được cấu hình bằng cách sử dụng biểu thức chính quy để "tìm và thay thế" các phần của URL. Một số ví dụ được thêm vào trong file cấu hình sau:
 
 ```php
-Recorders\OutgoingRequests::class => [
+Recorders\SlowOutgoingRequests::class => [
     // ...
     'groups' => [
         // '#^https://api\.github\.com/repos/.*$#' => 'api.github.com/repos/*',
@@ -333,12 +366,40 @@ Recorder `SlowQueries` sẽ ghi lại mọi truy vấn cơ sở dữ liệu tron
 
 Bạn có thể tùy chọn điều chỉnh ngưỡng mà truy vấn sẽ bị coi là chậm, [tỷ lệ lấy mẫu](#sampling) và các pattern truy vấn sẽ bị bỏ qua. Bạn cũng có thể cấu hình việc có nên ghi lại vị trí truy vấn hay không. Vị trí đã ghi lại sẽ được hiển thị trên bảng điều khiển Pulse, giúp bạn theo dõi nguồn gốc của truy vấn; tuy nhiên, nếu cùng một truy vấn được thực hiện ở nhiều vị trí khác nhau, nó sẽ xuất hiện nhiều lần cho mỗi vị trí đó.
 
+Bạn có thể có một số loại truy vấn mà bạn mong muốn sẽ mất nhiều thời gian hơn so với những truy vấn khác. Trong những trường hợp đó, bạn có thể cấu hình ngưỡng theo từng truy vấn:
+
+```php
+Recorders\SlowQueries::class => [
+    // ...
+    'threshold' => [
+        '#^insert into `yearly_reports`#' => 5000,
+        'default' => env('PULSE_SLOW_QUERIES_THRESHOLD', 1000),
+    ],
+],
+```
+
+Nếu không có pattern nào khớp với SQL của truy vấn, thì giá trị `'default'` sẽ được sử dụng.
+
 <a name="slow-requests-recorder"></a>
 #### Slow Requests
 
 Recorder `Requests` sẽ ghi lại thông tin về các request được gửi đến ứng dụng của bạn để hiển thị trên card [Slow Requests](#slow-requests-card) và card [Application Usage](#application-usage-card).
 
 Bạn có thể tùy ý điều chỉnh ngưỡng mà route sẽ bị coi là bị chậm, [tỷ lệ lấy mẫu](#sampling) và các path sẽ bị bỏ qua.
+
+Bạn có thể có một số request mà bạn mong muốn chạy sẽ mất nhiều thời gian hơn so với những request khác. Trong những trường hợp đó, bạn có thể cấu hình ngưỡng cho từng loại request:
+
+```php
+Recorders\SlowRequests::class => [
+    // ...
+    'threshold' => [
+        '#^/admin/#' => 5000,
+        'default' => env('PULSE_SLOW_REQUESTS_THRESHOLD', 1000),
+    ],
+],
+```
+
+Nếu không có pattern nào khớp với URL của request, thì giá trị `'default'` sẽ được sử dụng.
 
 <a name="servers-recorder"></a>
 #### Servers
@@ -365,7 +426,7 @@ Bạn có thể tùy ý điều chỉnh [tỷ lệ lấy mẫu](#sampling) và c
 
 Recorder `UserRequests` sẽ ghi lại thông tin về user đã gửi request đối với ứng dụng của bạn để hiển thị trên card [Application Usage](#application-usage-card).
 
-Bạn có thể tùy ý điều chỉnh [tỷ lệ lấy mẫu](#sampling) và các job pattern sẽ bị bỏ qua.
+Bạn có thể tùy ý điều chỉnh [tỷ lệ lấy mẫu](#sampling) và các URL pattern sẽ bị bỏ qua.
 
 <a name="filtering"></a>
 ### Filtering
@@ -660,7 +721,7 @@ class TopSellers extends Card
     public function render()
     {
         return view('livewire.pulse.top-sellers', [
-            'topSellers' => $this->aggregate('user_sale', ['sum', 'count']);
+            'topSellers' => $this->aggregate('user_sale', ['sum', 'count'])
         ]);
     }
 }
@@ -745,7 +806,7 @@ class Deployments
     /**
      * The events to listen for.
      *
-     * @var list<class-string>
+     * @var array<int, class-string>
      */
     public array $listen = [
         Deployment::class,

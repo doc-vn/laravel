@@ -28,6 +28,32 @@ Helper `url` có thể được sử dụng để tạo các URL tùy biến cho
 
     // http://example.com/posts/1
 
+Để tạo ra một URL với các tham số query string, bạn có thể sử dụng phương thức `query`:
+
+    echo url()->query('/posts', ['search' => 'Laravel']);
+
+    // https://example.com/posts?search=Laravel
+
+    echo url()->query('/posts?sort=latest', ['search' => 'Laravel']);
+
+    // http://example.com/posts?sort=latest&search=Laravel
+
+Việc cung cấp các tham số query string đã tồn tại trong path sẽ ghi đè lên giá trị hiện có của chúng:
+
+    echo url()->query('/posts?sort=latest', ['sort' => 'oldest']);
+
+    // http://example.com/posts?sort=oldest
+
+Các mảng giá trị cũng có thể được truyền dưới dạng tham số query string. Các giá trị này sẽ được gán key và mã hóa đúng cách trong URL được tạo ra:
+
+    echo $url = url()->query('/posts', ['columns' => ['title', 'body']]);
+
+    // http://example.com/posts?columns%5B0%5D=title&columns%5B1%5D=body
+
+    echo urldecode($url);
+
+    // http://example.com/posts?columns[0]=title&columns[1]=body
+
 <a name="accessing-the-current-url"></a>
 ### Truy cập vào URL hiện tại
 
@@ -41,6 +67,9 @@ Nếu như không có đường dẫn nào được truyền vào cho helper `ur
 
     // Get the full URL for the previous request...
     echo url()->previous();
+
+    // Get the path for the previous request...
+    echo url()->previousPath();
 
 Các phương thức này cũng có thể được truy cập thông qua [facade](/docs/{{version}}/facades) `URL`:
 
@@ -130,20 +159,7 @@ Thỉnh thoảng, bạn có thể cần cho phép frontend của ứng dụng th
         abort(401);
     }
 
-Thay vì xác thực các signed URL bằng cách sử dụng instance request, bạn có thể gán một [middleware](/docs/{{version}}/middleware) `Illuminate\Routing\Middleware\ValidateSignature` cho một route. Nếu bạn chưa đăng ký middleware này, bạn có thể gán cho middleware đó cho một alias trong mảng `middlewareAliases` của file kernel HTTP của bạn:
-
-    /**
-     * The application's middleware aliases.
-     *
-     * Aliases may be used to conveniently assign middleware to routes and groups.
-     *
-     * @var array<string, class-string|string>
-     */
-    protected $middlewareAliases = [
-        'signed' => \Illuminate\Routing\Middleware\ValidateSignature::class,
-    ];
-
-Sau khi bạn đã đăng ký xong middleware trong file kernel của bạn, bạn có thể gán nó vào một route. Nếu request đến không có chữ ký hợp lệ, middleware sẽ tự động trả về HTTP response `403`:
+Thay vì xác thực các signed URL bằng cách sử dụng instance request, bạn có thể gán một [middleware](/docs/{{version}}/middleware) `signed` (`Illuminate\Routing\Middleware\ValidateSignature`) cho một route. Nếu request đến không có chữ ký hợp lệ, middleware sẽ tự động trả về HTTP response `403`:
 
     Route::post('/unsubscribe/{user}', function (Request $request) {
         // ...
@@ -158,19 +174,15 @@ Nếu trong signed URL của bạn không chứa tên miền trong URL hash, b�
 <a name="responding-to-invalid-signed-routes"></a>
 #### Responding To Invalid Signed Routes
 
-Khi ai đó truy cập một URL signed đã hết hạn, họ sẽ nhận được một trang lỗi chung có mã trạng thái HTTP `403`. Tuy nhiên, bạn có thể tùy chỉnh hành vi này bằng cách định nghĩa một closure "renderable" tùy chỉnh cho exception `InvalidSignatureException` trong quá trình xử lý exception của bạn. Closure này sẽ trả về một HTTP response:
+Khi ai đó truy cập một URL signed đã hết hạn, họ sẽ nhận được một trang lỗi chung có mã trạng thái HTTP `403`. Tuy nhiên, bạn có thể tùy chỉnh hành vi này bằng cách định nghĩa một closure "render" tùy chỉnh cho exception `InvalidSignatureException` trong file `bootstrap/app.php` của ứng dụng của bạn:
 
     use Illuminate\Routing\Exceptions\InvalidSignatureException;
 
-    /**
-     * Register the exception handling callbacks for the application.
-     */
-    public function register(): void
-    {
-        $this->renderable(function (InvalidSignatureException $e) {
-            return response()->view('error.link-expired', [], 403);
+    ->withExceptions(function (Exceptions $exceptions) {
+        $exceptions->render(function (InvalidSignatureException $e) {
+            return response()->view('errors.link-expired', status: 403);
         });
-    }
+    })
 
 <a name="urls-for-controller-actions"></a>
 ## URLs cho Controller Actions
@@ -225,20 +237,13 @@ Khi giá trị mặc định cho tham số `locale` đã được cài đặt, b
 <a name="url-defaults-middleware-priority"></a>
 #### URL Defaults và Middleware Priority
 
-Việc set giá trị mặc định của URL có thể cản trở việc xử lý các liên kết ngầm model của Laravel. Do đó, bạn nên [ưu tiên middleware của bạn](/docs/{{version}}/middleware#sorting-middleware) về set mặc định URL được chạy trước middleware `SubstituteBindings` của Laravel. Bạn có thể thực hiện điều này bằng cách đưa middleware của bạn lên trước middleware `SubstituteBindings` trong thuộc tính `$middlewarePriority` của HTTP kernel của ứng dụng của bạn.
+Việc set giá trị mặc định của URL có thể cản trở việc xử lý các liên kết ngầm model của Laravel. Do đó, bạn nên [ưu tiên middleware của bạn](/docs/{{version}}/middleware#sorting-middleware) về set mặc định URL được chạy trước middleware `SubstituteBindings` của Laravel. Bạn có thể thực hiện điều này bằng cách sử dụng phương thức `priority` middleware method trong file `bootstrap/app.php` của ứng dụng của bạn:
 
-Thuộc tính `$middlewarePriority` được định nghĩa trong class base `Illuminate\Foundation\Http\Kernel`. Bạn có thể copy định nghĩa của nó từ trong class đó và ghi đè nó trong HTTP kernel của ứng dụng để thay đổi nó:
-
-    /**
-     * The priority-sorted list of middleware.
-     *
-     * This forces non-global middleware to always be in the given order.
-     *
-     * @var array
-     */
-    protected $middlewarePriority = [
-        // ...
-         \App\Http\Middleware\SetDefaultLocaleForUrls::class,
-         \Illuminate\Routing\Middleware\SubstituteBindings::class,
-         // ...
-    ];
+```php
+->withMiddleware(function (Middleware $middleware) {
+    $middleware->prependToPriorityList(
+        before: \Illuminate\Routing\Middleware\SubstituteBindings::class,
+        prepend: \App\Http\Middleware\SetDefaultLocaleForUrls::class,
+    );
+})
+```

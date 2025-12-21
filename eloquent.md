@@ -32,6 +32,7 @@
 - [Query Scope](#query-scopes)
     - [Global Scope](#global-scopes)
     - [Local Scope](#local-scopes)
+    - [Pending Attributes](#pending-attributes)
 - [So sánh Model](#comparing-models)
 - [Event](#events)
     - [Dùng Closures](#events-using-closures)
@@ -92,6 +93,7 @@ php artisan make:model Flight -mfsc
 
 # Shortcut to generate a model, migration, factory, seeder, policy, controller, and form requests...
 php artisan make:model Flight --all
+php artisan make:model Flight -a
 
 # Generate a pivot model...
 php artisan make:model Member --pivot
@@ -312,7 +314,7 @@ Nếu bạn cần tùy biến tên của các cột được sử dụng để l
 
 Nếu bạn muốn thực hiện các thao tác trên model mà không cần sửa timestamp `updated_at` của model, bạn có thể thao tác trên model trong một closure được cung cấp trong phương thức `withoutTimestamps`:
 
-    Model::withoutTimestamps(fn () => $post->increment(['reads']));
+    Model::withoutTimestamps(fn () => $post->increment('reads'));
 
 <a name="database-connections"></a>
 ### Database Connection
@@ -332,7 +334,7 @@ Mặc định, tất cả các model Eloquent sẽ sử dụng kết nối cơ s
          *
          * @var string
          */
-        protected $connection = 'sqlite';
+        protected $connection = 'mysql';
     }
 
 <a name="default-attribute-values"></a>
@@ -387,7 +389,7 @@ Model::preventSilentlyDiscardingAttributes(! $this->app->isProduction());
 <a name="retrieving-models"></a>
 ## Lấy ra Model
 
-Khi bạn đã tạo một model và [bảng cơ sở dữ liệu được liên kết với model đó](/docs/{{version}}/migrations#writing-migrations), bạn có thể bắt đầu truy xuất dữ liệu từ cơ sở dữ liệu của bạn. Bạn có thể nghĩ về mỗi model Eloquent như là một [query builder](/docs/{{version}}/queries) cho phép bạn truy vấn vào bảng cơ sở dữ liệu được liên kết với model đó. Phương thức `all` của model sẽ lấy ra tất cả các bản ghi từ bảng cơ sở dữ liệu được liên kết của model:
+Khi bạn đã tạo một model và [bảng cơ sở dữ liệu được liên kết với model đó](/docs/{{version}}/migrations#generating-migrations), bạn có thể bắt đầu truy xuất dữ liệu từ cơ sở dữ liệu của bạn. Bạn có thể nghĩ về mỗi model Eloquent như là một [query builder](/docs/{{version}}/queries) cho phép bạn truy vấn vào bảng cơ sở dữ liệu được liên kết với model đó. Phương thức `all` của model sẽ lấy ra tất cả các bản ghi từ bảng cơ sở dữ liệu được liên kết của model:
 
     use App\Models\Flight;
 
@@ -401,9 +403,9 @@ Khi bạn đã tạo một model và [bảng cơ sở dữ liệu được liên
 Phương thức `all` của Eloquent sẽ trả về tất cả các bản ghi có trong bảng của model. Tuy nhiên, vì mỗi model Eloquent đóng vai trò là một [query builder](/docs/{{version}}/queries), nên bạn có thể thêm các ràng buộc bổ sung cho các truy vấn của bạn, và sau đó gọi phương thức `get` để lấy ra kết quả:
 
     $flights = Flight::where('active', 1)
-                   ->orderBy('name')
-                   ->take(10)
-                   ->get();
+        ->orderBy('name')
+        ->take(10)
+        ->get();
 
 > [!NOTE]
 > Vì các model Eloquent là các query builder, nên bạn nên xem lại tất cả các phương thức đã được cung cấp bởi [query builder](/docs/{{version}}/queries) của Laravel. Bạn có thể sử dụng bất kỳ phương thức nào khi viết các truy vấn Eloquent của bạn.
@@ -478,7 +480,20 @@ Nếu bạn đang lọc kết quả từ phương thức `chunk` dựa trên m�
 Flight::where('departed', true)
     ->chunkById(200, function (Collection $flights) {
         $flights->each->update(['departed' => false]);
-    }, $column = 'id');
+    }, column: 'id');
+```
+
+Vì các phương thức `chunkById` và `lazyById` sẽ thêm các điều kiện "where" của riêng chúng vào truy vấn đang được thực thi, nên thông thường bạn nên [logic nhóm](/docs/{{version}}/queries#logical-grouping) các điều kiện riêng của bạn trong một closure:
+
+```php
+Flight::where(function ($query) {
+    $query->where('delayed', true)->orWhere('cancelled', true);
+})->chunkById(200, function (Collection $flights) {
+    $flights->each->update([
+        'departed' => false,
+        'cancelled' => true
+    ]);
+}, column: 'id');
 ```
 
 <a name="chunking-using-lazy-collections"></a>
@@ -498,7 +513,7 @@ Nếu bạn đang lọc kết quả của phương thức `lazy` dựa trên m�
 
 ```php
 Flight::where('departed', true)
-    ->lazyById(200, $column = 'id')
+    ->lazyById(200, column: 'id')
     ->each->update(['departed' => false]);
 ```
 
@@ -715,14 +730,23 @@ Phương thức `save` cũng có thể được sử dụng để cập nhật m
 
     $flight->save();
 
+Đôi khi, bạn có thể cần cập nhật model hiện có hoặc tạo một model mới nếu không có model nào phù hợp. Giống như phương thức `firstOrCreate`, thì phương thức `updateOrCreate` cũng sẽ lưu model, và do đó bạn không cần phải gọi phương thức `save`.
+
+Trong ví dụ dưới đây, nếu một chuyến bay tồn tại với điểm khởi hành là `Oakland` và điểm đến là `San Diego`, thì các cột `price` và `discounted` của chuyến bay đó sẽ được cập nhật. Nếu không có chuyến bay nào như vậy, một chuyến bay mới sẽ được tạo với các thuộc tính có được từ việc hợp nhất mảng tham số thứ nhất với mảng tham số thứ hai:
+
+    $flight = Flight::updateOrCreate(
+        ['departure' => 'Oakland', 'destination' => 'San Diego'],
+        ['price' => 99, 'discounted' => 1]
+    );
+
 <a name="mass-updates"></a>
 #### Mass Updates
 
 Cập nhật cũng có thể được thực hiện đối với các model tương ứng với một câu lệnh truy vấn duy nhất. Trong ví dụ này, tất cả các flight `đang hoạt động` và có `điểm đến` là `San Diego` sẽ bị đánh dấu là delay:
 
     Flight::where('active', 1)
-          ->where('destination', 'San Diego')
-          ->update(['delayed' => 1]);
+        ->where('destination', 'San Diego')
+        ->update(['delayed' => 1]);
 
 Phương thức `update` yêu cầu một mảng gồm các cặp: tên cột và giá trị cần được cập nhật. Phương thức `update` này sẽ trả về số hàng bị ảnh hưởng.
 
@@ -820,7 +844,7 @@ Vì vậy, để bắt đầu, bạn nên định nghĩa các thuộc tính  mà
         /**
          * The attributes that are mass assignable.
          *
-         * @var array
+         * @var array<int, string>
          */
         protected $fillable = ['name'];
     }
@@ -841,7 +865,7 @@ Khi gán các cột JSON, mỗi khóa mass assignable của cột đó phải đ
     /**
      * The attributes that are mass assignable.
      *
-     * @var array
+     * @var array<int, string>
      */
     protected $fillable = [
         'options->enabled',
@@ -855,7 +879,7 @@ Nếu bạn muốn làm cho tất cả các thuộc tính của bạn đều có
     /**
      * The attributes that aren't mass assignable.
      *
-     * @var array
+     * @var array<string>|bool
      */
     protected $guarded = [];
 
@@ -864,7 +888,7 @@ Nếu bạn muốn làm cho tất cả các thuộc tính của bạn đều có
 
 Mặc định, các thuộc tính không có trong mảng `$fillable` sẽ bị loại ra khi thực hiện các thao tác mass-assignment. Trong môi trường production, đây là hành vi được mong đợi; tuy nhiên, trong quá trình phát triển ở local, điều này có thể dẫn đến sự nhầm lẫn về lý do tại sao có những thay đổi về mặt model lại không có hiệu lực.
 
-Nếu muốn, bạn có thể hướng dẫn Laravel đưa ra một ngoại lệ khi cố gắng đưa vào một thuộc tính không thể đưa bằng cách gọi phương thức `preventSilentlyDiscardingAttributes`. Thông thường, phương thức này nên được gọi trong một phương thức `boot` của một service provider trong ứng dụng của bạn:
+Nếu muốn, bạn có thể hướng dẫn Laravel đưa ra một ngoại lệ khi cố gắng đưa vào một thuộc tính không thể đưa bằng cách gọi phương thức `preventSilentlyDiscardingAttributes`. Thông thường, phương thức này nên được gọi trong phương thức `boot` của class `AppServiceProvider` của ứng dụng của bạn:
 
     use Illuminate\Database\Eloquent\Model;
 
@@ -879,24 +903,15 @@ Nếu muốn, bạn có thể hướng dẫn Laravel đưa ra một ngoại lệ
 <a name="upserts"></a>
 ### Upserts
 
-Đôi khi, bạn có thể cần cập nhật model hiện có hoặc tạo một model mới nếu không có model đó. Giống như phương thức `firstOrCreate`, phương thức `updateOrCreate` sẽ lưu model luôn, mà không cần gọi phương thức `save` theo cách thủ công.
-
-Trong ví dụ bên dưới, nếu một chuyến bay có một vị trí `khởi hành` là `Oakland` và vị trí `đến` là `San Diego`, thì các cột `price` và `discounted` của chuyến bay đó sẽ được cập nhật. Nếu như không có chuyến bay nào tồn tại, thì một chuyến bay mới sẽ được tạo và có các thuộc tính từ mảng tham số thứ nhất cùng với mảng tham số thứ hai:
-
-    $flight = Flight::updateOrCreate(
-        ['departure' => 'Oakland', 'destination' => 'San Diego'],
-        ['price' => 99, 'discounted' => 1]
-    );
-
-Nếu bạn muốn thực hiện nhiều "uperts" trong một truy vấn, thì bạn nên sử dụng phương thức `upsert` để thay thế. Tham số đầu tiên của phương thức sẽ chứa các giá trị để thêm hoặc cập nhật, trong khi tham số thứ hai là liệt kê (các) cột để xác định tính duy nhất của các bản ghi trong bảng cơ sở dữ liệu. Tham số thứ ba và cũng là tham số cuối cùng của phương thức là một mảng các cột sẽ được cập nhật nếu một bản ghi phù hợp đã tồn tại trong cơ sở dữ liệu. Phương thức `upsert` sẽ tự động set timestamp cho cột `created_at` và `updated_at` nếu timestamp được enabled trên model:
+Phương thức `upsert` của Eloquent có thể được sử dụng để cập nhật hoặc tạo bản ghi trong một thao tác duy nhất. Tham số đầu tiên của phương thức sẽ chứa các giá trị để thêm hoặc cập nhật, trong khi tham số thứ hai là liệt kê (các) cột để xác định tính duy nhất của các bản ghi trong bảng cơ sở dữ liệu. Tham số thứ ba và cũng là tham số cuối cùng của phương thức là một mảng các cột sẽ được cập nhật nếu một bản ghi phù hợp đã tồn tại trong cơ sở dữ liệu. Phương thức `upsert` sẽ tự động set timestamp cho cột `created_at` và `updated_at` nếu timestamp được enabled trên model:
 
     Flight::upsert([
         ['departure' => 'Oakland', 'destination' => 'San Diego', 'price' => 99],
         ['departure' => 'Chicago', 'destination' => 'New York', 'price' => 150]
-    ], ['departure', 'destination'], ['price']);
+    ], uniqueBy: ['departure', 'destination'], update: ['price']);
 
 > [!WARNING]
-> Tất cả các cơ sở dữ liệu ngoại trừ SQL Server đều yêu cầu các cột trong tham số thứ hai của phương thức `upsert` phải có một cột "primary" hoặc một "unique" index trong đó. Ngoài ra, driver cơ sở dữ liệu MySQL sẽ bỏ qua tham số thứ hai của phương thức `upsert` và luôn sử dụng các "primary" và "unique" indexe của bảng để phát hiện các bản ghi hiện có.
+> Tất cả các cơ sở dữ liệu ngoại trừ SQL Server đều yêu cầu các cột trong tham số thứ hai của phương thức `upsert` phải có một cột "primary" hoặc một "unique" index trong đó. Ngoài ra, driver cơ sở dữ liệu MariaDB và MySQL sẽ bỏ qua tham số thứ hai của phương thức `upsert` và luôn sử dụng các "primary" và "unique" indexe của bảng để phát hiện các bản ghi hiện có.
 
 <a name="deleting-models"></a>
 ## Xoá Model
@@ -908,10 +923,6 @@ Nếu bạn muốn thực hiện nhiều "uperts" trong một truy vấn, thì b
     $flight = Flight::find(1);
 
     $flight->delete();
-
-Bạn có thể gọi phương thức `truncate` để xóa tất cả các bản ghi trong cơ sở dữ liệu được liên kết của model. Thao tác `truncate` này cũng sẽ set lại bất kỳ ID tự động tăng nào có trong bảng được liên kết của model:
-
-    Flight::truncate();
 
 <a name="deleting-an-existing-model-by-its-primary-key"></a>
 #### Deleting An Existing Model By Its Primary Key
@@ -926,6 +937,10 @@ Trong ví dụ trên, chúng ta đang lấy một model từ cơ sở dữ liệ
 
     Flight::destroy(collect([1, 2, 3]));
 
+Nếu bạn đang sử dụng [model soft delete](#soft-deleting), bạn có thể xóa vĩnh viễn các model thông qua phương thức `forceDestroy`:
+
+    Flight::forceDestroy(1);
+
 > [!WARNING]
 > Phương thức `destroy` sẽ load từng model và gọi phương thức `delete` trên từng model đó để kích hoạt các event `deleting` và `deleted`.
 
@@ -935,6 +950,10 @@ Trong ví dụ trên, chúng ta đang lấy một model từ cơ sở dữ liệ
 Bạn cũng có thể chạy một câu lệnh xóa trên một tập các model. Trong ví dụ này, chúng ta sẽ xóa tất cả các flight có đánh dấu là không hoạt động. Giống như mass update, mass delete cũng sẽ không kích hoạt bất kỳ event nào của model khi các model bị xóa:
 
     $deleted = Flight::where('active', 0)->delete();
+
+Để xóa tất cả các model có trong một bảng, bạn nên thực hiện truy vấn mà không cần thêm bất kỳ điều kiện nào:
+
+    $deleted = Flight::query()->delete();
 
 > [!WARNING]
 > Khi thực hiện câu lệnh mass delete thông qua Eloquent, các event model như là `deleting` và `deleted` sẽ không được kích hoạt cho các model đã bị xóa. Điều này là do các model đã không được lấy ra khi thực hiện câu lệnh xóa.
@@ -1019,8 +1038,8 @@ Như đã lưu ý ở trên, các model bị soft delete sẽ bị tự động 
     use App\Models\Flight;
 
     $flights = Flight::withTrashed()
-                    ->where('account_id', 1)
-                    ->get();
+        ->where('account_id', 1)
+        ->get();
 
 Phương thức `withTrashed` cũng có thể được gọi khi tạo query cho [quan hệ](/docs/{{version}}/eloquent-relationships):
 
@@ -1032,8 +1051,8 @@ Phương thức `withTrashed` cũng có thể được gọi khi tạo query cho
 Phương thức `onlyTrashed` sẽ **chỉ** truy xuất vào các model đã bị soft deleted:
 
     $flights = Flight::onlyTrashed()
-                    ->where('airline_id', 1)
-                    ->get();
+        ->where('airline_id', 1)
+        ->get();
 
 <a name="pruning-models"></a>
 ## Pruning Models
@@ -1071,25 +1090,21 @@ Khi đánh dấu model là `Prunable`, bạn cũng có thể định nghĩa mộ
         // ...
     }
 
-Sau khi cấu hình model prunable của bạn, bạn nên tạo schedule chạy lệnh `model:prune` Artisan trong class `App\Console\Kernel` của ứng dụng của bạn. Bạn có thể tự do chọn khoảng thời gian thích hợp để chạy lệnh này:
+Sau khi cấu hình model prunable của bạn, bạn nên tạo schedule chạy lệnh `model:prune` Artisan trong file `routes/console.php` của ứng dụng của bạn. Bạn có thể tự do chọn khoảng thời gian thích hợp để chạy lệnh này:
 
-    /**
-     * Define the application's command schedule.
-     */
-    protected function schedule(Schedule $schedule): void
-    {
-        $schedule->command('model:prune')->daily();
-    }
+    use Illuminate\Support\Facades\Schedule;
+
+    Schedule::command('model:prune')->daily();
 
 Hậu trường, lệnh `model:prune` sẽ tự động tìm các model "Prunablec" trong thư mục `app/Models` của ứng dụng của bạn. Nếu các model của bạn ở một vị trí khác, thì bạn có thể sử dụng tùy chọn `--model` để chỉ định tên class của model:
 
-    $schedule->command('model:prune', [
+    Schedule::command('model:prune', [
         '--model' => [Address::class, Flight::class],
     ])->daily();
 
 Nếu bạn muốn bỏ qua một số model ra khỏi pruned trong khi đang pruning tất cả các model khác, thì bạn có thể sử dụng tùy chọn `--except`:
 
-    $schedule->command('model:prune', [
+    Schedule::command('model:prune', [
         '--except' => [Address::class, Flight::class],
     ])->daily();
 
@@ -1376,6 +1391,37 @@ Khi các tham số được thêm vào định dạng của phương thức scop
 
     $users = User::ofType('admin')->get();
 
+<a name="pending-attributes"></a>
+### Pending Attributes
+
+Nếu bạn muốn sử dụng scope để tạo các model có cùng thuộc tính với các thuộc tính được sử dụng để hạn chế scope, bạn có thể sử dụng phương thức `withAttributes` khi xây dựng truy vấn scope:
+
+    <?php
+
+    namespace App\Models;
+
+    use Illuminate\Database\Eloquent\Builder;
+    use Illuminate\Database\Eloquent\Model;
+
+    class Post extends Model
+    {
+        /**
+         * Scope the query to only include drafts.
+         */
+        public function scopeDraft(Builder $query): void
+        {
+            $query->withAttributes([
+                'hidden' => true,
+            ]);
+        }
+    }
+
+Phương thức `withAttributes` sẽ thêm các ràng buộc mệnh đề `where` vào truy vấn bằng cách sử dụng các thuộc tính đã cho và cũng sẽ thêm các thuộc tính đó vào bất kỳ model nào được tạo thông qua scope:
+
+    $draft = Post::draft()->create(['title' => 'In Progress']);
+
+    $draft->hidden; // true
+
 <a name="comparing-models"></a>
 ## So sánh Model
 
@@ -1423,7 +1469,7 @@ Event `retrieved` sẽ được kích hoạt khi một model được lấy ra k
         /**
          * The event map for the model.
          *
-         * @var array
+         * @var array<string, string>
          */
         protected $dispatchesEvents = [
             'saved' => UserSaved::class,
@@ -1542,13 +1588,13 @@ Lệnh này sẽ lưu file observer mới vào trong thư mục `app/Observers` 
         //
     }
 
-Hoặc, bạn có thể tự đăng ký một observer bằng cách gọi phương thức `observe` trên model mà bạn muốn observe. Bạn có thể đăng ký observe trong phương thức `boot` của service provider `App\Providers\EventServiceProvider` của application:
+Hoặc, bạn có thể tự đăng ký một observer bằng cách gọi phương thức `observe` trên model mà bạn muốn observe. Bạn có thể đăng ký observe trong phương thức `boot` của class `AppServiceProvider` của application:
 
     use App\Models\User;
     use App\Observers\UserObserver;
 
     /**
-     * Register any events for your application.
+     * Bootstrap any application services.
      */
     public function boot(): void
     {

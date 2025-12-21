@@ -28,6 +28,7 @@ Mã nguồn của Laravel được quản lý trên GitHub và có các reposito
 
 - [Laravel Application](https://github.com/laravel/laravel)
 - [Laravel Art](https://github.com/laravel/art)
+- [Laravel Breeze](https://github.com/laravel/breeze)
 - [Laravel Documentation](https://github.com/laravel/docs)
 - [Laravel Dusk](https://github.com/laravel/dusk)
 - [Laravel Cashier Stripe](https://github.com/laravel/cashier)
@@ -36,20 +37,20 @@ Mã nguồn của Laravel được quản lý trên GitHub và có các reposito
 - [Laravel Envoy](https://github.com/laravel/envoy)
 - [Laravel Folio](https://github.com/laravel/folio)
 - [Laravel Framework](https://github.com/laravel/framework)
-- [Laravel Homestead](https://github.com/laravel/homestead)
-- [Laravel Homestead Build Scripts](https://github.com/laravel/settler)
+- [Laravel Homestead](https://github.com/laravel/homestead) ([Build Scripts](https://github.com/laravel/settler))
 - [Laravel Horizon](https://github.com/laravel/horizon)
 - [Laravel Jetstream](https://github.com/laravel/jetstream)
 - [Laravel Passport](https://github.com/laravel/passport)
 - [Laravel Pennant](https://github.com/laravel/pennant)
 - [Laravel Pint](https://github.com/laravel/pint)
 - [Laravel Prompts](https://github.com/laravel/prompts)
+- [Laravel Reverb](https://github.com/laravel/reverb)
 - [Laravel Sail](https://github.com/laravel/sail)
 - [Laravel Sanctum](https://github.com/laravel/sanctum)
 - [Laravel Scout](https://github.com/laravel/scout)
 - [Laravel Socialite](https://github.com/laravel/socialite)
 - [Laravel Telescope](https://github.com/laravel/telescope)
-- [Laravel Website](https://github.com/laravel/laravel.com-next)
+- [Laravel Website](https://github.com/laravel/laravel.com)
 
 </div>
 
@@ -80,9 +81,9 @@ Kênh `#internals` của [Laravel Discord server](https://discord.gg/laravel) s�
 <a name="which-branch"></a>
 ## Branch nào?
 
-**Tất cả** các bản sửa lỗi phải được gửi đến phiên bản mới nhất được hỗ trợ sửa lỗi (hiện tại là `10.x`). Các bản sửa lỗi sẽ **không** được gửi đến branch `master` trừ khi chúng sửa các tính năng đã tồn tại trong bản phát hành sắp tới.
+**Tất cả** các bản sửa lỗi phải được gửi đến phiên bản mới nhất được hỗ trợ sửa lỗi (hiện tại là `11.x`). Các bản sửa lỗi sẽ **không** được gửi đến branch `master` trừ khi chúng sửa các tính năng đã tồn tại trong bản phát hành sắp tới.
 
-Các tính năng **phụ** có **tương thích** với bản phát hành hiện tại thì có thể được gửi đến branch ổn định mới nhất (hiện tại là `10.x`).
+Các tính năng **phụ** có **tương thích** với bản phát hành hiện tại thì có thể được gửi đến branch ổn định mới nhất (hiện tại là `11.x`).
 
 Các tính năng **chính** mới hoặc các tính năng có những thay đổi nghiêm trọng phải luôn được gửi đến branch `master`, nơi chứa code của các bản phát hành sắp tới.
 

@@ -67,6 +67,7 @@ Ngoài ra, class `Illuminate\Database\Eloquent\Collection` cũng sẽ cung cấp
 [diff](#method-diff)
 [except](#method-except)
 [find](#method-find)
+[findOrFail](#method-find-or-fail)
 [fresh](#method-fresh)
 [intersect](#method-intersect)
 [load](#method-load)
@@ -124,6 +125,15 @@ Phương thức `find` trả về model có khóa chính khớp với khóa đã
     $users = User::all();
 
     $user = $users->find(1);
+
+<a name="method-find-or-fail"></a>
+#### `findOrFail($key)` {.collection-method}
+
+Phương thức `findOrFail` sẽ trả về model có khóa chính khớp với khóa đã cho hoặc đưa ra exception `Illuminate\Database\Eloquent\ModelNotFoundException` nếu không tìm thấy model nào khớp có trong collection:
+
+    $users = User::all();
+
+    $user = $users->findOrFail(1);
 
 <a name="method-fresh"></a>
 #### `fresh($with = [])` {.collection-method}
@@ -232,7 +242,23 @@ Phương thức `unique` sẽ trả về tất cả các unique model có trong 
 <a name="custom-collections"></a>
 ## Tuỳ biến Collection
 
-Nếu bạn muốn sử dụng một đối tượng `Collection` tùy biến khi tương tác với một model nhất định, bạn có thể định nghĩa một phương thức `newCollection` trên model của bạn:
+Nếu bạn muốn sử dụng một đối tượng `Collection` tùy biến khi tương tác với một model nhất định, bạn có thể thêm thuộc tính `CollectedBy` vào model của bạn:
+
+    <?php
+
+    namespace App\Models;
+
+    use App\Support\UserCollection;
+    use Illuminate\Database\Eloquent\Attributes\CollectedBy;
+    use Illuminate\Database\Eloquent\Model;
+
+    #[CollectedBy(UserCollection::class)]
+    class User extends Model
+    {
+        // ...
+    }
+
+Ngoài ra, bạn có thể định nghĩa một phương thức `newCollection` trên model của bạn:
 
     <?php
 
@@ -256,4 +282,6 @@ Nếu bạn muốn sử dụng một đối tượng `Collection` tùy biến kh
         }
     }
 
-Khi bạn đã định nghĩa một phương thức `newCollection`, bạn sẽ nhận lại một instance của collection tùy biến của bạn bất cứ lúc nào Eloquent trả về một `Illuminate\Database\Eloquent\Collection` instance. Nếu bạn muốn sử dụng collection tùy biến cho mọi model trong application của bạn, bạn nên định nghĩa phương thức `newCollection` trên một class base model mà được tất cả các model của ứng dụng extend.
+Khi bạn đã định nghĩa một phương thức `newCollection` hoặc thêm thuộc tính `CollectedBy` vào model của bạn, bạn sẽ nhận lại một instance của collection tùy biến của bạn bất cứ lúc nào Eloquent trả về một `Illuminate\Database\Eloquent\Collection` instance.
+
+Nếu bạn muốn sử dụng collection tùy biến cho mọi model trong application của bạn, bạn nên định nghĩa phương thức `newCollection` trên một class base model mà được tất cả các model của ứng dụng extend.

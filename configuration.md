@@ -8,6 +8,7 @@
     - [Mã hóa file môi trường](#encrypting-environment-files)
 - [Nhận về biến config](#accessing-configuration-values)
 - [Caching các biến config](#configuration-caching)
+- [Cấu hình export](#configuration-publishing)
 - [Chế độ debug](#debug-mode)
 - [Chế độ bảo trì](#maintenance-mode)
 
@@ -18,10 +19,10 @@ Tất cả các file config cho Laravel framework được lưu trữ trong thư
 
 Các file cấu hình này cho phép bạn cấu hình những thứ như thông tin kết nối cơ sở dữ liệu, thông tin mail của bạn, cũng như nhiều giá trị cấu hình cốt lõi khác, chẳng hạn như múi giờ ứng dụng và key mã hóa.
 
-<a name="application-overview"></a>
-#### Application Overview
+<a name="the-about-command"></a>
+#### The `about` Command
 
-Bạn có đang vội? Bạn có thể xem nhanh tổng quan về cấu hình, driver và môi trường của ứng dụng thông qua lệnh `about` Artisan:
+Laravel có thể hiển thị tổng quan về cấu hình, driver và môi trường của ứng dụng thông qua lệnh `about` Artisan.
 
 ```shell
 php artisan about
@@ -46,9 +47,9 @@ Nó rất hữu dụng cho những giá trị config khác nhau dựa trên môi
 
 Để dễ dàng hơn, Laravel sử dụng thư viện PHP [DotEnv](https://github.com/vlucas/phpdotenv). Trong thư mục project gốc của bạn có chứa một file `.env.example` sẽ định nghĩa nhiều biến môi trường phổ biến. Trong quá trình cài đặt Laravel, file này sẽ tự động được sao chép vào file `.env`.
 
-File `.env` mặc định của Laravel có chứa một số giá trị cấu hình phổ biến có thể khác nhau tùy thuộc vào việc ứng dụng của bạn đang chạy ở local hay trên máy chủ web production. Các giá trị này sau đó sẽ được lấy ra từ các file cấu hình Laravel khác nhau trong thư mục `config` bằng phương thức `env` của Laravel.
+File `.env` mặc định của Laravel có chứa một số giá trị cấu hình phổ biến có thể khác nhau tùy thuộc vào việc ứng dụng của bạn đang chạy ở local hay trên server web production. Các giá trị này sau đó sẽ được đọc bởi các file cấu hình Laravel khác nhau trong thư mục `config` bằng phương thức `env` của Laravel.
 
-Nếu bạn đang phát triển cùng với một team, bạn nên thêm file `.env.example` vào trong project của bạn, sau đó, thêm cái giá trị ví dụ vào trong file `.env.example`, các nhà phát triển tiếp theo sẽ hiểu rõ ràng hơn về các biến môi trường cần được cài đặt để chạy application của bạn.
+Nếu bạn đang phát triển cùng với một team, bạn nên thêm và sửa file `.env.example` vào trong project của bạn, sau đó, thêm cái giá trị ví dụ vào trong file `.env.example`, các nhà phát triển tiếp theo sẽ hiểu rõ ràng hơn về các biến môi trường cần được cài đặt để chạy application của bạn.
 
 > [!NOTE]
 > Tất cả các biến trong file `.env` có thể bị ghi đè bởi biến môi trường bên ngoài như là biến môi trường server hoặc system.
@@ -70,8 +71,10 @@ Trước khi load các biến môi trường của ứng dụng của bạn, Lar
 
 Tất cả các biến trong file `.env` của bạn thường được nhận dạng là dưới dạng kiểu string, vì vậy có một số giá trị đã được tạo để cho phép bạn trả về nhiều kiểu hơn từ hàm `env()`:
 
+<div class="overflow-auto">
+
 | `.env` Value | `env()` Value |
-|--------------|---------------|
+| ------------ | ------------- |
 | true         | (bool) true   |
 | (true)       | (bool) true   |
 | false        | (bool) false  |
@@ -80,6 +83,8 @@ Tất cả các biến trong file `.env` của bạn thường được nhận d
 | (empty)      | (string) ''   |
 | null         | (null) null   |
 | (null)       | (null) null   |
+
+</div>
 
 Nếu bạn cần định nghĩa một biến môi trường có chứa khoảng trắng, bạn có thể làm như vậy bằng cách đặt giá trị đó vào trong dấu ngoặc kép:
 
@@ -202,6 +207,14 @@ Bạn có thể dễ dàng gọi biến mà bạn đã cấu hình bằng facade
 
     config(['app.timezone' => 'America/Chicago']);
 
+Để hỗ trợ phân tích, facade `Config` cũng cung cấp các phương thức lấy ra cấu hình theo kiểu. Nếu giá trị cấu hình được lấy ra không khớp với kiểu bạn mong muốn, một ngoại lệ sẽ được đưa ra:
+
+    Config::string('config-key');
+    Config::integer('config-key');
+    Config::float('config-key');
+    Config::boolean('config-key');
+    Config::array('config-key');
+
 <a name="configuration-caching"></a>
 ## Caching các biến config
 
@@ -221,6 +234,19 @@ php artisan config:clear
 
 > [!WARNING]
 > Nếu bạn chạy lệnh `config:cache` trong quá trình phát triển của bạn, bạn nên đảm bảo là bạn chỉ gọi hàm `env` ở trong các file cấu hình của bạn. Sau khi cấu hình đã được lưu vào bộ nhớ cache, file `.env` sẽ không được load; và do đó, hàm `env` sẽ chỉ trả về các biến môi trường ở cấp độ hệ thống hoặc bên ngoài.
+
+<a name="configuration-publishing"></a>
+## Cấu hình export
+
+Hầu hết các file cấu hình của Laravel đều đã được export trong thư mục `config` của ứng dụng; tuy nhiên, một số file cấu hình như `cors.php` và `view.php` không được export vì hầu hết các ứng dụng sẽ không bao giờ cần thiết phải sửa chúng.
+
+Tuy nhiên, bạn có thể sử dụng lệnh Artisan `config:publish` để export bất kỳ file cấu hình nào không được export:
+
+```shell
+php artisan config:publish
+
+php artisan config:publish --all
+```
 
 <a name="debug-mode"></a>
 ## Chế độ debug
@@ -278,6 +304,18 @@ Khi truy cập vào route ẩn này, bạn sẽ được chuyển hướng đế
 
 > [!NOTE]
 > Secret trong chế độ bảo trì của bạn sẽ thường phải chứa các ký tự chữ và số và các dấu gạch ngang. Bạn nên tránh sử dụng các ký tự có ý nghĩa đặc biệt trong URL, chẳng hạn như `?` hoặc `&`.
+
+<a name="maintenance-mode-on-multiple-servers"></a>
+#### Maintenance Mode on Multiple Servers
+
+Mặc định, Laravel sẽ xác định xem ứng dụng của bạn có đang ở chế độ bảo trì hay không bằng hệ thống file. Điều này có nghĩa là để kích hoạt chế độ bảo trì, lệnh `php artisan down` này phải được chạy trên mỗi server hosting ứng dụng của bạn.
+
+Ngoài ra, Laravel cũng cung cấp một phương thức dựa trên bộ nhớ cache (cache-based) để xử lý chế độ bảo trì. Phương thức này yêu cầu chạy lệnh `php artisan down` trên chỉ chạy trên một server. Để sử dụng phương thức này, hãy sửa các biến chế độ bảo trì trong file `.env` của ứng dụng. Bạn nên chọn một bộ nhớ cache `store` mà tất cả các server của bạn đều có thể truy cập. Điều này đảm bảo trạng thái chế độ bảo trì được duy trì nhất quán trên mọi server:
+
+```ini
+APP_MAINTENANCE_DRIVER=cache
+APP_MAINTENANCE_STORE=database
+```
 
 <a name="pre-rendering-the-maintenance-mode-view"></a>
 #### Pre-Rendering the Maintenance Mode View

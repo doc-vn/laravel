@@ -2,11 +2,16 @@
 
 - [Lời nói đầu](#meet-laravel)
     - [Tại sao lại là Laravel?](#why-laravel)
-- [Creating a Laravel Project](#creating-a-laravel-project)
+- [Tạo một Laravel Application](#creating-a-laravel-project)
+    - [Cài đặt PHP và Laravel Installer](#installing-php)
+    - [Tạo một Application](#creating-an-application)
 - [Cài đặt cấu hình](#initial-configuration)
     - [Cấu hình file môi trường](#environment-based-configuration)
     - [Databases và Migrations](#databases-and-migrations)
     - [Cấu hình thư mục](#directory-configuration)
+- [Cài đặt local bằng Herd](#local-installation-using-herd)
+    - [Herd trên macOS](#herd-on-macos)
+    - [Herd trên Windows](#herd-on-windows)
 - [Cài đặt Docker bằng Sail](#docker-installation-using-sail)
     - [Sail trên macOS](#sail-on-macos)
     - [Sail trên Windows](#sail-on-windows)
@@ -51,33 +56,57 @@ Cần mở rộng quy mô cực lớn? Các nền tảng như [Laravel Vapor](ht
 Laravel kết hợp các package tốt nhất trong hệ sinh thái PHP để cung cấp framework mạnh mẽ và thân thiện nhất với nhà phát triển. Ngoài ra, hàng nghìn nhà phát triển tài năng từ khắp nơi trên thế giới đã [đóng góp cho framework](https://github.com/laravel/framework). Ai biết được, thậm chí có thể bạn sẽ trở thành người đóng góp cho Laravel.
 
 <a name="creating-a-laravel-project"></a>
-## Creating a Laravel Project
+## Tạo một Laravel Application
 
-Trước khi tạo project Laravel đầu tiên, bạn hãy chắc chắn là máy local của bạn đã cài đặt PHP và [Composer](https://getcomposer.org). Nếu bạn đang phát triển trên môi trường macOS, PHP và Composer, thì bạn có thể cài đặt được chúng trong vài phút thông qua [Laravel Herd](https://herd.laravel.com). Ngoài ra, chúng tôi cũng khuyên bạn nên [cài đặt Node và NPM](https://nodejs.org).
+<a name="installing-php"></a>
+### Cài đặt PHP và Laravel Installer
 
-Sau khi bạn đã hoàn thành việc cài đặt PHP và Composer, bạn có thể tạo một project Laravel mới thông qua lệnh `create-project` của Composer:
+Trước khi tạo application Laravel đầu tiên, bạn hãy chắc chắn là máy local của bạn đã cài đặt [PHP](https://php.net), [Composer](https://getcomposer.org), và [Laravel installer](https://github.com/laravel/installer). Ngoài ra, bạn nên cài đặt cả [Node và NPM](https://nodejs.org) hoặc [Bun](https://bun.sh/) để có thể biên dịch các asset frontend của ứng dụng.
 
-```nothing
-composer create-project "laravel/laravel:^10.0" example-app
+Nếu bạn chưa cài đặt PHP và Composer trên máy local của bạn, các lệnh sau sẽ cài đặt PHP, Composer và Laravel installer trên macOS, Windows hoặc Linux:
+
+```shell tab=macOS
+/bin/bash -c "$(curl -fsSL https://php.new/install/mac/8.4)"
 ```
 
-Hoặc, bạn có thể tạo project Laravel mới bằng cách dùng qua [Laravel installer](https://github.com/laravel/installer) đang được cài đặt global thông qua Composer:
+```shell tab=Windows PowerShell
+# Run as administrator...
+Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://php.new/install/windows/8.4'))
+```
+
+```shell tab=Linux
+/bin/bash -c "$(curl -fsSL https://php.new/install/linux/8.4)"
+```
+
+Sau khi bạn đã chạy xong một trong các lệnh trên, bạn nên khởi động lại phiên terminal của bạn. Để cập nhật PHP, Composer và Laravel installer sau khi cài đặt chúng qua `php.new`, bạn có thể chạy lại trong terminal của bạn.
+
+Nếu bạn đã cài đặt PHP và Composer trên máy local của bạn, bạn có thể cài đặt Laravel installer thông qua Composer:
+
+```shell
+composer global require laravel/installer
+```
+
+> [!NOTE]
+> Để có trải nghiệm cài đặt và quản lý PHP thuận tiện, đầy đủ tính năng, hãy xem qua [Laravel Herd](#local-installation-using-herd).
+
+<a name="creating-an-application"></a>
+### Tạo một Application
+
+Sau khi bạn đã cài đặt PHP, Composer và Laravel installer xong, bạn đã sẵn sàng tạo một application Laravel mới. Laravel installer sẽ hỏi bạn chọn framework testing, cơ sở dữ liệu và bộ khởi tạo ưa thích của bạn:
 
 ```nothing
-composer global require laravel/installer
-
 laravel new example-app
 ```
 
-Khi project đã được tạo, hãy khởi động máy chủ local của Laravel bằng lệnh `serve` của Laravel Artisan:
+Khi application đã được tạo, bạn có thể khởi động server local, queue worker, và server Vite development bằng lệnh `dev` của Composer:
 
 ```nothing
 cd example-app
-
-php artisan serve
+npm install && npm run build
+composer run dev
 ```
 
-Sau khi bạn đã khởi động máy chủ bằng Artisan, ứng dụng của bạn sẽ có thể truy cập được trong trình duyệt web của bạn bằng địa chỉ [http://localhost:8000](http://localhost:8000). Tiếp theo, bạn đã sẵn sàng [bắt đầu thực hiện các bước khác trong hệ sinh thái Laravel](#next-steps). Tất nhiên, bạn cũng có thể muốn [cấu hình cơ sở dữ liệu](#databases-and-migrations).
+Sau khi bạn đã khởi động server, ứng dụng của bạn sẽ có thể truy cập được trong trình duyệt web của bạn bằng địa chỉ [http://localhost:8000](http://localhost:8000). Tiếp theo, bạn đã sẵn sàng [bắt đầu thực hiện các bước khác trong hệ sinh thái Laravel](#next-steps). Tất nhiên, bạn cũng có thể muốn [cấu hình cơ sở dữ liệu](#databases-and-migrations).
 
 > [!NOTE]
 > Nếu bạn muốn có một sự khởi đầu thuận tiện khi phát triển ứng dụng Laravel, thì hãy cân nhắc sử dụng một trong những [bộ khởi tạo](/docs/{{version}}/starter-kits) của chúng tôi. Bộ khởi tạo này cung cấp một nền tảng xác thực có sẵn cả backend và frontend cho ứng dụng Laravel mới của bạn.
@@ -87,7 +116,7 @@ Sau khi bạn đã khởi động máy chủ bằng Artisan, ứng dụng của 
 
 Tất cả các file cấu hình cho Laravel framework đều được lưu trong thư mục `config`. Mỗi tùy chọn đều đã được giải thích, vì vậy bạn hãy thoải mái xem qua các file và làm quen với các tùy chọn có sẵn cho bạn.
 
-Laravel hầu như không cần bạn cấu hình thêm bất cứ cấu hình nào khi cài đặt. Bạn có thể thoải mái bắt đầu phát triển! Tuy nhiên, bạn có thể muốn xem qua file `config/app.php` và tài liệu hướng dẫn của nó. Nó chứa một số tùy chọn như `timezone` và `locale` mà bạn có thể muốn thay đổi theo trạng thái ứng dụng của bạn.
+Laravel hầu như không cần bạn cấu hình thêm bất cứ cấu hình nào khi cài đặt. Bạn có thể thoải mái bắt đầu phát triển! Tuy nhiên, bạn có thể muốn xem qua file `config/app.php` và tài liệu hướng dẫn của nó. Nó chứa một số tùy chọn như `url` và `locale` mà bạn có thể muốn thay đổi theo trạng thái ứng dụng của bạn.
 
 <a name="environment-based-configuration"></a>
 ### Environment Based Configuration
@@ -102,40 +131,89 @@ File `.env` của bạn không nên được commit vào source control của �
 <a name="databases-and-migrations"></a>
 ### Databases and Migrations
 
-Bây giờ bạn đã tạo ứng dụng Laravel của bạn, có lẽ bạn muốn lưu một số dữ liệu vào trong cơ sở dữ liệu. Mặc định, file cấu hình `.env` của ứng dụng của bạn sẽ tương tác với cơ sở dữ liệu MySQL và sẽ truy cập cơ sở dữ liệu ở địa chỉ `127.0.0.1`.
+Bây giờ bạn đã tạo ứng dụng Laravel của bạn, có lẽ bạn muốn lưu một số dữ liệu vào trong cơ sở dữ liệu. Mặc định, file cấu hình `.env` của ứng dụng của bạn sẽ tương tác với cơ sở dữ liệu SQLite.
 
-> [!NOTE]
-> Nếu bạn đang phát triển trên macOS và cần cài đặt MySQL, Postgres hoặc Redis ở local, hãy cân nhắc sử dụng [DBngin](https://dbngin.com/).
+Trong quá trình tạo ứng dụng, Laravel đã tạo một file `database/database.sqlite` cho bạn và chạy các migration cần thiết để tạo các bảng cơ sở dữ liệu cho ứng dụng.
 
-Nếu bạn không muốn cài đặt MySQL hoặc Postgres trên máy local của bạn, bạn có thể sử dụng cơ sở dữ liệu [SQLite](https://www.sqlite.org/index.html). SQLite là một loại cơ sở dữ liệu nhỏ, nhanh và độc lập. Để bắt đầu, hãy cập nhật file cấu hình `.env` của bạn để sử dụng driver cơ sở dữ liệu `sqlite` của Laravel. Bạn có thể xóa các tùy chọn cấu hình cơ sở dữ liệu khác:
+Nếu bạn muốn sử dụng một driver cơ sở dữ liệu khác như MySQL hoặc PostgreSQL, bạn có thể cập nhật file cấu hình `.env` của bạn để sử dụng cơ sở dữ liệu thích hợp. Ví dụ, nếu bạn muốn sử dụng MySQL, hãy cập nhật các biến `DB_*` trong file cấu hình `.env` của bạn như sau:
 
 ```ini
-DB_CONNECTION=sqlite # [tl! add]
-DB_CONNECTION=mysql # [tl! remove]
-DB_HOST=127.0.0.1 # [tl! remove]
-DB_PORT=3306 # [tl! remove]
-DB_DATABASE=laravel # [tl! remove]
-DB_USERNAME=root # [tl! remove]
-DB_PASSWORD= # [tl! remove]
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=laravel
+DB_USERNAME=root
+DB_PASSWORD=
 ```
 
-Sau khi cấu hình cơ sở dữ liệu SQLite, bạn có thể chạy [database migrations](/docs/{{version}}/migrations) của ứng dụng, lệnh này sẽ tạo ra các bảng cơ sở dữ liệu cho ứng dụng:
+Nếu bạn chọn sử dụng cơ sở dữ liệu khác ngoài SQLite, bạn sẽ cần tạo một cơ sở dữ liệu và chạy [các migration cơ sở dữ liệu](/docs/{{version}}/migrations) của ứng dụng:
 
 ```shell
 php artisan migrate
 ```
 
-Nếu cơ sở dữ liệu SQLite chưa được tạo cho ứng dụng của bạn, Laravel sẽ hỏi bạn có muốn tạo cơ sở dữ liệu không. Thông thường, file cơ sở dữ liệu SQLite sẽ được tạo tại `database/database.sqlite`.
+> [!NOTE]
+> Nếu bạn đang phát triển trên macOS hoặc Windows và cần cài đặt MySQL, PostgreSQL hoặc Redis ở local, bạn hãy xem xét sử dụng [Herd Pro](https://herd.laravel.com/#plans).
 
 <a name="directory-configuration"></a>
 ### Cấu hình thư mục
 
 Laravel nên được chạy từ thư mục root của "web directory" đã được cấu hình trong server web của bạn. Bạn không nên cố gắng chạy ứng dụng Laravel từ thư mục con của "web directory". Cố gắng làm như vậy có thể làm lộ các file nhạy cảm có trong ứng dụng của bạn.
 
+<a name="local-installation-using-herd"></a>
+## Cài đặt local bằng Herd
+
+[Laravel Herd](https://herd.laravel.com) là một môi trường phát triển Laravel và PHP native cực nhanh dành cho macOS và Windows. Herd bao gồm mọi thứ mà bạn cần để bắt đầu phát triển Laravel, bao gồm cả PHP và Nginx.
+
+Sau khi bạn cài đặt xong Herd, bạn đã sẵn sàng bắt đầu phát triển với Laravel. Herd có chứa các command line cho `php`, `composer`, `laravel`, `expose`, `node`, `npm`, và `nvm`.
+
+> [!NOTE]
+> [Herd Pro](https://herd.laravel.com/#plans) bổ sung cho Herd các tính năng mạnh mẽ khác, chẳng hạn như khả năng tạo và quản lý cơ sở dữ liệu MySQL, Postgres và Redis local, cũng như xem mail local và giám sát log.
+
+<a name="herd-on-macos"></a>
+### Herd trên macOS
+
+Nếu bạn phát triển trên macOS, bạn có thể tải installer của Herd từ [trang web của Herd](https://herd.laravel.com). Và installer này sẽ tự động tải xuống phiên bản PHP mới nhất và cấu hình máy Mac của bạn để luôn chạy [Nginx](https://www.nginx.com/) trong background.
+
+Herd trên macOS sử dụng [dnsmasq](https://en.wikipedia.org/wiki/Dnsmasq) để hỗ trợ các thư mục "parked". Bất kỳ ứng dụng Laravel nào có trong thư mục parked sẽ tự động được Herd chạy. Mặc định, Herd sẽ tạo một thư mục parked tại `~/Herd` và bạn có thể truy cập bất kỳ ứng dụng Laravel nào có trong thư mục đó trên tên miền `.test` bằng cách sử dụng tên thư mục.
+
+Sau khi bạn đã cài đặt Herd, cách nhanh nhất để tạo một ứng dụng Laravel mới là sử dụng Laravel CLI, được tích hợp sẵn bên trong Herd:
+
+```nothing
+cd ~/Herd
+laravel new my-app
+cd my-app
+herd open
+```
+
+Tất nhiên, bạn luôn có thể quản lý các thư mục đã được "parked" và các cài đặt PHP khác thông qua giao diện người dùng của Herd, bạn có thể được mở nó từ menu Herd ở trên tab bar system của bạn.
+
+Bạn có thể tìm hiểu thêm về Herd bằng cách xem [tài liệu của họ](https://herd.laravel.com/docs).
+
+<a name="herd-on-windows"></a>
+### Herd trên Windows
+
+Bạn có thể tải installer của Herd dành cho Windows trên [website của Herd](https://herd.laravel.com/windows). Sau khi quá trình cài đặt hoàn tất, bạn có thể khởi động Herd để hoàn tất quá trình giới thiệu và truy cập vào giao diện người dùng của Herd.
+
+Giao diện người dùng của Herd có thể truy cập vào bằng cách nhấp chuột trái vào biểu tượng Herd trên tab bar của hệ thống của bạn. Nhấp chuột phải sẽ mở thanh menu nhanh với quyền truy cập vào tất cả các công cụ mà bạn cần hàng ngày.
+
+Trong quá trình cài đặt, Herd sẽ tạo một thư mục "parked" trong thư mục home của bạn tại `%USERPROFILE%\Herd`. Bất kỳ ứng dụng Laravel nào có trong thư mục parked sẽ tự động được Herd chạy và bạn có thể truy cập bất kỳ ứng dụng Laravel nào có trong thư mục parked trên miền `.test` thông qua tên thư mục của nó.
+
+Sau khi bạn đã cài đặt Herd, cách nhanh nhất để tạo một ứng dụng Laravel mới là sử dụng Laravel CLI, được tích hợp sẵn bên trong Herd. Để bắt đầu, hãy mở Powershell và chạy các lệnh sau:
+
+```nothing
+cd ~\Herd
+laravel new my-app
+cd my-app
+herd open
+```
+
+Bạn có thể tìm hiểu thêm về Herd bằng cách xem [tài liệu của họ dành cho Windows](https://herd.laravel.com/docs/windows).
+
 <a name="docker-installation-using-sail"></a>
 ## Cài đặt Docker bằng Sail
 
-Chúng tôi muốn việc bắt đầu với Laravel trở nên dễ dàng nhất có thể với bất kỳ hệ điều hành nào mà bạn thích. Vì vậy, có nhiều tùy chọn để phát triển và chạy dự án Laravel trên máy local của bạn. Mặc dù bạn có thể muốn khám phá các tùy chọn này sau, nhưng Laravel cung cấp [Sail](/docs/{{version}}/sail), một giải pháp sẵn có để chạy các project Laravel của bạn bằng [Docker](https://www.docker.com).
+Chúng tôi muốn việc bắt đầu với Laravel trở nên dễ dàng nhất có thể với bất kỳ hệ điều hành nào mà bạn thích. Vì vậy, có nhiều tùy chọn để phát triển và chạy Laravel application trên máy local của bạn. Mặc dù bạn có thể muốn khám phá các tùy chọn này sau, nhưng Laravel cung cấp [Sail](/docs/{{version}}/sail), một giải pháp sẵn có để chạy các Laravel application của bạn bằng [Docker](https://www.docker.com).
 
 Docker là một công cụ để chạy các ứng dụng và service trong các "containers" nhỏ, nhẹ, không can thiệp vào cấu hình hoặc phần mềm được cài đặt trên máy local của bạn. Điều này có nghĩa là bạn không phải lo lắng về việc cấu hình hoặc thiết lập các công cụ phát triển phức tạp như web server và cơ sở dữ liệu trên máy local của bạn. Để bắt đầu, bạn chỉ cần cài đặt [Docker Desktop](https://www.docker.com/products/docker-desktop).
 
@@ -147,7 +225,7 @@ Laravel Sail là giao diện command-line nhẹ để tương tác với cấu h
 <a name="sail-on-macos"></a>
 ### Sail trên macOS
 
-Nếu bạn đang phát triển trên máy Mac và [Docker Desktop](https://www.docker.com/products/docker-desktop) đã được cài đặt, bạn có thể sử dụng một lệnh terminal đơn giản để tạo project Laravel mới. Ví dụ: để tạo một ứng dụng Laravel mới trong thư mục có tên "example-app", bạn có thể chạy lệnh sau trong terminal của bạn:
+Nếu bạn đang phát triển trên máy Mac và [Docker Desktop](https://www.docker.com/products/docker-desktop) đã được cài đặt, bạn có thể sử dụng một lệnh terminal đơn giản để tạo application Laravel mới. Ví dụ: để tạo một ứng dụng Laravel mới trong thư mục có tên "example-app", bạn có thể chạy lệnh sau trong terminal của bạn:
 
 ```shell
 curl -s "https://laravel.build/example-app" | bash
@@ -157,7 +235,7 @@ Tất nhiên, bạn có thể thay đổi "example-app" trong URL này thành b�
 
 Việc cài đặt Sail có thể mất vài phút khi các container ứng dụng của Sail được cấu trúc vào máy local của bạn.
 
-Sau khi project được tạo, bạn có thể di chuyển đến thư mục ứng dụng và khởi động Laravel Sail. Laravel Sail cung cấp một giao diện command-line đơn giản để tương tác với cấu hình Docker mặc định của Laravel:
+Sau khi application được tạo, bạn có thể di chuyển đến thư mục ứng dụng và khởi động Laravel Sail. Laravel Sail cung cấp một giao diện command-line đơn giản để tương tác với cấu hình Docker mặc định của Laravel:
 
 ```shell
 cd example-app
@@ -165,7 +243,13 @@ cd example-app
 ./vendor/bin/sail up
 ```
 
-Khi container Docker của ứng dụng đã được khởi động xong, bạn có thể truy cập vào ứng dụng trong trình duyệt web của bạn tại: http://localhost.
+Khi container Docker của ứng dụng được khởi động xong, bạn nên chạy các [database migrations](/docs/{{version}}/migrations) của ứng dụng của bạn:
+
+```shell
+./vendor/bin/sail artisan migrate
+```
+
+Cuối cùng, bạn có thể truy cập vào ứng dụng trong trình duyệt web của bạn tại: http://localhost.
 
 > [!NOTE]
 > Để tiếp tục tìm hiểu thêm về Laravel Sail, hãy xem lại [tài liệu đầy đủ](/docs/{{version}}/sail).
@@ -178,7 +262,7 @@ Trước khi chúng ta tạo một ứng dụng Laravel mới trên máy Windows
 > [!NOTE]
 > Sau khi cài đặt và kích hoạt WSL2 xong, bạn nên đảm bảo rằng Docker Desktop đã được [cấu hình để sử dụng WSL2](https://docs.docker.com/docker-for-windows/wsl/).
 
-Tiếp theo, bạn đã sẵn sàng tạo project Laravel đầu tiên của bạn. Chạy [Windows Terminal](https://www.microsoft.com/en-us/p/windows-terminal/9n0dx20hk701?rtc=1&activetab=pivot:overviewtab) và bắt đầu phiên terminal mới cho hệ điều hành WSL2 Linux của bạn. Tiếp theo, bạn có thể sử dụng lệnh terminal đơn giản để tạo project Laravel mới. Ví dụ: để tạo một ứng dụng Laravel mới trong thư mục có tên là "example-app", bạn có thể chạy lệnh sau trong terminal của bạn:
+Tiếp theo, bạn đã sẵn sàng tạo application Laravel đầu tiên của bạn. Chạy [Windows Terminal](https://www.microsoft.com/en-us/p/windows-terminal/9n0dx20hk701?rtc=1&activetab=pivot:overviewtab) và bắt đầu phiên terminal mới cho hệ điều hành WSL2 Linux của bạn. Tiếp theo, bạn có thể sử dụng lệnh terminal đơn giản để tạo application Laravel mới. Ví dụ: để tạo một ứng dụng Laravel mới trong thư mục có tên là "example-app", bạn có thể chạy lệnh sau trong terminal của bạn:
 
 ```shell
 curl -s https://laravel.build/example-app | bash
@@ -188,7 +272,7 @@ Tất nhiên, bạn có thể thay đổi "example-app" trong URL này thành b�
 
 Việc cài đặt Sail có thể mất vài phút khi các container ứng dụng của Sail được cấu trúc vào máy local của bạn.
 
-Sau khi project được tạo, bạn có thể di chuyển đến thư mục ứng dụng và khởi động Laravel Sail. Laravel Sail cung cấp một giao diện command-line đơn giản để tương tác với cấu hình Docker mặc định của Laravel:
+Sau khi application được tạo, bạn có thể di chuyển đến thư mục ứng dụng và khởi động Laravel Sail. Laravel Sail cung cấp một giao diện command-line đơn giản để tương tác với cấu hình Docker mặc định của Laravel:
 
 ```shell
 cd example-app
@@ -196,7 +280,13 @@ cd example-app
 ./vendor/bin/sail up
 ```
 
-Khi container Docker của ứng dụng đã được khởi động xong, bạn có thể truy cập vào ứng dụng trong trình duyệt web của bạn tại: http://localhost.
+Khi container Docker của ứng dụng được khởi động xong, bạn nên chạy các [database migrations](/docs/{{version}}/migrations) của ứng dụng của bạn:
+
+```shell
+./vendor/bin/sail artisan migrate
+```
+
+Cuối cùng, bạn có thể truy cập vào ứng dụng trong trình duyệt web của bạn tại: http://localhost.
 
 > [!NOTE]
 > Để tiếp tục tìm hiểu thêm về Laravel Sail, hãy xem lại [tài liệu đầy đủ](/docs/{{version}}/sail).
@@ -205,12 +295,12 @@ Khi container Docker của ứng dụng đã được khởi động xong, bạn
 
 Tất nhiên, bạn cũng sẽ cần có khả năng thay đổi các file ứng dụng Laravel đã được tạo trong quá trình cài đặt WSL2. Để thực hiện điều này, chúng tôi khuyên bạn nên sử dụng IDE [Visual Studio Code](https://code.visualstudio.com) của Microsoft và extension của nhà phát triển cho [Remote Development](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.vscode-remote-extensionpack).
 
-Sau khi cài đặt các công cụ này, bạn có thể mở bất kỳ dự án Laravel nào bằng cách chạy lệnh `code .` từ thư mục gốc của ứng dụng bằng Windows Terminal.
+Sau khi cài đặt các công cụ này, bạn có thể mở bất kỳ application Laravel nào bằng cách chạy lệnh `code .` từ thư mục gốc của ứng dụng bằng Windows Terminal.
 
 <a name="sail-on-linux"></a>
 ### Sail trên Linux
 
-Nếu bạn đang phát triển trên Linux và [Docker Compose](https://docs.docker.com/compose/install/) đã được cài đặt, bạn có thể sử dụng lệnh terminal đơn giản để tạo dự án Laravel mới.
+Nếu bạn đang phát triển trên Linux và [Docker Compose](https://docs.docker.com/compose/install/) đã được cài đặt, bạn có thể sử dụng lệnh terminal đơn giản để tạo application Laravel mới.
 
 Đầu tiên, nếu bạn đang sử dụng Docker Desktop cho Linux, thì bạn nên thực hiện lệnh sau. Nếu bạn không sử dụng Docker Desktop cho Linux, bạn có thể bỏ qua bước này:
 
@@ -228,7 +318,7 @@ Tất nhiên, bạn có thể thay đổi "example-app" trong URL này thành b�
 
 Việc cài đặt Sail có thể mất vài phút khi các container ứng dụng của Sail được cấu trúc vào máy local của bạn.
 
-Sau khi project được tạo, bạn có thể di chuyển đến thư mục ứng dụng và khởi động Laravel Sail. Laravel Sail cung cấp một giao diện command-line đơn giản để tương tác với cấu hình Docker mặc định của Laravel:
+Sau khi application được tạo, bạn có thể di chuyển đến thư mục ứng dụng và khởi động Laravel Sail. Laravel Sail cung cấp một giao diện command-line đơn giản để tương tác với cấu hình Docker mặc định của Laravel:
 
 ```shell
 cd example-app
@@ -236,7 +326,13 @@ cd example-app
 ./vendor/bin/sail up
 ```
 
-Khi container Docker của ứng dụng đã được khởi động xong, bạn có thể truy cập vào ứng dụng trong trình duyệt web của bạn tại: http://localhost.
+Khi container Docker của ứng dụng được khởi động xong, bạn nên chạy các [database migrations](/docs/{{version}}/migrations) của ứng dụng của bạn:
+
+```shell
+./vendor/bin/sail artisan migrate
+```
+
+Cuối cùng, bạn có thể truy cập vào ứng dụng trong trình duyệt web của bạn tại: http://localhost.
 
 > [!NOTE]
 > Để tiếp tục tìm hiểu thêm về Laravel Sail, hãy xem lại [tài liệu đầy đủ](/docs/{{version}}/sail).
@@ -244,7 +340,7 @@ Khi container Docker của ứng dụng đã được khởi động xong, bạn
 <a name="choosing-your-sail-services"></a>
 ### Chọn service Sail bạn dùng
 
-Khi tạo một ứng dụng Laravel mới thông qua Sail, bạn có thể sử dụng biến `with` để chọn service nào sẽ được cấu hình trong file `docker-compose.yml` của ứng dụng mới của bạn. Các service có sẵn là `mysql`, `pgsql`, `mariadb`, `redis`, `memcached`, `meilisearch`, `typesense`, `minio`, `selenium` và `mailpit`:
+Khi tạo một ứng dụng Laravel mới thông qua Sail, bạn có thể sử dụng biến `with` để chọn service nào sẽ được cấu hình trong file `docker-compose.yml` của ứng dụng mới của bạn. Các service có sẵn là `mysql`, `pgsql`, `mariadb`, `redis`, `valkey`, `memcached`, `meilisearch`, `typesense`, `minio`, `selenium` và `mailpit`:
 
 ```shell
 curl -s "https://laravel.build/example-app?with=mysql,redis" | bash
@@ -268,7 +364,7 @@ Ngoài ra, cộng đồng cũng duy trì [Laravel Idea](https://laravel-idea.com
 <a name="next-steps"></a>
 ## Bước tiếp theo
 
-Bây giờ bạn đã tạo xong project Laravel của bạn, có thể bạn đang tự hỏi nên học gì tiếp theo. Trước tiên, chúng tôi thực sự khuyên bạn nên làm quen với cách Laravel hoạt động bằng cách đọc các tài liệu sau:
+Bây giờ bạn đã tạo xong application Laravel của bạn, có thể bạn đang tự hỏi nên học gì tiếp theo. Trước tiên, chúng tôi thực sự khuyên bạn nên làm quen với cách Laravel hoạt động bằng cách đọc các tài liệu sau:
 
 <div class="content-list" markdown="1">
 

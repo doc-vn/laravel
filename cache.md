@@ -10,7 +10,6 @@
     - [Xoá item trong cache](#removing-items-from-the-cache)
     - [Cache helper](#the-cache-helper)
 - [Atomic Locks](#atomic-locks)
-    - [Yêu cầu driver](#lock-driver-prerequisites)
     - [Quản lý Locks](#managing-locks)
     - [Quản lý Locks trong Processes](#managing-locks-across-processes)
 - [Thêm tuỳ biến cache driver](#adding-custom-cache-drivers)
@@ -28,9 +27,9 @@ Rất may, Laravel đã cung cấp một API hợp nhất, rõ ràng cho nhiều
 <a name="configuration"></a>
 ## Cấu hình
 
-Cấu hình cache của application được lưu trong file `config/cache.php`. Trong file này, các bạn có thể chỉ định cache driver nào bạn muốn được sử dụng mặc định trong application của bạn. Mặc định, Laravel hỗ trợ các backend caching phổ biến như [Memcached](https://memcached.org), [Redis](https://redis.io), [DynamoDB](https://aws.amazon.com/dynamodb), và mặc định là cơ sở dữ liệu quan hệ. Ngoài ra, có sẵn driver cache dựa trên file, trong khi driver cache `array` và "null" cung cấp backend cache thuận tiện cho các automated test của bạn.
+Cấu hình cache của application được lưu trong file `config/cache.php`. Trong file này, các bạn có thể chỉ định cache store nào bạn muốn được sử dụng mặc định trong application của bạn. Mặc định, Laravel hỗ trợ các backend caching phổ biến như [Memcached](https://memcached.org), [Redis](https://redis.io), [DynamoDB](https://aws.amazon.com/dynamodb), và mặc định là cơ sở dữ liệu quan hệ. Ngoài ra, có sẵn driver cache dựa trên file, trong khi driver cache `array` và "null" cung cấp backend cache thuận tiện cho các automated test của bạn.
 
-File cấu hình cache cũng chứa nhiều tùy chọn khác, vì vậy hãy chắc chắn là bạn đã đọc qua các tùy chọn đó. Mặc định, Laravel được cấu hình để sử dụng cache driver `file`, lưu trữ các đối tượng ở dưới dạng byte, và được cache trong filesystem của server. Đối với các application lớn, bạn nên sử dụng driver mạnh hơn như Memcached hoặc Redis. Thậm chí bạn có thể cài đặt nhiều cấu hình cache cho cùng một driver.
+File cấu hình cache cũng chứa nhiều lựa chọn khác mà bạn có thể xem xét. Mặc định, Laravel được cấu hình để sử dụng cache driver `database`, lưu trữ các đối tượng ở dưới dạng byte, và được cache trong cơ sở dữ liệu ứng dụng của bạn.
 
 <a name="driver-prerequisites"></a>
 ### Yêu cầu driver
@@ -38,16 +37,13 @@ File cấu hình cache cũng chứa nhiều tùy chọn khác, vì vậy hãy ch
 <a name="prerequisites-database"></a>
 #### Database
 
-Khi sử dụng cache driver `database`, bạn sẽ cần cài đặt một bảng để chứa các item cache. Bạn có thể làm như ví dụ ở bên dưới, khai báo một `Schema` cho một bảng:
+Khi sử dụng cache driver `database`, bạn sẽ cần một bảng cơ sở dữ liệu để chứa dữ liệu bộ nhớ cache. Thông thường, bảng này đã được chứa sẵn trong file [database migration](/docs/{{version}}/migrations) `0001_01_01_000001_create_cache_table.php` mặc định của Laravel; tuy nhiên, nếu ứng dụng của bạn chưa chứa file migration này, bạn có thể sử dụng lệnh Artisan `make:cache-table` để tạo nó:
 
-    Schema::create('cache', function (Blueprint $table) {
-        $table->string('key')->unique();
-        $table->text('value');
-        $table->integer('expiration');
-    });
+```shell
+php artisan make:cache-table
 
-> [!NOTE]
-> Bạn cũng có thể sử dụng lệnh Artisan `php artisan cache:table` để tạo migration với một schema phù hợp.
+php artisan migrate
+```
 
 <a name="memcached"></a>
 #### Memcached
@@ -55,6 +51,8 @@ Khi sử dụng cache driver `database`, bạn sẽ cần cài đặt một bả
 Sử dụng driver Memcached, sẽ yêu cầu [Memcached PECL package](https://pecl.php.net/package/memcached) phải được cài đặt. Bạn có thể list tất cả các máy chủ Memcached của bạn trong file cấu hình `config/cache.php`. This file already contains a `memcached.servers` entry to get you started:
 
     'memcached' => [
+        // ...
+
         'servers' => [
             [
                 'host' => env('MEMCACHED_HOST', '127.0.0.1'),
@@ -67,26 +65,58 @@ Sử dụng driver Memcached, sẽ yêu cầu [Memcached PECL package](https://p
 Nếu cần, bạn có thể set tùy chọn `host` thành một đường dẫn socket UNIX. Nếu bạn làm điều này, tùy chọn `port` nên được set thành `0`:
 
     'memcached' => [
-        [
-            'host' => '/var/run/memcached/memcached.sock',
-            'port' => 0,
-            'weight' => 100
+        // ...
+
+        'servers' => [
+            [
+                'host' => '/var/run/memcached/memcached.sock',
+                'port' => 0,
+                'weight' => 100
+            ],
         ],
     ],
 
 <a name="redis"></a>
 #### Redis
 
-Trước khi sử dụng cache Redis với Laravel, bạn sẽ cần cài đặt extension PhpRedis của PHP thông qua PECL hoặc cài đặt package `predis/predis` (~1.0) thông qua Composer. [Laravel Sail](/docs/{{version}}/sail) đã chứa extension này. Ngoài ra, mặc định, các nền tảng triển khai Laravel chính thức như [Laravel Forge](https://forge.laravel.com) và [Laravel Vapor](https://vapor.laravel.com) cũng đã được cài đặt extension PhpRedis.
+Trước khi sử dụng cache Redis với Laravel, bạn sẽ cần cài đặt extension PhpRedis của PHP thông qua PECL hoặc cài đặt package `predis/predis` (~2.0) thông qua Composer. [Laravel Sail](/docs/{{version}}/sail) đã chứa extension này. Ngoài ra, mặc định, các nền tảng triển khai Laravel chính thức như [Laravel Forge](https://forge.laravel.com) và [Laravel Vapor](https://vapor.laravel.com) cũng đã được cài đặt extension PhpRedis.
 
 Để biết thêm thông tin về cách cấu hình Redis, hãy tham khảo [tài liệu của Laravel](/docs/{{version}}/redis#configuration).
 
 <a name="dynamodb"></a>
 #### DynamoDB
 
-Trước khi sử dụng driver cache [DynamoDB](https://aws.amazon.com/dynamodb), bạn phải tạo một bảng DynamoDB để lưu trữ tất cả dữ liệu được lưu trong cache. Thông thường, bảng này nên được set tên là `cache`. Tuy nhiên, bạn nên set tên cho bảng dựa trên giá trị của cấu hình `stores.dynamodb.table` trong file cấu hình `cache` của ứng dụng của bạn.
+Trước khi sử dụng driver cache [DynamoDB](https://aws.amazon.com/dynamodb), bạn phải tạo một bảng DynamoDB để lưu trữ tất cả dữ liệu được lưu trong cache. Thông thường, bảng này nên được set tên là `cache`. Tuy nhiên, bạn nên set tên cho bảng dựa trên giá trị của cấu hình `stores.dynamodb.table` trong file cấu hình `cache`. Tên bảng cũng có thể được set thông qua biến môi trường `DYNAMODB_CACHE_TABLE`.
 
 Bảng này cũng phải có một chuỗi khóa phân vùng có tên tương ứng với giá trị của mục cấu hình `stores.dynamodb.attributes.key` trong file cấu hình `cache` của ứng dụng của bạn. Mặc định, khóa phân vùng phải được set tên là `key`.
+
+Thông thường, DynamoDB sẽ không tự động xóa các item đã hết hạn ra khỏi bảng. Do đó, bạn nên [bật thời gian tồn tại của một item (TTL)](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/TTL.html) trong bảng. Khi cài đặt TTL của bảng, bạn nên set tên thuộc tính TTL là `expires_at`.
+
+Tiếp theo, hãy cài đặt AWS SDK để ứng dụng Laravel của bạn có thể giao tiếp với DynamoDB:
+
+```shell
+composer require aws/aws-sdk-php
+```
+
+Ngoài ra, bạn cũng nên đảm bảo cung cấp các giá trị cho các tùy chọn cấu hình cache store DynamoDB. Thông thường, các tùy chọn này, chẳng hạn như `AWS_ACCESS_KEY_ID` và `AWS_SECRET_ACCESS_KEY`, phải được định nghĩa trong file cấu hình `.env` của ứng dụng:
+
+```php
+'dynamodb' => [
+    'driver' => 'dynamodb',
+    'key' => env('AWS_ACCESS_KEY_ID'),
+    'secret' => env('AWS_SECRET_ACCESS_KEY'),
+    'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
+    'table' => env('DYNAMODB_CACHE_TABLE', 'cache'),
+    'endpoint' => env('DYNAMODB_ENDPOINT'),
+],
+```
+
+<a name="mongodb"></a>
+#### MongoDB
+
+Nếu bạn đang sử dụng MongoDB, driver cache `mongodb` sẽ được cung cấp bởi package official `mongodb/laravel-mongodb` và có thể được cấu hình bằng một kết nối cơ sở dữ liệu `mongodb`. MongoDB hỗ trợ TTL index, có thể được sử dụng để tự động xóa đi các mục cache đã hết hạn.
+
+Để biết thêm thông tin về cách cấu hình MongoDB, vui lòng tham khảo [tài liệu về Cache và Lock](https://www.mongodb.com/docs/drivers/php/laravel-mongodb/current/cache/) của MongoDB.
 
 <a name="cache-usage"></a>
 ## Sử dụng cache
@@ -181,12 +211,27 @@ Bạn có thể sử dụng phương thức `rememberForever` để lấy một 
         return DB::table('users')->get();
     });
 
+<a name="swr"></a>
+#### Stale While Revalidate
+
+Khi sử dụng phương thức `Cache::remember`, một số người dùng có thể gặp phải tình trạng phản hồi chậm nếu giá trị được lưu trong bộ nhớ cache đã hết hạn. Đối với một số loại dữ liệu nhất định, việc cho phép dữ liệu cũ được lấy ra trong khi một giá trị mới đang được lưu vào trong bộ nhớ cache có thể hữu ích, để giúp người dùng tránh được tình trạng phản hồi chậm trong khi giá trị mới đang được lưu vào trong bộ nhớ cache. Điều này thường được gọi là pattern "stale-while-revalidate", và phương thức `Cache::flexible` cung cấp một implementation cho pattern này.
+
+Phương thức flexible sẽ chấp nhận một mảng chỉ định thời gian giá trị được lưu trong bộ nhớ cache sẽ được coi là "mới" và khi nào nó trở thành giá trị "cũ". Giá trị đầu tiên trong mảng định nghĩa số giây mà bộ nhớ cache được coi là mới, trong khi giá trị thứ hai sẽ định nghĩa thời gian nó có thể được lấy như dữ liệu cũ trước khi cần lấy mới.
+
+Nếu một request được thực hiện trong khoảng thời gian đầu (trước giá trị đầu tiên), bộ nhớ cache sẽ được trả về ngay lập tức mà không cần tính toán lại. Nếu một request được thực hiện trong khoảng thời gian cũ (giữa hai giá trị), giá trị cũ sẽ được cung cấp cho người dùng và một [hàm chạy sau](/docs/{{version}}/helpers#deferred-functions) sẽ được đăng ký để làm mới giá trị đã được lưu trong bộ nhớ cache sau khi response được gửi đến người dùng. Nhưng nếu một request được thực hiện sau giá trị thứ hai, thì bộ nhớ cache sẽ được coi như là đã hết hạn và giá trị sẽ được tính toán lại, và điều này đó có thể dẫn đến response chậm cho người dùng:
+
+    $value = Cache::flexible('users', [5, 10], function () {
+        return DB::table('users')->get();
+    });
+
 <a name="retrieve-delete"></a>
 #### Retrieve và Delete
 
 Nếu bạn cần lấy một item từ cache và sau đó xóa item đó đi, bạn có thể sử dụng phương thức `pull`. Giống như phương thức `get`, thì `null` sẽ được trả về nếu item đó không tồn tại trong cache:
 
     $value = Cache::pull('key');
+
+    $value = Cache::pull('key', 'default');
 
 <a name="storing-items-in-the-cache"></a>
 ### Lưu item trong cache
@@ -268,23 +313,6 @@ Khi hàm `cache` được gọi mà không có bất kỳ tham số nào đượ
 > [!WARNING]
 > Để sử dụng tính năng này, ứng dụng của bạn phải sử dụng cache driver `memcached`, `redis`, `dynamodb`, `database`, `file`, hoặc `array` làm cache driver mặc định của ứng dụng của bạn. Ngoài ra, tất cả các server phải được giao tiếp với cùng một server cache trung tâm.
 
-<a name="lock-driver-prerequisites"></a>
-### Yêu cầu driver
-
-<a name="atomic-locks-prerequisites-database"></a>
-#### Database
-
-Khi sử dụng cache driver `database`, bạn sẽ cần cài đặt một bảng để chứa các cache lock của application. Bạn có thể tham khảo một khai báo `Schema` mẫu như bảng dưới đây:
-
-    Schema::create('cache_locks', function (Blueprint $table) {
-        $table->string('key')->primary();
-        $table->string('owner');
-        $table->integer('expiration');
-    });
-
-> [!NOTE]
-> Nếu bạn dùng lệnh Artisan `cache:table` để tạo table cache của driver database, thì file migration được tạo bởi lệnh Artisan đã chứa sẵn một định nghĩa cho table `cache_locks`.
-
 <a name="managing-locks"></a>
 ### Quản lý Locks
 
@@ -319,7 +347,7 @@ Nếu khóa chưa sẵn sàng tại thời điểm bạn yêu cầu, bạn có t
     } catch (LockTimeoutException $e) {
         // Unable to acquire lock...
     } finally {
-        $lock?->release();
+        $lock->release();
     }
 
 Ví dụ trên có thể được đơn giản hóa bằng cách truyền một closure cho phương thức `block`. Khi một closure được truyền cho phương thức này, Laravel sẽ cố lấy khóa trong số giây đã chỉ định và sẽ tự động giải phóng khóa sau khi quá trình closure đã được thực thi:
@@ -427,41 +455,30 @@ Chúng ta chỉ cần implement từng phương thức này bằng một kết n
 
 Tham số đầu tiên được truyền vào phương thức `extend` là tên của driver. Điều này sẽ tương ứng với option `driver` trong file cấu hình `config/cache.php`. Tham số thứ hai là một closure sẽ trả về một instance `Illuminate\Cache\Repository`. Closure cũng sẽ được truyền vào một instance [service container](/docs/{{version}}/container) `$app`.
 
-Khi extension của bạn đã được đăng ký, hãy cập nhật option `driver` trong file cấu hình `config/cache.php` của bạn thành tên của extension của bạn.
+Khi extension của bạn đã được đăng ký, hãy cập nhật biến môi trường `CACHE_STORE` hoặc tùy chọn `default` trong file cấu hình `config/cache.php` của ứng dụng của bạn thành tên của extension của bạn.
 
 <a name="events"></a>
 ## Event
 
-Để thực thi một đoạn code trên các thao tác cache, bạn có thể listen cho các [event](/docs/{{version}}/events) được kích hoạt bởi cache. Thông thường, bạn nên lưu những event listener này trong class `App\Providers\EventServiceProvider` của application:
+Để chạy một đoạn code khi bạn thao tác trên bộ nhớ cache, bạn có thể listen nhiều [event](/docs/{{version}}/events) khác nhau được gửi bởi bộ nhớ cache:
 
-    use App\Listeners\LogCacheHit;
-    use App\Listeners\LogCacheMissed;
-    use App\Listeners\LogKeyForgotten;
-    use App\Listeners\LogKeyWritten;
-    use Illuminate\Cache\Events\CacheHit;
-    use Illuminate\Cache\Events\CacheMissed;
-    use Illuminate\Cache\Events\KeyForgotten;
-    use Illuminate\Cache\Events\KeyWritten;
+<div class="overflow-auto">
 
-    /**
-     * The event listener mappings for the application.
-     *
-     * @var array
-     */
-    protected $listen = [
-        CacheHit::class => [
-            LogCacheHit::class,
-        ],
+| Event Name |
+| --- |
+| `Illuminate\Cache\Events\CacheHit` |
+| `Illuminate\Cache\Events\CacheMissed` |
+| `Illuminate\Cache\Events\KeyForgotten` |
+| `Illuminate\Cache\Events\KeyWritten` |
 
-        CacheMissed::class => [
-            LogCacheMissed::class,
-        ],
+</div>
 
-        KeyForgotten::class => [
-            LogKeyForgotten::class,
-        ],
+Để tăng hiệu suất, bạn có thể disable các event bộ nhớ cache bằng cách set tùy chọn cấu hình `events` thành `false` cho một cache store nhất định trong file cấu hình `config/cache.php` của ứng dụng:
 
-        KeyWritten::class => [
-            LogKeyWritten::class,
-        ],
-    ];
+```php
+'database' => [
+    'driver' => 'database',
+    // ...
+    'events' => false,
+],
+```

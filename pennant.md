@@ -10,6 +10,7 @@
     - [Trait `HasFeatures`](#the-has-features-trait)
     - [Blade Directive](#blade-directive)
     - [Middleware](#middleware)
+    - [Chặn kiểm tra chức năng](#intercepting-feature-checks)
     - [In-Memory Cache](#in-memory-cache)
 - [Scope](#scope)
     - [Chỉ định Scope](#specifying-the-scope)
@@ -22,11 +23,12 @@
 - [Eager Loading](#eager-loading)
 - [Updating Values](#updating-values)
     - [Bulk Updates](#bulk-updates)
-    - [Purging Features](#purging-features)
+    - [Xóa Features](#purging-features)
 - [Testing](#testing)
 - [Thêm Custom Pennant Drivers](#adding-custom-pennant-drivers)
     - [Implementing the Driver](#implementing-the-driver)
     - [Đăng ký Driver](#registering-the-driver)
+    - [Định nghĩa Features bên ngoài](#defining-features-externally)
 - [Events](#events)
 
 <a name="introduction"></a>
@@ -123,6 +125,7 @@ Khi viết một class chức năng, bạn chỉ cần định nghĩa một phư
 
 namespace App\Features;
 
+use App\Models\User;
 use Illuminate\Support\Lottery;
 
 class NewApi
@@ -141,7 +144,16 @@ class NewApi
 }
 ```
 
-> [!NOTE] Các class chức năng được resolve thông qua [container](/docs/{{version}}/container), do đó bạn có thể tích hợp thêm các phụ thuộc vào hàm constructor của class chức năng khi cần.
+Nếu bạn muốn tự resolve một instance của một chức năng dựa trên một class, bạn có thể gọi phương thức `instance` trên facade `Feature`:
+
+```php
+use Illuminate\Support\Facades\Feature;
+
+$instance = Feature::instance(NewApi::class);
+```
+
+> [!NOTE]
+> Các class chức năng được resolve thông qua [container](/docs/{{version}}/container), do đó bạn có thể tích hợp thêm các phụ thuộc vào hàm constructor của class chức năng khi cần.
 
 #### Customizing the Stored Feature Name
 
@@ -187,8 +199,8 @@ class PodcastController
     public function index(Request $request): Response
     {
         return Feature::active('new-api')
-                ? $this->resolveNewApiResponse($request)
-                : $this->resolveLegacyApiResponse($request);
+            ? $this->resolveNewApiResponse($request)
+            : $this->resolveLegacyApiResponse($request);
     }
 
     // ...
@@ -199,8 +211,8 @@ Mặc dù các chức năng sẽ được kiểm tra mặc định cho người 
 
 ```php
 return Feature::for($user)->active('new-api')
-        ? $this->resolveNewApiResponse($request)
-        : $this->resolveLegacyApiResponse($request);
+    ? $this->resolveNewApiResponse($request)
+    : $this->resolveLegacyApiResponse($request);
 ```
 
 Pennant cũng cung cấp thêm một số phương thức tiện lợi có thể hiệu quả khi xác định một chức năng nào đó có đang hoạt động hay không:
@@ -248,8 +260,8 @@ class PodcastController
     public function index(Request $request): Response
     {
         return Feature::active(NewApi::class)
-                ? $this->resolveNewApiResponse($request)
-                : $this->resolveLegacyApiResponse($request);
+            ? $this->resolveNewApiResponse($request)
+            : $this->resolveLegacyApiResponse($request);
     }
 
     // ...
@@ -353,7 +365,7 @@ $user->features()->unless('new-api',
 <a name="blade-directive"></a>
 ### Blade Directive
 
-Để việc kiểm tra các chức năng trong Blade trở nên liền mạch, Pennant cung cấp lệnh `@feature`:
+Để việc kiểm tra các chức năng trong Blade trở nên liền mạch, Pennant cung cấp lệnh `@feature` và lệnh `@featureany`:
 
 ```blade
 @feature('site-redesign')
@@ -361,6 +373,10 @@ $user->features()->unless('new-api',
 @else
     <!-- 'site-redesign' is inactive -->
 @endfeature
+
+@featureany(['site-redesign', 'beta'])
+    <!-- 'site-redesign' or `beta` is active -->
+@endfeatureany
 ```
 
 <a name="middleware"></a>
@@ -402,6 +418,78 @@ public function boot(): void
 }
 ```
 
+<a name="intercepting-feature-checks"></a>
+### Chặn kiểm tra chức năng
+
+Thỉnh thoảng, có thể hữu ích khi thực hiện một số kiểm tra trong bộ nhớ RAM trước khi lấy ra giá trị đã được lưu của một tính năng nhất định. Hãy tưởng tượng bạn đang phát triển một API mới đằng sau là một flag tính năng và bạn muốn có khả năng tắt API mới mà không làm mất bất kỳ giá trị tính năng đã được resolve nào trong bộ nhớ. Nếu bạn phát hiện ra một lỗi trong API mới, bạn có thể dễ dàng tắt nó cho mọi người trừ các thành viên trong team của mình, sửa lỗi và sau đó bật lại API mới cho những người dùng trước đây đã có quyền truy cập vào tính năng.
+
+Bạn có thể đạt được điều này bằng phương thức `before` của [feature dựa trên class](#class-based-features). Khi có tồn tại phương thức `before`, phương thức `before` luôn được chạy trong bộ nhớ RAM trước khi lấy giá trị từ cơ sở dữ liệu. Nếu một giá trị không phải `null` được trả về từ phương thức, nó sẽ được sử dụng thay cho giá trị được lưu của feature đó trong suốt thời gian request:
+
+```php
+<?php
+
+namespace App\Features;
+
+use App\Models\User;
+use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Lottery;
+
+class NewApi
+{
+    /**
+     * Run an always-in-memory check before the stored value is retrieved.
+     */
+    public function before(User $user): mixed
+    {
+        if (Config::get('features.new-api.disabled')) {
+            return $user->isInternalTeamMember();
+        }
+    }
+
+    /**
+     * Resolve the feature's initial value.
+     */
+    public function resolve(User $user): mixed
+    {
+        return match (true) {
+            $user->isInternalTeamMember() => true,
+            $user->isHighTrafficCustomer() => false,
+            default => Lottery::odds(1 / 100),
+        };
+    }
+}
+```
+
+Bạn cũng có thể sử dụng chức năng này để lên lịch triển khai global một chức năng nằm sau một flag feature:
+
+```php
+<?php
+
+namespace App\Features;
+
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Config;
+
+class NewApi
+{
+    /**
+     * Run an always-in-memory check before the stored value is retrieved.
+     */
+    public function before(User $user): mixed
+    {
+        if (Config::get('features.new-api.disabled')) {
+            return $user->isInternalTeamMember();
+        }
+
+        if (Carbon::parse(Config::get('features.new-api.rollout-date'))->isPast()) {
+            return true;
+        }
+    }
+
+    // ...
+}
+```
+
 <a name="in-memory-cache"></a>
 ### In-Memory Cache
 
@@ -421,8 +509,8 @@ Như đã thảo luận, các chức năng thường được kiểm tra đối 
 
 ```php
 return Feature::for($user)->active('new-api')
-        ? $this->resolveNewApiResponse($request)
-        : $this->resolveLegacyApiResponse($request);
+    ? $this->resolveNewApiResponse($request)
+    : $this->resolveLegacyApiResponse($request);
 ```
 
 Tất nhiên, phạm vi của chức năng không bị giới hạn ở mỗi "người dùng". Hãy tưởng tượng bạn đang xây dựng một trải nghiệm thanh toán mới mà bạn đang dự định triển khai cho toàn bộ các team thay vì người dùng cá nhân. Có thể bạn muốn các team dùng lâu hơn sẽ được giới thiệu chậm hơn so các team mới. Closure chức năng của bạn có thể trông giống như sau:
@@ -450,7 +538,7 @@ Bạn sẽ nhận thấy rằng closure mà chúng ta đã định nghĩa sẽ k
 
 ```php
 if (Feature::for($user->team)->active('billing-v2')) {
-    return redirect()->to('/billing/v2');
+    return redirect('/billing/v2');
 }
 
 // ...
@@ -605,7 +693,8 @@ Lệnh Blade có sẵn của Pennant cũng giúp bạn dễ dàng hiển thị n
 @endfeature
 ```
 
-> [!NOTE] Khi sử dụng các giá trị khác, điều quan trọng bạn phải biết là một chức năng sẽ được coi là "hoạt động" khi nó có giá trị nào khác, khác với giá trị `false`.
+> [!NOTE]
+> Khi sử dụng các giá trị khác, điều quan trọng bạn phải biết là một chức năng sẽ được coi là "hoạt động" khi nó có giá trị nào khác, khác với giá trị `false`.
 
 Khi gọi phương thức [điều kiện `when`](#conditional-execution), giá trị khác của chức năng sẽ được cung cấp cho hàm closure đầu tiên:
 
@@ -723,6 +812,12 @@ Feature::for($users)->loadMissing([
 ]);
 ```
 
+Bạn có thể load tất cả các feature đã định nghĩa bằng phương thức `loadAll`:
+
+```php
+Feature::for($users)->loadAll();
+```
+
 <a name="updating-values"></a>
 ## Updating Values
 
@@ -773,7 +868,8 @@ Ngoài ra, bạn cũng có thể tắt chức năng này cho tất cả người
 Feature::deactivateForEveryone('new-api');
 ```
 
-> [!NOTE] Thao tác này sẽ chỉ cập nhật các giá trị chức năng đã được resolve và được lưu trữ bởi driver lưu trữ của Pennant. Bạn cũng sẽ cần cập nhật định nghĩa chức năng trong ứng dụng của bạn.
+> [!NOTE]
+> Thao tác này sẽ chỉ cập nhật các giá trị chức năng đã được resolve và được lưu trữ bởi driver lưu trữ của Pennant. Bạn cũng sẽ cần cập nhật định nghĩa chức năng trong ứng dụng của bạn.
 
 <a name="purging-features"></a>
 ### Purging Features
@@ -834,7 +930,17 @@ Feature::define('purchase-button', fn () => Arr::random([
 
 Để sửa giá trị trả về của chức năng trong các bài test, bạn có thể định nghĩa lại chức năng ở đầu bài test. Bài test sau sẽ luôn được pass, ngay cả khi hàm `Arr::random()` vẫn còn trong service provider:
 
-```php
+```php tab=Pest
+use Laravel\Pennant\Feature;
+
+test('it can control feature values', function () {
+    Feature::define('purchase-button', 'seafoam-green');
+
+    expect(Feature::value('purchase-button'))->toBe('seafoam-green');
+});
+```
+
+```php tab=PHPUnit
 use Laravel\Pennant\Feature;
 
 public function test_it_can_control_feature_values()
@@ -847,7 +953,17 @@ public function test_it_can_control_feature_values()
 
 Có thể sử dụng cách tiếp cận tương tự cho các chức năng dựa trên class:
 
-```php
+```php tab=Pest
+use Laravel\Pennant\Feature;
+
+test('it can control feature values', function () {
+    Feature::define(NewApi::class, true);
+
+    expect(Feature::value(NewApi::class))->toBeTrue();
+});
+```
+
+```php tab=PHPUnit
 use App\Features\NewApi;
 use Laravel\Pennant\Feature;
 
@@ -960,44 +1076,113 @@ Sau khi driver đã được đăng ký, bạn có thể sử dụng driver `red
 
     ],
 
+<a name="defining-features-externally"></a>
+### Định nghĩa Features bên ngoài
+
+Nếu driver của bạn là một wrapper của một nền tảng flag feature của một bên thứ ba, bạn có thể sẽ định nghĩa các tính năng trên nền tảng đó thay vì sử dụng phương thức `Feature::define` của Pennant. Nếu đúng như vậy, driver tùy chỉnh của bạn cũng nên implement interface `Laravel\Pennant\Contracts\DefinesFeaturesExternally`:
+
+```php
+<?php
+
+namespace App\Extensions;
+
+use Laravel\Pennant\Contracts\Driver;
+use Laravel\Pennant\Contracts\DefinesFeaturesExternally;
+
+class FeatureFlagServiceDriver implements Driver, DefinesFeaturesExternally
+{
+    /**
+     * Get the features defined for the given scope.
+     */
+    public function definedFeaturesForScope(mixed $scope): array {}
+
+    /* ... */
+}
+```
+
+Phương thức `definedFeaturesForScope` nên trả về một danh sách gồm các tên feature đã được định nghĩa cho scope đã cho.
+
 <a name="events"></a>
 ## Events
 
 Pennant có gửi nhiều event khác nhau mà có thể hữu ích cho bạn khi bạn theo dõi feature flag trong toàn bộ ứng dụng.
 
-### `Laravel\Pennant\Events\RetrievingKnownFeature`
+### `Laravel\Pennant\Events\FeatureRetrieved`
 
-Event này được gửi đi lần đầu tiên khi một chức năng được kiểm tra trong một request cho một phạm vi cụ thể. Event này có thể hữu ích để tạo và theo dõi số liệu của feature flag khi đang được sử dụng trong toàn bộ ứng dụng của bạn.
+Event này được gửi đi mỗi khi một [feature được kiểm tra](#checking-features). Event này có thể hữu ích để tạo và theo dõi các số liệu về việc sử dụng flag feature trong toàn bộ ứng dụng của bạn.
 
-### `Laravel\Pennant\Events\RetrievingUnknownFeature`
+### `Laravel\Pennant\Events\FeatureResolved`
 
-Event này được gửi đi lần đầu tiên khi một chức năng không xác định được kiểm tra trong một request cho một phạm vi cụ thể. Event này có thể hữu ích nếu bạn định xóa feature flag, nhưng có thể đã vô tình để lại một số tham chiếu khác liên quan đến nó trong ứng dụng.
+Event này được gửi đi khi lần đầu tiên giá trị của một feature được resolve cho một scope cụ thể.
 
-Ví dụ, bạn có thể thấy hữu ích khi listen các event này và `report` hoặc đưa ra một exception khi nó xảy ra:
+### `Laravel\Pennant\Events\UnknownFeatureResolved`
+
+Event này được gửi đi khi lần đầu tiên một unknown feature được resolve cho một scope cụ thể. Việc lắng nghe event này có thể hữu ích nếu bạn đã có ý định xóa một feature flag nhưng vô tình quên các tham chiếu đến nó trong toàn bộ ứng dụng của bạn:
 
 ```php
 <?php
 
 namespace App\Providers;
 
-use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
+use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Event;
-use Laravel\Pennant\Events\RetrievingUnknownFeature;
+use Illuminate\Support\Facades\Log;
+use Laravel\Pennant\Events\UnknownFeatureResolved;
 
-class EventServiceProvider extends ServiceProvider
+class AppServiceProvider extends ServiceProvider
 {
     /**
-     * Register any other events for your application.
+     * Bootstrap any application services.
      */
     public function boot(): void
     {
-        Event::listen(function (RetrievingUnknownFeature $event) {
-            report("Resolving unknown feature [{$event->feature}].");
+        Event::listen(function (UnknownFeatureResolved $event) {
+            Log::error("Resolving unknown feature [{$event->feature}].");
         });
     }
 }
 ```
 
-### `Laravel\Pennant\Events\DynamicallyDefiningFeature`
+### `Laravel\Pennant\Events\DynamicallyRegisteringFeatureClass`
 
-Event này được gửi đi khi một chức năng dựa trên class được kiểm tra lần đầu tiên trong một request.
+Event này được gửi đi khi một [chức năng dựa trên class](#class-based-features) được kiểm tra lần đầu tiên trong một request.
+
+### `Laravel\Pennant\Events\UnexpectedNullScopeEncountered`
+
+Event này được gửi đi khi một scope `null` được truyền vào một định nghĩa feature [không hỗ trợ giá trị null](#nullable-scope).
+
+Tình huống này được xử lý một cách linh hoạt và feature sẽ trả về `false`. Tuy nhiên, nếu bạn muốn từ chối hành vi linh hoạt mặc định của feature này, bạn có thể đăng ký một listener cho event này trong phương thức `boot` của `AppServiceProvider` ứng dụng của bạn:
+
+```php
+use Illuminate\Support\Facades\Log;
+use Laravel\Pennant\Events\UnexpectedNullScopeEncountered;
+
+/**
+ * Bootstrap any application services.
+ */
+public function boot(): void
+{
+    Event::listen(UnexpectedNullScopeEncountered::class, fn () => abort(500));
+}
+
+```
+
+### `Laravel\Pennant\Events\FeatureUpdated`
+
+Event này được gửi đi khi cập nhật một feature cho một scope, thường là bằng cách gọi `activate` hoặc `deactivate`.
+
+### `Laravel\Pennant\Events\FeatureUpdatedForAllScopes`
+
+Event này được gửi đi khi cập nhật một feature cho tất cả các scope, thường là bằng cách gọi `activateForEveryone` hoặc `deactivateForEveryone`.
+
+### `Laravel\Pennant\Events\FeatureDeleted`
+
+Event này được gửi đi khi xóa một feature cho một scope, thường là bằng cách gọi `forget`.
+
+### `Laravel\Pennant\Events\FeaturesPurged`
+
+Event này được gửi đi khi xóa các feature cụ thể.
+
+### `Laravel\Pennant\Events\AllFeaturesPurged`
+
+Event này được gửi đi khi xóa tất cả các feature.

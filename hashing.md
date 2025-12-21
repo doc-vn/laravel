@@ -6,6 +6,7 @@
     - [Hashing một mật khẩu](#hashing-passwords)
     - [Kiểm tra một mật khẩu khớp với một hashing](#verifying-that-a-password-matches-a-hash)
     - [Kiểm tra một mật khẩu cần re-hashing](#determining-if-a-password-needs-to-be-rehashed)
+- [Verify thuật toán hash](#hash-algorithm-verification)
 
 <a name="introduction"></a>
 ## Giới thiệu
@@ -17,7 +18,14 @@ Bcrypt là một lựa chọn tuyệt vời để hashing mật khẩu vì "work
 <a name="configuration"></a>
 ## Cấu hình
 
-Driver hashing mặc định cho ứng dụng của bạn sẽ được cấu hình trong file cấu hình `config/hashing.php` của ứng dụng của bạn. Hiện tại có nhiều driver được hỗ trợ: [Bcrypt](https://en.wikipedia.org/wiki/Bcrypt) và [Argon2](https://en.wikipedia.org/wiki/Argon2) (Argon2i và biến thể Argon2id).
+Mặc định, Laravel sử dụng driver hashing `bcrypt` khi hashing dữ liệu. Tuy nhiên, một số driver hashing khác cũng được hỗ trợ, có cả [`argon`](https://en.wikipedia.org/wiki/Argon2) và [`argon2id`](https://en.wikipedia.org/wiki/Argon2).
+
+Bạn có thể chỉ định driver hashing cho ứng dụng của bạn bằng cách sử dụng biến môi trường `HASH_DRIVER`. Tuy nhiên, nếu bạn muốn tùy chỉnh tất cả các tùy chọn cấu hình của driver hashing có trong Laravel, bạn nên export file cấu hình `hashing` bằng lệnh Artisan `config:publish`:
+
+
+```bash
+php artisan config:publish hashing
+```
 
 <a name="basic-usage"></a>
 ## Cách dùng cơ bản
@@ -92,3 +100,14 @@ Hàm `needsRehash` được cung cấp facade `Hash` cho phép bạn kiểm tra 
     if (Hash::needsRehash($hashed)) {
         $hashed = Hash::make('plain-text');
     }
+
+<a name="hash-algorithm-verification"></a>
+## Verify thuật toán hash
+
+Để ngăn chặn việc thao túng thuật toán hash, phương thức `Hash::check` của Laravel sẽ kiểm tra xem chuỗi hash đã cho có được tạo bằng thuật toán hashing đã chọn của ứng dụng hay không. Nếu thuật toán khác với thuật toán đã chọn, thì một ngoại lệ `RuntimeException` sẽ được đưa ra.
+
+Đây là hành vi mong đợi đối với hầu hết tất cả các ứng dụng, nơi mà thuật toán hashing bị thay đổi và sự khác biệt trong thuật toán hashing cũng có thể là một dấu hiệu của một cuộc tấn công. Tuy nhiên, nếu bạn cần hỗ trợ nhiều thuật toán hashing trong ứng dụng của bạn, chẳng hạn như khi migrating từ thuật toán này sang một thuật toán khác, bạn có thể tắt xác minh thuật toán hash bằng cách set biến môi trường `HASH_VERIFY` thành `false`:
+
+```ini
+HASH_VERIFY=false
+```

@@ -28,18 +28,14 @@ Tiếp theo, hãy chú ý model `App\Models\User` của bạn phải được im
 <a name="database-preparation"></a>
 ### Chuẩn bị Database
 
-Một bảng phải được tạo để lưu trữ các mã token reset của application của bạn. Mặc định, việc migration cho bảng này đã có sẵn trong Laravel application, vì vậy bạn chỉ cần migrate cơ sở dữ liệu của bạn để tạo bảng này:
-
-```shell
-php artisan migrate
-```
+Một bảng phải được tạo ra để lưu trữ các mã token reset của ứng dụng của bạn. Thông thường, điều này đã có trong migration cơ sở dữ liệu mặc định `0001_01_01_000000_create_users_table.php` của Laravel.
 
 <a name="configuring-trusted-hosts"></a>
 ### Cấu hình Trusted Hosts
 
-Mặc định, Laravel sẽ respond tất cả các request mà nó nhận được bất kể nội dung của header `Host` của request HTTP đó là gì. Ngoài ra, giá trị của header `Host` sẽ được sử dụng khi tạo URL cho ứng dụng của bạn trong khi web request.
+Mặc định, Laravel sẽ phản hồi lại tất cả các request mà nó nhận được bất kể nội dung của header `Host` của request HTTP đó là gì. Ngoài ra, giá trị của header `Host` sẽ được sử dụng khi tạo URL cho ứng dụng của bạn trong khi web request.
 
-Thông thường, bạn nên cấu hình máy chủ web của bạn, chẳng hạn như Nginx hoặc Apache, để chỉ gửi request đến ứng dụng giống với một host name nhất định. Tuy nhiên, nếu bạn không có khả năng tùy chỉnh trực tiếp máy chủ web của bạn và cần hướng dẫn Laravel chỉ phản hồi với một số host name nhất định, bạn có thể làm như vậy bằng cách bật middleware `App\Http\Middleware\TrustHosts` trong ứng dụng của bạn. Điều này đặc biệt quan trọng khi ứng dụng của bạn cung cấp chức năng set lại mật khẩu.
+Thông thường, bạn nên cấu hình máy chủ web của bạn, chẳng hạn như Nginx hoặc Apache, để chỉ gửi request đến ứng dụng giống với một host name nhất định. Tuy nhiên, nếu bạn không có khả năng tùy chỉnh trực tiếp máy chủ web của bạn và cần hướng dẫn Laravel chỉ phản hồi với một số host name nhất định, bạn có thể làm như vậy bằng cách sử dụng phương thức middleware `trustHosts` trong file `bootstrap/app.php` của ứng dụng của bạn. Điều này đặc biệt quan trọng khi ứng dụng của bạn cung cấp chức năng set lại mật khẩu.
 
 Để tìm hiểu thêm về middleware này, vui lòng tham khảo [tài liệu về middleware `TrustHosts`](/docs/{{version}}/requests#configuring-trusted-hosts).
 
@@ -77,9 +73,9 @@ Tiếp theo, chúng ta sẽ định nghĩa một route để xử lý request fo
             $request->only('email')
         );
 
-        return $status === Password::RESET_LINK_SENT
-                    ? back()->with(['status' => __($status)])
-                    : back()->withErrors(['email' => __($status)]);
+        return $status === Password::ResetLinkSent
+            ? back()->with(['status' => __($status)])
+            : back()->withErrors(['email' => __($status)]);
     })->middleware('guest')->name('password.email');
 
 Trước khi tiếp tục, chúng ta hãy xem xét route này chi tiết hơn. Đầu tiên, thuộc tính `email` của request sẽ được validate. Tiếp theo, chúng ta sẽ sử dụng "password broker" có sẵn của Laravel (thông qua facade `Password`) để gửi link set lại mật khẩu cho người dùng. Password broker sẽ đảm nhiệm việc lấy ra người dùng theo một field nhất định (trong trường hợp này là địa chỉ email) và gửi cho người dùng link set lại mật khẩu thông qua [hệ thống notification](/docs/{{version}}/notifications).
@@ -140,9 +136,9 @@ Tất nhiên, chúng ta sẽ cần định nghĩa một route để xử lý vi�
             }
         );
 
-        return $status === Password::PASSWORD_RESET
-                    ? redirect()->route('login')->with('status', __($status))
-                    : back()->withErrors(['email' => [__($status)]]);
+        return $status === Password::PasswordReset
+            ? redirect()->route('login')->with('status', __($status))
+            : back()->withErrors(['email' => [__($status)]]);
     })->middleware('guest')->name('password.update');
 
 Trước khi tiếp tục, chúng ta hãy xem xét route này một cách chi tiết hơn. Đầu tiên, các thuộc tính `token`, `email` và `password` của request sẽ được validate. Tiếp theo, chúng ta sẽ sử dụng "password broker" có sẵn của Laravel (thông qua facade `Password`) để validate thông tin xác thực của request đặt lại mật khẩu.
@@ -164,7 +160,9 @@ php artisan auth:clear-resets
 
 Nếu bạn muốn tự động hóa quy trình này, hãy cân nhắc thêm lệnh vào [scheduler](/docs/{{version}}/scheduling) trong ứng dụng của bạn:
 
-    $schedule->command('auth:clear-resets')->everyFifteenMinutes();
+    use Illuminate\Support\Facades\Schedule;
+
+    Schedule::command('auth:clear-resets')->everyFifteenMinutes();
 
 <a name="password-customization"></a>
 ## Customization
@@ -172,13 +170,13 @@ Nếu bạn muốn tự động hóa quy trình này, hãy cân nhắc thêm l�
 <a name="reset-link-customization"></a>
 #### Reset Link Customization
 
-Bạn có thể tùy chỉnh URL link set lại mật khẩu bằng phương thức `createUrlUsing` do class notification `ResetPassword` cung cấp. Phương thức này chấp nhận một closure nhận vào một instance người dùng đang nhận thông báo cũng như một token set lại mật khẩu. Thông thường, bạn nên gọi phương thức này từ phương thức `boot` của service provider `App\Providers\AuthServiceProvider`:
+Bạn có thể tùy chỉnh URL link set lại mật khẩu bằng phương thức `createUrlUsing` do class notification `ResetPassword` cung cấp. Phương thức này chấp nhận một closure nhận vào một instance người dùng đang nhận thông báo cũng như một token set lại mật khẩu. Thông thường, bạn nên gọi phương thức này từ phương thức `boot` của service provider `App\Providers\AppServiceProvider`:
 
     use App\Models\User;
     use Illuminate\Auth\Notifications\ResetPassword;
 
     /**
-     * Register any authentication / authorization services.
+     * Bootstrap any application services.
      */
     public function boot(): void
     {

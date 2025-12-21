@@ -332,48 +332,56 @@ Laravel có chứa các view phân trang được xây dựng bằng [Bootstrap 
 
 Mỗi instance phân trang cung cấp thêm các thông tin phân trang thông qua các phương thức có sẵn sau:
 
-Method  |  Description
--------  |  -----------
-`$paginator->count()`  |  Lấy số lượng các item cho trang hiện tại.
-`$paginator->currentPage()`  |  Lấy page number trong trang hiện tại.
-`$paginator->firstItem()`  |  Lấy số lượng kết quả của item đầu tiên trong kết quả.
-`$paginator->getOptions()`  |  Lấy các tùy chọn paginator.
-`$paginator->getUrlRange($start, $end)`  |  Tạo một loạt các URL phân trang.
-`$paginator->hasPages()`  |  Kiểm tra xem có đủ item để chia thành nhiều trang hay không.
-`$paginator->hasMorePages()`  |  Kiểm tra xem có nhiều item hơn trong data store hay không.
-`$paginator->items()`  |  Lấy các item cho trang hiện tại.
-`$paginator->lastItem()`  |  Lấy số lượng kết quả của item cuối cùng trong kết quả.
-`$paginator->lastPage()`  |  Lấy page number của trang cuối cùng có sẵn. (Không khả dụng khi sử dụng `simplePaginate`).
-`$paginator->nextPageUrl()`  |  Lấy URL cho trang tiếp theo.
-`$paginator->onFirstPage()`  |  Kiểm tra xem paginator có đang ở trang đầu tiên hay không.
-`$paginator->perPage()`  |  Số lượng item được hiển thị trên mỗi trang.
-`$paginator->previousPageUrl()`  |  Lấy URL cho trang trước đó.
-`$paginator->total()`  |  Kiểm tra tổng số item phù hợp trong data store. (Không khả dụng khi sử dụng `simplePaginate`).
-`$paginator->url($page)`  |  Lấy URL cho một trang nhất định.
-`$paginator->getPageName()`  |  Lấy biến query string được sử dụng để lưu trữ trang.
-`$paginator->setPageName($name)`  |  Set biến query string được sử dụng để lưu trữ trang.
-`$paginator->through($callback)`  |  Sẽ lặp cái item có trong data store với một callback.
+<div class="overflow-auto">
+
+| Method | Description |
+| --- | --- |
+| `$paginator->count()` | Lấy số lượng các item cho trang hiện tại. |
+| `$paginator->currentPage()` | GLấy page number trong trang hiện tại. |
+| `$paginator->firstItem()` | Lấy số lượng kết quả của item đầu tiên trong kết quả. |
+| `$paginator->getOptions()` | Lấy các tùy chọn paginator. |
+| `$paginator->getUrlRange($start, $end)` | Tạo một loạt các URL phân trang. |
+| `$paginator->hasPages()` | Kiểm tra xem có đủ item để chia thành nhiều trang hay không. |
+| `$paginator->hasMorePages()` | Kiểm tra xem có nhiều item hơn trong data store hay không. |
+| `$paginator->items()` | Lấy các item cho trang hiện tại. |
+| `$paginator->lastItem()` | Lấy số lượng kết quả của item cuối cùng trong kết quả. |
+| `$paginator->lastPage()` | Lấy page number của trang cuối cùng có sẵn. (Không khả dụng khi sử dụng `simplePaginate`). |
+| `$paginator->nextPageUrl()` | Lấy URL cho trang tiếp theo. |
+| `$paginator->onFirstPage()` | Kiểm tra xem paginator có đang ở trang đầu tiên hay không. |
+| `$paginator->perPage()` | Số lượng item được hiển thị trên mỗi trang. |
+| `$paginator->previousPageUrl()` | Lấy URL cho trang trước đó. |
+| `$paginator->total()` | Kiểm tra tổng số item phù hợp trong data store. (Không khả dụng khi sử dụng `simplePaginate`). |
+| `$paginator->url($page)` | Lấy URL cho một trang nhất định. |
+| `$paginator->getPageName()` | Lấy biến query string được sử dụng để lưu trữ trang. |
+| `$paginator->setPageName($name)` | Set biến query string được sử dụng để lưu trữ trang. |
+| `$paginator->through($callback)` | Sẽ lặp cái item có trong data store với một callback. |
+
+</div>
 
 <a name="cursor-paginator-instance-methods"></a>
 ## Cursor Paginator Instance Methods
 
 Mỗi instance phân trang con trỏ cung cấp thêm các thông tin phân trang thông qua các phương thức có sẵn sau:
 
-Method  |  Description
--------  |  -----------
-`$paginator->count()`  |  Lấy số lượng các item cho trang hiện tại.
-`$paginator->cursor()`  |  Lấy instance con trỏ hiện tại.
-`$paginator->getOptions()`  |  Lấy các tùy chọn paginator.
-`$paginator->hasPages()`  |  Kiểm tra xem có đủ item để chia thành nhiều trang hay không.
-`$paginator->hasMorePages()`  |  Kiểm tra xem có nhiều item hơn trong data store hay không.
-`$paginator->getCursorName()`  |  Lấy biến truy vấn được sử dụng để lưu trữ con trỏ.
-`$paginator->items()`  |  Lấy các item cho trang hiện tại.
-`$paginator->nextCursor()`  |  Lấy instance con trỏ cho set item tiếp theo.
-`$paginator->nextPageUrl()`  |  Lấy URL cho trang tiếp theo.
-`$paginator->onFirstPage()`  |  Kiểm tra xem paginator có đang ở trang đầu tiên hay không.
-`$paginator->onLastPage()`  |  Kiểm tra xem paginator có ở trang cuối cùng hay không.
-`$paginator->perPage()`  |  Số lượng item được hiển thị trên mỗi trang.
-`$paginator->previousCursor()`  |  Lấy instance con trỏ cho set item trước đó.
-`$paginator->previousPageUrl()`  |  Lấy URL cho trang trước đó.
-`$paginator->setCursorName()`  |  Set biến truy vấn sẽ được sử dụng để lưu trữ con trỏ.
-`$paginator->url($cursor)`  |  Lấy URL cho một instance con trỏ nhất định.
+<div class="overflow-auto">
+
+| Method                          | Description                                                       |
+| ------------------------------- | ----------------------------------------------------------------- |
+| `$paginator->count()`           | Lấy số lượng các item cho trang hiện tại.                         |
+| `$paginator->cursor()`          | Lấy instance con trỏ hiện tại.                                    |
+| `$paginator->getOptions()`      | Lấy các tùy chọn paginator.                                       |
+| `$paginator->hasPages()`        | Kiểm tra xem có đủ item để chia thành nhiều trang hay không.      |
+| `$paginator->hasMorePages()`    | Kiểm tra xem có nhiều item hơn trong data store hay không.        |
+| `$paginator->getCursorName()`   | Lấy biến truy vấn được sử dụng để lưu trữ con trỏ.                |
+| `$paginator->items()`           | Lấy các item cho trang hiện tại.                                  |
+| `$paginator->nextCursor()`      | Lấy instance con trỏ cho set item tiếp theo.                      |
+| `$paginator->nextPageUrl()`     | Lấy URL cho trang tiếp theo.                                      |
+| `$paginator->onFirstPage()`     | Kiểm tra xem paginator có đang ở trang đầu tiên hay không.        |
+| `$paginator->onLastPage()`      | Kiểm tra xem paginator có ở trang cuối cùng hay không.            |
+| `$paginator->perPage()`         | Số lượng item được hiển thị trên mỗi trang.                       |
+| `$paginator->previousCursor()`  | Lấy instance con trỏ cho set item trước đó.                       |
+| `$paginator->previousPageUrl()` | Lấy URL cho trang trước đó.                                       |
+| `$paginator->setCursorName()`   | Set biến truy vấn sẽ được sử dụng để lưu trữ con trỏ.             |
+| `$paginator->url($cursor)`      | Lấy URL cho một instance con trỏ nhất định.                       |
+
+</div>

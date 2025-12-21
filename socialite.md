@@ -15,7 +15,7 @@
 <a name="introduction"></a>
 ## Giới thiệu
 
-Ngoài những cách authentication thông thường dựa trên form, Laravel cũng cung cấp thêm một số cách đơn giản, thuận tiện để authentication với các provider OAuth khác bằng cách sử dụng [Laravel Socialite](https://github.com/laravel/socialite). Socialite hiện hỗ trợ authentication thông qua Facebook, Twitter, LinkedIn, Google, GitHub, GitLab, Bitbucket, và Slack.
+Ngoài những cách authentication thông thường dựa trên form, Laravel cũng cung cấp thêm một số cách đơn giản, thuận tiện để authentication với các provider OAuth khác bằng cách sử dụng [Laravel Socialite](https://github.com/laravel/socialite). Socialite hiện hỗ trợ authentication thông qua Facebook, X, LinkedIn, Google, GitHub, GitLab, Bitbucket, và Slack.
 
 > [!NOTE]
 > Bộ chuyển đổi cho các nền tảng này có sẵn thông qua trang web [Socialite Providers](https://socialiteproviders.com/) do cộng đồng phát triển.
@@ -39,7 +39,7 @@ Khi nâng cấp lên phiên bản mới của Socialite, điều quan trọng l�
 
 Trước khi sử dụng Socialite, bạn sẽ cần phải thêm thông tin các OAuth provider mà application của bạn đang muốn sử dụng. Thông thường, những thông tin xác thực này có thể được lấy ra bằng cách tạo "ứng dụng dành cho nhà phát triển" trong bảng điều khiển của dịch vụ mà bạn sẽ xác thực.
 
-Các thông tin này phải được set trong file cấu hình `config/services.php` của application của bạn và sử dụng các key `facebook`, `twitter` (OAuth 1.0), `twitter-oauth-2` (OAuth 2.0), `linkedin-openid`, `google`, `github`, `gitlab`, `bitbucket`, hoặc `slack`, tùy thuộc vào provider application của bạn yêu cầu. Ví dụ:
+Các thông tin này phải được set trong file cấu hình `config/services.php` của application của bạn và sử dụng các key `facebook`, `x`, `linkedin-openid`, `google`, `github`, `gitlab`, `bitbucket`, `slack`, hoặc `slack-openid`, tùy thuộc vào provider application của bạn yêu cầu. Ví dụ:
 
     'github' => [
         'client_id' => env('GITHUB_CLIENT_ID'),
@@ -189,7 +189,7 @@ Các thuộc tính và các phương thức có trong object này vẫn còn ph�
     });
 
 <a name="retrieving-user-details-from-a-token-oauth2"></a>
-#### Retrieving User Details From A Token (OAuth2)
+#### Retrieving User Details From A Token
 
 Nếu bạn đã có một access token hợp lệ của một người dùng, bạn có thể lấy ra thông tin chi tiết của người dùng đó bằng phương thức `userFromToken` của Socialite:
 
@@ -197,14 +197,7 @@ Nếu bạn đã có một access token hợp lệ của một người dùng, b
 
     $user = Socialite::driver('github')->userFromToken($token);
 
-<a name="retrieving-user-details-from-a-token-and-secret-oauth1"></a>
-#### Retrieving User Details From A Token And Secret (OAuth1)
-
-Nếu bạn đã có một token và secret hợp lệ của người dùng, bạn có thể truy xuất thông tin chi tiết của người dùng đó bằng phương thức `userFromTokenAndSecret` của Socialite:
-
-    use Laravel\Socialite\Facades\Socialite;
-
-    $user = Socialite::driver('twitter')->userFromTokenAndSecret($token, $secret);
+Nếu bạn đang dùng Facebook Limited Login thông qua một ứng dụng iOS, Facebook sẽ trả về một OIDC token thay vì một access token. Giống như một access token, OIDC token có thể được cung cấp cho phương thức `userFromToken` để lấy thông tin chi tiết của người dùng.
 
 <a name="stateless-authentication"></a>
 #### Stateless Authentication
@@ -214,6 +207,3 @@ Phương thức `stateless` có thể được sử dụng để vô hiệu hóa
     use Laravel\Socialite\Facades\Socialite;
 
     return Socialite::driver('google')->stateless()->user();
-
-> [!WARNING]
-> Xác thực không trạng thái sẽ không khả dụng cho driver Twitter OAuth 1.0.

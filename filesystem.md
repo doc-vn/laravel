@@ -43,7 +43,7 @@ Driver `local` tương tác với các file được lưu trữ local trên máy
 <a name="the-local-driver"></a>
 ### The Local Driver
 
-Khi sử dụng driver `local`, tất cả các hoạt động của file đều liên quan đến thư mục `root` được định nghĩa trong file cấu hình `filesystems` của bạn. Mặc định, giá trị này được set cho thư mục `storage/app`. Do đó, phương thức sau sẽ write vào `storage/app/example.txt`:
+Khi sử dụng driver `local`, tất cả các hoạt động của file đều liên quan đến thư mục `root` được định nghĩa trong file cấu hình `filesystems` của bạn. Mặc định, giá trị này được set cho thư mục `storage/app/private`. Do đó, phương thức sau sẽ write vào `storage/app/private/example.txt`:
 
     use Illuminate\Support\Facades\Storage;
 
@@ -54,7 +54,7 @@ Khi sử dụng driver `local`, tất cả các hoạt động của file đều
 
 Disk `public` có trong file cấu hình `filesystems` của ứng dụng của bạn là dành cho các file có thể truy cập ở dạng công khai. Mặc định, `public` disk sẽ sử dụng driver `local` và lưu trữ các file này trong `storage/app/public`.
 
-Để làm cho các file này có thể truy cập từ web, bạn nên tạo một link liên kết ảo từ `public/storage` đến `storage/app/public`. Việc sử dụng quy ước thư mục này sẽ giúp cho các file có thể truy cập công khai của bạn ở trong một thư mục có thể dễ dàng chia sẻ qua mỗi lần deploy khi sử dụng các hệ thống deploy zero down-time như [Envoyer](https://envoyer.io).
+Nếu disk `public` của bạn sử dụng driver `local` và bạn muốn làm cho các file này có thể truy cập được từ web, bạn nên tạo một link ảo từ thư mục source `storage/app/public` đến thư mục target `public/storage`:
 
 Để tạo link liên kết ảo, bạn có thể sử dụng lệnh Artisan `storage:link`:
 
@@ -91,7 +91,17 @@ Trước khi sử dụng driver S3, bạn cần cài đặt package Flysystem S3
 composer require league/flysystem-aws-s3-v3 "^3.0" --with-all-dependencies
 ```
 
-Thông tin cấu hình driver S3 nằm trong file cấu hình `config/filesystems.php` của bạn. File này chứa một mảng cấu hình mẫu cho driver S3. Bạn có thể tự do sửa mảng này với thông tin và cấu hình S3 của riêng bạn. Để thuận tiện, các biến môi trường đã được đặt tên khớp với quy ước đặt tên được sử dụng bởi AWS CLI.
+Một mảng cấu hình disk dành cho S3 đã được cài đặt sẵn trong file cấu hình `config/filesystems.php` của bạn. Thông thường, bạn nên cấu hình thông tin và thông tin xác thực S3 của bạn bằng cách sử dụng các biến môi trường sau đây, các biến này sẽ được gọi bởi file cấu hình `config/filesystems.php`:
+
+```
+AWS_ACCESS_KEY_ID=<your-key-id>
+AWS_SECRET_ACCESS_KEY=<your-secret-access-key>
+AWS_DEFAULT_REGION=us-east-1
+AWS_BUCKET=<your-bucket-name>
+AWS_USE_PATH_STYLE_ENDPOINT=false
+```
+
+Để thuận tiện, các biến môi trường đã được đặt tên khớp với quy ước đặt tên được sử dụng bởi AWS CLI.
 
 <a name="ftp-driver-configuration"></a>
 #### FTP Driver Configuration
@@ -102,7 +112,7 @@ Trước khi sử dụng driver FTP, bạn cần cài đặt package Flysystem F
 composer require league/flysystem-ftp "^3.0"
 ```
 
-Flysystem integration của Laravel hoạt động tốt với FTP; tuy nhiên, mặc định, một cấu hình mẫu không được thêm vào trong file cấu hình `filesystems.php` của framework. Nếu bạn cần cấu hình một hệ thống file FTP, bạn có thể sử dụng cấu hình mẫu ở bên dưới:
+Flysystem tích hợp trong Laravel hoạt động tốt với FTP; tuy nhiên, mặc định, một cấu hình mẫu không được thêm vào trong file cấu hình `config/filesystems.php` của framework. Nếu bạn cần cấu hình một hệ thống file FTP, bạn có thể sử dụng cấu hình mẫu ở bên dưới:
 
     'ftp' => [
         'driver' => 'ftp',
@@ -127,7 +137,7 @@ Trước khi sử dụng driver SFTP, bạn cần cài đặt package Flysystem 
 composer require league/flysystem-sftp-v3 "^3.0"
 ```
 
-Flysystem tích hợp trong Laravel hoạt động tốt với SFTP; tuy nhiên, mặc định một cấu hình mẫu sẽ không có trong file cấu hình `filesystems.php` của framework. Nếu bạn cần cấu hình một hệ thống filesystem SFTP, bạn có thể sử dụng cấu hình ví dụ ở bên dưới:
+Flysystem tích hợp trong Laravel hoạt động tốt với SFTP; tuy nhiên, mặc định một cấu hình mẫu sẽ không có trong file cấu hình `config/filesystems.php` của framework. Nếu bạn cần cấu hình một hệ thống filesystem SFTP, bạn có thể sử dụng cấu hình ví dụ ở bên dưới:
 
     'sftp' => [
         'driver' => 'sftp',
@@ -193,7 +203,7 @@ Tiếp theo, bạn có thể thêm tùy chọn cấu hình `read-only` vào tron
 <a name="amazon-s3-compatible-filesystems"></a>
 ### Filesystem tương thích Amazon S3
 
-Mặc định, file cấu hình `filesystems` của ứng dụng sẽ chứa một cấu hình disk cho disk `s3`. Ngoài việc sử dụng disk này để tương tác với Amazon S3, bạn cũng có thể sử dụng nó để tương tác với bất kỳ dịch vụ lưu trữ file nào tương thích S3 nào, chẳng hạn như [MinIO](https://github.com/minio/minio) hoặc [DigitalOcean Spaces](https://www.digitalocean.com/products/spaces/).
+Mặc định, file cấu hình `filesystems` của ứng dụng sẽ chứa một cấu hình disk cho disk `s3`. Ngoài việc sử dụng disk này để tương tác với [Amazon S3](https://aws.amazon.com/s3/), bạn cũng có thể sử dụng nó để tương tác với bất kỳ dịch vụ lưu trữ file nào tương thích S3 nào, chẳng hạn như [MinIO](https://github.com/minio/minio), [DigitalOcean Spaces](https://www.digitalocean.com/products/spaces/), [Vultr Object Storage](https://www.vultr.com/products/object-storage/), [Cloudflare R2](https://www.cloudflare.com/developer-platform/products/r2/), hoặc [Hetzner Cloud Storage](https://www.hetzner.com/storage/object-storage/).
 
 Thông thường, sau khi cập nhật thông tin đăng nhập của disk để khớp với thông tin đăng nhập của dịch vụ mà bạn đang sử dụng, bạn chỉ cần cập nhật giá trị của tùy chọn của cấu hình `endpoint`. Giá trị tùy chọn này thường được định nghĩa thông qua biến môi trường `AWS_ENDPOINT`:
 
@@ -209,7 +219,7 @@ AWS_URL=http://localhost:9000/local
 ```
 
 > [!WARNING]
-> Việc tạo URL tạm thời thông qua phương thức `temporaryUrl` không được hỗ trợ khi sử dụng MinIO.
+> Việc tạo URL tạm thời thông qua phương thức `temporaryUrl` có thể không hoạt động khi sử dụng MinIO nếu `endpoint` không thể truy cập được bởi client.
 
 <a name="obtaining-disk-instances"></a>
 ## Lấy Disk Instance
@@ -289,25 +299,43 @@ Khi sử dụng driver `local`, tất cả các file mà có thể truy cập �
 <a name="url-host-customization"></a>
 #### URL Host Customization
 
-Nếu bạn muốn định nghĩa trước host cho các URL được tạo ra bằng cách sử dụng facade `Storage`, bạn có thể thêm tùy chọn `url` vào mảng cấu hình của disk:
+Nếu bạn muốn thay đổi host cho các URL được tạo ra bằng cách sử dụng facade `Storage`, bạn có thể thêm hoặc sửa tùy chọn `url` trong mảng cấu hình của disk:
 
     'public' => [
         'driver' => 'local',
         'root' => storage_path('app/public'),
         'url' => env('APP_URL').'/storage',
         'visibility' => 'public',
+        'throw' => false,
     ],
 
 <a name="temporary-urls"></a>
 ### Temporary URLs
 
-Sử dụng phương thức `temporaryUrl`, bạn có thể tạo ra các URL tạm cho các file được lưu trữ bằng driver `s3`. Phương thức này chấp nhận một đường dẫn và một instance `DateTime` để định nghĩa khi URL sẽ hết hạn:
+Sử dụng phương thức `temporaryUrl`, bạn có thể tạo ra các URL tạm cho các file được lưu trữ bằng driver `local` và driver `s3`. Phương thức này chấp nhận một đường dẫn và một instance `DateTime` để định nghĩa khi URL sẽ hết hạn:
 
     use Illuminate\Support\Facades\Storage;
 
     $url = Storage::temporaryUrl(
         'file.jpg', now()->addMinutes(5)
     );
+
+<a name="enabling-local-temporary-urls"></a>
+#### Enabling Local Temporary URLs
+
+Nếu bạn đang bắt đầu phát triển ứng dụng trước khi hỗ trợ URL tạm thời được giới thiệu cho driver `local`, bạn có thể cần phải enable URL tạm thời cho driver local. Để làm như vậy, bạn hãy thêm tùy chọn `serve` vào mảng cấu hình của disk `local` có trong file cấu hình `config/filesystems.php`:
+
+```php
+'local' => [
+    'driver' => 'local',
+    'root' => storage_path('app/private'),
+    'serve' => true, // [tl! add]
+    'throw' => false,
+],
+```
+
+<a name="s3-request-parameters"></a>
+#### S3 Request Parameters
 
 Nếu bạn cần chỉ định thêm một [S3 request parameters](https://docs.aws.amazon.com/AmazonS3/latest/API/RESTObjectGET.html#RESTObjectGET-requests), bạn có thể truyền một mảng request parameter làm tham số thứ ba cho phương thức `temporaryUrl`:
 
@@ -319,6 +347,9 @@ Nếu bạn cần chỉ định thêm một [S3 request parameters](https://docs
             'ResponseContentDisposition' => 'attachment; filename=file2.jpg',
         ]
     );
+
+<a name="customizing-temporary-urls"></a>
+#### Customizing Temporary URLs
 
 Nếu bạn cần tùy chỉnh cách mà các URL tạm được tạo ra cho một disk lưu trữ cụ thể, bạn có thể sử dụng phương thức `buildTemporaryUrlsUsing`. Ví dụ: điều này có thể hữu ích nếu bạn có một controller cho phép người dùng tải xuống các file được lưu trữ thông qua disk mà thường không hỗ trợ URL tạm. Thông thường, phương thức này nên được gọi từ phương thức `boot` của một service provider:
 
@@ -586,6 +617,7 @@ Khi sử dụng driver `local`, thư mục `public` [visibility](#file-visibilit
                 'private' => 0700,
             ],
         ],
+    'throw' => false,
     ],
 
 <a name="deleting-files"></a>
@@ -647,37 +679,72 @@ Cuối cùng, phương thức `deleteDirectory` có thể được sử dụng �
 
 Phương thức `fake` của facade `Storage` cho phép bạn dễ dàng tạo ra một disk giả, kết hợp với các tiện ích tạo file của class `Illuminate\Http\UploadedFile`, giúp bạn đơn giản hóa đáng kể việc kiểm tra các file upload. Ví dụ:
 
-    <?php
+```php tab=Pest
+<?php
 
-    namespace Tests\Feature;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 
-    use Illuminate\Http\UploadedFile;
-    use Illuminate\Support\Facades\Storage;
-    use Tests\TestCase;
+test('albums can be uploaded', function () {
+    Storage::fake('photos');
 
-    class ExampleTest extends TestCase
+    $response = $this->json('POST', '/photos', [
+        UploadedFile::fake()->image('photo1.jpg'),
+        UploadedFile::fake()->image('photo2.jpg')
+    ]);
+
+    // Assert one or more files were stored...
+    Storage::disk('photos')->assertExists('photo1.jpg');
+    Storage::disk('photos')->assertExists(['photo1.jpg', 'photo2.jpg']);
+
+    // Assert one or more files were not stored...
+    Storage::disk('photos')->assertMissing('missing.jpg');
+    Storage::disk('photos')->assertMissing(['missing.jpg', 'non-existing.jpg']);
+
+    // Assert that the number of files in a given directory matches the expected count...
+    Storage::disk('photos')->assertCount('/wallpapers', 2);
+
+    // Assert that a given directory is empty...
+    Storage::disk('photos')->assertDirectoryEmpty('/wallpapers');
+});
+```
+
+```php tab=PHPUnit
+<?php
+
+namespace Tests\Feature;
+
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
+use Tests\TestCase;
+
+class ExampleTest extends TestCase
+{
+    public function test_albums_can_be_uploaded(): void
     {
-        public function test_albums_can_be_uploaded(): void
-        {
-            Storage::fake('photos');
+        Storage::fake('photos');
 
-            $response = $this->json('POST', '/photos', [
-                UploadedFile::fake()->image('photo1.jpg'),
-                UploadedFile::fake()->image('photo2.jpg')
-            ]);
+        $response = $this->json('POST', '/photos', [
+            UploadedFile::fake()->image('photo1.jpg'),
+            UploadedFile::fake()->image('photo2.jpg')
+        ]);
 
-            // Assert one or more files were stored...
-            Storage::disk('photos')->assertExists('photo1.jpg');
-            Storage::disk('photos')->assertExists(['photo1.jpg', 'photo2.jpg']);
+        // Assert one or more files were stored...
+        Storage::disk('photos')->assertExists('photo1.jpg');
+        Storage::disk('photos')->assertExists(['photo1.jpg', 'photo2.jpg']);
 
-            // Assert one or more files were not stored...
-            Storage::disk('photos')->assertMissing('missing.jpg');
-            Storage::disk('photos')->assertMissing(['missing.jpg', 'non-existing.jpg']);
+        // Assert one or more files were not stored...
+        Storage::disk('photos')->assertMissing('missing.jpg');
+        Storage::disk('photos')->assertMissing(['missing.jpg', 'non-existing.jpg']);
 
-            // Assert that a given directory is empty...
-            Storage::disk('photos')->assertDirectoryEmpty('/wallpapers');
-        }
+        // Assert that the number of files in a given directory matches the expected count...
+        Storage::disk('photos')->assertCount('/wallpapers', 2);
+
+        // Assert that a given directory is empty...
+        Storage::disk('photos')->assertDirectoryEmpty('/wallpapers');
     }
+}
+```
 
 Mặc định, phương thức `fake` sẽ xóa tất cả các file có trong thư mục tạm thời của nó. Nếu bạn muốn giữ lại các file này, bạn có thể sử dụng phương thức "persistentFake" thay thế. Để biết thêm thông tin về việc thử nghiệm file upload, bạn có thể tham khảo [thông tin về file upload của tài liệu HTTP testing](/docs/{{version}}/http-tests#testing-file-uploads).
 

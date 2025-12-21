@@ -30,20 +30,9 @@ Laravel sử dụng thư viện [Monolog](https://github.com/Seldaek/monolog) đ
 <a name="configuration"></a>
 ## Cấu hình
 
-Tất cả các tuỳ chọn cấu hình cho các hành động của hệ thống ghi log của ứng dụng của bạn sẽ được lưu trong file cấu hình `config/logging.php`. File này cho phép bạn cấu hình các channel log, vì vậy hãy đảm bảo là bạn đã xem qua các channel hiện có và các tùy chọn của chúng. Chúng ta cũng sẽ xem xét một số tùy chọn phổ biến ở bên dưới.
+Tất cả các tuỳ chọn cấu hình dành cho việc điều khiển các hành động của hệ thống ghi log của ứng dụng của bạn sẽ được lưu trong file cấu hình `config/logging.php`. File này cho phép bạn cấu hình các channel log, vì vậy hãy đảm bảo là bạn đã xem qua các channel hiện có và các tùy chọn của chúng. Chúng ta cũng sẽ xem xét một số tùy chọn phổ biến ở bên dưới.
 
 Mặc định, Laravel sẽ sử dụng channel `stack` để ghi log. Channel `stack` có thể được sử dụng để tổng hợp nhiều channel log thành một channel. Để biết thêm thông tin về cách xây dựng stack, hãy xem [tài liệu ở bên dưới](#building-log-stacks).
-
-<a name="configuring-the-channel-name"></a>
-#### Configuring The Channel Name
-
-Mặc định, Monolog được khởi tạo bởi "tên channel" phù hợp với môi trường hiện tại đang chạy ứng dụng, chẳng hạn như `production` hoặc `local`. Để thay đổi giá trị này, hãy thêm tùy chọn `name` vào cấu hình channel của bạn:
-
-    'stack' => [
-        'driver' => 'stack',
-        'name' => 'channel-name',
-        'channels' => ['single', 'slack'],
-    ],
 
 <a name="available-channel-drivers"></a>
 ### Driver Channel có sẵn
@@ -52,22 +41,33 @@ Mỗi log channel được cung cấp bởi một "driver". Driver sẽ xác đ�
 
 <div class="overflow-auto">
 
-Name | Description
-------------- | -------------
-`custom` | Một driver gọi một factory cụ thể để tạo ra một channel
-`daily` | Một driver Monolog dựa trên `RotatingFileHandler` xoay vòng theo ngày
-`errorlog` | Một driver Monolog dựa trên `ErrorLogHandler`
-`monolog` | Một driver Monolog factory có thể sử dụng bất kỳ Monolog handler nào được hỗ trợ
-`papertrail` | Một driver Monolog dựa trên `SyslogUdpHandler`
-`single` | Một file hoặc một channel ghi log dựa trên đường dẫn (`StreamHandler`)
-`slack` | Một driver Monolog dựa trên `SlackWebhookHandler`
-`stack` | Một wrapper để tạo điều kiện thuận lợi cho việc tạo một channel với "nhiều channel"
-`syslog` | Một driver Monolog dựa trên `SyslogHandler`
+| Name         | Description                                                                          |
+| ------------ | ------------------------------------------------------------------------------------ |
+| `custom`     | Một driver gọi một factory cụ thể để tạo ra một channel.                             |
+| `daily`      | Một driver Monolog dựa trên `RotatingFileHandler` xoay vòng theo ngày.               |
+| `errorlog`   | Một driver Monolog dựa trên `ErrorLogHandler`.                                       |
+| `monolog`    | Một driver Monolog factory có thể sử dụng bất kỳ Monolog handler nào được hỗ trợ.    |
+| `papertrail` | Một driver Monolog dựa trên `SyslogUdpHandler`.                                      |
+| `single`     | Một file hoặc một channel ghi log dựa trên đường dẫn (`StreamHandler`).              |
+| `slack`      | Một driver Monolog dựa trên `SlackWebhookHandler`.                                   |
+| `stack`      | Một wrapper để tạo điều kiện thuận lợi cho việc tạo một channel với "nhiều channel". |
+| `syslog`     | Một driver Monolog dựa trên `SyslogHandler`.                                         |
 
 </div>
 
 > [!NOTE]
 > Xem tài liệu về [tùy chỉnh channel nâng cao](#monolog-channel-customization) để tìm hiểu thêm về driver `monolog` và `custom`.
+
+<a name="configuring-the-channel-name"></a>
+#### Configuring The Channel Name
+
+Mặc định, Monolog được khởi tạo bởi "tên channel" phù hợp với môi trường hiện tại đang chạy ứng dụng, chẳng hạn như `production` hoặc `local`. Để thay đổi giá trị này, bạn có thể thêm tùy chọn `name` vào cấu hình channel của bạn:
+
+    'stack' => [
+        'driver' => 'stack',
+        'name' => 'channel-name',
+        'channels' => ['single', 'slack'],
+    ],
 
 <a name="channel-prerequisites"></a>
 ### Channel Prerequisites
@@ -79,45 +79,48 @@ Các channel `single` và `daily` có thêm ba tùy chọn cấu hình khác: `b
 
 <div class="overflow-auto">
 
-Name | Description | Default
-------------- | ------------- | -------------
-`bubble` | Cho biết messages đang được xử lý có được gửi sang channel khác sau khi xử lý xong hay không | `true`
-`locking` | Cố gắng khóa file log trước khi ghi vào nó | `false`
-`permission` | Quyền của file log | `0644`
+| Name         | Description                                                                                   | Default |
+| ------------ | --------------------------------------------------------------------------------------------- | ------- |
+| `bubble`     | Cho biết messages đang được xử lý có được gửi sang channel khác sau khi xử lý xong hay không. | `true`  |
+| `locking`    | Cố gắng khóa file log trước khi ghi vào nó.                                                   | `false` |
+| `permission` | Quyền của file log.                                                                           | `0644`  |
 
 </div>
 
-Ngoài ra, thời hạn lưu giữ file log cho channel `daily` có thể được cấu hình thông qua tùy chọn `days`:
+Ngoài ra, thời hạn lưu giữ file log cho channel `daily` có thể được cấu hình thông qua biến môi trường `LOG_DAILY_DAYS` hoặc thông qua cách set tùy chọn cấu hình `days`.
 
 <div class="overflow-auto">
 
-Name | Description                                                       | Default
-------------- |-------------------------------------------------------------------| -------------
-`days` | Số ngày mà các file daily log phải được lưu giữ | `7`
+| Name   | Description                                                 | Default |
+| ------ | ----------------------------------------------------------- | ------- |
+| `days` | Số ngày mà các file daily log phải được lưu giữ.            | `7`     |
 
 </div>
 
 <a name="configuring-the-papertrail-channel"></a>
 #### Configuring The Papertrail Channel
 
-Channel `papertrail` sẽ yêu cầu các tùy chọn cấu hình `host` và `port`. Bạn có thể lấy các giá trị này từ [Papertrail](https://help.papertrailapp.com/kb/configuration/configuring-centralized-logging-from-php-apps/#send-events-from-php-app).
+Channel `papertrail` sẽ yêu cầu các tùy chọn cấu hình `host` và `port`. Các giá trị này có thể được định nghĩa thông qua các biến môi trường `PAPERTRAIL_URL` và `PAPERTRAIL_PORT`. Bạn có thể lấy các giá trị này từ [Papertrail](https://help.papertrailapp.com/kb/configuration/configuring-centralized-logging-from-php-apps/#send-events-from-php-app).
 
 <a name="configuring-the-slack-channel"></a>
 #### Configuring The Slack Channel
 
-Channel `slack` yêu cầu một cấu hình `url`. URL này phải khớp với một URL đã cho của một [webhook](https://slack.com/apps/A0F7XDUAZ-incoming-webhooks) mà bạn đã cấu hình trong nhóm Slack của bạn.
+Channel `slack` yêu cầu một cấu hình `url`. Giá trị này có thể được định nghĩa thông qua biến môi trường `LOG_SLACK_WEBHOOK_URL`. URL này phải khớp với một URL đã cho của một [webhook](https://slack.com/apps/A0F7XDUAZ-incoming-webhooks) mà bạn đã cấu hình trong nhóm Slack của bạn.
 
-Mặc định, Slack sẽ chỉ nhận các log ở cấp độ `critical` trở lên; tuy nhiên, bạn có thể điều chỉnh điều này trong file cấu hình `config/logging.php` của bạn bằng cách sửa tùy chọn cấu hình `level` trong mảng cấu hình của channel log Slack của bạn.
+Mặc định, Slack sẽ chỉ nhận các log ở cấp độ `critical` trở lên; tuy nhiên, bạn có thể điều chỉnh điều này bằng cách sử dụng biến môi trường `LOG_LEVEL` hoặc bằng cách sửa tùy chọn cấu hình `level` trong mảng cấu hình của channel log Slack của bạn.
 
 <a name="logging-deprecation-warnings"></a>
 ### Cảnh báo Logging Deprecation
 
-PHP, Laravel và các thư viện khác thường thông báo cho người dùng biết một số tính năng của php, laravel hoặc của một thư viện khác sẽ không dùng được nữa và sẽ bị loại bỏ trong những phiên bản khác. Nếu muốn ghi lại những cảnh báo này, bạn có thể chỉ định log channel `deprecations` trong file cấu hình `config/logging.php` của ứng dụng:
+PHP, Laravel và các thư viện khác thường thông báo cho người dùng biết một số tính năng của php, laravel hoặc của một thư viện khác sẽ không dùng được nữa và sẽ bị loại bỏ trong những phiên bản khác. Nếu muốn ghi lại những cảnh báo này, bạn có thể chỉ định log channel `deprecations` bằng cách sử dụng biến môi trường `LOG_DEPRECATIONS_CHANNEL`, hoặc trong file cấu hình `config/logging.php` của ứng dụng:
 
-    'deprecations' => env('LOG_DEPRECATIONS_CHANNEL', 'null'),
+    'deprecations' => [
+        'channel' => env('LOG_DEPRECATIONS_CHANNEL', 'null'),
+        'trace' => env('LOG_DEPRECATIONS_TRACE', false),
+    ],
 
     'channels' => [
-        ...
+        // ...
     ]
 
 Hoặc, bạn có thể định nghĩa một log channel có tên là `deprecations`. Nếu log channel có tên này tồn tại, nó sẽ luôn được sử dụng để ghi lại các trường hợp ngừng sử dụng như thế này:
@@ -134,25 +137,31 @@ Hoặc, bạn có thể định nghĩa một log channel có tên là `deprecati
 
 Như đã đề cập trước đây, driver `stack` cho phép bạn kết hợp nhiều channel thành một channel duy nhất để thuận tiện. Để minh họa cho cách sử dụng stack log, hãy xem một cấu hình mẫu sau mà bạn có thể thấy trong ứng dụng thực tế:
 
-    'channels' => [
-        'stack' => [
-            'driver' => 'stack',
-            'channels' => ['syslog', 'slack'],
-        ],
-
-        'syslog' => [
-            'driver' => 'syslog',
-            'level' => 'debug',
-        ],
-
-        'slack' => [
-            'driver' => 'slack',
-            'url' => env('LOG_SLACK_WEBHOOK_URL'),
-            'username' => 'Laravel Log',
-            'emoji' => ':boom:',
-            'level' => 'critical',
-        ],
+```php
+'channels' => [
+    'stack' => [
+        'driver' => 'stack',
+        'channels' => ['syslog', 'slack'], // [tl! add]
+        'ignore_exceptions' => false,
     ],
+
+    'syslog' => [
+        'driver' => 'syslog',
+        'level' => env('LOG_LEVEL', 'debug'),
+        'facility' => env('LOG_SYSLOG_FACILITY', LOG_USER),
+        'replace_placeholders' => true,
+    ],
+
+    'slack' => [
+        'driver' => 'slack',
+        'url' => env('LOG_SLACK_WEBHOOK_URL'),
+        'username' => env('LOG_SLACK_USERNAME', 'Laravel Log'),
+        'emoji' => env('LOG_SLACK_EMOJI', ':boom:'),
+        'level' => env('LOG_LEVEL', 'critical'),
+        'replace_placeholders' => true,
+    ],
+],
+```
 
 Hãy cùng xem xét cấu hình này. Đầu tiên, hãy để ý đến channel `stack` của chúng ta, nó được tổng hợp từ hai channel khác nhau thông qua tùy chọn `channels` của nó: `syslog` và `slack`. Vì vậy, khi ghi log message, cả hai channel này đều sẽ được ghi log message. Tuy nhiên, như chúng ta sẽ thấy, việc các channel này có thực sự ghi log hay không có thể được xác định bởi mức độ nghiêm trọng của tin nhắn.
 
@@ -339,7 +348,8 @@ Thỉnh thoảng bạn có thể cần kiểm soát cách cấu hình Monolog ch
         'driver' => 'single',
         'tap' => [App\Logging\CustomizeFormatter::class],
         'path' => storage_path('logs/laravel.log'),
-        'level' => 'debug',
+        'level' => env('LOG_LEVEL', 'debug'),
+        'replace_placeholders' => true,
     ],
 
 Sau khi bạn đã cấu hình tùy chọn `tap` trong file cấu hình channel của bạn, bạn đã sẵn sàng để định nghĩa class sẽ tùy biến instance Monolog. Class này chỉ cần một phương thức duy nhất: `__invoke` phương thức này nhận vào một instance `Illuminate\Log\Logger`. Instance `Illuminate\Log\Logger` sẽ chuyển hướng tất cả các cuộc gọi phương thức đến trực tiếp instance Monolog để thực hiện:
@@ -407,9 +417,8 @@ Nếu bạn đang sử dụng xử lý Monolog mà có khả năng cung cấp m�
         'formatter' => 'default',
     ],
 
-
 <a name="monolog-processors"></a>
- #### Monolog Processors
+#### Monolog Processors
 
 Monolog cũng có thể xử lý các message trước khi log chúng. Bạn có thể tạo một bộ xử lý của riêng bạn hoặc sử dụng [bộ xử lý hiện có do Monolog cung cấp](https://github.com/Seldaek/monolog/tree/main/src/Monolog/Processor).
 
@@ -432,7 +441,6 @@ Nếu bạn muốn tùy chỉnh bộ xử lý cho driver `monolog`, bạn hãy t
             ],
          ],
      ],
-
 
 <a name="creating-custom-channels-via-factories"></a>
 ### Tạo một channel tuỳ biến thông qua Factory

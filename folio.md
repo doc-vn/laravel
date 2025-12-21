@@ -109,7 +109,7 @@ php artisan folio:list
 Bạn có thể tạo một route lồng nhau bằng cách tạo một hoặc nhiều thư mục trong một hoặc nhiều trong một thư mục khác của Folio. Ví dụ, để tạo một trang có thể truy cập qua `/user/profile`, hãy tạo một template `profile.blade.php` trong thư mục `pages/user`:
 
 ```bash
-php artisan make:folio user/profile
+php artisan folio:page user/profile
 
 # pages/user/profile.blade.php → /user/profile
 ```
@@ -120,10 +120,10 @@ php artisan make:folio user/profile
 Thỉnh thoảng, bạn có thể muốn tạo một trang thành "mặc định" của một thư mục. Bằng cách đặt một template `index.blade.php` vào trong một thư mục Folio, mọi request đến thư mục gốc của thư mục đó sẽ được route ngay đến trang đó:
 
 ```bash
-php artisan make:folio index
+php artisan folio:page index
 # pages/index.blade.php → /
 
-php artisan make:folio users/index
+php artisan folio:page users/index
 # pages/users/index.blade.php → /users
 ```
 
@@ -133,7 +133,7 @@ php artisan make:folio users/index
 Thông thường, bạn sẽ cần phải có các tham số URL của request được đưa vào trang của bạn để bạn có thể tương tác với chúng. Ví dụ, bạn có thể cần lấy "ID" của người dùng có profile đang được hiển thị. Để thực hiện điều này, bạn có thể khai báo một tham số của trang trong dấu ngoặc vuông:
 
 ```bash
-php artisan make:folio "users/[id]"
+php artisan folio:page "users/[id]"
 
 # pages/users/[id].blade.php → /users/1
 ```
@@ -149,7 +149,7 @@ Các tham số đã được khai báo thể được truy cập dưới dạng 
 Để khai báo nhiều tham số, bạn có thể thêm tiền tố vào tham số được khai báo bằng ba dấu chấm `...`:
 
 ```bash
-php artisan make:folio "users/[...ids]"
+php artisan folio:page "users/[...ids]"
 
 # pages/users/[...ids].blade.php → /users/1/2/3
 ```
@@ -170,7 +170,7 @@ Khi khai báo nhiều tham số, các tham số được khai báo sẽ được
 Nếu một tham số wildcard trong template trang của bạn tương ứng với một trong các model Eloquent của ứng dụng, Folio sẽ tự động tận dụng khả năng liên kết model route của Laravel và sẽ thử tích hợp instance model đó vào trong trang của bạn:
 
 ```bash
-php artisan make:folio "users/[User]"
+php artisan folio:page "users/[User]"
 
 # pages/users/[User].blade.php → /users/1
 ```
@@ -194,7 +194,7 @@ Trên Windows, bạn nên sử dụng ký tự `-` để tách tên model ra kh�
 Mặc định, Folio sẽ tìm kiếm model của bạn trong thư mục `app/Models` của ứng dụng. Tuy nhiên, nếu cần, bạn có thể chỉ định tên class model đủ điều kiện trong filename template của bạn:
 
 ```bash
-php artisan make:folio "users/[.App.Models.User]"
+php artisan folio:page "users/[.App.Models.User]"
 
 # pages/users/[.App.Models.User].blade.php → /users/1
 ```
