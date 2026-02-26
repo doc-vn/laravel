@@ -22,18 +22,15 @@ Trong các framework khác, phân trang có thể rất khổ. Chúng tôi hy v�
 
 Mặc định, HTML được tạo ra bởi trình phân trang tương thích với [Tailwind CSS framework](https://tailwindcss.com/); tuy nhiên, phân trang với Bootstrap cũng có sẵn.
 
-<a name="tailwind-jit"></a>
-#### Tailwind JIT
+<a name="tailwind"></a>
+#### Tailwind
 
-Nếu bạn đang sử dụng view phân trang Tailwind mặc định của Laravel và engine Tailwind JIT, bạn nên đảm bảo là khóa `content` của file `tailwind.config.js` trong ứng dụng của bạn tham chiếu đến các view phân trang của Laravel để các class Tailwind của chúng không bị xóa:
+Nếu bạn đang sử dụng các view phân trang Tailwind mặc định của Laravel với Tailwind 4.x, file `resources/css/app.css` của ứng dụng sẽ được cấu hình sẵn cho việc `@source` các view phân trang của Laravel:
 
-```js
-content: [
-    './resources/**/*.blade.php',
-    './resources/**/*.js',
-    './resources/**/*.vue',
-    './vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php',
-],
+```css
+@import 'tailwindcss';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 ```
 
 <a name="basic-usage"></a>
@@ -46,26 +43,27 @@ Có một số cách để phân trang. Đơn giản nhất là sử dụng phư
 
 Trong ví dụ này, chỉ có một tham số duy nhất được truyền vào phương thức `paginate` đó là số lượng dữ liệu mà bạn muốn hiển thị "trên mỗi trang". Trong trường hợp này, hãy khai báo chúng ta muốn hiển thị `15` dữ liệu trên mỗi trang:
 
-    <?php
+```php
+<?php
 
-    namespace App\Http\Controllers;
+namespace App\Http\Controllers;
 
-    use App\Http\Controllers\Controller;
-    use Illuminate\Support\Facades\DB;
-    use Illuminate\View\View;
+use Illuminate\Support\Facades\DB;
+use Illuminate\View\View;
 
-    class UserController extends Controller
+class UserController extends Controller
+{
+    /**
+     * Show all application users.
+     */
+    public function index(): View
     {
-        /**
-         * Show all application users.
-         */
-        public function index(): View
-        {
-            return view('user.index', [
-                'users' => DB::table('users')->paginate(15)
-            ]);
-        }
+        return view('user.index', [
+            'users' => DB::table('users')->paginate(15)
+        ]);
     }
+}
+```
 
 <a name="simple-pagination"></a>
 #### Simple Pagination
@@ -74,39 +72,51 @@ Phương thức `paginate` sẽ đếm tổng số bản ghi khớp với truy v
 
 Vì vậy, nếu bạn chỉ cần hiển thị các link đơn giản ví dụ như "Next" và "Previous" trong UI của application của bạn, bạn có thể sử dụng phương thức `simplePaginate` để thực hiện query đơn giản, hiệu quả.
 
-    $users = DB::table('users')->simplePaginate(15);
+```php
+$users = DB::table('users')->simplePaginate(15);
+```
 
 <a name="paginating-eloquent-results"></a>
 ### Phân trang từ Eloquent
 
 Bạn cũng có thể phân trang bằng các truy vấn [Eloquent](/docs/{{version}}/eloquent). Trong ví dụ này, chúng ta sẽ phân trang model `App\Models\User` và cho biết chúng ta sẽ dự định hiển thị 15 bản ghi trên mỗi trang. Như bạn có thể thấy, cú pháp này gần giống với phân trang bằng query builder:
 
-    use App\Models\User;
+```php
+use App\Models\User;
 
-    $users = User::paginate(15);
+$users = User::paginate(15);
+```
 
 Mặc định, bạn có thể gọi phương thức `paginate` sau khi set các điều kiện cho truy vấn, chẳng hạn như câu lệnh `where`:
 
-    $users = User::where('votes', '>', 100)->paginate(15);
+```php
+$users = User::where('votes', '>', 100)->paginate(15);
+```
 
 Bạn cũng có thể sử dụng phương thức `simplePaginate` khi phân trang trên các model Eloquent:
 
-    $users = User::where('votes', '>', 100)->simplePaginate(15);
+```php
+$users = User::where('votes', '>', 100)->simplePaginate(15);
+```
 
 Tương tự, bạn có thể sử dụng phương thức `cursorPaginate` để phân trang từ con trỏ trong các model Eloquent:
 
-    $users = User::where('votes', '>', 100)->cursorPaginate(15);
+```php
+$users = User::where('votes', '>', 100)->cursorPaginate(15);
+```
 
 <a name="multiple-paginator-instances-per-page"></a>
 #### Multiple Paginator Instances Per Page
 
 Thỉnh thoảng, bạn có thể cần hiển thị hai phân trang khác nhau trong một màn hình do ứng dụng của bạn hiển thị. Tuy nhiên, nếu cả hai instance phân trang đều sử dụng tham số query `page` để lưu lại trang hiện tại thì hai phân trang sẽ xung đột với nhau. Để giải quyết xung đột này, bạn có thể truyền tên của tham số query mà bạn muốn sử dụng để lưu lại trang hiện tại của phân trang thông qua tham số thứ ba được cung cấp cho các phương thức `paginate`, `simplePaginate` và `cursorPaginate`:
 
-    use App\Models\User;
+```php
+use App\Models\User;
 
-    $users = User::where('votes', '>', 100)->paginate(
-        $perPage = 15, $columns = ['*'], $pageName = 'users'
-    );
+$users = User::where('votes', '>', 100)->paginate(
+    $perPage = 15, $columns = ['*'], $pageName = 'users'
+);
+```
 
 <a name="cursor-pagination"></a>
 ### Phân trang từ con trỏ
@@ -115,13 +125,15 @@ Trong khi `paginate` và `simplePaginate` tạo các truy vấn bằng cách s�
 
 Không giống như phân trang dựa trên offset, sẽ chứa trang số bao nhiêu trong chuỗi truy vấn của các URL do phân trang tạo ra, phân trang từ con trỏ sẽ lưu một chuỗi "con trỏ" vào chuỗi truy vấn. "Con trỏ" là một chuỗi được mã hóa chứa vị trí tiếp theo sẽ bắt đầu phân trang và hướng mà nó sẽ phân trang:
 
-```nothing
+```text
 http://localhost/users?cursor=eyJpZCI6MTUsIl9wb2ludHNUb05leHRJdGVtcyI6dHJ1ZX0
 ```
 
 Bạn có thể tạo một instance phân trang từ con trỏ thông qua phương thức `cursorPaginate` do query builder cung cấp. Phương thức này sẽ trả về một instance của `Illuminate\Pagination\CursorPaginator`:
 
-    $users = DB::table('users')->orderBy('id')->cursorPaginate(15);
+```php
+$users = DB::table('users')->orderBy('id')->cursorPaginate(15);
+```
 
 Khi bạn đã lấy ra được một instance phân trang từ con trỏ, bạn có thể [hiển thị kết quả phân trang](#displaying-pagination-results) như bạn thường làm khi sử dụng các phương thức `paginate` và `simplePaginate`. Để biết thêm thông tin về các phương thức instance do phân trang từ con trỏ cung cấp, vui lòng tham khảo [tài liệu về phương thức instance phân trang từ con trỏ](#cursor-paginator-instance-methods).
 
@@ -170,41 +182,49 @@ Nói cách khác, `Paginator` tương ứng với phương thức `simplePaginat
 
 Mặc định, các link do phân trang được tạo ra sẽ giống với URI của request hiện tại. Tuy nhiên, phương thức `withPath` của phân trang cho phép bạn tùy chỉnh các URI mà được trình phân trang sử dụng khi tạo link. Ví dụ: nếu bạn muốn trình phân trang tạo các link như `http://example.com/admin/users?page=N`, thì bạn nên truyền `/admin/users` cho phương thức `withPath`:
 
-    use App\Models\User;
+```php
+use App\Models\User;
 
-    Route::get('/users', function () {
-        $users = User::paginate(15);
+Route::get('/users', function () {
+    $users = User::paginate(15);
 
-        $users->withPath('/admin/users');
+    $users->withPath('/admin/users');
 
-        // ...
-    });
+    // ...
+});
+```
 
 <a name="appending-query-string-values"></a>
 #### Appending Query String Values
 
 Bạn có thể nối thêm các tham số vào các link phân trang bằng phương thức `appends`. Ví dụ: để nối `sort=votes` vào các link phân trang, bạn có thể thực hiện gọi đến phương thức `appends` như sau:
 
-    use App\Models\User;
+```php
+use App\Models\User;
 
-    Route::get('/users', function () {
-        $users = User::paginate(15);
+Route::get('/users', function () {
+    $users = User::paginate(15);
 
-        $users->appends(['sort' => 'votes']);
+    $users->appends(['sort' => 'votes']);
 
-        // ...
-    });
+    // ...
+});
+```
 
 Nếu bạn muốn nối tất cả các giá trị query string hiện tại vào các link phân trang, bạn có thể sử dụng phương thức `withQueryString`:
 
-    $users = User::paginate(15)->withQueryString();
+```php
+$users = User::paginate(15)->withQueryString();
+```
 
 <a name="appending-hash-fragments"></a>
 #### Appending Hash Fragments
 
 Nếu bạn muốn nối thêm một "hash fragment" vào các URL của trình phân trang, bạn có thể sử dụng phương thức `fragment`. Ví dụ: để nối `#users` vào cuối của mỗi link phân trang, hãy thực hiện gọi đến phương thức `fragment` như sau:
 
-    $users = User::paginate(15)->fragment('users');
+```php
+$users = User::paginate(15)->fragment('users');
+```
 
 <a name="displaying-pagination-results"></a>
 ## Displaying Pagination Results
@@ -239,35 +259,40 @@ Khi trình phân trang hiển thị các link phân trang, số trang hiện t�
 
 Các class phân trang của Laravel sẽ được implement một contract Interface `Illuminate\Contracts\Support\Jsonable` và có sẵn phương thức `toJson`, do đó rất dễ để chuyển đổi kết quả phân trang của bạn sang dạng JSON. Bạn cũng có thể chuyển đổi một instance phân trang thành JSON bằng cách trả nó về từ một action của một route hoặc một controller:
 
-    use App\Models\User;
+```php
+use App\Models\User;
 
-    Route::get('/users', function () {
-        return User::paginate();
-    });
+Route::get('/users', function () {
+    return User::paginate();
+});
+```
 
 JSON từ trình phân trang sẽ chứa thông tin meta như `total`, `current_page`, `last_page`, và hơn thế nữa. Các record kết quả sẽ nằm trong key `data` trong mảng JSON. Dưới đây là một ví dụ về JSON được tạo ra bằng cách trả về instance paginator từ một route:
 
-    {
-       "total": 50,
-       "per_page": 15,
-       "current_page": 1,
-       "last_page": 4,
-       "first_page_url": "http://laravel.app?page=1",
-       "last_page_url": "http://laravel.app?page=4",
-       "next_page_url": "http://laravel.app?page=2",
-       "prev_page_url": null,
-       "path": "http://laravel.app",
-       "from": 1,
-       "to": 15,
-       "data":[
-            {
-                // Record...
-            },
-            {
-                // Record...
-            }
-       ]
-    }
+```json
+{
+   "total": 50,
+   "per_page": 15,
+   "current_page": 1,
+   "last_page": 4,
+   "current_page_url": "http://laravel.app?page=1",
+   "first_page_url": "http://laravel.app?page=1",
+   "last_page_url": "http://laravel.app?page=4",
+   "next_page_url": "http://laravel.app?page=2",
+   "prev_page_url": null,
+   "path": "http://laravel.app",
+   "from": 1,
+   "to": 15,
+   "data":[
+        {
+            // Record...
+        },
+        {
+            // Record...
+        }
+   ]
+}
+```
 
 <a name="customizing-the-pagination-view"></a>
 ## Tuỳ biến View của phân trang
@@ -291,41 +316,45 @@ Lệnh này sẽ lưu các view vào trong thư mục `resources/views/vendor/pa
 
 Nếu bạn muốn chỉ định một file khác làm pagination view mặc định, bạn có thể gọi phương thức `defaultView` và `defaultSimpleView` của paginator trong phương thức `boot` của class `App\Providers\AppServiceProvider` của bạn:
 
-    <?php
+```php
+<?php
 
-    namespace App\Providers;
+namespace App\Providers;
 
-    use Illuminate\Pagination\Paginator;
-    use Illuminate\Support\ServiceProvider;
+use Illuminate\Pagination\Paginator;
+use Illuminate\Support\ServiceProvider;
 
-    class AppServiceProvider extends ServiceProvider
+class AppServiceProvider extends ServiceProvider
+{
+    /**
+     * Bootstrap any application services.
+     */
+    public function boot(): void
     {
-        /**
-         * Bootstrap any application services.
-         */
-        public function boot(): void
-        {
-            Paginator::defaultView('view-name');
+        Paginator::defaultView('view-name');
 
-            Paginator::defaultSimpleView('view-name');
-        }
+        Paginator::defaultSimpleView('view-name');
     }
+}
+```
 
 <a name="using-bootstrap"></a>
 ### Dùng Bootstrap
 
 Laravel có chứa các view phân trang được xây dựng bằng [Bootstrap CSS](https://getbootstrap.com/). Để sử dụng các view này thay vì các view Tailwind mặc định, bạn có thể gọi phương thức `useBootstrapFour` hoặc `useBootstrapFive` của paginator trong phương thức `boot` của class `App\Providers\AppServiceProvider` của bạn:
 
-    use Illuminate\Pagination\Paginator;
+```php
+use Illuminate\Pagination\Paginator;
 
-    /**
-     * Bootstrap any application services.
-     */
-    public function boot(): void
-    {
-        Paginator::useBootstrapFive();
-        Paginator::useBootstrapFour();
-    }
+/**
+ * Bootstrap any application services.
+ */
+public function boot(): void
+{
+    Paginator::useBootstrapFive();
+    Paginator::useBootstrapFour();
+}
+```
 
 <a name="paginator-instance-methods"></a>
 ## Paginator / LengthAwarePaginator Instance Methods
@@ -334,27 +363,28 @@ Mỗi instance phân trang cung cấp thêm các thông tin phân trang thông q
 
 <div class="overflow-auto">
 
-| Method | Description |
-| --- | --- |
-| `$paginator->count()` | Lấy số lượng các item cho trang hiện tại. |
-| `$paginator->currentPage()` | GLấy page number trong trang hiện tại. |
-| `$paginator->firstItem()` | Lấy số lượng kết quả của item đầu tiên trong kết quả. |
-| `$paginator->getOptions()` | Lấy các tùy chọn paginator. |
-| `$paginator->getUrlRange($start, $end)` | Tạo một loạt các URL phân trang. |
-| `$paginator->hasPages()` | Kiểm tra xem có đủ item để chia thành nhiều trang hay không. |
-| `$paginator->hasMorePages()` | Kiểm tra xem có nhiều item hơn trong data store hay không. |
-| `$paginator->items()` | Lấy các item cho trang hiện tại. |
-| `$paginator->lastItem()` | Lấy số lượng kết quả của item cuối cùng trong kết quả. |
-| `$paginator->lastPage()` | Lấy page number của trang cuối cùng có sẵn. (Không khả dụng khi sử dụng `simplePaginate`). |
-| `$paginator->nextPageUrl()` | Lấy URL cho trang tiếp theo. |
-| `$paginator->onFirstPage()` | Kiểm tra xem paginator có đang ở trang đầu tiên hay không. |
-| `$paginator->perPage()` | Số lượng item được hiển thị trên mỗi trang. |
-| `$paginator->previousPageUrl()` | Lấy URL cho trang trước đó. |
-| `$paginator->total()` | Kiểm tra tổng số item phù hợp trong data store. (Không khả dụng khi sử dụng `simplePaginate`). |
-| `$paginator->url($page)` | Lấy URL cho một trang nhất định. |
-| `$paginator->getPageName()` | Lấy biến query string được sử dụng để lưu trữ trang. |
-| `$paginator->setPageName($name)` | Set biến query string được sử dụng để lưu trữ trang. |
-| `$paginator->through($callback)` | Sẽ lặp cái item có trong data store với một callback. |
+| Method                                  | Description                                                                                                  |
+| --------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| `$paginator->count()`                   | Lấy số lượng các item cho trang hiện tại.                                                                    |
+| `$paginator->currentPage()`             | GLấy page number trong trang hiện tại.                                                                       |
+| `$paginator->firstItem()`               | Lấy số lượng kết quả của item đầu tiên trong kết quả.                                                        |
+| `$paginator->getOptions()`              | Lấy các tùy chọn paginator.                                                                                  |
+| `$paginator->getUrlRange($start, $end)` | Tạo một loạt các URL phân trang.                                                                             |
+| `$paginator->hasPages()`                | Kiểm tra xem có đủ item để chia thành nhiều trang hay không.                                                 |
+| `$paginator->hasMorePages()`            | Kiểm tra xem có nhiều item hơn trong data store hay không.                                                   |
+| `$paginator->items()`                   | Lấy các item cho trang hiện tại.                                                                             |
+| `$paginator->lastItem()`                | Lấy số lượng kết quả của item cuối cùng trong kết quả.                                                       |
+| `$paginator->lastPage()`                | Lấy page number của trang cuối cùng có sẵn. (Không khả dụng khi sử dụng `simplePaginate`).                   |
+| `$paginator->nextPageUrl()`             | Lấy URL cho trang tiếp theo.                                                                                 |
+| `$paginator->onFirstPage()`             | Kiểm tra xem paginator có đang ở trang đầu tiên hay không.                                                   |
+| `$paginator->onLastPage()`              | Kiểm tra xem paginator có đang ở trang cuối cùng hay không.                                                  |
+| `$paginator->perPage()`                 | Số lượng item được hiển thị trên mỗi trang.                                                                  |
+| `$paginator->previousPageUrl()`         | Lấy URL cho trang trước đó.                                                                                  |
+| `$paginator->total()`                   | Kiểm tra tổng số item phù hợp trong data store. (Không khả dụng khi sử dụng `simplePaginate`).               |
+| `$paginator->url($page)`                | Lấy URL cho một trang nhất định.                                                                             |
+| `$paginator->getPageName()`             | Lấy biến query string được sử dụng để lưu trữ trang.                                                         |
+| `$paginator->setPageName($name)`        | Set biến query string được sử dụng để lưu trữ trang.                                                         |
+| `$paginator->through($callback)`        | Sẽ lặp cái item có trong data store với một callback.                                                        |
 
 </div>
 

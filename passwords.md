@@ -1,8 +1,9 @@
 # Resetting Passwords
 
 - [Giới thiệu](#introduction)
+    - [Cấu hình](#configuration)
+    - [Yêu cầu driver](#driver-prerequisites)
     - [Chuẩn bị Model](#model-preparation)
-    - [Chuẩn bị Database](#database-preparation)
     - [Cấu hình Trusted Hosts](#configuring-trusted-hosts)
 - [Routing](#routing)
     - [Requesting The Password Reset Link](#requesting-the-password-reset-link)
@@ -18,17 +19,53 @@ Hầu hết các ứng dụng web đều cung cấp một cách nào đó để 
 > [!NOTE]
 > Bạn muốn bắt đầu nhanh chóng? Hãy cài đặt [starter kit](/docs/{{version}}/starter-kits) của Laravel trong ứng dụng mới của bạn. Bộ khởi đầu của Laravel sẽ đảm nhiệm việc xây dựng toàn bộ hệ thống xác thực cho bạn, bao gồm cả việc reset mật khẩu.
 
+<a name="configuration"></a>
+### Cấu hình
+
+File cấu hình reset mật khẩu của ứng dụng được lưu tại `config/auth.php`. Hãy nhớ kiểm tra các tùy chọn có sẵn có trong file này. Mặc định, Laravel đã được cấu hình để sử dụng driver `database` để reset mật khẩu.
+
+Tùy chọn cấu hình `driver` reset mật khẩu sẽ định nghĩa nơi lưu trữ dữ liệu reset mật khẩu. Laravel có chứa hai driver:
+
+<div class="content-list" markdown="1">
+
+- `database` - dữ liệu reset mật khẩu sẽ được lưu trong một cơ sở dữ liệu quan hệ.
+- `cache` - dữ liệu reset mật khẩu sẽ được lưu trong một trong các kho lưu trữ dựa trên cache của bạn.
+
+</div>
+
+<a name="driver-prerequisites"></a>
+### Yêu cầu driver
+
+<a name="database"></a>
+#### Database
+
+Khi sử dụng driver `database` mặc định, một bảng phải được tạo để lưu các token reset mật khẩu của ứng dụng. Thông thường, điều này đã có sẵn trong file migration `0001_01_01_000000_create_users_table.php` mặc định của Laravel.
+
+<a name="cache"></a>
+#### Cache
+
+Cũng có một driver cache có sẵn để xử lý việc reset mật khẩu, driver này không yêu cầu một bảng cơ sở dữ liệu riêng biệt. Các mục được khóa theo địa chỉ email của người dùng, vì vậy hãy đảm bảo bạn không sử dụng địa chỉ email làm cache key ở một nơi khác trong ứng dụng của bạn:
+
+```php
+'passwords' => [
+    'users' => [
+        'driver' => 'cache',
+        'provider' => 'users',
+        'store' => 'passwords', // Optional...
+        'expire' => 60,
+        'throttle' => 60,
+    ],
+],
+```
+
+Để ngăn việc gọi lệnh `artisan cache:clear` làm mất dữ liệu reset mật khẩu của bạn, bạn có thể tùy chọn chỉ định một cache store riêng biệt bằng key cấu hình `store`. Giá trị này phải tương ứng với một store đã được cấu hình trong file `config/cache.php` của bạn.
+
 <a name="model-preparation"></a>
 ### Chuẩn bị Model
 
 Trước khi sử dụng các tính năng reset mật khẩu của Laravel, model `App\Models\User` của ứng dụng của bạn phải sử dụng trait `Illuminate\Notifications\Notifiable`. Thông thường, mặc định trait này đã được đưa vào model `App\Models\User` khi tạo ứng dụng Laravel mới.
 
 Tiếp theo, hãy chú ý model `App\Models\User` của bạn phải được implement từ contract `Illuminate\Contracts\Auth\CanResetPassword`. Model `App\Models\User` đi kèm với framework Laravel đã implement interface này và sử dụng trait `Illuminate\Auth\Passwords\CanResetPassword` để chứa các phương thức để implement interface đó.
-
-<a name="database-preparation"></a>
-### Chuẩn bị Database
-
-Một bảng phải được tạo ra để lưu trữ các mã token reset của ứng dụng của bạn. Thông thường, điều này đã có trong migration cơ sở dữ liệu mặc định `0001_01_01_000000_create_users_table.php` của Laravel.
 
 <a name="configuring-trusted-hosts"></a>
 ### Cấu hình Trusted Hosts
@@ -37,7 +74,7 @@ Mặc định, Laravel sẽ phản hồi lại tất cả các request mà nó n
 
 Thông thường, bạn nên cấu hình máy chủ web của bạn, chẳng hạn như Nginx hoặc Apache, để chỉ gửi request đến ứng dụng giống với một host name nhất định. Tuy nhiên, nếu bạn không có khả năng tùy chỉnh trực tiếp máy chủ web của bạn và cần hướng dẫn Laravel chỉ phản hồi với một số host name nhất định, bạn có thể làm như vậy bằng cách sử dụng phương thức middleware `trustHosts` trong file `bootstrap/app.php` của ứng dụng của bạn. Điều này đặc biệt quan trọng khi ứng dụng của bạn cung cấp chức năng set lại mật khẩu.
 
-Để tìm hiểu thêm về middleware này, vui lòng tham khảo [tài liệu về middleware `TrustHosts`](/docs/{{version}}/requests#configuring-trusted-hosts).
+Để tìm hiểu thêm về middleware này, vui lòng tham khảo [tài liệu về middleware TrustHosts](/docs/{{version}}/requests#configuring-trusted-hosts).
 
 <a name="routing"></a>
 ## Routing
@@ -52,9 +89,11 @@ Thông thường, bạn nên cấu hình máy chủ web của bạn, chẳng h�
 
 Đầu tiên, chúng ta sẽ định nghĩa các route cần thiết để yêu cầu link set lại mật khẩu. Để bắt đầu, chúng ta sẽ định nghĩa một route trả về view với form yêu cầu link set lại mật khẩu:
 
-    Route::get('/forgot-password', function () {
-        return view('auth.forgot-password');
-    })->middleware('guest')->name('password.request');
+```php
+Route::get('/forgot-password', function () {
+    return view('auth.forgot-password');
+})->middleware('guest')->name('password.request');
+```
 
 View mà được route này trả về phải có form chứa field `email`, field này sẽ cho phép người dùng yêu cầu link set lại mật khẩu cho một địa chỉ email nhất định.
 
@@ -63,20 +102,22 @@ View mà được route này trả về phải có form chứa field `email`, fi
 
 Tiếp theo, chúng ta sẽ định nghĩa một route để xử lý request form từ view "quên mật khẩu". Route này sẽ chịu trách nhiệm xác thực địa chỉ email và gửi yêu cầu set lại mật khẩu đến người dùng tương ứng:
 
-    use Illuminate\Http\Request;
-    use Illuminate\Support\Facades\Password;
+```php
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Password;
 
-    Route::post('/forgot-password', function (Request $request) {
-        $request->validate(['email' => 'required|email']);
+Route::post('/forgot-password', function (Request $request) {
+    $request->validate(['email' => 'required|email']);
 
-        $status = Password::sendResetLink(
-            $request->only('email')
-        );
+    $status = Password::sendResetLink(
+        $request->only('email')
+    );
 
-        return $status === Password::ResetLinkSent
-            ? back()->with(['status' => __($status)])
-            : back()->withErrors(['email' => __($status)]);
-    })->middleware('guest')->name('password.email');
+    return $status === Password::ResetLinkSent
+        ? back()->with(['status' => __($status)])
+        : back()->withErrors(['email' => __($status)]);
+})->middleware('guest')->name('password.email');
+```
 
 Trước khi tiếp tục, chúng ta hãy xem xét route này chi tiết hơn. Đầu tiên, thuộc tính `email` của request sẽ được validate. Tiếp theo, chúng ta sẽ sử dụng "password broker" có sẵn của Laravel (thông qua facade `Password`) để gửi link set lại mật khẩu cho người dùng. Password broker sẽ đảm nhiệm việc lấy ra người dùng theo một field nhất định (trong trường hợp này là địa chỉ email) và gửi cho người dùng link set lại mật khẩu thông qua [hệ thống notification](/docs/{{version}}/notifications).
 
@@ -98,9 +139,11 @@ Bạn có thể thắc mắc làm thế nào mà Laravel biết cách lấy ra b
 
 Tiếp theo, chúng ta sẽ định nghĩa các route cần thiết để set lại mật khẩu khi người dùng nhấn vào link set lại mật khẩu đã được gửi qua email cho họ và cung cấp một mật khẩu mới. Trước tiên, hãy định nghĩa route sẽ hiển thị form set lại mật khẩu mà được hiển thị khi người dùng nhấn vào link set lại mật khẩu. Route này sẽ nhận vào tham số `token` mà chúng ta sẽ sử dụng sau này để xác minh yêu cầu set lại mật khẩu:
 
-    Route::get('/reset-password/{token}', function (string $token) {
-        return view('auth.reset-password', ['token' => $token]);
-    })->middleware('guest')->name('password.reset');
+```php
+Route::get('/reset-password/{token}', function (string $token) {
+    return view('auth.reset-password', ['token' => $token]);
+})->middleware('guest')->name('password.reset');
+```
 
 View được route này trả về sẽ hiển thị một form chứa các field `email`, field `password`, field `password_confirmation` và field `token` hidden, field này phải chứa giá trị của `$token` mà đã được nhận bởi route của chúng ta.
 
@@ -109,37 +152,39 @@ View được route này trả về sẽ hiển thị một form chứa các fie
 
 Tất nhiên, chúng ta sẽ cần định nghĩa một route để xử lý việc gửi form set lại mật khẩu. Route này sẽ chịu trách nhiệm xác thực request đến và cập nhật mật khẩu của người dùng trong cơ sở dữ liệu:
 
-    use App\Models\User;
-    use Illuminate\Auth\Events\PasswordReset;
-    use Illuminate\Http\Request;
-    use Illuminate\Support\Facades\Hash;
-    use Illuminate\Support\Facades\Password;
-    use Illuminate\Support\Str;
+```php
+use App\Models\User;
+use Illuminate\Auth\Events\PasswordReset;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Str;
 
-    Route::post('/reset-password', function (Request $request) {
-        $request->validate([
-            'token' => 'required',
-            'email' => 'required|email',
-            'password' => 'required|min:8|confirmed',
-        ]);
+Route::post('/reset-password', function (Request $request) {
+    $request->validate([
+        'token' => 'required',
+        'email' => 'required|email',
+        'password' => 'required|min:8|confirmed',
+    ]);
 
-        $status = Password::reset(
-            $request->only('email', 'password', 'password_confirmation', 'token'),
-            function (User $user, string $password) {
-                $user->forceFill([
-                    'password' => Hash::make($password)
-                ])->setRememberToken(Str::random(60));
+    $status = Password::reset(
+        $request->only('email', 'password', 'password_confirmation', 'token'),
+        function (User $user, string $password) {
+            $user->forceFill([
+                'password' => Hash::make($password)
+            ])->setRememberToken(Str::random(60));
 
-                $user->save();
+            $user->save();
 
-                event(new PasswordReset($user));
-            }
-        );
+            event(new PasswordReset($user));
+        }
+    );
 
-        return $status === Password::PasswordReset
-            ? redirect()->route('login')->with('status', __($status))
-            : back()->withErrors(['email' => [__($status)]]);
-    })->middleware('guest')->name('password.update');
+    return $status === Password::PasswordReset
+        ? redirect()->route('login')->with('status', __($status))
+        : back()->withErrors(['email' => [__($status)]]);
+})->middleware('guest')->name('password.update');
+```
 
 Trước khi tiếp tục, chúng ta hãy xem xét route này một cách chi tiết hơn. Đầu tiên, các thuộc tính `token`, `email` và `password` của request sẽ được validate. Tiếp theo, chúng ta sẽ sử dụng "password broker" có sẵn của Laravel (thông qua facade `Password`) để validate thông tin xác thực của request đặt lại mật khẩu.
 
@@ -152,7 +197,7 @@ Trước khi tiếp tục, bạn có thể thắc mắc làm thế nào mà Lara
 <a name="deleting-expired-tokens"></a>
 ## Xoá Token hết hạn
 
-Token reset password đã hết hạn sẽ vẫn còn nằm trong cơ sở dữ liệu của bạn. Tuy nhiên, bạn có thể dễ dàng xóa các bản ghi này bằng lệnh Artisan `auth:clear-resets`:
+Nếu bạn đang sử dụng driver `database`,token reset password đã hết hạn sẽ vẫn còn nằm trong cơ sở dữ liệu của bạn. Tuy nhiên, bạn có thể dễ dàng xóa các bản ghi này bằng lệnh Artisan `auth:clear-resets`:
 
 ```shell
 php artisan auth:clear-resets
@@ -160,9 +205,11 @@ php artisan auth:clear-resets
 
 Nếu bạn muốn tự động hóa quy trình này, hãy cân nhắc thêm lệnh vào [scheduler](/docs/{{version}}/scheduling) trong ứng dụng của bạn:
 
-    use Illuminate\Support\Facades\Schedule;
+```php
+use Illuminate\Support\Facades\Schedule;
 
-    Schedule::command('auth:clear-resets')->everyFifteenMinutes();
+Schedule::command('auth:clear-resets')->everyFifteenMinutes();
+```
 
 <a name="password-customization"></a>
 ## Customization
@@ -170,36 +217,40 @@ Nếu bạn muốn tự động hóa quy trình này, hãy cân nhắc thêm l�
 <a name="reset-link-customization"></a>
 #### Reset Link Customization
 
-Bạn có thể tùy chỉnh URL link set lại mật khẩu bằng phương thức `createUrlUsing` do class notification `ResetPassword` cung cấp. Phương thức này chấp nhận một closure nhận vào một instance người dùng đang nhận thông báo cũng như một token set lại mật khẩu. Thông thường, bạn nên gọi phương thức này từ phương thức `boot` của service provider `App\Providers\AppServiceProvider`:
+Bạn có thể tùy chỉnh URL link set lại mật khẩu bằng phương thức `createUrlUsing` do class notification `ResetPassword` cung cấp. Phương thức này chấp nhận một closure nhận vào một instance người dùng đang nhận thông báo cũng như một token set lại mật khẩu. Thông thường, bạn nên gọi phương thức này từ phương thức `boot` của service provider `AppServiceProvider`:
 
-    use App\Models\User;
-    use Illuminate\Auth\Notifications\ResetPassword;
+```php
+use App\Models\User;
+use Illuminate\Auth\Notifications\ResetPassword;
 
-    /**
-     * Bootstrap any application services.
-     */
-    public function boot(): void
-    {
-        ResetPassword::createUrlUsing(function (User $user, string $token) {
-            return 'https://example.com/reset-password?token='.$token;
-        });
-    }
+/**
+ * Bootstrap any application services.
+ */
+public function boot(): void
+{
+    ResetPassword::createUrlUsing(function (User $user, string $token) {
+        return 'https://example.com/reset-password?token='.$token;
+    });
+}
+```
 
 <a name="reset-email-customization"></a>
 #### Reset Email Customization
 
 Bạn có thể dễ dàng sửa class notification được sử dụng để gửi link reset mật khẩu cho người dùng. Để bắt đầu, hãy ghi đè phương thức `sendPasswordResetNotification` trong model `App\Models\User` của bạn. Trong phương thức này, bạn có thể gửi thông báo bằng bất kỳ [class notification](/docs/{{version}}/notifications) do chính bạn tạo. `$token` set lại mật khẩu là tham số đầu tiên mà phương thức nhận vào. Bạn có thể sử dụng `$token` này để tạo URL set lại mật khẩu mà bạn chọn và gửi thông báo cho người dùng:
 
-    use App\Notifications\ResetPasswordNotification;
+```php
+use App\Notifications\ResetPasswordNotification;
 
-    /**
-     * Send a password reset notification to the user.
-     *
-     * @param  string  $token
-     */
-    public function sendPasswordResetNotification($token): void
-    {
-        $url = 'https://example.com/reset-password?token='.$token;
+/**
+ * Send a password reset notification to the user.
+ *
+ * @param  string  $token
+ */
+public function sendPasswordResetNotification($token): void
+{
+    $url = 'https://example.com/reset-password?token='.$token;
 
-        $this->notify(new ResetPasswordNotification($url));
-    }
+    $this->notify(new ResetPasswordNotification($url));
+}
+```

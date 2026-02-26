@@ -86,34 +86,36 @@ Thỉnh thoảng, bạn cũng có thể muốn sử dụng một kết nối ri�
 
 Để xem cách cấu hình các kết nối đọc và ghi này, hãy xem ví dụ sau:
 
-    'mysql' => [
-        'read' => [
-            'host' => [
-                '192.168.1.1',
-                '196.168.1.2',
-            ],
+```php
+'mysql' => [
+    'read' => [
+        'host' => [
+            '192.168.1.1',
+            '196.168.1.2',
         ],
-        'write' => [
-            'host' => [
-                '196.168.1.3',
-            ],
-        ],
-        'sticky' => true,
-
-        'database' => env('DB_DATABASE', 'laravel'),
-        'username' => env('DB_USERNAME', 'root'),
-        'password' => env('DB_PASSWORD', ''),
-        'unix_socket' => env('DB_SOCKET', ''),
-        'charset' => env('DB_CHARSET', 'utf8mb4'),
-        'collation' => env('DB_COLLATION', 'utf8mb4_unicode_ci'),
-        'prefix' => '',
-        'prefix_indexes' => true,
-        'strict' => true,
-        'engine' => null,
-        'options' => extension_loaded('pdo_mysql') ? array_filter([
-            PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
-        ]) : [],
     ],
+    'write' => [
+        'host' => [
+            '196.168.1.3',
+        ],
+    ],
+    'sticky' => true,
+
+    'database' => env('DB_DATABASE', 'laravel'),
+    'username' => env('DB_USERNAME', 'root'),
+    'password' => env('DB_PASSWORD', ''),
+    'unix_socket' => env('DB_SOCKET', ''),
+    'charset' => env('DB_CHARSET', 'utf8mb4'),
+    'collation' => env('DB_COLLATION', 'utf8mb4_unicode_ci'),
+    'prefix' => '',
+    'prefix_indexes' => true,
+    'strict' => true,
+    'engine' => null,
+    'options' => extension_loaded('pdo_mysql') ? array_filter([
+        PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
+    ]) : [],
+],
+```
 
 Lưu ý rằng có ba key đã được thêm vào trong mảng cấu hình là: `read`, `write` và `stick`. Các key `read` và `write` có thể có một mảng các giá trị chứa key duy nhất là: `host`. Còn lại các tùy chọn cơ sở dữ liệu khác cho các kết nối `read` và `write` sẽ được lấy từ trong mảng cấu hình `mysql`.
 
@@ -134,107 +136,126 @@ Khi bạn đã cấu hình các kết nối cơ sở dữ liệu của bạn, b�
 
 Để chạy một truy vấn SELECT cơ bản, bạn có thể sử dụng phương thức `select` trên facade `DB`:
 
-    <?php
+```php
+<?php
 
-    namespace App\Http\Controllers;
+namespace App\Http\Controllers;
 
-    use App\Http\Controllers\Controller;
-    use Illuminate\Support\Facades\DB;
-    use Illuminate\View\View;
+use Illuminate\Support\Facades\DB;
+use Illuminate\View\View;
 
-    class UserController extends Controller
+class UserController extends Controller
+{
+    /**
+     * Show a list of all of the application's users.
+     */
+    public function index(): View
     {
-        /**
-         * Show a list of all of the application's users.
-         */
-        public function index(): View
-        {
-            $users = DB::select('select * from users where active = ?', [1]);
+        $users = DB::select('select * from users where active = ?', [1]);
 
-            return view('user.index', ['users' => $users]);
-        }
+        return view('user.index', ['users' => $users]);
     }
+}
+```
 
 Tham số đầu tiên được truyền cho phương thức `select` là một truy vấn SQL, còn tham số thứ hai là bất kỳ tham số nào cần thiết cho truy vấn đó thông thường là các giá trị của các mệnh đề `where`. Rằng buộc tham số này sẽ được bảo vệ để chống lại các SQL injection.
 
 Phương thức `select` sẽ luôn trả về một kết quả là một `array`. Mỗi kết quả trong mảng sẽ là một đối tượng `stdClass` của PHP, đại diện cho một record trong cơ sở dữ liệu:
 
-    use Illuminate\Support\Facades\DB;
+```php
+use Illuminate\Support\Facades\DB;
 
-    $users = DB::select('select * from users');
+$users = DB::select('select * from users');
 
-    foreach ($users as $user) {
-        echo $user->name;
-    }
+foreach ($users as $user) {
+    echo $user->name;
+}
+```
 
 <a name="selecting-scalar-values"></a>
 #### Selecting Scalar Values
 
 Thỉnh thoảng truy vấn cơ sở dữ liệu của bạn có thể dẫn đến một giá trị duy nhất. Thay vì được yêu cầu lấy ra kết quả của truy vấn từ một record object, Laravel cho phép bạn lấy ra trực tiếp giá trị này bằng phương thức `scalar`:
 
-    $burgers = DB::scalar(
-        "select count(case when food = 'burger' then 1 end) as burgers from menu"
-    );
+```php
+$burgers = DB::scalar(
+    "select count(case when food = 'burger' then 1 end) as burgers from menu"
+);
+```
 
 <a name="selecting-multiple-result-sets"></a>
 #### Selecting Multiple Result Sets
 
 Nếu ứng dụng của bạn gọi các procedure của sql và trả về nhiều kết quả, bạn có thể sử dụng phương thức `selectResultSets` để lấy ra tất cả các kết quả được trả về bởi procedure đó:
 
-    [$options, $notifications] = DB::selectResultSets(
-        "CALL get_user_options_and_notifications(?)", $request->user()->id
-    );
+```php
+[$options, $notifications] = DB::selectResultSets(
+    "CALL get_user_options_and_notifications(?)", $request->user()->id
+);
+```
 
 <a name="using-named-bindings"></a>
 #### Using Named Bindings
 
 Thay vì sử dụng `?` để biểu thị cho các tham số của bạn, bạn có thể thực hiện truy vấn bằng các tham số có tên:
 
-    $results = DB::select('select * from users where id = :id', ['id' => 1]);
+```php
+$results = DB::select('select * from users where id = :id', ['id' => 1]);
+```
 
 <a name="running-an-insert-statement"></a>
 #### Running an Insert Statement
 
 Để thực hiện một câu lệnh `insert`, bạn có thể sử dụng phương thức `insert` trên facade `DB`. Giống như `select`, phương thức này chấp nhận truy vấn SQL làm tham số đầu tiên và các tham số còn lại làm tham số thứ hai:
 
-    use Illuminate\Support\Facades\DB;
+```php
+use Illuminate\Support\Facades\DB;
 
-    DB::insert('insert into users (id, name) values (?, ?)', [1, 'Marc']);
+DB::insert('insert into users (id, name) values (?, ?)', [1, 'Marc']);
+```
 
 <a name="running-an-update-statement"></a>
 #### Running an Update Statement
 
 Phương thức `update` sẽ được sử dụng để cập nhật các bản ghi hiện có trong cơ sở dữ liệu. Số lượng các hàng bị cập nhật bởi câu lệnh này sẽ được trả về từ phương thức:
 
-    use Illuminate\Support\Facades\DB;
+```php
+use Illuminate\Support\Facades\DB;
 
-    $affected = DB::update(
-        'update users set votes = 100 where name = ?',
-        ['Anita']
-    );
+$affected = DB::update(
+    'update users set votes = 100 where name = ?',
+    ['Anita']
+);
+```
 
 <a name="running-a-delete-statement"></a>
 #### Running a Delete Statement
 
 Phương thức `delete` sẽ được sử dụng để xóa các bản ghi ra khỏi cơ sở dữ liệu. Giống như `update`, Số lượng các hàng bị xoá sẽ được trả về từ phương thức:
 
-    use Illuminate\Support\Facades\DB;
+```php
+use Illuminate\Support\Facades\DB;
 
-    $deleted = DB::delete('delete from users');
+$deleted = DB::delete('delete from users');
+```
 
 <a name="running-a-general-statement"></a>
 #### Running a General Statement
 
 Có một số lệnh cơ sở dữ liệu không trả về bất kỳ giá trị nào. Đối với các loại lệnh như thế này, bạn có thể sử dụng phương thức `statement` trên facade `DB`:
 
-    DB::statement('drop table users');
+```php
+DB::statement('drop table users');
+```
 
 <a name="running-an-unprepared-statement"></a>
 #### Running an Unprepared Statement
 
 Thỉnh thoảng bạn có thể muốn thực hiện một câu lệnh SQL mà không có liên kết với bất kỳ vào giá trị nào. Bạn có thể sử dụng phương pháp `unprepared` của facade `DB` để thực hiện việc này:
 
-    DB::unprepared('update users set votes = 100 where name = "Dries"');
+```php
+DB::unprepared('update users set votes = 100 where name = "Dries"');
+```
 
 > [!WARNING]
 > Vì các câu lệnh unprepared không liên kết với bất kỳ tham số nên chúng có thể dễ bị tấn công bởi SQL injection. Bạn đừng bao giờ cho phép các giá trị do người dùng kiểm soát thực hiện trong câu lệnh unprepared .
@@ -244,7 +265,9 @@ Thỉnh thoảng bạn có thể muốn thực hiện một câu lệnh SQL mà 
 
 Khi sử dụng các phương thức `statement` và `unprepared` của facade `DB` trong các transaction, bạn phải cẩn thận để tránh các câu lệnh gây ra các [commit ngầm](https://dev.mysql.com/doc/refman/8.0/en/implicit-commit.html). Các câu lệnh này sẽ khiến database engine gián tiếp commit toàn bộ transaction, khiến Laravel không biết về mức độ transaction của cơ sở dữ liệu. Một ví dụ về câu lệnh như vậy là tạo một bảng cơ sở dữ liệu:
 
-    DB::unprepared('create table a (col varchar(1) null)');
+```php
+DB::unprepared('create table a (col varchar(1) null)');
+```
 
 Vui lòng tham khảo hướng dẫn sử dụng MySQL để biết thêm về [danh sách tất cả các câu lệnh](https://dev.mysql.com/doc/refman/8.0/en/implicit-commit.html) kích hoạt các commit ngầm.
 
@@ -253,128 +276,146 @@ Vui lòng tham khảo hướng dẫn sử dụng MySQL để biết thêm về [
 
 Nếu ứng dụng của bạn định nghĩa nhiều kết nối trong file cấu hình `config/database.php`, thì bạn có thể truy cập từng kết nối thông qua phương thức `connection` do facade `DB` cung cấp. Tên kết nối được truyền cho phương thức `connection` phải tương ứng với một trong các kết nối được liệt kê trong file cấu hình `config/database.php` hoặc được cấu hình trong lúc chạy thực bằng helper `config`:
 
-    use Illuminate\Support\Facades\DB;
+```php
+use Illuminate\Support\Facades\DB;
 
-    $users = DB::connection('sqlite')->select(/* ... */);
+$users = DB::connection('sqlite')->select(/* ... */);
+```
 
 Bạn có thể truy cập vào instance PDO raw, cơ bản của kết nối bằng cách sử dụng phương thức `getPdo` trên instance kết nối:
 
-    $pdo = DB::connection()->getPdo();
+```php
+$pdo = DB::connection()->getPdo();
+```
 
 <a name="listening-for-query-events"></a>
 ### Listen cho Query Event
 
 Nếu bạn muốn chỉ định một closure được gọi cho mỗi truy vấn SQL được thực thi bởi ứng dụng của bạn, bạn có thể sử dụng phương thức `listen` của facade `DB`. Phương thức này có thể hữu ích để ghi log truy vấn hoặc để debug. Bạn có thể đăng ký closure listener truy vấn này trong phương thức `boot` của [service provider](/docs/{{version}}/providers):
 
-    <?php
+```php
+<?php
 
-    namespace App\Providers;
+namespace App\Providers;
 
-    use Illuminate\Database\Events\QueryExecuted;
-    use Illuminate\Support\Facades\DB;
-    use Illuminate\Support\ServiceProvider;
+use Illuminate\Database\Events\QueryExecuted;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\ServiceProvider;
 
-    class AppServiceProvider extends ServiceProvider
+class AppServiceProvider extends ServiceProvider
+{
+    /**
+     * Register any application services.
+        */
+    public function register(): void
     {
-        /**
-         * Register any application services.
-         */
-        public function register(): void
-        {
-            // ...
-        }
-
-        /**
-         * Bootstrap any application services.
-         */
-        public function boot(): void
-        {
-            DB::listen(function (QueryExecuted $query) {
-                // $query->sql;
-                // $query->bindings;
-                // $query->time;
-                // $query->toRawSql();
-            });
-        }
+        // ...
     }
+
+    /**
+     * Bootstrap any application services.
+     */
+    public function boot(): void
+    {
+        DB::listen(function (QueryExecuted $query) {
+            // $query->sql;
+            // $query->bindings;
+            // $query->time;
+            // $query->toRawSql();
+        });
+    }
+}
+```
 
 <a name="monitoring-cumulative-query-time"></a>
 ### Giám sát thời gian truy vấn
 
 Lỗi hiệu suất phổ biến của các ứng dụng web hiện đại là lượng thời gian chúng dành để truy vấn cơ sở dữ liệu. Rất may, Laravel có thể gọi một closure hoặc một callback theo lựa chọn của bạn khi nó dành quá nhiều thời gian để truy vấn cơ sở dữ liệu trong một single request. Để bắt đầu, hãy cung cấp ngưỡng thời gian truy vấn (tính bằng mili giây) và closure cho phương thức `whenQueryingForLongerThan`. Bạn có thể gọi phương thức này trong phương thức `boot` của một [service provider](/docs/{{version}}/providers):
 
-    <?php
+```php
+<?php
 
-    namespace App\Providers;
+namespace App\Providers;
 
-    use Illuminate\Database\Connection;
-    use Illuminate\Support\Facades\DB;
-    use Illuminate\Support\ServiceProvider;
-    use Illuminate\Database\Events\QueryExecuted;
+use Illuminate\Database\Connection;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\ServiceProvider;
+use Illuminate\Database\Events\QueryExecuted;
 
-    class AppServiceProvider extends ServiceProvider
+class AppServiceProvider extends ServiceProvider
+{
+    /**
+     * Register any application services.
+     */
+    public function register(): void
     {
-        /**
-         * Register any application services.
-         */
-        public function register(): void
-        {
-            // ...
-        }
-
-        /**
-         * Bootstrap any application services.
-         */
-        public function boot(): void
-        {
-            DB::whenQueryingForLongerThan(500, function (Connection $connection, QueryExecuted $event) {
-                // Notify development team...
-            });
-        }
+        // ...
     }
+
+    /**
+     * Bootstrap any application services.
+     */
+    public function boot(): void
+    {
+        DB::whenQueryingForLongerThan(500, function (Connection $connection, QueryExecuted $event) {
+            // Notify development team...
+        });
+    }
+}
+```
 
 <a name="database-transactions"></a>
 ## Database Transaction
 
 Bạn có thể sử dụng phương thức `transaction` được cung cấp bởi facade `DB` để chạy một tập hợp các lệnh trong một transaction cơ sở dữ liệu. Nếu một ngoại lệ được đưa ra trong transaction closure này, transaction sẽ được tự động khôi phục lại trạng thái trước khi chạy và ngoại lệ đó sẽ được đưa ra. Nếu closure thực hiện thành công, transaction sẽ được tự động thực hiện. Bạn không cần phải lo lắng về việc bạn phải tự rollback hay commit trong khi sử dụng phương thức `transaction`:
 
-    use Illuminate\Support\Facades\DB;
+```php
+use Illuminate\Support\Facades\DB;
 
-    DB::transaction(function () {
-        DB::update('update users set votes = 1');
+DB::transaction(function () {
+    DB::update('update users set votes = 1');
 
-        DB::delete('delete from posts');
+    DB::delete('delete from posts');
     });
+```
 
 <a name="handling-deadlocks"></a>
 #### Handling Deadlocks
 
 Phương thức `transaction` chấp nhận một tham số thứ hai làm một tùy chọn để định nghĩa số lần transaction sẽ được thử lại khi xảy ra lỗi. Sau khi thử lại hết số lần thử, thì một ngoại lệ sẽ được đưa ra:
 
-    use Illuminate\Support\Facades\DB;
+```php
+use Illuminate\Support\Facades\DB;
 
-    DB::transaction(function () {
-        DB::update('update users set votes = 1');
+DB::transaction(function () {
+    DB::update('update users set votes = 1');
 
-        DB::delete('delete from posts');
-    }, 5);
+    DB::delete('delete from posts');
+}, attempts: 5);
+```
 
 <a name="manually-using-transactions"></a>
 #### Manually Using Transactions
 
 Nếu bạn muốn chạy một transaction theo cách thủ công và có toàn quyền kiểm soát với các rollback và commit, bạn có thể sử dụng phương thức `beginTransaction` được cung cấp bởi facade `DB`:
 
-    use Illuminate\Support\Facades\DB;
+```php
+use Illuminate\Support\Facades\DB;
 
-    DB::beginTransaction();
+DB::beginTransaction();
+```
 
 Bạn có thể rollback transaction thông qua phương thức `rollBack`:
 
-    DB::rollBack();
+```php
+DB::rollBack();
+```
 
 Cuối cùng, bạn có thể commit một transaction thông qua phương thức `commit`:
 
-    DB::commit();
+```php
+DB::commit();
+```
 
 > [!NOTE]
 > Các phương thức transaction của facade `DB` sẽ kiểm soát các transaction cho cả [query builder](/docs/{{version}}/queries) và [Eloquent ORM](/docs/{{version}}/eloquent).
@@ -417,17 +458,21 @@ php artisan db:show --counts --views
 
 Ngoài ra, bạn cũng có thể sử dụng các phương thức `Schema` sau để kiểm tra cơ sở dữ liệu của bạn:
 
-    use Illuminate\Support\Facades\Schema;
+```php
+use Illuminate\Support\Facades\Schema;
 
-    $tables = Schema::getTables();
-    $views = Schema::getViews();
-    $columns = Schema::getColumns('users');
-    $indexes = Schema::getIndexes('users');
-    $foreignKeys = Schema::getForeignKeys('users');
+$tables = Schema::getTables();
+$views = Schema::getViews();
+$columns = Schema::getColumns('users');
+$indexes = Schema::getIndexes('users');
+$foreignKeys = Schema::getForeignKeys('users');
+```
 
 Nếu bạn muốn kiểm tra một kết nối cơ sở dữ liệu không phải là kết nối mặc định của ứng dụng, bạn có thể sử dụng phương thức `connection`:
 
-    $columns = Schema::connection('sqlite')->getColumns('users');
+```php
+$columns = Schema::connection('sqlite')->getColumns('users');
+```
 
 <a name="table-overview"></a>
 #### Table Overview

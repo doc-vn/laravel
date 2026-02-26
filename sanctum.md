@@ -70,25 +70,29 @@ Tiếp theo, nếu bạn định sử dụng Sanctum để xác thực một SPA
 
 Mặc dù không bắt buộc, nhưng bạn có thể thoải mái extend model `PersonalAccessToken` được Sanctum sử dụng bên trong:
 
-    use Laravel\Sanctum\PersonalAccessToken as SanctumPersonalAccessToken;
+```php
+use Laravel\Sanctum\PersonalAccessToken as SanctumPersonalAccessToken;
 
-    class PersonalAccessToken extends SanctumPersonalAccessToken
-    {
-        // ...
-    }
+class PersonalAccessToken extends SanctumPersonalAccessToken
+{
+    // ...
+}
+```
 
 Sau đó, bạn có thể hướng dẫn Sanctum sử dụng model tùy chỉnh của bạn thông qua phương thức `usePersonalAccessTokenModel` do Sanctum cung cấp. Thông thường, bạn nên gọi phương thức này trong phương thức `boot` của fiel `AppServiceProvider` trong ứng dụng của bạn:
 
-    use App\Models\Sanctum\PersonalAccessToken;
-    use Laravel\Sanctum\Sanctum;
+```php
+use App\Models\Sanctum\PersonalAccessToken;
+use Laravel\Sanctum\Sanctum;
 
-    /**
-     * Bootstrap any application services.
-     */
-    public function boot(): void
-    {
-        Sanctum::usePersonalAccessTokenModel(PersonalAccessToken::class);
-    }
+/**
+ * Bootstrap any application services.
+ */
+public function boot(): void
+{
+    Sanctum::usePersonalAccessTokenModel(PersonalAccessToken::class);
+}
+```
 
 <a name="api-token-authentication"></a>
 ## API Token Authentication
@@ -103,72 +107,88 @@ Sanctum cho phép bạn phát hành các API token hoặc các personal access t
 
 Để bắt đầu phát hành token cho người dùng, model User của bạn nên sử dụng trait `Laravel\Sanctum\HasApiTokens`:
 
-    use Laravel\Sanctum\HasApiTokens;
+```php
+use Laravel\Sanctum\HasApiTokens;
 
-    class User extends Authenticatable
-    {
-        use HasApiTokens, HasFactory, Notifiable;
-    }
+class User extends Authenticatable
+{
+    use HasApiTokens, HasFactory, Notifiable;
+}
+```
 
 Để phát hành một token, bạn có thể sử dụng phương thức `createToken`. Phương thức `createToken` sẽ trả về một instance `Laravel\Sanctum\NewAccessToken`. API token này sẽ được hash bằng cách sử dụng hàm hash SHA-256 trước khi được lưu vào trong cơ sở dữ liệu của bạn, nhưng bạn có thể truy cập vào giá trị thật của token này bằng cách sử dụng thuộc tính `plainTextToken` của instance `NewAccessToken`. Bạn nên hiển thị giá trị thật này cho người dùng ngay sau khi token được tạo:
 
-    use Illuminate\Http\Request;
+```php
+use Illuminate\Http\Request;
 
-    Route::post('/tokens/create', function (Request $request) {
-        $token = $request->user()->createToken($request->token_name);
+Route::post('/tokens/create', function (Request $request) {
+    $token = $request->user()->createToken($request->token_name);
 
-        return ['token' => $token->plainTextToken];
-    });
+    return ['token' => $token->plainTextToken];
+});
+```
 
 Bạn có thể truy cập vào tất cả các token của người dùng bằng cách sử dụng quan hệ Eloquent `tokens` được cung cấp bởi trait `HasApiTokens`:
 
-    foreach ($user->tokens as $token) {
-        // ...
-    }
+```php
+foreach ($user->tokens as $token) {
+    // ...
+}
+```
 
 <a name="token-abilities"></a>
 ### Quyền của token
 
 Sanctum cho phép bạn gán các token vào các "quyền". Mục đích của các "quyền" tương tự như "scope" của OAuth. Bạn có thể truyền một mảng quyền làm tham số thứ hai cho phương thức `createToken` hoặc phương thức `tokenCant`:
 
-    return $user->createToken('token-name', ['server:update'])->plainTextToken;
+```php
+return $user->createToken('token-name', ['server:update'])->plainTextToken;
+```
 
 Khi xử lý một request được Sanctum xác thực, bạn có thể xác định xem token đó có một quyền nhất định hay không bằng cách sử dụng phương thức `tokenCan`:
 
-    if ($user->tokenCan('server:update')) {
-        // ...
-    }
+```php
+if ($user->tokenCan('server:update')) {
+    // ...
+}
 
-    if ($user->tokenCant('server:update')) {
-        // ...
-    }
+if ($user->tokenCant('server:update')) {
+    // ...
+}
+```
 
 <a name="token-ability-middleware"></a>
 #### Token Ability Middleware
 
 Sanctum cũng chứa hai middleware có thể được sử dụng để xác minh request đến là đã được xác thực bằng một token mà đã được cấp một quyền nhất định. Để bắt đầu, hãy định nghĩa các alias middleware sau trong file `bootstrap/app.php` của ứng dụng của bạn:
 
-    use Laravel\Sanctum\Http\Middleware\CheckAbilities;
-    use Laravel\Sanctum\Http\Middleware\CheckForAnyAbility;
+```php
+use Laravel\Sanctum\Http\Middleware\CheckAbilities;
+use Laravel\Sanctum\Http\Middleware\CheckForAnyAbility;
 
-    ->withMiddleware(function (Middleware $middleware) {
-        $middleware->alias([
-            'abilities' => CheckAbilities::class,
-            'ability' => CheckForAnyAbility::class,
-        ]);
-    })
+->withMiddleware(function (Middleware $middleware): void {
+    $middleware->alias([
+        'abilities' => CheckAbilities::class,
+        'ability' => CheckForAnyAbility::class,
+    ]);
+})
+```
 
 Middleware `abilities` có thể được gán cho một route để xác minh xem token của request đến có tất cả các quyền đã được liệt kê hay không:
 
-    Route::get('/orders', function () {
-        // Token has both "check-status" and "place-orders" abilities...
-    })->middleware(['auth:sanctum', 'abilities:check-status,place-orders']);
+```php
+Route::get('/orders', function () {
+    // Token has both "check-status" and "place-orders" abilities...
+})->middleware(['auth:sanctum', 'abilities:check-status,place-orders']);
+```
 
 Middleware `ability` có thể được chỉ định cho một route để xác minh xem token của request đến có *ít nhất một* trong số các quyền đã được liệt kê hay không:
 
-    Route::get('/orders', function () {
-        // Token has the "check-status" or "place-orders" ability...
-    })->middleware(['auth:sanctum', 'ability:check-status,place-orders']);
+```php
+Route::get('/orders', function () {
+    // Token has the "check-status" or "place-orders" ability...
+})->middleware(['auth:sanctum', 'ability:check-status,place-orders']);
+```
 
 <a name="first-party-ui-initiated-requests"></a>
 #### First-Party UI Initiated Requests
@@ -193,25 +213,29 @@ Lúc đầu, việc cho phép gọi phương thức `tokenCan` và luôn trả v
 
 Bạn có thể thắc mắc tại sao chúng tôi khuyên bạn nên xác thực các route trong file `routes/web.php` của ứng dụng bằng cách sử dụng guard `sanctum`. Hãy nhớ rằng, trước tiên Sanctum sẽ cố gắng xác thực các request đến bằng cách sử dụng cookie xác thực session thông thường của Laravel. Nếu cookie đó không xuất hiện thì Sanctum sẽ cố gắng xác thực request bằng cách sử dụng token trong header `Authorization` của request. Ngoài ra, việc xác thực tất cả request bằng Sanctum sẽ đảm bảo rằng chúng ta luôn có thể gọi phương thức `tokenCan` trên instance người dùng hiện đã được xác thực:
 
-    use Illuminate\Http\Request;
+```php
+use Illuminate\Http\Request;
 
-    Route::get('/user', function (Request $request) {
-        return $request->user();
-    })->middleware('auth:sanctum');
+Route::get('/user', function (Request $request) {
+    return $request->user();
+})->middleware('auth:sanctum');
+```
 
 <a name="revoking-tokens"></a>
 ### Thu hồi token
 
 Bạn có thể "thu hồi" token bằng cách xóa chúng ra khỏi cơ sở dữ liệu của bạn bằng cách sử dụng quan hệ `tokens` được cung cấp bởi trait `Laravel\Sanctum\HasApiTokens`:
 
-    // Revoke all tokens...
-    $user->tokens()->delete();
+```php
+// Revoke all tokens...
+$user->tokens()->delete();
 
-    // Revoke the token that was used to authenticate the current request...
-    $request->user()->currentAccessToken()->delete();
+// Revoke the token that was used to authenticate the current request...
+$request->user()->currentAccessToken()->delete();
 
-    // Revoke a specific token...
-    $user->tokens()->where('id', $tokenId)->delete();
+// Revoke a specific token...
+$user->tokens()->where('id', $tokenId)->delete();
+```
 
 <a name="token-expiration"></a>
 ### Thời hạn token
@@ -226,7 +250,7 @@ Nếu bạn muốn chỉ định một cách độc lập thời gian hết hạ
 
 ```php
 return $user->createToken(
-    'token-name', ['*'], now()->addWeek()
+    'token-name', ['*'], now()->plus(weeks: 1)
 )->plainTextToken;
 ```
 
@@ -256,6 +280,8 @@ Sanctum cũng cung cấp một phương thức đơn giản để xác thực c�
 
 Đầu tiên, bạn nên cấu hình các tên miền mà SPA của bạn sẽ thực hiện request từ đó. Bạn có thể cấu hình các tên miền này bằng cách sử dụng tùy chọn cấu hình `stateful` trong file cấu hình `sanctum` của bạn. Cài đặt cấu hình này sẽ xác định xem tên miền nào sẽ duy trì "trạng thái" xác thực bằng cách sử dụng session cookie Laravel khi tạo request tới API của bạn.
 
+Để hỗ trợ bạn trong việc thiết lập các tên miền stateful của bên first-party, Sanctum cung cấp hai hàm helper mà bạn có thể đưa vào cấu hình. Đầu tiên là `Sanctum::currentApplicationUrlWithPort()` sẽ trả về URL hiện tại của ứng dụng từ biến môi trường `APP_URL`, và `Sanctum::currentRequestHost()` sẽ chèn thêm một biến vào danh sách tên miền stateful mà khi ứng dụng chạy, nó sẽ được thay thế biến đó thành host từ request hiện tại để tất cả các request mà có cùng tên miền đều sẽ được coi là stateful.
+
 > [!WARNING]
 > Nếu bạn đang truy cập ứng dụng của bạn thông qua URL có cổng (`127.0.0.1:8000`), bạn nên đảm bảo là bạn đã cấu hình cả số cổng với tên miền.
 
@@ -264,9 +290,11 @@ Sanctum cũng cung cấp một phương thức đơn giản để xác thực c�
 
 Tiếp theo, bạn nên hướng dẫn Laravel là các request đến từ các SPA của bạn có thể được xác thực bằng session cookie của Laravel, trong khi vẫn cho phép các request từ bên thứ ba hoặc ứng dụng di động xác thực bằng cách sử dụng API token. Điều này có thể dễ dàng thực hiện bằng cách gọi phương thức middleware `statefulApi` trong file `bootstrap/app.php` của ứng dụng của bạn:
 
-    ->withMiddleware(function (Middleware $middleware) {
-        $middleware->statefulApi();
-    })
+```php
+->withMiddleware(function (Middleware $middleware) {
+    $middleware->statefulApi();
+})
+```
 
 <a name="cors-and-cookies"></a>
 #### CORS và Cookies
@@ -275,7 +303,7 @@ Nếu bạn gặp sự cố khi xác thực ứng dụng của bạn từ một 
 
 Mặc định, file cấu hình `config/cors.php` không được export. Nếu bạn cần tùy chỉnh các tùy chọn CORS của Laravel, bạn nên export file cấu hình `cors` bằng cách sử dụng lệnh Artisan `config:publish`:
 
-```bash
+```shell
 php artisan config:publish cors
 ```
 
@@ -290,7 +318,9 @@ axios.defaults.withXSRFToken = true;
 
 Cuối cùng, bạn nên đảm bảo cấu hình session cookie của têm miền trong ứng dụng hỗ trợ tất cả các subdomain của tên miền gốc. Bạn có thể hoàn thành việc này bằng cách set thêm tiền tố dấu `.` đứng trước tên miền bằng trong file cấu hình `config/session.php` của application của bạn:
 
-    'domain' => '.domain.com',
+```php
+'domain' => '.domain.com',
+```
 
 <a name="spa-authenticating"></a>
 ### Authenticating
@@ -325,26 +355,30 @@ Tất nhiên, nếu session người dùng của bạn hết hạn do không ho�
 
 Để bảo vệ các route sao cho tất cả các request phải được xác thực, bạn nên gắn guard `sanctum` vào các route API của bạn trong file `routes/api.php`. Guard này sẽ đảm bảo rằng các request sẽ được xác thực trạng thái từ SPA của bạn hoặc chứa một header API token hợp lệ nếu request đến từ bên thứ ba:
 
-    use Illuminate\Http\Request;
+```php
+use Illuminate\Http\Request;
 
-    Route::get('/user', function (Request $request) {
-        return $request->user();
-    })->middleware('auth:sanctum');
+Route::get('/user', function (Request $request) {
+    return $request->user();
+})->middleware('auth:sanctum');
+```
 
 <a name="authorizing-private-broadcast-channels"></a>
 ### Authorizing Private Broadcast Channels
 
 Nếu SPA của bạn cần xác thực với [các channel private / presence broadcast](/docs/{{version}}/broadcasting#authorizing-channels), bạn nên xóa mục `channels` ra khỏi phương thức `withRouting` có trong file `bootstrap/app.php` của ứng dụng. Thay vào đó, bạn nên gọi phương thức `withBroadcasting` để có thể chỉ định middleware chính xác cho các route broadcasting của ứng dụng:
 
-    return Application::configure(basePath: dirname(__DIR__))
-        ->withRouting(
-            web: __DIR__.'/../routes/web.php',
-            // ...
-        )
-        ->withBroadcasting(
-            __DIR__.'/../routes/channels.php',
-            ['prefix' => 'api', 'middleware' => ['api', 'auth:sanctum']],
-        )
+```php
+return Application::configure(basePath: dirname(__DIR__))
+    ->withRouting(
+        web: __DIR__.'/../routes/web.php',
+        // ...
+    )
+    ->withBroadcasting(
+        __DIR__.'/../routes/channels.php',
+        ['prefix' => 'api', 'middleware' => ['api', 'auth:sanctum']],
+    )
+```
 
 Tiếp theo, để các authorization request của Pusher thành công, bạn sẽ cần phải cung cấp một tùy chỉnh `authorizer` của Pusher khi khởi tạo [Laravel Echo](/docs/{{version}}/broadcasting#client-side-installation). Điều này cho phép ứng dụng của bạn cấu hình Pusher để sử dụng một instance `axios` được [cấu hình đúng cho các request cross-domain](#cors-and-cookies):
 
@@ -385,28 +419,30 @@ Bạn cũng có thể sử dụng token Sanctum để xác thực các request c
 
 Thông thường, bạn sẽ tạo một request tới route token từ màn hình "đăng nhập" ứng dụng di động của bạn. Route sẽ trả về một token Sanctum thật để có thể được lưu trên thiết bị di động và được sử dụng để thực hiện thêm các request API sau đó:
 
-    use App\Models\User;
-    use Illuminate\Http\Request;
-    use Illuminate\Support\Facades\Hash;
-    use Illuminate\Validation\ValidationException;
+```php
+use App\Models\User;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\ValidationException;
 
-    Route::post('/sanctum/token', function (Request $request) {
-        $request->validate([
-            'email' => 'required|email',
-            'password' => 'required',
-            'device_name' => 'required',
+Route::post('/sanctum/token', function (Request $request) {
+    $request->validate([
+        'email' => 'required|email',
+        'password' => 'required',
+        'device_name' => 'required',
+    ]);
+
+    $user = User::where('email', $request->email)->first();
+
+    if (! $user || ! Hash::check($request->password, $user->password)) {
+        throw ValidationException::withMessages([
+            'email' => ['The provided credentials are incorrect.'],
         ]);
+    }
 
-        $user = User::where('email', $request->email)->first();
-
-        if (! $user || ! Hash::check($request->password, $user->password)) {
-            throw ValidationException::withMessages([
-                'email' => ['The provided credentials are incorrect.'],
-            ]);
-        }
-
-        return $user->createToken($request->device_name)->plainTextToken;
-    });
+    return $user->createToken($request->device_name)->plainTextToken;
+});
+```
 
 Khi ứng dụng di động sử dụng token để thực hiện một request API đối với application của bạn, ứng dụng đó sẽ truyền token vào trong header `Authorization` dưới dạng một token `Bearer`.
 
@@ -418,20 +454,24 @@ Khi ứng dụng di động sử dụng token để thực hiện một request 
 
 Như đã được ghi ở trước đó, bạn có thể bảo vệ các route để tất cả các request đến phải được xác thực bằng cách gắn guard `sanctum` vào các route.
 
-    Route::get('/user', function (Request $request) {
-        return $request->user();
-    })->middleware('auth:sanctum');
+```php
+Route::get('/user', function (Request $request) {
+    return $request->user();
+})->middleware('auth:sanctum');
+```
 
 <a name="revoking-mobile-api-tokens"></a>
 ### Thu hồi token
 
 Để cho phép người dùng thu hồi token API đã cấp cho thiết bị di động, bạn có thể liệt kê chúng theo tên, cùng với nút "thu hồi", trong phần "cài đặt tài khoản" trong giao diện web người dùng ứng dụng. Khi người dùng nhấp vào nút "thu hồi", bạn có thể xóa token ra khỏi cơ sở dữ liệu. Hãy nhớ rằng, bạn có thể truy cập vào token API của người dùng thông qua quan hệ `tokens` được cung cấp sẵn bởi trait `Laravel\Sanctum\HasApiTokens`:
 
-    // Revoke all tokens...
-    $user->tokens()->delete();
+```php
+// Revoke all tokens...
+$user->tokens()->delete();
 
-    // Revoke a specific token...
-    $user->tokens()->where('id', $tokenId)->delete();
+// Revoke a specific token...
+$user->tokens()->where('id', $tokenId)->delete();
+```
 
 <a name="testing"></a>
 ## Testing
@@ -473,7 +513,9 @@ public function test_task_list_can_be_retrieved(): void
 
 Nếu bạn muốn cấp tất cả các quyền cho một token, bạn nên thêm dấu `*` vào trong danh sách các quyền được cung cấp cho phương thức `actingAs`:
 
-    Sanctum::actingAs(
-        User::factory()->create(),
-        ['*']
-    );
+```php
+Sanctum::actingAs(
+    User::factory()->create(),
+    ['*']
+);
+```

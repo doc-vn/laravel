@@ -51,7 +51,7 @@ Nếu bạn đang sử dụng [Laravel Sail](/docs/{{version}}/sail) làm môi t
 <a name="tinker"></a>
 ### Tinker (REPL)
 
-Laravel Tinker là một REPL mạnh mẽ cho Laravel framework, cung cấp bởi package [PsySH](https://github.com/bobthecow/psysh).
+[Laravel Tinker](https://github.com/laravel/tinker) là một REPL mạnh mẽ cho Laravel framework, cung cấp bởi package [PsySH](https://github.com/bobthecow/psysh).
 
 <a name="installation"></a>
 #### Installation
@@ -81,30 +81,34 @@ php artisan vendor:publish --provider="Laravel\Tinker\TinkerServiceProvider"
 ```
 
 > [!WARNING]
->  Hàm helper `dispatch` và phương thức `dispatch` trên class `Dispatchable` phụ thuộc vào việc thu gom rác để set job vào queue. Do đó, khi sử dụng tinker, bạn nên sử dụng `Bus::dispatch` hoặc `Queue::push` để điều phối job.
+>  Hàm helper `dispatch` và phương thức `dispatch` trên class `Dispatchable` phụ thuộc vào việc thu gom rác để set job vào queue. Do đó, khi sử dụng Tinker, bạn nên sử dụng `Bus::dispatch` hoặc `Queue::push` để điều phối job.
 
 <a name="command-allow-list"></a>
 #### Command Allow List
 
 Tinker có sử dụng một danh sách "allow" để xác định các lệnh Artisan nào được phép chạy. Mặc định, bạn có thể chạy các lệnh `clear-compiled`, `down`, `env`, `inspire`, `migrate`, `migrate:install`, `up`, và `optimize`. Nếu bạn muốn cho phép thêm các lệnh khác, bạn có thể thêm chúng vào mảng `commands` trong file cấu hình `tinker.php` của bạn:
 
-    'commands' => [
-        // App\Console\Commands\ExampleCommand::class,
-    ],
+```php
+'commands' => [
+    // App\Console\Commands\ExampleCommand::class,
+],
+```
 
 <a name="classes-that-should-not-be-aliased"></a>
 #### Classes That Should Not Be Aliased
 
 Thông thường, Tinker sẽ tự động đặt bí danh cho các class khi bạn tương tác với chúng trong Tinker. Tuy nhiên, bạn có thể muốn không đặt bí danh cho một số class. Bạn có thể thực hiện điều này bằng cách thêm các class đó vào trong mảng `dont_alias` của file cấu hình `tinker.php` của bạn:
 
-    'dont_alias' => [
-        App\Models\User::class,
-    ],
+```php
+'dont_alias' => [
+    App\Models\User::class,
+],
+```
 
 <a name="writing-commands"></a>
 ## Viết Commands
 
-Ngoài các lệnh được cung cấp với Artisan, bạn có thể tự xây dựng các lệnh của riêng bạn. Các lệnh thường được lưu trữ trong thư mục `app/Console/Commands`; tuy nhiên, bạn cũng có thể thoải mái chọn vị trí lưu trữ mà bạn muốn, miễn là các lệnh của bạn có thể load được bởi Composer.
+Ngoài các lệnh được cung cấp với Artisan, bạn có thể tự xây dựng các lệnh của riêng bạn. Các lệnh thường được lưu trữ trong thư mục `app/Console/Commands`; tuy nhiên, bạn cũng có thể thoải mái chọn vị trí lưu trữ miễn là bạn hướng dẫn Laravel [tìm các thư mục đó để tìm các lệnh Artisan](#registering-commands).
 
 <a name="generating-commands"></a>
 ### Tạo Commands
@@ -122,38 +126,40 @@ Sau khi đã tạo xong command, bạn hãy định nghĩa các giá trị phù 
 
 Chúng ta hãy xem một ví dụ về command. Lưu ý rằng chúng ta có thể yêu cầu bất kỳ service nào mà chúng ta muốn thông qua hàm `handle` của command. Laravel [service container](/docs/{{version}}/container) sẽ tự động inject tất cả các phụ thuộc đã được khai báo có trong phương thức đó:
 
-    <?php
+```php
+<?php
 
-    namespace App\Console\Commands;
+namespace App\Console\Commands;
 
-    use App\Models\User;
-    use App\Support\DripEmailer;
-    use Illuminate\Console\Command;
+use App\Models\User;
+use App\Support\DripEmailer;
+use Illuminate\Console\Command;
 
-    class SendEmails extends Command
+class SendEmails extends Command
+{
+    /**
+     * The name and signature of the console command.
+     *
+     * @var string
+     */
+    protected $signature = 'mail:send {user}';
+
+    /**
+     * The console command description.
+     *
+     * @var string
+     */
+    protected $description = 'Send a marketing email to a user';
+
+    /**
+     * Execute the console command.
+     */
+    public function handle(DripEmailer $drip): void
     {
-        /**
-         * The name and signature of the console command.
-         *
-         * @var string
-         */
-        protected $signature = 'mail:send {user}';
-
-        /**
-         * The console command description.
-         *
-         * @var string
-         */
-        protected $description = 'Send a marketing email to a user';
-
-        /**
-         * Execute the console command.
-         */
-        public function handle(DripEmailer $drip): void
-        {
-            $drip->send(User::find($this->argument('user')));
-        }
+        $drip->send(User::find($this->argument('user')));
     }
+}
+```
 
 > [!NOTE]
 > Để code của bạn có thể tái sử dụng tốt hơn, thì cách tốt nhất là giữ cho các command của bạn được "nhẹ" và hãy để các application service hoàn thành nhiệm vụ đó cho bạn. Trong ví dụ dưới trên, hãy chú ý rằng chúng ta sẽ inject một service class để thực hiện một "công việc nặng" như việc gửi e-mail.
@@ -163,24 +169,30 @@ Chúng ta hãy xem một ví dụ về command. Lưu ý rằng chúng ta có th�
 
 Nếu không có gì được trả về từ phương thức `handle` và command sẽ được chạy thành công, và command sẽ exit với exit code là `0`, thể hiện sự thành công. Tuy nhiên, phương thức `handle` có thể tùy ý trả về một số integer để chỉ định exit code của command:
 
-    $this->error('Something went wrong.');
+```php
+$this->error('Something went wrong.');
 
-    return 1;
+return 1;
+```
 
 Nếu bạn muốn command "thất bại" từ bất kỳ phương thức nào có trong command, bạn có thể sử dụng phương thức `fail`. Phương thức `fail` sẽ ngay lập tức ngừng chạy command và trả về exit code là `1`:
 
-    $this->fail('Something went wrong.');
+```php
+$this->fail('Something went wrong.');
+```
 
 <a name="closure-commands"></a>
 ### Closure Command
 
 Các command được tạo dựa trên closure sẽ cung cấp thêm một giải pháp để định nghĩa các command. Giống như cách mà các closure route làm, là tạo thêm một cách định nghĩa cho controller, bạn hãy nghĩ các closure command này như là một cách định nghĩa khác cho các class command, thay vì phải tạo ra một file command mới.
 
-Mặc dù file `routes/console.php` không định nghĩa các HTTP route, nhưng nó định nghĩa các closure dựa theo format của route vào trong application của bạn. Trong file này, bạn có thể định nghĩa tất cả các closure dựa trên lệnh console của bạn bằng phương thức `Artisan::command`. Phương thức `command` chấp nhận hai tham số: một là một [command signature](#defining-input-expectations) và hai là một closure để nhận vào các tham số và các option của command:
+Mặc dù file `routes/console.php` không định nghĩa các HTTP route, nhưng nó định nghĩa các console dựa theo format của route vào trong application của bạn. Trong file này, bạn có thể định nghĩa tất cả các closure dựa trên lệnh console của bạn bằng phương thức `Artisan::command`. Phương thức `command` chấp nhận hai tham số: một là một [command signature](#defining-input-expectations) và hai là một closure để nhận vào các tham số và các option của command:
 
-    Artisan::command('mail:send {user}', function (string $user) {
-        $this->info("Sending email to: {$user}!");
-    });
+```php
+Artisan::command('mail:send {user}', function (string $user) {
+    $this->info("Sending email to: {$user}!");
+});
+```
 
 Closure sẽ được liên kết với một instance command cơ bản, nên bạn có toàn quyền truy cập vào tất cả các phương thức helper mà bạn thường dùng trên một class command cơ bản.
 
@@ -189,21 +201,26 @@ Closure sẽ được liên kết với một instance command cơ bản, nên b
 
 Ngoài việc nhận vào các tham số và các option của command, closure command cũng có thể khai báo thêm các phụ thuộc mà bạn muốn resolve từ [service container](/docs/{{version}}/container):
 
-    use App\Models\User;
-    use App\Support\DripEmailer;
+```php
+use App\Models\User;
+use App\Support\DripEmailer;
+use Illuminate\Support\Facades\Artisan;
 
-    Artisan::command('mail:send {user}', function (DripEmailer $drip, string $user) {
-        $drip->send(User::find($user));
-    });
+Artisan::command('mail:send {user}', function (DripEmailer $drip, string $user) {
+    $drip->send(User::find($user));
+});
+```
 
 <a name="closure-command-descriptions"></a>
 #### Closure Command Descriptions
 
 Khi định nghĩa một command dựa trên closure, bạn có thể sử dụng phương thức `purpose` để thêm mô tả cho command. Mô tả này sẽ được hiển thị khi bạn chạy lệnh `php artisan list` hoặc lệnh `php artisan help`:
 
-    Artisan::command('mail:send {user}', function (string $user) {
-        // ...
-    })->purpose('Send a marketing email to a user');
+```php
+Artisan::command('mail:send {user}', function (string $user) {
+    // ...
+})->purpose('Send a marketing email to a user');
+```
 
 <a name="isolatable-commands"></a>
 ### Isolatable Commands
@@ -213,19 +230,21 @@ Khi định nghĩa một command dựa trên closure, bạn có thể sử dụn
 
 Thỉnh thoảng bạn có thể muốn đảm bảo rằng một instance của một command chỉ được chạy trong một thời điểm. Để thực hiện điều này, bạn có thể implement interface `Illuminate\Contracts\Console\Isolatable` trên class command của bạn:
 
-    <?php
+```php
+<?php
 
-    namespace App\Console\Commands;
+namespace App\Console\Commands;
 
-    use Illuminate\Console\Command;
-    use Illuminate\Contracts\Console\Isolatable;
+use Illuminate\Console\Command;
+use Illuminate\Contracts\Console\Isolatable;
 
-    class SendEmails extends Command implements Isolatable
-    {
-        // ...
-    }
+class SendEmails extends Command implements Isolatable
+{
+    // ...
+}
+```
 
-Khi một command được đánh dấu là `Isolatable`, Laravel sẽ tự động thêm tùy chọn `--isolat` vào command. Khi command được gọi với tùy chọn đó, Laravel sẽ đảm bảo là sẽ không có instance nào khác của command đó được đang chạy. Laravel thực hiện điều này bằng cách thử lấy khóa atomic bằng driver cache mặc định của ứng dụng của bạn. Nếu một instance khác của command này đang chạy, thì command này sẽ không thực hiện; tuy nhiên, command vẫn sẽ được exit với một mã trạng thái thành công:
+Khi bạn đánh dấu một command là `Isolatable`, Laravel sẽ tự động tạo tùy chọn `--isolated` cho command mà không cần phải định nghĩa nó trong options của command. Khi command được gọi với tùy chọn đó, Laravel sẽ đảm bảo là sẽ không có instance nào khác của command đó được đang chạy. Laravel thực hiện điều này bằng cách thử lấy khóa atomic bằng driver cache mặc định của ứng dụng của bạn. Nếu một instance khác của command này đang chạy, thì command này sẽ không thực hiện; tuy nhiên, command vẫn sẽ được exit với một mã trạng thái thành công:
 
 ```shell
 php artisan mail:send 1 --isolated
@@ -266,7 +285,7 @@ use DateInterval;
  */
 public function isolationLockExpiresAt(): DateTimeInterface|DateInterval
 {
-    return now()->addMinutes(5);
+    return now()->plus(minutes: 5);
 }
 ```
 
@@ -280,32 +299,38 @@ Khi viết một lệnh console, thường thu nhận các dữ liệu đầu v�
 
 Tất cả các tham số và các tùy chọn do người dùng cung cấp được wrap trong một dấu ngoặc nhọn. Trong ví dụ sau, lệnh sẽ định nghĩa một tham số bắt buộc: `user`:
 
-    /**
-     * The name and signature of the console command.
-     *
-     * @var string
-     */
-    protected $signature = 'mail:send {user}';
+```php
+/**
+ * The name and signature of the console command.
+ *
+ * @var string
+ */
+protected $signature = 'mail:send {user}';
+```
 
 Bạn cũng có thể tạo ra tham số tùy chọn hoặc định nghĩa giá trị mặc định cho các tham số đó:
 
-    // Optional argument...
-    'mail:send {user?}'
+```php
+// Optional argument...
+'mail:send {user?}'
 
-    // Optional argument with default value...
-    'mail:send {user=foo}'
+// Optional argument with default value...
+'mail:send {user=foo}'
+```
 
 <a name="options"></a>
 ### Tuỳ chọn
 
 Tùy chọn, giống như một tham số, là một dạng khác của input user. Các tùy chọn sẽ được gán tiền tố với hai dấu gạch nối (`--`) khi chúng được cung cấp thông qua cửa sổ dòng lệnh. Có hai loại tùy chọn: loại tùy chọn nhận một giá trị và loại tuỳ chọn không nhận giá trị nào. Các tùy chọn không nhận giá trị đóng vai trò như là một "switch" boolean. Chúng ta hãy xem một ví dụ về loại tùy chọn này:
 
-    /**
-     * The name and signature of the console command.
-     *
-     * @var string
-     */
-    protected $signature = 'mail:send {user} {--queue}';
+```php
+/**
+ * The name and signature of the console command.
+ *
+ * @var string
+ */
+protected $signature = 'mail:send {user} {--queue}';
+```
 
 Trong ví dụ này, switch `--queue` có thể được chỉ định khi gọi lệnh Artisan. Nếu switch `--queue` được thông qua, giá trị của tùy chọn sẽ là `true`. Nếu không, giá trị sẽ là `false`:
 
@@ -318,12 +343,14 @@ php artisan mail:send 1 --queue
 
 Tiếp theo, chúng ta hãy xem một tùy chọn nhận một giá trị. Nếu người dùng phải chỉ định một giá trị cho một tùy chọn, thì bạn hãy thêm hậu tố vào tên của tùy chọn đó bằng dấu `=`:
 
-    /**
-     * The name and signature of the console command.
-     *
-     * @var string
-     */
-    protected $signature = 'mail:send {user} {--queue=}';
+```php
+/**
+ * The name and signature of the console command.
+ *
+ * @var string
+ */
+protected $signature = 'mail:send {user} {--queue=}';
+```
 
 Trong ví dụ này, người dùng có thể truyền một giá trị cho tùy chọn đó như sau. Nếu tùy chọn không được truyền vào khi chạy command, thì giá trị của nó sẽ là `null`:
 
@@ -333,14 +360,18 @@ php artisan mail:send 1 --queue=default
 
 Bạn cũng có thể gán một giá trị mặc định cho các tùy chọn này bằng cách chỉ định giá trị mặc định sau tên mỗi tùy chọn. Nếu không có giá trị tùy chọn nào được người dùng truyền vào, thì giá trị mặc định sẽ được sử dụng:
 
-    'mail:send {user} {--queue=default}'
+```php
+'mail:send {user} {--queue=default}'
+```
 
 <a name="option-shortcuts"></a>
 #### Option Shortcuts
 
 Để gán một shortcut khi định nghĩa một tùy chọn, bạn có thể chỉ định nó vào phía trước tên của một tùy chọn và sử dụng ký tự `|` như một dấu để phân tách shortcut khỏi toàn bộ tên tùy chọn:
 
-    'mail:send {user} {--Q|queue}'
+```php
+'mail:send {user} {--Q|queue=}'
+```
 
 Khi gọi command trên terminal của bạn, các shortcut tùy chọn phải được set bằng một dấu gạch ngang ở đằng trước và không nên có dấu `=` khi chỉ định giá trị cho tùy chọn:
 
@@ -353,9 +384,11 @@ php artisan mail:send 1 -Qdefault
 
 Nếu bạn muốn định nghĩa các tham số hoặc tùy chọn để nhận vào nhiều giá trị, bạn có thể sử dụng ký tự `*`. Đầu tiên, chúng ta hãy xem một ví dụ định nghĩa một tham số như sau:
 
-    'mail:send {user*}'
+```php
+'mail:send {user*}'
+```
 
-Khi gọi phương thức này, các tham số `user` có thể được truyền theo dòng lệnh. Ví dụ: lệnh sau sẽ set giá trị của `user` thành một mảng với `foo` và `bar` là các giá trị của nó:
+Khi chạy lệnh này, các tham số `user` có thể được truyền theo dòng lệnh. Ví dụ: lệnh sau sẽ set giá trị của `user` thành một mảng với `foo` và `bar` là các giá trị của nó:
 
 ```shell
 php artisan mail:send 1 2
@@ -363,14 +396,18 @@ php artisan mail:send 1 2
 
 Ký tự `*` này có thể được kết hợp với một định nghĩa tùy chọn tham số để cho phép nhập từ không đến nhiều instance tham số:
 
-    'mail:send {user?*}'
+```php
+'mail:send {user?*}'
+```
 
 <a name="option-arrays"></a>
 #### Option Arrays
 
 Khi định nghĩa một tùy chọn yêu cầu nhiều giá trị input, mỗi giá trị tùy chọn đó được truyền đến command phải được đặt tên tùy chọn đó ở đằng trước:
 
-    'mail:send {--id=*}'
+```php
+'mail:send {--id=*}'
+```
 
 Một command như vậy có thể được gọi bằng cách truyền nhiều tham số `--id`:
 
@@ -383,97 +420,109 @@ php artisan mail:send --id=1 --id=2
 
 Bạn có thể gán một mô tả cho các input đầu vào như tham số hoặc tùy chọn bằng cách tách tên tham số đó ra khỏi mô tả bằng dấu hai chấm. Nếu bạn cần thêm một chút chỗ trống để định nghĩa thêm cho lệnh của mình, hãy định nghĩa nó trên nhiều dòng:
 
-    /**
-     * The name and signature of the console command.
-     *
-     * @var string
-     */
-    protected $signature = 'mail:send
-                            {user : The ID of the user}
-                            {--queue : Whether the job should be queued}';
+```php
+/**
+ * The name and signature of the console command.
+ *
+ * @var string
+ */
+protected $signature = 'mail:send
+                        {user : The ID of the user}
+                        {--queue : Whether the job should be queued}';
+```
 
 <a name="prompting-for-missing-input"></a>
 ### Nhắc cho Input thiếu
 
 Nếu command của bạn chứa các tham số sẽ bắt buộc phải nhập, thì người dùng sẽ nhận được một thông báo lỗi khi chúng không được nhập. Ngoài ra, bạn có thể cấu hình command của bạn sẽ tự động nhắc người dùng khi các tham số bắt buộc bị nhập thiếu bằng cách implement interface `PromptsForMissingInput`:
 
-    <?php
+```php
+<?php
 
-    namespace App\Console\Commands;
+namespace App\Console\Commands;
 
-    use Illuminate\Console\Command;
-    use Illuminate\Contracts\Console\PromptsForMissingInput;
+use Illuminate\Console\Command;
+use Illuminate\Contracts\Console\PromptsForMissingInput;
 
-    class SendEmails extends Command implements PromptsForMissingInput
-    {
-        /**
-         * The name and signature of the console command.
-         *
-         * @var string
-         */
-        protected $signature = 'mail:send {user}';
+class SendEmails extends Command implements PromptsForMissingInput
+{
+    /**
+     * The name and signature of the console command.
+     *
+     * @var string
+     */
+    protected $signature = 'mail:send {user}';
 
-        // ...
-    }
+    // ...
+}
+```
 
 Nếu Laravel cần yêu cầu một tham số bắt buộc từ người dùng, nó sẽ tự động yêu cầu người dùng cung cấp tham số đó bằng cách hỏi một câu hỏi thông qua tên của tham số hoặc mô tả của nó. Nếu bạn muốn tùy chỉnh câu hỏi được sử dụng để yêu cầu tham số bắt buộc đó, bạn có thể implement phương thức `promptForMissingArgumentsUsing`, trả về một mảng các câu hỏi có khóa là tên các tham số:
 
-    /**
-     * Prompt for missing input arguments using the returned questions.
-     *
-     * @return array<string, string>
-     */
-    protected function promptForMissingArgumentsUsing(): array
-    {
-        return [
-            'user' => 'Which user ID should receive the mail?',
-        ];
-    }
+```php
+/**
+ * Prompt for missing input arguments using the returned questions.
+ *
+ * @return array<string, string>
+ */
+protected function promptForMissingArgumentsUsing(): array
+{
+    return [
+        'user' => 'Which user ID should receive the mail?',
+    ];
+}
+```
 
 Bạn cũng có thể cung cấp một text gợi ý bằng cách sử dụng một bộ dữ liệu chứa câu hỏi và text gợi ý:
 
-    return [
-        'user' => ['Which user ID should receive the mail?', 'E.g. 123'],
-    ];
+```php
+return [
+    'user' => ['Which user ID should receive the mail?', 'E.g. 123'],
+];
+```
 
 Nếu bạn muốn hoàn toàn kiểm soát câu hỏi và text gợi ý, bạn có thể cung cấp một closure để thực hiện việc đó và trả về câu trả lời của người dùng:
 
-    use App\Models\User;
-    use function Laravel\Prompts\search;
+```php
+use App\Models\User;
+use function Laravel\Prompts\search;
 
-    // ...
+// ...
 
-    return [
-        'user' => fn () => search(
-            label: 'Search for a user:',
-            placeholder: 'E.g. Taylor Otwell',
-            options: fn ($value) => strlen($value) > 0
-                ? User::where('name', 'like', "%{$value}%")->pluck('name', 'id')->all()
-                : []
-        ),
-    ];
+return [
+    'user' => fn () => search(
+        label: 'Search for a user:',
+        placeholder: 'E.g. Taylor Otwell',
+        options: fn ($value) => strlen($value) > 0
+            ? User::whereLike('name', "%{$value}%")->pluck('name', 'id')->all()
+            : []
+    ),
+];
+```
 
 > [!NOTE]
 Tài liệu [Laravel Prompts](/docs/{{version}}/prompts) đã có chứa thêm các thông tin thêm về các lời nhắc có sẵn và cách sử dụng chúng.
 
 Nếu bạn muốn nhắc người dùng về chọn lựa hoặc nhập [options](#options), bạn có thể thêm lời nhắc vào trong phương thức `handle` của command. Tuy nhiên, nếu bạn chỉ muốn nhắc người dùng khi họ vừa bị nhắc về các tham số còn thiếu, thì bạn có thể implement phương thức `afterPromptingForMissingArguments`:
 
-    use Symfony\Component\Console\Input\InputInterface;
-    use Symfony\Component\Console\Output\OutputInterface;
-    use function Laravel\Prompts\confirm;
+```php
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Output\OutputInterface;
+use function Laravel\Prompts\confirm;
 
-    // ...
+// ...
 
-    /**
-     * Perform actions after the user was prompted for missing arguments.
-     */
-    protected function afterPromptingForMissingArguments(InputInterface $input, OutputInterface $output): void
-    {
-        $input->setOption('queue', confirm(
-            label: 'Would you like to queue the mail?',
-            default: $this->option('queue')
-        ));
-    }
+/**
+ * Perform actions after the user was prompted for missing arguments.
+ */
+protected function afterPromptingForMissingArguments(InputInterface $input, OutputInterface $output): void
+{
+    $input->setOption('queue', confirm(
+        label: 'Would you like to queue the mail?',
+        default: $this->option('queue')
+    ));
+}
+```
 
 <a name="command-io"></a>
 ## Input và output của Command
@@ -483,25 +532,31 @@ Nếu bạn muốn nhắc người dùng về chọn lựa hoặc nhập [option
 
 Trong khi lệnh của bạn đang thực thi, bạn có thể sẽ cần truy cập vào các giá trị của các tham số và các tùy chọn đã được khai báo trong lệnh của bạn. Để làm như vậy, bạn có thể sử dụng các phương thức `argument` và `option`. Nếu một tham số hoặc tùy chọn không tồn tại, thì giá trị `null` sẽ được trả về:
 
-    /**
-     * Execute the console command.
-     */
-    public function handle(): void
-    {
-        $userId = $this->argument('user');
-    }
+```php
+/**
+ * Execute the console command.
+ */
+public function handle(): void
+{
+    $userId = $this->argument('user');
+}
+```
 
 Nếu bạn cần lấy ra tất cả các tham số dưới dạng một `array`, hãy gọi phương thức `arguments`:
 
-    $arguments = $this->arguments();
+```php
+$arguments = $this->arguments();
+```
 
 Các tùy chọn có thể được lấy ra dễ dàng như các tham số bằng cách sử dụng phương thức `option`. Để lấy tất cả các tùy chọn dưới dạng một mảng, hãy gọi phương thức `options`:
 
-    // Retrieve a specific option...
-    $queueName = $this->option('queue');
+```php
+// Retrieve a specific option...
+$queueName = $this->option('queue');
 
-    // // Retrieve all options as an array...
-    $options = $this->options();
+// Retrieve all options as an array...
+$options = $this->options();
+```
 
 <a name="prompting-for-input"></a>
 ### Hỏi giá trị input
@@ -511,163 +566,203 @@ Các tùy chọn có thể được lấy ra dễ dàng như các tham số bằ
 
 Ngoài việc hiển thị output, bạn cũng có thể yêu cầu người dùng cung cấp thêm thông tin trong quá trình đang thực thi lệnh. Phương thức `ask` sẽ hỏi người dùng với một câu hỏi có sẵn, chấp nhận thông tin nhập thêm của người dùng và sau đó truyền lại thông tin mới nhập thêm đó cho lệnh của bạn:
 
-    /**
-     * Execute the console command.
-     */
-    public function handle(): void
-    {
-        $name = $this->ask('What is your name?');
+```php
+/**
+ * Execute the console command.
+ */
+public function handle(): void
+{
+    $name = $this->ask('What is your name?');
 
-        // ...
-    }
+    // ...
+}
+```
 
 Phương thức `ask` cũng chấp nhận tham số thứ hai tùy chọn để chỉ định giá trị mặc định sẽ được trả về nếu không có dữ liệu đầu vào nào của người dùng được đưa vào:
 
-    $name = $this->ask('What is your name?', 'Taylor');
+```php
+$name = $this->ask('What is your name?', 'Taylor');
+```
 
 Phương thức `secret` tương tự như phương thức `ask`, nhưng đầu vào của người dùng sẽ không được hiển thị cho họ khi họ gõ vào console. Phương thức này hữu ích khi yêu cầu thông tin nhạy cảm như mật khẩu:
 
-    $password = $this->secret('What is the password?');
+```php
+$password = $this->secret('What is the password?');
+```
 
 <a name="asking-for-confirmation"></a>
 #### Xác nhận
 
 Nếu bạn cần yêu cầu người dùng xác nhận "yes hoặc no", bạn có thể sử dụng phương thức `confirm`. Mặc định, phương thức này sẽ trả về `false`. Tuy nhiên, nếu người dùng nhập `y` hoặc `yes` để trả lời confirm, thì phương thức sẽ trả về `true`.
 
-    if ($this->confirm('Do you wish to continue?')) {
-        // ...
-    }
+```php
+if ($this->confirm('Do you wish to continue?')) {
+    // ...
+}
+```
 
 Nếu cần thiết, bạn có thể chỉ định rằng mặc định confirm sẽ trả về giá trị `true` bằng cách truyền giá trị `true` làm tham số thứ hai cho phương thức `confirm`:
 
-    if ($this->confirm('Do you wish to continue?', true)) {
-        // ...
-    }
+```php
+if ($this->confirm('Do you wish to continue?', true)) {
+    // ...
+}
+```
 
 <a name="auto-completion"></a>
 #### Auto-Completion
 
 Phương thức `anticipate` có thể được sử dụng để cung cấp một auto-completion cho các lựa chọn. Người dùng vẫn có thể cung cấp bất kỳ câu trả lời nào, cho dù có gợi ý auto-completion:
 
-    $name = $this->anticipate('What is your name?', ['Taylor', 'Dayle']);
+```php
+$name = $this->anticipate('What is your name?', ['Taylor', 'Dayle']);
+```
 
 Ngoài ra, bạn có thể truyền một closure làm tham số thứ hai cho phương thức `anticipate`. closure sẽ được gọi mỗi khi người dùng nhập một ký tự vào. closure phải chấp nhận một tham số string có chứa các ký tự nhập vào của người dùng và trả về một loạt các tùy chọn để tự động hoàn thành:
 
-    $name = $this->anticipate('What is your address?', function (string $input) {
-        // Return auto-completion options...
-    });
+```php
+use App\Models\Address;
+
+$name = $this->anticipate('What is your address?', function (string $input) {
+    return Address::whereLike('name', "{$input}%")
+        ->limit(5)
+        ->pluck('name')
+        ->all();
+});
+```
 
 <a name="multiple-choice-questions"></a>
 #### Multiple Choice Questions
 
 Nếu bạn cần cung cấp cho người dùng một danh sách các lựa chọn khi hỏi một câu hỏi, thì bạn có thể sử dụng phương thức `choice`. Bạn có thể set giá trị mặc định cho phương thức này thông qua index của mảng, và nó sẽ được trả về nếu người dùng không chọn bất kỳ tuỳ chọn nào của bạn index này có thể được chỉ định qua tham số thứ ba:
 
-    $name = $this->choice(
-        'What is your name?',
-        ['Taylor', 'Dayle'],
-        $defaultIndex
-    );
+```php
+$name = $this->choice(
+    'What is your name?',
+    ['Taylor', 'Dayle'],
+    $defaultIndex
+);
+```
 
 Ngoài ra, phương thức `choice` chấp nhận tham số thứ tư và tùy chọn thứ năm để xác định số lần thử tối đa và có cho phép chọn nhiều hay không:
 
-    $name = $this->choice(
-        'What is your name?',
-        ['Taylor', 'Dayle'],
-        $defaultIndex,
-        $maxAttempts = null,
-        $allowMultipleSelections = false
-    );
+```php
+$name = $this->choice(
+    'What is your name?',
+    ['Taylor', 'Dayle'],
+    $defaultIndex,
+    $maxAttempts = null,
+    $allowMultipleSelections = false
+);
+```
 
 <a name="writing-output"></a>
 ### Viết Output
 
-Để gửi một output đến console, hãy sử dụng các phương thức `line`, `info`, `comment`, `question` và `error`. Mỗi phương thức này sẽ sử dụng một màu ANSI thích hợp cho mục đích của chúng. Ví dụ: Để hiển thị một thông tin chung cho người dùng. Thì thông thường, phương thức `info` sẽ hiển thị trong console dưới dạng màu xanh lá cây:
+Để gửi một output đến console, hãy sử dụng các phương thức `line`, `newLine`, `info`, `comment`, `question`, `warn`, `alert`, và `error`. Mỗi phương thức này sẽ sử dụng một màu ANSI thích hợp cho mục đích của chúng. Ví dụ: Để hiển thị một thông tin chung cho người dùng. Thì thông thường, phương thức `info` sẽ hiển thị trong console dưới dạng màu xanh lá cây:
 
-    /**
-     * Execute the console command.
-     */
-    public function handle(): void
-    {
-        // ...
+```php
+/**
+ * Execute the console command.
+ */
+public function handle(): void
+{
+    // ...
 
-        $this->info('The command was successful!');
-    }
+    $this->info('The command was successful!');
+}
+```
 
 Để hiển thị một thông báo lỗi, sử dụng phương thức `error`. Thông báo lỗi đó sẽ được hiển thị màu đỏ:
 
-    $this->error('Something went wrong!');
+```php
+$this->error('Something went wrong!');
+```
 
 Bạn có thể sử dụng phương thức `line` để hiển thị đoạn text, không có màu:
 
-    $this->line('Display this on the screen');
+```php
+$this->line('Display this on the screen');
+```
 
 Bạn có thể sử dụng phương thức `newLine` để hiển thị một dòng trống:
 
-    // Write a single blank line...
-    $this->newLine();
+```php
+// Write a single blank line...
+$this->newLine();
 
-    // Write three blank lines...
-    $this->newLine(3);
+// Write three blank lines...
+$this->newLine(3);
+```
 
 <a name="tables"></a>
 #### Tables
 
-Phương thức `table` giúp bạn dễ dàng định dạng chính xác nhiều hàng / cột dữ liệu. Tất cả những gì bạn cần làm là cung cấp tên cột và dữ liệu cho bảng và Laravel sẽ
-tự động tính toán chiều rộng và chiều cao thích hợp cho bảng của bạn:
+Phương thức `table` giúp bạn dễ dàng định dạng chính xác nhiều hàng / cột dữ liệu. Tất cả những gì bạn cần làm là cung cấp tên cột và dữ liệu cho bảng và Laravel sẽ tự động tính toán chiều rộng và chiều cao thích hợp cho bảng của bạn:
 
-    use App\Models\User;
+```php
+use App\Models\User;
 
-    $this->table(
-        ['Name', 'Email'],
-        User::all(['name', 'email'])->toArray()
-    );
+$this->table(
+    ['Name', 'Email'],
+    User::all(['name', 'email'])->toArray()
+);
+```
 
 <a name="progress-bars"></a>
 #### Progress Bars
 
 Đối với các tác vụ chạy dài, có thể bạn sẽ cần hiển thị một thanh tiến trình thông báo cho người dùng biết mức độ hoàn thành của tác vụ. Sử dụng phương thức `withProgressBar`, Laravel sẽ hiển thị một thanh tiến trình và tăng tiến trình đó thông qua mỗi lần lặp của một giá trị lặp nhất định:
 
-    use App\Models\User;
+```php
+use App\Models\User;
 
-    $users = $this->withProgressBar(User::all(), function (User $user) {
-        $this->performTask($user);
-    });
+$users = $this->withProgressBar(User::all(), function (User $user) {
+    $this->performTask($user);
+});
+```
 
 Thỉnh thoảng, bạn có thể cần kiểm soát nhiều hơn đối với cách tăng của thanh tiến trình. Đầu tiên, định nghĩa tổng số các bước mà tiến trình sẽ lặp. Sau đó, tăng thanh tiến trình sau khi xử lý xong từng bước:
 
-    $users = App\Models\User::all();
+```php
+$users = App\Models\User::all();
 
-    $bar = $this->output->createProgressBar(count($users));
+$bar = $this->output->createProgressBar(count($users));
 
-    $bar->start();
+$bar->start();
 
-    foreach ($users as $user) {
-        $this->performTask($user);
+foreach ($users as $user) {
+    $this->performTask($user);
 
-        $bar->advance();
-    }
+    $bar->advance();
+}
 
-    $bar->finish();
+$bar->finish();
+```
 
 > [!NOTE]
-> Để biết các tùy chọn nâng cao, hãy xem [tài liệu component Symfony Progress Bar](https://symfony.com/doc/7.0/components/console/helpers/progressbar.html).
+> Để biết các tùy chọn nâng cao, hãy xem [tài liệu component Symfony Progress Bar](https://symfony.com/doc/current/components/console/helpers/progressbar.html).
 
 <a name="registering-commands"></a>
 ## Đăng ký Command
 
 Mặc định, Laravel sẽ tự động đăng ký tất cả các command có trong thư mục `app/Console/Commands`. Tuy nhiên, bạn có thể tuỳ chỉnh Laravel sẽ đọc các thư mục khác để tìm command Artisan bằng phương thức `withCommands` trong file `bootstrap/app.php` của ứng dụng của bạn:
 
-    ->withCommands([
-        __DIR__.'/../app/Domain/Orders/Commands',
-    ])
+```php
+->withCommands([
+    __DIR__.'/../app/Domain/Orders/Commands',
+])
+```
 
 Nếu cần thiết, bạn cũng có thể đăng ký command theo cách thủ công bằng cách cung cấp tên class của command cho phương thức `withCommands`:
 
-    use App\Domain\Orders\Commands\SendEmails;
+```php
+use App\Domain\Orders\Commands\SendEmails;
 
-    ->withCommands([
-        SendEmails::class,
-    ])
+->withCommands([
+    SendEmails::class,
+])
+```
 
 Khi Artisan được khởi động, tất cả các command có trong ứng dụng của bạn sẽ được resolve bởi [service container](/docs/{{version}}/container) và được đăng ký cùng với Artisan.
 
@@ -676,110 +771,133 @@ Khi Artisan được khởi động, tất cả các command có trong ứng d�
 
 Thỉnh thoảng bạn có thể muốn chạy một command Artisan bên ngoài CLI. Ví dụ: bạn có thể chạy một command Artisan từ route hoặc controller. Bạn có thể sử dụng phương thức `call` trên facade `Artisan` để thực hiện điều này. Phương thức `call` chấp nhận tên một command hoặc tên một class làm tham số đầu tiên và một mảng các tham số của command đó làm tham số thứ hai. Exit code sẽ được trả về:
 
-    use Illuminate\Support\Facades\Artisan;
+```php
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Route;
 
-    Route::post('/user/{user}/mail', function (string $user) {
-        $exitCode = Artisan::call('mail:send', [
-            'user' => $user, '--queue' => 'default'
-        ]);
+Route::post('/user/{user}/mail', function (string $user) {
+    $exitCode = Artisan::call('mail:send', [
+        'user' => $user, '--queue' => 'default'
+    ]);
 
-        // ...
-    });
+    // ...
+});
+```
 
 Ngoài ra, bạn có thể truyền toàn bộ lệnh Artisan sang phương thức `call` dưới dạng một chuỗi:
 
-    Artisan::call('mail:send 1 --queue=default');
+```php
+Artisan::call('mail:send 1 --queue=default');
+```
 
 <a name="passing-array-values"></a>
 #### Passing Array Values
 
 Nếu command của bạn định nghĩa một tùy chọn là một mảng, bạn có thể truyền một mảng các giá trị cho tùy chọn đó:
 
-    use Illuminate\Support\Facades\Artisan;
+```php
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Route;
 
-    Route::post('/mail', function () {
-        $exitCode = Artisan::call('mail:send', [
-            '--id' => [5, 13]
-        ]);
-    });
+Route::post('/mail', function () {
+    $exitCode = Artisan::call('mail:send', [
+        '--id' => [5, 13]
+    ]);
+});
+```
 
 <a name="passing-boolean-values"></a>
 #### Passing Boolean Values
 
 Nếu bạn cần định nghĩa một giá trị cho một tùy chọn không nhận giá trị, chẳng hạn như một flag `--force` trong lệnh `migrate:refresh`, bạn có thể truyền `true` hoặc `false`:
 
-    $exitCode = Artisan::call('migrate:refresh', [
-        '--force' => true,
-    ]);
+```php
+$exitCode = Artisan::call('migrate:refresh', [
+    '--force' => true,
+]);
+```
 
 <a name="queueing-artisan-commands"></a>
 #### Queueing Artisan Commands
 
 Sử dụng phương thức `queue` trên facade `Artisan`, bạn thậm chí có thể queue các lệnh Artisan để chúng được xử lý trong background bởi [queue worker](/docs/{{version}}/queues) của bạn. Trước khi sử dụng phương thức này, hãy đảm bảo là bạn đã cấu hình queue của bạn và đang chạy một queue listener:
 
-    use Illuminate\Support\Facades\Artisan;
+```php
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Route;
 
-    Route::post('/user/{user}/mail', function (string $user) {
-        Artisan::queue('mail:send', [
-            'user' => $user, '--queue' => 'default'
-        ]);
+Route::post('/user/{user}/mail', function (string $user) {
+    Artisan::queue('mail:send', [
+        'user' => $user, '--queue' => 'default'
+    ]);
 
-        // ...
-    });
+    // ...
+});
+```
 
 Sử dụng phương thức `onConnection` và `onQueue`, bạn có thể chỉ định kết nối hoặc queue nào mà lệnh Artisan sẽ được gửi tới:
 
-    Artisan::queue('mail:send', [
-        'user' => 1, '--queue' => 'default'
-    ])->onConnection('redis')->onQueue('commands');
+```php
+Artisan::queue('mail:send', [
+    'user' => 1, '--queue' => 'default'
+])->onConnection('redis')->onQueue('commands');
+```
 
 <a name="calling-commands-from-other-commands"></a>
 ### Calling Commands From Other Commands
 
 Thỉnh thoảng bạn có thể muốn gọi các lệnh khác từ một lệnh Artisan hiện có. Bạn có thể làm như vậy bằng cách sử dụng phương thức `call`. Phương thức `call` này nhận vào tên của command và một mảng các tham số của command đó:
 
-    /**
-     * Execute the console command.
-     */
-    public function handle(): void
-    {
-        $this->call('mail:send', [
-            'user' => 1, '--queue' => 'default'
-        ]);
+```php
+/**
+ * Execute the console command.
+ */
+public function handle(): void
+{
+    $this->call('mail:send', [
+        'user' => 1, '--queue' => 'default'
+    ]);
 
-        // ...
-    }
+    // ...
+}
+```
 
 Nếu bạn muốn gọi một command khác và xoá đi tất cả các output của nó, bạn có thể sử dụng phương thức `callSilent`. Phương thức `callSilent` có cùng cách khai báo với phương thức `call`:
 
-    $this->callSilently('mail:send', [
-        'user' => 1, '--queue' => 'default'
-    ]);
+```php
+$this->callSilently('mail:send', [
+    'user' => 1, '--queue' => 'default'
+]);
+```
 
 <a name="signal-handling"></a>
 ## Xử lý tín hiệu
 
 Như bạn có thể biết, hệ điều hành cho phép gửi tín hiệu đến các process đang chạy. Ví dụ: tín hiệu `SIGTERM` là cách hệ điều hành yêu cầu một chương trình kết thúc. Nếu bạn muốn listen các tín hiệu này trong lệnh Artisan console và chạy code khi chúng xảy ra, bạn có thể sử dụng phương thức `trap`:
 
-    /**
-     * Execute the console command.
-     */
-    public function handle(): void
-    {
-        $this->trap(SIGTERM, fn () => $this->shouldKeepRunning = false);
+```php
+/**
+ * Execute the console command.
+ */
+public function handle(): void
+{
+    $this->trap(SIGTERM, fn () => $this->shouldKeepRunning = false);
 
-        while ($this->shouldKeepRunning) {
-            // ...
-        }
+    while ($this->shouldKeepRunning) {
+        // ...
     }
+}
+```
 
 Để listen nhiều tín hiệu cùng một lúc, bạn có thể cung cấp một mảng tín hiệu cho phương thức `trap`:
 
-    $this->trap([SIGTERM, SIGQUIT], function (int $signal) {
-        $this->shouldKeepRunning = false;
+```php
+$this->trap([SIGTERM, SIGQUIT], function (int $signal) {
+    $this->shouldKeepRunning = false;
 
-        dump($signal); // SIGTERM / SIGQUIT
-    });
+    dump($signal); // SIGTERM / SIGQUIT
+});
+```
 
 <a name="stub-customization"></a>
 ## Stub Customization

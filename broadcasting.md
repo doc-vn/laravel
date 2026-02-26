@@ -1,8 +1,8 @@
 # Broadcasting
 
 - [Giới thiệu](#introduction)
+- [Bắt đầu nhanh](#quickstart)
 - [Cài đặt phía Server](#server-side-installation)
-    - [Cấu hình](#configuration)
     - [Reverb](#reverb)
     - [Pusher Channels](#pusher-channels)
     - [Ably](#ably)
@@ -25,10 +25,12 @@
     - [Only To Others](#only-to-others)
     - [Tuỳ chỉnh Connection](#customizing-the-connection)
     - [Event ẩn](#anonymous-events)
+    - [Xử lý lỗi khi broadcast](#rescuing-broadcasts)
 - [Nhận Broadcast](#receiving-broadcasts)
     - [Listening cho Event](#listening-for-events)
     - [Rời một Channel](#leaving-a-channel)
     - [Namespaces](#namespaces)
+    - [Sử dụng React hoặc Vue](#using-react-or-vue)
 - [Presence Channel](#presence-channels)
     - [Authorizing Presence Channel](#authorizing-presence-channels)
     - [Tham gia Presence Channel](#joining-presence-channels)
@@ -58,47 +60,57 @@ Mặc định, Laravel có chứa ba driver broadcasting cho server-side để b
 > [!NOTE]
 > Trước khi đi sâu vào broadcasting event, hãy đảm bảo là bạn đã đọc tài liệu của Laravel về [event và listener](/docs/{{version}}/events).
 
-<a name="server-side-installation"></a>
-## Cài đặt phía Server
+<a name="quickstart"></a>
+## Bắt đầu nhanh
 
-Để bắt đầu sử dụng chức năng broadcasting event của Laravel, chúng ta cần thực hiện một số cấu hình trong ứng dụng Laravel cũng như cài đặt một vài package.
-
-Broadcasting event được thực hiện bởi một driver broadcasting server-side và nó sẽ broadcasting các event Laravel của bạn để Laravel Echo (một thư viện JavaScript) có thể nhận được trong ứng dụng client trên trình duyệt. Đừng lo lắng - chúng tôi sẽ hướng dẫn từng bước của quy trình cài đặt.
-
-<a name="configuration"></a>
-### Cấu hình
-
-Tất cả các cấu hình event broadcasting của application đều được lưu trữ trong file cấu hình `config/broadcasting.php`. Đừng lo lắng nếu thư mục này không tồn tại trong ứng dụng của bạn; nó sẽ được tạo ra khi bạn chạy lệnh Artisan `install:broadcasting`.
-
-Mặc định, Laravel hỗ trợ một số broadcast driver: [Laravel Reverb](/docs/{{version}}/reverb), [Pusher Channels](https://pusher.com/channels), [Ably](https://ably.com), và driver `log` dành cho lúc phát triển và lúc gỡ lỗi. Ngoài ra, driver `null` cũng được cung cấp cho phép bạn tắt broadcasting trong khi test. Một số cấu hình mẫu cũng sẽ được cung cấp trong file cấu hình `config/broadcasting.php`.
-
-<a name="installation"></a>
-#### Installation
-
-Mặc định, broadcasting không được bật trong các ứng dụng Laravel mới. Bạn có thể bật broadcasting bằng lệnh Artisan `install:broadcasting`:
+Mặc định, broadcasting không được enable trong các ứng dụng Laravel mới. Bạn có thể enable broadcasting bằng cách sử dụng lệnh Artisan `install:broadcasting`:
 
 ```shell
 php artisan install:broadcasting
 ```
-Lệnh `install:broadcasting` sẽ tạo file cấu hình `config/broadcasting.php`. Ngoài ra, lệnh này cũng sẽ tạo ra file `routes/channels.php`, nơi mà bạn có thể đăng ký các route broadcast authorization và các callback của chúng.
 
-<a name="queue-configuration"></a>
-#### Queue Configuration
+Lệnh `install:broadcasting` sẽ hỏi bạn chọn dịch vụ broadcast event nào mà bạn muốn sử dụng. Ngoài ra, nó sẽ tạo một file cấu hình `config/broadcasting.php` và một file `routes/channels.php` nơi mà bạn có thể đăng ký các route và các callback xác thực broadcast cho ứng dụng của bạn.
 
-Trước khi broadcast bất kỳ event nào, đầu tiên bạn nên cấu hình và chạy một [queue worker](/docs/{{version}}/queues). Tất cả việc broadcasting event sẽ được thực hiện thông qua các queued job để thời gian phản hồi của ứng dụng của bạn không bị ảnh hưởng nghiêm trọng bởi các event đang được broadcast.
+Mặc định, Laravel hỗ trợ một số broadcast driver: [Laravel Reverb](/docs/{{version}}/reverb), [Pusher Channels](https://pusher.com/channels), [Ably](https://ably.com), và driver `log` dành cho lúc phát triển và lúc gỡ lỗi. Ngoài ra, driver `null` cũng được cung cấp cho phép bạn tắt broadcasting trong khi test. Một số cấu hình mẫu cũng sẽ được cung cấp trong file cấu hình `config/broadcasting.php`.
+
+Tất cả các cấu hình event broadcasting cho ứng dụng của bạn được lưu trong file cấu hình `config/broadcasting.php`. Bạn đừng lo nếu file này chưa tồn tại trong ứng dụng của bạn; nó sẽ được tạo khi bạn chạy lệnh Artisan `install:broadcasting`.
+
+<a name="quickstart-next-steps"></a>
+#### Next Steps
+
+Sau khi bạn đã enable event broadcasting, bạn đã sẵn sàng tìm hiểu thêm về việc [định nghĩa các broadcast event](#defining-broadcast-events) và [listen các event](#listening-for-events) này. Nếu bạn đang sử dụng các [starter kit](/docs/{{version}}/starter-kits) React hoặc Vue của Laravel, bạn có thể listen các event bằng cách sử dụng [hook useEcho](#using-react-or-vue) của Echo.
+
+> [!NOTE]
+> Trước khi broadcast bất kỳ event nào, đầu tiên bạn nên cấu hình và chạy một [queue worker](/docs/{{version}}/queues). Tất cả các event broadcasting đều được thực hiện thông qua các queued job sẽ giúp thời gian response của ứng dụng của bạn không bị ảnh hưởng bởi các event đang được broadcast.
+
+<a name="server-side-installation"></a>
+## Server Side Installation
+
+Để bắt đầu sử dụng Laravel's event broadcasting, chúng ta cần thực hiện một số cấu hình trong ứng dụng Laravel cũng như cài đặt một số package.
+
+Việc broadcasting event được thực hiện bởi một driver broadcasting phía server, driver này sẽ broadcast các event Laravel để Laravel Echo (một thư viện JavaScript) có thể nhận được chúng ở bên trong trình duyệt của client. Đừng lo lắng - chúng ta sẽ đi qua từng bước của quá trình cài đặt này.
 
 <a name="reverb"></a>
 ### Reverb
 
-Khi chạy lệnh `install:broadcasting`, bạn sẽ được nhắc là cần cài đặt [Laravel Reverb](/docs/{{version}}/reverb). Tất nhiên, bạn cũng có thể cài đặt Reverb bằng trình quản lý package Composer.
+Để nhanh chóng enable các tính năng broadcasting của Laravel khi sử dụng Reverb làm driver broadcast event của bạn, hãy chạy lệnh Artisan `install:broadcasting` với tùy chọn `--reverb`. Lệnh Artisan này sẽ cài đặt các package Composer và NPM cần thiết của Reverb và cập nhật file `.env` của ứng dụng với các biến môi trường phù hợp:
 
-```sh
+```shell
+php artisan install:broadcasting --reverb
+```
+
+<a name="reverb-manual-installation"></a>
+#### Manual Installation
+
+Khi chạy lệnh `install:broadcasting`, bạn sẽ được nhắc là cần cài đặt [Laravel Reverb](/docs/{{version}}/reverb). Tất nhiên, bạn cũng có thể cài đặt Reverb bằng trình quản lý package Composer:
+
+```shell
 composer require laravel/reverb
 ```
 
 Sau khi package được cài đặt xong, bạn có thể chạy lệnh cài đặt của Reverb để export ra cấu hình, thêm các biến môi trường cần thiết của Reverb, và enable broadcast trong ứng dụng của bạn:
 
-```sh
+```shell
 php artisan reverb:install
 ```
 
@@ -107,7 +119,16 @@ Bạn có thể tìm thấy hướng dẫn cài đặt và sử dụng Reverb ch
 <a name="pusher-channels"></a>
 ### Pusher Channels
 
-Nếu bạn có kế hoạch broadcast các event của bạn bằng cách sử dụng [Pusher Channels](https://pusher.com/channels), thì bạn nên cài đặt SDK PHP của Pusher Channels bằng trình quản lý package Composer:
+Để nhanh chóng enable các tính năng broadcasting của Laravel khi sử dụng Pusher làm driver broadcast event của bạn, hãy chạy lệnh Artisan `install:broadcasting` với tùy chọn `--pusher`. Lệnh Artisan này sẽ yêu cầu bạn nhập các thông tin xác thực của Pusher, cài đặt các SDK PHP và JavaScript của Pusher, và cập nhật file `.env` của ứng dụng với các biến môi trường phù hợp:
+
+```shell
+php artisan install:broadcasting --pusher
+```
+
+<a name="pusher-manual-installation"></a>
+#### Manual Installation
+
+Để cài đặt Pusher thủ công, bạn cần cài đặt SDK PHP của Pusher Channels bằng trình quản lý package Composer:
 
 ```shell
 composer require pusher/pusher-php-server
@@ -141,7 +162,18 @@ Cuối cùng, bạn đã sẵn sàng để cài đặt và cấu hình [Laravel 
 > [!NOTE]
 > Tài liệu dưới đây sẽ thảo luận về cách dùng Ably trong chế độ "tương thích với Pusher". Tuy nhiên, Ably team rất khuyến khích bạn và duy trì một broadcaster, một Echo client có thể tận dụng tối đa các khả năng độc đáo do Ably cung cấp. Để biết thêm thông tin về cách sử dụng các driver được Ably cung cấp, vui lòng [tham khảo tài liệu về broadcaster Laravel của Ably](https://github.com/ably/laravel-broadcaster).
 
-Nếu bạn định broadcast các event của bạn bằng [Ably](https://ably.com), thì bạn nên cài đặt Ably PHP SDK bằng trình quản lý package Composer:
+Để nhanh chóng enable các tính năng broadcasting của Laravel khi sử dụng [Ably](https://ably.com) làm driver broadcast event của bạn, hãy chạy lệnh Artisan `install:broadcasting` với tùy chọn `--ably`. Lệnh Artisan này sẽ yêu cầu bạn nhập các thông tin xác thực của Ably, cài đặt các SDK PHP và JavaScript của Ably, và cập nhật file `.env` của ứng dụng với các biến môi trường phù hợp:
+
+```shell
+php artisan install:broadcasting --ably
+```
+
+**Trước khi tiếp tục, bạn nên bật hỗ trợ giao thức Pusher trong phần cài đặt ứng dụng Ably của bạn. Bạn có thể bật tính năng này trong phần "Protocol Adapter Settings" của dashboard cài đặt ứng dụng Ably.**
+
+<a name="ably-manual-installation"></a>
+#### Manual Installation
+
+Để cài đặt Ably thủ công, thì bạn nên cài đặt Ably PHP SDK bằng trình quản lý package Composer:
 
 ```shell
 composer require ably/ably-php
@@ -167,15 +199,22 @@ Cuối cùng, bạn đã sẵn sàng để cài đặt và cấu hình [Laravel 
 <a name="client-reverb"></a>
 ### Reverb
 
-[Laravel Echo](https://github.com/laravel/echo) là một thư viện JavaScript giúp việc subscribe channel và lắng nghe các event broadcast được tạo bởi driver server-side broadcasting trở nên dễ dàng. Bạn có thể cài đặt Echo thông qua trình quản lý package NPM. Trong ví dụ này, chúng ta cũng sẽ cài đặt package `pusher-js` vì Reverb sử dụng giao thức Pusher cho các subscription, channel và tin nhắn thông qua WebSocket:
+[Laravel Echo](https://github.com/laravel/echo) là một thư viện JavaScript giúp việc subscribe channel và lắng nghe các event broadcast được tạo bởi driver server-side broadcasting trở nên dễ dàng.
+
+Khi cài đặt Laravel Reverb thông qua lệnh Artisan `install:broadcasting`, khung và cấu hình của Reverb và Echo sẽ được tự động thêm vào ứng dụng của bạn. Tuy nhiên, nếu bạn muốn tự cấu hình Laravel Echo, bạn có thể thực hiện theo các hướng dẫn bên dưới.
+
+<a name="reverb-client-manual-installation"></a>
+#### Manual Installation
+
+Để tự cấu hình Laravel Echo cho frontend của ứng dụng, trước tiên hãy cài đặt package `pusher-js` vì Reverb sử dụng giao thức Pusher cho các subscription, channel và tin nhắn thông qua WebSocket:
 
 ```shell
 npm install --save-dev laravel-echo pusher-js
 ```
 
-Sau khi Echo được cài đặt xong, bạn đã sẵn sàng tạo một instance Echo mới trong JavaScript của ứng dụng. Một vị trí tuyệt vời để thực hiện việc này là ở cuối file `resources/js/bootstrap.js` được chứa sẵn trong framework Laravel. Mặc định, một cấu hình Echo mẫu đã được chứa trong file này - bạn chỉ cần bỏ comment và cập nhật tùy chọn cấu hình `broadcaster` thành `reverb`:
+Sau khi Echo được cài đặt xong, bạn đã sẵn sàng tạo một instance Echo mới trong JavaScript của ứng dụng. Một vị trí tuyệt vời để thực hiện việc này là ở cuối file `resources/js/bootstrap.js` được chứa sẵn trong framework Laravel:
 
-```js
+```js tab=JavaScript
 import Echo from 'laravel-echo';
 
 import Pusher from 'pusher-js';
@@ -185,10 +224,38 @@ window.Echo = new Echo({
     broadcaster: 'reverb',
     key: import.meta.env.VITE_REVERB_APP_KEY,
     wsHost: import.meta.env.VITE_REVERB_HOST,
-    wsPort: import.meta.env.VITE_REVERB_PORT,
-    wssPort: import.meta.env.VITE_REVERB_PORT,
+    wsPort: import.meta.env.VITE_REVERB_PORT ?? 80,
+    wssPort: import.meta.env.VITE_REVERB_PORT ?? 443,
     forceTLS: (import.meta.env.VITE_REVERB_SCHEME ?? 'https') === 'https',
     enabledTransports: ['ws', 'wss'],
+});
+```
+
+```js tab=React
+import { configureEcho } from "@laravel/echo-react";
+
+configureEcho({
+    broadcaster: "reverb",
+    // key: import.meta.env.VITE_REVERB_APP_KEY,
+    // wsHost: import.meta.env.VITE_REVERB_HOST,
+    // wsPort: import.meta.env.VITE_REVERB_PORT,
+    // wssPort: import.meta.env.VITE_REVERB_PORT,
+    // forceTLS: (import.meta.env.VITE_REVERB_SCHEME ?? 'https') === 'https',
+    // enabledTransports: ['ws', 'wss'],
+});
+```
+
+```js tab=Vue
+import { configureEcho } from "@laravel/echo-vue";
+
+configureEcho({
+    broadcaster: "reverb",
+    // key: import.meta.env.VITE_REVERB_APP_KEY,
+    // wsHost: import.meta.env.VITE_REVERB_HOST,
+    // wsPort: import.meta.env.VITE_REVERB_PORT,
+    // wssPort: import.meta.env.VITE_REVERB_PORT,
+    // forceTLS: (import.meta.env.VITE_REVERB_SCHEME ?? 'https') === 'https',
+    // enabledTransports: ['ws', 'wss'],
 });
 ```
 
@@ -204,17 +271,22 @@ npm run build
 <a name="client-pusher-channels"></a>
 ### Pusher Channels
 
-[Laravel Echo](https://github.com/laravel/echo) là một thư viện JavaScript giúp bạn dễ dàng đăng ký channel và lắng nghe các event do các driver broadcasting server-side của bạn. Echo cũng tận dụng package NPM `pusher-js` để triển khai giao thức Pusher cho các đăng ký, channel và tin nhắn thông qua WebSocket.
+[Laravel Echo](https://github.com/laravel/echo) là một thư viện JavaScript giúp bạn dễ dàng đăng ký channel và lắng nghe các event do các driver broadcasting server-side của bạn.
 
-Lệnh `install:broadcasting` của Artisan sẽ tự động cài đặt các package `laravel-echo` và `pusher-js` cho bạn; tuy nhiên, bạn cũng có thể tự cài đặt các package này thông qua NPM:
+Khi cài đặt hỗ trợ broadcasting thông qua lệnh Artisan `install:broadcasting --pusher`, các khung và cấu hình của Pusher và Echo sẽ được tự động thêm vào ứng dụng của bạn. Tuy nhiên, nếu bạn muốn tự cấu hình Laravel Echo, bạn có thể thực hiện theo các hướng dẫn bên dưới.
+
+<a name="pusher-client-manual-installation"></a>
+#### Manual Installation
+
+Để tự cấu hình Laravel Echo cho frontend của ứng dụng, trước tiên hãy cài đặt các package `laravel-echo` và `pusher-js` sử dụng giao thức Pusher cho các subscription, channel và tin nhắn thông qua WebSocket:
 
 ```shell
 npm install --save-dev laravel-echo pusher-js
 ```
 
-Sau khi cài đặt Echo, bạn đã sẵn sàng tạo một instance Echo mới trong JavaScript của ứng dụng. Lệnh `install:broadcasting` tạo một file cấu hình Echo tại `resources/js/echo.js`; tuy nhiên, cấu hình mặc định trong file này dành cho Laravel Reverb. Bạn có thể copy cấu hình bên dưới để chuyển cấu hình sang Pusher:
+Sau khi cài đặt Echo, bạn đã sẵn sàng tạo một instance Echo mới trong file `resources/js/bootstrap.js` của ứng dụng:
 
-```js
+```js tab=JavaScript
 import Echo from 'laravel-echo';
 
 import Pusher from 'pusher-js';
@@ -225,6 +297,36 @@ window.Echo = new Echo({
     key: import.meta.env.VITE_PUSHER_APP_KEY,
     cluster: import.meta.env.VITE_PUSHER_APP_CLUSTER,
     forceTLS: true
+});
+```
+
+```js tab=React
+import { configureEcho } from "@laravel/echo-react";
+
+configureEcho({
+    broadcaster: "pusher",
+    // key: import.meta.env.VITE_PUSHER_APP_KEY,
+    // cluster: import.meta.env.VITE_PUSHER_APP_CLUSTER,
+    // forceTLS: true,
+    // wsHost: import.meta.env.VITE_PUSHER_HOST,
+    // wsPort: import.meta.env.VITE_PUSHER_PORT,
+    // wssPort: import.meta.env.VITE_PUSHER_PORT,
+    // enabledTransports: ["ws", "wss"],
+});
+```
+
+```js tab=Vue
+import { configureEcho } from "@laravel/echo-vue";
+
+configureEcho({
+    broadcaster: "pusher",
+    // key: import.meta.env.VITE_PUSHER_APP_KEY,
+    // cluster: import.meta.env.VITE_PUSHER_APP_CLUSTER,
+    // forceTLS: true,
+    // wsHost: import.meta.env.VITE_PUSHER_HOST,
+    // wsPort: import.meta.env.VITE_PUSHER_PORT,
+    // wssPort: import.meta.env.VITE_PUSHER_PORT,
+    // enabledTransports: ["ws", "wss"],
 });
 ```
 
@@ -267,7 +369,7 @@ import Pusher from 'pusher-js';
 
 const options = {
     broadcaster: 'pusher',
-    key: 'your-pusher-channels-key'
+    key: import.meta.env.VITE_PUSHER_APP_KEY
 }
 
 window.Echo = new Echo({
@@ -282,19 +384,24 @@ window.Echo = new Echo({
 > [!NOTE]
 > Tài liệu dưới đây sẽ thảo luận về cách dùng Ably trong chế độ "tương thích với Pusher". Tuy nhiên, Ably team rất khuyến khích bạn và duy trì một broadcaster, một Echo client có thể tận dụng tối đa các khả năng độc đáo do Ably cung cấp. Để biết thêm thông tin về cách sử dụng các driver được Ably cung cấp, vui lòng [tham khảo tài liệu về broadcaster Laravel của Ably](https://github.com/ably/laravel-broadcaster).
 
-[Laravel Echo](https://github.com/laravel/echo) là một thư viện JavaScript giúp bạn dễ dàng đăng ký channel và lắng nghe các event do các driver broadcasting server-side của bạn. Echo cũng tận dụng package NPM `pusher-js` để triển khai giao thức Pusher cho các đăng ký, channel và các message WebSocket.
+[Laravel Echo](https://github.com/laravel/echo) là một thư viện JavaScript giúp bạn dễ dàng đăng ký channel và lắng nghe các event do các driver broadcasting server-side của bạn.
 
-Lệnh `install:broadcasting` Artisan sẽ tự động cài đặt các package `laravel-echo` và `pusher-js` cho bạn; tuy nhiên, bạn cũng có thể tự cài đặt các package này thông qua NPM:
+Khi cài đặt hỗ trợ broadcasting thông qua lệnh Artisan `install:broadcasting --ably`, các khung và cấu hình của Ably và Echo sẽ được tự động thêm vào ứng dụng của bạn. Tuy nhiên, nếu bạn muốn tự cấu hình Laravel Echo, bạn có thể thực hiện theo các hướng dẫn bên dưới.
+
+<a name="ably-client-manual-installation"></a>
+#### Manual Installation
+
+Để tự cấu hình Laravel Echo cho frontend của ứng dụng, trước tiên hãy cài đặt các package `laravel-echo` và `pusher-js` sử dụng giao thức Pusher cho các subscription, channel và tin nhắn thông qua WebSocket:
 
 ```shell
 npm install --save-dev laravel-echo pusher-js
 ```
 
-**Trước khi tiếp tục, bạn nên bật hỗ trợ giao thức Pusher trong cài đặt ứng dụng Ably của bạn. Bạn có thể bật chức năng này trong phần "Protocol Adapter Settings" trên bảng điều khiển cài đặt của ứng dụng Ably.**
+**Trước khi tiếp tục, bạn nên bật hỗ trợ giao thức Pusher trong phần cài đặt ứng dụng Ably của bạn. Bạn có thể bật tính năng này trong phần "Protocol Adapter Settings" của dashboard cài đặt ứng dụng Ably.**
 
-Sau khi cài đặt Echo, bạn đã sẵn sàng tạo một instance Echo mới trong JavaScript của ứng dụng. Lệnh `install:broadcasting` sẽ tạo file cấu hình Echo tại `resources/js/echo.js`; tuy nhiên, cấu hình mặc định trong file này sẽ dành cho Laravel Reverb. Bạn có thể sao chép cấu hình bên dưới để chuyển cấu hình của bạn sang Ably:
+Sau khi cài đặt Echo, bạn đã sẵn sàng tạo một instance Echo mới trong file `resources/js/bootstrap.js` của ứng dụng:
 
-```js
+```js tab=JavaScript
 import Echo from 'laravel-echo';
 
 import Pusher from 'pusher-js';
@@ -307,6 +414,32 @@ window.Echo = new Echo({
     wsPort: 443,
     disableStats: true,
     encrypted: true,
+});
+```
+
+```js tab=React
+import { configureEcho } from "@laravel/echo-react";
+
+configureEcho({
+    broadcaster: "ably",
+    // key: import.meta.env.VITE_ABLY_PUBLIC_KEY,
+    // wsHost: "realtime-pusher.ably.io",
+    // wsPort: 443,
+    // disableStats: true,
+    // encrypted: true,
+});
+```
+
+```js tab=Vue
+import { configureEcho } from "@laravel/echo-vue";
+
+configureEcho({
+    broadcaster: "ably",
+    // key: import.meta.env.VITE_ABLY_PUBLIC_KEY,
+    // wsHost: "realtime-pusher.ably.io",
+    // wsPort: 443,
+    // disableStats: true,
+    // encrypted: true,
 });
 ```
 
@@ -324,7 +457,7 @@ npm run dev
 <a name="concept-overview"></a>
 ## Khái niệm tổng quan
 
-Broadcasting event của Laravel cho phép bạn broadcast các event Laravel ở phía máy chủ của bạn tới các application ở JavaScript bên phía client bằng cách sử dụng các phương pháp tiếp cận dựa trên các driver WebSockets. Hiện tại, Laravel hỗ trợ [Pusher Channels](https://pusher.com/channels) và driver [Ably](https://ably.com). Các event có thể được sử dụng dễ dàng ở phía client bằng cách sử dụng package Javascript [Laravel Echo](#client-side-installation).
+Broadcasting event của Laravel cho phép bạn broadcast các event Laravel ở phía máy chủ của bạn tới các application ở JavaScript bên phía client bằng cách sử dụng các phương pháp tiếp cận dựa trên các driver WebSockets. Hiện tại, Laravel hỗ trợ [Laravel Reverb](https://reverb.laravel.com), [Pusher Channels](https://pusher.com/channels), và driver [Ably](https://ably.com). Các event có thể được sử dụng dễ dàng ở phía client bằng cách sử dụng package Javascript [Laravel Echo](#client-side-installation).
 
 Các event được broadcast qua các "channels", có thể chỉ định là công khai hoặc là riêng tư. Bất kỳ client nào truy cập vào application của bạn đều có thể đăng ký channel công khai mà không cần bất kỳ authentication hoặc authorization nào; tuy nhiên, để đăng ký channel private, người dùng phải được authentication và authorization để listen trên channel đó.
 
@@ -335,77 +468,87 @@ Trước khi đi sâu vào từng thành phần của event broadcasting, bạn 
 
 Trong application của chúng ta, giả sử chúng ta có một trang cho phép người dùng xem trạng thái giao hàng của đơn hàng của họ. Chúng ta cũng giả sử rằng một event `OrderShipmentStatusUpdated` sẽ được kích hoạt khi một shipping được cập nhật trạng thái bởi application:
 
-    use App\Events\OrderShipmentStatusUpdated;
+```php
+use App\Events\OrderShipmentStatusUpdated;
 
-    OrderShipmentStatusUpdated::dispatch($order);
+OrderShipmentStatusUpdated::dispatch($order);
+```
 
 <a name="the-shouldbroadcast-interface"></a>
 #### The `ShouldBroadcast` Interface
 
 Khi người dùng đang xem một trong các đơn hàng của họ, chúng ta không muốn họ phải refresh trang để xem lại trạng thái của đơn hàng đó. Thay vào đó, chúng ta muốn broadcast các cập nhật trạng thái cho application của chúng ta khi chúng được tạo. Vì thế, chúng ta cần đánh dấu event `OrderShipmentStatusUpdated` bằng interface `ShouldBroadcast`. Điều này sẽ hướng dẫn Laravel là tạo một broadcast event khi event đó được kích hoạt:
 
-    <?php
+```php
+<?php
 
-    namespace App\Events;
+namespace App\Events;
 
-    App\Models\Order;
-    use Illuminate\Broadcasting\Channel;
-    use Illuminate\Broadcasting\InteractsWithSockets;
-    use Illuminate\Broadcasting\PresenceChannel;
-    use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
-    use Illuminate\Queue\SerializesModels;
+use App\Models\Order;
+use Illuminate\Broadcasting\Channel;
+use Illuminate\Broadcasting\InteractsWithSockets;
+use Illuminate\Broadcasting\PresenceChannel;
+use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
+use Illuminate\Queue\SerializesModels;
 
-    class OrderShipmentStatusUpdated implements ShouldBroadcast
-    {
-        /**
-         * The order instance.
-         *
-         * @var \App\Models\Order
-         */
-        public $order;
-    }
+class OrderShipmentStatusUpdated implements ShouldBroadcast
+{
+    /**
+     * The order instance.
+     *
+     * @var \App\Models\Order
+     */
+    public $order;
+}
+```
 
 Interface `ShouldBroadcast` yêu cầu event của chúng ta cần định nghĩa một phương thức là `broadcastOn`. Phương thức này sẽ chịu trách nhiệm trả về các channel mà event này sẽ broadcast trên đó. Một empty stub của phương thức này sẽ được định nghĩa sẵn cho chúng ta trên các class event đã được tạo ra, vì vậy chúng ta sẽ chỉ cần điền các thông tin chi tiết về nó. Chúng ta muốn chỉ duy nhất người đã tạo đơn hàng này mới có thể xem trạng thái, vì vậy chúng ta sẽ cần broadcast event này trên một channel private được gắn với đơn đặt hàng:
 
-    use Illuminate\Broadcasting\Channel;
-    use Illuminate\Broadcasting\PrivateChannel;
+```php
+use Illuminate\Broadcasting\Channel;
+use Illuminate\Broadcasting\PrivateChannel;
 
-    /**
-     * Get the channel the event should broadcast on.
-     */
-    public function broadcastOn(): Channel
-    {
-        return new PrivateChannel('orders.'.$this->order->id);
-    }
+/**
+ * Get the channel the event should broadcast on.
+ */
+public function broadcastOn(): Channel
+{
+    return new PrivateChannel('orders.'.$this->order->id);
+}
+```
 
 Nếu bạn muốn event được broadcast đến nhiều channel, bạn có thể trả về một `array`:
 
-    use Illuminate\Broadcasting\PrivateChannel;
+```php
+use Illuminate\Broadcasting\PrivateChannel;
 
-    /**
-     * Get the channels the event should broadcast on.
-     *
-     * @return array<int, \Illuminate\Broadcasting\Channel>
-     */
-    public function broadcastOn(): array
-    {
-        return [
-            new PrivateChannel('orders.'.$this->order->id),
-            // ...
-        ];
-    }
+/**
+ * Get the channels the event should broadcast on.
+ *
+ * @return array<int, \Illuminate\Broadcasting\Channel>
+ */
+public function broadcastOn(): array
+{
+    return [
+        new PrivateChannel('orders.'.$this->order->id),
+        // ...
+    ];
+}
+```
 
 <a name="example-application-authorizing-channels"></a>
 #### Authorizing Channels
 
 Hãy nhớ rằng, người dùng phải có phép thì mới có thể listen trên các channel private. Chúng ta có thể định nghĩa các quy tắc authorization cho channel này trong file `routes/channels.php` của application. Trong ví dụ này, chúng ta cần kiểm tra rằng bất kỳ người dùng nào đang cố gắng listen trên channel private `orders.1` này có phải là người đã tạo ra đơn đặt hàng hay không:
 
-    use App\Models\Order;
-    use App\Models\User;
+```php
+use App\Models\Order;
+use App\Models\User;
 
-    Broadcast::channel('orders.{orderId}', function (User $user, int $orderId) {
-        return $user->id === Order::findOrNew($orderId)->user_id;
-    });
+Broadcast::channel('orders.{orderId}', function (User $user, int $orderId) {
+    return $user->id === Order::findOrNew($orderId)->user_id;
+});
+```
 
 Phương thức `channel` này chấp nhận hai tham số: một là tên của channel và một là callback trả về `true` hoặc `false` cho biết người dùng đó có được phép listen trên channel hay không.
 
@@ -414,13 +557,32 @@ Tất cả các authorization callback này đều nhận vào tham số đầu 
 <a name="listening-for-event-broadcasts"></a>
 #### Listening For Event Broadcasts
 
-Tiếp theo, tất cả những gì còn lại là listen event trong JavaScript của chúng ta. Chúng ta có thể làm điều này bằng cách sử dụng [Laravel Echo](#client-side-installation). Đầu tiên, chúng ta sẽ sử dụng phương thức `private` để đăng ký channel private. Sau đó, chúng ta có thể sử dụng phương thức `listen` để listen event `OrderShipmentStatusUpdated`. Mặc định, tất cả các thuộc tính công khai của event sẽ được đưa vào trong broadcast event:
+Tiếp theo, tất cả những gì còn lại là listen event trong JavaScript của chúng ta. Chúng ta có thể làm điều này bằng cách sử dụng [Laravel Echo](#client-side-installation). Các hook React và Vue được tích hợp sẵn của Laravel Echo giúp việc bắt đầu trở nên dễ dàng, và, mặc định, tất cả các thuộc tính công khai của event sẽ được đưa vào trong broadcast event:
 
-```js
-Echo.private(`orders.${orderId}`)
-    .listen('OrderShipmentStatusUpdated', (e) => {
+```js tab=React
+import { useEcho } from "@laravel/echo-react";
+
+useEcho(
+    `orders.${orderId}`,
+    "OrderShipmentStatusUpdated",
+    (e) => {
         console.log(e.order);
-    });
+    },
+);
+```
+
+```vue tab=Vue
+<script setup lang="ts">
+import { useEcho } from "@laravel/echo-vue";
+
+useEcho(
+    `orders.${orderId}`,
+    "OrderShipmentStatusUpdated",
+    (e) => {
+        console.log(e.order);
+    },
+);
+</script>
 ```
 
 <a name="defining-broadcast-events"></a>
@@ -430,41 +592,43 @@ Echo.private(`orders.${orderId}`)
 
 Interface `ShouldBroadcast` yêu cầu bạn implement một phương thức: `broadcastOn`. Phương thức `broadcastOn` sẽ trả về tên một channel hoặc một mảng tên các channel mà event sẽ được broadcast trên đó. Các channel phải là các instance của `Channel`, `PrivateChannel`, hoặc `PresenceChannel`. Các instance của `Channel` là đại diện cho các channel public mà bất kỳ người dùng nào cũng có thể vào, trong khi `PrivateChannels` và `PresenceChannels` là đại diện cho các channel private yêu cầu [channel authorization](#authorizing-channels):
 
-    <?php
+```php
+<?php
 
-    namespace App\Events;
+namespace App\Events;
 
-    use App\Models\User;
-    use Illuminate\Broadcasting\Channel;
-    use Illuminate\Broadcasting\InteractsWithSockets;
-    use Illuminate\Broadcasting\PresenceChannel;
-    use Illuminate\Broadcasting\PrivateChannel;
-    use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
-    use Illuminate\Queue\SerializesModels;
+use App\Models\User;
+use Illuminate\Broadcasting\Channel;
+use Illuminate\Broadcasting\InteractsWithSockets;
+use Illuminate\Broadcasting\PresenceChannel;
+use Illuminate\Broadcasting\PrivateChannel;
+use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
+use Illuminate\Queue\SerializesModels;
 
-    class ServerCreated implements ShouldBroadcast
+class ServerCreated implements ShouldBroadcast
+{
+    use SerializesModels;
+
+    /**
+     * Create a new event instance.
+     */
+    public function __construct(
+        public User $user,
+    ) {}
+
+    /**
+     * Get the channels the event should broadcast on.
+     *
+     * @return array<int, \Illuminate\Broadcasting\Channel>
+     */
+    public function broadcastOn(): array
     {
-        use SerializesModels;
-
-        /**
-         * Create a new event instance.
-         */
-        public function __construct(
-            public User $user,
-        ) {}
-
-        /**
-         * Get the channels the event should broadcast on.
-         *
-         * @return array<int, \Illuminate\Broadcasting\Channel>
-         */
-        public function broadcastOn(): array
-        {
-            return [
-                new PrivateChannel('user.'.$this->user->id),
-            ];
-        }
+        return [
+            new PrivateChannel('user.'.$this->user->id),
+        ];
     }
+}
+```
 
 Sau khi implement interface `ShouldBroadcast`, bạn chỉ cần [kích hoạt event](/docs/{{version}}/events) như bình thường. Khi event đó đã được kích hoạt, [queued job](/docs/{{version}}/queues) sẽ tự động broadcast event đó thông qua driver broadcast mà chúng ta đã định nghĩa.
 
@@ -473,19 +637,23 @@ Sau khi implement interface `ShouldBroadcast`, bạn chỉ cần [kích hoạt e
 
 Mặc định, Laravel sẽ broadcast event bằng tên class của event. Tuy nhiên, bạn có thể tùy chỉnh tên của broadcast bằng cách định nghĩa phương thức `broadcastAs` trong event:
 
-    /**
-     * The event's broadcast name.
-     */
-    public function broadcastAs(): string
-    {
-        return 'server.created';
-    }
+```php
+/**
+ * The event's broadcast name.
+ */
+public function broadcastAs(): string
+{
+    return 'server.created';
+}
+```
 
 Nếu bạn tùy chỉnh tên broadcast bằng phương thức `broadcastAs`, bạn nên đảm bảo rằng đã đăng ký listener của bạn với một ký tự `.` ở đầu. Điều này sẽ hướng dẫn Echo không thêm namespace application cho event của bạn:
 
-    .listen('.server.created', function (e) {
-        ....
-    });
+```javascript
+.listen('.server.created', function (e) {
+    // ...
+});
+```
 
 <a name="broadcast-data"></a>
 ### Broadcast Data
@@ -504,68 +672,80 @@ Khi một event đã được broadcast, thì tất cả các thuộc tính `pub
 
 Tuy nhiên, nếu bạn muốn có quyền kiểm soát chi tiết hơn đối với payload broadcast của bạn, bạn có thể thêm một phương thức `broadcastWith` vào event của bạn. Phương thức này sẽ trả về mảng dữ liệu mà bạn muốn broadcast dưới dạng payload event:
 
-    /**
-     * Get the data to broadcast.
-     *
-     * @return array<string, mixed>
-     */
-    public function broadcastWith(): array
-    {
-        return ['id' => $this->user->id];
-    }
+```php
+/**
+ * Get the data to broadcast.
+ *
+ * @return array<string, mixed>
+ */
+public function broadcastWith(): array
+{
+    return ['id' => $this->user->id];
+}
+```
 
 <a name="broadcast-queue"></a>
 ### Broadcast Queue
 
 Mặc định, mỗi broadcast event sẽ được đặt trên một queue mặc định với một kết nối queue mặc định được định nghĩa trong file cấu hình `queue.php` của bạn. Bạn có thể tùy chỉnh kết nối queue và tên được broadcaster sử dụng bằng cách định nghĩa các thuộc tính `connection` và `queue` trên các event class của bạn:
 
-    /**
-     * The name of the queue connection to use when broadcasting the event.
-     *
-     * @var string
-     */
-    public $connection = 'redis';
+```php
+/**
+ * The name of the queue connection to use when broadcasting the event.
+ *
+ * @var string
+ */
+public $connection = 'redis';
 
-    /**
-     * The name of the queue on which to place the broadcasting job.
-     *
-     * @var string
-     */
-    public $queue = 'default';
+/**
+ * The name of the queue on which to place the broadcasting job.
+ *
+ * @var string
+ */
+public $queue = 'default';
+```
 
 Ngoài ra, bạn có thể tùy chỉnh tên queue bằng cách định nghĩa phương thức `broadcastQueue` cho event của bạn:
 
-    /**
-     * The name of the queue on which to place the broadcasting job.
-     */
-    public function broadcastQueue(): string
-    {
-        return 'default';
-    }
+```php
+/**
+ * The name of the queue on which to place the broadcasting job.
+ */
+public function broadcastQueue(): string
+{
+    return 'default';
+}
+```
 
 Nếu bạn muốn broadcast event của bạn bằng queue `sync` thay vì driver queue mặc định, bạn có thể implement interface `ShouldBroadcastNow` thay vì `ShouldBroadcast`:
 
-    <?php
+```php
+<?php
 
-    use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
+namespace App\Events;
 
-    class OrderShipmentStatusUpdated implements ShouldBroadcastNow
-    {
-        // ...
-    }
+use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
+
+class OrderShipmentStatusUpdated implements ShouldBroadcastNow
+{
+    // ...
+}
+```
 
 <a name="broadcast-conditions"></a>
 ### Broadcast Conditions
 
 Thỉnh thoảng bạn cũng có thể muốn broadcast event của bạn trong một điều kiện nhất định. Bạn có thể định nghĩa các điều kiện này bằng cách thêm một phương thức `broadcastWhen` vào trong class event của bạn:
 
-    /**
-     * Determine if this event should broadcast.
-     */
-    public function broadcastWhen(): bool
-    {
-        return $this->order->value > 100;
-    }
+```php
+/**
+ * Determine if this event should broadcast.
+ */
+public function broadcastWhen(): bool
+{
+    return $this->order->value > 100;
+}
+```
 
 <a name="broadcasting-and-database-transactions"></a>
 #### Broadcasting và Database Transactions
@@ -574,18 +754,20 @@ Khi các broadcast event được gửi đi trong các database transaction, ch�
 
 Nếu tùy chọn cấu hình `after_commit` của queue connection của bạn được set thành `false`, thì bạn vẫn có thể cho biết một broadcast event sẽ được gửi đi sau khi tất cả các database transaction đã được thực hiện bằng cách implement interface `ShouldDispatchAfterCommit` trên class event đó:
 
-    <?php
+```php
+<?php
 
-    namespace App\Events;
+namespace App\Events;
 
-    use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
-    use Illuminate\Contracts\Events\ShouldDispatchAfterCommit;
-    use Illuminate\Queue\SerializesModels;
+use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
+use Illuminate\Contracts\Events\ShouldDispatchAfterCommit;
+use Illuminate\Queue\SerializesModels;
 
-    class ServerCreated implements ShouldBroadcast, ShouldDispatchAfterCommit
-    {
-        use SerializesModels;
-    }
+class ServerCreated implements ShouldBroadcast, ShouldDispatchAfterCommit
+{
+    use SerializesModels;
+}
+```
 
 > [!NOTE]
 > Để tìm hiểu thêm về cách khắc phục những sự cố như thế này, vui lòng xem lại tài liệu về [queued job và database transaction](/docs/{{version}}/queues#jobs-and-database-transactions).
@@ -595,18 +777,28 @@ Nếu tùy chọn cấu hình `after_commit` của queue connection của bạn 
 
 Các channel private sẽ yêu cầu bạn authorize rằng người dùng hiện tại đang được authenticate có thể có listen trên channel private này hay không. Điều này có thể được thực hiện bằng cách tạo một HTTP request đến application Laravel của bạn với tên channel và sau đó application của bạn có thể xác định xem người dùng đó có thể listen trên channel đó hay không. Khi sử dụng [Laravel Echo](#client-side-installation), thì HTTP request authorize này sẽ được tạo ra tự động.
 
-Khi enable broadcast, Laravel sẽ tự động đăng ký route `/broadcasting/auth` để xử lý các request xác thực. Route `/broadcasting/auth` sẽ được tự động đặt nằm trong nhóm middleware `web`.
+Khi broadcast được cài đặt xong , Laravel sẽ thử tự động đăng ký route `/broadcasting/auth` để xử lý các request xác thực. Nếu Laravel không tự động đăng ký các route này, bạn có thể tự đăng ký chúng trong file `/bootstrap/app.php` của ứng dụng:
+
+```php
+->withRouting(
+    web: __DIR__.'/../routes/web.php',
+    channels: __DIR__.'/../routes/channels.php',
+    health: '/up',
+)
+```
 
 <a name="defining-authorization-callbacks"></a>
 ### Định nghĩa Authorization Callback
 
 Tiếp theo, chúng ta cần định nghĩa các logic sẽ được determine if the currently authenticated user can listen to a given channel. Điều này sẽ được thực hiện trong file `routes/channels.php` được tạo ra bởi lệnh Artisan `install:broadcasting`. Trong file này, bạn có thể sử dụng phương thức `Broadcast::channel` để đăng ký các callback authorization channel:
 
-    use App\Models\User;
+```php
+use App\Models\User;
 
-    Broadcast::channel('orders.{orderId}', function (User $user, int $orderId) {
-        return $user->id === Order::findOrNew($orderId)->user_id;
-    });
+Broadcast::channel('orders.{orderId}', function (User $user, int $orderId) {
+    return $user->id === Order::findOrNew($orderId)->user_id;
+});
+```
 
 Phương thức `channel` chấp nhận hai tham số: một là tên của channel và một là callback trả về `true` hoặc `false` cho biết người dùng đó có được phép listen trên channel này hay không.
 
@@ -623,12 +815,14 @@ php artisan channel:list
 
 Giống như các route HTTP, các route channel cũng có thể tận dụng các [route model binding](/docs/{{version}}/routing#route-model-binding). Ví dụ, thay vì nhận một chuỗi ID hoặc một chuỗi số thứ tự, bạn có thể yêu cầu một instance model `Order`:
 
-    use App\Models\Order;
-    use App\Models\User;
+```php
+use App\Models\Order;
+use App\Models\User;
 
-    Broadcast::channel('orders.{order}', function (User $user, Order $order) {
-        return $user->id === $order->user_id;
-    });
+Broadcast::channel('orders.{order}', function (User $user, Order $order) {
+    return $user->id === $order->user_id;
+});
+```
 
 > [!WARNING]
 > Không giống như liên kết model route HTTP, liên kết model channel không cung cấp hỗ trợ tự động [scope theo liên kết model ngầm](/docs/{{version}}/routing#implicit-model-binding-scoping). Tuy nhiên, đây hiếm khi là vấn đề vì hầu hết các channel có thể được xác định scope dựa trên khóa chính, duy nhất của một model.
@@ -638,9 +832,11 @@ Giống như các route HTTP, các route channel cũng có thể tận dụng c�
 
 Các channel broadcast private và presence sẽ xác thực người dùng hiện tại thông qua authentication guard mặc định của ứng dụng. Nếu người dùng không được xác thực, channel authorization cũng sẽ tự động bị từ chối và lệnh authorization callback cũng sẽ không bao giờ được thực thi. Tuy nhiên, bạn có thể chỉ định nhiều guard tùy chỉnh khác sẽ xác thực request đến nếu cần:
 
-    Broadcast::channel('channel', function () {
-        // ...
-    }, ['guards' => ['web', 'admin']]);
+```php
+Broadcast::channel('channel', function () {
+    // ...
+}, ['guards' => ['web', 'admin']]);
+```
 
 <a name="defining-channel-classes"></a>
 ### Định nghĩa Channel Class
@@ -653,34 +849,38 @@ php artisan make:channel OrderChannel
 
 Tiếp theo, đăng ký channel của bạn vào trong file `routes/channels.php`:
 
-    use App\Broadcasting\OrderChannel;
+```php
+use App\Broadcasting\OrderChannel;
 
-    Broadcast::channel('orders.{order}', OrderChannel::class);
+Broadcast::channel('orders.{order}', OrderChannel::class);
+```
 
 Cuối cùng, bạn có thể viết các logic cấp quyền cho channel của bạn vào trong phương thức `join` của class channel. Phương thức `join` sẽ chứa cùng một logic với code mà bạn thường viết trong closure cấp quyền channel của bạn. Bạn cũng có thể tận dụng lợi thế của liên kết model channel:
 
-    <?php
+```php
+<?php
 
-    namespace App\Broadcasting;
+namespace App\Broadcasting;
 
-    use App\Models\Order;
-    use App\Models\User;
+use App\Models\Order;
+use App\Models\User;
 
-    class OrderChannel
+class OrderChannel
+{
+    /**
+     * Create a new channel instance.
+     */
+    public function __construct() {}
+
+    /**
+     * Authenticate the user's access to the channel.
+     */
+    public function join(User $user, Order $order): array|bool
     {
-        /**
-         * Create a new channel instance.
-         */
-        public function __construct() {}
-
-        /**
-         * Authenticate the user's access to the channel.
-         */
-        public function join(User $user, Order $order): array|bool
-        {
-            return $user->id === $order->user_id;
-        }
+        return $user->id === $order->user_id;
     }
+}
+```
 
 > [!NOTE]
 > Giống như nhiều class khác trong Laravel, các class channel sẽ tự động được resolve bởi [service container](/docs/{{version}}/container). Vì vậy, bạn có thể khai báo bất kỳ phụ thuộc nào mà channel của bạn cần trong hàm tạo của nó.
@@ -690,18 +890,22 @@ Cuối cùng, bạn có thể viết các logic cấp quyền cho channel của 
 
 Khi bạn đã định nghĩa một event và đánh dấu nó bằng một interface `ShouldBroadcast`, bạn chỉ cần kích hoạt event đó bằng hàm dispatch của event. Dispatcher của event sẽ hiểu được rằng event đó đã được đánh dấu bằng một interface `ShouldBroadcast` nên nó sẽ tạo một queue event để broadcasting:
 
-    use App\Events\OrderShipmentStatusUpdated;
+```php
+use App\Events\OrderShipmentStatusUpdated;
 
-    OrderShipmentStatusUpdated::dispatch($order);
+OrderShipmentStatusUpdated::dispatch($order);
+```
 
 <a name="only-to-others"></a>
 ### Only To Others
 
 Khi xây dựng một application sử dụng event broadcasting, đôi khi bạn có thể cần broadcast một event cho tất cả những người đăng ký trên một channel nhất định ngoại trừ người dùng hiện tại. Bạn có thể thực hiện việc này bằng cách sử dụng helper `broadcast` và phương thức `toOthers`:
 
-    use App\Events\OrderShipmentStatusUpdated;
+```php
+use App\Events\OrderShipmentStatusUpdated;
 
-    broadcast(new OrderShipmentStatusUpdated($update))->toOthers();
+broadcast(new OrderShipmentStatusUpdated($update))->toOthers();
+```
 
 Để hiểu rõ hơn lý do mà bạn có thể muốn sử dụng phương thức `toOthers`, hãy tưởng tượng một application quản lý danh sách các task trong đó người dùng có thể tạo ra một task mới bằng cách nhập tên task. Để tạo một task mới, application của bạn có thể tạo một request đến url `/task` để broadcasts tạo task và trả về một JSON là một task mới. Khi JavaScript của bạn nhận được phản hồi từ route, nó có thể trực tiếp chèn task mới này vào danh sách các task đã tồn tại như sau:
 
@@ -733,36 +937,40 @@ var socketId = Echo.socketId();
 
 Nếu ứng dụng của bạn tương tác với nhiều kết nối broadcast và bạn muốn broadcast một event bằng cách sử dụng một broadcaster khác, khác với mặc định của bạn, thì bạn có thể chỉ định kết nối đó bằng cách sử dụng phương thức `via`:
 
-    use App\Events\OrderShipmentStatusUpdated;
+```php
+use App\Events\OrderShipmentStatusUpdated;
 
-    broadcast(new OrderShipmentStatusUpdated($update))->via('pusher');
+broadcast(new OrderShipmentStatusUpdated($update))->via('pusher');
+```
 
 Ngoài ra, bạn có thể chỉ định kết nối broadcast của event bằng cách gọi phương thức `broadcastVia` trong hàm khởi tạo của event. Tuy nhiên, trước khi làm như vậy, bạn nên đảm bảo rằng class event đã sử dụng trait `InteractsWithBroadcasting`:
 
-    <?php
+```php
+<?php
 
-    namespace App\Events;
+namespace App\Events;
 
-    use Illuminate\Broadcasting\Channel;
-    use Illuminate\Broadcasting\InteractsWithBroadcasting;
-    use Illuminate\Broadcasting\InteractsWithSockets;
-    use Illuminate\Broadcasting\PresenceChannel;
-    use Illuminate\Broadcasting\PrivateChannel;
-    use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
-    use Illuminate\Queue\SerializesModels;
+use Illuminate\Broadcasting\Channel;
+use Illuminate\Broadcasting\InteractsWithBroadcasting;
+use Illuminate\Broadcasting\InteractsWithSockets;
+use Illuminate\Broadcasting\PresenceChannel;
+use Illuminate\Broadcasting\PrivateChannel;
+use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
+use Illuminate\Queue\SerializesModels;
 
-    class OrderShipmentStatusUpdated implements ShouldBroadcast
+class OrderShipmentStatusUpdated implements ShouldBroadcast
+{
+    use InteractsWithBroadcasting;
+
+    /**
+     * Create a new event instance.
+     */
+    public function __construct()
     {
-        use InteractsWithBroadcasting;
-
-        /**
-         * Create a new event instance.
-         */
-        public function __construct()
-        {
-            $this->broadcastVia('pusher');
-        }
+        $this->broadcastVia('pusher');
     }
+}
+```
 
 <a name="anonymous-events"></a>
 ### Event ẩn
@@ -823,6 +1031,27 @@ Broadcast::on('orders.'.$order->id)
     ->send();
 ```
 
+<a name="rescuing-broadcasts"></a>
+### Xử lý lỗi khi broadcast
+
+Khi server queue của ứng dụng không sẵn sàng hoặc Laravel gặp lỗi trong khi broadcast một event, một exception sẽ được đưa ra và thường khiến người dùng thấy lỗi của ứng dụng. Do việc broadcast event thường chỉ là phần bổ trợ cho chức năng cốt lõi của ứng dụng, bạn có thể ngăn các exception này làm gián đoạn trải nghiệm người dùng bằng cách implement một interface `ShouldRescue` trên các event của bạn.
+
+Các event mà implement interface `ShouldRescue` sẽ được tự động sử dụng [helper function rescue](/docs/{{version}}/helpers#method-rescue) của Laravel trong quá trình broadcast. Helper này sẽ catch mọi exception, report chúng cho exception handler của ứng dụng để ghi log, và cho phép ứng dụng tiếp tục thực thi bình thường mà không làm gián đoạn luồng công việc của người dùng:
+
+```php
+<?php
+
+namespace App\Events;
+
+use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
+use Illuminate\Contracts\Broadcasting\ShouldRescue;
+
+class ServerCreated implements ShouldBroadcast, ShouldRescue
+{
+    // ...
+}
+```
+
 <a name="receiving-broadcasts"></a>
 ## Receiving Broadcasts
 
@@ -854,7 +1083,7 @@ Nếu bạn muốn dừng listening một event mà không phải [rời khỏi 
 
 ```js
 Echo.private(`orders.${this.order.id}`)
-    .stopListening('OrderShipmentStatusUpdated')
+    .stopListening('OrderShipmentStatusUpdated');
 ```
 
 <a name="leaving-a-channel"></a>
@@ -893,6 +1122,167 @@ Echo.channel('orders')
     });
 ```
 
+<a name="using-react-or-vue"></a>
+### Sử dụng React hoặc Vue
+
+Laravel Echo có chứa các hook React và Vue giúp việc lắng nghe các event trở nên dễ dàng. Để bắt đầu, hãy gọi hook `useEcho`, hook này được sử dụng để lắng nghe các event private. Hook `useEcho` sẽ tự động thoát khỏi các channel khi component sử dụng nó bị unmount:
+
+```js tab=React
+import { useEcho } from "@laravel/echo-react";
+
+useEcho(
+    `orders.${orderId}`,
+    "OrderShipmentStatusUpdated",
+    (e) => {
+        console.log(e.order);
+    },
+);
+```
+
+```vue tab=Vue
+<script setup lang="ts">
+import { useEcho } from "@laravel/echo-vue";
+
+useEcho(
+    `orders.${orderId}`,
+    "OrderShipmentStatusUpdated",
+    (e) => {
+        console.log(e.order);
+    },
+);
+</script>
+```
+
+Bạn có thể lắng nghe nhiều event bằng cách cung cấp một mảng các event cho `useEcho`:
+
+```js
+useEcho(
+    `orders.${orderId}`,
+    ["OrderShipmentStatusUpdated", "OrderShipped"],
+    (e) => {
+        console.log(e.order);
+    },
+);
+```
+
+Bạn cũng có thể chỉ định cấu trúc của dữ liệu payload của event broadcast, giúp tăng tính an toàn về kiểu dữ liệu và thuận tiện hơn khi chỉnh sửa:
+
+```ts
+type OrderData = {
+    order: {
+        id: number;
+        user: {
+            id: number;
+            name: string;
+        };
+        created_at: string;
+    };
+};
+
+useEcho<OrderData>(`orders.${orderId}`, "OrderShipmentStatusUpdated", (e) => {
+    console.log(e.order.id);
+    console.log(e.order.user.id);
+});
+```
+
+Hook `useEcho` sẽ tự động thoát khỏi các channel khi component sử dụng nó bị unmount; tuy nhiên, bạn có thể sử dụng các hàm được trả về để stop hoặc start lắng nghe các channel một cách thủ công khi cần thiết:
+
+```js tab=React
+import { useEcho } from "@laravel/echo-react";
+
+const { leaveChannel, leave, stopListening, listen } = useEcho(
+    `orders.${orderId}`,
+    "OrderShipmentStatusUpdated",
+    (e) => {
+        console.log(e.order);
+    },
+);
+
+// Stop listening without leaving channel...
+stopListening();
+
+// Start listening again...
+listen();
+
+// Leave channel...
+leaveChannel();
+
+// Leave a channel and also its associated private and presence channels...
+leave();
+```
+
+```vue tab=Vue
+<script setup lang="ts">
+import { useEcho } from "@laravel/echo-vue";
+
+const { leaveChannel, leave, stopListening, listen } = useEcho(
+    `orders.${orderId}`,
+    "OrderShipmentStatusUpdated",
+    (e) => {
+        console.log(e.order);
+    },
+);
+
+// Stop listening without leaving channel...
+stopListening();
+
+// Start listening again...
+listen();
+
+// Leave channel...
+leaveChannel();
+
+// Leave a channel and also its associated private and presence channels...
+leave();
+</script>
+```
+
+<a name="react-vue-connecting-to-public-channels"></a>
+#### Connecting to Public Channels
+
+Để kết nối với một public channel, bạn có thể sử dụng hook `useEchoPublic`:
+
+```js tab=React
+import { useEchoPublic } from "@laravel/echo-react";
+
+useEchoPublic("posts", "PostPublished", (e) => {
+    console.log(e.post);
+});
+```
+
+```vue tab=Vue
+<script setup lang="ts">
+import { useEchoPublic } from "@laravel/echo-vue";
+
+useEchoPublic("posts", "PostPublished", (e) => {
+    console.log(e.post);
+});
+</script>
+```
+
+<a name="react-vue-connecting-to-presence-channels"></a>
+#### Connecting to Presence Channels
+
+Để kết nối với một presence channel, bạn có thể sử dụng hook `useEchoPresence`:
+
+```js tab=React
+import { useEchoPresence } from "@laravel/echo-react";
+
+useEchoPresence("posts", "PostPublished", (e) => {
+    console.log(e.post);
+});
+```
+
+```vue tab=Vue
+<script setup lang="ts">
+import { useEchoPresence } from "@laravel/echo-vue";
+
+useEchoPresence("posts", "PostPublished", (e) => {
+    console.log(e.post);
+});
+</script>
+```
+
 <a name="presence-channels"></a>
 ## Presence Channel
 
@@ -905,13 +1295,15 @@ Tất cả các presence channel cũng là các private channel; do đó, ngư�
 
 Dữ liệu được trả về bởi authorization callback cũng sẽ được cung cấp cho những người khác đang listen event trong presence channel của JavaScript của bạn. Nếu người dùng không được phép tham gia presence channel, bạn nên trả về `false` hoặc `null`:
 
-    use App\Models\User;
+```php
+use App\Models\User;
 
-    Broadcast::channel('chat.{roomId}', function (User $user, int $roomId) {
-        if ($user->canJoinRoom($roomId)) {
-            return ['id' => $user->id, 'name' => $user->name];
-        }
-    });
+Broadcast::channel('chat.{roomId}', function (User $user, int $roomId) {
+    if ($user->canJoinRoom($roomId)) {
+        return ['id' => $user->id, 'name' => $user->name];
+    }
+});
+```
 
 <a name="joining-presence-channels"></a>
 ### Tham gia Presence Channel
@@ -941,23 +1333,27 @@ Callback `here` sẽ được thực hiện ngay sau khi kết nối thành côn
 
 Các presence channel có thể nhận các event giống như các public hoặc private channel. Ví dụ như về một chatroom, chúng ta có thể muốn broadcast các event `NewMessage` lên một room. Để làm như vậy, chúng ta sẽ trả về một instance của `PresenceChannel` từ phương thức `broadcastOn` của event:
 
-    /**
-     * Get the channels the event should broadcast on.
-     *
-     * @return array<int, \Illuminate\Broadcasting\Channel>
-     */
-    public function broadcastOn(): array
-    {
-        return [
-            new PresenceChannel('chat.'.$this->message->room_id),
-        ];
-    }
+```php
+/**
+ * Get the channels the event should broadcast on.
+ *
+ * @return array<int, \Illuminate\Broadcasting\Channel>
+ */
+public function broadcastOn(): array
+{
+    return [
+        new PresenceChannel('chat.'.$this->message->room_id),
+    ];
+}
+```
 
 Cũng như các event khác, bạn có thể sử dụng helper `broadcast` và phương thức `toOthers` để loại người dùng hiện tại ra khỏi việc nhận broadcast:
 
-    broadcast(new NewMessage($message));
+```php
+broadcast(new NewMessage($message));
 
-    broadcast(new NewMessage($message))->toOthers();
+broadcast(new NewMessage($message))->toOthers();
+```
 
 Là điển hình của các loại event khác, bạn có thể listen các event được gửi đến các presence channel bằng phương thức `listen` của Echo:
 
@@ -1092,7 +1488,7 @@ return [new Channel($this->user)];
 Nếu bạn cần xác định xem tên channel của một model, bạn có thể gọi phương thức `broadcastChannel` trên bất kỳ instance model nào. Ví dụ: phương thức này trả về chuỗi `App.Models.User.1` cho một model `App\Models\User` với `id` là `1`:
 
 ```php
-$user->broadcastChannel()
+$user->broadcastChannel();
 ```
 
 <a name="model-broadcasting-event-conventions"></a>
@@ -1110,7 +1506,7 @@ Vì vậy, ví dụ: cập nhật của model `App\Models\Post` sẽ broadcast r
         ...
     },
     ...
-    "socket": "someSocketId",
+    "socket": "someSocketId"
 }
 ```
 
@@ -1155,9 +1551,47 @@ Sau khi bạn đã nhận được instance channel, bạn có thể sử dụng
 
 ```js
 Echo.private(`App.Models.User.${this.user.id}`)
-    .listen('.PostUpdated', (e) => {
+    .listen('.UserUpdated', (e) => {
         console.log(e.model);
     });
+```
+
+<a name="model-broadcasts-with-react-or-vue"></a>
+#### Sử dụng React hoặc Vue
+
+Nếu bạn đang sử dụng React hoặc Vue, bạn có thể sử dụng hook `useEchoModel` có sẵn của Laravel Echo để dễ dàng lắng nghe các model broadcast:
+
+```js tab=React
+import { useEchoModel } from "@laravel/echo-react";
+
+useEchoModel("App.Models.User", userId, ["UserUpdated"], (e) => {
+    console.log(e.model);
+});
+```
+
+```vue tab=Vue
+<script setup lang="ts">
+import { useEchoModel } from "@laravel/echo-vue";
+
+useEchoModel("App.Models.User", userId, ["UserUpdated"], (e) => {
+    console.log(e.model);
+});
+</script>
+```
+
+Bạn cũng có thể chỉ định cấu trúc của dữ liệu payload của model event, mang lại tính an toàn kiểu dữ liệu cao hơn và sự thuận tiện khi chỉnh sửa:
+
+```ts
+type User = {
+    id: number;
+    name: string;
+    email: string;
+};
+
+useEchoModel<User, "App.Models.User">("App.Models.User", userId, ["UserUpdated"], (e) => {
+    console.log(e.model.id);
+    console.log(e.model.name);
+});
 ```
 
 <a name="client-events"></a>
@@ -1170,20 +1604,68 @@ Thỉnh thoảng bạn có thể muốn broadcast một event cho những client
 
 Để broadcast các client event, bạn có thể sử dụng phương thức `whisper` của Echo:
 
-```js
+```js tab=JavaScript
 Echo.private(`chat.${roomId}`)
     .whisper('typing', {
         name: this.user.name
     });
 ```
 
+```js tab=React
+import { useEcho } from "@laravel/echo-react";
+
+const { channel } = useEcho(`chat.${roomId}`, ['update'], (e) => {
+    console.log('Chat event received:', e);
+});
+
+channel().whisper('typing', { name: user.name });
+```
+
+```vue tab=Vue
+<script setup lang="ts">
+import { useEcho } from "@laravel/echo-vue";
+
+const { channel } = useEcho(`chat.${roomId}`, ['update'], (e) => {
+    console.log('Chat event received:', e);
+});
+
+channel().whisper('typing', { name: user.name });
+</script>
+```
+
 Để listen các client event, bạn có thể sử dụng phương thức `listenForWhisper`:
 
-```js
+```js tab=JavaScript
 Echo.private(`chat.${roomId}`)
     .listenForWhisper('typing', (e) => {
         console.log(e.name);
     });
+```
+
+```js tab=React
+import { useEcho } from "@laravel/echo-react";
+
+const { channel } = useEcho(`chat.${roomId}`, ['update'], (e) => {
+    console.log('Chat event received:', e);
+});
+
+channel().listenForWhisper('typing', (e) => {
+    console.log(e.name);
+});
+```
+
+```vue tab=Vue
+<script setup lang="ts">
+import { useEcho } from "@laravel/echo-vue";
+
+const { channel } = useEcho(`chat.${roomId}`, ['update'], (e) => {
+    console.log('Chat event received:', e);
+});
+
+channel().listenForWhisper('typing', (e) => {
+    console.log(e.name);
+});
+</script>
 ```
 
 <a name="notifications"></a>
@@ -1193,11 +1675,52 @@ Bằng cách kết nối event broadcasting với [notifications](/docs/{{versio
 
 Khi bạn đã cấu hình thông báo sử dụng broadcast channel, bạn có thể listen các broadcast event bằng phương thức `notification` của Echo. Hãy nhớ rằng, tên channel phải khớp với tên class nhận thông báo:
 
-```js
+```js tab=JavaScript
 Echo.private(`App.Models.User.${userId}`)
     .notification((notification) => {
         console.log(notification.type);
     });
 ```
 
+```js tab=React
+import { useEchoModel } from "@laravel/echo-react";
+
+const { channel } = useEchoModel('App.Models.User', userId);
+
+channel().notification((notification) => {
+    console.log(notification.type);
+});
+```
+
+```vue tab=Vue
+<script setup lang="ts">
+import { useEchoModel } from "@laravel/echo-vue";
+
+const { channel } = useEchoModel('App.Models.User', userId);
+
+channel().notification((notification) => {
+    console.log(notification.type);
+});
+</script>
+```
+
 Trong ví dụ trên, tất cả các thông báo được gửi đến instance `App\Models\User` thông qua channel `broadcast` sẽ được nhận được thông qua hàm callback. Một callback authorization cho channel `App.Models.User.{id}` sẽ có sẵn trong `BroadcastServiceProvider` đi kèm với framework Laravel.
+
+<a name="stop-listening-for-notifications"></a>
+#### Stop Listening for Notifications
+
+If you would like to stop listening to notifications without [leaving the channel](#leaving-a-channel), you may use the `stopListeningForNotification` method:
+
+```js
+const callback = (notification) => {
+    console.log(notification.type);
+}
+
+// Start listening...
+Echo.private(`App.Models.User.${userId}`)
+    .notification(callback);
+
+// Stop listening (callback must be the same)...
+Echo.private(`App.Models.User.${userId}`)
+    .stopListeningForNotification(callback);
+```

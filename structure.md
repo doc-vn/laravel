@@ -32,9 +32,6 @@
 
 Cấu trúc thư mục mặc định của Laravel nhằm cung cấp một khởi đầu tốt cho tất cả các application lớn và nhỏ. Nhưng bạn có thể tự tổ chức theo cách mà bạn muốn. Laravel sẽ gần như không áp đặt một hạn chế nào về mặt vị trí cho bất cứ class nào, miễn là Composer có thể load class đó.
 
-> [!NOTE]
-> Bạn mới sử dụng Laravel? Hãy xem [Laravel Bootcamp](https://bootcamp.laravel.com) để có thể tham quan thực tế về framework và chúng tôi sẽ hướng dẫn bạn về cách xây dựng ứng dụng Laravel đầu tiên của bạn.
-
 <a name="the-root-directory"></a>
 ## Thư mục gốc
 

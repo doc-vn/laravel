@@ -39,15 +39,17 @@ Laravel sẽ tự động tạo một "token" CSRF cho mỗi [session người d
 
 Token CSRF của session hiện tại có thể được truy cập thông qua session của request hoặc thông qua function helper `csrf_token`:
 
-    use Illuminate\Http\Request;
+```php
+use Illuminate\Http\Request;
 
-    Route::get('/token', function (Request $request) {
-        $token = $request->session()->token();
+Route::get('/token', function (Request $request) {
+    $token = $request->session()->token();
 
-        $token = csrf_token();
+    $token = csrf_token();
 
-        // ...
-    });
+    // ...
+});
+```
 
 Bất cứ khi nào bạn định nghĩa một HTML form "POST", "PUT", "PATCH", hoặc "DELETE" nào trong ứng dụng của bạn, bạn nên tạo một field hidden chứa mã CSRF `_token` để middleware protection CSRF có thể kiểm tra request đó. Để thuận tiện, Bạn có thể sử dụng lệnh `@csrf` của Blade để tạo field hidden chứa mã token đó:
 
@@ -74,13 +76,15 @@ Nếu bạn đang xây dựng một SPA đang sử dụng Laravel làm backend A
 
 Thông thường, bạn nên đặt các loại route này ra ngoài group middleware `web`, group này được Laravel áp dụng cho tất cả các route có trong file `routes/web.php`. Tuy nhiên, bạn cũng có thể loại bỏ các route cụ thể bằng cách cung cấp URI của chúng cho phương thức `validateCsrfTokens` trong file `bootstrap/app.php` của ứng dụng của bạn:
 
-    ->withMiddleware(function (Middleware $middleware) {
-        $middleware->validateCsrfTokens(except: [
-            'stripe/*',
-            'http://example.com/foo/bar',
-            'http://example.com/foo/*',
-        ]);
-    })
+```php
+->withMiddleware(function (Middleware $middleware) {
+    $middleware->validateCsrfTokens(except: [
+        'stripe/*',
+        'http://example.com/foo/bar',
+        'http://example.com/foo/*',
+    ]);
+})
+```
 
 > [!NOTE]
 > Để thuận tiện, CSRF middleware sẽ tự động bị disable cho tất cả các route khi [đang chạy test](/docs/{{version}}/testing).

@@ -11,9 +11,12 @@
 - [Queued Event Listener](#queued-event-listeners)
     - [Tương tác thủ công với queue](#manually-interacting-with-the-queue)
     - [Queued Event Listeners và Database Transactions](#queued-event-listeners-and-database-transactions)
+    - [Queued Listener Middleware](#queued-listener-middleware)
+    - [Encrypted Queued Listeners](#encrypted-queued-listeners)
     - [Xử lý Failed Job](#handling-failed-jobs)
 - [Dispatching Event](#dispatching-events)
     - [Dispatching Events After Database Transactions](#dispatching-events-after-database-transactions)
+    - [Deferring Events](#deferring-events)
 - [Event Subscriber](#event-subscribers)
     - [Viết Event Subscriber](#writing-event-subscribers)
     - [Đăng ký Event Subscriber](#registering-event-subscribers)
@@ -55,41 +58,48 @@ php artisan make:listener
 
 Laravel sẽ tự động tìm và đăng ký các event listener của bạn bằng cách scan thư mục `Listeners` có trong application của bạn. Khi Laravel tìm thấy bất kỳ phương thức của class listener nào mà bắt đầu bằng `handle` hoặc `__invoke`, thì Laravel sẽ đăng ký các phương thức đó như các event listener cho event được khai báo trong signature của phương thức:
 
-    use App\Events\PodcastProcessed;
+```php
+use App\Events\PodcastProcessed;
 
-    class SendPodcastNotification
-    {
-        /**
-         * Handle the given event.
-         */
-        public function handle(PodcastProcessed $event): void
-        {
-            // ...
-        }
-    }
-
-Bạn có thể listen nhiều event cùng một lúc bằng cách sử dụng kiểu union của PHP:
-
+class SendPodcastNotification
+{
     /**
-     * Handle the given event.
+     * Handle the event.
      */
-    public function handle(PodcastProcessed|PodcastPublished $event): void
+    public function handle(PodcastProcessed $event): void
     {
         // ...
     }
+}
+```
+
+Bạn có thể listen nhiều event cùng một lúc bằng cách sử dụng kiểu union của PHP:
+
+```php
+/**
+ * Handle the event.
+ */
+public function handle(PodcastProcessed|PodcastPublished $event): void
+{
+    // ...
+}
+```
 
 Nếu bạn định lưu các listener của bạn trong một thư mục khác hoặc trong nhiều thư mục, bạn có thể hướng dẫn Laravel scan các thư mục đó bằng cách sử dụng phương thức `withEvents` có trong file `bootstrap/app.php` của ứng dụng:
 
-
-    ->withEvents(discover: [
-        __DIR__.'/../app/Domain/Orders/Listeners',
-    ])
+```php
+->withEvents(discover: [
+    __DIR__.'/../app/Domain/Orders/Listeners',
+])
+```
 
 Bạn có thể scan các listener trong nhiều thư mục cùng mức bằng cách sử dụng ký tự `*` làm ký tự đại diện:
 
-    ->withEvents(discover: [
-        __DIR__.'/../app/Domain/*/Listeners',
-    ])
+```php
+->withEvents(discover: [
+    __DIR__.'/../app/Domain/*/Listeners',
+])
+```
 
 Lệnh `event:list` có thể được dùng để liệt kê ra tất cả các listener đã được đăng ký có trong ứng dụng của bạn:
 
@@ -107,20 +117,22 @@ php artisan event:list
 
 Sử dụng facade `Event`, bạn có thể tự đăng ký các event và listener tương ứng của chúng trong phương thức `boot` của `AppServiceProvider` trong ứng dụng của bạn:
 
-    use App\Domain\Orders\Events\PodcastProcessed;
-    use App\Domain\Orders\Listeners\SendPodcastNotification;
-    use Illuminate\Support\Facades\Event;
+```php
+use App\Domain\Orders\Events\PodcastProcessed;
+use App\Domain\Orders\Listeners\SendPodcastNotification;
+use Illuminate\Support\Facades\Event;
 
-    /**
-     * Bootstrap any application services.
-     */
-    public function boot(): void
-    {
-        Event::listen(
-            PodcastProcessed::class,
-            SendPodcastNotification::class,
-        );
-    }
+/**
+ * Bootstrap any application services.
+ */
+public function boot(): void
+{
+    Event::listen(
+        PodcastProcessed::class,
+        SendPodcastNotification::class,
+    );
+}
+```
 
 Lệnh `event:list` có thể được dùng để liệt kê ra tất cả các listener đã được đăng ký có trong ứng dụng của bạn:
 
@@ -133,91 +145,103 @@ php artisan event:list
 
 Thông thường, các listener được định nghĩa dưới dạng class; tuy nhiên, bạn cũng có thể tự đăng ký các listener dựa trên closure có trong phương thức `boot` của `AppServiceProvider` trong ứng dụng của bạn:
 
-    use App\Events\PodcastProcessed;
-    use Illuminate\Support\Facades\Event;
+```php
+use App\Events\PodcastProcessed;
+use Illuminate\Support\Facades\Event;
 
-    /**
-     * Bootstrap any application services.
-     */
-    public function boot(): void
-    {
-        Event::listen(function (PodcastProcessed $event) {
-            // ...
-        });
-    }
+/**
+ * Bootstrap any application services.
+ */
+public function boot(): void
+{
+    Event::listen(function (PodcastProcessed $event) {
+        // ...
+    });
+}
+```
 
 <a name="queuable-anonymous-event-listeners"></a>
 #### Queueable Anonymous Event Listeners
 
 Khi đăng ký event listener dựa trên closure, bạn có thể bọc listener closure trong hàm `Illuminate\Events\queueable` để hướng dẫn Laravel thực thi listener này bằng cách sử dụng [queue](/docs/{{version}}/queues):
 
-    use App\Events\PodcastProcessed;
-    use function Illuminate\Events\queueable;
-    use Illuminate\Support\Facades\Event;
+```php
+use App\Events\PodcastProcessed;
+use function Illuminate\Events\queueable;
+use Illuminate\Support\Facades\Event;
 
-    /**
-     * Bootstrap any application services.
-     */
-    public function boot(): void
-    {
-        Event::listen(queueable(function (PodcastProcessed $event) {
-            // ...
-        }));
-    }
+/**
+ * Bootstrap any application services.
+ */
+public function boot(): void
+{
+    Event::listen(queueable(function (PodcastProcessed $event) {
+        // ...
+    }));
+}
+```
 
 Giống như queued job, bạn có thể sử dụng các phương thức `onConnection`, `onQueue`, và `delay` để tùy chỉnh việc thực thi queued listener:
 
-    Event::listen(queueable(function (PodcastProcessed $event) {
-        // ...
-    })->onConnection('redis')->onQueue('podcasts')->delay(now()->addSeconds(10)));
+```php
+Event::listen(queueable(function (PodcastProcessed $event) {
+    // ...
+})->onConnection('redis')->onQueue('podcasts')->delay(now()->plus(seconds: 10)));
+```
 
 Nếu bạn muốn xử lý các lỗi nonymous queued listener, bạn có thể cung cấp một closure cho phương thức `catch` trong khi định nghĩa listener `queueable`. Closure này sẽ nhận vào một instance event và một instance `Throwable` đã gây ra lỗi cho listener:
 
-    use App\Events\PodcastProcessed;
-    use function Illuminate\Events\queueable;
-    use Illuminate\Support\Facades\Event;
-    use Throwable;
+```php
+use App\Events\PodcastProcessed;
+use function Illuminate\Events\queueable;
+use Illuminate\Support\Facades\Event;
+use Throwable;
 
-    Event::listen(queueable(function (PodcastProcessed $event) {
-        // ...
-    })->catch(function (PodcastProcessed $event, Throwable $e) {
-        // The queued listener failed...
-    }));
+Event::listen(queueable(function (PodcastProcessed $event) {
+    // ...
+})->catch(function (PodcastProcessed $event, Throwable $e) {
+    // The queued listener failed...
+}));
+```
 
 <a name="wildcard-event-listeners"></a>
 #### Wildcard Event Listeners
 
 Bạn cũng có thể đăng ký listener bằng cách sử dụng ký tự `*` làm tham số đại diện, cho phép bạn nhận được nhiều event trên cùng một listener. Và nó nhận tên event là tham số đầu tiên và toàn bộ mảng dữ liệu event là tham số thứ hai:
 
-    Event::listen('event.*', function (string $eventName, array $data) {
-        // ...
-    });
+```php
+Event::listen('event.*', function (string $eventName, array $data) {
+    // ...
+});
+```
 
 <a name="defining-events"></a>
 ## Khai báo Event
 
 Một event class về cơ bản là một data container chứa các thông tin liên quan đến event. Ví dụ: giả sử event `App\Events\OrderShipped` của chúng ta sẽ nhận một đối tượng [Eloquent ORM](/docs/{{version}}/eloquent):
 
-    <?php
+```php
+<?php
 
-    namespace App\Events;
+namespace App\Events;
 
-    use App\Models\Order;
-    use Illuminate\Broadcasting\InteractsWithSockets;
-    use Illuminate\Foundation\Events\Dispatchable;
-    use Illuminate\Queue\SerializesModels;
+use App\Models\Order;
+use Illuminate\Broadcasting\InteractsWithSockets;
+use Illuminate\Foundation\Events\Dispatchable;
+use Illuminate\Queue\SerializesModels;
 
-    class OrderShipped
-    {
-        use Dispatchable, InteractsWithSockets, SerializesModels;
+class OrderShipped
+{
+    use Dispatchable, InteractsWithSockets, SerializesModels;
 
-        /**
-         * Create a new event instance.
-         */
-        public function __construct(
-            public Order $order,
-        ) {}
-    }
+    /**
+     * Create a new event instance.
+     */
+    public function __construct(
+        public Order $order,
+    ) {}
+}
+```
 
 Như bạn có thể thấy, event class này không chứa code logic. Nó là một container chứa instance `App\Models\Order` đã được mua. Trait `SerializesModels` được sử dụng trong event này để khôi phục lại bất kỳ model Eloquent nào nếu nó đã bị chuyển đổi bằng hàm `serialize` của PHP, chẳng hạn như khi sử dụng [queued listeners](#queued-event-listeners).
 
@@ -226,27 +250,29 @@ Như bạn có thể thấy, event class này không chứa code logic. Nó là 
 
 Tiếp theo, chúng ta hãy xem một listener mẫu cho một event. Listener của event sẽ nhận vào một instance event trong phương thức `handle`. Lệnh Artisan `make:listener`, khi được gọi với tùy chọn `--event`, sẽ tự động import class event và khai báo nó vào trong phương thức `handle`. Trong phương thức `handle`, bạn có thể thực hiện bất kỳ hành động nào cần thiết để xử lý event:
 
-    <?php
+```php
+<?php
 
-    namespace App\Listeners;
+namespace App\Listeners;
 
-    use App\Events\OrderShipped;
+use App\Events\OrderShipped;
 
-    class SendShipmentNotification
+class SendShipmentNotification
+{
+    /**
+     * Create the event listener.
+     */
+    public function __construct() {}
+
+    /**
+     * Handle the event.
+     */
+    public function handle(OrderShipped $event): void
     {
-        /**
-         * Create the event listener.
-         */
-        public function __construct() {}
-
-        /**
-         * Handle the event.
-         */
-        public function handle(OrderShipped $event): void
-        {
-            // Access the order using $event->order...
-        }
+        // Access the order using $event->order...
     }
+}
+```
 
 > [!NOTE]
 > Listener event của bạn cũng có thể khai báo bất kỳ sự phụ thuộc nào cần thiết ở trong hàm khởi tạo. Tất cả các listener event sẽ được resolve thông qua [service container](/docs/{{version}}/container), do đó, các phụ thuộc cũng sẽ được tự động thêm vào.
@@ -263,17 +289,19 @@ Queueing listener có thể có lợi nếu listener của bạn thực hiện m
 
 Để khai báo một listener sẽ được queue, hãy thêm interface `ShouldQueue` vào class listener. Listener được tạo bởi lệnh Artisan `make:listener` sẽ khai báo sẵn interface này và import nó vào namespace hiện tại, vì vậy bạn có thể sử dụng nó ngay lập tức:
 
-    <?php
+```php
+<?php
 
-    namespace App\Listeners;
+namespace App\Listeners;
 
-    use App\Events\OrderShipped;
-    use Illuminate\Contracts\Queue\ShouldQueue;
+use App\Events\OrderShipped;
+use Illuminate\Contracts\Queue\ShouldQueue;
 
-    class SendShipmentNotification implements ShouldQueue
-    {
-        // ...
-    }
+class SendShipmentNotification implements ShouldQueue
+{
+    // ...
+}
+```
 
 Và chỉ có thế! Bây giờ, khi an event handled by this listener is dispatched, the listener sẽ tự động được queue bởi event dispatcher bằng cách sử dụng [queue system](/docs/{{version}}/queues) của Laravel. Nếu không có ngoại lệ nào được đưa ra khi listener được thực thi bởi queue, thì queue job đó sẽ tự động bị xóa sau khi xử lý xong.
 
@@ -282,121 +310,129 @@ Và chỉ có thế! Bây giờ, khi an event handled by this listener is dispat
 
 Nếu bạn muốn tùy chỉnh kết nối của queue, tên queue hoặc delay time của queue được sử dụng bởi event listener, bạn có thể định nghĩa các thuộc tính `$connection`, `$queue`, hoặc `$delay` trong class listener của bạn:
 
-    <?php
+```php
+<?php
 
-    namespace App\Listeners;
+namespace App\Listeners;
 
-    use App\Events\OrderShipped;
-    use Illuminate\Contracts\Queue\ShouldQueue;
+use App\Events\OrderShipped;
+use Illuminate\Contracts\Queue\ShouldQueue;
 
-    class SendShipmentNotification implements ShouldQueue
-    {
-        /**
-         * The name of the connection the job should be sent to.
-         *
-         * @var string|null
-         */
-        public $connection = 'sqs';
+class SendShipmentNotification implements ShouldQueue
+{
+    /**
+     * The name of the connection the job should be sent to.
+     *
+     * @var string|null
+     */
+    public $connection = 'sqs';
 
-        /**
-         * The name of the queue the job should be sent to.
-         *
-         * @var string|null
-         */
-        public $queue = 'listeners';
+    /**
+     * The name of the queue the job should be sent to.
+     *
+     * @var string|null
+     */
+    public $queue = 'listeners';
 
-        /**
-         * The time (seconds) before the job should be processed.
-         *
-         * @var int
-         */
-        public $delay = 60;
-    }
+    /**
+     * The time (seconds) before the job should be processed.
+     *
+     * @var int
+     */
+    public $delay = 60;
+}
+```
 
 Nếu bạn muốn định nghĩa một listener connection của queue, tên queue, hoặc một delay time khi ứng dụng chạy, bạn có thể định nghĩa các phương thức `viaConnection`, `viaQueue`, hoặc `withDelay` trên listener:
 
-    /**
-     * Get the name of the listener's queue connection.
-     */
-    public function viaConnection(): string
-    {
-        return 'sqs';
-    }
+```php
+/**
+ * Get the name of the listener's queue connection.
+ */
+public function viaConnection(): string
+{
+    return 'sqs';
+}
 
-    /**
-     * Get the name of the listener's queue.
-     */
-    public function viaQueue(): string
-    {
-        return 'listeners';
-    }
+/**
+ * Get the name of the listener's queue.
+ */
+public function viaQueue(): string
+{
+    return 'listeners';
+}
 
-    /**
-     * Get the number of seconds before the job should be processed.
-     */
-    public function withDelay(OrderShipped $event): int
-    {
-        return $event->highPriority ? 0 : 60;
-    }
+/**
+ * Get the number of seconds before the job should be processed.
+ */
+public function withDelay(OrderShipped $event): int
+{
+    return $event->highPriority ? 0 : 60;
+}
+```
 
 <a name="conditionally-queueing-listeners"></a>
 #### Conditionally Queueing Listeners
 
 Thỉnh thoảng, bạn có thể cần phải xác định xem một listener có nên được queue hay không dựa vào một số dữ liệu chỉ có trong lúc runtime. Để thực hiện điều này, phương thức `shouldQueue` có thể được thêm vào trong listener để xác định xem listener này có nên được queue hay không. Nếu phương thức `shouldQueue` trả về `false`, listener sẽ không được queue:
 
-    <?php
+```php
+<?php
 
-    namespace App\Listeners;
+namespace App\Listeners;
 
-    use App\Events\OrderCreated;
-    use Illuminate\Contracts\Queue\ShouldQueue;
+use App\Events\OrderCreated;
+use Illuminate\Contracts\Queue\ShouldQueue;
 
-    class RewardGiftCard implements ShouldQueue
+class RewardGiftCard implements ShouldQueue
+{
+    /**
+     * Reward a gift card to the customer.
+     */
+    public function handle(OrderCreated $event): void
     {
-        /**
-         * Reward a gift card to the customer.
-         */
-        public function handle(OrderCreated $event): void
-        {
-            // ...
-        }
-
-        /**
-         * Determine whether the listener should be queued.
-         */
-        public function shouldQueue(OrderCreated $event): bool
-        {
-            return $event->order->subtotal >= 5000;
-        }
+        // ...
     }
+
+    /**
+     * Determine whether the listener should be queued.
+     */
+    public function shouldQueue(OrderCreated $event): bool
+    {
+        return $event->order->subtotal >= 5000;
+    }
+}
+```
 
 <a name="manually-interacting-with-the-queue"></a>
 ### Tương tác thủ công với queue
 
 Nếu bạn cần tự truy cập các phương thức `delete` và `release` của queue job, bạn có thể làm như vậy bằng cách sử dụng trait `Illuminate\Queue\InteractsWithQueue`. Trait này sẽ được mặc định import sẵn vào trong các listener nếu nó được tạo bằng lệnh artisan và cung cấp quyền truy cập vào các phương thức `delete` và `release`:
 
-    <?php
+```php
+<?php
 
-    namespace App\Listeners;
+namespace App\Listeners;
 
-    use App\Events\OrderShipped;
-    use Illuminate\Contracts\Queue\ShouldQueue;
-    use Illuminate\Queue\InteractsWithQueue;
+use App\Events\OrderShipped;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Queue\InteractsWithQueue;
 
-    class SendShipmentNotification implements ShouldQueue
+class SendShipmentNotification implements ShouldQueue
+{
+    use InteractsWithQueue;
+
+    /**
+     * Handle the event.
+     */
+    public function handle(OrderShipped $event): void
     {
-        use InteractsWithQueue;
-
-        /**
-         * Handle the event.
-         */
-        public function handle(OrderShipped $event): void
-        {
-            if (true) {
-                $this->release(30);
-            }
+        if ($condition) {
+            $this->release(30);
         }
     }
+}
+```
 
 <a name="queued-event-listeners-and-database-transactions"></a>
 ### Queued Event Listeners và Database Transactions
@@ -405,166 +441,330 @@ Khi các queued listener được gửi đi trong các database transaction, ch�
 
 Nếu tùy chọn `after_commit` trong cấu hình queue connection được set thành `false`, thì bạn vẫn có thể cho biết một queued listener sẽ được gửi đi sau khi tất cả các database transaction đã được thực hiện bằng cách implement một interface `ShouldQueueAfterCommit` trên class listener:
 
-    <?php
+```php
+<?php
 
-    namespace App\Listeners;
+namespace App\Listeners;
 
-    use Illuminate\Contracts\Queue\ShouldQueueAfterCommit;
-    use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Contracts\Queue\ShouldQueueAfterCommit;
+use Illuminate\Queue\InteractsWithQueue;
 
-    class SendShipmentNotification implements ShouldQueueAfterCommit
-    {
-        use InteractsWithQueue;
-    }
+class SendShipmentNotification implements ShouldQueueAfterCommit
+{
+    use InteractsWithQueue;
+}
+```
 
 > [!NOTE]
 > Để tìm hiểu về cách khắc phục những sự cố này, vui lòng xem lại tài liệu về [queued job và database transaction](/docs/{{version}}/queues#jobs-and-database-transactions).
+
+<a name="queued-listener-middleware"></a>
+### Queued Listener Middleware
+
+Các queued listener cũng có thể sử dụng [job middleware](/docs/{{version}}/queues#job-middleware). Job middleware cho phép bạn tùy chỉnh logic bao bọc việc thực thi của các queued listener, giúp giảm thiểu các code lặp lại trong chính các listener đó. Sau khi tạo job middleware, chúng có thể được gán vào một listener bằng cách trả về chúng từ phương thức `middleware` của listener:
+
+```php
+<?php
+
+namespace App\Listeners;
+
+use App\Events\OrderShipped;
+use App\Jobs\Middleware\RateLimited;
+use Illuminate\Contracts\Queue\ShouldQueue;
+
+class SendShipmentNotification implements ShouldQueue
+{
+    /**
+     * Handle the event.
+     */
+    public function handle(OrderShipped $event): void
+    {
+        // Process the event...
+    }
+
+    /**
+     * Get the middleware the listener should pass through.
+     *
+     * @return array<int, object>
+     */
+    public function middleware(OrderShipped $event): array
+    {
+        return [new RateLimited];
+    }
+}
+```
+
+<a name="encrypted-queued-listeners"></a>
+#### Encrypted Queued Listeners
+
+Laravel cho phép bạn đảm bảo tính privacy và toàn vẹn của dữ liệu trong queued listener thông qua [encryption](/docs/{{version}}/encryption). Để bắt đầu, chỉ cần thêm interface `ShouldBeEncrypted` vào class listener. Sau khi interface này được thêm vào class, Laravel sẽ tự động mã hóa listener của bạn trước khi đưa nó vào queue:
+
+```php
+<?php
+
+namespace App\Listeners;
+
+use App\Events\OrderShipped;
+use Illuminate\Contracts\Queue\ShouldBeEncrypted;
+use Illuminate\Contracts\Queue\ShouldQueue;
+
+class SendShipmentNotification implements ShouldQueue, ShouldBeEncrypted
+{
+    // ...
+}
+```
 
 <a name="handling-failed-jobs"></a>
 ### Xử lý Failed Job
 
 Thỉnh thoảng queue của event listener của bạn có thể bị thất bại. Nếu queued listener chạy vượt quá số lần thử tối đa được định nghĩa bởi queue worker của bạn, phương thức `failed` sẽ được gọi trong listener của bạn. Phương thức `failed` nhận vào instance event và một `Throwable` nguyên nhân gây ra lỗi:
 
-    <?php
+```php
+<?php
 
-    namespace App\Listeners;
+namespace App\Listeners;
 
-    use App\Events\OrderShipped;
-    use Illuminate\Contracts\Queue\ShouldQueue;
-    use Illuminate\Queue\InteractsWithQueue;
-    use Throwable;
+use App\Events\OrderShipped;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Queue\InteractsWithQueue;
+use Throwable;
 
-    class SendShipmentNotification implements ShouldQueue
+class SendShipmentNotification implements ShouldQueue
+{
+    use InteractsWithQueue;
+
+    /**
+     * Handle the event.
+     */
+    public function handle(OrderShipped $event): void
     {
-        use InteractsWithQueue;
-
-        /**
-         * Handle the event.
-         */
-        public function handle(OrderShipped $event): void
-        {
-            // ...
-        }
-
-        /**
-         * Handle a job failure.
-         */
-        public function failed(OrderShipped $event, Throwable $exception): void
-        {
-            // ...
-        }
+        // ...
     }
+
+    /**
+     * Handle a job failure.
+     */
+    public function failed(OrderShipped $event, Throwable $exception): void
+    {
+        // ...
+    }
+}
+```
 
 <a name="specifying-queued-listener-maximum-attempts"></a>
 #### Specifying Queued Listener Maximum Attempts
 
 Nếu một trong những queued listener của bạn gặp phải lỗi, bạn có thể không muốn nó tiếp tục thử lại nó một lần nào nữa. Do đó, Laravel cung cấp nhiều cách khác nhau để chỉ định số lần thử lại hoặc khoảng thời gian của một listener có thể được thử lại.
 
-Bạn có thể định nghĩa một thuộc tính `$tries` trên class listener của bạn để chỉ định số lần mà listener có thể được thử lại trước khi nó được coi là thất bại:
+Bạn có thể định nghĩa một thuộc tính `tries` hoặc phương thức trên class listener của bạn để chỉ định số lần mà listener có thể được thử lại trước khi nó được coi là thất bại:
 
-    <?php
+```php
+<?php
 
-    namespace App\Listeners;
+namespace App\Listeners;
 
-    use App\Events\OrderShipped;
-    use Illuminate\Contracts\Queue\ShouldQueue;
-    use Illuminate\Queue\InteractsWithQueue;
+use App\Events\OrderShipped;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Queue\InteractsWithQueue;
 
-    class SendShipmentNotification implements ShouldQueue
-    {
-        use InteractsWithQueue;
+class SendShipmentNotification implements ShouldQueue
+{
+    use InteractsWithQueue;
 
-        /**
-         * The number of times the queued listener may be attempted.
-         *
-         * @var int
-         */
-        public $tries = 5;
-    }
+    /**
+     * The number of times the queued listener may be attempted.
+     *
+     * @var int
+     */
+    public $tries = 5;
+}
+```
 
 Là một giải pháp thay thế cho việc xác định số lần mà một listener có thể được thử trước khi nó thất bại, bạn có thể định nghĩa thời điểm mà listener không còn được thử lại nữa. Điều này cho phép listener được thử bao nhiêu tuỳ thích trong một khoảng thời gian nhất định. Để định nghĩa khoảng thời gian mà một listener không còn được thử nữa, bạn hãy thêm một phương thức `retryUntil` vào class listener của bạn. Phương thức này sẽ trả về một instance `DateTime`:
 
-    use DateTime;
+```php
+use DateTime;
 
-    /**
-     * Determine the time at which the listener should timeout.
-     */
-    public function retryUntil(): DateTime
-    {
-        return now()->addMinutes(5);
-    }
+/**
+ * Determine the time at which the listener should timeout.
+ */
+public function retryUntil(): DateTime
+{
+    return now()->plus(minutes: 5);
+}
+```
+
+Nếu cả `retryUntil` và `tries` được định nghĩa, Laravel sẽ ưu tiên phương thức `retryUntil`.
 
 <a name="specifying-queued-listener-backoff"></a>
 #### Specifying Queued Listener Backoff
 
 Nếu bạn muốn cấu hình số giây mà Laravel sẽ đợi trước khi thử lại một listener bị exception, bạn có thể làm như vậy bằng cách định nghĩa thuộc tính `backoff` trên class listener của bạn:
 
-    /**
-     * The number of seconds to wait before retrying the queued listener.
-     *
-     * @var int
-     */
-    public $backoff = 3;
+```php
+/**
+ * The number of seconds to wait before retrying the queued listener.
+ *
+ * @var int
+ */
+public $backoff = 3;
+```
 
 Nếu bạn muốn yêu cầu một logic phức tạp hơn để xác định thời gian backoff của listener, bạn có thể định nghĩa một phương thức `backoff` trên class listener của bạn:
 
-    /**
-     * Calculate the number of seconds to wait before retrying the queued listener.
-     */
-    public function backoff(): int
-    {
-        return 3;
-    }
+```php
+/**
+ * Calculate the number of seconds to wait before retrying the queued listener.
+ */
+public function backoff(): int
+{
+    return 3;
+}
+```
 
 Bạn có thể dễ dàng cấu hình "backoff" theo cấp số nhân bằng cách trả về một mảng các giá trị backoff từ phương thức `backoff`. Trong ví dụ này, độ trễ thử lại sẽ là 1 giây cho lần thử lại đầu tiên, và 5 giây cho lần thử lại thứ hai, và 10 giây cho lần thử lại thứ ba và 10 giây cho các lần thử lại tiếp theo nếu còn nhiều lần thử khác:
 
+```php
+/**
+ * Calculate the number of seconds to wait before retrying the queued listener.
+ *
+ * @return array<int, int>
+ */
+public function backoff(): array
+{
+    return [1, 5, 10];
+}
+```
+
+<a name="specifying-queued-listener-max-exceptions"></a>
+#### Specifying Queued Listener Max Exceptions
+
+Thỉnh thoảng bạn có thể muốn chỉ định một queued listener có thể được thử lại nhiều lần, nhưng nó sẽ bị thất bại nếu các lần thử lại đó bị thất bại bởi một số lượng exception nhất định chưa được xử lý (trái ngược với việc được release trực tiếp bởi phương thức `release`). Để thực hiện điều này, bạn có thể định nghĩa thuộc tính `maxExceptions` trên class listener của bạn:
+
+```php
+<?php
+
+namespace App\Listeners;
+
+use App\Events\OrderShipped;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Queue\InteractsWithQueue;
+
+class SendShipmentNotification implements ShouldQueue
+{
+    use InteractsWithQueue;
+
     /**
-     * Calculate the number of seconds to wait before retrying the queued listener.
+     * The number of times the queued listener may be attempted.
      *
-     * @return array<int, int>
+     * @var int
      */
-    public function backoff(): array
+    public $tries = 25;
+
+    /**
+     * The maximum number of unhandled exceptions to allow before failing.
+     *
+     * @var int
+     */
+    public $maxExceptions = 3;
+
+    /**
+     * Handle the event.
+     */
+    public function handle(OrderShipped $event): void
     {
-        return [1, 5, 10];
+        // Process the event...
     }
+}
+```
+
+Trong ví dụ này, listener sẽ được thử tối đa 25 lần. Tuy nhiên, listener sẽ bị thất bại nếu có ba exception chưa được xử lý được đưa ra.
+
+<a name="specifying-queued-listener-timeout"></a>
+#### Specifying Queued Listener Timeout
+
+Thông thường, bạn biết thời gian mà bạn mong muốn các queued listener của bạn được thực hiện. Vì lý do này, Laravel cho phép bạn chỉ định một giá trị "timeout". Nếu một listener đang xử lý lâu hơn số giây được chỉ định bởi giá trị timeout, worker đang xử lý listener đó sẽ thoát với một lỗi. Bạn có thể định nghĩa số giây tối đa mà một listener được phép chạy bằng cách định nghĩa thuộc tính `timeout` trên class listener của bạn:
+
+```php
+<?php
+
+namespace App\Listeners;
+
+use App\Events\OrderShipped;
+use Illuminate\Contracts\Queue\ShouldQueue;
+
+class SendShipmentNotification implements ShouldQueue
+{
+    /**
+     * The number of seconds the listener can run before timing out.
+     *
+     * @var int
+     */
+    public $timeout = 120;
+}
+```
+
+Nếu bạn muốn chỉ định một listener sẽ bị đánh dấu là thất bại khi bị timeout, bạn có thể định nghĩa thuộc tính `failOnTimeout` trên class listener:
+
+```php
+<?php
+
+namespace App\Listeners;
+
+use App\Events\OrderShipped;
+use Illuminate\Contracts\Queue\ShouldQueue;
+
+class SendShipmentNotification implements ShouldQueue
+{
+    /**
+     * Indicate if the listener should be marked as failed on timeout.
+     *
+     * @var bool
+     */
+    public $failOnTimeout = true;
+}
+```
 
 <a name="dispatching-events"></a>
 ## Dispatching Event
 
 Để gửi một event, bạn có thể gọi phương thức static `dispatch` trong event. Phương thức này được cung cấp trên event bởi trait `Illuminate\Foundation\Events\Dispatchable`. Mọi tham số được truyền cho phương thức `dispatch` sẽ được truyền cho hàm tạo của event:
 
-    <?php
+```php
+<?php
 
-    namespace App\Http\Controllers;
+namespace App\Http\Controllers;
 
-    use App\Events\OrderShipped;
-    use App\Http\Controllers\Controller;
-    use App\Models\Order;
-    use Illuminate\Http\RedirectResponse;
-    use Illuminate\Http\Request;
+use App\Events\OrderShipped;
+use App\Models\Order;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 
-    class OrderShipmentController extends Controller
+class OrderShipmentController extends Controller
+{
+    /**
+     * Ship the given order.
+     */
+    public function store(Request $request): RedirectResponse
     {
-        /**
-         * Ship the given order.
-         */
-        public function store(Request $request): RedirectResponse
-        {
-            $order = Order::findOrFail($request->order_id);
+        $order = Order::findOrFail($request->order_id);
 
-            // Order shipment logic...
+        // Order shipment logic...
 
-            OrderShipped::dispatch($order);
+        OrderShipped::dispatch($order);
 
-            return redirect('/orders');
-        }
+        return redirect('/orders');
     }
+}
+```
 
 Nếu bạn muốn gửi một event có điều kiện, bạn có thể sử dụng các phương thức `dispatchIf` và `dispatchUnless`:
 
-    OrderShipped::dispatchIf($condition, $order);
+```php
+OrderShipped::dispatchIf($condition, $order);
 
-    OrderShipped::dispatchUnless($condition, $order);
+OrderShipped::dispatchUnless($condition, $order);
+```
 
 > [!NOTE]
 > Khi testing, nếu bạn cần kiểm tra một số event được gửi đi mà không cần chạy đến các listener của các event. [Helper testing mặc định](#testing) của Laravel giúp việc này trở nên dễ dàng.
@@ -576,27 +776,62 @@ Thỉnh thoảng, bạn có thể muốn hướng dẫn Laravel chỉ gửi even
 
 Interface này sẽ hướng dẫn Laravel không gửi event cho đến khi transaction hiện tại được commit. Nếu transaction bị lỗi, event sẽ bị hủy. Nếu không có transaction nào đang thực hiện khi event được gửi đi, thì event đó sẽ được gửi đi ngay lập tức:
 
-    <?php
+```php
+<?php
 
-    namespace App\Events;
+namespace App\Events;
 
-    use App\Models\Order;
-    use Illuminate\Broadcasting\InteractsWithSockets;
-    use Illuminate\Contracts\Events\ShouldDispatchAfterCommit;
-    use Illuminate\Foundation\Events\Dispatchable;
-    use Illuminate\Queue\SerializesModels;
+use App\Models\Order;
+use Illuminate\Broadcasting\InteractsWithSockets;
+use Illuminate\Contracts\Events\ShouldDispatchAfterCommit;
+use Illuminate\Foundation\Events\Dispatchable;
+use Illuminate\Queue\SerializesModels;
 
-    class OrderShipped implements ShouldDispatchAfterCommit
-    {
-        use Dispatchable, InteractsWithSockets, SerializesModels;
+class OrderShipped implements ShouldDispatchAfterCommit
+{
+    use Dispatchable, InteractsWithSockets, SerializesModels;
 
-        /**
-         * Create a new event instance.
-         */
-        public function __construct(
-            public Order $order,
-        ) {}
-    }
+    /**
+     * Create a new event instance.
+     */
+    public function __construct(
+        public Order $order,
+    ) {}
+}
+```
+
+<a name="deferring-events"></a>
+### Deferring Events
+
+Deferred events cho phép bạn trì hoãn việc gửi các model event và chạy các event listener cho đến sau khi một đoạn code cụ thể đã hoàn thành. Điều này đặc biệt hữu ích khi bạn cần đảm bảo tất cả các record liên quan đã được tạo trước khi các event listener được kích hoạt.
+
+Để trì hoãn các event, hãy cung cấp một closure cho phương thức `Event::defer()`:
+
+```php
+use App\Models\User;
+use Illuminate\Support\Facades\Event;
+
+Event::defer(function () {
+    $user = User::create(['name' => 'Victoria Otwell']);
+
+    $user->posts()->create(['title' => 'My first post!']);
+});
+```
+
+Tất cả các event được kích hoạt bên trong closure sẽ được gửi đi sau khi closure đã được chạy. Điều này đảm bảo rằng các event listener có quyền truy cập vào tất cả các record liên quan đã được tạo trong quá trình event được chạy. Nếu có một exception xảy ra bên trong closure, các event sẽ không được gửi đi.
+
+Để chỉ trì hoãn các event cụ thể, hãy truyền một mảng các event làm tham số thứ hai cho phương thức `defer`:
+
+```php
+use App\Models\User;
+use Illuminate\Support\Facades\Event;
+
+Event::defer(function () {
+    $user = User::create(['name' => 'Victoria Otwell']);
+
+    $user->posts()->create(['title' => 'My first post!']);
+}, ['eloquent.created: '.User::class]);
+```
 
 <a name="event-subscribers"></a>
 ## Event Subscriber
@@ -604,104 +839,110 @@ Interface này sẽ hướng dẫn Laravel không gửi event cho đến khi tra
 <a name="writing-event-subscribers"></a>
 ### Viết Event Subscriber
 
-Event subscriber là các class có thể đăng ký nhiều event từ trong chính class subscriber đó, cho phép bạn định nghĩa nhiều xử lý event trong cùng một class. Subscriber nên định nghĩa một phương thức `subscribe`, nó sẽ nhận vào một instance event dispatcher. Bạn có thể gọi phương thức `listen` trong dispatcher đó để đăng ký event listener:
+Event subscriber là các class có thể đăng ký nhiều event từ trong chính class subscriber đó, cho phép bạn định nghĩa nhiều xử lý event trong cùng một class. Subscriber nên định nghĩa một phương thức `subscribe`, nó sẽ nhận một instance event dispatcher. Bạn có thể gọi phương thức `listen` trong dispatcher đó để đăng ký event listener:
 
-    <?php
+```php
+<?php
 
-    namespace App\Listeners;
+namespace App\Listeners;
 
-    use Illuminate\Auth\Events\Login;
-    use Illuminate\Auth\Events\Logout;
-    use Illuminate\Events\Dispatcher;
+use Illuminate\Auth\Events\Login;
+use Illuminate\Auth\Events\Logout;
+use Illuminate\Events\Dispatcher;
 
-    class UserEventSubscriber
+class UserEventSubscriber
+{
+    /**
+     * Handle user login events.
+     */
+    public function handleUserLogin(Login $event): void {}
+
+    /**
+     * Handle user logout events.
+     */
+    public function handleUserLogout(Logout $event): void {}
+
+    /**
+     * Register the listeners for the subscriber.
+     */
+    public function subscribe(Dispatcher $events): void
     {
-        /**
-         * Handle user login events.
-         */
-        public function handleUserLogin(Login $event): void {}
+        $events->listen(
+            Login::class,
+            [UserEventSubscriber::class, 'handleUserLogin']
+        );
 
-        /**
-         * Handle user logout events.
-         */
-        public function handleUserLogout(Logout $event): void {}
-
-        /**
-         * Register the listeners for the subscriber.
-         */
-        public function subscribe(Dispatcher $events): void
-        {
-            $events->listen(
-                Login::class,
-                [UserEventSubscriber::class, 'handleUserLogin']
-            );
-
-            $events->listen(
-                Logout::class,
-                [UserEventSubscriber::class, 'handleUserLogout']
-            );
-        }
+        $events->listen(
+            Logout::class,
+            [UserEventSubscriber::class, 'handleUserLogout']
+        );
     }
+}
+```
 
 Nếu các phương thức event listener của bạn được định nghĩa trong chính subscriber, bạn có thể thấy thuận tiện hơn khi trả về một mảng các event và các tên phương thức từ phương thức `subscribe` trong subscriber. Laravel sẽ tự động xác định tên class của subscriber khi đăng ký event listener:
 
-    <?php
+```php
+<?php
 
-    namespace App\Listeners;
+namespace App\Listeners;
 
-    use Illuminate\Auth\Events\Login;
-    use Illuminate\Auth\Events\Logout;
-    use Illuminate\Events\Dispatcher;
+use Illuminate\Auth\Events\Login;
+use Illuminate\Auth\Events\Logout;
+use Illuminate\Events\Dispatcher;
 
-    class UserEventSubscriber
+class UserEventSubscriber
+{
+    /**
+     * Handle user login events.
+     */
+    public function handleUserLogin(Login $event): void {}
+
+    /**
+     * Handle user logout events.
+     */
+    public function handleUserLogout(Logout $event): void {}
+
+    /**
+     * Register the listeners for the subscriber.
+     *
+     * @return array<string, string>
+     */
+    public function subscribe(Dispatcher $events): array
     {
-        /**
-         * Handle user login events.
-         */
-        public function handleUserLogin(Login $event): void {}
-
-        /**
-         * Handle user logout events.
-         */
-        public function handleUserLogout(Logout $event): void {}
-
-        /**
-         * Register the listeners for the subscriber.
-         *
-         * @return array<string, string>
-         */
-        public function subscribe(Dispatcher $events): array
-        {
-            return [
-                Login::class => 'handleUserLogin',
-                Logout::class => 'handleUserLogout',
-            ];
-        }
+        return [
+            Login::class => 'handleUserLogin',
+            Logout::class => 'handleUserLogout',
+        ];
     }
+}
+```
 
 <a name="registering-event-subscribers"></a>
 ### Đăng ký Event Subscriber
 
 Sau khi đã tạo xong subscriber, Laravel sẽ tự động đăng ký các phương thức handler có trong subscriber nếu chúng tuân thủ các [quy ước discovery event](#event-discovery) của Laravel. Nếu không phải vậy, bạn có thể đăng ký subscriber của bạn theo cách của bạn bằng cách sử dụng phương thức `subscribe` của facade `Event`. Thông thường, việc này nên được thực hiện trong phương thức `boot` của `AppServiceProvider` của ứng dụng:
 
-    <?php
+```php
+<?php
 
-    namespace App\Providers;
+namespace App\Providers;
 
-    use App\Listeners\UserEventSubscriber;
-    use Illuminate\Support\Facades\Event;
-    use Illuminate\Support\ServiceProvider;
+use App\Listeners\UserEventSubscriber;
+use Illuminate\Support\Facades\Event;
+use Illuminate\Support\ServiceProvider;
 
-    class AppServiceProvider extends ServiceProvider
+class AppServiceProvider extends ServiceProvider
+{
+    /**
+     * Bootstrap any application services.
+     */
+    public function boot(): void
     {
-        /**
-         * Bootstrap any application services.
-         */
-        public function boot(): void
-        {
-            Event::subscribe(UserEventSubscriber::class);
-        }
+        Event::subscribe(UserEventSubscriber::class);
     }
+}
+```
 
 <a name="testing"></a>
 ## Testing
@@ -727,6 +968,9 @@ test('orders can be shipped', function () {
 
     // Assert an event was dispatched twice...
     Event::assertDispatched(OrderShipped::class, 2);
+
+    // Assert an event was dispatched once...
+    Event::assertDispatchedOnce(OrderShipped::class);
 
     // Assert an event was not dispatched...
     Event::assertNotDispatched(OrderFailedToShip::class);
@@ -763,6 +1007,9 @@ class ExampleTest extends TestCase
         // Assert an event was dispatched twice...
         Event::assertDispatched(OrderShipped::class, 2);
 
+        // Assert an event was dispatched once...
+        Event::assertDispatchedOnce(OrderShipped::class);
+
         // Assert an event was not dispatched...
         Event::assertNotDispatched(OrderFailedToShip::class);
 
@@ -774,16 +1021,20 @@ class ExampleTest extends TestCase
 
 Bạn có thể truyền một closure cho các phương thức `assertDispatched` hoặc `assertNotDispatched` để yêu cầu một event đã được gửi đi và pass qua "bài kiểm tra" đã cho. Nếu có ít nhất một event đã được gửi đi và pass qua bài kiểm tra đã cho thì yêu cầu sẽ thành công:
 
-    Event::assertDispatched(function (OrderShipped $event) use ($order) {
-        return $event->order->id === $order->id;
-    });
+```php
+Event::assertDispatched(function (OrderShipped $event) use ($order) {
+    return $event->order->id === $order->id;
+});
+```
 
 Nếu bạn chỉ muốn yêu cầu listener của một event đang nhận một event nhất định, bạn có thể sử dụng phương thức `assertListening`:
 
-    Event::assertListening(
-        OrderShipped::class,
-        SendShipmentNotification::class
-    );
+```php
+Event::assertListening(
+    OrderShipped::class,
+    SendShipmentNotification::class
+);
+```
 
 > [!WARNING]
 > Sau khi gọi `Event::fake()`, sẽ không có listener event nào được thực thi. Vì vậy, nếu các bài kiểm tra của bạn sử dụng các model factory dựa trên các event, chẳng hạn như tạo UUID trong event `creating` của nodel, bạn nên gọi `Event::fake()` **sau** khi sử dụng các factory của bạn.
@@ -804,7 +1055,9 @@ test('orders can be processed', function () {
     Event::assertDispatched(OrderCreated::class);
 
     // Other events are dispatched as normal...
-    $order->update([...]);
+    $order->update([
+        // ...
+    ]);
 });
 ```
 
@@ -823,15 +1076,19 @@ public function test_orders_can_be_processed(): void
     Event::assertDispatched(OrderCreated::class);
 
     // Other events are dispatched as normal...
-    $order->update([...]);
+    $order->update([
+        // ...
+    ]);
 }
 ```
 
 Bạn có thể fake tất cả các event ngoại trừ một tập hợp các event được chỉ định bằng phương thức `except`:
 
-    Event::fake()->except([
-        OrderCreated::class,
-    ]);
+```php
+Event::fake()->except([
+    OrderCreated::class,
+]);
+```
 
 <a name="scoped-event-fakes"></a>
 ### Scoped Event Fakes
@@ -854,8 +1111,10 @@ test('orders can be processed', function () {
         return $order;
     });
 
-    // Events are dispatched as normal and observers will run ...
-    $order->update([...]);
+    // Events are dispatched as normal and observers will run...
+    $order->update([
+        // ...
+    ]);
 });
 ```
 
@@ -884,8 +1143,10 @@ class ExampleTest extends TestCase
             return $order;
         });
 
-        // Events are dispatched as normal and observers will run ...
-        $order->update([...]);
+        // Events are dispatched as normal and observers will run...
+        $order->update([
+            // ...
+        ]);
     }
 }
 ```

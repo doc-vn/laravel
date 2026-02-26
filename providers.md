@@ -39,26 +39,28 @@ Như đã đề cập trước, trong phương thức `register`, bạn chỉ n�
 
 Chúng ta hãy cùng xem một service provider cơ bản. Trong bất kỳ phương thức nào của service provider, bạn luôn có quyền truy cập vào thuộc tính `$app`, mà cung cấp quyền truy cập vào service container:
 
-    <?php
+```php
+<?php
 
-    namespace App\Providers;
+namespace App\Providers;
 
-    use App\Services\Riak\Connection;
-    use Illuminate\Contracts\Foundation\Application;
-    use Illuminate\Support\ServiceProvider;
+use App\Services\Riak\Connection;
+use Illuminate\Contracts\Foundation\Application;
+use Illuminate\Support\ServiceProvider;
 
-    class RiakServiceProvider extends ServiceProvider
+class RiakServiceProvider extends ServiceProvider
+{
+    /**
+     * Register any application services.
+     */
+    public function register(): void
     {
-        /**
-         * Register any application services.
-         */
-        public function register(): void
-        {
-            $this->app->singleton(Connection::class, function (Application $app) {
-                return new Connection(config('riak'));
-            });
-        }
+        $this->app->singleton(Connection::class, function (Application $app) {
+            return new Connection(config('riak'));
+        });
     }
+}
+```
 
 Service provider này chỉ định nghĩa một phương thức `register` và sử dụng phương thức đó để định nghĩa một implementation của `App\Services\Riak\Connection` trong service container. Nếu bạn chưa quen với service container của Laravel, hãy xem [tài liệu về nó](/docs/{{version}}/container).
 
@@ -67,100 +69,110 @@ Service provider này chỉ định nghĩa một phương thức `register` và 
 
 Nếu service provider của bạn đăng ký nhiều liên kết, thì bạn có thể muốn sử dụng thuộc tính `bindings` và `singletons` để đăng ký thay vì đăng ký thủ công từng liên kết một vào container. Khi service provider được load bởi framework, nó sẽ tự động kiểm tra các thuộc tính này và đăng ký các liên kết mà bạn đã khai báo:
 
-    <?php
+```php
+<?php
 
-    namespace App\Providers;
+namespace App\Providers;
 
-    use App\Contracts\DowntimeNotifier;
-    use App\Contracts\ServerProvider;
-    use App\Services\DigitalOceanServerProvider;
-    use App\Services\PingdomDowntimeNotifier;
-    use App\Services\ServerToolsProvider;
-    use Illuminate\Support\ServiceProvider;
+use App\Contracts\DowntimeNotifier;
+use App\Contracts\ServerProvider;
+use App\Services\DigitalOceanServerProvider;
+use App\Services\PingdomDowntimeNotifier;
+use App\Services\ServerToolsProvider;
+use Illuminate\Support\ServiceProvider;
 
-    class AppServiceProvider extends ServiceProvider
-    {
-        /**
-         * All of the container bindings that should be registered.
-         *
-         * @var array
-         */
-        public $bindings = [
-            ServerProvider::class => DigitalOceanServerProvider::class,
-        ];
+class AppServiceProvider extends ServiceProvider
+{
+    /**
+     * All of the container bindings that should be registered.
+     *
+     * @var array
+     */
+    public $bindings = [
+        ServerProvider::class => DigitalOceanServerProvider::class,
+    ];
 
-        /**
-         * All of the container singletons that should be registered.
-         *
-         * @var array
-         */
-        public $singletons = [
-            DowntimeNotifier::class => PingdomDowntimeNotifier::class,
-            ServerProvider::class => ServerToolsProvider::class,
-        ];
-    }
+    /**
+     * All of the container singletons that should be registered.
+     *
+     * @var array
+     */
+    public $singletons = [
+        DowntimeNotifier::class => PingdomDowntimeNotifier::class,
+        ServerProvider::class => ServerToolsProvider::class,
+    ];
+}
+```
 
 <a name="the-boot-method"></a>
 ### Phương thức Boot
 
 Vậy, điều gì sẽ xảy ra nếu chúng ta cần đăng ký một [view composer](/docs/{{version}}/views#view-composers) trong service provider của chúng ta? Điều này nên được thực hiện trong phương thức `boot`. **Phương thức này được gọi sau khi tất cả các service provider khác đã được đăng ký**, nghĩa là bạn có quyền truy cập vào tất cả các service khác đã được đăng ký theo framework:
 
-    <?php
+```php
+<?php
 
-    namespace App\Providers;
+namespace App\Providers;
 
-    use Illuminate\Support\Facades\View;
-    use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\View;
+use Illuminate\Support\ServiceProvider;
 
-    class ComposerServiceProvider extends ServiceProvider
+class ComposerServiceProvider extends ServiceProvider
+{
+    /**
+     * Bootstrap any application services.
+     */
+    public function boot(): void
     {
-        /**
-         * Bootstrap any application services.
-         */
-        public function boot(): void
-        {
-            View::composer('view', function () {
-                // ...
-            });
-        }
+        View::composer('view', function () {
+            // ...
+        });
     }
+}
+```
 
 <a name="boot-method-dependency-injection"></a>
 #### Phương thức Boot tích hợp khai báo phụ thuộc
 
 Bạn có thể viết khai báo phụ thuộc vào trong phương thức `boot` của service provider của bạn. [service container](/docs/{{version}}/container) sẽ tự động tích hợp bất kỳ phụ thuộc nào mà bạn cần:
 
-    use Illuminate\Contracts\Routing\ResponseFactory;
+```php
+use Illuminate\Contracts\Routing\ResponseFactory;
 
-    /**
-     * Bootstrap any application services.
-     */
-    public function boot(ResponseFactory $response): void
-    {
-        $response->macro('serialized', function (mixed $value) {
-            // ...
-        });
-    }
+/**
+ * Bootstrap any application services.
+ */
+public function boot(ResponseFactory $response): void
+{
+    $response->macro('serialized', function (mixed $value) {
+        // ...
+    });
+}
+```
 
 <a name="registering-providers"></a>
 ## Đăng ký Providers
 
 Tất cả các service provider được đăng ký trong file cấu hình `bootstrap/providers.php`. File này trả về một mảng chứa các tên class của các service provider của application của bạn:
 
-    <?php
+```php
+<?php
 
-    return [
-        App\Providers\AppServiceProvider::class,
-    ];
+return [
+    App\Providers\AppServiceProvider::class,
+];
+```
 
 Khi bạn gọi lệnh Artisan `make:provider`, Laravel sẽ tự động thêm provider được tạo vào file `bootstrap/providers.php`. Tuy nhiên, nếu bạn đã tạo class provider rồi, thì bạn nên tự thêm class provider vào mảng:
 
-    <?php
+```php
+<?php
 
-    return [
-        App\Providers\AppServiceProvider::class,
-        App\Providers\ComposerServiceProvider::class, // [tl! add]
-    ];
+return [
+    App\Providers\AppServiceProvider::class,
+    App\Providers\ComposerServiceProvider::class, // [tl! add]
+];
+```
 
 <a name="deferred-providers"></a>
 ## Các Provider hoãn
@@ -171,34 +183,36 @@ Laravel sẽ biên dịch và lưu trữ một danh sách tất cả các servic
 
 Để trì hoãn việc load của một provider, hãy implement interface `\Illuminate\Contracts\Support\DeferrableProvider` và định nghĩa một phương thức `provides`. Phương thức `provides` sẽ trả về các liên kết service container được đăng ký bởi provider:
 
-    <?php
+```php
+<?php
 
-    namespace App\Providers;
+namespace App\Providers;
 
-    use App\Services\Riak\Connection;
-    use Illuminate\Contracts\Foundation\Application;
-    use Illuminate\Contracts\Support\DeferrableProvider;
-    use Illuminate\Support\ServiceProvider;
+use App\Services\Riak\Connection;
+use Illuminate\Contracts\Foundation\Application;
+use Illuminate\Contracts\Support\DeferrableProvider;
+use Illuminate\Support\ServiceProvider;
 
-    class RiakServiceProvider extends ServiceProvider implements DeferrableProvider
+class RiakServiceProvider extends ServiceProvider implements DeferrableProvider
+{
+    /**
+     * Register any application services.
+     */
+    public function register(): void
     {
-        /**
-         * Register any application services.
-         */
-        public function register(): void
-        {
-            $this->app->singleton(Connection::class, function (Application $app) {
-                return new Connection($app['config']['riak']);
-            });
-        }
-
-        /**
-         * Get the services provided by the provider.
-         *
-         * @return array<int, string>
-         */
-        public function provides(): array
-        {
-            return [Connection::class];
-        }
+        $this->app->singleton(Connection::class, function (Application $app) {
+            return new Connection($app['config']['riak']);
+        });
     }
+
+    /**
+     * Get the services provided by the provider.
+     *
+     * @return array<int, string>
+     */
+    public function provides(): array
+    {
+        return [Connection::class];
+    }
+}
+```

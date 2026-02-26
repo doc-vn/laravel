@@ -54,39 +54,47 @@ php artisan vendor:publish --provider="Laravel\Scout\ScoutServiceProvider"
 
 Cuối cùng, thêm trait `Laravel\Scout\Searchable` vào model mà bạn muốn thêm chức năng tìm kiếm. Trait này sẽ đăng ký một model observer để tự động giữ cho các model được đồng bộ với driver tìm kiếm của bạn:
 
-    <?php
+```php
+<?php
 
-    namespace App\Models;
+namespace App\Models;
 
-    use Illuminate\Database\Eloquent\Model;
-    use Laravel\Scout\Searchable;
+use Illuminate\Database\Eloquent\Model;
+use Laravel\Scout\Searchable;
 
-    class Post extends Model
-    {
-        use Searchable;
-    }
+class Post extends Model
+{
+    use Searchable;
+}
+```
 
 <a name="queueing"></a>
 ### Queueing
 
-Mặc dù không bắt buộc phải sử dụng Scout, nhưng bạn nên cân nhắc cấu hình một [queue driver](/docs/{{version}}/queues) trước khi sử dụng thư viện. Chạy một queue worker sẽ cho phép Scout sẽ queue tất cả các hoạt động đồng bộ thông tin model của bạn với các index tìm kiếm của bạn lại, cung cấp thời gian phản hồi tốt hơn cho giao diện ứng dụng web của bạn.
+Khi sử dụng một engine không phải là engine `database` hoặc `collection`, bạn nên cân nhắc cấu hình một [queue driver](/docs/{{version}}/queues) trước khi sử dụng thư viện. Chạy một queue worker sẽ cho phép Scout queue tất cả các hoạt động đồng bộ hóa thông tin model của bạn với các search index, giúp cung cấp thời gian phản hồi nhanh hơn cho giao diện ứng dụng web của bạn.
 
 Khi bạn đã cấu hình xong queue driver, hãy set giá trị của tùy chọn `queue` trong file cấu hình `config/scout.php` của bạn là `true`:
 
-    'queue' => true,
+```php
+'queue' => true,
+```
 
 Ngay cả khi tùy chọn `queue` được set thành `false`, thì điều quan trọng bạn cần nhớ là một số driver Scout như Algolia và Meilisearch vẫn luôn lập index cho các bản ghi theo chế độ không đồng bộ. Nghĩa là, ngay cả khi hoạt động lập index đã hoàn tất trong ứng dụng Laravel của bạn, thì bản thân công cụ tìm kiếm vẫn có thể không phản ánh ngay lập tức các bản ghi mới hoặc các bản ghi đã được cập nhật.
 
 Để chỉ định kết nối và queue nào mà job Scout của bạn sử dụng, bạn có thể định nghĩa tùy chọn cấu hình `queue` dưới dạng một mảng:
 
-    'queue' => [
-        'connection' => 'redis',
-        'queue' => 'scout'
-    ],
+```php
+'queue' => [
+    'connection' => 'redis',
+    'queue' => 'scout'
+],
+```
 
 Tất nhiên, nếu bạn muốn tùy chỉnh kết nối và queue mà các tác vụ Scout sử dụng, bạn nên chạy một queue worker để xử lý các tác vụ trên kết nối và queue đó:
 
-    php artisan queue:work redis --queue=scout
+```shell
+php artisan queue:work redis --queue=scout
+```
 
 <a name="driver-prerequisites"></a>
 ### Yêu cầu của driver
@@ -168,7 +176,7 @@ Khi sử dụng Typesense, model searchable của bạn phải định nghĩa ph
  *
  * @return array<string, mixed>
  */
-public function toSearchableArray()
+public function toSearchableArray(): array
 {
     return array_merge($this->toArray(),[
         'id' => (string) $this->id,
@@ -219,67 +227,73 @@ Todo::search('Groceries')->options([
 
 Mỗi một model Eloquent được đồng bộ với một "index" tìm kiếm nhất định, nó sẽ chứa tất cả các bản ghi có thể được tìm kiếm cho model đó. Nói cách khác, bạn có thể nghĩ mỗi index giống như là một bảng trong MySQL. Mặc định, mỗi model sẽ được lưu trữ theo một index khớp với tên "bảng" của model. Thông thường, là dạng số nhiều của tên model; tuy nhiên, bạn có thể tùy biến index của model bằng cách ghi đè phương thức `searchableAs` trên model:
 
-    <?php
+```php
+<?php
 
-    namespace App\Models;
+namespace App\Models;
 
-    use Illuminate\Database\Eloquent\Model;
-    use Laravel\Scout\Searchable;
+use Illuminate\Database\Eloquent\Model;
+use Laravel\Scout\Searchable;
 
-    class Post extends Model
+class Post extends Model
+{
+    use Searchable;
+
+    /**
+     * Get the name of the index associated with the model.
+     */
+    public function searchableAs(): string
     {
-        use Searchable;
-
-        /**
-         * Get the name of the index associated with the model.
-         */
-        public function searchableAs(): string
-        {
-            return 'posts_index';
-        }
+        return 'posts_index';
     }
+}
+```
 
 <a name="configuring-searchable-data"></a>
 ### Configuring Searchable Data
 
 Mặc định, toàn bộ form `toArray` của một model sẽ được lưu theo index tìm kiếm của nó. Nếu bạn muốn tùy biến dữ liệu được đồng bộ với index tìm kiếm, bạn có thể ghi đè phương thức `toSearchableArray` trên model:
 
-    <?php
+```php
+<?php
 
-    namespace App\Models;
+namespace App\Models;
 
-    use Illuminate\Database\Eloquent\Model;
-    use Laravel\Scout\Searchable;
+use Illuminate\Database\Eloquent\Model;
+use Laravel\Scout\Searchable;
 
-    class Post extends Model
+class Post extends Model
+{
+    use Searchable;
+
+    /**
+     * Get the indexable data array for the model.
+     *
+     * @return array<string, mixed>
+     */
+    public function toSearchableArray(): array
     {
-        use Searchable;
+        $array = $this->toArray();
 
-        /**
-         * Get the indexable data array for the model.
-         *
-         * @return array<string, mixed>
-         */
-        public function toSearchableArray(): array
-        {
-            $array = $this->toArray();
+        // Customize the data array...
 
-            // Customize the data array...
-
-            return $array;
-        }
+        return $array;
     }
+}
+```
 
 Một số công cụ tìm kiếm như Meilisearch sẽ chỉ thực hiện các thao tác lọc (`>`, `<`, vv.) trên đúng loại dữ liệu. Vì vậy, khi sử dụng các công cụ tìm kiếm này và tùy chỉnh searchable data của bạn, bạn nên đảm bảo rằng các giá trị số được chuyển thành đúng loại với chúng:
 
-    public function toSearchableArray()
-    {
-        return [
-            'id' => (int) $this->id,
-            'name' => $this->name,
-            'price' => (float) $this->price,
-        ];
-    }
+```php
+public function toSearchableArray(): array
+{
+    return [
+        'id' => (int) $this->id,
+        'name' => $this->name,
+        'price' => (float) $this->price,
+    ];
+}
+```
 
 <a name="configuring-indexes-for-algolia"></a>
 #### Configuring Index Settings (Algolia)
@@ -371,60 +385,64 @@ php artisan scout:sync-index-settings
 
 Mặc định, Scout sẽ sử dụng khóa chính của model làm ID / key duy nhất của model được lưu trữ trong search index. Nếu bạn cần tùy chỉnh hành vi này, bạn có thể ghi đè phương thức `getScoutKey` và phương thức `getScoutKeyName` trên model đó:
 
-    <?php
+```php
+<?php
 
-    namespace App\Models;
+namespace App\Models;
 
-    use Illuminate\Database\Eloquent\Model;
-    use Laravel\Scout\Searchable;
+use Illuminate\Database\Eloquent\Model;
+use Laravel\Scout\Searchable;
 
-    class User extends Model
+class User extends Model
+{
+    use Searchable;
+
+    /**
+     * Get the value used to index the model.
+     */
+    public function getScoutKey(): mixed
     {
-        use Searchable;
-
-        /**
-         * Get the value used to index the model.
-         */
-        public function getScoutKey(): mixed
-        {
-            return $this->email;
-        }
-
-        /**
-         * Get the key name used to index the model.
-         */
-        public function getScoutKeyName(): mixed
-        {
-            return 'email';
-        }
+        return $this->email;
     }
+
+    /**
+     * Get the key name used to index the model.
+     */
+    public function getScoutKeyName(): mixed
+    {
+        return 'email';
+    }
+}
+```
 
 <a name="configuring-search-engines-per-model"></a>
 ### Configuring Search Engines Per Model
 
 Khi tìm kiếm, Scout thường sẽ sử dụng công cụ tìm kiếm mặc định được chỉ định trong file cấu hình `scout` của ứng dụng. Tuy nhiên, công cụ tìm kiếm cho một model cụ thể có thể được thay đổi bằng cách ghi đè phương thức `searchableUsing` trên model:
 
-    <?php
+```php
+<?php
 
-    namespace App\Models;
+namespace App\Models;
 
-    use Illuminate\Database\Eloquent\Model;
-    use Laravel\Scout\Engines\Engine;
-    use Laravel\Scout\EngineManager;
-    use Laravel\Scout\Searchable;
+use Illuminate\Database\Eloquent\Model;
+use Laravel\Scout\Engines\Engine;
+use Laravel\Scout\Scout;
+use Laravel\Scout\Searchable;
 
-    class User extends Model
+class User extends Model
+{
+    use Searchable;
+
+    /**
+     * Get the engine used to index the model.
+     */
+    public function searchableUsing(): Engine
     {
-        use Searchable;
-
-        /**
-         * Get the engine used to index the model.
-         */
-        public function searchableUsing(): Engine
-        {
-            return app(EngineManager::class)->engine('meilisearch');
-        }
+        return Scout::engine('meilisearch');
     }
+}
+```
 
 <a name="identifying-users"></a>
 ### Identifying Users
@@ -446,7 +464,7 @@ Bật tính năng này cũng sẽ truyền địa chỉ IP của request và kho
 > [!WARNING]
 > Database engine hiện chỉ hỗ trợ MySQL và PostgreSQL.
 
-Nếu ứng dụng của bạn tương tác với các cơ sở dữ liệu có quy mô vừa và nhỏ hoặc có khối lượng công việc nhẹ, bạn có thể thấy thuận tiện hơn khi bắt đầu với "database" engine của Scout. Database engine sẽ sử dụng các lệnh "where like" và index full text khi lọc kết quả từ cơ sở dữ liệu hiện có của bạn để xác định kết quả tìm kiếm phù hợp cho truy vấn của bạn.
+Engine `database` là cách nhanh nhất để bắt đầu với Laravel Scout, và sử dụng các index full-text của MySQL / PostgreSQL và các câu lệnh "where like" khi lọc kết quả từ cơ sở dữ liệu hiện có của bạn để xác định kết quả tìm kiếm phù hợp cho truy vấn của bạn.
 
 Để sử dụng database engine, bạn chỉ cần set giá trị của biến môi trường `SCOUT_DRIVER` thành `database` hoặc chỉ định driver `database` trực tiếp trong file cấu hình `scout` của ứng dụng:
 
@@ -518,6 +536,12 @@ Nếu bạn đang cài đặt Scout cho một project đã tồn tại, có th�
 php artisan scout:import "App\Models\Post"
 ```
 
+Lệnh `scout:queue-import` có thể được sử dụng để import tất cả các bản ghi hiện có của bạn bằng cách sử dụng [các queued job](/docs/{{version}}/queues):
+
+```shell
+php artisan scout:queue-import "App\Models\Post" --chunk=500
+```
+
 Lệnh `flush` có thể được sử dụng để xóa tất cả các bản ghi của model ra khỏi các search index của bạn:
 
 ```shell
@@ -529,15 +553,17 @@ php artisan scout:flush "App\Models\Post"
 
 Nếu bạn muốn sửa truy vấn được sử dụng để lấy ra tất cả các model của bạn để import hàng loạt, bạn có thể định nghĩa phương thức `makeAllSearchableUsing` trên model của bạn. Đây là nơi tuyệt vời để thêm bất kỳ quan hệ eager loading nào có thể cần thiết trước khi import model của bạn:
 
-    use Illuminate\Database\Eloquent\Builder;
+```php
+use Illuminate\Database\Eloquent\Builder;
 
-    /**
-     * Modify the query used to retrieve models when making all of the models searchable.
-     */
-    protected function makeAllSearchableUsing(Builder $query): Builder
-    {
-        return $query->with('author');
-    }
+/**
+ * Modify the query used to retrieve models when making all of the models searchable.
+ */
+protected function makeAllSearchableUsing(Builder $query): Builder
+{
+    return $query->with('author');
+}
+```
 
 > [!WARNING]
 > Phương thức `makeAllSearchableUsing` có thể không áp dụng được khi sử dụng queue để import model. Các quan hệ sẽ [không được khôi phục](/docs/{{version}}/queues#handling-relationships) khi các collection model được xử lý bởi các job.
@@ -547,30 +573,38 @@ Nếu bạn muốn sửa truy vấn được sử dụng để lấy ra tất c�
 
 Khi mà bạn đã thêm trait `Laravel\Scout\Searchable` vào một model, tất cả những gì bạn cần làm là `save` hoặc `create` một instance model và nó sẽ tự động được thêm vào index tìm kiếm cho bạn. Nếu bạn đã cấu hình Scout để [sử dụng queue](#queueing) thì thao tác này sẽ được thực hiện dưới background bởi queue worker của bạn:
 
-    use App\Models\Order;
+```php
+use App\Models\Order;
 
-    $order = new Order;
+$order = new Order;
 
-    // ...
+// ...
 
-    $order->save();
+$order->save();
+```
 
 <a name="adding-records-via-query"></a>
 #### Adding Records Via Query
 
 Nếu bạn muốn thêm một collection model vào index tìm kiếm của bạn thông qua truy vấn của Eloquent, bạn có thể kết hợp thêm phương thức `searchable` vào truy vấn của Eloquent. Phương thức `searchable` sẽ [chunk các kết quả](/docs/{{version}}/eloquent#chunking-results) của truy vấn và thêm các bản ghi vào index tìm kiếm của bạn. Một lần nữa, nếu bạn đã cấu hình Scout để sử dụng queue, tất cả các chunk sẽ được import vào dưới background bởi các queue worker của bạn:
 
-    use App\Models\Order;
+```php
+use App\Models\Order;
 
-    Order::where('price', '>', 100)->searchable();
+Order::where('price', '>', 100)->searchable();
+```
 
 Bạn cũng có thể gọi phương thức `searchable` trên instance quan hệ Eloquent:
 
-    $user->orders()->searchable();
+```php
+$user->orders()->searchable();
+```
 
 Hoặc, nếu bạn đã có một collection các model Eloquent trong bộ nhớ, bạn có thể gọi phương thức `searchable` trên instance collection để thêm các instance model vào index tương ứng của chúng:
 
-    $orders->searchable();
+```php
+$orders->searchable();
+```
 
 > [!NOTE]
 > Phương thức `searchable` có thể được coi như là một hành động "updateOrCreate". Nói cách khác, nếu bản ghi model đã có trong index của bạn, nó sẽ được cập nhật. Nếu nó không tồn tại trong index, nó sẽ được thêm vào index.
@@ -580,91 +614,115 @@ Hoặc, nếu bạn đã có một collection các model Eloquent trong bộ nh�
 
 Để cập nhật một model mà có thể tìm kiếm, bạn chỉ cần cập nhật các thuộc tính của instance model và `save` model đó vào cơ sở dữ liệu của bạn. Scout sẽ tự động lưu các thay đổi đối với index tìm kiếm của bạn:
 
-    use App\Models\Order;
+```php
+use App\Models\Order;
 
-    $order = Order::find(1);
+$order = Order::find(1);
 
-    // Update the order...
+// Update the order...
 
-    $order->save();
+$order->save();
+```
 
 Bạn cũng có thể gọi phương thức `searchable` trên một instance truy vấn của Eloquent để cập nhật một collection model. Nếu model không tồn tại trong index tìm kiếm của bạn, chúng sẽ được tạo mới:
 
-    Order::where('price', '>', 100)->searchable();
+```php
+Order::where('price', '>', 100)->searchable();
+```
 
 Nếu bạn muốn cập nhật các bản ghi search index cho tất cả các model trong một quan hệ, bạn có thể gọi `searchable` trên instance quan hệ:
 
-    $user->orders()->searchable();
+```php
+$user->orders()->searchable();
+```
 
 Hoặc, nếu bạn đã có một collection các model Eloquent trong bộ nhớ, bạn có thể gọi phương thức `searchable` trên instance collection để cập nhật các instance model vào trong index tương ứng của chúng:
 
-    $orders->searchable();
+```php
+$orders->searchable();
+```
 
 <a name="modifying-records-before-importing"></a>
 #### Modifying Records Before Importing
 
 Thỉnh thoảng bạn có thể cần chuẩn bị collection các model trước khi chúng được tìm kiếm. Ví dụ, bạn có thể muốn eager load một quan hệ để dữ liệu quan hệ này có thể được thêm vào index tìm kiếm của bạn. Để thực hiện điều này, hãy định nghĩa một phương thức `makeSearchableUsing` trên model tương ứng:
 
-    use Illuminate\Database\Eloquent\Collection;
+```php
+use Illuminate\Database\Eloquent\Collection;
 
-    /**
-     * Modify the collection of models being made searchable.
-     */
-    public function makeSearchableUsing(Collection $models): Collection
-    {
-        return $models->load('author');
-    }
+/**
+ * Modify the collection of models being made searchable.
+ */
+public function makeSearchableUsing(Collection $models): Collection
+{
+    return $models->load('author');
+}
+```
 
 <a name="removing-records"></a>
 ### Removing Records
 
 Để xóa một bản ghi ra khỏi index của bạn, bạn chỉ đơn giản là xóa model đó ra khỏi cơ sở dữ liệu. Điều này có thể được thực hiện ngay cả khi bạn đang sử dụng các mode [đã bị soft delete](/docs/{{version}}/eloquent#soft-deleting):
 
-    use App\Models\Order;
+```php
+use App\Models\Order;
 
-    $order = Order::find(1);
+$order = Order::find(1);
 
-    $order->delete();
+$order->delete();
+```
 
 Nếu bạn không muốn lấy ra model trước khi xóa nó, bạn có thể sử dụng phương thức `unsearchable` trên một instance truy vấn của Eloquent:
 
-    Order::where('price', '>', 100)->unsearchable();
+```php
+Order::where('price', '>', 100)->unsearchable();
+```
 
 Nếu bạn muốn xóa bản ghi search index cho tất cả các model trong một quan hệ, bạn có thể gọi `unsearchable` trên instance quan hệ đó:
 
-    $user->orders()->unsearchable();
+```php
+$user->orders()->unsearchable();
+```
 
 Hoặc, nếu bạn đã có một collection các model Eloquent trong bộ nhớ, bạn có thể gọi phương thức `unsearchable` trên instance collection để xóa các instance model ra khỏi index tìm kiếm của chúng:
 
-    $orders->unsearchable();
+```php
+$orders->unsearchable();
+```
 
 Để xóa tất cả các record model ra khỏi index tìm kiếm của chúng, bạn có thể gọi phương thức `removeAllFromSearch`:
 
-    Order::removeAllFromSearch();
+```php
+Order::removeAllFromSearch();
+```
 
 <a name="pausing-indexing"></a>
 ### Pausing Indexing
 
 Thỉnh thoảng bạn có thể cần thực hiện một loạt các hành động Eloquent trên một model mà không muốn đồng bộ dữ liệu của model đó với index tìm kiếm. Bạn có thể làm điều này bằng cách sử dụng phương thức `withoutSyncingToSearch`. Phương thức này sẽ chấp nhận một closure sẽ được thực hiện ngay lập tức. Bất kỳ hành động model nào xảy ra trong closure này đều sẽ không được đồng bộ với index của model:
 
-    use App\Models\Order;
+```php
+use App\Models\Order;
 
-    Order::withoutSyncingToSearch(function () {
-        // Perform model actions...
-    });
+Order::withoutSyncingToSearch(function () {
+    // Perform model actions...
+});
+```
 
 <a name="conditionally-searchable-model-instances"></a>
 ### Điều kiện Model Searchable
 
 Thỉnh thoảng bạn có thể muốn tìm kiếm trong model searchable có thêm một số điều kiện nhất định. Ví dụ: hãy tưởng tượng bạn có model `App\Models\Post` có thể ở một trong hai trạng thái: "draft" và "published". Bạn có thể chỉ muốn tìm kiếm các bài đăng đã được "published". Để thực hiện điều này, bạn có thể định nghĩa một phương thức `shouldBeSearchable` trên model của bạn:
 
-    /**
-     * Determine if the model should be searchable.
-     */
-    public function shouldBeSearchable(): bool
-    {
-        return $this->isPublished();
-    }
+```php
+/**
+ * Determine if the model should be searchable.
+ */
+public function shouldBeSearchable(): bool
+{
+    return $this->isPublished();
+}
+```
 
 Phương thức `shouldBeSearchable` chỉ được áp dụng khi bạn thao tác với model thông qua phương thức `save` và `create`, các câu lệnh truy vấn hoặc các quan hệ. Bạn gọi trực tiếp phương thức `searchable` qua model hoặc qua các collection searchable, thì nó sẽ ghi đè kết quả của phương thức `shouldBeSearchable`.
 
@@ -676,52 +734,66 @@ Phương thức `shouldBeSearchable` chỉ được áp dụng khi bạn thao t�
 
 Bạn có thể bắt đầu tìm kiếm một model bằng phương thức `search`. Phương thức search chấp nhận một chuỗi string để tìm kiếm model của bạn. Sau đó, bạn nên kết hợp thêm phương thức `get` vào truy vấn tìm kiếm để lấy ra các model Eloquent phù hợp với truy vấn tìm kiếm đã cho:
 
-    use App\Models\Order;
+```php
+use App\Models\Order;
 
-    $orders = Order::search('Star Trek')->get();
+$orders = Order::search('Star Trek')->get();
+```
 
 Vì các tìm kiếm Scout trả về một collection của model Eloquent, nên bạn thậm chí có thể trả về kết quả trực tiếp từ một route hoặc một controller và chúng sẽ tự động được chuyển thành dạng JSON:
 
-    use App\Models\Order;
-    use Illuminate\Http\Request;
+```php
+use App\Models\Order;
+use Illuminate\Http\Request;
 
-    Route::get('/search', function (Request $request) {
-        return Order::search($request->search)->get();
-    });
+Route::get('/search', function (Request $request) {
+    return Order::search($request->search)->get();
+});
+```
 
 Nếu bạn muốn nhận kết quả search raw trước khi chúng được chuyển đổi thành các model Eloquent, bạn nên sử dụng phương thức `raw`:
 
-    $orders = Order::search('Star Trek')->raw();
+```php
+$orders = Order::search('Star Trek')->raw();
+```
 
 <a name="custom-indexes"></a>
 #### Custom Indexes
 
-Các câu lệnh truy vấn tìm kiếm thường sẽ được thực hiện trên index mà được chỉ định bởi phương thức [`searchableAs`](#configuring-model-indexes) của model. Tuy nhiên, bạn có thể sử dụng phương thức `within` để chỉ định một index khác sẽ được tìm kiếm:
+Các câu lệnh truy vấn tìm kiếm thường sẽ được thực hiện trên index mà được chỉ định bởi phương thức [searchableAs](#configuring-model-indexes) của model. Tuy nhiên, bạn có thể sử dụng phương thức `within` để chỉ định một index khác sẽ được tìm kiếm:
 
-    $orders = Order::search('Star Trek')
-        ->within('tv_shows_popularity_desc')
-        ->get();
+```php
+$orders = Order::search('Star Trek')
+    ->within('tv_shows_popularity_desc')
+    ->get();
+```
 
 <a name="where-clauses"></a>
 ### Where Clauses
 
 Scout cho phép bạn thêm các điều kiện "where" vào các truy vấn tìm kiếm của bạn. Hiện tại, các điều kiện này chỉ hỗ trợ so sánh số cơ bản và chủ yếu sử dụng cho việc query tìm kiếm theo ID.
 
-    use App\Models\Order;
+```php
+use App\Models\Order;
 
-    $orders = Order::search('Star Trek')->where('user_id', 1)->get();
+$orders = Order::search('Star Trek')->where('user_id', 1)->get();
+```
 
 Ngoài ra, phương thức `whereIn` có thể được sử dụng để xác minh các giá trị của một cột nhất định có nằm trong một mảng hay không:
 
-    $orders = Order::search('Star Trek')->whereIn(
-        'status', ['open', 'paid']
-    )->get();
+```php
+$orders = Order::search('Star Trek')->whereIn(
+    'status', ['open', 'paid']
+)->get();
+```
 
 Phương thức `whereNotIn` sẽ xác minh giá trị của cột đã cho không có trong một mảng đã cho:
 
-    $orders = Order::search('Star Trek')->whereNotIn(
-        'status', ['closed']
-    )->get();
+```php
+$orders = Order::search('Star Trek')->whereNotIn(
+    'status', ['closed']
+)->get();
+```
 
 Vì search index không phải là cơ sở dữ liệu quan hệ nên các lệnh "where" nâng cao hiện không được hỗ trợ.
 
@@ -733,13 +805,17 @@ Vì search index không phải là cơ sở dữ liệu quan hệ nên các lệ
 
 Ngoài việc lấy ra một collection của model, bạn có thể phân trang kết quả tìm kiếm của bạn bằng phương thức `paginate`. Phương thức này sẽ trả về một instance `Illuminate\Pagination\LengthAwarePaginator` giống như bạn đã đọc ở [tài liệu phân trang truy vấn Eloquent](/docs/{{version}}/pagination) trong các phần trước:
 
-    use App\Models\Order;
+```php
+use App\Models\Order;
 
-    $orders = Order::search('Star Trek')->paginate();
+$orders = Order::search('Star Trek')->paginate();
+```
 
 Bạn có thể chỉ định số lượng model được trả về trên mỗi trang bằng cách truyền vào số lượng đó làm tham số đầu tiên cho phương thức `paginate`:
 
-    $orders = Order::search('Star Trek')->paginate(15);
+```php
+$orders = Order::search('Star Trek')->paginate(15);
+```
 
 Khi bạn đã lấy ra được kết quả, bạn có thể hiển thị kết quả và tạo ra các page links bằng [Blade](/docs/{{version}}/blade) giống như khi bạn thực hiện phân trang truy vấn Eloquent:
 
@@ -755,12 +831,14 @@ Khi bạn đã lấy ra được kết quả, bạn có thể hiển thị kết
 
 Tất nhiên, nếu bạn muốn lấy ra kết quả pagination dưới dạng JSON, bạn có thể trả về instance pagination trực tiếp từ một route hoặc một controller:
 
-    use App\Models\Order;
-    use Illuminate\Http\Request;
+```php
+use App\Models\Order;
+use Illuminate\Http\Request;
 
-    Route::get('/orders', function (Request $request) {
-        return Order::search($request->input('query'))->paginate(15);
-    });
+Route::get('/orders', function (Request $request) {
+    return Order::search($request->input('query'))->paginate(15);
+});
+```
 
 > [!WARNING]
 > Vì các công cụ tìm kiếm không biết về định nghĩa global scope của model Eloquent của bạn, bạn không nên sử dụng global scope trong các ứng dụng mà sử dụng phân trang của Scout. Hoặc, bạn nên tạo lại các ràng buộc của global scope khi tìm kiếm thông qua Scout.
@@ -770,17 +848,21 @@ Tất nhiên, nếu bạn muốn lấy ra kết quả pagination dưới dạng 
 
 Nếu các model index của bạn là loại có thể [soft deleting](/docs/{{version}}/eloquent#soft-deleting) và bạn cần tìm kiếm các model đã bị soft delete của bạn, hãy set tùy chọn `soft_delete` vào trong file cấu hình `config/scout.php` của bạn thành `true`:
 
-    'soft_delete' => true,
+```php
+'soft_delete' => true,
+```
 
 Khi tùy chọn cấu hình này thành `true`, Scout sẽ không xóa các model đó ra khỏi search index. Thay vào đó, nó sẽ set thuộc tính ẩn `__soft_deleted` trên bản ghi đó. Và sau đó, bạn có thể sử dụng phương thức `withTrashed` hoặc `onlyTrashed` để lấy ra các bản ghi đã soft delete khi tìm kiếm:
 
-    use App\Models\Order;
+```php
+use App\Models\Order;
 
-    // Include trashed records when retrieving results...
-    $orders = Order::search('Star Trek')->withTrashed()->get();
+// Include trashed records when retrieving results...
+$orders = Order::search('Star Trek')->withTrashed()->get();
 
-    // Only include trashed records when retrieving results...
-    $orders = Order::search('Star Trek')->onlyTrashed()->get();
+// Only include trashed records when retrieving results...
+$orders = Order::search('Star Trek')->onlyTrashed()->get();
+```
 
 > [!NOTE]
 > Khi một model đã bị xóa vĩnh viễn bằng cách sử dụng `forceDelete`, Scout sẽ tự động xóa model đó ra khỏi search index.
@@ -790,20 +872,22 @@ Khi tùy chọn cấu hình này thành `true`, Scout sẽ không xóa các mode
 
 Nếu bạn cần thực hiện một tùy chỉnh nâng cao cho hành động tìm kiếm của một engine, bạn có thể truyền một lệnh closure làm tham số thứ hai cho phương thức `search`. Ví dụ: bạn có thể sử dụng lệnh closure này để thêm dữ liệu vị trí vào các tùy chọn tìm kiếm trước khi câu lệnh tìm kiếm được truyền đến Algolia:
 
-    use Algolia\AlgoliaSearch\SearchIndex;
-    use App\Models\Order;
+```php
+use Algolia\AlgoliaSearch\SearchIndex;
+use App\Models\Order;
 
-    Order::search(
-        'Star Trek',
-        function (SearchIndex $algolia, string $query, array $options) {
-            $options['body']['query']['bool']['filter']['geo_distance'] = [
-                'distance' => '1000km',
-                'location' => ['lat' => 36, 'lon' => 111],
-            ];
+Order::search(
+    'Star Trek',
+    function (SearchIndex $algolia, string $query, array $options) {
+        $options['body']['query']['bool']['filter']['geo_distance'] = [
+            'distance' => '1000km',
+            'location' => ['lat' => 36, 'lon' => 111],
+        ];
 
-            return $algolia->search($query, $options);
-        }
-    )->get();
+        return $algolia->search($query, $options);
+    }
+)->get();
+```
 
 <a name="customizing-the-eloquent-results-query"></a>
 #### Customizing The Eloquent Results Query
@@ -829,16 +913,18 @@ Vì lệnh callback này được gọi sau khi các model liên quan đã đư�
 
 Nếu một trong những engine tìm kiếm của Scout không phù hợp với nhu cầu của bạn, bạn có thể viết một engine mới của riêng bạn và đăng ký nó với Scout. Engine của bạn sẽ được extend từ abstract class `Laravel\Scout\Engines\Engine`. Abstract class này chứa tám phương thức mà engine mới của bạn phải implement:
 
-    use Laravel\Scout\Builder;
+```php
+use Laravel\Scout\Builder;
 
-    abstract public function update($models);
-    abstract public function delete($models);
-    abstract public function search(Builder $builder);
-    abstract public function paginate(Builder $builder, $perPage, $page);
-    abstract public function mapIds($results);
-    abstract public function map(Builder $builder, $results, $model);
-    abstract public function getTotalCount($results);
-    abstract public function flush($model);
+abstract public function update($models);
+abstract public function delete($models);
+abstract public function search(Builder $builder);
+abstract public function paginate(Builder $builder, $perPage, $page);
+abstract public function mapIds($results);
+abstract public function map(Builder $builder, $results, $model);
+abstract public function getTotalCount($results);
+abstract public function flush($model);
+```
 
 Bạn có thể tham khảo class `Laravel\Scout\Engines\AlgoliaEngine` để biết thêm cách bạn nên implement các phương thức đó như thế nào. Class này sẽ cung cấp cho bạn một điểm khởi đầu tốt để bạn có thể học cách implement từng phương thức này trong engine của riêng bạn.
 
@@ -847,19 +933,23 @@ Bạn có thể tham khảo class `Laravel\Scout\Engines\AlgoliaEngine` để bi
 
 Khi bạn đã viết xong engine mới của bạn, bạn có thể đăng ký nó với Scout bằng phương thức `extend` trong engine manager của Scout. Engine manager của Scout có thể được resolve từ service container của Laravel. Bạn nên gọi phương thức `extend` từ phương thức `boot` của class `App\Providers\AppServiceProvider` hoặc bất kỳ service provider nào khác được application của bạn sử dụng.
 
-    use App\ScoutExtensions\MySqlSearchEngine;
-    use Laravel\Scout\EngineManager;
+```php
+use App\ScoutExtensions\MySqlSearchEngine;
+use Laravel\Scout\EngineManager;
 
-    /**
-     * Bootstrap any application services.
-     */
-    public function boot(): void
-    {
-        resolve(EngineManager::class)->extend('mysql', function () {
-            return new MySqlSearchEngine;
-        });
-    }
+/**
+ * Bootstrap any application services.
+ */
+public function boot(): void
+{
+    resolve(EngineManager::class)->extend('mysql', function () {
+        return new MySqlSearchEngine;
+    });
+}
+```
 
 Khi engine của bạn đã được đăng ký, bạn có thể khai báo nó làm Scout `driver` mặc định trong file cấu hình `config/scout.php` của application của bạn:
 
-    'driver' => 'mysql',
+```php
+'driver' => 'mysql',
+```

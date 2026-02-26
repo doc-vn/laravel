@@ -22,17 +22,21 @@ Các tính năng localization của Laravel cung cấp một cách thuận tiệ
 
 Laravel cung cấp hai cách để quản lý chuỗi được dịch. Đầu tiên, các chuỗi ngôn ngữ có thể được lưu trữ trong các file ở thư mục `lang` trong application. Trong thư mục này, có thể có các thư mục con cho mỗi ngôn ngữ được application của bạn hỗ trợ. Đây là cách tiếp cận mà Laravel sử dụng để quản lý các chuỗi dịch cho các tính năng được tích hợp sẵn của Laravel, chẳng hạn như thông báo lỗi validation:
 
-    /lang
-        /en
-            messages.php
-        /es
-            messages.php
+```text
+/lang
+    /en
+        messages.php
+    /es
+        messages.php
+```
 
 Hoặc, các chuỗi dịch có thể được định nghĩa trong các file JSON được lưu trong thư mục `lang`. Khi thực hiện cách này, mỗi ngôn ngữ được ứng dụng của bạn hỗ trợ sẽ có một file JSON tương ứng trong thư mục này. Cách tiếp cận này được khuyến cáo cho các ứng dụng có số lượng lớn chuỗi cần phải dịch:
 
-    /lang
-        en.json
-        es.json
+```text
+/lang
+    en.json
+    es.json
+```
 
 Chúng ta sẽ thảo luận về từng cách quản lý chuỗi dịch này trong tài liệu dưới.
 
@@ -54,47 +58,63 @@ Bạn cũng có thể cấu hình một "ngôn ngữ dự phòng", nó sẽ đư
 
 Bạn có thể sửa ngôn ngữ mặc định cho một HTTP request khi đang chạy bằng cách sử dụng phương thức `setLocale` được cung cấp bởi facade `App`:
 
-    use Illuminate\Support\Facades\App;
+```php
+use Illuminate\Support\Facades\App;
 
-    Route::get('/greeting/{locale}', function (string $locale) {
-        if (! in_array($locale, ['en', 'es', 'fr'])) {
-            abort(400);
-        }
+Route::get('/greeting/{locale}', function (string $locale) {
+    if (! in_array($locale, ['en', 'es', 'fr'])) {
+        abort(400);
+    }
 
-        App::setLocale($locale);
+    App::setLocale($locale);
 
-        // ...
-    });
+    // ...
+});
+```
 
 <a name="determining-the-current-locale"></a>
 #### Xác định ngôn ngữ hiện tại
 
 Bạn có thể sử dụng các phương thức `currentLocale` và `isLocale` trên facade `App` để xác định ngôn ngữ hiện tại hoặc kiểm tra xem ngôn ngữ có phải là một giá trị nào đó hay không:
 
-    use Illuminate\Support\Facades\App;
+```php
+use Illuminate\Support\Facades\App;
 
-    $locale = App::currentLocale();
+$locale = App::currentLocale();
 
-    if (App::isLocale('en')) {
-        // ...
-    }
+if (App::isLocale('en')) {
+    // ...
+}
+```
 
 <a name="pluralization-language"></a>
 ### Số nhiều trong ngôn ngữ
 
+<style>
+.code-list-no-flex-break code {
+    display: contents !important;
+}
+</style>
+
+<div class="code-list-no-flex-break">
+
 Bạn có thể hướng dẫn quy tắc "số nhiều" trong Laravel, được Eloquent và các thành phần khác trong framework sử dụng để chuyển đổi chuỗi số ít thành chuỗi số nhiều khi bạn sử dụng một ngôn ngữ khác ngoài tiếng Anh. Điều này có thể được thực hiện bằng cách gọi phương thức `useLanguage` trong phương thức `boot` của một trong những service provider trong ứng dụng của bạn. Các ngôn ngữ hiện được hỗ trợ bởi bộ quy tắc số nhiều là: `french`, `norwegian-bokmal` (`tiếng Na Uy`), `portuguese`, `spanish`, và `turkish`:
 
-    use Illuminate\Support\Pluralizer;
+</div>
 
-    /**
-     * Bootstrap any application services.
-     */
-    public function boot(): void
-    {
-        Pluralizer::useLanguage('spanish');
+```php
+use Illuminate\Support\Pluralizer;
 
-        // ...
-    }
+/**
+ * Bootstrap any application services.
+ */
+public function boot(): void
+{
+    Pluralizer::useLanguage('spanish');
+
+    // ...
+}
+```
 
 > [!WARNING]
 > Nếu bạn tùy chỉnh ngôn ngữ của bộ quy tấc số nhiều, thì bạn cần định nghĩa lại [table names](/docs/{{version}}/eloquent#table-names) trong model Eloquent của bạn.
@@ -107,21 +127,25 @@ Bạn có thể hướng dẫn quy tắc "số nhiều" trong Laravel, được 
 
 Thông thường, các chuỗi dịch được lưu trữ trong các file trong thư mục `lang`. Trong thư mục này, cần có thư mục con cho mỗi ngôn ngữ được application của bạn hỗ trợ. Đây là cách tiếp cận mà Laravel sử dụng để quản lý các chuỗi dịch cho các tính năng được tích hợp sẵn của Laravel, chẳng hạn như thông báo lỗi validation:
 
-    /lang
-        /en
-            messages.php
-        /es
-            messages.php
+```text
+/lang
+    /en
+        messages.php
+    /es
+        messages.php
+```
 
 Tất cả các file ngôn ngữ đều trả về một mảng của các chuỗi đã được đặt key. Ví dụ:
 
-    <?php
+```php
+<?php
 
-    // lang/en/messages.php
+// lang/en/messages.php
 
-    return [
-        'welcome' => 'Welcome to our application!',
-    ];
+return [
+    'welcome' => 'Welcome to our application!',
+];
+```
 
 > [!WARNING]
 > Đối với các ngôn ngữ khác nhau theo lãnh thổ, bạn nên set tên thư mục của ngôn ngữ theo tiêu chuẩn ISO 15897. Ví dụ: "en_GB" nên được sử dụng cho tiếng Anh của nước Anh thay vì "en-gb".
@@ -148,62 +172,78 @@ Bạn không nên định nghĩa các khóa chuỗi dịch xung đột với cá
 
 Bạn có thể lấy chuỗi dịch từ các file ngôn ngữ của bạn bằng hàm helper `__`. Nếu bạn đang sử dụng "short keys" để định nghĩa các chuỗi dịch của bạn, bạn nên truyền file chứa khóa và chính khóa của nó cho hàm `__` bằng cú pháp "chấm". Ví dụ: có thể lấy chuỗi đã được dịch `welcome` từ file ngôn ngữ `lang/en/messages.php`:
 
-    echo __('messages.welcome');
+```php
+echo __('messages.welcome');
+```
 
 Nếu chuỗi dịch được chỉ định không tồn tại, hàm `__` sẽ trả về khóa của chuỗi dịch. Vì vậy, theo ví dụ trên, hàm `__` sẽ trả về `messages.welcome` nếu chuỗi dịch đó không tồn tại.
 
 Nếu bạn đang sử dụng [chuỗi dịch mặc định làm khóa dịch](#using-translation-strings-as-keys), bạn nên truyền bản dịch mặc định của chuỗi đó cho hàm `__`;
 
-    echo __('I love programming.');
+```php
+echo __('I love programming.');
+```
 
 Một lần nữa, nếu chuỗi dịch đó không tồn tại, hàm `__` sẽ trả về khóa của chuỗi dịch và nó đã được cung cấp.
 
 Nếu đang sử dụng [Blade templating engine](/docs/{{version}}/blade), bạn có thể sử dụng cú pháp echo `{{ }}` để hiển thị chuỗi dịch:
 
-    {{ __('messages.welcome') }}
+```php
+{{ __('messages.welcome') }}
+```
 
 <a name="replacing-parameters-in-translation-strings"></a>
 ### Thay thế parameter trong chuỗi translation
 
 Nếu bạn muốn, bạn có thể định nghĩa một thuộc tính thay thế trong các chuỗi translation của bạn. Tất cả những thuộc tính thay thế đều có tiền tố là `:`. Ví dụ: bạn có thể định nghĩa thông báo chào mừng với một thuộc tính thay thế name:
 
-    'welcome' => 'Welcome, :name',
+```php
+'welcome' => 'Welcome, :name',
+```
 
 Để thay đổi các thuộc tính thay thế khi lấy chuỗi translation, bạn có thể truyền một mảng các thay thế làm tham số thứ hai cho hàm `__`:
 
-    echo __('messages.welcome', ['name' => 'dayle']);
+```php
+echo __('messages.welcome', ['name' => 'dayle']);
+```
 
 Nếu biến thay thế của bạn đều là chữ in hoa hoặc chỉ viết hoa chữ cái đầu tiên, giá trị translation cũng sẽ được viết hoa tương ứng:
 
-    'welcome' => 'Welcome, :NAME', // Welcome, DAYLE
-    'goodbye' => 'Goodbye, :Name', // Goodbye, Dayle
+```php
+'welcome' => 'Welcome, :NAME', // Welcome, DAYLE
+'goodbye' => 'Goodbye, :Name', // Goodbye, Dayle
+```
 
 <a name="object-replacement-formatting"></a>
 #### Object Replacement Formatting
 
-Nếu bạn muốn cung cấp một đối tượng làm biến translation thay thế, phương thức `__toString` của đối tượng sẽ được gọi. Phương thức [`__toString`](https://www.php.net/manual/en/language.oop5.magic.php#object.tostring) là một trong những "phương thức magic" được tích hợp sẵn trong PHP. Tuy nhiên, đôi khi bạn có thể không có quyền kiểm soát đối với phương thức `__toString` của một class nhất định, chẳng hạn như khi class mà bạn đang tương tác thuộc về thư viện của third-party.
+Nếu bạn muốn cung cấp một đối tượng làm biến translation thay thế, phương thức `__toString` của đối tượng sẽ được gọi. Phương thức [__toString](https://www.php.net/manual/en/language.oop5.magic.php#object.tostring) là một trong những "phương thức magic" được tích hợp sẵn trong PHP. Tuy nhiên, đôi khi bạn có thể không có quyền kiểm soát đối với phương thức `__toString` của một class nhất định, chẳng hạn như khi class mà bạn đang tương tác thuộc về thư viện của third-party.
 
 Trong những trường hợp này, Laravel cho phép bạn đăng ký một trình xử lý định dạng tùy chỉnh cho một loại đối tượng cụ thể. Để thực hiện việc này, bạn nên gọi phương thức `stringable` của translator. Phương thức `stringable` sẽ chấp nhận một closure, phương thức này sẽ khai báo kiểu đối tượng mà nó chịu trách nhiệm định dạng. Thông thường, phương thức `stringable` nên được gọi trong phương thức `boot` của class `AppServiceProvider` trong ứng dụng của bạn:
 
-    use Illuminate\Support\Facades\Lang;
-    use Money\Money;
+```php
+use Illuminate\Support\Facades\Lang;
+use Money\Money;
 
-    /**
-     * Bootstrap any application services.
-     */
-    public function boot(): void
-    {
-        Lang::stringable(function (Money $money) {
-            return $money->formatTo('en_GB');
-        });
-    }
+/**
+ * Bootstrap any application services.
+ */
+public function boot(): void
+{
+    Lang::stringable(function (Money $money) {
+        return $money->formatTo('en_GB');
+    });
+}
+```
 
 <a name="pluralization"></a>
 ### Số nhiều
 
 Số nhiều là một vấn đề phức tạp, vì các ngôn ngữ khác nhau lại có nhiều quy tắc phức tạp cho số nhiều; Tuy nhiên, Laravel có thể giúp bạn dịch các chuỗi khác nhau dựa trên các quy tắc số nhiều mà bạn đã định nghĩa. Sử dụng một ký tự "|", bạn có thể phân biệt các dạng số ít và số nhiều của chuỗi:
 
-    'apples' => 'There is one apple|There are many apples',
+```php
+'apples' => 'There is one apple|There are many apples',
+```
 
 Tất nhiên, số nhiều cũng được hỗ trợ khi sử dụng [chuỗi dịch làm khóa](#using-translation-strings-as-keys):
 
@@ -215,21 +255,29 @@ Tất nhiên, số nhiều cũng được hỗ trợ khi sử dụng [chuỗi d�
 
 Bạn thậm chí có thể tạo ra các quy tắc số nhiều phức tạp hơn, bằng cách chỉ định các chuỗi translation cho nhiều phạm vi giá trị khác nhau:
 
-    'apples' => '{0} There are none|[1,19] There are some|[20,*] There are many',
+```php
+'apples' => '{0} There are none|[1,19] There are some|[20,*] There are many',
+```
 
 Sau khi định nghĩa chuỗi translation có nhiều tùy chọn về số nhiều, bạn có thể sử dụng hàm `trans_choice` để lấy ra chuỗi cho một "count" đã cho. Trong ví dụ này, vì count lớn hơn một, dạng số nhiều của chuỗi translation sẽ được trả về:
 
-    echo trans_choice('messages.apples', 10);
+```php
+echo trans_choice('messages.apples', 10);
+```
 
 Bạn cũng có thể định nghĩa các thuộc tính thay thế trong các chuỗi số nhiều. Những thuộc tính thay thế này có thể được thay thế bằng cách truyền một mảng làm tham số thứ ba cho hàm `trans_choice`:
 
-    'minutes_ago' => '{1} :value minute ago|[2,*] :value minutes ago',
+```php
+'minutes_ago' => '{1} :value minute ago|[2,*] :value minutes ago',
 
-    echo trans_choice('time.minutes_ago', 5, ['value' => 5]);
+echo trans_choice('time.minutes_ago', 5, ['value' => 5]);
+```
 
 Nếu bạn muốn hiển thị giá trị integer đã được truyền vào hàm `trans_choice`, bạn có thể sử dụng thuộc tính thay thế `:count` có sẵn:
 
-    'apples' => '{0} There are none|{1} There is one|[2,*] There are :count',
+```php
+'apples' => '{0} There are none|{1} There is one|[2,*] There are :count',
+```
 
 <a name="overriding-package-language-files"></a>
 ## Ghi đè package file language

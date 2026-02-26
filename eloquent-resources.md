@@ -49,201 +49,16 @@ php artisan make:resource UserCollection
 
 Trước khi đi sâu vào tất cả các tùy chọn có sẵn cho bạn khi bạn viết resource, trước tiên chúng ta hãy xem về cách sử dụng resource trong Laravel. Một class resource sẽ đại diện cho một model cần chuyển đổi thành dạng JSON. Ví dụ, đây là một resource class `UserResource` đơn giản:
 
-    <?php
+```php
+<?php
 
-    namespace App\Http\Resources;
+namespace App\Http\Resources;
 
-    use Illuminate\Http\Request;
-    use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\JsonResource;
 
-    class UserResource extends JsonResource
-    {
-        /**
-         * Transform the resource into an array.
-         *
-         * @return array<string, mixed>
-         */
-        public function toArray(Request $request): array
-        {
-            return [
-                'id' => $this->id,
-                'name' => $this->name,
-                'email' => $this->email,
-                'created_at' => $this->created_at,
-                'updated_at' => $this->updated_at,
-            ];
-        }
-    }
-
-Mọi class resource đều định nghĩa một phương thức `toArray` trả về mảng các thuộc tính sẽ được chuyển đổi thành JSON trước khi resource đó được trả về dưới dạng response từ một route hoặc một phương thức trong controller.
-
-Lưu ý rằng chúng ta có thể truy cập vào các thuộc tính của model trực tiếp từ biến `$this`. Điều này là do một resource class sẽ tự động chuyển các thuộc tính và các phương thức xuống model để dễ dàng truy cập thuận tiện hơn. Sau khi resource đã được định nghĩa xong, nó có thể được trả về từ một route hoặc controller. Resource chấp nhận instance model thông qua hàm khởi tạo của nó:
-
-    use App\Http\Resources\UserResource;
-    use App\Models\User;
-
-    Route::get('/user/{id}', function (string $id) {
-        return new UserResource(User::findOrFail($id));
-    });
-
-<a name="resource-collections"></a>
-### Resource Collections
-
-Nếu bạn đang trả về một resource collection hoặc một response đang được phân trang, bạn nên sử dụng phương thức `collection` được cung cấp bởi resource class khi tạo instance resource trong route hoặc controller của bạn:
-
-    use App\Http\Resources\UserResource;
-    use App\Models\User;
-
-    Route::get('/users', function () {
-        return UserResource::collection(User::all());
-    });
-
-Chú ý rằng điều này sẽ không cho phép bạn thêm bất kỳ dữ liệu meta tuỳ chỉnh nào để có thể được trả về cùng với collection của bạn. Nếu bạn muốn tùy chỉnh response của resource collection, bạn có thể tạo một resource chuyên dụng để tạo collection:
-
-```shell
-php artisan make:resource UserCollection
-```
-
-Khi class resource collection đã được tạo, bạn có thể dễ dàng định nghĩa bất kỳ dữ liệu meta nào cần có trong response:
-
-    <?php
-
-    namespace App\Http\Resources;
-
-    use Illuminate\Http\Request;
-    use Illuminate\Http\Resources\Json\ResourceCollection;
-
-    class UserCollection extends ResourceCollection
-    {
-        /**
-         * Transform the resource collection into an array.
-         *
-         * @return array<int|string, mixed>
-         */
-        public function toArray(Request $request): array
-        {
-            return [
-                'data' => $this->collection,
-                'links' => [
-                    'self' => 'link-value',
-                ],
-            ];
-        }
-    }
-
-Sau khi định nghĩa xong resource collection của bạn, nó có thể được trả về từ một route hoặc một controller:
-
-    use App\Http\Resources\UserCollection;
-    use App\Models\User;
-
-    Route::get('/users', function () {
-        return new UserCollection(User::all());
-    });
-
-<a name="preserving-collection-keys"></a>
-#### Preserving Collection Keys
-
-Khi trả về một resource collection từ một route, Laravel sẽ reset lại các khóa của collection để chúng có thứ tự sắp xếp từ 0. Tuy nhiên, bạn có thể thêm thuộc tính `preserveKeys` vào class resource của bạn để cho biết liệu khóa collection có được giữ nguyên hay không:
-
-    <?php
-
-    namespace App\Http\Resources;
-
-    use Illuminate\Http\Resources\Json\JsonResource;
-
-    class UserResource extends JsonResource
-    {
-        /**
-         * Indicates if the resource's collection keys should be preserved.
-         *
-         * @var bool
-         */
-        public $preserveKeys = true;
-    }
-
-Khi thuộc tính `secureKeys` được set thành `true`, các khóa của collection sẽ được giữ nguyên khi collection được trả về từ mmột route hoặc một controller:
-
-    use App\Http\Resources\UserResource;
-    use App\Models\User;
-
-    Route::get('/users', function () {
-        return UserResource::collection(User::all()->keyBy->id);
-    });
-
-<a name="customizing-the-underlying-resource-class"></a>
-#### Tùy biến Resource Class cơ bản
-
-Thông thường, thuộc tính `$this->collection` của một resource collection sẽ được tự động nối với kết quả của việc ánh xạ của từng item của collection với class resource của nó. Class resource được giả định là tên class của collection mà không có chuỗi `Collection` ở cuối tên class. Ngoài ra, tùy thuộc vào sở thích cá nhân của bạn, resource class có thể có hoặc không có hậu tố `Resource`.
-
-Ví dụ: `UserCollection` sẽ thử ánh xạ các instance user vào một resource có thể `UserResource`. Để tùy biến hành động này, bạn có thể ghi đè thuộc tính `$collects` của resource collection của bạn:
-
-    <?php
-
-    namespace App\Http\Resources;
-
-    use Illuminate\Http\Resources\Json\ResourceCollection;
-
-    class UserCollection extends ResourceCollection
-    {
-        /**
-         * The resource that this resource collects.
-         *
-         * @var string
-         */
-        public $collects = Member::class;
-    }
-
-<a name="writing-resources"></a>
-## Viết Resources
-
-> [!NOTE]
-> Nếu bạn chưa đọc phần [khái niệm tổng quan](#concept-overview), bạn được khuyến khích đọc nó trước khi tiếp tục với phần này.
-
-Resource chỉ cần chuyển đổi một model thành một mảng. Vì vậy, mỗi resource chứa một phương thức `toArray` để giúp chuyển các thuộc tính của model của bạn thành một mảng thân thiện với API để có thể được trả về từ các route hoặc controller của ứng dụng của bạn:
-
-    <?php
-
-    namespace App\Http\Resources;
-
-    use Illuminate\Http\Request;
-    use Illuminate\Http\Resources\Json\JsonResource;
-
-    class UserResource extends JsonResource
-    {
-        /**
-         * Transform the resource into an array.
-         *
-         * @return array<string, mixed>
-         */
-        public function toArray(Request $request): array
-        {
-            return [
-                'id' => $this->id,
-                'name' => $this->name,
-                'email' => $this->email,
-                'created_at' => $this->created_at,
-                'updated_at' => $this->updated_at,
-            ];
-        }
-    }
-
-Khi một resource đã được định nghĩa xong, nó có thể được trả về trực tiếp từ một route hoặc một controller:
-
-    use App\Http\Resources\UserResource;
-    use App\Models\User;
-
-    Route::get('/user/{id}', function (string $id) {
-        return new UserResource(User::findOrFail($id));
-    });
-
-<a name="relationships"></a>
-#### Relationships
-
-Nếu bạn muốn thêm các quan hệ vào trong một response của bạn, bạn có thể thêm chúng vào mảng được trả về trong phương thức `toArray` của resource của bạn. Trong ví dụ này, chúng ra sẽ sử dụng phương thức `collection` của resource `PostResource` để thêm các post trên blog của người dùng vào response của resource:
-
-    use App\Http\Resources\PostResource;
-    use Illuminate\Http\Request;
-
+class UserResource extends JsonResource
+{
     /**
      * Transform the resource into an array.
      *
@@ -255,11 +70,292 @@ Nếu bạn muốn thêm các quan hệ vào trong một response của bạn, b
             'id' => $this->id,
             'name' => $this->name,
             'email' => $this->email,
-            'posts' => PostResource::collection($this->posts),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];
     }
+}
+```
+
+Mọi class resource đều định nghĩa một phương thức `toArray` trả về mảng các thuộc tính sẽ được chuyển đổi thành JSON trước khi resource đó được trả về dưới dạng response từ một route hoặc một phương thức trong controller.
+
+Lưu ý rằng chúng ta có thể truy cập vào các thuộc tính của model trực tiếp từ biến `$this`. Điều này là do một resource class sẽ tự động chuyển các thuộc tính và các phương thức xuống model để dễ dàng truy cập thuận tiện hơn. Sau khi resource đã được định nghĩa xong, nó có thể được trả về từ một route hoặc controller. Resource chấp nhận instance model thông qua hàm khởi tạo của nó:
+
+```php
+use App\Http\Resources\UserResource;
+use App\Models\User;
+
+Route::get('/user/{id}', function (string $id) {
+    return new UserResource(User::findOrFail($id));
+});
+```
+
+Để thuận tiện, bạn có thể sử dụng phương thức `toResource` của model, phương thức này sẽ sử dụng các quy ước của framework để tự động tìm ra resource tương ứng của model đó:
+
+```php
+return User::findOrFail($id)->toResource();
+```
+
+Khi gọi phương thức `toResource`, Laravel sẽ cố gắng tìm một resource giống với tên của model và có thể có hậu tố `Resource` nằm trong namespace `Http\Resources` gần nhất với namespace của model.
+
+Nếu resource class của bạn không tuân theo quy ước đặt tên này hoặc nằm trong một namespace khác, bạn có thể chỉ định resource mặc định cho model bằng cách sử dụng attribute `UseResource`:
+
+```php
+<?php
+
+namespace App\Models;
+
+use App\Http\Resources\CustomUserResource;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Attributes\UseResource;
+
+#[UseResource(CustomUserResource::class)]
+class User extends Model
+{
+    // ...
+}
+```
+
+Ngoài ra, bạn có thể chỉ định resource class bằng cách truyền nó vào phương thức `toResource`:
+
+```php
+return User::findOrFail($id)->toResource(CustomUserResource::class);
+```
+
+<a name="resource-collections"></a>
+### Resource Collections
+
+Nếu bạn đang trả về một resource collection hoặc một response đang được phân trang, bạn nên sử dụng phương thức `collection` được cung cấp bởi resource class khi tạo instance resource trong route hoặc controller của bạn:
+
+```php
+use App\Http\Resources\UserResource;
+use App\Models\User;
+
+Route::get('/users', function () {
+    return UserResource::collection(User::all());
+});
+```
+
+Hoặc, để thuận tiện, bạn có thể sử dụng phương thức `toResourceCollection` của collection Eloquent, phương thức này sẽ sử dụng các quy ước của framework để tự động tìm ra resource collection tương ứng của model đó:
+
+```php
+return User::all()->toResourceCollection();
+```
+
+Khi gọi phương thức `toResourceCollection`, Laravel sẽ cố gắng tìm kiếm một resource collection giống với tên của model và có hậu tố `Collection` bên trong namespace `Http\Resources` gần nhất với namespace của model.
+
+Nếu resource collection class của bạn không tuân theo quy ước đặt tên này hoặc nằm trong một namespace khác, bạn có thể chỉ định resource collection mặc định cho model bằng cách sử dụng attribute `UseResourceCollection`:
+
+```php
+<?php
+
+namespace App\Models;
+
+use App\Http\Resources\CustomUserCollection;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Attributes\UseResourceCollection;
+
+#[UseResourceCollection(CustomUserCollection::class)]
+class User extends Model
+{
+    // ...
+}
+```
+
+Ngoài ra, bạn có thể chỉ định resource collection class bằng cách truyền nó vào phương thức `toResourceCollection`:
+
+```php
+return User::all()->toResourceCollection(CustomUserCollection::class);
+```
+
+<a name="custom-resource-collections"></a>
+#### Custom Resource Collections
+
+Mặc định, resource collections sẽ không cho phép bạn thêm bất kỳ dữ liệu meta tuỳ chỉnh nào để có thể được trả về cùng với collection của bạn. Nếu bạn muốn tùy chỉnh response của resource collection, bạn có thể tạo một resource chuyên dụng để tạo collection:
+
+```shell
+php artisan make:resource UserCollection
+```
+
+Khi class resource collection đã được tạo, bạn có thể dễ dàng định nghĩa bất kỳ dữ liệu meta nào cần có trong response:
+
+```php
+<?php
+
+namespace App\Http\Resources;
+
+use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\ResourceCollection;
+
+class UserCollection extends ResourceCollection
+{
+    /**
+     * Transform the resource collection into an array.
+     *
+     * @return array<int|string, mixed>
+     */
+    public function toArray(Request $request): array
+    {
+        return [
+            'data' => $this->collection,
+            'links' => [
+                'self' => 'link-value',
+            ],
+        ];
+    }
+}
+```
+
+Sau khi định nghĩa xong resource collection của bạn, nó có thể được trả về từ một route hoặc một controller:
+
+```php
+use App\Http\Resources\UserCollection;
+use App\Models\User;
+
+Route::get('/users', function () {
+    return new UserCollection(User::all());
+});
+```
+
+Hoặc, để thuận tiện, bạn có thể sử dụng phương thức `toResourceCollection` của collection Eloquent, phương thức này sẽ sử dụng các quy ước của framework để tự động tìm ra resource collection tương ứng của model đó:
+
+```php
+return User::all()->toResourceCollection();
+```
+
+Khi gọi phương thức `toResourceCollection`, Laravel sẽ cố gắng tìm một resource collection giống với tên của model và có hậu tố là `Collection` bên trong namespace `Http\Resources` gần nhất với namespace của model đó.
+
+<a name="preserving-collection-keys"></a>
+#### Preserving Collection Keys
+
+Khi trả về một resource collection từ một route, Laravel sẽ reset lại các khóa của collection để chúng có thứ tự sắp xếp từ 0. Tuy nhiên, bạn có thể thêm thuộc tính `preserveKeys` vào class resource của bạn để cho biết liệu khóa collection có được giữ nguyên hay không:
+
+```php
+<?php
+
+namespace App\Http\Resources;
+
+use Illuminate\Http\Resources\Json\JsonResource;
+
+class UserResource extends JsonResource
+{
+    /**
+     * Indicates if the resource's collection keys should be preserved.
+     *
+     * @var bool
+     */
+    public $preserveKeys = true;
+}
+```
+
+Khi thuộc tính `secureKeys` được set thành `true`, các khóa của collection sẽ được giữ nguyên khi collection được trả về từ mmột route hoặc một controller:
+
+```php
+use App\Http\Resources\UserResource;
+use App\Models\User;
+
+Route::get('/users', function () {
+    return UserResource::collection(User::all()->keyBy->id);
+});
+```
+
+<a name="customizing-the-underlying-resource-class"></a>
+#### Tùy biến Resource Class cơ bản
+
+Thông thường, thuộc tính `$this->collection` của một resource collection sẽ được tự động nối với kết quả của việc ánh xạ của từng item của collection với class resource của nó. Class resource được giả định là tên class của collection mà không có chuỗi `Collection` ở cuối tên class. Ngoài ra, tùy thuộc vào sở thích cá nhân của bạn, resource class có thể có hoặc không có hậu tố `Resource`.
+
+Ví dụ: `UserCollection` sẽ thử ánh xạ các instance user vào một resource có thể `UserResource`. Để tùy biến hành động này, bạn có thể ghi đè thuộc tính `$collects` của resource collection của bạn:
+
+```php
+<?php
+
+namespace App\Http\Resources;
+
+use Illuminate\Http\Resources\Json\ResourceCollection;
+
+class UserCollection extends ResourceCollection
+{
+    /**
+     * The resource that this resource collects.
+     *
+     * @var string
+     */
+    public $collects = Member::class;
+}
+```
+
+<a name="writing-resources"></a>
+## Viết Resources
+
+> [!NOTE]
+> Nếu bạn chưa đọc phần [khái niệm tổng quan](#concept-overview), bạn được khuyến khích đọc nó trước khi tiếp tục với phần này.
+
+Resource chỉ cần chuyển đổi một model thành một mảng. Vì vậy, mỗi resource chứa một phương thức `toArray` để giúp chuyển các thuộc tính của model của bạn thành một mảng thân thiện với API để có thể được trả về từ các route hoặc controller của ứng dụng của bạn:
+
+```php
+<?php
+
+namespace App\Http\Resources;
+
+use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\JsonResource;
+
+class UserResource extends JsonResource
+{
+    /**
+     * Transform the resource into an array.
+     *
+     * @return array<string, mixed>
+     */
+    public function toArray(Request $request): array
+    {
+        return [
+            'id' => $this->id,
+            'name' => $this->name,
+            'email' => $this->email,
+            'created_at' => $this->created_at,
+            'updated_at' => $this->updated_at,
+        ];
+    }
+}
+```
+
+Khi một resource đã được định nghĩa xong, nó có thể được trả về trực tiếp từ một route hoặc một controller:
+
+```php
+use App\Models\User;
+
+Route::get('/user/{id}', function (string $id) {
+    return new UserResource(User::findOrFail($id));
+});
+```
+
+<a name="relationships"></a>
+#### Relationships
+
+Nếu bạn muốn thêm các quan hệ vào trong một response của bạn, bạn có thể thêm chúng vào mảng được trả về trong phương thức `toArray` của resource của bạn. Trong ví dụ này, chúng ra sẽ sử dụng phương thức `collection` của resource `PostResource` để thêm các post trên blog của người dùng vào response của resource:
+
+```php
+use App\Http\Resources\PostResource;
+use Illuminate\Http\Request;
+
+/**
+ * Transform the resource into an array.
+ *
+ * @return array<string, mixed>
+ */
+public function toArray(Request $request): array
+{
+    return [
+        'id' => $this->id,
+        'name' => $this->name,
+        'email' => $this->email,
+        'posts' => PostResource::collection($this->posts),
+        'created_at' => $this->created_at,
+        'updated_at' => $this->updated_at,
+    ];
+}
+```
 
 > [!NOTE]
 > Nếu bạn chỉ thêm các quan hệ chỉ khi chúng đã được load, hãy xem tài liệu về [điều kiện cho quan hệ](#conditional-relationships).
@@ -267,50 +363,63 @@ Nếu bạn muốn thêm các quan hệ vào trong một response của bạn, b
 <a name="writing-resource-collections"></a>
 #### Resource Collections
 
-Trong khi các resource sẽ chuyển một model thành một mảng, thì các resource collection sẽ chuyển một collection của model thành một mảng. Tuy nhiên, không nhất thiết phải định nghĩa một class resource collection cho từng loại model của bạn vì tất cả các resource đều được cung cấp một phương thức `collection` để tạo các resource collection "ad-hoc" một cách nhanh chóng:
+Trong khi các resource sẽ chuyển một model thành một mảng, thì các resource collection sẽ chuyển một collection của model thành một mảng. Tuy nhiên, không nhất thiết phải định nghĩa một class resource collection cho từng loại model của bạn vì tất cả các collection eloquent model đều được cung cấp một phương thức `toResourceCollection` để tạo các resource collection "ad-hoc" một cách nhanh chóng:
 
-    use App\Http\Resources\UserResource;
-    use App\Models\User;
+```php
+use App\Models\User;
 
-    Route::get('/users', function () {
-        return UserResource::collection(User::all());
-    });
+Route::get('/users', function () {
+    return User::all()->toResourceCollection();
+});
+```
 
 Tuy nhiên, nếu bạn cần tùy chỉnh dữ liệu meta được trả về cùng với collection, bạn sẽ cần phải định nghĩa riêng một resource collection của chính bạn:
 
-    <?php
+```php
+<?php
 
-    namespace App\Http\Resources;
+namespace App\Http\Resources;
 
-    use Illuminate\Http\Request;
-    use Illuminate\Http\Resources\Json\ResourceCollection;
+use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\ResourceCollection;
 
-    class UserCollection extends ResourceCollection
+class UserCollection extends ResourceCollection
+{
+    /**
+     * Transform the resource collection into an array.
+     *
+     * @return array<string, mixed>
+     */
+    public function toArray(Request $request): array
     {
-        /**
-         * Transform the resource collection into an array.
-         *
-         * @return array<string, mixed>
-         */
-        public function toArray(Request $request): array
-        {
-            return [
-                'data' => $this->collection,
-                'links' => [
-                    'self' => 'link-value',
-                ],
-            ];
-        }
+        return [
+            'data' => $this->collection,
+            'links' => [
+                'self' => 'link-value',
+            ],
+        ];
     }
+}
+```
 
 Giống như resource, resource collection có thể được trả về trực tiếp từ các route hoặc controller:
 
-    use App\Http\Resources\UserCollection;
-    use App\Models\User;
+```php
+use App\Http\Resources\UserCollection;
+use App\Models\User;
 
-    Route::get('/users', function () {
-        return new UserCollection(User::all());
-    });
+Route::get('/users', function () {
+    return new UserCollection(User::all());
+});
+```
+
+Hoặc, để thuận tiện, bạn có thể sử dụng phương thức `toResourceCollection` của collection Eloquent, phương thức này sẽ sử dụng các quy ước của framework để tự động tìm ra resource collection tương ứng của model đó:
+
+```php
+return User::all()->toResourceCollection();
+```
+
+Khi gọi phương thức `toResourceCollection`, Laravel sẽ cố gắng tìm một resource collection giống với tên của model và có hậu tố là `Collection` trong namespace `Http\Resources` gần nhất với namespace của model đó.
 
 <a name="data-wrapping"></a>
 ### Data Wrapping
@@ -336,31 +445,33 @@ Mặc định, resource ngoài cùng của bạn sẽ được bao bọc bởi m
 
 Nếu bạn muốn vô hiệu hóa việc bao bọc resource này, bạn nên gọi phương thức `withoutWrapping` trên class `Illuminate\Http\Resources\Json\JsonResource`. Thông thường, bạn nên gọi phương thức này từ `AppServiceProvider` hoặc từ một [service provider](/docs/{{version}}/providers) khác để được load cho mọi request trong application của bạn:
 
-    <?php
+```php
+<?php
 
-    namespace App\Providers;
+namespace App\Providers;
 
-    use Illuminate\Http\Resources\Json\JsonResource;
-    use Illuminate\Support\ServiceProvider;
+use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\ServiceProvider;
 
-    class AppServiceProvider extends ServiceProvider
+class AppServiceProvider extends ServiceProvider
+{
+    /**
+     * Register any application services.
+     */
+    public function register(): void
     {
-        /**
-         * Register any application services.
-         */
-        public function register(): void
-        {
-            // ...
-        }
-
-        /**
-         * Bootstrap any application services.
-         */
-        public function boot(): void
-        {
-            JsonResource::withoutWrapping();
-        }
+        // ...
     }
+
+    /**
+     * Bootstrap any application services.
+     */
+    public function boot(): void
+    {
+        JsonResource::withoutWrapping();
+    }
+}
+```
 
 > [!WARNING]
 > Phương thức `withoutWrapping` chỉ ảnh hưởng đến response ở ngoài cùng và sẽ không xóa các key `data` mà bạn đã thêm vào bên trong resource collection.
@@ -372,24 +483,26 @@ Bạn có toàn quyền tự do định nghĩa các quan hệ của resource c�
 
 Bạn có thể tự hỏi liệu rằng điều này có khiến resource ngoài cùng của bạn có bị bao bọc trong hai key `data`. Đừng lo lắng, Laravel sẽ không bao giờ để resource của bạn vô tình bị bao bọc lặp lại như vậy, vì vậy bạn không phải lo lắng về mức độ lồng nhau của resource collection mà bạn đang chuyển đổi:
 
-    <?php
+```php
+<?php
 
-    namespace App\Http\Resources;
+namespace App\Http\Resources;
 
-    use Illuminate\Http\Resources\Json\ResourceCollection;
+use Illuminate\Http\Resources\Json\ResourceCollection;
 
-    class CommentsCollection extends ResourceCollection
+class CommentsCollection extends ResourceCollection
+{
+    /**
+     * Transform the resource collection into an array.
+     *
+     * @return array<string, mixed>
+     */
+    public function toArray(Request $request): array
     {
-        /**
-         * Transform the resource collection into an array.
-         *
-         * @return array<string, mixed>
-         */
-        public function toArray(Request $request): array
-        {
-            return ['data' => $this->collection];
-        }
+        return ['data' => $this->collection];
     }
+}
+```
 
 <a name="data-wrapping-and-pagination"></a>
 #### Data Wrapping And Phân trang
@@ -433,12 +546,20 @@ Khi trả về một collection được phân trang thông qua một response r
 
 Bạn có thể truyền một instance phân trang của Laravel cho phương thức `collection` của một resource hoặc một resource collection tùy biến:
 
-    use App\Http\Resources\UserCollection;
-    use App\Models\User;
+```php
+use App\Http\Resources\UserCollection;
+use App\Models\User;
 
-    Route::get('/users', function () {
-        return new UserCollection(User::paginate());
-    });
+Route::get('/users', function () {
+    return new UserCollection(User::paginate());
+});
+```
+
+Hoặc, để thuận tiện, bạn có thể sử dụng phương thức `toResourceCollection` của paginator, phương thức này sẽ sử dụng các quy ước của framework để tự động tìm kiếm resource collection tương ứng của model được phân trang:
+
+```php
+return User::paginate()->toResourceCollection();
+```
 
 Các response được phân trang luôn chứa các key `meta` và `links` cùng với các thông tin về trạng thái của phân trang:
 
@@ -479,83 +600,95 @@ Các response được phân trang luôn chứa các key `meta` và `links` cùn
 
 Nếu bạn muốn tùy chỉnh thông tin được chứa trong các key `links` hoặc `meta` của response phân trang, bạn có thể định nghĩa phương thức `paginationInformation` trên các resource. Phương thức này sẽ nhận vào dữ liệu `$paginated` và một mảng thông tin `$default` có chứa các key `links` và `meta`:
 
-    /**
-     * Customize the pagination information for the resource.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  array $paginated
-     * @param  array $default
-     * @return array
-     */
-    public function paginationInformation($request, $paginated, $default)
-    {
-        $default['links']['custom'] = 'https://example.com';
+```php
+/**
+ * Customize the pagination information for the resource.
+ *
+ * @param  \Illuminate\Http\Request  $request
+ * @param  array  $paginated
+ * @param  array  $default
+ * @return array
+ */
+public function paginationInformation($request, $paginated, $default)
+{
+    $default['links']['custom'] = 'https://example.com';
 
-        return $default;
-    }
+    return $default;
+}
+```
 
 <a name="conditional-attributes"></a>
 ### Điều kiện cho thuộc tính
 
 Đôi khi bạn có thể chỉ muốn thêm một số thuộc tính vào trong một response resource nếu một điều kiện được đáp ứng. Ví dụ: bạn có thể chỉ muốn thêm một giá trị nếu người dùng hiện tại đang là "quản trị viên". Laravel cung cấp nhiều phương thức helper để hỗ trợ cho bạn trong những tình huống này. Phương thức `when` có thể được sử dụng để thêm một điều kiện cho một thuộc tính vào response resource:
 
-    /**
-     * Transform the resource into an array.
-     *
-     * @return array<string, mixed>
-     */
-    public function toArray(Request $request): array
-    {
-        return [
-            'id' => $this->id,
-            'name' => $this->name,
-            'email' => $this->email,
-            'secret' => $this->when($request->user()->isAdmin(), 'secret-value'),
-            'created_at' => $this->created_at,
-            'updated_at' => $this->updated_at,
-        ];
-    }
+```php
+/**
+ * Transform the resource into an array.
+ *
+ * @return array<string, mixed>
+ */
+public function toArray(Request $request): array
+{
+    return [
+        'id' => $this->id,
+        'name' => $this->name,
+        'email' => $this->email,
+        'secret' => $this->when($request->user()->isAdmin(), 'secret-value'),
+        'created_at' => $this->created_at,
+        'updated_at' => $this->updated_at,
+    ];
+}
+```
 
 Trong ví dụ này, khóa `secret` sẽ chỉ được trả về trong response resource nếu phương thức `$this->isAdmin()` của người dùng hiện tại trả về giá trị `true`. Nếu phương thức trả về giá trị `false`, thì khóa `secret` sẽ bị xóa khỏi response resource trước khi nó được gửi về cho client. Phương thức `when` cho phép bạn định nghĩa một resource mà không cần dùng đến các câu lệnh có điều kiện khi xây dựng một mảng.
 
 Phương thức `when` cũng chấp nhận một closure là tham số thứ hai của nó, cho phép bạn tính toán giá trị trả về nếu điều kiện đã cho là `true`:
 
-    'secret' => $this->when($request->user()->isAdmin(), function () {
-        return 'secret-value';
-    }),
+```php
+'secret' => $this->when($request->user()->isAdmin(), function () {
+    return 'secret-value';
+}),
+```
 
 Phương thức `whenHas` có thể được sử dụng để chứa một thuộc tính nếu nó thực sự có trên model:
 
-    'name' => $this->whenHas('name'),
+```php
+'name' => $this->whenHas('name'),
+```
 
 Ngoài ra, phương thức `whenNotNull` có thể được sử dụng để đưa một thuộc tính vào resource response nếu thuộc tính đó không rỗng:
 
-    'name' => $this->whenNotNull($this->name),
+```php
+'name' => $this->whenNotNull($this->name),
+```
 
 <a name="merging-conditional-attributes"></a>
 #### Merging Điều kiện cho thuộc tính
 
 Thỉnh thoảng bạn có thể có một số thuộc tính chỉ được đưa vào trong một response resource dựa trên cùng một điều kiện nào đó. Trong trường hợp này, bạn có thể sử dụng phương thức `mergeWhen` để thêm các thuộc tính vào trong response chỉ khi một điều kiện là `true`:
 
-    /**
-     * Transform the resource into an array.
-     *
-     * @return array<string, mixed>
-     */
-    public function toArray(Request $request): array
-    {
-        return [
-            'id' => $this->id,
-            'name' => $this->name,
-            'email' => $this->email,
-            $this->mergeWhen($request->user()->isAdmin(), [
-                'first-secret' => 'value',
-                'second-secret' => 'value',
-            ]),
-            'created_at' => $this->created_at,
-            'updated_at' => $this->updated_at,
-        ];
-    }
+```php
+/**
+ * Transform the resource into an array.
+ *
+ * @return array<string, mixed>
+ */
+public function toArray(Request $request): array
+{
+    return [
+        'id' => $this->id,
+        'name' => $this->name,
+        'email' => $this->email,
+        $this->mergeWhen($request->user()->isAdmin(), [
+            'first-secret' => 'value',
+            'second-secret' => 'value',
+        ]),
+        'created_at' => $this->created_at,
+        'updated_at' => $this->updated_at,
+    ];
+}
+```
 
 Một lần nữa, nếu điều kiện trả về giá trị là `false`, các thuộc tính này sẽ bị xóa ra khỏi response resource trước khi nó được gửi về client.
 
@@ -569,24 +702,26 @@ Ngoài các thuộc tính load có điều kiện, bạn cũng có thể thêm c
 
 Phương thức `whenLoaded` có thể được sử dụng để load một quan hệ theo điều kiện. Để tránh load các quan hệ không cần thiết, phương thức này chấp nhận tên của quan hệ thay vì chính quan hệ đó:
 
-    use App\Http\Resources\PostResource;
+```php
+use App\Http\Resources\PostResource;
 
-    /**
-     * Transform the resource into an array.
-     *
-     * @return array<string, mixed>
-     */
-    public function toArray(Request $request): array
-    {
-        return [
-            'id' => $this->id,
-            'name' => $this->name,
-            'email' => $this->email,
-            'posts' => PostResource::collection($this->whenLoaded('posts')),
-            'created_at' => $this->created_at,
-            'updated_at' => $this->updated_at,
-        ];
-    }
+/**
+ * Transform the resource into an array.
+ *
+ * @return array<string, mixed>
+ */
+public function toArray(Request $request): array
+{
+    return [
+        'id' => $this->id,
+        'name' => $this->name,
+        'email' => $this->email,
+        'posts' => PostResource::collection($this->whenLoaded('posts')),
+        'created_at' => $this->created_at,
+        'updated_at' => $this->updated_at,
+    ];
+}
+```
 
 Trong ví dụ này, nếu quan hệ chưa được load, thì khóa `posts` sẽ bị xóa bỏ ra khỏi response resource trước khi nó được gửi về client.
 
@@ -595,26 +730,30 @@ Trong ví dụ này, nếu quan hệ chưa được load, thì khóa `posts` s�
 
 Ngoài điều kiện cho quan hệ, bạn có thể thêm "counts" quan hệ trên các resource response của bạn dựa trên việc count của quan hệ đó đã được load trên model hay chưa:
 
-    new UserResource($user->loadCount('posts'));
+```php
+new UserResource($user->loadCount('posts'));
+```
 
 Phương thức `whenCounted` có thể được sử dụng để đưa count quan hệ vào resource response của bạn một cách có điều kiện. Phương thức này tránh việc chứa thuộc tính một cách không cần thiết nếu không có count quan hệ đó:
 
-    /**
-     * Transform the resource into an array.
-     *
-     * @return array<string, mixed>
-     */
-    public function toArray(Request $request): array
-    {
-        return [
-            'id' => $this->id,
-            'name' => $this->name,
-            'email' => $this->email,
-            'posts_count' => $this->whenCounted('posts'),
-            'created_at' => $this->created_at,
-            'updated_at' => $this->updated_at,
-        ];
-    }
+```php
+/**
+ * Transform the resource into an array.
+ *
+ * @return array<string, mixed>
+ */
+public function toArray(Request $request): array
+{
+    return [
+        'id' => $this->id,
+        'name' => $this->name,
+        'email' => $this->email,
+        'posts_count' => $this->whenCounted('posts'),
+        'created_at' => $this->created_at,
+        'updated_at' => $this->updated_at,
+    ];
+}
+```
 
 Trong ví dụ này, nếu count quan hệ `posts` chưa được load, khóa `posts_count` sẽ bị xóa khỏi resource response trước khi nó được gửi đến client.
 
@@ -632,65 +771,73 @@ Các loại tính toán khác, chẳng hạn như `avg`, `sum`, `min` và `max` 
 
 Ngoài việc thêm các thông tin quan hệ có điều kiện vào trong các response resource của bạn, bạn cũng có thể thêm các điều kiện cho dữ liệu từ các bảng trung gian của quan hệ nhiều-nhiều bằng cách sử dụng phương thức `whenPivotLoaded`. Phương thức `whenPivotLoaded` chấp nhận tên của bảng pivot làm tham số đầu tiên. Tham số thứ hai phải là một closure sẽ trả về giá trị được trả về nếu thông tin pivot đó tồn tại trên model:
 
-    /**
-     * Transform the resource into an array.
-     *
-     * @return array<string, mixed>
-     */
-    public function toArray(Request $request): array
-    {
-        return [
-            'id' => $this->id,
-            'name' => $this->name,
-            'expires_at' => $this->whenPivotLoaded('role_user', function () {
-                return $this->pivot->expires_at;
-            }),
-        ];
-    }
+```php
+/**
+ * Transform the resource into an array.
+ *
+ * @return array<string, mixed>
+ */
+public function toArray(Request $request): array
+{
+    return [
+        'id' => $this->id,
+        'name' => $this->name,
+        'expires_at' => $this->whenPivotLoaded('role_user', function () {
+            return $this->pivot->expires_at;
+        }),
+    ];
+}
+```
 
 Nếu quan hệ của bạn đang sử dụng một [model bảng trung gian tùy chỉnh](/docs/{{version}}/eloquent-relationships#defining-custom-intermediate-table-models), bạn có thể truyền một instance của model bảng trung gian làm tham số đầu tiên cho phương thức `whenPivotLoaded`:
 
-    'expires_at' => $this->whenPivotLoaded(new Membership, function () {
-        return $this->pivot->expires_at;
-    }),
+```php
+'expires_at' => $this->whenPivotLoaded(new Membership, function () {
+    return $this->pivot->expires_at;
+}),
+```
 
 Nếu bảng trung gian của bạn đang sử dụng một tên accessor khác không phải là `pivot`, bạn có thể sử dụng phương thức `whenPivotLoadedAs`:
 
-    /**
-     * Transform the resource into an array.
-     *
-     * @return array<string, mixed>
-     */
-    public function toArray(Request $request): array
-    {
-        return [
-            'id' => $this->id,
-            'name' => $this->name,
-            'expires_at' => $this->whenPivotLoadedAs('subscription', 'role_user', function () {
-                return $this->subscription->expires_at;
-            }),
-        ];
-    }
+```php
+/**
+ * Transform the resource into an array.
+ *
+ * @return array<string, mixed>
+ */
+public function toArray(Request $request): array
+{
+    return [
+        'id' => $this->id,
+        'name' => $this->name,
+        'expires_at' => $this->whenPivotLoadedAs('subscription', 'role_user', function () {
+            return $this->subscription->expires_at;
+        }),
+    ];
+}
+```
 
 <a name="adding-meta-data"></a>
 ### Thêm Meta Data
 
 Một số tiêu chuẩn API JSON sẽ yêu cầu thêm dữ liệu meta vào các response của resource và resource collection của bạn. Điều này thường chứa những thông tin như `links` đến resource hoặc resource quan hệ hoặc dữ liệu meta về chính resource đó. Nếu bạn cần trả về thêm dữ liệu meta cho một resource, hãy cho nó vào phương thức `toArray` của bạn. Ví dụ: bạn có thể chứa thông tin `links` khi chuyển đổi một resource collection:
 
-    /**
-     * Transform the resource into an array.
-     *
-     * @return array<string, mixed>
-     */
-    public function toArray(Request $request): array
-    {
-        return [
-            'data' => $this->collection,
-            'links' => [
-                'self' => 'link-value',
-            ],
-        ];
-    }
+```php
+/**
+ * Transform the resource into an array.
+ *
+ * @return array<string, mixed>
+ */
+public function toArray(Request $request): array
+{
+    return [
+        'data' => $this->collection,
+        'links' => [
+            'self' => 'link-value',
+        ],
+    ];
+}
+```
 
 Khi trả về thêm một dữ liệu meta từ resource của bạn, bạn sẽ không phải lo lắng về việc vô tình ghi đè các key `links` hoặc `meta` được Laravel tự động thêm khi trả về các response để phân trang. Bất kỳ `links` nào mà bạn đã định nghĩa sẽ được merge với các link đã được cung cấp bởi paginator.
 
@@ -699,101 +846,113 @@ Khi trả về thêm một dữ liệu meta từ resource của bạn, bạn s�
 
 Thỉnh thoảng bạn có thể chỉ muốn thêm một số dữ liệu meta nhất định vào một response resource nếu resource đó là resource ngoài cùng được trả về. Thông thường, điều này sẽ chứa những thông tin meta về toàn bộ response. Để định nghĩa những dữ liệu meta như thế này, hãy thêm một phương thức `with` vào trong class resource của bạn. Phương thức này sẽ trả về một mảng dữ liệu meta sẽ được chứa trong response resource chỉ khi resource đó là resource ngoài cùng được chuyển đổi:
 
-    <?php
+```php
+<?php
 
-    namespace App\Http\Resources;
+namespace App\Http\Resources;
 
-    use Illuminate\Http\Resources\Json\ResourceCollection;
+use Illuminate\Http\Resources\Json\ResourceCollection;
 
-    class UserCollection extends ResourceCollection
+class UserCollection extends ResourceCollection
+{
+    /**
+     * Transform the resource collection into an array.
+     *
+     * @return array<string, mixed>
+     */
+    public function toArray(Request $request): array
     {
-        /**
-         * Transform the resource collection into an array.
-         *
-         * @return array<string, mixed>
-         */
-        public function toArray(Request $request): array
-        {
-            return parent::toArray($request);
-        }
-
-        /**
-         * Get additional data that should be returned with the resource array.
-         *
-         * @return array<string, mixed>
-         */
-        public function with(Request $request): array
-        {
-            return [
-                'meta' => [
-                    'key' => 'value',
-                ],
-            ];
-        }
+        return parent::toArray($request);
     }
+
+    /**
+     * Get additional data that should be returned with the resource array.
+     *
+     * @return array<string, mixed>
+     */
+    public function with(Request $request): array
+    {
+        return [
+            'meta' => [
+                'key' => 'value',
+            ],
+        ];
+    }
+}
+```
 
 <a name="adding-meta-data-when-constructing-resources"></a>
 #### Thêm Meta Data When Constructing Resources
 
 Bạn cũng có thể thêm dữ liệu khi khởi tạo một instance resource trong route hoặc controller của bạn. Phương thức `additional`, có sẵn trên tất cả các resource, chấp nhận một mảng dữ liệu cần được thêm vào response resource:
 
-    return (new UserCollection(User::all()->load('roles')))
-        ->additional(['meta' => [
-            'key' => 'value',
-        ]]);
+```php
+return User::all()
+    ->load('roles')
+    ->toResourceCollection()
+    ->additional(['meta' => [
+        'key' => 'value',
+    ]]);
+```
 
 <a name="resource-responses"></a>
 ## Resource Responses
 
 Như bạn đã đọc, resources có thể được trả về trực tiếp từ một route hoặc một controller:
 
-    use App\Http\Resources\UserResource;
-    use App\Models\User;
+```php
+use App\Models\User;
 
-    Route::get('/user/{id}', function (string $id) {
-        return new UserResource(User::findOrFail($id));
-    });
+Route::get('/user/{id}', function (string $id) {
+    return User::findOrFail($id)->toResource();
+});
+```
 
 Tuy nhiên, thỉnh thoảng bạn có thể cần tùy biến HTTP response trước khi nó được gửi về client. Có hai cách để thực hiện điều này. Đầu tiên, bạn có thể gắn thêm phương thức `response` vào trong resource. Phương thức này sẽ trả về một instance `Illuminate\Http\JsonResponse`, cho phép bạn toàn quyền kiểm soát các header của response:
 
-    use App\Http\Resources\UserResource;
-    use App\Models\User;
+```php
+use App\Http\Resources\UserResource;
+use App\Models\User;
 
-    Route::get('/user', function () {
-        return (new UserResource(User::find(1)))
-            ->response()
-            ->header('X-Value', 'True');
-    });
+Route::get('/user', function () {
+    return User::find(1)
+        ->toResource()
+        ->response()
+        ->header('X-Value', 'True');
+});
+```
 
 Ngoài ra, bạn cũng có thể định nghĩa một phương thức `withResponse` vào trong chính resource của bạn. Phương thức này sẽ được gọi khi resource được trả về là resource ngoài cùng nhất trong một response:
 
-    <?php
+```php
+<?php
 
-    namespace App\Http\Resources;
+namespace App\Http\Resources;
 
-    use Illuminate\Http\JsonResponse;
-    use Illuminate\Http\Request;
-    use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\JsonResource;
 
-    class UserResource extends JsonResource
+class UserResource extends JsonResource
+{
+    /**
+     * Transform the resource into an array.
+     *
+     * @return array<string, mixed>
+     */
+    public function toArray(Request $request): array
     {
-        /**
-         * Transform the resource into an array.
-         *
-         * @return array<string, mixed>
-         */
-        public function toArray(Request $request): array
-        {
-            return [
-                'id' => $this->id,
-            ];
-        }
-
-        /**
-         * Customize the outgoing response for the resource.
-         */
-        public function withResponse(Request $request, JsonResponse $response): void
-        {
-            $response->header('X-Value', 'True');
-        }
+        return [
+            'id' => $this->id,
+        ];
     }
+
+    /**
+     * Customize the outgoing response for the resource.
+     */
+    public function withResponse(Request $request, JsonResponse $response): void
+    {
+        $response->header('X-Value', 'True');
+    }
+}
+```

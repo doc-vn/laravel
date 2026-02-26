@@ -92,7 +92,7 @@ php artisan migrate
 <a name="paddle-sandbox"></a>
 ### Paddle Sandbox
 
-Trong quá trình phát triển local và staging, bạn nên [đăng ký một tài khoản Paddle Sandbox](https://sandbox-login.paddle.com/signup). Tài khoản này sẽ cung cấp cho bạn một môi trường sandbox để thử nghiệm và phát triển các ứng dụng của bạn mà không cần thực hiện thanh toán. Bạn có thể sử dụng [test card numbers](https://developer.paddle.com/concepts/payment-methods/credit-debit-card) của Paddle để mô phỏng các tình huống thanh toán khác nhau.
+Trong quá trình phát triển local và staging, bạn nên [đăng ký một tài khoản Paddle Sandbox](https://sandbox-login.paddle.com/signup). Tài khoản này sẽ cung cấp cho bạn một môi trường sandbox để thử nghiệm và phát triển các ứng dụng của bạn mà không cần thực hiện thanh toán. Bạn có thể sử dụng [test card numbers](https://developer.paddle.com/concepts/payment-methods/credit-debit-card#test-payment-method) của Paddle để mô phỏng các tình huống thanh toán khác nhau.
 
 Khi sử dụng môi trường Paddle Sandbox, bạn nên set biến môi trường `PADDLE_SANDBOX` thành `true` trong file `.env` của ứng dụng:
 
@@ -110,22 +110,26 @@ Sau khi hoàn thành việc phát triển ứng dụng của bạn, bạn có th
 
 Trước khi sử dụng Cashier, hãy thêm trait `Billable` vào định nghĩa model của bạn. Trait này sẽ cung cấp các phương thức khác nhau cho phép bạn thực hiện các tác vụ thanh toán phổ biến, chẳng hạn như tạo subscription hoặc cập nhật thông tin phương thức thanh toán:
 
-    use Laravel\Paddle\Billable;
+```php
+use Laravel\Paddle\Billable;
 
-    class User extends Authenticatable
-    {
-        use Billable;
-    }
+class User extends Authenticatable
+{
+    use Billable;
+}
+```
 
 Nếu bạn có các billable model không phải là các user, bạn cũng có thể thêm trait này vào các class đó:
 
-    use Illuminate\Database\Eloquent\Model;
-    use Laravel\Paddle\Billable;
+```php
+use Illuminate\Database\Eloquent\Model;
+use Laravel\Paddle\Billable;
 
-    class Team extends Model
-    {
-        use Billable;
-    }
+class Team extends Model
+{
+    use Billable;
+}
+```
 
 <a name="api-keys"></a>
 ### API Keys
@@ -142,7 +146,7 @@ PADDLE_SANDBOX=true
 
 Biến môi trường `PADDLE_SANDBOX` phải được set thành `true` khi bạn đang sử dụng trong [môi trường Sandbox của Paddle](#paddle-sandbox). Biến `PADDLE_SANDBOX` phải được set thành `false` nếu bạn đang triển khai ứng dụng của bạn sang production và đang sử dụng môi trường nhà cung cấp trực tiếp của Paddle.
 
-`PADDLE_RETAIN_KEY` là tùy chọn và chỉ nên được cài đặt nếu bạn đang sử dụng Paddle với [Retain](https://developer.paddle.com/paddlejs/retain).
+`PADDLE_RETAIN_KEY` là tùy chọn và chỉ nên được cài đặt nếu bạn đang sử dụng Paddle với [Retain](https://developer.paddle.com/concepts/retain/overview).
 
 <a name="paddle-js"></a>
 ### Paddle JS
@@ -174,26 +178,30 @@ CASHIER_CURRENCY_LOCALE=nl_BE
 
 Bạn có thể tự do extend các model mà Cashier sử dụng bên trong bằng cách định nghĩa model của riêng bạn và extend model Cashier tương ứng:
 
-    use Laravel\Paddle\Subscription as CashierSubscription;
+```php
+use Laravel\Paddle\Subscription as CashierSubscription;
 
-    class Subscription extends CashierSubscription
-    {
-        // ...
-    }
+class Subscription extends CashierSubscription
+{
+    // ...
+}
+```
 
 Sau khi định nghĩa model của bạn, bạn có thể hướng dẫn Cashier sử dụng model tùy chỉnh của bạn thông qua class `Laravel\Paddle\Cashier`. Thông thường, bạn nên thông báo cho Cashier về các model tùy chỉnh của bạn trong phương thức `boot` của class `App\Providers\AppServiceProvider` của ứng dụng:
 
-    use App\Models\Cashier\Subscription;
-    use App\Models\Cashier\Transaction;
+```php
+use App\Models\Cashier\Subscription;
+use App\Models\Cashier\Transaction;
 
-    /**
-     * Bootstrap any application services.
-     */
-    public function boot(): void
-    {
-        Cashier::useSubscriptionModel(Subscription::class);
-        Cashier::useTransactionModel(Transaction::class);
-    }
+/**
+ * Bootstrap any application services.
+ */
+public function boot(): void
+{
+    Cashier::useSubscriptionModel(Subscription::class);
+    Cashier::useTransactionModel(Transaction::class);
+}
+```
 
 <a name="quickstart"></a>
 ## Bắt đầu nhanh
@@ -204,18 +212,20 @@ Sau khi định nghĩa model của bạn, bạn có thể hướng dẫn Cashier
 > [!NOTE]
 > Trước khi sử dụng Paddle Checkout, bạn nên định nghĩa sản phẩm với giá cố định của nó trong bảng điều khiển Paddle của bạn. Ngoài ra, bạn nên [cấu hình xử lý webhook của Paddle](#handling-paddle-webhooks).
 
-Việc cung cấp thanh toán sản phẩm và subscription thông qua ứng dụng của bạn có thể gây khó khăn. Tuy nhiên, nhờ Cashier và [Checkout Overlay của Paddle](https://www.paddle.com/billing/checkout), bạn có thể dễ dàng tích hợp các thanh toán hiện đại, mạnh mẽ.
+Việc cung cấp thanh toán sản phẩm và subscription thông qua ứng dụng của bạn có thể gây khó khăn. Tuy nhiên, nhờ Cashier và [Checkout Overlay của Paddle](https://developer.paddle.com/concepts/sell/overlay-checkout), bạn có thể dễ dàng tích hợp các thanh toán hiện đại, mạnh mẽ.
 
 Để tính phí khách hàng cho các sản phẩm không định kỳ, tính phí một lần, chúng ta sẽ sử dụng Cashier để hướng dẫn khách hàng đến trang Checkout Overlay của Paddle, nơi họ sẽ cần phải cung cấp thông tin thanh toán và xác nhận giao dịch mua của họ. Sau khi thanh toán qua Checkout Overlay, khách hàng sẽ được chuyển hướng đến URL thành công do bạn đăng ký trong ứng dụng của bạn:
 
-    use Illuminate\Http\Request;
+```php
+use Illuminate\Http\Request;
 
-    Route::get('/buy', function (Request $request) {
-        $checkout = $request->user()->checkout('pri_deluxe_album')
-            ->returnTo(route('dashboard'));
+Route::get('/buy', function (Request $request) {
+    $checkout = $request->user()->checkout('pri_deluxe_album')
+        ->returnTo(route('dashboard'));
 
-        return view('buy', ['checkout' => $checkout]);
-    })->name('checkout');
+    return view('buy', ['checkout' => $checkout]);
+})->name('checkout');
+```
 
 Như bạn có thể thấy trong ví dụ trên, chúng ta sẽ sử dụng phương thức `checkout` do Cashier cung cấp để chuyển hướng khách hàng đến Paddle Checkout Overlay với một "mã giá" nhất định. Khi sử dụng Paddle, "giá" ám chỉ [giá đã được định nghĩa cho các sản phẩm cụ thể](https://developer.paddle.com/build/products/create-products-prices).
 
@@ -236,22 +246,24 @@ Khi bán sản phẩm, thông thường bạn sẽ theo dõi các đơn hàng đ
 
 Để thực hiện điều này, bạn có thể cung cấp một mảng cho phương thức `checkout`. Hãy tưởng tượng một `Order` đang được chờ xử lý được tạo ra trong ứng dụng khi người dùng bắt đầu quá trình thanh toán. Hãy nhớ rằng, các model `Cart` và `Order` trong ví dụ này chỉ mang tính minh họa và không được Cashier cung cấp. Bạn có thể tự do triển khai các khái niệm này dựa trên nhu cầu của ứng dụng của bạn:
 
-    use App\Models\Cart;
-    use App\Models\Order;
-    use Illuminate\Http\Request;
+```php
+use App\Models\Cart;
+use App\Models\Order;
+use Illuminate\Http\Request;
 
-    Route::get('/cart/{cart}/checkout', function (Request $request, Cart $cart) {
-        $order = Order::create([
-            'cart_id' => $cart->id,
-            'price_ids' => $cart->price_ids,
-            'status' => 'incomplete',
-        ]);
+Route::get('/cart/{cart}/checkout', function (Request $request, Cart $cart) {
+    $order = Order::create([
+        'cart_id' => $cart->id,
+        'price_ids' => $cart->price_ids,
+        'status' => 'incomplete',
+    ]);
 
-        $checkout = $request->user()->checkout($order->price_ids)
-            ->customData(['order_id' => $order->id]);
+    $checkout = $request->user()->checkout($order->price_ids)
+        ->customData(['order_id' => $order->id]);
 
-        return view('billing', ['checkout' => $checkout]);
-    })->name('checkout');
+    return view('billing', ['checkout' => $checkout]);
+})->name('checkout');
+```
 
 Như bạn có thể thấy trong ví dụ trên, khi người dùng bắt đầu quy trình thanh toán, chúng ta sẽ cung cấp tất cả các mã giá Paddle liên quan đến cart hoặc order cho phương thức `checkout`. Tất nhiên, ứng dụng của bạn có trách nhiệm liên kết các item này với "shopping cart" hoặc order khi khách hàng thêm chúng. Chúng ta cũng cung cấp ID của order cho Paddle Checkout Overlay thông qua phương thức `customData`.
 
@@ -259,40 +271,44 @@ Tất nhiên, bạn có thể muốn đánh dấu đơn hàng là đã "hoàn t�
 
 Để bắt đầu, hãy listen event `TransactionCompleted` được Cashier gửi. Thông thường, bạn nên đăng ký listen event này trong phương thức `boot` của `AppServiceProvider` trong ứng dụng của bạn:
 
-    use App\Listeners\CompleteOrder;
-    use Illuminate\Support\Facades\Event;
-    use Laravel\Paddle\Events\TransactionCompleted;
+```php
+use App\Listeners\CompleteOrder;
+use Illuminate\Support\Facades\Event;
+use Laravel\Paddle\Events\TransactionCompleted;
 
-    /**
-     * Bootstrap any application services.
-     */
-    public function boot(): void
-    {
-        Event::listen(TransactionCompleted::class, CompleteOrder::class);
-    }
+/**
+ * Bootstrap any application services.
+ */
+public function boot(): void
+{
+    Event::listen(TransactionCompleted::class, CompleteOrder::class);
+}
+```
 
 Trong ví dụ này, listener `CompleteOrder` có thể sẽ trông như sau:
 
-    namespace App\Listeners;
+```php
+namespace App\Listeners;
 
-    use App\Models\Order;
-    use Laravel\Paddle\Cashier;
-    use Laravel\Paddle\Events\TransactionCompleted;
+use App\Models\Order;
+use Laravel\Paddle\Cashier;
+use Laravel\Paddle\Events\TransactionCompleted;
 
-    class CompleteOrder
+class CompleteOrder
+{
+    /**
+     * Handle the incoming Cashier webhook event.
+     */
+    public function handle(TransactionCompleted $event): void
     {
-        /**
-         * Handle the incoming Cashier webhook event.
-         */
-        public function handle(TransactionCompleted $event): void
-        {
-            $orderId = $event->payload['data']['custom_data']['order_id'] ?? null;
+        $orderId = $event->payload['data']['custom_data']['order_id'] ?? null;
 
-            $order = Order::findOrFail($orderId);
+        $order = Order::findOrFail($orderId);
 
-            $order->update(['status' => 'completed']);
-        }
+        $order->update(['status' => 'completed']);
     }
+}
+```
 
 Vui lòng tham khảo thêm tài liệu của Paddle để biết thêm thông tin về [dữ liệu chứa trong event `transaction.completed`](https://developer.paddle.com/webhooks/transactions/transaction-completed).
 
@@ -302,20 +318,22 @@ Vui lòng tham khảo thêm tài liệu của Paddle để biết thêm thông t
 > [!NOTE]
 > Trước khi sử dụng Paddle Checkout, bạn nên định nghĩa sản phẩm với giá cố định của nó trong bảng điều khiển Paddle của bạn. Ngoài ra, bạn nên [cấu hình xử lý webhook của Paddle](#handling-paddle-webhooks).
 
-Việc cung cấp thanh toán sản phẩm và subscription thông qua ứng dụng của bạn có thể gây khó khăn. Tuy nhiên, nhờ Cashier và [Checkout Overlay của Paddle](https://www.paddle.com/billing/checkout), bạn có thể dễ dàng tích hợp các thanh toán hiện đại, mạnh mẽ.
+Việc cung cấp thanh toán sản phẩm và subscription thông qua ứng dụng của bạn có thể gây khó khăn. Tuy nhiên, nhờ Cashier và [Checkout Overlay của Paddle](https://developer.paddle.com/concepts/sell/overlay-checkout), bạn có thể dễ dàng tích hợp các thanh toán hiện đại, mạnh mẽ.
 
-Để tìm hiểu cách bán subscription bằng Cashier và Checkout Overlay của Paddle, hãy xem xét một kịch bản đơn giản của subscription service với gói cơ bản hàng tháng (`price_basic_monthly`) và hàng năm (`price_basic_yearly`). Hai mức giá này có thể được nhóm lại thành sản phẩm "cơ bản" (`pro_basic`) trong bảng điều khiển Paddle của chúng ta. Ngoài ra, subscription service của chúng ta có thể cung cấp gói nâng cao là `pro_expert`.
+Để tìm hiểu cách bán subscription bằng Cashier và Checkout Overlay của Paddle, hãy xem xét một kịch bản đơn giản của subscription service với gói cơ bản hàng tháng (`price_basic_monthly`) và hàng năm (`price_basic_yearly`). Hai mức giá này có thể được nhóm lại thành sản phẩm "cơ bản" (`pro_basic`) trong bảng điều khiển Paddle của chúng ta. Ngoài ra, subscription service của chúng ta có thể cung cấp gói "nâng cao" là `pro_expert`.
 
 Trước tiên, hãy cùng khám phá cách khách hàng có thể đăng ký dịch vụ của chúng ta. Tất nhiên, bạn có thể tưởng tượng khách hàng có thể ấn vào nút "đăng ký" cho gói cơ bản trên trang giá của ứng dụng. Nút này sẽ gọi đến Paddle Checkout Overlay cho gói mà họ đã chọn. Để bắt đầu, hãy khởi tạo phiên thanh toán thông qua phương thức `checkout`:
 
-    use Illuminate\Http\Request;
+```php
+use Illuminate\Http\Request;
 
-    Route::get('/subscribe', function (Request $request) {
-        $checkout = $request->user()->checkout('price_basic_monthly')
-            ->returnTo(route('dashboard'));
+Route::get('/subscribe', function (Request $request) {
+    $checkout = $request->user()->checkout('price_basic_monthly')
+        ->returnTo(route('dashboard'));
 
-        return view('subscribe', ['checkout' => $checkout]);
-    })->name('subscribe');
+    return view('subscribe', ['checkout' => $checkout]);
+})->name('subscribe');
+```
 
 Trong view `subscribe`, chúng ta sẽ thêm một nút để hiển thị Checkout Overlay. Blade component `paddle-button` đã được chứa trong Cashier Paddle; tuy nhiên, bạn cũng có thể [tự hiển thị overlay checkout](#manually-rendering-an-overlay-checkout):
 
@@ -352,60 +370,68 @@ We can even easily determine if a user is subscribed to specific product or pric
 
 Để thuận tiện, bạn có thể muốn tạo một [middleware](/docs/{{version}}/middleware) để xác định xem request đến có phải từ một người dùng đã đăng ký rồi hay không. Sau khi middleware này được định nghĩa, bạn có thể dễ dàng gán nó cho một route để chặn những người dùng chưa đăng ký truy cập route:
 
-    <?php
+```php
+<?php
 
-    namespace App\Http\Middleware;
+namespace App\Http\Middleware;
 
-    use Closure;
-    use Illuminate\Http\Request;
-    use Symfony\Component\HttpFoundation\Response;
+use Closure;
+use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Response;
 
-    class Subscribed
+class Subscribed
+{
+    /**
+     * Handle an incoming request.
+     */
+    public function handle(Request $request, Closure $next): Response
     {
-        /**
-         * Handle an incoming request.
-         */
-        public function handle(Request $request, Closure $next): Response
-        {
-            if (! $request->user()?->subscribed()) {
-                // Redirect user to billing page and ask them to subscribe...
-                return redirect('/subscribe');
-            }
-
-            return $next($request);
+        if (! $request->user()?->subscribed()) {
+            // Redirect user to billing page and ask them to subscribe...
+            return redirect('/subscribe');
         }
+
+        return $next($request);
     }
+}
+```
 
 Sau khi middleware đã được định nghĩa, bạn có thể gán nó cho một route:
 
-    use App\Http\Middleware\Subscribed;
+```php
+use App\Http\Middleware\Subscribed;
 
-    Route::get('/dashboard', function () {
-        // ...
-    })->middleware([Subscribed::class]);
+Route::get('/dashboard', function () {
+    // ...
+})->middleware([Subscribed::class]);
+```
 
 <a name="quickstart-allowing-customers-to-manage-their-billing-plan"></a>
 #### Allowing Customers to Manage Their Billing Plan
 
 Tất nhiên, khách hàng có thể muốn thay đổi gói đăng ký của họ sang một sản phẩm khác hoặc một "cấp" khác. Trong ví dụ trên, chúng ta muốn cho phép khách hàng thay đổi gói đăng ký của họ từ đăng ký hàng tháng sang đăng ký hàng năm. Đối với điều này, bạn sẽ cần phải làm một cái gì đó giống như một button để dẫn đến route bên dưới:
 
-    use Illuminate\Http\Request;
+```php
+use Illuminate\Http\Request;
 
-    Route::put('/subscription/{price}/swap', function (Request $request, $price) {
-        $user->subscription()->swap($price); // With "$price" being "price_basic_yearly" for this example.
+Route::put('/subscription/{price}/swap', function (Request $request, $price) {
+    $user->subscription()->swap($price); // With "$price" being "price_basic_yearly" for this example.
 
-        return redirect()->route('dashboard');
-    })->name('subscription.swap');
+    return redirect()->route('dashboard');
+})->name('subscription.swap');
+```
 
 Bên cạnh việc đổi gói, bạn cũng cần cho phép khách hàng của bạn hủy đăng ký. Giống như việc đổi gói, hãy cung cấp một button dẫn đến route sau:
 
-    use Illuminate\Http\Request;
+```php
+use Illuminate\Http\Request;
 
-    Route::put('/subscription/cancel', function (Request $request, $price) {
-        $user->subscription()->cancel();
+Route::put('/subscription/cancel', function (Request $request, $price) {
+    $user->subscription()->cancel();
 
-        return redirect()->route('dashboard');
-    })->name('subscription.cancel');
+    return redirect()->route('dashboard');
+})->name('subscription.cancel');
+```
 
 Và bây giờ đăng ký của họ sẽ bị hủy vào cuối thời hạn thanh toán.
 
@@ -424,14 +450,16 @@ Trước khi xử lý thanh toán bằng Paddle, bạn nên định nghĩa một
 
 Trước khi hiển thị Checkout Overlay widget, bạn phải tạo một checkout session bằng Cashier. Checkout session này sẽ thông báo cho checkout widget về thao tác thanh toán cần thực hiện:
 
-    use Illuminate\Http\Request;
+```php
+use Illuminate\Http\Request;
 
-    Route::get('/buy', function (Request $request) {
-        $checkout = $user->checkout('pri_34567')
-            ->returnTo(route('dashboard'));
+Route::get('/buy', function (Request $request) {
+    $checkout = $user->checkout('pri_34567')
+        ->returnTo(route('dashboard'));
 
-        return view('billing', ['checkout' => $checkout]);
-    });
+    return view('billing', ['checkout' => $checkout]);
+});
+```
 
 Cashier đã chứa một [component Blade](/docs/{{version}}/blade#components) `paddle-button`. Bạn có thể truyền checkout session cho component này dưới dạng một "prop". Sau đó, khi nhấp vào nút này, checkout widget của Paddle sẽ được hiển thị:
 
@@ -459,14 +487,16 @@ Giao diện thanh toán bằng Paddle là không đồng bộ. Sau khi người 
 
 Bạn cũng có thể hiển thị một overlay checkout theo cách thủ công mà không cần phải sử dụng các component Blade có sẵn của Laravel. Để bắt đầu, hãy tạo một checkout session [như minh họa trong các ví dụ trước](#overlay-checkout):
 
-    use Illuminate\Http\Request;
+```php
+use Illuminate\Http\Request;
 
-    Route::get('/buy', function (Request $request) {
-        $checkout = $user->checkout('pri_34567')
-            ->returnTo(route('dashboard'));
+Route::get('/buy', function (Request $request) {
+    $checkout = $user->checkout('pri_34567')
+        ->returnTo(route('dashboard'));
 
-        return view('billing', ['checkout' => $checkout]);
-    });
+    return view('billing', ['checkout' => $checkout]);
+});
+```
 
 Tiếp theo, bạn có thể sử dụng Paddle.js để khởi tạo checkout. Trong ví dụ này, chúng ta sẽ tạo một link được gán vào class `paddle_button`. Paddle.js sẽ phát hiện class này và hiển thị overlay checkout khi link được nhấn vào:
 
@@ -496,14 +526,16 @@ Nếu bạn không muốn sử dụng giao diện thanh toán theo kiểu "overl
 
 Để giúp bạn dễ dàng bắt đầu với tính năng thanh toán inline, Cashier đã chứa một Blade component `paddle-checkout`. Để bắt đầu, bạn nên [tạo một checkout session](#overlay-checkout):
 
-    use Illuminate\Http\Request;
+```php
+use Illuminate\Http\Request;
 
-    Route::get('/buy', function (Request $request) {
-        $checkout = $user->checkout('pri_34567')
-            ->returnTo(route('dashboard'));
+Route::get('/buy', function (Request $request) {
+    $checkout = $user->checkout('pri_34567')
+        ->returnTo(route('dashboard'));
 
-        return view('billing', ['checkout' => $checkout]);
-    });
+    return view('billing', ['checkout' => $checkout]);
+});
+```
 
 Sau đó, bạn có thể truyền checkout session đến thuộc tính `checkout` của component:
 
@@ -524,14 +556,16 @@ Vui lòng tham khảo [hướng dẫn về Inline Checkout](https://developer.pa
 
 Bạn cũng có thể hiển thị thanh toán inline theo cách thủ công mà không cần sử dụng các component Blade có sẵn của Laravel. Để bắt đầu, hãy tạo checkout session [như minh họa trong các ví dụ trước](#inline-checkout):
 
-    use Illuminate\Http\Request;
+```php
+use Illuminate\Http\Request;
 
-    Route::get('/buy', function (Request $request) {
-        $checkout = $user->checkout('pri_34567')
-            ->returnTo(route('dashboard'));
+Route::get('/buy', function (Request $request) {
+    $checkout = $user->checkout('pri_34567')
+        ->returnTo(route('dashboard'));
 
-        return view('billing', ['checkout' => $checkout]);
-    });
+    return view('billing', ['checkout' => $checkout]);
+});
+```
 
 Tiếp theo, bạn có thể sử dụng Paddle.js để khởi tạo thanh toán. Trong ví dụ này, chúng ta sẽ minh họa điều này bằng cách sử dụng [Alpine.js](https://github.com/alpinejs/alpine); tuy nhiên, bạn có thể tự do sửa ví dụ này cho giao diện người dùng của riêng bạn:
 
@@ -554,15 +588,17 @@ $options['settings']['frameInitialHeight'] = 366;
 
 Thỉnh thoảng, bạn có thể cần tạo một checkout session cho người dùng mà không cần lập tài khoản trong ứng dụng của bạn. Để thực hiện điều này, bạn có thể sử dụng phương thức `guest`:
 
-    use Illuminate\Http\Request;
-    use Laravel\Paddle\Checkout;
+```php
+use Illuminate\Http\Request;
+use Laravel\Paddle\Checkout;
 
-    Route::get('/buy', function (Request $request) {
-        $checkout = Checkout::guest(['pri_34567'])
-            ->returnTo(route('home'));
+Route::get('/buy', function (Request $request) {
+    $checkout = Checkout::guest(['pri_34567'])
+        ->returnTo(route('home'));
 
-        return view('billing', ['checkout' => $checkout]);
-    });
+    return view('billing', ['checkout' => $checkout]);
+});
+```
 
 Sau đó, bạn có thể cung cấp checkout session cho các Blade component [Paddle button](#overlay-checkout) hoặc component [inline checkout](#inline-checkout).
 
@@ -571,18 +607,22 @@ Sau đó, bạn có thể cung cấp checkout session cho các Blade component [
 
 Paddle cho phép bạn tùy chỉnh giá dựa trên mỗi đơn vị tiền tệ, về cơ bản cho phép bạn cấu hình các mức giá khác nhau cho từng quốc gia khác nhau. Cashier Paddle cũng cho phép bạn lấy ra tất cả các những giá bằng phương thức `previewPrices`. Phương thức này chấp nhận các ID giá mà bạn muốn lấy ra:
 
-    use Laravel\Paddle\Cashier;
+```php
+use Laravel\Paddle\Cashier;
 
-    $prices = Cashier::previewPrices(['pri_123', 'pri_456']);
+$prices = Cashier::previewPrices(['pri_123', 'pri_456']);
+```
 
 Đơn vị tiền tệ sẽ được xác định dựa trên địa chỉ IP của request; tuy nhiên, bạn có thể tùy chọn cung cấp một quốc gia cụ thể để lấy ra giá cho sản phẩm đó:
 
-    use Laravel\Paddle\Cashier;
+```php
+use Laravel\Paddle\Cashier;
 
-    $prices = Cashier::previewPrices(['pri_123', 'pri_456'], ['address' => [
-        'country_code' => 'BE',
-        'postal_code' => '1234',
-    ]]);
+$prices = Cashier::previewPrices(['pri_123', 'pri_456'], ['address' => [
+    'country_code' => 'BE',
+    'postal_code' => '1234',
+]]);
+```
 
 Sau khi lấy ra giá, bạn có thể hiển thị chúng theo cách bạn muốn:
 
@@ -611,9 +651,11 @@ Bạn cũng có thể hiển thị giá thực (không bao gồm thuế) và hi�
 
 Nếu người dùng đã là một customer và bạn muốn hiển thị giá áp dụng cho customer đó, bạn có thể làm như sau bằng cách lấy ra giá trực tiếp từ instance customer:
 
-    use App\Models\User;
+```php
+use App\Models\User;
 
-    $prices = User::find(1)->previewPrices(['pri_123', 'pri_456']);
+$prices = User::find(1)->previewPrices(['pri_123', 'pri_456']);
+```
 
 Trong nội bộ, Cashier sẽ sử dụng customer ID của người dùng để lấy ra giá theo đơn vị tiền tệ của họ. Vì vậy, ví dụ: một người dùng sống ở Hoa Kỳ sẽ thấy giá bằng đô-la US trong khi người dùng ở Bỉ sẽ thấy giá bằng Euros. Nếu không tìm thấy đơn vị tiền tệ phù hợp, đơn vị tiền tệ mặc định của sản phẩm sẽ được sử dụng. Bạn có thể tùy chỉnh tất cả các mức giá của sản phẩm hoặc gói subscription trong bảng điều khiển Paddle.
 
@@ -622,11 +664,13 @@ Trong nội bộ, Cashier sẽ sử dụng customer ID của người dùng đ�
 
 Bạn cũng có thể chọn hiển thị giá sau khi discount. Khi gọi phương thức `previewPrices`, bạn cung cấp ID discount thông qua tùy chọn `discount_id`:
 
-    use Laravel\Paddle\Cashier;
+```php
+use Laravel\Paddle\Cashier;
 
-    $prices = Cashier::previewPrices(['pri_123', 'pri_456'], [
-        'discount_id' => 'dsc_123'
-    ]);
+$prices = Cashier::previewPrices(['pri_123', 'pri_456'], [
+    'discount_id' => 'dsc_123'
+]);
+```
 
 Sau đó, hiển thị giá đã tính:
 
@@ -646,21 +690,23 @@ Sau đó, hiển thị giá đã tính:
 
 Cashier cho phép bạn định nghĩa một số trường mặc định hữu ích cho khách hàng của bạn khi tạo checkout session. Việc set các giá trị mặc định này cho phép bạn điền trước địa chỉ email và name của khách hàng để họ có thể chuyển ngay sang phần thanh toán của giao diện thanh toán. Bạn có thể set các giá trị mặc định này bằng cách ghi đè các phương thức sau trong billable model của bạn:
 
-    /**
-     * Get the customer's name to associate with Paddle.
-     */
-    public function paddleName(): string|null
-    {
-        return $this->name;
-    }
+```php
+/**
+ * Get the customer's name to associate with Paddle.
+ */
+public function paddleName(): string|null
+{
+    return $this->name;
+}
 
-    /**
-     * Get the customer's email address to associate with Paddle.
-     */
-    public function paddleEmail(): string|null
-    {
-        return $this->email;
-    }
+/**
+ * Get the customer's email address to associate with Paddle.
+ */
+public function paddleEmail(): string|null
+{
+    return $this->email;
+}
+```
 
 Các giá trị mặc định này sẽ được sử dụng cho mọi hành động trong Cashier khi tạo [checkout session](#checkout-sessions).
 
@@ -669,20 +715,26 @@ Các giá trị mặc định này sẽ được sử dụng cho mọi hành đ�
 
 Bạn có thể lấy ra một khách hàng dựa theo ID khách hàng Paddle của họ thông qua phương thức `Cashier::findBilable`. Phương thức này sẽ trả về một instance của billable model:
 
-    use Laravel\Paddle\Cashier;
+```php
+use Laravel\Paddle\Cashier;
 
-    $user = Cashier::findBillable($customerId);
+$user = Cashier::findBillable($customerId);
+```
 
 <a name="creating-customers"></a>
 ### Tạo customer
 
 Thỉnh thoảng, bạn có thể muốn tạo một khách hàng Paddle mà không cần phải đăng ký subscription. Bạn có thể thực hiện việc này bằng phương thức `createAsCustomer`:
 
-    $customer = $user->createAsCustomer();
+```php
+$customer = $user->createAsCustomer();
+```
 
 Một instance của `Laravel\Paddle\Customer` sẽ được trả về. Sau khi khách hàng đã được tạo trong Paddle, bạn có thể bắt đầu đăng ký subscription sau. Bạn có thể cung cấp một mảng `$options` để truyền vào bất kỳ [tham số tạo khách hàng nào được API Paddle hỗ trợ](https://developer.paddle.com/api-reference/customers/create-customer):
 
-    $customer = $user->createAsCustomer($options);
+```php
+$customer = $user->createAsCustomer($options);
+```
 
 <a name="subscriptions"></a>
 ## Subscriptions
@@ -692,22 +744,26 @@ Một instance của `Laravel\Paddle\Customer` sẽ được trả về. Sau khi
 
 Để tạo một subscription, trước tiên hãy lấy ra một instance billable model trong database của bạn, thường là một instance của `App\Models\User`. Khi bạn đã lấy được instance của model, bạn có thể sử dụng phương thức `subscribe` để tạo ra một checkout session cho model của bạn:
 
-    use Illuminate\Http\Request;
+```php
+use Illuminate\Http\Request;
 
-    Route::get('/user/subscribe', function (Request $request) {
-        $checkout = $request->user()->subscribe($premium = 12345, 'default')
-            ->returnTo(route('home'));
+Route::get('/user/subscribe', function (Request $request) {
+    $checkout = $request->user()->subscribe($premium = 'pri_123', 'default')
+        ->returnTo(route('home'));
 
-        return view('billing', ['checkout' => $checkout]);
-    });
+    return view('billing', ['checkout' => $checkout]);
+});
+```
 
 Tham số đầu tiên được cung cấp cho phương thức `subscribe` là một giá cụ thể mà người dùng đang đăng ký. Giá này phải tương ứng với mã giá có trong Paddle. Phương thức `returnTo` sẽ chấp nhận một URL mà người dùng của bạn sẽ được chuyển đến sau khi họ hoàn tất thanh toán. Tham số thứ hai được truyền vào cho phương thức `subscribe` phải là tên "type" của subscription. Nếu ứng dụng của bạn chỉ cung cấp một loại subscription duy nhất, bạn có thể gọi nó là `default` hoặc `primary`. Type subscription này chỉ dành cho việc sử dụng ứng dụng nội bộ và không nhằm mục đích hiển thị cho người dùng. Ngoài ra, nó cũng không được chứa các khoảng trắng và nó không được thay đổi sau khi tạo subscription.
 
 Bạn cũng có thể cung cấp một mảng metadata tùy chỉnh cho một subscription bằng phương thức `customData`:
 
-    $checkout = $request->user()->subscribe($premium = 12345, 'default')
-        ->customData(['key' => 'value'])
-        ->returnTo(route('home'));
+```php
+$checkout = $request->user()->subscribe($premium = 'pri_123', 'default')
+    ->customData(['key' => 'value'])
+    ->returnTo(route('home'));
+```
 
 Sau khi subscription checkout session được tạo, checkout session có thể được cung cấp cho [Blade component](#overlay-checkout) `paddle-button` có sẵn trong Cashier Paddle:
 
@@ -724,99 +780,119 @@ Sau khi người dùng hoàn tất quá trình thanh toán của họ, webhook `
 
 Sau khi người dùng subscription vào ứng dụng của bạn, bạn có thể kiểm tra trạng thái subscription của họ bằng nhiều phương thức tiện lợi khác nhau. Đầu tiên, phương thức `subscribed` sẽ trả về `true` nếu người dùng có một subscription tồn tại, ngay cả khi subscription này đang trong thời gian dùng thử:
 
-    if ($user->subscribed()) {
-        // ...
-    }
+```php
+if ($user->subscribed()) {
+    // ...
+}
+```
 
 Nếu ứng dụng của bạn cung cấp nhiều subscription, bạn có thể chỉ định subscription khi gọi phương thức `subscribed`:
 
-    if ($user->subscribed('default')) {
-        // ...
-    }
+```php
+if ($user->subscribed('default')) {
+    // ...
+}
+```
 
 Phương thức `subscribed` cũng là một ví dụ tốt cho một [route middleware](/docs/{{version}}/middleware), cho phép bạn chặn các quyền truy cập vào các route và controller mà dựa trên trạng thái subscription của người dùng:
 
-    <?php
+```php
+<?php
 
-    namespace App\Http\Middleware;
+namespace App\Http\Middleware;
 
-    use Closure;
-    use Illuminate\Http\Request;
-    use Symfony\Component\HttpFoundation\Response;
+use Closure;
+use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Response;
 
-    class EnsureUserIsSubscribed
+class EnsureUserIsSubscribed
+{
+    /**
+     * Handle an incoming request.
+     *
+     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
+     */
+    public function handle(Request $request, Closure $next): Response
     {
-        /**
-         * Handle an incoming request.
-         *
-         * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
-         */
-        public function handle(Request $request, Closure $next): Response
-        {
-            if ($request->user() && ! $request->user()->subscribed()) {
-                // This user is not a paying customer...
-                return redirect('/billing');
-            }
-
-            return $next($request);
+        if ($request->user() && ! $request->user()->subscribed()) {
+            // This user is not a paying customer...
+            return redirect('/billing');
         }
+
+        return $next($request);
     }
+}
+```
 
 Nếu bạn muốn xác định xem người dùng đó có còn trong thời gian dùng thử hay không, bạn có thể sử dụng phương thức `onTrial`. Phương thức này có thể hữu ích để xác định xem bạn có nên hiển thị cảnh báo cho người dùng biết rằng họ vẫn đang trong thời gian dùng thử:
 
-    if ($user->subscription()->onTrial()) {
-        // ...
-    }
+```php
+if ($user->subscription()->onTrial()) {
+    // ...
+}
+```
 
 Phương thức `subscribedToPrice` có thể được sử dụng để xác định xem người dùng có đăng ký gói dịch vụ đã cho hay không dựa vào ID của gói trong Paddle. Trong ví dụ này, chúng ta sẽ xác định xem subscription `default` của người dùng có đăng ký gói `monthly` hay không:
 
-    if ($user->subscribedToPrice($monthly = 'pri_123', 'default')) {
-        // ...
-    }
+```php
+if ($user->subscribedToPrice($monthly = 'pri_123', 'default')) {
+    // ...
+}
+```
 
 Phương thức `recurring` có thể được sử dụng để xác định xem người dùng hiện tại không còn trong thời gian dùng thử hoặc thời gian gia hạn và đang active subscription:
 
-    if ($user->subscription()->recurring()) {
-        // ...
-    }
+```php
+if ($user->subscription()->recurring()) {
+    // ...
+}
+```
 
 <a name="canceled-subscription-status"></a>
 #### Canceled Subscription Status
 
 Để xác định xem người dùng đã từng subscription nhưng sau đó đã hủy, bạn có thể sử dụng phương thức `canceled`:
 
-    if ($user->subscription()->canceled()) {
-        // ...
-    }
+```php
+if ($user->subscription()->canceled()) {
+    // ...
+}
+```
 
 Bạn cũng có thể xác định xem người dùng đã hủy subscription của họ hay chưa, hay vẫn còn trong "thời gian có hiệu lực" cho đến khi subscription hết hạn. Ví dụ: nếu người dùng hủy subscription vào ngày 5 tháng 3 mà dự kiến ban đầu là sẽ hết hạn vào ngày 10 tháng 3, thì người dùng sẽ ở trong "thời gian có hiệu lực" của họ cho đến ngày 10 tháng 3. Ngoài ra, phương thức `subscribed` vẫn trả về `true` trong thời gian này:
 
-    if ($user->subscription()->onGracePeriod()) {
-        // ...
-    }
+```php
+if ($user->subscription()->onGracePeriod()) {
+    // ...
+}
+```
 
 <a name="past-due-status"></a>
 #### Past Due Status
 
 Nếu một khoản thanh toán không thành công cho một subscription, nó sẽ được đánh dấu là `past_due`. Khi subscription của bạn ở trạng thái này, nó sẽ không hoạt động cho đến khi nào khách hàng cập nhật thông tin thanh toán của họ. Bạn có thể xác định xem một subscription có quá hạn hay không bằng cách sử dụng phương thức `pastDue` trên instance subscription:
 
-    if ($user->subscription()->pastDue()) {
-        // ...
-    }
+```php
+if ($user->subscription()->pastDue()) {
+    // ...
+}
+```
 
 Khi một subscription quá hạn, bạn nên hướng dẫn người dùng [cập nhật lại thông tin thanh toán của họ](#updating-payment-information).
 
 Nếu bạn muốn các subscription vẫn được coi là tồn tại khi chúng ở trạng thái `past_due`, thì bạn có thể sử dụng phương thức `keepPastDueSubscriptionsActive` do Cashier cung cấp. Thông thường, phương thức này nên được gọi trong phương thức `register` của `AppServiceProvider` của bạn:
 
-    use Laravel\Paddle\Cashier;
+```php
+use Laravel\Paddle\Cashier;
 
-    /**
-     * Register any application services.
-     */
-    public function register(): void
-    {
-        Cashier::keepPastDueSubscriptionsActive();
-    }
+/**
+ * Register any application services.
+ */
+public function register(): void
+{
+    Cashier::keepPastDueSubscriptionsActive();
+}
+```
 
 > [!WARNING]
 > Khi một subscription ở trạng thái `past_due`, thì bạn không thể thay đổi subscription cho đến khi thông tin thanh toán được cập nhật. Do đó, các phương thức `swap` và `updateQuantity` sẽ tạo ra một exception khi subscription ở trạng thái `past_due`.
@@ -826,57 +902,67 @@ Nếu bạn muốn các subscription vẫn được coi là tồn tại khi chú
 
 Hầu hết các trạng thái subscription cũng có sẵn dưới dạng query scope giúp cho bạn có thể dễ dàng truy vấn dữ liệu subscription của bạn ở một trạng thái nhất định:
 
-    // Get all valid subscriptions...
-    $subscriptions = Subscription::query()->valid()->get();
+```php
+// Get all valid subscriptions...
+$subscriptions = Subscription::query()->valid()->get();
 
-    // Get all of the canceled subscriptions for a user...
-    $subscriptions = $user->subscriptions()->canceled()->get();
+// Get all of the canceled subscriptions for a user...
+$subscriptions = $user->subscriptions()->canceled()->get();
+```
 
 Dưới đây là một danh sách đầy đủ các scope có sẵn:
 
-    Subscription::query()->valid();
-    Subscription::query()->onTrial();
-    Subscription::query()->expiredTrial();
-    Subscription::query()->notOnTrial();
-    Subscription::query()->active();
-    Subscription::query()->recurring();
-    Subscription::query()->pastDue();
-    Subscription::query()->paused();
-    Subscription::query()->notPaused();
-    Subscription::query()->onPausedGracePeriod();
-    Subscription::query()->notOnPausedGracePeriod();
-    Subscription::query()->canceled();
-    Subscription::query()->notCanceled();
-    Subscription::query()->onGracePeriod();
-    Subscription::query()->notOnGracePeriod();
+```php
+Subscription::query()->valid();
+Subscription::query()->onTrial();
+Subscription::query()->expiredTrial();
+Subscription::query()->notOnTrial();
+Subscription::query()->active();
+Subscription::query()->recurring();
+Subscription::query()->pastDue();
+Subscription::query()->paused();
+Subscription::query()->notPaused();
+Subscription::query()->onPausedGracePeriod();
+Subscription::query()->notOnPausedGracePeriod();
+Subscription::query()->canceled();
+Subscription::query()->notCanceled();
+Subscription::query()->onGracePeriod();
+Subscription::query()->notOnGracePeriod();
+```
 
 <a name="subscription-single-charges"></a>
 ### Subscription tính phí một lần
 
 Các subscription tính phí một lần cho phép bạn tính phí người dùng với khoản phí một lần trên các gói subscription của họ. Bạn phải cung cấp một hoặc nhiều ID giá khi gọi phương thức `charge`:
 
-    // Charge a single price...
-    $response = $user->subscription()->charge('pri_123');
+```php
+// Charge a single price...
+$response = $user->subscription()->charge('pri_123');
 
-    // Charge multiple prices at once...
-    $response = $user->subscription()->charge(['pri_123', 'pri_456']);
+// Charge multiple prices at once...
+$response = $user->subscription()->charge(['pri_123', 'pri_456']);
+```
 
 Phương thức `charge` sẽ không tính phí khách hàng cho đến thời gian thanh toán tiếp theo của subscription của họ. Nếu bạn muốn tính phí khách hàng ngay lập tức, bạn có thể sử dụng phương thức `chargeAndInvoice` để thay thế:
 
-    $response = $user->subscription()->chargeAndInvoice('pri_123');
+```php
+$response = $user->subscription()->chargeAndInvoice('pri_123');
+```
 
 <a name="updating-payment-information"></a>
 ### Cập nhật thông tin thanh toán
 
 Paddle luôn lưu một phương thức thanh toán cho mỗi subscription. Nếu bạn muốn cập nhật phương thức thanh toán mặc định cho một subscription, trước tiên bạn nên chuyển hướng khách hàng của bạn đến trang cập nhật phương thức thanh toán được Paddle cung cấp bằng phương thức `redirectToUpdatePaymentMethod` trên model subscription:
 
-    use Illuminate\Http\Request;
+```php
+use Illuminate\Http\Request;
 
-    Route::get('/update-payment-method', function (Request $request) {
-        $user = $request->user();
+Route::get('/update-payment-method', function (Request $request) {
+    $user = $request->user();
 
-        return $user->subscription()->redirectToUpdatePaymentMethod();
-    });
+    return $user->subscription()->redirectToUpdatePaymentMethod();
+});
+```
 
 Khi người dùng cập nhật xong thông tin của họ, một webhook `subscription_updated` sẽ được gửi bởi Paddle và chi tiết subscription sẽ được cập nhật trong cơ sở dữ liệu của ứng dụng của bạn.
 
@@ -885,32 +971,42 @@ Khi người dùng cập nhật xong thông tin của họ, một webhook `subsc
 
 Sau khi một người dùng đã subscription vào application của bạn, đôi khi họ có thể muốn thay đổi sang gói subscription mới. Để cập nhật gói subscription cho một người dùng, hãy truyền vào một identifier của price mới của bên Paddle vào phương thức `swap`:
 
-    use App\Models\User;
+```php
+use App\Models\User;
 
-    $user = User::find(1);
+$user = User::find(1);
 
-    $user->subscription()->swap($premium = 'pri_456');
+$user->subscription()->swap($premium = 'pri_456');
+```
 
 Nếu bạn muốn thay đổi gói và lập hóa đơn ngay cho người dùng thay vì đợi đến chu kỳ thanh toán tiếp theo của họ, bạn có thể sử dụng phương pháp `swapAndInvoice`:
 
-    $user = User::find(1);
+```php
+$user = User::find(1);
 
-    $user->subscription()->swapAndInvoice($premium = 'pri_456');
+$user->subscription()->swapAndInvoice($premium = 'pri_456');
+```
 
 <a name="prorations"></a>
 #### Prorations
 
 Mặc định, Paddle sẽ tính phí khi hoán đổi giữa các gói. Phương thức `noProrate` có thể được sử dụng để cập nhật nhiều subscription mà không bị tính phí:
 
-    $user->subscription('default')->noProrate()->swap($premium = 'pri_456');
+```php
+$user->subscription('default')->noProrate()->swap($premium = 'pri_456');
+```
 
 Nếu bạn muốn disable việc tính thêm phí và lập hóa đơn ngay cho khách hàng, bạn có thể sử dụng phương thức `swapAndInvoice` cùng với `noProrate`:
 
-    $user->subscription('default')->noProrate()->swapAndInvoice($premium = 'pri_456');
+```php
+$user->subscription('default')->noProrate()->swapAndInvoice($premium = 'pri_456');
+```
 
 Hoặc, để không tính phí khách hàng khi thay đổi subscription, bạn có thể sử dụng phương thức `doNotBill`:
 
-    $user->subscription('default')->doNotBill()->swap($premium = 'pri_456');
+```php
+$user->subscription('default')->doNotBill()->swap($premium = 'pri_456');
+```
 
 Để biết thêm thông tin về chính sách của Paddle, vui lòng tham khảo [tài liệu](https://developer.paddle.com/concepts/subscriptions/proration) của Paddle.
 
@@ -919,32 +1015,40 @@ Hoặc, để không tính phí khách hàng khi thay đổi subscription, bạn
 
 Thỉnh thoảng subscription có thể bị ảnh hưởng bởi "số lượng". Ví dụ: một application quản lý project có thể tính phí $10 mỗi tháng **cho mỗi người dùng** trên mỗi project. Để dễ dàng tăng hoặc giảm số lượng subscription của bạn, hãy sử dụng các phương thức `incrementQuantity` hoặc `decrementQuantity`:
 
-    $user = User::find(1);
+```php
+$user = User::find(1);
 
-    $user->subscription()->incrementQuantity();
+$user->subscription()->incrementQuantity();
 
-    // Add five to the subscription's current quantity...
-    $user->subscription()->incrementQuantity(5);
+// Add five to the subscription's current quantity...
+$user->subscription()->incrementQuantity(5);
 
-    $user->subscription()->decrementQuantity();
+$user->subscription()->decrementQuantity();
 
-    // Subtract five from the subscription's current quantity...
-    $user->subscription()->decrementQuantity(5);
+// Subtract five from the subscription's current quantity...
+$user->subscription()->decrementQuantity(5);
+```
 
 Ngoài ra, bạn cũng có thể set một số lượng cụ thể bằng phương thức `updateQuantity`:
 
-    $user->subscription()->updateQuantity(10);
+```php
+$user->subscription()->updateQuantity(10);
+```
 
 Phương thức `noProrate` có thể được sử dụng để cập nhật số lượng của subscription mà không cần chia tỷ lệ phí:
 
-    $user->subscription()->noProrate()->updateQuantity(10);
+```php
+$user->subscription()->noProrate()->updateQuantity(10);
+```
 
 <a name="quantities-for-subscription-with-multiple-products"></a>
 #### Quantities for Subscriptions With Multiple Products
 
 Nếu subscription của bạn là một [subscription gồm có nhiều sản phẩm](#subscriptions-with-multiple-products), bạn phải truyền ID giá cho phương thức mà bạn muốn tăng hoặc giảm số lượng làm tham số thứ hai cho các phương thức tăng hoặc giảm:
 
-    $user->subscription()->incrementQuantity(1, 'price_chat');
+```php
+$user->subscription()->incrementQuantity(1, 'price_chat');
+```
 
 <a name="subscriptions-with-multiple-products"></a>
 ### Subscription với nhiều sản phẩm
@@ -953,36 +1057,46 @@ Nếu subscription của bạn là một [subscription gồm có nhiều sản p
 
 Khi tạo subscription checkout, bạn có thể chỉ định nhiều sản phẩm cho một subscription nhất định bằng cách truyền một mảng giá làm tham số đầu tiên cho phương thức `subscribe`:
 
-    use Illuminate\Http\Request;
+```php
+use Illuminate\Http\Request;
 
-    Route::post('/user/subscribe', function (Request $request) {
-        $checkout = $request->user()->subscribe([
-            'price_monthly',
-            'price_chat',
-        ]);
+Route::post('/user/subscribe', function (Request $request) {
+    $checkout = $request->user()->subscribe([
+        'price_monthly',
+        'price_chat',
+    ]);
 
-        return view('billing', ['checkout' => $checkout]);
-    });
+    return view('billing', ['checkout' => $checkout]);
+});
+```
 
 Trong ví dụ trên, khách hàng sẽ có hai mức giá được thêm vào subscription `default` của họ. Cả hai mức giá này sẽ được tính theo các khoảng thời gian thanh toán tương ứng. Nếu cần, bạn có thể truyền một mảng các cặp khóa và giá trị để chỉ ra số lượng cụ thể cho mỗi mức giá:
 
-    $user = User::find(1);
+```php
+$user = User::find(1);
 
-    $checkout = $user->subscribe('default', ['price_monthly', 'price_chat' => 5]);
+$checkout = $user->subscribe('default', ['price_monthly', 'price_chat' => 5]);
+```
 
 Nếu bạn muốn thêm một mức giá khác vào một subscription hiện có, bạn phải sử dụng phương thức `swap` của subscription đó. Khi gọi phương thức `swap`, bạn cũng nên thêm cả giá và số lượng hiện tại của subscription đó:
 
-    $user = User::find(1);
+```php
+$user = User::find(1);
 
-    $user->subscription()->swap(['price_chat', 'price_original' => 2]);
+$user->subscription()->swap(['price_chat', 'price_original' => 2]);
+```
 
 Ví dụ trên sẽ thêm giá mới, nhưng khách hàng sẽ không bị tính phí cho đến khi chu kỳ thanh toán tiếp theo của họ. Nếu bạn muốn tính phí cho khách hàng ngay lập tức, bạn có thể sử dụng phương thức `swapAndInvoice`:
 
-    $user->subscription()->swapAndInvoice(['price_chat', 'price_original' => 2]);
+```php
+$user->subscription()->swapAndInvoice(['price_chat', 'price_original' => 2]);
+```
 
 Bạn có thể xóa giá ra khỏi subscription bằng phương thức `swap` và không thêm vào mức giá mà bạn muốn xóa bỏ:
 
-    $user->subscription()->swap(['price_original' => 2]);
+```php
+$user->subscription()->swap(['price_original' => 2]);
+```
 
 > [!WARNING]
 > Bạn không thể xóa cái giá cuối cùng còn lại trông một subscription. Thay vào đó, bạn chỉ cần hủy subscription.
@@ -994,52 +1108,70 @@ Paddle cho phép khách hàng của bạn có thể subscription nhiều loại 
 
 Khi ứng dụng của bạn tạo các đăng ký, bạn có thể cung cấp type của đăng ký cho phương thức `subscribe` như là tham số thứ hai. Tên có thể là bất kỳ chuỗi nào mà đại diện cho loại đăng ký mà người dùng đang muốn sử dụng:
 
-    use Illuminate\Http\Request;
+```php
+use Illuminate\Http\Request;
 
-    Route::post('/swimming/subscribe', function (Request $request) {
-        $checkout = $request->user()->subscribe($swimmingMonthly = 'pri_123', 'swimming');
+Route::post('/swimming/subscribe', function (Request $request) {
+    $checkout = $request->user()->subscribe($swimmingMonthly = 'pri_123', 'swimming');
 
-        return view('billing', ['checkout' => $checkout]);
-    });
+    return view('billing', ['checkout' => $checkout]);
+});
+```
 
 Trong ví dụ trên, chúng ta đã đăng ký bơi hàng tháng cho khách hàng. Nhưng, sau này có thể họ muốn chuyển sang đăng ký theo dạng hàng năm. Khi điều chỉnh đăng ký của khách hàng, chúng ta có thể chỉ cần hoán đổi giá của đăng ký `swimming`:
 
-    $user->subscription('swimming')->swap($swimmingYearly = 'pri_456');
+```php
+$user->subscription('swimming')->swap($swimmingYearly = 'pri_456');
+```
 
 Tất nhiên, bạn cũng có thể hủy đăng ký:
 
-    $user->subscription('swimming')->cancel();
+```php
+$user->subscription('swimming')->cancel();
+```
 
 <a name="pausing-subscriptions"></a>
 ### Tạm dừng Subscriptions
 
 Để tạm dừng một subscription, hãy gọi phương thức `pause` trên subscription của người dùng:
 
-    $user->subscription()->pause();
+```php
+$user->subscription()->pause();
+```
 
 Khi một subscription bị tạm dừng, Cashier sẽ tự động set cột `paused_at` trong cơ sở dữ liệu của bạn. Cột này được sử dụng để xác định khi nào thì phương thức `paused` sẽ bắt đầu trả về `true`. Ví dụ: nếu một khách hàng tạm dừng subscription vào ngày 1 tháng 3, nhưng subscription đó có thời hạn đến ngày 5 tháng 3, thì phương thức `paused` sẽ tiếp tục trả về giá trị `false` cho đến hết ngày 5 tháng 3. Điều này được thực hiện là vì người dùng thường được phép tiếp tục sử dụng ứng dụng cho đến khi kết thúc chu kỳ thanh toán của họ.
 
 Mặc định, việc tạm dừng này sẽ diễn ra ở thời điểm thanh toán tiếp theo của khách hàng để khách hàng có thể sử dụng phần còn lại của kỳ hạn của họ mà họ đã thanh toán. Nếu bạn muốn tạm dừng subscription ngay lập tức, bạn có thể sử dụng phương thức `pauseNow`:
 
-    $user->subscription()->pauseNow();
+```php
+$user->subscription()->pauseNow();
+```
 
 Sử dụng phương thức `pauseUntil`, bạn có thể tạm dừng đăng ký cho đến một thời điểm cụ thể:
 
-    $user->subscription()->pauseUntil(now()->addMonth());
+```php
+$user->subscription()->pauseUntil(now()->plus(months: 1));
+```
 
 Hoặc, bạn có thể sử dụng phương thức `pauseNowUntil` để tạm dừng đăng ký ngay lập tức cho đến một thời điểm nhất định:
 
-    $user->subscription()->pauseNowUntil(now()->addMonth());
+```php
+$user->subscription()->pauseNowUntil(now()->plus(months: 1));
+```
 
 Bạn có thể xác định xem người dùng đã tạm dừng subscription của họ nhưng vẫn đang trong "thời gian có hạn subscription" bằng cách sử dụng phương thức `onPausedGracePeriod`:
 
-    if ($user->subscription()->onPausedGracePeriod()) {
-        // ...
-    }
+```php
+if ($user->subscription()->onPausedGracePeriod()) {
+    // ...
+}
+```
 
 Để resume lại một subscription đã tạm dừng, bạn có thể gọi phương thức `resume` trên subscription của người dùng:
 
-    $user->subscription()->resume();
+```php
+$user->subscription()->resume();
+```
 
 > [!WARNING]
 > Không thể sửa subscription khi nó đang bị tạm dừng. Nếu bạn muốn chuyển sang một gói khác hoặc cập nhật số lượng subscription, trước tiên bạn phải resume lại subscription.
@@ -1049,23 +1181,31 @@ Bạn có thể xác định xem người dùng đã tạm dừng subscription c
 
 Để hủy một subscription, hãy gọi phương thức `cancel` trên subscription của người dùng:
 
-    $user->subscription()->cancel();
+```php
+$user->subscription()->cancel();
+```
 
 Khi một subscription bị hủy, Cashier sẽ tự động set cột `ends_at` trong cơ sở dữ liệu của bạn. Cột này được sử dụng để xác định xem khi nào phương thức `subscribed` sẽ bắt đầu trả về `false`. Ví dụ: nếu khách hàng hủy subscription vào ngày 1 tháng 3, nhưng subscription không thể kết thúc cho đến khi hết ngày 5 tháng 3, thì phương thức `subscribed` vẫn sẽ tiếp tục trả về `true` cho đến ngày 5 tháng 3. Điều này được thực hiện là vì người dùng thường được phép tiếp tục sử dụng ứng dụng cho đến khi kết thúc chu kỳ thanh toán của họ.
 
 Bạn có thể xác định những người dùng đã hủy subscription của họ nhưng vẫn đang trong "thời gian subscription có hiệu lực" bằng cách sử dụng phương thức `onGracePeriod`:
 
-    if ($user->subscription()->onGracePeriod()) {
-        // ...
-    }
+```php
+if ($user->subscription()->onGracePeriod()) {
+    // ...
+}
+```
 
 Nếu bạn muốn hủy subscription ngay lập tức, hãy gọi phương thức `cancelNow` trên subscription:
 
-    $user->subscription()->cancelNow();
+```php
+$user->subscription()->cancelNow();
+```
 
 Để dừng việc hủy subscription trong thời gian gia hạn, bạn có thể sử dụng phương thức `stopCancelation`:
 
-    $user->subscription()->stopCancelation();
+```php
+$user->subscription()->stopCancelation();
+```
 
 > [!WARNING]
 > Subscription của Paddle sẽ không thể resume sau khi nó bị hủy. Nếu khách hàng của bạn muốn resume lại subscription của họ, họ sẽ phải tạo một subscription mới.
@@ -1078,15 +1218,17 @@ Nếu bạn muốn hủy subscription ngay lập tức, hãy gọi phương th�
 
 Nếu bạn muốn cung cấp thời gian dùng thử cho khách hàng của bạn trong khi vẫn muốn thu thập thông tin thanh toán của khách hàng, bạn nên set thời gian dùng thử trong bảng điều khiển Paddle theo mức giá mà khách hàng của bạn đang đăng ký. Sau đó, bắt đầu thanh toán như bình thường:
 
-    use Illuminate\Http\Request;
+```php
+use Illuminate\Http\Request;
 
-    Route::get('/user/subscribe', function (Request $request) {
-        $checkout = $request->user()
-            ->subscribe('pri_monthly')
-            ->returnTo(route('home'));
+Route::get('/user/subscribe', function (Request $request) {
+    $checkout = $request->user()
+        ->subscribe('pri_monthly')
+        ->returnTo(route('home'));
 
-        return view('billing', ['checkout' => $checkout]);
-    });
+    return view('billing', ['checkout' => $checkout]);
+});
+```
 
 Khi ứng dụng của bạn nhận được event `subscription_created`, Cashier sẽ set ngày kết thúc của thời gian dùng thử vào trong bản ghi subscription trong cơ sở dữ liệu của application của bạn và sẽ bảo với Paddle là sẽ không tính phí khách hàng cho đến khi hết ngày dùng thử.
 
@@ -1095,88 +1237,101 @@ Khi ứng dụng của bạn nhận được event `subscription_created`, Cashi
 
 Bạn có thể xác định xem người dùng hiện tại có đang trong thời gian dùng thử hay không bằng cách sử dụng phương thức `onTrial` trên instance người dùng hoặc phương thức `onTrial` trên instance subscription. Hai ví dụ dưới đây là giống nhau:
 
-    if ($user->onTrial()) {
-        // ...
-    }
+```php
+if ($user->onTrial()) {
+    // ...
+}
+```
 
-    if ($user->subscription()->onTrial()) {
-        // ...
-    }
 Để xác định xem bản dùng thử hiện tại đã hết hạn hay chưa, bạn có thể sử dụng phương thức `hasExpiredTrial`:
 
-    if ($user->hasExpiredTrial()) {
-        // ...
-    }
-
-    if ($user->subscription()->hasExpiredTrial()) {
-        // ...
-    }
+```php
+if ($user->hasExpiredTrial()) {
+    // ...
+}
+```
 
 Để xác định xem một người dùng có đang dùng thử một loại đăng ký nào không, bạn có thể cung cấp loại đăng ký đó cho phương thức `onTrial` hoặc `hasExpiredTrial`:
 
-    if ($user->onTrial('default')) {
-        // ...
-    }
+```php
+if ($user->onTrial('default')) {
+    // ...
+}
 
-    if ($user->hasExpiredTrial('default')) {
-        // ...
-    }
+if ($user->hasExpiredTrial('default')) {
+    // ...
+}
+```
 
 <a name="without-payment-method-up-front"></a>
 ### Khai báo phương thức thanh toán sau
 
 Nếu bạn muốn cung cấp thời gian dùng thử mà không muốn thu thập thông tin thanh toán của người dùng, bạn có thể set cột `trial_ends_at` trong bản ghi của người dùng thành ngày kết thúc dùng thử mà bạn mong muốn. Điều này thường được thực hiện trong quá trình đăng ký người dùng:
 
-    use App\Models\User;
+```php
+use App\Models\User;
 
-    $user = User::create([
-        // ...
-    ]);
+$user = User::create([
+    // ...
+]);
 
-    $user->createAsCustomer([
-        'trial_ends_at' => now()->addDays(10)
-    ]);
+$user->createAsCustomer([
+    'trial_ends_at' => now()->plus(days: 10)
+]);
+```
 
 Cashier sẽ coi các loại dùng thử như thế này là "dùng thử đại trà", vì nó sẽ không được gắn với bất kỳ thông tin subscription nào. Phương thức `onTrial` trên instance `User` sẽ trả về `true` nếu ngày hiện tại không vượt quá giá trị của ngày `trial_ends_at`:
 
-    if ($user->onTrial()) {
-        // User is within their trial period...
-    }
+```php
+if ($user->onTrial()) {
+    // User is within their trial period...
+}
+```
 
 Khi bạn đã sẵn sàng tạo một subscription thực sự cho người dùng, bạn có thể sử dụng phương thức `subscribe` như bình thường:
 
-    use Illuminate\Http\Request;
+```php
+use Illuminate\Http\Request;
 
-    Route::get('/user/subscribe', function (Request $request) {
-        $checkout = $request->user()
-            ->subscribe('pri_monthly')
-            ->returnTo(route('home'));
+Route::get('/user/subscribe', function (Request $request) {
+    $checkout = $request->user()
+        ->subscribe('pri_monthly')
+        ->returnTo(route('home'));
 
-        return view('billing', ['checkout' => $checkout]);
-    });
+    return view('billing', ['checkout' => $checkout]);
+});
+```
 
 Để lấy ra ngày kết thúc dùng thử của một người dùng, bạn có thể sử dụng phương thức `trialEndsAt`. Phương thức này sẽ trả về một instance date Carbon nếu người dùng đang dùng thử hoặc `null` nếu họ không đang dùng thử. Bạn cũng có thể truyền một tham số loại subscription tùy chọn nếu bạn muốn biết ngày kết thúc dùng thử cho một subscription cụ thể khác với subscription mặc định:
 
-    if ($user->onTrial('default')) {
-        $trialEndsAt = $user->trialEndsAt();
-    }
+```php
+if ($user->onTrial('default')) {
+    $trialEndsAt = $user->trialEndsAt();
+}
+```
 
 Bạn có thể sử dụng phương thức `onGenericTrial` nếu bạn muốn biết cụ thể rằng người dùng đang trong thời gian dùng thử "generic" và chưa tạo subscription thực tế:
 
-    if ($user->onGenericTrial()) {
-        // User is within their "generic" trial period...
-    }
+```php
+if ($user->onGenericTrial()) {
+    // User is within their "generic" trial period...
+}
+```
 
 <a name="extend-or-activate-a-trial"></a>
 ### Gia hạn và kích hoạt dùng thử
 
 Bạn có thể gia hạn thời gian dùng thử hiện tại trên một subscription bằng cách sử dụng phương thức `extendTrial` và chỉ định thời điểm kết thúc của gói dùng thử:
 
-    $user->subscription()->extendTrial(now()->addDays(5));
+```php
+$user->subscription()->extendTrial(now()->plus(days: 5));
+```
 
 Hoặc, bạn có thể kích hoạt ngay đăng ký bằng cách kết thúc thời gian dùng thử thông qua phương thức `activate` trên subscription:
 
-    $user->subscription()->activate();
+```php
+$user->subscription()->activate();
+```
 
 <a name="handling-paddle-webhooks"></a>
 ## Xử lý Paddle Webhooks
@@ -1185,7 +1340,7 @@ Paddle có thể thông báo cho ứng dụng của bạn về nhiều event th�
 
 Mặc định, controller này sẽ tự động xử lý việc hủy đăng ký khi có quá nhiều khoản phí không thành công, cập nhật đăng ký và thay đổi phương thức thanh toán ; tuy nhiên, như bạn sẽ sớm khám phá ra rằng bạn có thể mở rộng controller này để xử lý bất kỳ sự kiện webhook nào của Paddle mà bạn muốn.
 
-Để đảm bảo ứng dụng của bạn có thể xử lý Paddle webhook, hãy nhớ [cấu hình URL webhook trong bảng điều khiển Paddle](https://vendors.paddle.com/alerts-webhooks). Mặc định, webhook controller của Cashier sẽ response trên đường dẫn URL là `/paddle/webhook`. Danh sách đầy đủ của tất cả các webhook mà bạn nên bật trong bảng điều khiển Paddle sẽ là:
+Để đảm bảo ứng dụng của bạn có thể xử lý Paddle webhook, hãy nhớ [cấu hình URL webhook trong bảng điều khiển Paddle](https://vendors.paddle.com/notifications-v2). Mặc định, webhook controller của Cashier sẽ response trên đường dẫn URL là `/paddle/webhook`. Danh sách đầy đủ của tất cả các webhook mà bạn nên bật trong bảng điều khiển Paddle sẽ là:
 
 - Customer Updated
 - Transaction Completed
@@ -1203,11 +1358,13 @@ Mặc định, controller này sẽ tự động xử lý việc hủy đăng k�
 
 Vì các webhook của Paddle cần được bỏ qua bước [bảo vệ CSRF](/docs/{{version}}/csrf) của Laravel, bạn nên đảm bảo Laravel sẽ không thử xác minh mã token CSRF cho các webhooks Paddle đang được gửi đến ứng dụng của bạn. Để thực hiện việc này, bạn nên loại trừ `paddle/*` ra khỏi chế độ bảo vệ CSRF trong file `bootstrap/app.php` của ứng dụng:
 
-    ->withMiddleware(function (Middleware $middleware) {
-        $middleware->validateCsrfTokens(except: [
-            'paddle/*',
-        ]);
-    })
+```php
+->withMiddleware(function (Middleware $middleware): void {
+    $middleware->validateCsrfTokens(except: [
+        'paddle/*',
+    ]);
+})
+```
 
 <a name="webhooks-local-development"></a>
 #### Webhooks và Local Development
@@ -1224,24 +1381,26 @@ Cashier sẽ tự động xử lý hủy subscription nếu như các lần tr�
 
 Cả hai event đều chứa toàn bộ payload của webhook Paddle. Ví dụ: nếu bạn muốn xử lý webhook `transaction.billed`, thì bạn có thể đăng ký [listener](/docs/{{version}}/events#defining-listeners) sẽ xử lý event đó:
 
-    <?php
+```php
+<?php
 
-    namespace App\Listeners;
+namespace App\Listeners;
 
-    use Laravel\Paddle\Events\WebhookReceived;
+use Laravel\Paddle\Events\WebhookReceived;
 
-    class PaddleEventListener
+class PaddleEventListener
+{
+    /**
+     * Handle received Paddle webhooks.
+     */
+    public function handle(WebhookReceived $event): void
     {
-        /**
-         * Handle received Paddle webhooks.
-         */
-        public function handle(WebhookReceived $event): void
-        {
-            if ($event->payload['event_type'] === 'transaction.billed') {
-                // Handle the incoming event...
-            }
+        if ($event->payload['event_type'] === 'transaction.billed') {
+            // Handle the incoming event...
         }
     }
+}
+```
 
 Cashier cũng phát ra các event dành riêng cho các loại webhook đã nhận. Ngoài toàn bộ payload từ Paddle, chúng cũng chứa các model đã được sử dụng để xử lý webhook, chẳng hạn như billable model, subscription hoặc receipt:
 
@@ -1266,7 +1425,7 @@ CASHIER_WEBHOOK=https://example.com/my-paddle-webhook-url
 <a name="verifying-webhook-signatures"></a>
 ### Kiểm tra định dạng Webhook
 
-Để bảo mật webhook của bạn, bạn có thể sử dụng [định dạng webhook của Paddle](https://developer.paddle.com/webhook-reference/verifying-webhooks). Để thuận tiện, Cashier đã tự động thêm một middleware để kiểm tra các request webhook Paddle đến application là hợp lệ.
+Để bảo mật webhook của bạn, bạn có thể sử dụng [định dạng webhook của Paddle](https://developer.paddle.com/webhooks/signature-verification). Để thuận tiện, Cashier đã tự động thêm một middleware để kiểm tra các request webhook Paddle đến application là hợp lệ.
 
 Để bật kiểm tra webhook, hãy đảm bảo rằng biến môi trường `PADDLE_WEBHOOK_SECRET` được định nghĩa trong file `.env` của application của bạn. Webhook secret này có thể được lấy ra từ trang tổng quan trong tài khoản Paddle của bạn.
 
@@ -1278,13 +1437,15 @@ CASHIER_WEBHOOK=https://example.com/my-paddle-webhook-url
 
 Nếu bạn muốn khởi tạo một sản phẩm mua cho một khách hàng, bạn có thể sử dụng phương thức `checkout` trên instance billable model để tạo một checkout session cho việc mua hàng. Phương thức `checkout` sẽ chấp nhận một hoặc nhiều ID giá. Nếu cần, bạn có thể cung cấp một mảng về số lượng sản phẩm đang được mua:
 
-    use Illuminate\Http\Request;
+```php
+use Illuminate\Http\Request;
 
-    Route::get('/buy', function (Request $request) {
-        $checkout = $request->user()->checkout(['pri_tshirt', 'pri_socks' => 5]);
+Route::get('/buy', function (Request $request) {
+    $checkout = $request->user()->checkout(['pri_tshirt', 'pri_socks' => 5]);
 
-        return view('buy', ['checkout' => $checkout]);
-    });
+    return view('buy', ['checkout' => $checkout]);
+});
+```
 
 Sau khi đã tạo checkout session, bạn có thể sử dụng [Blade component](#overlay-checkout) `paddle-button` do Cashier cung cấp để cho phép người dùng xem checkout Paddle và hoàn thành purchase đó:
 
@@ -1296,10 +1457,12 @@ Sau khi đã tạo checkout session, bạn có thể sử dụng [Blade componen
 
 Một checkout session sẽ có một phương thức `customData`, cho phép bạn truyền bất kỳ các custom data nào mà bạn muốn để tạo transaction. Vui lòng tham khảo [tài liệu của Paddle](https://developer.paddle.com/build/transactions/custom-data) để tìm hiểu thêm về các tùy chọn có sẵn cho bạn khi truyền custom data:
 
-    $checkout = $user->checkout('pri_tshirt')
-        ->customData([
-            'custom_option' => $value,
-        ]);
+```php
+$checkout = $user->checkout('pri_tshirt')
+    ->customData([
+        'custom_option' => $value,
+    ]);
+```
 
 <a name="refunding-transactions"></a>
 ### Hoàn tiền giao dịch
@@ -1308,20 +1471,24 @@ Transaction hoàn tiền sẽ hoàn trả lại số tiền đã thanh toán và
 
 Ví dụ, hãy tưởng tượng chúng ta muốn hoàn lại một giao dịch cho giá `pri_123` và `pri_456`. Chúng ta muốn hoàn lại toàn bộ `pri_123`, nhưng chỉ hoàn lại hai đô la cho `pri_456`:
 
-    use App\Models\User;
+```php
+use App\Models\User;
 
-    $user = User::find(1);
+$user = User::find(1);
 
-    $transaction = $user->transactions()->first();
+$transaction = $user->transactions()->first();
 
-    $response = $transaction->refund('Accidental charge', [
-        'pri_123', // Fully refund this price...
-        'pri_456' => 200, // Only partially refund this price...
-    ]);
+$response = $transaction->refund('Accidental charge', [
+    'pri_123', // Fully refund this price...
+    'pri_456' => 200, // Only partially refund this price...
+]);
+```
 
 Ví dụ trên sẽ hoàn lại các item có trong một giao dịch. Nếu bạn muốn hoàn lại toàn bộ giao dịch, chỉ cần cung cấp lý do:
 
-    $response = $transaction->refund('Accidental charge');
+```php
+$response = $transaction->refund('Accidental charge');
+```
 
 Để biết thêm thông tin về việc hoàn tiền, vui lòng tham khảo [tài liệu hoàn tiền của Paddle](https://developer.paddle.com/build/transactions/create-transaction-adjustments).
 
@@ -1333,10 +1500,12 @@ Ví dụ trên sẽ hoàn lại các item có trong một giao dịch. Nếu b�
 
 Cũng giống như hoàn tiền, bạn cũng có thể tạo credit transaction. Credit transaction sẽ thêm tiền vào số dư của khách hàng để có thể sử dụng cho các giao dịch mua trong tương lai. Credit transaction chỉ có thể được thực hiện đối với các giao dịch thủ công chứ không cho các giao dịch tự động (như subscription) vì Paddle tự động xử lý các subscription credit:
 
-    $transaction = $user->transactions()->first();
+```php
+$transaction = $user->transactions()->first();
 
-    // Credit a specific line item fully...
-    $response = $transaction->credit('Compensation', 'pri_123');
+// Credit a specific line item fully...
+$response = $transaction->credit('Compensation', 'pri_123');
+```
 
 Để biết thêm thông tin, hãy [xem tài liệu về credit của Paddle](https://developer.paddle.com/build/transactions/create-transaction-adjustments).
 
@@ -1348,11 +1517,13 @@ Cũng giống như hoàn tiền, bạn cũng có thể tạo credit transaction.
 
 Bạn có thể dễ dàng lấy ra một mảng các transaction của một model billable bằng cách sử dụng thuộc tính `transactions`:
 
-    use App\Models\User;
+```php
+use App\Models\User;
 
-    $user = User::find(1);
+$user = User::find(1);
 
-    $transactions = $user->transactions;
+$transactions = $user->transactions;
+```
 
 Transaction sẽ đại diện cho các khoản thanh toán cho một sản phẩm nào đó hoặc giao dịch mua của bạn và được kèm theo hóa đơn. Chỉ những giao dịch đã hoàn tất mới được lưu vào trong cơ sở dữ liệu của ứng dụng.
 
@@ -1373,26 +1544,30 @@ Khi liệt kê các transaction cho một khách hàng, bạn có thể sử d�
 
 Route `download-invoice` có thể trông như sau:
 
-    use Illuminate\Http\Request;
-    use Laravel\Paddle\Transaction;
+```php
+use Illuminate\Http\Request;
+use Laravel\Paddle\Transaction;
 
-    Route::get('/download-invoice/{transaction}', function (Request $request, Transaction $transaction) {
-        return $transaction->redirectToInvoicePdf();
-    })->name('download-invoice');
+Route::get('/download-invoice/{transaction}', function (Request $request, Transaction $transaction) {
+    return $transaction->redirectToInvoicePdf();
+})->name('download-invoice');
+```
 
 <a name="past-and-upcoming-payments"></a>
 ### Các khoản thanh toán quá khứ và tương lai
 
 Bạn có thể sử dụng phương thức `lastPayment` và `nextPayment` để nhận về và hiển thị các khoản thanh toán quá khứ hoặc tương lai của khách hàng cho các subscription định kỳ:
 
-    use App\Models\User;
+```php
+use App\Models\User;
 
-    $user = User::find(1);
+$user = User::find(1);
 
-    $subscription = $user->subscription();
+$subscription = $user->subscription();
 
-    $lastPayment = $subscription->lastPayment();
-    $nextPayment = $subscription->nextPayment();
+$lastPayment = $subscription->lastPayment();
+$nextPayment = $subscription->nextPayment();
+```
 
 Cả hai phương thức này sẽ trả về một instance của `Laravel\Paddle\Payment`; tuy nhiên, `lastPayment` sẽ trả về `null` khi các giao dịch chưa được đồng bộ bởi webhook, trong khi `nextPayment` sẽ trả về `null` nếu chu kỳ thanh toán đã kết thúc (chẳng hạn như khi subscription bị hủy):
 

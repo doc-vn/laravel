@@ -24,28 +24,32 @@ Nhiều web application yêu cầu người dùng xác minh địa chỉ email c
 
 Trước khi bắt đầu, hãy kiểm tra model `App\Models\User` của bạn đã implement contract `Illuminate\Contracts\Auth\MustVerifyEmail`:
 
-    <?php
+```php
+<?php
 
-    namespace App\Models;
+namespace App\Models;
 
-    use Illuminate\Contracts\Auth\MustVerifyEmail;
-    use Illuminate\Foundation\Auth\User as Authenticatable;
-    use Illuminate\Notifications\Notifiable;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
 
-    class User extends Authenticatable implements MustVerifyEmail
-    {
-        use Notifiable;
+class User extends Authenticatable implements MustVerifyEmail
+{
+    use Notifiable;
 
-        // ...
-    }
+    // ...
+}
+```
 
 Khi interface này đã được thêm vào model của bạn, thì những người dùng đăng ký mới sẽ được tự động gửi một email có chứa link xác minh email. Điều này diễn ra một cách liền mạch vì Laravel đã tự động đăng ký [listener](/docs/{{version}}/events) `Illuminate\Auth\Listeners\SendEmailVerificationNotification` cho event `Illuminate\Auth\Events\Registered`.
 
 Nếu bạn đang tự làm form đăng ký trong ứng dụng của bạn mà không sử dụng [bộ khởi tạo](/docs/{{version}}/starter-kits), thì bạn nên đảm bảo là bạn đang gửi event `Illuminate\Auth\Events\Registered` sau khi đăng ký người dùng thành công:
 
-    use Illuminate\Auth\Events\Registered;
+```php
+use Illuminate\Auth\Events\Registered;
 
-    event(new Registered($user));
+event(new Registered($user));
+```
 
 <a name="database-preparation"></a>
 ### Chuẩn bị cơ sở dữ liệu
@@ -66,9 +70,11 @@ Thứ ba, bạn sẽ cần có một route để gửi lại link xác minh nế
 
 Như đã đề cập trước đó, bạn cần định nghĩa một route sẽ trả về view hướng dẫn người dùng nhấn vào link xác minh email đã được Laravel gửi qua email cho họ sau khi đăng ký thành công. View này sẽ được hiển thị cho người dùng khi họ cố gắng truy cập các phần khác của ứng dụng mà chưa xác minh địa chỉ email của họ. Hãy nhớ rằng, link sẽ tự động được gửi qua email cho người dùng miễn là model `App\Models\User` của bạn implement interface `MustVerifyEmail`:
 
-    Route::get('/email/verify', function () {
-        return view('auth.verify-email');
-    })->middleware('auth')->name('verification.notice');
+```php
+Route::get('/email/verify', function () {
+    return view('auth.verify-email');
+})->middleware('auth')->name('verification.notice');
+```
 
 Route trả về thông báo xác minh email phải được đặt tên là `verification.notice`. Điều quan trọng là route này phải được đặt tên chính xác này vì middleware `verified` [có trong Laravel](#protecting-routes) sẽ tự động chuyển hướng đến tên route này nếu người dùng chưa xác minh địa chỉ email của họ.
 
@@ -80,13 +86,15 @@ Route trả về thông báo xác minh email phải được đặt tên là `ve
 
 Tiếp theo, chúng ta cần định nghĩa một route sẽ xử lý các request được tạo khi người dùng nhấn vào link xác minh email đã được gửi qua email cho họ. Route này phải được đặt tên là `verification.verify` và được gán với middlewares `auth` và `signed`:
 
-    use Illuminate\Foundation\Auth\EmailVerificationRequest;
+```php
+use Illuminate\Foundation\Auth\EmailVerificationRequest;
 
-    Route::get('/email/verify/{id}/{hash}', function (EmailVerificationRequest $request) {
-        $request->fulfill();
+Route::get('/email/verify/{id}/{hash}', function (EmailVerificationRequest $request) {
+    $request->fulfill();
 
-        return redirect('/home');
-    })->middleware(['auth', 'signed'])->name('verification.verify');
+    return redirect('/home');
+})->middleware(['auth', 'signed'])->name('verification.verify');
+```
 
 Trước khi tiếp tục, chúng ta hãy xem xét kỹ hơn về route này. Trước tiên, bạn sẽ nhận thấy rằng chúng tôi đang sử dụng loại request là `EmailVerificationRequest` thay vì instance `Illuminate\Http\Request`. `EmailVerificationRequest` là một [form request](/docs/{{version}}/validation#form-request-validation) có sẵn trong Laravel. Request này sẽ tự động đảm nhiệm việc xác thực các tham số `id` và `hash` của request.
 
@@ -97,22 +105,26 @@ Tiếp theo, chúng ta có thể tiến hành gọi trực tiếp phương thứ
 
 Thỉnh thoảng người dùng có thể nhấn nhầm chỗ hoặc vô tình xóa email xác minh địa chỉ email. Để giải quyết vấn đề này, bạn có thể muốn định nghĩa một route cho phép người dùng yêu cầu gửi lại email xác minh. Sau đó, bạn có thể tạo request này bằng cách tạo một nút gửi form đơn giản ở trong [view thông báo xác minh](#the-email-verification-notice):
 
-    use Illuminate\Http\Request;
+```php
+use Illuminate\Http\Request;
 
-    Route::post('/email/verification-notification', function (Request $request) {
-        $request->user()->sendEmailVerificationNotification();
+Route::post('/email/verification-notification', function (Request $request) {
+    $request->user()->sendEmailVerificationNotification();
 
-        return back()->with('message', 'Verification link sent!');
-    })->middleware(['auth', 'throttle:6,1'])->name('verification.send');
+    return back()->with('message', 'Verification link sent!');
+})->middleware(['auth', 'throttle:6,1'])->name('verification.send');
+```
 
 <a name="protecting-routes"></a>
 ### Bảo vệ Route
 
 [Route middleware](/docs/{{version}}/middleware) có thể được sử dụng để chỉ cho phép những người dùng mà đã xác minh được truy cập vào một route nhất định. Laravel đã có sẵn một [middleware alias](/docs/{{version}}/middleware#middleware-aliases) `verified`, là một alias cho class middleware `Illuminate\Auth\Middleware\EnsureEmailIsVerified`. Vì alias này đã được tự động đăng ký trong HTTP kernel bởi Laravel, nên tất cả những gì bạn cần là gắn middleware `verified` vào một định nghĩa route. Thông thường, middleware này sẽ được gắn với middleware `auth`:
 
-    Route::get('/profile', function () {
-        // Only verified users may access this route...
-    })->middleware(['auth', 'verified']);
+```php
+Route::get('/profile', function () {
+    // Only verified users may access this route...
+})->middleware(['auth', 'verified']);
+```
 
 Nếu người dùng chưa được xác minh email mà cố gắng truy cập vào route đã được chỉ định middleware này, họ sẽ tự động bị chuyển hướng đến [route có tên](/docs/{{version}}/routing#named-routes) `verification.notice`.
 
@@ -126,23 +138,25 @@ Mặc dù thông báo xác minh email mặc định phải đáp ứng tất c�
 
 Để bắt đầu, hãy truyền một closure tới phương thức `toMailUsing` được cung cấp bởi notification `Illuminate\Auth\Notifications\VerifyEmail`. Closure sẽ nhận vào instance model notifiable đang nhận notification và một link email verification mà người dùng phải truy cập để xác minh địa chỉ email của họ. Closure sẽ trả về một instance của `Illuminate\Notifications\Messages\MailMessage`. Thông thường, bạn nên gọi phương thức `toMailUsing` từ phương thức `boot` của class `AppServiceProvider` trong ứng dụng của bạn:
 
-    use Illuminate\Auth\Notifications\VerifyEmail;
-    use Illuminate\Notifications\Messages\MailMessage;
+```php
+use Illuminate\Auth\Notifications\VerifyEmail;
+use Illuminate\Notifications\Messages\MailMessage;
 
-    /**
-     * Bootstrap any application services.
-     */
-    public function boot(): void
-    {
-        // ...
+/**
+ * Bootstrap any application services.
+ */
+public function boot(): void
+{
+    // ...
 
-        VerifyEmail::toMailUsing(function (object $notifiable, string $url) {
-            return (new MailMessage)
-                ->subject('Verify Email Address')
-                ->line('Click the button below to verify your email address.')
-                ->action('Verify Email Address', $url);
-        });
-    }
+    VerifyEmail::toMailUsing(function (object $notifiable, string $url) {
+        return (new MailMessage)
+            ->subject('Verify Email Address')
+            ->line('Click the button below to verify your email address.')
+            ->action('Verify Email Address', $url);
+    });
+}
+```
 
 > [!NOTE]
 > Để tìm hiểu thêm về mail notification, vui lòng tham khảo thêm [tài liệu mail notification](/docs/{{version}}/notifications#mail-notifications).

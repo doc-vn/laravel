@@ -39,39 +39,43 @@ Phương án giải mã an toàn này cho phép người dùng tiếp tục sử
 
 Bạn có thể mã hóa một giá trị bằng cách sử dụng phương thức `encryptString` được cung cấp bởi facade `Crypt`. Tất cả các giá trị mã hóa đều được mã hóa bằng OpenSSL và mật mã `AES-256-CBC`. Hơn nữa, tất cả các giá trị mã hóa mà được ký bằng message authentication code (MAC). MAC được tích hợp sẵn sẽ ngăn chặn việc giải mã bất kỳ giá trị nào đã bị giả mạo bởi người dùng:
 
-     <?php
+```php
+<?php
 
-    namespace App\Http\Controllers;
+namespace App\Http\Controllers;
 
-    use Illuminate\Http\RedirectResponse;
-    use Illuminate\Http\Request;
-    use Illuminate\Support\Facades\Crypt;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Crypt;
 
-    class DigitalOceanTokenController extends Controller
+class DigitalOceanTokenController extends Controller
+{
+    /**
+     * Store a DigitalOcean API token for the user.
+     */
+    public function store(Request $request): RedirectResponse
     {
-        /**
-         * Store a DigitalOcean API token for the user.
-         */
-        public function store(Request $request): RedirectResponse
-        {
-            $request->user()->fill([
-                'token' => Crypt::encryptString($request->token),
-            ])->save();
+        $request->user()->fill([
+            'token' => Crypt::encryptString($request->token),
+        ])->save();
 
-            return redirect('/secrets');
-        }
+        return redirect('/secrets');
     }
+}
+```
 
 <a name="decrypting-a-value"></a>
 #### Decrypting A Value
 
 Bạn có thể giải mã các giá trị bằng cách sử dụng phương thức `decryptString` được cung cấp bởi facade `Crypt`. Nếu giá trị không thể được giải mã chính xác, chẳng hạn như khi message authentication code (MAC) không hợp lệ, một `Illuminate\Contracts\Encryption\DecryptException` sẽ được tạo ra:
 
-    use Illuminate\Contracts\Encryption\DecryptException;
-    use Illuminate\Support\Facades\Crypt;
+```php
+use Illuminate\Contracts\Encryption\DecryptException;
+use Illuminate\Support\Facades\Crypt;
 
-    try {
-        $decrypted = Crypt::decryptString($encryptedValue);
-    } catch (DecryptException $e) {
-        // ...
-    }
+try {
+    $decrypted = Crypt::decryptString($encryptedValue);
+} catch (DecryptException $e) {
+    // ...
+}
+```

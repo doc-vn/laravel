@@ -12,6 +12,7 @@
     - [Theo dõi file thay đổi](#watching-for-file-changes)
     - [Chỉ định số lượng Worker](#specifying-the-worker-count)
     - [Chỉ định số lượng request](#specifying-the-max-request-count)
+    - [Specifying the Max Execution Time](#specifying-the-max-execution-time)
     - [Reload Worker](#reloading-the-workers)
     - [Dừng Server](#stopping-the-server)
 - [Tích hợp phụ thuộc và Octane](#dependency-injection-and-octane)
@@ -46,9 +47,6 @@ php artisan octane:install
 
 <a name="server-prerequisites"></a>
 ## Yêu cầu Server
-
-> [!WARNING]
-> Laravel Octane yêu cầu [PHP 8.0+](https://php.net/releases/).
 
 <a name="frankenphp"></a>
 ### FrankenPHP
@@ -138,6 +136,17 @@ services:
 Nếu tùy chọn `--log-level` được truyền vào lệnh `php artisan octane:start`, Octane sẽ sử dụng logger gốc của FrankenPHP và, trừ khi được cấu hình khác, sẽ tạo ra các log dạng JSON.
 
 Bạn có thể tham khảo [tài liệu chính thức của FrankenPHP](https://frankenphp.dev/docs/docker/) để biết thêm thông tin chi tiết về cách chạy FrankenPHP cùng với Docker.
+
+<a name="frankenphp-caddyfile"></a>
+#### Custom Caddyfile Configuration
+
+Khi sử dụng FrankenPHP, bạn có thể chỉ định một Caddyfile tùy biến bằng cách sử dụng tùy chọn `--caddyfile` khi khởi chạy Octane:
+
+```shell
+php artisan octane:start --server=frankenphp --caddyfile=/path/to/your/Caddyfile
+```
+
+Điều này cho phép bạn tùy biến cấu hình của FrankenPHP vượt xa các cài đặt mặc định, chẳng hạn như thêm middleware tùy biến, cấu hình routing nâng cao hoặc cài đặt các lệnh tùy chỉnh. Bạn có thể tham khảo [tài liệu chính thức của Caddy](https://caddyserver.com/docs/caddyfile) để biết thêm thông tin về cú pháp Caddyfile và các tùy chọn cấu hình.
 
 <a name="roadrunner"></a>
 ### RoadRunner
@@ -249,6 +258,23 @@ php artisan octane:start
 
 Mặc định, Octane sẽ khởi động máy chủ trên cổng 8000, vì vậy bạn có thể truy cập ứng dụng của bạn ở trong trình duyệt web thông qua địa chỉ `http://localhost:8000`.
 
+<a name="keeping-octane-running-in-production"></a>
+#### Keeping Octane Running in Production
+
+Nếu bạn đang deploy ứng dụng Octane của bạn lên môi trường production, bạn nên sử dụng một trình giám sát process như Supervisor để đảm bảo máy chủ Octane luôn được hoạt động. Một file cấu hình Supervisor mẫu cho Octane có thể trông như sau:
+
+```ini
+[program:octane]
+process_name=%(program_name)s_%(process_num)02d
+command=php /home/forge/example.com/artisan octane:start --server=frankenphp --host=127.0.0.1 --port=8000
+autostart=true
+autorestart=true
+user=forge
+redirect_stderr=true
+stdout_logfile=/home/forge/example.com/storage/logs/octane.log
+stopwaitsecs=3600
+```
+
 <a name="serving-your-application-via-https"></a>
 ### Chạy application của bạn thông qua HTTPS
 
@@ -262,7 +288,7 @@ Mặc định, các ứng dụng chạy qua octane sẽ tạo link với tiền 
 ### Chạy application của bạn thông qua Nginx
 
 > [!NOTE]
-> Nếu bạn chưa sẵn sàng quản lý cấu hình máy chủ của bạn hoặc không thoải mái khi cấu hình tất cả các dịch vụ khác nhau cần thiết để chạy ứng dụng Laravel Octane mạnh mẽ, hãy xem [Laravel Forge](https://forge.laravel.com).
+> Nếu bạn chưa sẵn sàng quản lý cấu hình máy chủ của bạn hoặc không thoải mái khi cấu hình tất cả các dịch vụ khác nhau cần thiết để chạy ứng dụng Laravel Octane mạnh mẽ, hãy xem [Laravel Cloud](https://cloud.laravel.com), nơi cung cấp hỗ trợ quản lý hoàn toàn Laravel Octane.
 
 Trong môi trường production, bạn nên chạy ứng dụng Octane của bạn đằng sau một máy chủ web truyền thống như Nginx hoặc Apache. Làm như vậy sẽ cho phép máy chủ web phân phối các nội dung tĩnh như hình ảnh và stylesheet cũng như quản lý chứng chỉ SSL của bạn.
 
@@ -362,6 +388,20 @@ php artisan octane:start --workers=4 --task-workers=6
 ```shell
 php artisan octane:start --max-requests=250
 ```
+
+<a name="specifying-the-max-execution-time"></a>
+### Specifying the Max Execution Time
+
+Mặc định, Laravel Octane sẽ cài đặt thời gian chạy tối đa là 30 giây cho các request đến thông qua tùy chọn `max_execution_time` trong file cấu hình `config/octane.php` của ứng dụng:
+
+```php
+'max_execution_time' => 30,
+```
+
+Cài đặt này định nghĩa số giây tối đa mà một request đến được phép chạy trước khi bị kết thúc. Việc set giá trị này thành `0` sẽ disable hoàn toàn giới hạn thời gian chạy. Tùy chọn cấu hình này đặc biệt hữu ích cho các ứng dụng xử lý các request chạy lâu, chẳng hạn như upload file, xử lý dữ liệu hoặc gọi API tới các service bên ngoài.
+
+> [!WARNING]
+> Khi bạn thay đổi cấu hình `max_execution_time`, bạn phải khởi động lại máy chủ Octane để các thay đổi có hiệu lực.
 
 <a name="reloading-the-workers"></a>
 ### Reload Worker

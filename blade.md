@@ -53,9 +53,11 @@ Blade là một công cụ tạo template đơn giản nhưng mạnh mẽ đư�
 
 Blade view có thể được trả về từ các route hoặc controller bằng cách sử dụng helper `view` global. Tất nhiên, như đã đề cập trong tài liệu về [views](/docs/{{version}}/views), dữ liệu có thể được truyền cho Blade view bằng tham số thứ hai của helper `view`:
 
-    Route::get('/', function () {
-        return view('greeting', ['name' => 'Finn']);
-    });
+```php
+Route::get('/', function () {
+    return view('greeting', ['name' => 'Finn']);
+});
+```
 
 <a name="supercharging-blade-with-livewire"></a>
 ### Supercharging Blade cùng với Livewire
@@ -67,9 +69,11 @@ Bạn muốn đưa các template Blade của bạn lên một tầm cao mới v�
 
 Bạn có thể hiển thị dữ liệu mà đã được truyền đến Blade view của bạn bằng cách đặt tên biến vào trong hai lần dấu ngoặc nhọn. Ví dụ: một route như sau:
 
-    Route::get('greeting', function () {
-        return view('welcome', ['name' => 'Samantha']);
-    });
+```php
+Route::get('/', function () {
+    return view('welcome', ['name' => 'Samantha']);
+});
+```
 
 Bạn có thể hiển thị nội dung của biến `name` như thế này:
 
@@ -91,23 +95,25 @@ The current UNIX timestamp is {{ time() }}.
 
 Mặc định, Blade (cũng như phương thức `e` của Laravel) sẽ mã hóa kép các thực thể HTML. Nếu bạn không muốn mã hóa kép này, hãy gọi phương thức `Blade::withoutDoubleEncoding` từ phương thức `boot` của `AppServiceProvider` của bạn:
 
-    <?php
+```php
+<?php
 
-    namespace App\Providers;
+namespace App\Providers;
 
-    use Illuminate\Support\Facades\Blade;
-    use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\ServiceProvider;
 
-    class AppServiceProvider extends ServiceProvider
+class AppServiceProvider extends ServiceProvider
+{
+    /**
+     * Bootstrap any application services.
+     */
+    public function boot(): void
     {
-        /**
-         * Bootstrap any application services.
-         */
-        public function boot(): void
-        {
-            Blade::withoutDoubleEncoding();
-        }
+        Blade::withoutDoubleEncoding();
     }
+}
+```
 
 <a name="displaying-unescaped-data"></a>
 #### Hiển thị dữ liệu unescaped
@@ -149,7 +155,7 @@ Các symbol `@` cũng có thể được sử dụng cho các lệnh Blade:
 
 Đôi khi, bạn có thể truyền một mảng vào view của bạn với ý định hiển thị mảng đó dưới dạng JSON để khởi tạo một biến bên JavaScript. Ví dụ:
 
-```blade
+```php
 <script>
     var app = <?php echo json_encode($array); ?>;
 </script>
@@ -313,6 +319,17 @@ Lệnh `@session` có thể được sử dụng để xác định xem giá tr�
         {{ $value }}
     </div>
 @endsession
+```
+
+<a name="context-directives"></a>
+#### Context Directives
+
+Lệnh `@context` có thể được sử dụng để xác định xem giá trị [context](/docs/{{version}}/context) có tồn tại hay không. Nếu giá trị context tồn tại, nội dung của template có trong lệnh `@context` và `@endcontext` sẽ được chạy. Trong nội dung của lệnh `@context`, bạn có thể echo ra biến `$value` để hiển thị giá trị context:
+
+```blade
+@context('canonical')
+    <link href="{{ $value }}" rel="canonical">
+@endcontext
 ```
 
 <a name="switch-statements"></a>
@@ -623,6 +640,20 @@ Vì lệnh `@once` thường được sử dụng kết hợp với lệnh `@pus
 @endPushOnce
 ```
 
+Nếu bạn đang đưa một nội dung trùng lặp từ hai template Blade khác nhau, bạn nên cung cấp một mã định danh làm tham số thứ hai cho lệnh `@pushOnce` để đảm bảo nội dung chỉ được tạo ra một lần duy nhất:
+
+```blade
+<!-- pie-chart.blade.php -->
+@pushOnce('scripts', 'chart.js')
+    <script src="/chart.js"></script>
+@endPushOnce
+
+<!-- line-chart.blade.php -->
+@pushOnce('scripts', 'chart.js')
+    <script src="/chart.js"></script>
+@endPushOnce
+```
+
 <a name="raw-php"></a>
 ### Raw PHP
 
@@ -642,8 +673,35 @@ Hoặc, nếu bạn chỉ muốn sử dụng PHP để import một class, bạn
 
 Bạn có thể cung cấp tham số thứ hai cho lệnh `@use` để đặt tên cho class đã được import:
 
-```php
+```blade
 @use('App\Models\Flight', 'FlightModel')
+```
+
+Nếu bạn có nhiều class trong cùng một namespace, bạn có thể group các import của các class đó:
+
+```blade
+@use('App\Models\{Flight, Airport}')
+```
+
+Lệnh `@use` cũng hỗ trợ import các hàm và hằng số PHP bằng cách thêm tiền tố `function` hoặc `const` vào đường dẫn import:
+
+```blade
+@use(function App\Helpers\format_currency)
+@use(const App\Constants\MAX_ATTEMPTS)
+```
+
+Giống như class imports, aliases cũng được hỗ trợ cho functions và constants:
+
+```blade
+@use(function App\Helpers\format_currency, 'formatMoney')
+@use(const App\Constants\MAX_ATTEMPTS, 'MAX_TRIES')
+```
+
+Group import cũng được hỗ trợ cho cả function và const, cho phép bạn import nhiều symbols từ cùng một namespace trong một thư mục duy nhất:
+
+```blade
+@use(function App\Helpers\{format_currency, format_date})
+@use(const App\Constants\{MAX_ATTEMPTS, DEFAULT_TIMEOUT})
 ```
 
 <a name="comments"></a>
@@ -676,14 +734,6 @@ php artisan make:component Forms/Input
 
 Lệnh trên sẽ tạo một component `Input` trong thư mục `app/View/Components/Forms` và view sẽ được lưu trong thư mục `resources/views/components/forms`.
 
-Nếu bạn muốn tạo một component ẩn (một component chỉ có một Blade template và không có class), bạn có thể sử dụng flag `--view` khi gọi lệnh `make:component`:
-
-```shell
-php artisan make:component forms.input --view
-```
-
-Lệnh trên sẽ tạo một file Blade ở `resources/views/components/forms/input.blade.php` có thể được hiển thị dưới dạng một component thông qua `<x-forms.input />`.
-
 <a name="manually-registering-package-components"></a>
 #### Manually Registering Package Components
 
@@ -691,15 +741,17 @@ Khi viết các component cho ứng dụng của bạn, các component sẽ tự
 
 Tuy nhiên, nếu bạn đang xây dựng một package sử dụng các component Blade, bạn sẽ cần phải đăng ký thủ công các class component của bạn và các bí danh tag HTML của nó. Thông thường, bạn nên đăng ký các component của bạn trong phương thức `boot` của service provider trong package của bạn:
 
-    use Illuminate\Support\Facades\Blade;
+```php
+use Illuminate\Support\Facades\Blade;
 
-    /**
-     * Bootstrap your package's services.
-     */
-    public function boot(): void
-    {
-        Blade::component('package-alert', Alert::class);
-    }
+/**
+ * Bootstrap your package's services.
+ */
+public function boot(): void
+{
+    Blade::component('package-alert', Alert::class);
+}
+```
 
 Khi component của bạn đã được đăng ký, nó có thể được hiển thị bằng bí danh tag của nó:
 
@@ -709,15 +761,17 @@ Khi component của bạn đã được đăng ký, nó có thể được hiể
 
 Ngoài ra, bạn có thể sử dụng phương thức `componentNamespace` để tự động load các class component theo quy ước. Ví dụ: package `Nightshade` có thể có các component `Calendar` và `ColorPicker` nằm trong namespace là `Package\Views\Components`:
 
-    use Illuminate\Support\Facades\Blade;
+```php
+use Illuminate\Support\Facades\Blade;
 
-    /**
-     * Bootstrap your package's services.
-     */
-    public function boot(): void
-    {
-        Blade::componentNamespace('Nightshade\\Views\\Components', 'nightshade');
-    }
+/**
+ * Bootstrap your package's services.
+ */
+public function boot(): void
+{
+    Blade::componentNamespace('Nightshade\\Views\\Components', 'nightshade');
+}
+```
 
 Điều này sẽ cho phép sử dụng các package component theo namespace của họ bằng cách sử dụng cú pháp như sau: `package-name::`:
 
@@ -747,22 +801,24 @@ Nếu class component được lồng sâu hơn trong thư mục `app/View/Compo
 
 Nếu muốn render component của bạn theo một điều kiện nào đó, bạn có thể định nghĩa một phương thức `shouldRender` trên class component của bạn. Nếu phương thức `shouldRender` trả về `false` thì component sẽ không được render:
 
-    use Illuminate\Support\Str;
+```php
+use Illuminate\Support\Str;
 
-    /**
-     * Whether the component should be rendered
-     */
-    public function shouldRender(): bool
-    {
-        return Str::length($this->message) > 0;
-    }
+/**
+ * Whether the component should be rendered
+ */
+public function shouldRender(): bool
+{
+    return Str::length($this->message) > 0;
+}
+```
 
 <a name="index-components"></a>
 ### Index Components
 
 Thỉnh thoảng các component là một phần của một nhóm các component và bạn có thể muốn nhóm các component liên quan vào trong một thư mục duy nhất. Ví dụ, hãy tưởng tượng bạn có một component "card" với cấu trúc class sau:
 
-```none
+```text
 App\Views\Components\Card\Card
 App\Views\Components\Card\Header
 App\Views\Components\Card\Body
@@ -788,31 +844,33 @@ Bạn có thể truyền dữ liệu đến các component Blade bằng cách s�
 
 Bạn nên định nghĩa tất cả các dữ liệu của thuộc tính của component trong phương thức khởi tạo class của nó. Tất cả các thuộc tính public trong một component sẽ được tự động truyền view của component. Không cần thiết phải truyền dữ liệu vào view từ phương thức `render` của component:
 
-    <?php
+```php
+<?php
 
-    namespace App\View\Components;
+namespace App\View\Components;
 
-    use Illuminate\View\Component;
-    use Illuminate\View\View;
+use Illuminate\View\Component;
+use Illuminate\View\View;
 
-    class Alert extends Component
+class Alert extends Component
+{
+    /**
+     * Create the component instance.
+     */
+    public function __construct(
+        public string $type,
+        public string $message,
+    ) {}
+
+    /**
+     * Get the view / contents that represent the component.
+     */
+    public function render(): View
     {
-        /**
-         * Create the component instance.
-         */
-        public function __construct(
-            public string $type,
-            public string $message,
-        ) {}
-
-        /**
-         * Get the view / contents that represent the component.
-         */
-        public function render(): View
-        {
-            return view('components.alert');
-        }
+        return view('components.alert');
     }
+}
+```
 
 Khi component của bạn được tạo, bạn có thể hiển thị nội dung của các biến public của component bằng cách echo các biến theo tên của nó:
 
@@ -827,12 +885,14 @@ Khi component của bạn được tạo, bạn có thể hiển thị nội dun
 
 Các tham số của hàm khởi tạo component phải được chỉ định bằng cách sử dụng quy tắc đặt tên `camelCase`, trong khi quy tắc đặt tên `kebab-case` nên được sử dụng khi tham chiếu đến tên tham số đó trong các thuộc tính HTML của bạn. Ví dụ: cho hàm khởi tạo component sau:
 
-    /**
-     * Create the component instance.
-     */
-    public function __construct(
-        public string $alertType,
-    ) {}
+```php
+/**
+ * Create the component instance.
+ */
+public function __construct(
+    public string $alertType,
+) {}
+```
 
 Tham số `$alertType` có thể được cung cấp vào component như sau:
 
@@ -877,13 +937,15 @@ HTML sau đây sẽ được hiển thị bởi Blade:
 
 Ngoài các biến public có sẵn trong component template của bạn, bất kỳ phương thức public nào có trong component cũng có thể được gọi. Ví dụ: hãy tưởng tượng một component có phương thức `isSelected`:
 
-    /**
-     * Determine if the given option is the currently selected option.
-     */
-    public function isSelected(string $option): bool
-    {
-        return $option === $this->selected;
-    }
+```php
+/**
+ * Determine if the given option is the currently selected option.
+ */
+public function isSelected(string $option): bool
+{
+    return $option === $this->selected;
+}
+```
 
 Bạn có thể thực thi phương thức này từ trong component template của bạn bằng cách gọi một biến khớp với tên của phương thức đó:
 
@@ -898,27 +960,31 @@ Bạn có thể thực thi phương thức này từ trong component template c�
 
 Các Blade component cũng cho phép bạn truy cập vào tên component, thuộc tính và slot bên trong phương thức render của class. Tuy nhiên, để truy cập vào các dữ liệu này, bạn nên trả về một Closure từ phương thức `render` của component của bạn:
 
-    use Closure;
+```php
+use Closure;
 
-    /**
-     * Get the view / contents that represent the component.
-     */
-    public function render(): Closure
-    {
-        return function () {
-            return '<div {{ $attributes }}>Components content</div>';
-        };
-    }
+/**
+ * Get the view / contents that represent the component.
+ */
+public function render(): Closure
+{
+    return function () {
+        return '<div {{ $attributes }}>Components content</div>';
+    };
+}
+```
 
 Closure được trả về bởi phương thức `render` của component của bạn cũng có thể nhận vào một mảng `$data` làm tham số duy nhất của nó. Mảng này sẽ chứa một số phần tử cung cấp thông tin về component:
 
-    return function (array $data) {
-        // $data['componentName'];
-        // $data['attributes'];
-        // $data['slot'];
+```php
+return function (array $data) {
+    // $data['componentName'];
+    // $data['attributes'];
+    // $data['slot'];
 
-        return '<div {{ $attributes }}>Components content</div>';
-    }
+    return '<div {{ $attributes }}>Components content</div>';
+}
+```
 
 > [!WARNING]
 > Các phần tử trong mảng `$data` không bao giờ được nhúng trực tiếp vào chuỗi Blade được trả về bởi phương thức `render` của bạn, vì làm như vậy có thể cho phép chạy code từ xa thông qua thuộc tính content độc hại.
@@ -950,28 +1016,30 @@ public function __construct(
 
 Nếu bạn muốn ngăn không cho một số phương thức hoặc thuộc tính công khai hiển thị dưới dạng là một biến cho template component của bạn, bạn có thể thêm chúng vào thuộc tính mảng `$except` trên component của bạn:
 
-    <?php
+```php
+<?php
 
-    namespace App\View\Components;
+namespace App\View\Components;
 
-    use Illuminate\View\Component;
+use Illuminate\View\Component;
 
-    class Alert extends Component
-    {
-        /**
-         * The properties / methods that should not be exposed to the component template.
-         *
-         * @var array
-         */
-        protected $except = ['type'];
+class Alert extends Component
+{
+    /**
+     * The properties / methods that should not be exposed to the component template.
+     *
+     * @var array
+     */
+    protected $except = ['type'];
 
-        /**
-         * Create the component instance.
-         */
-        public function __construct(
-            public string $type,
-        ) {}
-    }
+    /**
+     * Create the component instance.
+     */
+    public function __construct(
+        public string $type,
+    ) {}
+}
+```
 
 <a name="component-attributes"></a>
 ### Thuộc tính Component
@@ -1038,7 +1106,7 @@ Nếu bạn cần hợp nhất các thuộc tính khác nhau vào component củ
 ```
 
 > [!NOTE]
-> Nếu bạn cần biên dịch có điều kiện các class trên các element HTML khác mà không nhận các thuộc tính được hợp nhất, bạn có thể sử dụng lệnh [`@class`](#conditional-classes).
+> Nếu bạn cần biên dịch có điều kiện các class trên các element HTML khác mà không nhận các thuộc tính được hợp nhất, bạn có thể sử dụng lệnh [@class](#conditional-classes).
 
 <a name="non-class-attribute-merging"></a>
 #### Non-Class Attribute Merging
@@ -1132,6 +1200,18 @@ Bạn có thể lấy ra giá trị của một thuộc tính cụ thể bằng 
 {{ $attributes->get('class') }}
 ```
 
+Phương thức `only` có thể được sử dụng để chỉ lấy ra các thuộc tính có khóa đã cho:
+
+```blade
+{{ $attributes->only(['class']) }}
+```
+
+Phương thức `except` có thể được sử dụng để lấy ra tất cả các thuộc tính ngoại trừ những thuộc tính có khóa đã cho:
+
+```blade
+{{ $attributes->except(['class']) }}
+```
+
 <a name="reserved-keywords"></a>
 ### Reserved Keywords
 
@@ -1141,6 +1221,7 @@ Mặc định, một số từ khóa được dành riêng cho mục đích sử
 
 - `data`
 - `render`
+- `resolve`
 - `resolveView`
 - `shouldRender`
 - `view`
@@ -1276,17 +1357,19 @@ Giống như các component của Blade, bạn có thể gán [thuộc tính](#c
 
 Đối với các component rất nhỏ, bạn có thể cảm thấy cồng kềnh khi quản lý cả một class component và template view của component đó. Vì lý do đó, bạn có thể trả về một component trực tiếp từ phương thức `render`:
 
-    /**
-     * Get the view / contents that represent the component.
-     */
-    public function render(): string
-    {
-        return <<<'blade'
-            <div class="alert alert-danger">
-                {{ $slot }}
-            </div>
-        blade;
-    }
+```php
+/**
+ * Get the view / contents that represent the component.
+ */
+public function render(): string
+{
+    return <<<'blade'
+        <div class="alert alert-danger">
+            {{ $slot }}
+        </div>
+    blade;
+}
+```
 
 <a name="generating-inline-view-components"></a>
 #### Generating Inline View Components
@@ -1318,16 +1401,18 @@ Khi viết các component cho ứng dụng của bạn, các component sẽ tự
 
 Tuy nhiên, nếu bạn đang xây dựng một package sử dụng các component Blade hoặc đặt các component trong các thư mục không theo quy ước trên, bạn sẽ cần phải đăng ký thủ công các class component của bạn và các bí danh thẻ HTML của nó để Laravel có thể biết nơi để tìm component đó. Bạn nên đăng ký các component của bạn trong phương thức `boot` của service provider trong package của bạn:
 
-    use Illuminate\Support\Facades\Blade;
-    use VendorPackage\View\Components\AlertComponent;
+```php
+use Illuminate\Support\Facades\Blade;
+use VendorPackage\View\Components\AlertComponent;
 
-    /**
-     * Bootstrap your package's services.
-     */
-    public function boot(): void
-    {
-        Blade::component('package-alert', AlertComponent::class);
-    }
+/**
+ * Bootstrap your package's services.
+ */
+public function boot(): void
+{
+    Blade::component('package-alert', AlertComponent::class);
+}
+```
 
 Sau khi component của bạn đã được đăng ký, nó có thể được hiển thị bằng cách sử dụng bí danh thẻ html của nó:
 
@@ -1339,15 +1424,17 @@ Sau khi component của bạn đã được đăng ký, nó có thể được h
 
 Ngoài ra, bạn có thể sử dụng phương thức `componentNamespace` để autoload các class component theo quy ước. Ví dụ, một package `Nightshade` có thể có các component `Calendar` và `ColorPicker` nằm trong namespace `Package\Views\Components`:
 
-    use Illuminate\Support\Facades\Blade;
+```php
+use Illuminate\Support\Facades\Blade;
 
-    /**
-     * Bootstrap your package's services.
-     */
-    public function boot(): void
-    {
-        Blade::componentNamespace('Nightshade\\Views\\Components', 'nightshade');
-    }
+/**
+ * Bootstrap your package's services.
+ */
+public function boot(): void
+{
+    Blade::componentNamespace('Nightshade\\Views\\Components', 'nightshade');
+}
+```
 
 Điều này sẽ cho phép bạn sử dụng các package component theo namespace của library bằng cú pháp `package-name::`:
 
@@ -1373,12 +1460,20 @@ Bạn có thể sử dụng ký tự `.` để cho biết một component đư�
 <x-inputs.button/>
 ```
 
+Để tạo ra một component ẩn thông qua Artisan, bạn có thể sử dụng flag `--view` khi chạy lệnh `make:component`:
+
+```shell
+php artisan make:component forms.input --view
+```
+
+Lệnh trên sẽ tạo ra một file Blade tại `resources/views/components/forms/input.blade.php`, file này có thể được hiển thị dưới dạng một component thông qua `<x-forms.input />`.
+
 <a name="anonymous-index-components"></a>
 ### Anonymous Index Components
 
 Thỉnh thoảng, khi một component được tạo thành từ nhiều template Blade, bạn có thể muốn nhóm các template của component đã cho trong một thư mục. Ví dụ: hãy tưởng tượng một component "accordion" với cấu trúc thư mục sau:
 
-```none
+```text
 /resources/views/components/accordion.blade.php
 /resources/views/components/accordion/item.blade.php
 ```
@@ -1397,7 +1492,7 @@ Tuy nhiên, để hiển thị component accordion thông qua `x-accordion`, ch�
 
 Rất may, Blade cho phép bạn đặt tên file giống với tên thư mục của component trong chính thư mục của component đó. Khi template này tồn tại, nó có thể được hiển thị dưới dạng phần tử "root" của component ngay cả khi nó được lồng trong một thư mục. Vì vậy, chúng ta có thể tiếp tục sử dụng cùng một cú pháp Blade được đưa ra trong ví dụ trên; tuy nhiên, chúng ta sẽ điều chỉnh cấu trúc thư mục của mình như sau:
 
-```none
+```text
 /resources/views/components/accordion/accordion.blade.php
 /resources/views/components/accordion/item.blade.php
 ```
@@ -1471,13 +1566,15 @@ Như đã thảo luận trước đó, các component ẩn thường được đ
 
 Phương thức `anonymousComponentPath` chấp nhận một "đường dẫn" đến vị trí component ẩn làm tham số đầu tiên và một tùy chọn "namespace" mà các component nên được đặt ở sau namespace đó làm tham số thứ hai. Thông thường, phương thức này nên được gọi từ phương thức `boot` của một trong các [service providers](/docs/{{version}}/providers) của ứng dụng của bạn:
 
-    /**
-     * Bootstrap any application services.
-     */
-    public function boot(): void
-    {
-        Blade::anonymousComponentPath(__DIR__.'/../components');
-    }
+```php
+/**
+ * Bootstrap any application services.
+ */
+public function boot(): void
+{
+    Blade::anonymousComponentPath(__DIR__.'/../components');
+}
+```
 
 Khi đường dẫn component đã được đăng ký mà không có tiền tố được chỉ định như ở trong ví dụ trên, thì chúng có thể được hiển thị trong các component Blade của bạn mà không cần tiền tố tương ứng. Ví dụ, nếu một component `panel.blade.php` tồn tại trong đường dẫn đã đăng ký ở trên, thì nó có thể được hiển thị như sau:
 
@@ -1487,7 +1584,9 @@ Khi đường dẫn component đã được đăng ký mà không có tiền t�
 
 Tiền tố "namespaces" có thể được cung cấp làm tham số thứ hai cho phương thức `anonymousComponentPath`:
 
-    Blade::anonymousComponentPath(__DIR__.'/../components', 'dashboard');
+```php
+Blade::anonymousComponentPath(__DIR__.'/../components', 'dashboard');
+```
 
 Khi cung cấp tiền tố, các component trong "namespace" đó có thể được hiển thị bằng cách thêm tiền tố namespace của component vào tên của component khi component được hiển thị:
 
@@ -1556,11 +1655,13 @@ Hãy nhớ rằng, mặc định, nội dung được thêm vào một component
 
 Bây giờ chúng ta đã định nghĩa xong view danh sách công việc và layout của bạn, bây giờ chúng ta chỉ cần trả lại layout `task` này từ một route:
 
-    use App\Models\Task;
+```php
+use App\Models\Task;
 
-    Route::get('/tasks', function () {
-        return view('tasks', ['tasks' => Task::all()]);
-    });
+Route::get('/tasks', function () {
+    return view('tasks', ['tasks' => Task::all()]);
+});
+```
 
 <a name="layouts-using-template-inheritance"></a>
 ### Layouts dùng Template kế thừa
@@ -1754,6 +1855,16 @@ Nếu bạn muốn thêm nội dung vào đầu một stack, bạn có thể s�
 @endprepend
 ```
 
+Lệnh `@hasstack` có thể được sử dụng để xác định xem một stack có rỗng hay không:
+
+```blade
+@hasstack('list')
+    <ul>
+        @stack('list')
+    </ul>
+@endif
+```
+
 <a name="service-injection"></a>
 ## Service Injection
 
@@ -1836,37 +1947,41 @@ Blade cho phép bạn định nghĩa thêm các lệnh tùy biến của riêng 
 
 Ví dụ sau đây sẽ tạo ra một lệnh `@datetime($var)` để format lại một biến `$var` đã cho, và biến này phải là một instance của `DateTime`:
 
-    <?php
+```php
+<?php
 
-    namespace App\Providers;
+namespace App\Providers;
 
-    use Illuminate\Support\Facades\Blade;
-    use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\ServiceProvider;
 
-    class AppServiceProvider extends ServiceProvider
+class AppServiceProvider extends ServiceProvider
+{
+    /**
+     * Register any application services.
+     */
+    public function register(): void
     {
-        /**
-         * Register any application services.
-         */
-        public function register(): void
-        {
-            // ...
-        }
-
-        /**
-         * Bootstrap any application services.
-         */
-        public function boot(): void
-        {
-            Blade::directive('datetime', function (string $expression) {
-                return "<?php echo ($expression)->format('m/d/Y H:i'); ?>";
-            });
-        }
+        // ...
     }
+
+    /**
+     * Bootstrap any application services.
+     */
+    public function boot(): void
+    {
+        Blade::directive('datetime', function (string $expression) {
+            return "<?php echo ($expression)->format('m/d/Y H:i'); ?>";
+        });
+    }
+}
+```
 
 Như bạn có thể thấy, chúng ta sẽ nối phương thức `format` vào bất kỳ biểu thức nào được truyền vào lệnh. Vì vậy, trong ví dụ này, code PHP cuối cùng được tạo ra bởi lệnh này sẽ như sau:
 
-    <?php echo ($var)->format('m/d/Y H:i'); ?>
+```php
+<?php echo ($var)->format('m/d/Y H:i'); ?>
+```
 
 > [!WARNING]
 > Sau khi cập nhật logic của lệnh Blade, bạn sẽ cần xóa tất cả các view Blade đã được lưu trong bộ nhớ cache. Các view Blade được lưu trong bộ nhớ cache có thể được loại bỏ bằng lệnh Artisan `view:clear`.
@@ -1874,22 +1989,24 @@ Như bạn có thể thấy, chúng ta sẽ nối phương thức `format` vào 
 <a name="custom-echo-handlers"></a>
 ### Tuỳ chỉnh xử lý hiển thị
 
-Nếu bạn cố gắng thử "echo" một đối tượng bằng Blade, thì phương thức `__toString` của đối tượng đó sẽ được gọi. Phương thức [`__toString`](https://www.php.net/manual/en/language.oop5.magic.php#object.tostring) là một trong những "phương thức magic" được tích hợp sẵn trong PHP. Tuy nhiên, đôi khi bạn có thể không có quyền kiểm soát đối với phương thức `__toString` của một class nhất định, chẳng hạn như khi class mà bạn đang tương tác thuộc về thư viện của third-party.
+Nếu bạn cố gắng thử "echo" một đối tượng bằng Blade, thì phương thức `__toString` của đối tượng đó sẽ được gọi. Phương thức [__toString](https://www.php.net/manual/en/language.oop5.magic.php#object.tostring) là một trong những "phương thức magic" được tích hợp sẵn trong PHP. Tuy nhiên, đôi khi bạn có thể không có quyền kiểm soát đối với phương thức `__toString` của một class nhất định, chẳng hạn như khi class mà bạn đang tương tác thuộc về thư viện của third-party.
 
 Trong những trường hợp như vậy, Blade cho phép bạn tuỳ chỉnh xử lý hiển thị cho một loại đối tượng cụ thể đó. Để thực hiện điều này, bạn nên gọi phương thức `stringable` của Blade. Phương thức `stringable` chấp nhận một closure. Closure này sẽ khai báo kiểu đối tượng mà nó chịu trách nhiệm hiển thị. Thông thường, phương thức `stringable` nên được gọi trong phương thức `boot` của class `AppServiceProvider` trong ứng dụng của bạn:
 
-    use Illuminate\Support\Facades\Blade;
-    use Money\Money;
+```php
+use Illuminate\Support\Facades\Blade;
+use Money\Money;
 
-    /**
-     * Bootstrap any application services.
-     */
-    public function boot(): void
-    {
-        Blade::stringable(function (Money $money) {
-            return $money->formatTo('en_GB');
-        });
-    }
+/**
+ * Bootstrap any application services.
+ */
+public function boot(): void
+{
+    Blade::stringable(function (Money $money) {
+        return $money->formatTo('en_GB');
+    });
+}
+```
 
 Khi tùy chỉnh xử lý hiển thị của bạn đã được định nghĩa xong, bạn chỉ đơn giản là hiển thị đối tượng trong template Blade của bạn:
 
@@ -1902,17 +2019,19 @@ Cost: {{ $money }}
 
 Lập trình một lệnh tùy biến đôi khi lại là phức tạp hơn là định nghĩa một câu lệnh điều kiện tùy biến đơn giản. Vì lý do đó, Blade cung cấp phương thức `Blade::if` cho phép bạn nhanh chóng định nghĩa các lệnh tùy biến có điều kiện bằng cách sử dụng closures. Ví dụ: hãy định nghĩa một điều kiện tùy biến để có thể kiểm tra cấu hình "disk" hiện tại của application. Chúng ta có thể làm điều này trong phương thức `boot` của `AppServiceProvider`:
 
-    use Illuminate\Support\Facades\Blade;
+```php
+use Illuminate\Support\Facades\Blade;
 
-    /**
-     * Bootstrap any application services.
-     */
-    public function boot(): void
-    {
-        Blade::if('disk', function (string $value) {
-            return config('filesystems.default') === $value;
-        });
-    }
+/**
+ * Bootstrap any application services.
+ */
+public function boot(): void
+{
+    Blade::if('disk', function (string $value) {
+        return config('filesystems.default') === $value;
+    });
+}
+```
 
 Khi điều kiện tùy biến đã được định nghĩa xong, bạn có thể sử dụng nó trong các template của bạn:
 

@@ -13,14 +13,14 @@
 <a name="introduction"></a>
 ## Giới thiệu
 
-[Redis](https://redis.io) là một dự án mã nguồn mở, dùng để lưu trữ các giá trị key-value. Nó thường được coi như là một server cấu trúc dữ liệu vì các key của nó có thể lưu [strings](https://redis.io/docs/data-types/strings/), [hashes](https://redis.io/docs/data-types/hashes/), [lists](https://redis.io/docs/data-types/lists/), [sets](https://redis.io/docs/data-types/sets/), và [sorted sets](https://redis.io/docs/data-types/sorted-sets/).
+[Redis](https://redis.io) là một dự án mã nguồn mở, dùng để lưu trữ các giá trị key-value. Nó thường được coi như là một server cấu trúc dữ liệu vì các key của nó có thể lưu [strings](https://redis.io/docs/latest/develop/data-types/strings/), [hashes](https://redis.io/docs/latest/develop/data-types/hashes/), [lists](https://redis.io/docs/latest/develop/data-types/lists/), [sets](https://redis.io/docs/latest/develop/data-types/sets/), và [sorted sets](https://redis.io/docs/latest/develop/data-types/sorted-sets/).
 
-Trước khi sử dụng Redis cho Laravel, chúng tôi khuyến khích bạn cài đặt và sử dụng extension [PhpRedis](https://github.com/phpredis/phpredis) của PHP thông qua PECL. Extension này phức tạp hơn để cài đặt compared to "user-land" PHP packages nhưng có thể mang lại hiệu suất tốt hơn cho các ứng dụng mà sử dụng nhiều Redis. Nếu bạn đang sử dụng [Laravel Sail](/docs/{{version}}/sail), thì extension này đã được cài đặt sẵn trong Docker container của ứng dụng của bạn.
+Trước khi sử dụng Redis cho Laravel, chúng tôi khuyến khích bạn cài đặt và sử dụng extension [PhpRedis](https://github.com/phpredis/phpredis) của PHP thông qua PECL. Extension này sẽ phức tạp hơn về mặt cài đặt so với các package PHP "user-land" nhưng có thể mang lại hiệu suất tốt hơn cho các ứng dụng mà sử dụng nhiều Redis. Nếu bạn đang sử dụng [Laravel Sail](/docs/{{version}}/sail), thì extension này đã được cài đặt sẵn trong Docker container của ứng dụng của bạn.
 
 Nếu bạn không thể cài đặt extension PhpRedis, bạn có thể cài đặt package `predis/predis` thông qua Composer. Predis là một client Redis được viết hoàn toàn bằng PHP và nó không yêu cầu cài thêm bất kỳ extension nào:
 
 ```shell
-composer require predis/predis:^2.0
+composer require predis/predis
 ```
 
 <a name="configuration"></a>
@@ -28,63 +28,17 @@ composer require predis/predis:^2.0
 
 Bạn có thể cấu hình cài đặt Redis của ứng dụng thông qua file cấu hình `config/database.php`. Trong file này, bạn sẽ thấy một mảng `redis` chứa các server Redis được application của bạn sử dụng:
 
-    'redis' => [
+```php
+'redis' => [
 
-        'client' => env('REDIS_CLIENT', 'phpredis'),
+    'client' => env('REDIS_CLIENT', 'phpredis'),
 
-        'options' => [
-            'cluster' => env('REDIS_CLUSTER', 'redis'),
-            'prefix' => env('REDIS_PREFIX', Str::slug(env('APP_NAME', 'laravel'), '_').'_database_'),
-        ],
-
-        'default' => [
-            'url' => env('REDIS_URL'),
-            'host' => env('REDIS_HOST', '127.0.0.1'),
-            'username' => env('REDIS_USERNAME'),
-            'password' => env('REDIS_PASSWORD'),
-            'port' => env('REDIS_PORT', '6379'),
-            'database' => env('REDIS_DB', '0'),
-        ],
-
-        'cache' => [
-            'url' => env('REDIS_URL'),
-            'host' => env('REDIS_HOST', '127.0.0.1'),
-            'username' => env('REDIS_USERNAME'),
-            'password' => env('REDIS_PASSWORD'),
-            'port' => env('REDIS_PORT', '6379'),
-            'database' => env('REDIS_CACHE_DB', '1'),
-        ],
-
+    'options' => [
+        'cluster' => env('REDIS_CLUSTER', 'redis'),
+        'prefix' => env('REDIS_PREFIX', Str::slug(env('APP_NAME', 'laravel'), '_').'_database_'),
     ],
-
-Mỗi một server Redis được định nghĩa trong file cấu hình của bạn yêu cầu phải có tên, host và một cổng trừ khi bạn định nghĩa một URL để đại diện cho kết nối Redis đó:
-
-    'redis' => [
-
-        'client' => env('REDIS_CLIENT', 'phpredis'),
-
-        'options' => [
-            'cluster' => env('REDIS_CLUSTER', 'redis'),
-            'prefix' => env('REDIS_PREFIX', Str::slug(env('APP_NAME', 'laravel'), '_').'_database_'),
-        ],
-
-        'default' => [
-            'url' => 'tcp://127.0.0.1:6379?database=0',
-        ],
-
-        'cache' => [
-            'url' => 'tls://user:password@127.0.0.1:6380?database=1',
-        ],
-
-    ],
-
-<a name="configuring-the-connection-scheme"></a>
-#### Configuring The Connection Scheme
-
-Mặc định, các Redis client sẽ sử dụng scheme `tcp` khi kết nối với Redis server của bạn; tuy nhiên, bạn có thể sử dụng mã hóa TLS / SSL bằng cách chỉ định một tùy chọn cấu hình `scheme` trong mảng cấu hình của Redis server của bạn:
 
     'default' => [
-        'scheme' => 'tls',
         'url' => env('REDIS_URL'),
         'host' => env('REDIS_HOST', '127.0.0.1'),
         'username' => env('REDIS_USERNAME'),
@@ -93,35 +47,89 @@ Mặc định, các Redis client sẽ sử dụng scheme `tcp` khi kết nối v
         'database' => env('REDIS_DB', '0'),
     ],
 
+    'cache' => [
+        'url' => env('REDIS_URL'),
+        'host' => env('REDIS_HOST', '127.0.0.1'),
+        'username' => env('REDIS_USERNAME'),
+        'password' => env('REDIS_PASSWORD'),
+        'port' => env('REDIS_PORT', '6379'),
+        'database' => env('REDIS_CACHE_DB', '1'),
+    ],
+
+],
+```
+
+Mỗi một server Redis được định nghĩa trong file cấu hình của bạn yêu cầu phải có tên, host và một cổng trừ khi bạn định nghĩa một URL để đại diện cho kết nối Redis đó:
+
+```php
+'redis' => [
+
+    'client' => env('REDIS_CLIENT', 'phpredis'),
+
+    'options' => [
+        'cluster' => env('REDIS_CLUSTER', 'redis'),
+        'prefix' => env('REDIS_PREFIX', Str::slug(env('APP_NAME', 'laravel'), '_').'_database_'),
+    ],
+
+    'default' => [
+        'url' => 'tcp://127.0.0.1:6379?database=0',
+    ],
+
+    'cache' => [
+        'url' => 'tls://user:password@127.0.0.1:6380?database=1',
+    ],
+
+],
+```
+
+<a name="configuring-the-connection-scheme"></a>
+#### Configuring The Connection Scheme
+
+Mặc định, các Redis client sẽ sử dụng scheme `tcp` khi kết nối với Redis server của bạn; tuy nhiên, bạn có thể sử dụng mã hóa TLS / SSL bằng cách chỉ định một tùy chọn cấu hình `scheme` trong mảng cấu hình của Redis server của bạn:
+
+```php
+'default' => [
+    'scheme' => 'tls',
+    'url' => env('REDIS_URL'),
+    'host' => env('REDIS_HOST', '127.0.0.1'),
+    'username' => env('REDIS_USERNAME'),
+    'password' => env('REDIS_PASSWORD'),
+    'port' => env('REDIS_PORT', '6379'),
+    'database' => env('REDIS_DB', '0'),
+],
+```
+
 <a name="clusters"></a>
 ### Cụm
 
 Nếu application của bạn đang sử dụng một cụm server Redis, bạn nên định nghĩa các cụm này bằng một key là `clusters` trong file cấu hình Redis của bạn. Mặc định, khóa cấu hình này không tồn tại, do đó bạn sẽ cần tạo nó trong file cấu hình `config/database.php` của ứng dụng:
 
-    redis' => [
+```php
+redis' => [
 
-        'client' => env('REDIS_CLIENT', 'phpredis'),
+    'client' => env('REDIS_CLIENT', 'phpredis'),
 
-        'options' => [
-            'cluster' => env('REDIS_CLUSTER', 'redis'),
-            'prefix' => env('REDIS_PREFIX', Str::slug(env('APP_NAME', 'laravel'), '_').'_database_'),
-        ],
+    'options' => [
+        'cluster' => env('REDIS_CLUSTER', 'redis'),
+        'prefix' => env('REDIS_PREFIX', Str::slug(env('APP_NAME', 'laravel'), '_').'_database_'),
+    ],
 
-        'clusters' => [
-            'default' => [
-                [
-                    'url' => env('REDIS_URL'),
-                    'host' => env('REDIS_HOST', '127.0.0.1'),
-                    'username' => env('REDIS_USERNAME'),
-                    'password' => env('REDIS_PASSWORD'),
-                    'port' => env('REDIS_PORT', '6379'),
-                    'database' => env('REDIS_DB', '0'),
-                ],
+    'clusters' => [
+        'default' => [
+            [
+                'url' => env('REDIS_URL'),
+                'host' => env('REDIS_HOST', '127.0.0.1'),
+                'username' => env('REDIS_USERNAME'),
+                'password' => env('REDIS_PASSWORD'),
+                'port' => env('REDIS_PORT', '6379'),
+                'database' => env('REDIS_DB', '0'),
             ],
         ],
-
-        // ...
     ],
+
+    // ...
+],
+```
 
 Mặc định, Laravel sẽ sử dụng native Redis clustering vì giá trị cấu hình `options.cluster` được set thành `redis`. Redis clustering là một tùy chọn mặc định tuyệt vời, bởi vì nó xử lý failover một cách linh hoạt.
 
@@ -129,87 +137,129 @@ Laravel cũng hỗ trợ client-side sharding khi sử dụng Predis. Tuy nhiên
 
 Nếu bạn muốn sử dụng client-side sharding thay vì native Redis clustering, bạn có thể xoá giá trị cấu hình `options.cluster` trong file cấu hình `config/database.php` của ứng dụng của bạn:
 
-    'redis' => [
+```php
+'redis' => [
 
-        'client' => env('REDIS_CLIENT', 'phpredis'),
+    'client' => env('REDIS_CLIENT', 'phpredis'),
 
-        'clusters' => [
-            // ...
-        ],
-
+    'clusters' => [
         // ...
     ],
+
+    // ...
+],
+```
 
 <a name="predis"></a>
 ### Predis
 
 Nếu bạn muốn ứng dụng của bạn tương tác với Redis thông qua package Predis, bạn nên set giá trị của biến môi trường `REDIS_CLIENT` là `predis`:
 
-    'redis' => [
+```php
+'redis' => [
 
-        'client' => env('REDIS_CLIENT', 'predis'),
+    'client' => env('REDIS_CLIENT', 'predis'),
 
-        // ...
-    ],
+    // ...
+],
+```
 
 Ngoài các tùy chọn cấu hình mặc định, Predis còn hỗ trợ thêm các [tham số kết nối](https://github.com/nrk/predis/wiki/Connection-Parameters) có thể định nghĩa cho mỗi server Redis của bạn. Để sử dụng thêm các tùy chọn cấu hình này, hãy thêm chúng vào cấu hình server Redis của bạn trong file cấu hình `config/database.php` của application của bạn:
 
-    'default' => [
-        'url' => env('REDIS_URL'),
-        'host' => env('REDIS_HOST', '127.0.0.1'),
-        'username' => env('REDIS_USERNAME'),
-        'password' => env('REDIS_PASSWORD'),
-        'port' => env('REDIS_PORT', '6379'),
-        'database' => env('REDIS_DB', '0'),
-        'read_write_timeout' => 60,
-    ],
+```php
+'default' => [
+    'url' => env('REDIS_URL'),
+    'host' => env('REDIS_HOST', '127.0.0.1'),
+    'username' => env('REDIS_USERNAME'),
+    'password' => env('REDIS_PASSWORD'),
+    'port' => env('REDIS_PORT', '6379'),
+    'database' => env('REDIS_DB', '0'),
+    'read_write_timeout' => 60,
+],
+```
 
 <a name="phpredis"></a>
 ### PhpRedis
 
 Mặc định, Laravel sẽ sử dụng extension PhpRedis để giao tiếp với Redis. Client mà Laravel sẽ sử dụng để giao tiếp với Redis được quyết định bởi giá trị của tùy chọn cấu hình `redis.client`, thường phản ánh bởi giá trị của biến môi trường `REDIS_CLIENT`:
 
-    'redis' => [
+```php
+'redis' => [
 
-        'client' => env('REDIS_CLIENT', 'phpredis'),
+    'client' => env('REDIS_CLIENT', 'phpredis'),
 
-        // ...
-    ],
+    // ...
+],
+```
 
 Ngoài các tùy chọn cấu hình mặc định, PhpRedis cũng hỗ trợ thêm các tham số kết nối bổ sung như sau: `name`, `persistent`, `persistent_id`, `prefix`, `read_timeout`, `retry_interval`, `max_retries`, `backoff_algorithm`, `backoff_base`, `backoff_cap`, `timeout`, và `context`. Bạn có thể thêm bất kỳ tùy chọn nào vào cấu hình server Redis của bạn trong file cấu hình `config/database.php`:
 
-    'default' => [
-        'url' => env('REDIS_URL'),
-        'host' => env('REDIS_HOST', '127.0.0.1'),
-        'username' => env('REDIS_USERNAME'),
-        'password' => env('REDIS_PASSWORD'),
-        'port' => env('REDIS_PORT', '6379'),
-        'database' => env('REDIS_DB', '0'),
-        'read_timeout' => 60,
-        'context' => [
-            // 'auth' => ['username', 'secret'],
-            // 'stream' => ['verify_peer' => false],
-        ],
+```php
+'default' => [
+    'url' => env('REDIS_URL'),
+    'host' => env('REDIS_HOST', '127.0.0.1'),
+    'username' => env('REDIS_USERNAME'),
+    'password' => env('REDIS_PASSWORD'),
+    'port' => env('REDIS_PORT', '6379'),
+    'database' => env('REDIS_DB', '0'),
+    'read_timeout' => 60,
+    'context' => [
+        // 'auth' => ['username', 'secret'],
+        // 'stream' => ['verify_peer' => false],
     ],
+],
+```
+
+<a name="retry-and-backoff-configuration"></a>
+#### Retry and Backoff Configuration
+
+Các tùy chọn `retry_interval`, `max_retries`, `backoff_algorithm`, `backoff_base`, và `backoff_cap` có thể được sử dụng để cấu hình PhpRedis client sẽ thử kết nối lại với máy chủ Redis. Các thuật toán backoff sau đây được hỗ trợ: `default`, `decorrelated_jitter`, `equal_jitter`, `exponential`, `uniform`, và `constant`:
+
+```php
+'default' => [
+    'url' => env('REDIS_URL'),
+    'host' => env('REDIS_HOST', '127.0.0.1'),
+    'username' => env('REDIS_USERNAME'),
+    'password' => env('REDIS_PASSWORD'),
+    'port' => env('REDIS_PORT', '6379'),
+    'database' => env('REDIS_DB', '0'),
+    'max_retries' => env('REDIS_MAX_RETRIES', 3),
+    'backoff_algorithm' => env('REDIS_BACKOFF_ALGORITHM', 'decorrelated_jitter'),
+    'backoff_base' => env('REDIS_BACKOFF_BASE', 100),
+    'backoff_cap' => env('REDIS_BACKOFF_CAP', 1000),
+],
+```
+
+<a name="unix-socket-connections"></a>
+#### Unix Socket Connections
+
+Các kết nối Redis cũng có thể được cấu hình để sử dụng Unix socket thay vì TCP. Điều này có thể mang lại hiệu suất tốt hơn bằng cách loại bỏ dữ liệu TCP dư thừa cho các kết nối tới các instance Redis trên cùng một server với ứng dụng của bạn. Để cấu hình Redis sử dụng Unix socket, hãy set biến môi trường `REDIS_HOST` thành đường dẫn của Redis socket và biến môi trường `REDIS_PORT` thành `0`:
+
+```env
+REDIS_HOST=/run/redis/redis.sock
+REDIS_PORT=0
+```
 
 <a name="phpredis-serialization"></a>
 #### PhpRedis Serialization và Compression
 
 Extension PhpRedis cũng có thể được cấu hình để sử dụng nhiều thuật toán nén và serializers khác nhau. Các thuật toán này có thể được cấu hình thông qua mảng `options` trong cấu hình Redis của bạn:
 
-    'redis' => [
+```php
+'redis' => [
 
-        'client' => env('REDIS_CLIENT', 'phpredis'),
+    'client' => env('REDIS_CLIENT', 'phpredis'),
 
-        'options' => [
-            'cluster' => env('REDIS_CLUSTER', 'redis'),
-            'prefix' => env('REDIS_PREFIX', Str::slug(env('APP_NAME', 'laravel'), '_').'_database_'),
-            'serializer' => Redis::SERIALIZER_MSGPACK,
-            'compression' => Redis::COMPRESSION_LZ4,
-        ],
-
-        // ...
+    'options' => [
+        'cluster' => env('REDIS_CLUSTER', 'redis'),
+        'prefix' => env('REDIS_PREFIX', Str::slug(env('APP_NAME', 'laravel'), '_').'_database_'),
+        'serializer' => Redis::SERIALIZER_MSGPACK,
+        'compression' => Redis::COMPRESSION_LZ4,
     ],
+
+    // ...
+],
+```
 
 Các serializers được hỗ trợ hiện tại là: `Redis::SERIALIZER_NONE` (mặc định), `Redis::SERIALIZER_PHP`, `Redis::SERIALIZER_JSON`, `Redis::SERIALIZER_IGBINARY` và `Redis::SERIALIZER_MSGPACK`.
 
@@ -220,62 +270,73 @@ Các thuật toán nén được hỗ trợ là: `Redis::COMPRESSION_NONE` (mặ
 
 Bạn có thể tương tác với Redis bằng cách gọi các phương thức khác nhau trên [facade](/docs/{{version}}/facades) `Redis`. Facade `Redis` hỗ trợ các phương thức động, nghĩa là bạn có thể gọi bất kỳ [lệnh Redis](https://redis.io/commands) nào trên facade và lệnh đó sẽ được chuyển trực tiếp đến Redis để thực hiện. Trong ví dụ này, chúng ta sẽ gọi lệnh Redis `GET` bằng cách gọi phương thức `get` trên facade `Redis`:
 
-    <?php
+```php
+<?php
 
-    namespace App\Http\Controllers;
+namespace App\Http\Controllers;
 
-    use App\Http\Controllers\Controller;
-    use Illuminate\Support\Facades\Redis;
-    use Illuminate\View\View;
+use Illuminate\Support\Facades\Redis;
+use Illuminate\View\View;
 
-    class UserController extends Controller
+class UserController extends Controller
+{
+    /**
+     * Show the profile for the given user.
+     */
+    public function show(string $id): View
     {
-        /**
-         * Show the profile for the given user.
-         */
-        public function show(string $id): View
-        {
-            return view('user.profile', [
-                'user' => Redis::get('user:profile:'.$id)
-            ]);
-        }
+        return view('user.profile', [
+            'user' => Redis::get('user:profile:'.$id)
+        ]);
     }
+}
+```
 
 Như đã đề cập ở trên, bạn có thể gọi bất kỳ lệnh Redis nào trên facade `Redis`. Laravel sẽ sử dụng các phương thức magic để truyền các lệnh đó đến server Redis. Nếu lệnh Redis yêu cầu các tham số, bạn cũng có thể truyền chúng sang phương thức tương ứng của facade:
 
-    use Illuminate\Support\Facades\Redis;
+```php
+use Illuminate\Support\Facades\Redis;
 
-    Redis::set('name', 'Taylor');
+Redis::set('name', 'Taylor');
 
-    $values = Redis::lrange('names', 5, 10);
+$values = Redis::lrange('names', 5, 10);
+```
 
 Ngoài ra, bạn có thể truyền lệnh đến server Redis bằng phương thức `command` của facade `Redis`, chấp nhận tên của lệnh làm tham số đầu tiên và một mảng các giá trị làm tham số thứ hai:
 
-    $values = Redis::command('lrange', ['name', 5, 10]);
+```php
+$values = Redis::command('lrange', ['name', 5, 10]);
+```
 
 <a name="using-multiple-redis-connections"></a>
 #### Using Multiple Redis Connections
 
 File cấu hình `config/database.php` của ứng dụng của bạn cho phép bạn định nghĩa nhiều kết nối máy chủ Redis. Bạn có thể nhận được kết nối đến một kết nối Redis cụ thể bằng cách sử dụng phương thức `connection` của facade `Redis`:
 
-    $redis = Redis::connection('connection-name');
+```php
+$redis = Redis::connection('connection-name');
+```
 
 Để có được một instance của kết nối Redis mặc định, bạn có thể gọi phương thức `connection` mà không cần thêm bất kỳ tham số nào:
 
-    $redis = Redis::connection();
+```php
+$redis = Redis::connection();
+```
 
 <a name="transactions"></a>
 ### Transactions
 
 Phương thức `transaction` của facade `Redis` cung cấp một wrapper thuận tiện xung quanh các lệnh `MULTI` và `EXEC` gốc của Redis. Phương thức `transaction` chấp nhận một closure làm tham số duy nhất của nó. Closure này sẽ nhận vào một instance kết nối Redis và bạn có thể đưa vào bất kỳ lệnh nào mà bạn muốn cho instance này. Tất cả các lệnh Redis được đưa vào trong closure sẽ được thực thi trong một transaction nguyên tử duy nhất:
 
-    use Redis;
-    use Illuminate\Support\Facades;
+```php
+use Redis;
+use Illuminate\Support\Facades;
 
-    Facades\Redis::transaction(function (Redis $redis) {
-        $redis->incr('user_visits', 1);
-        $redis->incr('total_visits', 1);
-    });
+Facades\Redis::transaction(function (Redis $redis) {
+    $redis->incr('user_visits', 1);
+    $redis->incr('total_visits', 1);
+});
+```
 
 > [!WARNING]
 > Khi định nghĩa một transaction Redis, bạn không được lấy bất kỳ giá trị nào từ kết nối Redis. Hãy nhớ rằng, transaction của bạn được thực thi dưới dạng một thao tác duy nhất và thao tác đó không được thực thi cho đến khi toàn bộ closure của bạn thực thi xong các lệnh của nó.
@@ -288,15 +349,17 @@ Phương thức `eval` lúc đầu có thể hơi đáng sợ, nhưng chúng ta 
 
 Trong ví dụ này, chúng ta sẽ tăng counter, kiểm tra giá trị mới của nó và tăng counter thứ hai nếu giá trị của counter thứ nhất lớn hơn năm. Cuối cùng, chúng ta sẽ trả về giá trị của counter đầu tiên:
 
-    $value = Redis::eval(<<<'LUA'
-        local counter = redis.call("incr", KEYS[1])
+```php
+$value = Redis::eval(<<<'LUA'
+    local counter = redis.call("incr", KEYS[1])
 
-        if counter > 5 then
-            redis.call("incr", KEYS[2])
-        end
+    if counter > 5 then
+        redis.call("incr", KEYS[2])
+    end
 
-        return counter
-    LUA, 2, 'first-counter', 'second-counter');
+    return counter
+LUA, 2, 'first-counter', 'second-counter');
+```
 
 > [!WARNING]
 > Vui lòng tham khảo [tài liệu về Redis](https://redis.io/commands/eval) để biết thêm thông tin về script Redis.
@@ -306,14 +369,16 @@ Trong ví dụ này, chúng ta sẽ tăng counter, kiểm tra giá trị mới c
 
 Thỉnh thoảng bạn có thể cần thực thi nhiều lệnh Redis. Thay vì thực hiện truy vấn tới server Redis của bạn cho từng lệnh một, bạn có thể sử dụng phương thức `pipeline`. Phương thức `pipeline` chấp nhận một tham số là: một closure nhận vào một instance Redis. Bạn có thể đưa vào tất cả các lệnh của bạn cho instance Redis này và tất cả chúng sẽ được truyền trực tiếp đến server đồng thời để giảm các lượt truy vấn đến server. Các lệnh vẫn sẽ được thực thi theo thứ tự chúng được ghi:
 
-    use Redis;
-    use Illuminate\Support\Facades;
+```php
+use Redis;
+use Illuminate\Support\Facades;
 
-    Facades\Redis::pipeline(function (Redis $pipe) {
-        for ($i = 0; $i < 1000; $i++) {
-            $pipe->set("key:$i", $i);
-        }
-    });
+Facades\Redis::pipeline(function (Redis $pipe) {
+    for ($i = 0; $i < 1000; $i++) {
+        $pipe->set("key:$i", $i);
+    }
+});
+```
 
 <a name="pubsub"></a>
 ## Pub / Sub
@@ -322,61 +387,67 @@ Laravel cung cấp một interface thuận tiện cho các lệnh `publish` và 
 
 Đầu tiên, hãy thiết lập một listen channel bằng phương thức `subscribe`. Chúng ta sẽ thực hiện gọi phương thức này trong một [lệnh Artisan](/docs/{{version}}/artisan) vì khi gọi phương thức `subscribe` là sẽ bắt đầu chạy một process lâu dài:
 
-    <?php
+```php
+<?php
 
-    namespace App\Console\Commands;
+namespace App\Console\Commands;
 
-    use Illuminate\Console\Command;
-    use Illuminate\Support\Facades\Redis;
+use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Redis;
 
-    class RedisSubscribe extends Command
+class RedisSubscribe extends Command
+{
+    /**
+     * The name and signature of the console command.
+     *
+     * @var string
+     */
+    protected $signature = 'redis:subscribe';
+
+    /**
+     * The console command description.
+     *
+     * @var string
+     */
+    protected $description = 'Subscribe to a Redis channel';
+
+    /**
+     * Execute the console command.
+     */
+    public function handle(): void
     {
-        /**
-         * The name and signature of the console command.
-         *
-         * @var string
-         */
-        protected $signature = 'redis:subscribe';
-
-        /**
-         * The console command description.
-         *
-         * @var string
-         */
-        protected $description = 'Subscribe to a Redis channel';
-
-        /**
-         * Execute the console command.
-         */
-        public function handle(): void
-        {
-            Redis::subscribe(['test-channel'], function (string $message) {
-                echo $message;
-            });
-        }
+        Redis::subscribe(['test-channel'], function (string $message) {
+            echo $message;
+        });
     }
+}
+```
 
 Bây giờ chúng ta có thể publish tin nhắn lên channel bằng phương thức `publish`:
 
-    use Illuminate\Support\Facades\Redis;
+```php
+use Illuminate\Support\Facades\Redis;
 
-    Route::get('/publish', function () {
-        // ...
+Route::get('/publish', function () {
+    // ...
 
-        Redis::publish('test-channel', json_encode([
-            'name' => 'Adam Wathan'
-        ]));
-    });
+    Redis::publish('test-channel', json_encode([
+        'name' => 'Adam Wathan'
+    ]));
+});
+```
 
 <a name="wildcard-subscriptions"></a>
 #### Wildcard Subscriptions
 
 Sử dụng phương thức `psubscribe`, bạn có thể theo dõi một nhóm các channel, nó có thể hữu ích để lấy tất cả các tin nhắn trên tất cả các channel. Tên channel sẽ được truyền làm tham số thứ hai cho closure:
 
-    Redis::psubscribe(['*'], function (string $message, string $channel) {
-        echo $message;
-    });
+```php
+Redis::psubscribe(['*'], function (string $message, string $channel) {
+    echo $message;
+});
 
-    Redis::psubscribe(['users.*'], function (string $message, string $channel) {
-        echo $message;
-    });
+Redis::psubscribe(['users.*'], function (string $message, string $channel) {
+    echo $message;
+});
+```

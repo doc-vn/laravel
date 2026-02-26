@@ -7,6 +7,7 @@
     - [Chạy testcase đồng thời](#running-tests-in-parallel)
     - [Báo cáo phạm vi chạy testcase](#reporting-test-coverage)
     - [Profiling Tests](#profiling-tests)
+- [Configuration Caching](#configuration-caching)
 
 <a name="introduction"></a>
 ## Giới thiệu
@@ -144,44 +145,46 @@ php artisan test --parallel --recreate-databases
 
 Bằng cách sử dụng facade `ParallelTesting`, bạn có thể chỉ định code nào sẽ được chạy trên `setUp` và `tearDown` của một process hoặc một test case. Các closure đã cho sẽ nhận các biến `$token` và `$testCase` lần lượt là process token và test case hiện tại:
 
-    <?php
+```php
+<?php
 
-    namespace App\Providers;
+namespace App\Providers;
 
-    use Illuminate\Support\Facades\Artisan;
-    use Illuminate\Support\Facades\ParallelTesting;
-    use Illuminate\Support\ServiceProvider;
-    use PHPUnit\Framework\TestCase;
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\ParallelTesting;
+use Illuminate\Support\ServiceProvider;
+use PHPUnit\Framework\TestCase;
 
-    class AppServiceProvider extends ServiceProvider
+class AppServiceProvider extends ServiceProvider
+{
+    /**
+     * Bootstrap any application services.
+     */
+    public function boot(): void
     {
-        /**
-         * Bootstrap any application services.
-         */
-        public function boot(): void
-        {
-            ParallelTesting::setUpProcess(function (int $token) {
-                // ...
-            });
+        ParallelTesting::setUpProcess(function (int $token) {
+            // ...
+        });
 
-            ParallelTesting::setUpTestCase(function (int $token, TestCase $testCase) {
-                // ...
-            });
+        ParallelTesting::setUpTestCase(function (int $token, TestCase $testCase) {
+            // ...
+        });
 
-            // Executed when a test database is created...
-            ParallelTesting::setUpTestDatabase(function (string $database, int $token) {
-                Artisan::call('db:seed');
-            });
+        // Executed when a test database is created...
+        ParallelTesting::setUpTestDatabase(function (string $database, int $token) {
+            Artisan::call('db:seed');
+        });
 
-            ParallelTesting::tearDownTestCase(function (int $token, TestCase $testCase) {
-                // ...
-            });
+        ParallelTesting::tearDownTestCase(function (int $token, TestCase $testCase) {
+            // ...
+        });
 
-            ParallelTesting::tearDownProcess(function (int $token) {
-                // ...
-            });
-        }
+        ParallelTesting::tearDownProcess(function (int $token) {
+            // ...
+        });
     }
+}
+```
 
 <a name="accessing-the-parallel-testing-token"></a>
 #### Accessing The Parallel Testing Token
@@ -218,4 +221,35 @@ Artisan test runner cũng chứa một cơ chế tiện lợi để liệt kê c
 
 ```shell
 php artisan test --profile
+```
+
+<a name="configuration-caching"></a>
+## Configuration Caching
+
+Khi chạy các bài test, Laravel sẽ khởi động ứng dụng cho từng phương thức test riêng lẻ. Nếu không có file cấu hình được cache, mỗi file cấu hình trong ứng dụng của bạn phải được load lại khi bắt đầu một bài test. Để build cấu hình một lần và sử dụng lại cấu hình đó cho tất cả các bài test đó trong các lần chạy còn lại, bạn có thể sử dụng trait `Illuminate\Foundation\Testing\WithCachedConfig`:
+
+```php tab=Pest
+<?php
+
+use Illuminate\Foundation\Testing\WithCachedConfig;
+
+pest()->use(WithCachedConfig::class);
+
+// ...
+```
+
+```php tab=PHPUnit
+<?php
+
+namespace Tests\Feature;
+
+use Illuminate\Foundation\Testing\WithCachedConfig;
+use Tests\TestCase;
+
+class ConfigTest extends TestCase
+{
+    use WithCachedConfig;
+
+    // ...
+}
 ```

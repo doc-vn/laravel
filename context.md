@@ -56,7 +56,7 @@ Log::info('User authenticated.', ['auth_id' => Auth::id()]);
 
 Log được viết ra sẽ chứa `auth_id`, nhưng nó cũng sẽ chứa `url` và `trace_id` của context dưới dạng metadata:
 
-```
+```text
 User authenticated. {"auth_id":27} {"url":"https://example.com/login","trace_id":"e04e1a11-e75c-4db3-b5b5-cfef4ef56697"}
 ```
 
@@ -96,7 +96,7 @@ class ProcessPodcast implements ShouldQueue
 
 Kết quả log sẽ chứa các thông tin được thêm vào context trong request ban đầu gửi job:
 
-```
+```text
 Processing podcast. {"podcast_id":95} {"url":"https://example.com/login","trace_id":"e04e1a11-e75c-4db3-b5b5-cfef4ef56697"}
 ```
 
@@ -136,6 +136,16 @@ Context::get('key');
 // "first"
 ```
 
+Context cũng cung cấp các phương thức thuận tiện để tăng hoặc giảm một khóa nhất định. Cả hai phương thức này đều chấp nhận ít nhất một tham số: khóa cần theo dõi. Tham số thứ hai có thể được cung cấp để chỉ định giá trị mà khóa sẽ được tăng hoặc giảm:
+
+```php
+Context::increment('records_added');
+Context::increment('records_added', 5);
+
+Context::decrement('records_added');
+Context::decrement('records_added', 5);
+```
+
 <a name="conditional-context"></a>
 #### Conditional Context
 
@@ -151,6 +161,45 @@ Context::when(
     fn ($context) => $context->add('permissions', []),
 );
 ```
+
+<a name="scoped-context"></a>
+#### Scoped Context
+
+Phương thức `scope` cung cấp một cách để thay đổi context tạm thời trong quá trình chạy một callback nhất định và khôi phục context về trạng thái ban đầu sau khi callback được chạy xong. Ngoài ra, bạn có thể truyền thêm dữ liệu vào context (dưới dạng tham số thứ hai và thứ ba) trong khi closure đang chạy.
+
+```php
+use Illuminate\Support\Facades\Context;
+use Illuminate\Support\Facades\Log;
+
+Context::add('trace_id', 'abc-999');
+Context::addHidden('user_id', 123);
+
+Context::scope(
+    function () {
+        Context::add('action', 'adding_friend');
+
+        $userId = Context::getHidden('user_id');
+
+        Log::debug("Adding user [{$userId}] to friends list.");
+        // Adding user [987] to friends list.  {"trace_id":"abc-999","user_name":"taylor_otwell","action":"adding_friend"}
+    },
+    data: ['user_name' => 'taylor_otwell'],
+    hidden: ['user_id' => 987],
+);
+
+Context::all();
+// [
+//     'trace_id' => 'abc-999',
+// ]
+
+Context::allHidden();
+// [
+//     'user_id' => 123,
+// ]
+```
+
+> [!WARNING]
+> Nếu một object trong context bị thay đổi ở trong scoped closure, thì sự thay đổi đó sẽ ảnh hưởng ra bên ngoài scope.
 
 <a name="stacks"></a>
 ### Stacks
@@ -178,6 +227,7 @@ Ngăn xếp có thể hữu ích khi ghi lại các thông tin lịch sử về 
 use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\DB;
 
+// In AppServiceProvider.php...
 DB::listen(function ($event) {
     Context::push('queries', [$event->time, $event->sql]);
 });
@@ -217,10 +267,12 @@ use Illuminate\Support\Facades\Context;
 $value = Context::get('key');
 ```
 
-Phương thức `only` có thể được sử dụng để lấy ra một tập hợp con của thông tin có trong context:
+Các phương thức `only` và `except` có thể được sử dụng để lấy ra một tập hợp con của thông tin có trong context:
 
 ```php
 $data = Context::only(['first_key', 'second_key']);
+
+$data = Context::except(['first_key']);
 ```
 
 Phương thức `pull` có thể được sử dụng để lấy ra thông tin từ context và xóa nó ra khỏi context:
@@ -234,11 +286,20 @@ Nếu dữ liệu context được lưu trong một [ngăn xếp](#stacks), thì
 ```php
 Context::push('breadcrumbs', 'first_value', 'second_value');
 
-Context::pop('breadcrumbs')
+Context::pop('breadcrumbs');
 // second_value
 
 Context::get('breadcrumbs');
 // ['first_value']
+```
+
+Các phương thức `remember` và `rememberHidden` có thể được sử dụng để lấy thông tin ra khỏi context, đồng thời thiết lập giá trị context bằng giá trị được trả về bởi closure nếu thông tin được yêu cầu không tồn tại trong context:
+
+```php
+$permissions = Context::remember(
+    'user-permissions',
+    fn () => $user->permissions,
+);
 ```
 
 Nếu bạn muốn lấy ra toàn bộ thông tin được lưu trong context, bạn có thể gọi phương thức `all`:
@@ -323,8 +384,10 @@ Context::getHidden(/* ... */);
 Context::pullHidden(/* ... */);
 Context::popHidden(/* ... */);
 Context::onlyHidden(/* ... */);
+Context::exceptHidden(/* ... */);
 Context::allHidden(/* ... */);
 Context::hasHidden(/* ... */);
+Context::missingHidden(/* ... */);
 Context::forgetHidden(/* ... */);
 ```
 

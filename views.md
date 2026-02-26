@@ -31,9 +31,11 @@ View giúp tách logic controller và logic của ứng dụng ra khỏi logic h
 
 Vì view được lưu ở trong `resources/views/greeting.blade.php`, nên chúng ta có thể gọi nó bằng cách dùng global helper `view` như sau:
 
-    Route::get('/', function () {
-        return view('greeting', ['name' => 'James']);
-    });
+```php
+Route::get('/', function () {
+    return view('greeting', ['name' => 'James']);
+});
+```
 
 > [!NOTE]
 > Bạn đang tìm kiếm thêm thông tin về cách viết Blade template? Hãy xem [tài liệu đầy đủ về Blade](/docs/{{version}}/blade) để bắt đầu.
@@ -58,15 +60,19 @@ Phần mở rộng `.blade.php` sẽ thông báo cho framework biết rằng fil
 
 Khi bạn đã tạo xong view, bạn có thể trả view đó từ một trong các route hoặc controller của ứng dụng bằng cách sử dụng helper global `view`:
 
-    Route::get('/', function () {
-        return view('greeting', ['name' => 'James']);
-    });
+```php
+Route::get('/', function () {
+    return view('greeting', ['name' => 'James']);
+});
+```
 
 View cũng có thể được trả về bằng cách sử dụng facade `View`:
 
-    use Illuminate\Support\Facades\View;
+```php
+use Illuminate\Support\Facades\View;
 
-    return View::make('greeting', ['name' => 'James']);
+return View::make('greeting', ['name' => 'James']);
+```
 
 Như bạn có thể thấy, tham số đầu tiên được truyền tới helper `view` là tên của file view có trong thư mục `resources/views`. Tham số thứ hai là một mảng dữ liệu được truyền vào view. Trong trường hợp này, chúng ta đang truyền biến `name` cho view, và được hiển thị trong view bằng [Blade syntax](/docs/{{version}}/blade).
 
@@ -75,7 +81,9 @@ Như bạn có thể thấy, tham số đầu tiên được truyền tới help
 
 View cũng có thể được nằm trong một thư mục con của thư mục `resources/views`. Ký tự "chấm" có thể được sử dụng để gọi đến những thư mục view con đó. Ví dụ: nếu view của bạn được lưu tại `resources/views/admin/profile.blade.php`, bạn có thể trả nó từ một trong các route hoặc controller của ứng dụng của bạn như sau:
 
-    return view('admin.profile', $data);
+```php
+return view('admin.profile', $data);
+```
 
 > [!WARNING]
 > Tên thư mục view sẽ không được chứa ký tự `.`.
@@ -85,65 +93,75 @@ View cũng có thể được nằm trong một thư mục con của thư mục 
 
 Bằng cách sử dụng phương thức `first` của facade `View`, bạn có thể tạo view đầu tiên tồn tại trong một mảng các view nhất định. Điều này có thể hữu ích nếu ứng dụng hoặc package của bạn cho phép tùy chỉnh hoặc ghi đè view:
 
-    use Illuminate\Support\Facades\View;
+```php
+use Illuminate\Support\Facades\View;
 
-    return View::first(['custom.admin', 'admin'], $data);
+return View::first(['custom.admin', 'admin'], $data);
+```
 
 <a name="determining-if-a-view-exists"></a>
 ### Xác định nếu một View tồn tại
 
 Nếu bạn cần kiểm tra một view có tồn tại hay không, bạn có thể sử dụng facade `View`. Phương thức `exists` sẽ trả về `true` nếu view đó tồn tại:
 
-    use Illuminate\Support\Facades\View;
+```php
+use Illuminate\Support\Facades\View;
 
-    if (View::exists('admin.profile')) {
-        // ...
-    }
+if (View::exists('admin.profile')) {
+    // ...
+}
+```
 
 <a name="passing-data-to-views"></a>
 ## Truyền dữ liệu đến view
 
 Như bạn có thể thấy trong các ví dụ trước, bạn có thể truyền một mảng dữ liệu cho view để cung cấp dữ liệu đó cho view:
 
-    return view('greetings', ['name' => 'Victoria']);
+```php
+return view('greetings', ['name' => 'Victoria']);
+```
 
 Khi truyền thông tin theo cách này, dữ liệu phải là một mảng với các cặp key / value. Sau khi cung cấp dữ liệu cho một view, bạn có thể truy cập vào các giá trị trong view của bạn bằng cách sử dụng các key của dữ liệu, chẳng hạn như `<?php echo $key; ?>`.
 
 Để thay thế cho việc truyền một mảng dữ liệu cho hàm helper `view`, bạn có thể sử dụng phương thức `with` để thêm từng phần dữ liệu vào view. Phương thức `with` sẽ trả về một instance của đối tượng view để bạn có thể tiếp tục kết hợp thêm các phương thức khác trước khi trả về view:
 
-    return view('greeting')
-        ->with('name', 'Victoria')
-        ->with('occupation', 'Astronaut');
+```php
+return view('greeting')
+    ->with('name', 'Victoria')
+    ->with('occupation', 'Astronaut');
+```
 
 <a name="sharing-data-with-all-views"></a>
 ### Chia sẽ dữ liệu với tất cả các view
 
 Đôi khi, bạn có thể cần chia sẻ dữ liệu với tất cả các view có trong application của bạn. Bạn có thể làm như vậy bằng cách sử dụng phương thức `share` trong facade `View`. Thông thường, bạn nên thực hiện gọi phương thức `share` trong phương thức `boot` của service provider. Bạn có thể thêm chúng vào class `App\Providers\AppServiceProvider` hoặc tạo một service provider riêng để chứa chúng:
 
-    <?php
+```php
+<?php
 
-    namespace App\Providers;
+namespace App\Providers;
 
-    use Illuminate\Support\Facades\View;
+use Illuminate\Support\Facades\View;
 
-    class AppServiceProvider extends ServiceProvider
+class AppServiceProvider extends ServiceProvider
+{
+    /**
+     * Register any application services.
+     */
+    public function register(): void
     {
-        /**
-         * Register any application services.
-         */
-        public function register(): void
-        {
-            // ...
-        }
-
-        /**
-         * Bootstrap any application services.
-         */
-        public function boot(): void
-        {
-            View::share('key', 'value');
-        }
+        // ...
     }
+
+    /**
+     * Bootstrap any application services.
+     */
+    public function boot(): void
+    {
+        View::share('key', 'value');
+    }
+}
+```
 
 <a name="view-composers"></a>
 ## View Composers
@@ -154,70 +172,74 @@ Thông thường, view composer sẽ được đăng ký vào trong một trong 
 
 Chúng tôi sẽ sử dụng phương thức `composer` của facade `View` để đăng ký view composer. Laravel không chứa một thư mục mặc định cho các class dựa trên view composer, nên bạn có thể tổ chức chúng theo cách bạn muốn. Ví dụ: bạn có thể tạo thư mục `app/Http/View/Composers` để chứa tất cả các view composer của ứng dụng của bạn:
 
-    <?php
+```php
+<?php
 
-    namespace App\Providers;
+namespace App\Providers;
 
-    use App\View\Composers\ProfileComposer;
-    use Illuminate\Support\Facades;
-    use Illuminate\Support\ServiceProvider;
-    use Illuminate\View\View;
+use App\View\Composers\ProfileComposer;
+use Illuminate\Support\Facades;
+use Illuminate\Support\ServiceProvider;
+use Illuminate\View\View;
 
-    class AppServiceProvider extends ServiceProvider
+class AppServiceProvider extends ServiceProvider
+{
+    /**
+     * Register any application services.
+     */
+    public function register(): void
     {
-        /**
-         * Register any application services.
-         */
-        public function register(): void
-        {
-            // ...
-        }
-
-        /**
-         * Bootstrap any application services.
-         */
-        public function boot(): void
-        {
-            // Using class based composers...
-            Facades\View::composer('profile', ProfileComposer::class);
-
-            // Using closure based composers...
-            Facades\View::composer('welcome', function (View $view) {
-                // ...
-            });
-
-            Facades\View::composer('dashboard', function (View $view) {
-                // ...
-            });
-        }
+        // ...
     }
+
+    /**
+     * Bootstrap any application services.
+     */
+    public function boot(): void
+    {
+        // Using class based composers...
+        Facades\View::composer('profile', ProfileComposer::class);
+
+        // Using closure based composers...
+        Facades\View::composer('welcome', function (View $view) {
+            // ...
+        });
+
+        Facades\View::composer('dashboard', function (View $view) {
+            // ...
+        });
+    }
+}
+```
 
 Sau khi chúng ta đã đăng ký xong composer, phương thức `compose` của class `App\View\Composers\ProfileComposer` sẽ được thực thi mỗi khi view `profile` được render. Hãy xem một ví dụ về class composer:
 
-    <?php
+```php
+<?php
 
-    namespace App\View\Composers;
+namespace App\View\Composers;
 
-    use App\Repositories\UserRepository;
-    use Illuminate\View\View;
+use App\Repositories\UserRepository;
+use Illuminate\View\View;
 
-    class ProfileComposer
+class ProfileComposer
+{
+    /**
+     * Create a new profile composer.
+     */
+    public function __construct(
+        protected UserRepository $users,
+    ) {}
+
+    /**
+     * Bind data to the view.
+     */
+    public function compose(View $view): void
     {
-        /**
-         * Create a new profile composer.
-         */
-        public function __construct(
-            protected UserRepository $users,
-        ) {}
-
-        /**
-         * Bind data to the view.
-         */
-        public function compose(View $view): void
-        {
-            $view->with('count', $this->users->count());
-        }
+        $view->with('count', $this->users->count());
     }
+}
+```
 
 Như bạn có thể thấy, tất cả các view composer được resolve thông qua [service container](/docs/{{version}}/container), do đó bạn có thể khai báo bất kỳ phụ thuộc nào mà bạn cần vào trong hàm khởi tạo của composer.
 
@@ -226,32 +248,38 @@ Như bạn có thể thấy, tất cả các view composer được resolve thô
 
 Bạn có thể gắn một view composer cho nhiều view cùng một lúc bằng cách truyền một mảng các view làm tham số đầu tiên của phương thức `composer`:
 
-    use App\Views\Composers\MultiComposer;
-    use Illuminate\Support\Facades\View;
+```php
+use App\Views\Composers\MultiComposer;
+use Illuminate\Support\Facades\View;
 
-    View::composer(
-        ['profile', 'dashboard'],
-        MultiComposer::class
-    );
+View::composer(
+    ['profile', 'dashboard'],
+    MultiComposer::class
+);
+```
 
 Phương thức `composer` cũng chấp nhận một ký tự `*` làm ký tự đại diện, cho phép bạn gắn một composer cho tất cả các view:
 
-    use Illuminate\Support\Facades;
-    use Illuminate\View\View;
+```php
+use Illuminate\Support\Facades;
+use Illuminate\View\View;
 
-    Facades\View::composer('*', function (View $view) {
-        // ...
-    });
+Facades\View::composer('*', function (View $view) {
+    // ...
+});
+```
 
 <a name="view-creators"></a>
 #### View Creators
 
 View "creators" giống với view composer; tuy nhiên, chúng được thực thi ngay lập tức sau khi view được khởi tạo thay vì đợi cho đến khi view sắp được hiển thị. Để đăng ký một view creator, hãy sử dụng phương thức `creator`:
 
-    use App\View\Creators\ProfileCreator;
-    use Illuminate\Support\Facades\View;
+```php
+use App\View\Creators\ProfileCreator;
+use Illuminate\Support\Facades\View;
 
-    View::creator('profile', ProfileCreator::class);
+View::creator('profile', ProfileCreator::class);
+```
 
 <a name="optimizing-views"></a>
 ## Optimizing Views

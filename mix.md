@@ -5,6 +5,9 @@
 <a name="introduction"></a>
 ## Giới thiệu
 
+> [!WARNING]
+> Laravel Mix là một package cũ không còn được phát triển nữa. [Vite](/docs/{{version}}/vite) có thể được sử dụng như một giải pháp thay thế hiện đại.
+
 [Laravel Mix](https://github.com/laravel-mix/laravel-mix) là một package được phát triển bởi Jeffrey Way [Laracasts](https://laracasts.com), cung cấp một API dễ hiểu để định nghĩa các bước xây dựng [webpack](https://webpack.js.org) cho application Laravel của bạn bằng cách sử dụng một số CSS phổ biến và JavaScript pre-processors.
 
 Nói cách khác, Mix giúp bạn dễ dàng biên dịch và thu nhỏ các file CSS và JavaScript trong ứng dụng của bạn. Thông qua cách kết hợp nhiều phương thức đơn giản, bạn có thể dễ dàng định nghĩa asset pipeline của bạn. Ví dụ:

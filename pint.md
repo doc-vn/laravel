@@ -13,7 +13,7 @@
 <a name="introduction"></a>
 ## Giới thiệu
 
-[Laravel Pint](https://github.com/laravel/pint) là một trình sửa lỗi code cho PHP dành cho những người theo chủ nghĩa tối giản. Pint được xây dựng trên PHP-CS-Fixer và giúp đảm bảo code của bạn luôn sạch sẽ và nhất quán.
+[Laravel Pint](https://github.com/laravel/pint) là một trình sửa lỗi code cho PHP dành cho những người theo chủ nghĩa tối giản. Pint được xây dựng trên [PHP CS Fixer](https://github.com/FriendsOfPHP/PHP-CS-Fixer) và giúp đảm bảo code của bạn luôn sạch sẽ và nhất quán.
 
 Pint được tự động cài đặt với tất cả các ứng dụng Laravel mới để bạn có thể bắt đầu sử dụng ngay lập tức. Mặc định, Pint không yêu cầu bất kỳ cấu hình nào và sẽ khắc phục các lỗi về code style của bạn bằng cách tuân theo coding style ​​của Laravel.
 
@@ -33,6 +33,18 @@ Bạn có thể hướng dẫn Pint sửa các lỗi về code style bằng các
 
 ```shell
 ./vendor/bin/pint
+```
+
+Nếu bạn muốn Pint chạy ở chế độ song song (thử nghiệm) để cải thiện hiệu suất, bạn có thể sử dụng tùy chọn `--parallel`:
+
+```shell
+./vendor/bin/pint --parallel
+```
+
+Chế độ song song cũng cho phép bạn chỉ định số lượng process tối đa được chạy thông qua tùy chọn `--max-processes`. Nếu tùy chọn này không được cung cấp, Pint sẽ sử dụng tất cả các core có sẵn trên máy của bạn:
+
+```shell
+./vendor/bin/pint --parallel --max-processes=4
 ```
 
 Bạn cũng có thể chạy Pint cho các file hoặc một thư mục cụ thể:
@@ -129,7 +141,7 @@ Tuy nhiên, nếu bạn muốn, bạn có thể enable hoặc disable các quy t
     }
 }
 ```
-Pint được xây dựng dựa trên [PHP-CS-Fixer](https://github.com/FriendsOfPHP/PHP-CS-Fixer). Do đó, bạn có thể sử dụng bất kỳ quy tắc nào của PHP-CS-Fixer để khắc phục các lỗi code style trong project của bạn: [PHP-CS-Fixer Configurator](https://mlocati.github.io/php-cs-fixer-configurator).
+Pint được xây dựng dựa trên [PHP CS Fixer](https://github.com/FriendsOfPHP/PHP-CS-Fixer). Do đó, bạn có thể sử dụng bất kỳ quy tắc nào của PHP-CS-Fixer để khắc phục các lỗi code style trong project của bạn: [PHP CS Fixer Configurator](https://mlocati.github.io/php-cs-fixer-configurator).
 
 <a name="excluding-files-or-folders"></a>
 ### Loại trừ file hoặc folder
@@ -188,21 +200,17 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
-          extensions: json, dom, curl, libxml, mbstring
-          coverage: none
-
-      - name: Install Pint
-        run: composer global require laravel/pint
+          tools: pint
 
       - name: Run Pint
         run: pint
 
       - name: Commit linted files
-        uses: stefanzweifel/git-auto-commit-action@v5
+        uses: stefanzweifel/git-auto-commit-action@v6
 ```

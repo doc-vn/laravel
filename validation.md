@@ -53,10 +53,12 @@ Laravel chứa nhiều quy tắc validation tiện lợi mà bạn có thể áp
 
 Đầu tiên, giả sử chúng ta có các route sau đã được định nghĩa trong file `routes/web.php`:
 
-    use App\Http\Controllers\PostController;
+```php
+use App\Http\Controllers\PostController;
 
-    Route::get('/post/create', [PostController::class, 'create']);
-    Route::post('/post', [PostController::class, 'store']);
+Route::get('/post/create', [PostController::class, 'create']);
+Route::post('/post', [PostController::class, 'store']);
+```
 
 Route `GET` sẽ hiển thị một form cho người dùng để tạo một bài đăng mới trong blog, trong khi route `POST` sẽ lưu trữ bài đăng đó vào trong blog trong cơ sở dữ liệu.
 
@@ -65,36 +67,38 @@ Route `GET` sẽ hiển thị một form cho người dùng để tạo một b�
 
 Tiếp theo, chúng ta hãy xem một controller đơn giản xử lý các request đến route này. Bây giờ chúng ta sẽ bỏ trống phương thức `store`:
 
-    <?php
+```php
+<?php
 
-    namespace App\Http\Controllers;
+namespace App\Http\Controllers;
 
-    use Illuminate\Http\RedirectResponse;
-    use Illuminate\Http\Request;
-    use Illuminate\View\View;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\View;
 
-    class PostController extends Controller
+class PostController extends Controller
+{
+    /**
+     * Show the form to create a new blog post.
+     */
+    public function create(): View
     {
-        /**
-         * Show the form to create a new blog post.
-         */
-        public function create(): View
-        {
-            return view('post.create');
-        }
-
-        /**
-         * Store a new blog post.
-         */
-        public function store(Request $request): RedirectResponse
-        {
-            // Validate and store the blog post...
-
-            $post = /** ... */
-
-            return to_route('post.show', ['post' => $post->id]);
-        }
+        return view('post.create');
     }
+
+    /**
+     * Store a new blog post.
+     */
+    public function store(Request $request): RedirectResponse
+    {
+        // Validate and store the blog post...
+
+        $post = /** ... */
+
+        return to_route('post.show', ['post' => $post->id]);
+    }
+}
+```
 
 <a name="quick-writing-the-validation-logic"></a>
 ### Viết Validation Logic
@@ -105,46 +109,54 @@ Nếu validation thất bại trong một request HTTP bình thường, thì m�
 
 Để hiểu rõ hơn về phương thức `validate`, chúng ta hãy quay lại phương thức` store`:
 
-    /**
-     * Store a new blog post.
-     */
-    public function store(Request $request): RedirectResponse
-    {
-        $validated = $request->validate([
-            'title' => 'required|unique:posts|max:255',
-            'body' => 'required',
-        ]);
+```php
+/**
+ * Store a new blog post.
+ */
+public function store(Request $request): RedirectResponse
+{
+    $validated = $request->validate([
+        'title' => 'required|unique:posts|max:255',
+        'body' => 'required',
+    ]);
 
-        // The blog post is valid...
+    // The blog post is valid...
 
-        return redirect('/posts');
-    }
+    return redirect('/posts');
+}
+```
 
 Như bạn có thể thấy, các quy tắc validation đã được truyền vào phương thức `validate`. Đừng lo lắng - tất cả các quy tắc validation có sẵn đều có [tài liệu](#available-validation-rules). Một lần nữa, nếu validation thất bại, một response thích hợp sẽ được tự động trả về. Còn nếu validation thành công, controller của chúng ta sẽ tiếp tục được thực thi bình thường.
 
 Ngoài ra, các quy tắc validation có thể được chỉ định dưới dạng các mảng quy tắc thay vì một chuỗi phân cách bằng dấu `|`:
 
-    $validatedData = $request->validate([
-        'title' => ['required', 'unique:posts', 'max:255'],
-        'body' => ['required'],
-    ]);
+```php
+$validatedData = $request->validate([
+    'title' => ['required', 'unique:posts', 'max:255'],
+    'body' => ['required'],
+]);
+```
 
 Ngoài ra, bạn có thể sử dụng phương thức `validateWithBag` để kiểm tra một request và lưu bất kỳ thông báo lỗi nào vào trong một [named error bag](#named-error-bags):
 
-    $validatedData = $request->validateWithBag('post', [
-        'title' => ['required', 'unique:posts', 'max:255'],
-        'body' => ['required'],
-    ]);
+```php
+$validatedData = $request->validateWithBag('post', [
+    'title' => ['required', 'unique:posts', 'max:255'],
+    'body' => ['required'],
+]);
+```
 
 <a name="stopping-on-first-validation-failure"></a>
 #### Dừng luôn nếu Validation đầu tiên thất bại
 
 Đôi khi bạn có thể muốn dừng chạy quy tắc validation trên một thuộc tính sau lần thất bại đầu tiên. Để làm như vậy, hãy gán quy tắc `bail` cho thuộc tính:
 
-    $request->validate([
-        'title' => 'bail|required|unique:posts|max:255',
-        'body' => 'required',
-    ]);
+```php
+$request->validate([
+    'title' => 'bail|required|unique:posts|max:255',
+    'body' => 'required',
+]);
+```
 
 Trong ví dụ này, nếu quy tắc `unique` trong thuộc tính `title` thất bại, quy tắc `max` sẽ không được kiểm tra. Các quy tắc này sẽ được validate theo thứ tự mà chúng được định nghĩa.
 
@@ -153,18 +165,22 @@ Trong ví dụ này, nếu quy tắc `unique` trong thuộc tính `title` thất
 
 Nếu incoming request HTTP chứa một field dữ liệu "lồng nhau", bạn có thể định nghĩa field này trong quy tắc validation bằng cách sử dụng cú pháp "chấm":
 
-    $request->validate([
-        'title' => 'required|unique:posts|max:255',
-        'author.name' => 'required',
-        'author.description' => 'required',
-    ]);
+```php
+$request->validate([
+    'title' => 'required|unique:posts|max:255',
+    'author.name' => 'required',
+    'author.description' => 'required',
+]);
+```
 
 Mặt khác, nếu tên field của bạn có chứa dấu chấm, thì bạn có thể ngăn chặn điều này khỏi bị hiểu nhầm là cú pháp "dấu chấm" bằng cách thêm dấu gạch chéo đằng trước dấu chấm:
 
-    $request->validate([
-        'title' => 'required|unique:posts|max:255',
-        'v1\.0' => 'required',
-    ]);
+```php
+$request->validate([
+    'title' => 'required|unique:posts|max:255',
+    'v1\.0' => 'required',
+]);
+```
 
 <a name="quick-displaying-the-validation-errors"></a>
 ### Hiển thị Validation Errors
@@ -245,7 +261,9 @@ Khi Laravel tạo response chuyển hướng do lỗi validation, framework sẽ
 
 Để lấy ra dữ liệu input đã được flash từ request trước đó, hãy gọi phương thức `old` trên instance của `Illuminate\Http\Request`. Phương thức `old` sẽ lấy dữ liệu input đã được flash trước đó từ [session](/docs/{{version}}/session):
 
-    $title = $request->old('title');
+```php
+$title = $request->old('title');
+```
 
 Laravel cũng cung cấp một helper global `old`. Nếu bạn đang muốn hiển thị thông tin cũ vào trong [Blade](/docs/{{version}}/blade), thì sẽ thuận tiện hơn khi sử dụng helper `old` để điền lại vào form. Nếu không có dữ liệu cũ tồn tại cho field đã cho, giá trị `null` sẽ được trả về:
 
@@ -258,11 +276,13 @@ Laravel cũng cung cấp một helper global `old`. Nếu bạn đang muốn hi�
 
 Mặc định, Laravel sẽ chứa hai middleware là: `TrimStrings` và `ConvertEmptyStringsToNull` trong stack middleware global application. Vì thế, bạn sẽ cần phải đánh dấu các trường request "optional" của bạn là `nullable` nếu bạn không muốn validator coi các giá trị `null` của các trường này là không hợp lệ. Ví dụ:
 
-    $request->validate([
-        'title' => 'required|unique:posts|max:255',
-        'body' => 'required',
-        'publish_at' => 'nullable|date',
-    ]);
+```php
+$request->validate([
+    'title' => 'required|unique:posts|max:255',
+    'body' => 'required',
+    'publish_at' => 'nullable|date',
+]);
+```
 
 Trong ví dụ trên, chúng ta đang định nghĩa là trường `publish_at` có thể là `null` hoặc nếu có giá trị thì phải theo format của date. Nếu chúng ta không thêm `nullable` vào trong định nghĩa quy tắc này, thì validator sẽ coi `null` là một date không hợp lệ.
 
@@ -310,42 +330,46 @@ Class form request được tạo ra sẽ được lưu trong thư mục `app/Ht
 
 Như bạn có thể thấy, phương thức `authorize` sẽ chịu trách nhiệm xác định xem người dùng hiện tại có thể thực hiện hành động hay không, trong khi phương thức `rules` sẽ trả về các quy tắc validation sẽ áp dụng cho dữ liệu của request:
 
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
-     */
-    public function rules(): array
-    {
-        return [
-            'title' => 'required|unique:posts|max:255',
-            'body' => 'required',
-        ];
-    }
+```php
+/**
+ * Get the validation rules that apply to the request.
+ *
+ * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+ */
+public function rules(): array
+{
+    return [
+        'title' => 'required|unique:posts|max:255',
+        'body' => 'required',
+    ];
+}
+```
 
 > [!NOTE]
 > Bạn có thể khai báo bất kỳ phụ thuộc nào mà bạn muốn trong phương thức `rule`. Những phụ thuộc đó sẽ được tự động resolve thông qua Laravel [service container](/docs/{{version}}/container).
 
 Vậy, các quy tắc validation sẽ được so sánh như thế nào? Tất cả những gì bạn cần làm là khai báo nó cho request trong phương thức controller của bạn. Form request đến sẽ được validate trước khi phương thức controller được gọi, nghĩa là bạn không cần làm lộn xộn controller của bạn với bất kỳ logic validate nào:
 
-    /**
-     * Store a new blog post.
-     */
-    public function store(StorePostRequest $request): RedirectResponse
-    {
-        // The incoming request is valid...
+```php
+/**
+ * Store a new blog post.
+ */
+public function store(StorePostRequest $request): RedirectResponse
+{
+    // The incoming request is valid...
 
-        // Retrieve the validated input data...
-        $validated = $request->validated();
+    // Retrieve the validated input data...
+    $validated = $request->validated();
 
-        // Retrieve a portion of the validated input data...
-        $validated = $request->safe()->only(['name', 'email']);
-        $validated = $request->safe()->except(['name', 'email']);
+    // Retrieve a portion of the validated input data...
+    $validated = $request->safe()->only(['name', 'email']);
+    $validated = $request->safe()->except(['name', 'email']);
 
-        // Store the blog post...
+    // Store the blog post...
 
-        return redirect('/posts');
-    }
+    return redirect('/posts');
+}
+```
 
 Nếu validation thất bại, một response chuyển hướng sẽ được tạo và đưa người dùng trở về vị trí trước đó của họ. Các lỗi cũng sẽ được flash vào session để chúng có thể được hiển thị. Nếu request là loại request XHR, response HTTP có status code 422 sẽ được trả về cho người dùng chứa một [data JSON gồm các lỗi validation](#validation-error-response-format).
 
@@ -359,24 +383,26 @@ Thỉnh thoảng bạn cần thực hiện thêm một validation bổ sung sau 
 
 Phương thức `after` sẽ cần trả về một mảng các callback hoặc closure, cái mà sẽ được gọi sau khi validation hoàn thành. Cái hàm callback sẽ nhận vào một instance `Illuminate\Validation\Validator`, cho phép bạn đưa thêm vào các error message nếu cần thiết:
 
-    use Illuminate\Validation\Validator;
+```php
+use Illuminate\Validation\Validator;
 
-    /**
-     * Get the "after" validation callables for the request.
-     */
-    public function after(): array
-    {
-        return [
-            function (Validator $validator) {
-                if ($this->somethingElseIsInvalid()) {
-                    $validator->errors()->add(
-                        'field',
-                        'Something is wrong with this field!'
-                    );
-                }
+/**
+ * Get the "after" validation callables for the request.
+ */
+public function after(): array
+{
+    return [
+        function (Validator $validator) {
+            if ($this->somethingElseIsInvalid()) {
+                $validator->errors()->add(
+                    'field',
+                    'Something is wrong with this field!'
+                );
             }
-        ];
-    }
+        }
+    ];
+}
+```
 
 Hãy chú ý rằng, mảng mà được trả về bởi hàm `after` cũng là một class có thể gọi lại. Phương thức `__invoke` của class này sẽ nhận vào một instance `Illuminate\Validation\Validator`:
 
@@ -405,70 +431,84 @@ public function after(): array
 
 Bằng cách thêm một thuộc tính `stopOnFirstFailure` vào request class của bạn, bạn có thể thông báo cho validator rằng nó sẽ phải ngừng kiểm tra các thuộc tính khác sau khi đã xảy ra một lỗi validation:
 
-    /**
-     * Indicates if the validator should stop on the first rule failure.
-     *
-     * @var bool
-     */
-    protected $stopOnFirstFailure = true;
+```php
+/**
+ * Indicates if the validator should stop on the first rule failure.
+ *
+ * @var bool
+ */
+protected $stopOnFirstFailure = true;
+```
 
 <a name="customizing-the-redirect-location"></a>
 #### Customizing The Redirect Location
 
 Khi xác thực form request không thành công, một response chuyển hướng sẽ được tạo để đưa người dùng quay lại vị trí trước đó của họ. Tuy nhiên, bạn có thể tự do tùy chỉnh hành vi này. Để làm như vậy, hãy định nghĩa một thuộc tính `$redirect` trên form request của bạn:
 
-    /**
-     * The URI that users should be redirected to if validation fails.
-     *
-     * @var string
-     */
-    protected $redirect = '/dashboard';
+```php
+/**
+ * The URI that users should be redirected to if validation fails.
+ *
+ * @var string
+ */
+protected $redirect = '/dashboard';
+```
 
 Hoặc, nếu bạn muốn chuyển hướng người dùng đến một route đã được đặt tên, thì thay vào đó, bạn có thể định nghĩa một thuộc tính `$redirectRoute`:
 
-    /**
-     * The route that users should be redirected to if validation fails.
-     *
-     * @var string
-     */
-    protected $redirectRoute = 'dashboard';
+```php
+/**
+ * The route that users should be redirected to if validation fails.
+ *
+ * @var string
+ */
+protected $redirectRoute = 'dashboard';
+```
 
 <a name="authorizing-form-requests"></a>
 ### Authorizing Form Requests
 
 Class form request cũng chứa một phương thức `authorize`. Trong phương thức này, bạn có thể xác định xem người dùng hiện tại thực sự có quyền truy cập vào resource này hay không. Ví dụ: bạn có thể xác định xem người dùng có thực sự là chủ sở hữu của một bình luận trong blog mà họ đang cố cập nhật hay không. Rất có thể, bạn sẽ tương tác với [các authorization gate và các policy](/docs/{{version}}/authorization) của bạn trong phương thức này:
 
-    use App\Models\Comment;
+```php
+use App\Models\Comment;
 
-    /**
-     * Determine if the user is authorized to make this request.
-     */
-    public function authorize(): bool
-    {
-        $comment = Comment::find($this->route('comment'));
+/**
+ * Determine if the user is authorized to make this request.
+ */
+public function authorize(): bool
+{
+    $comment = Comment::find($this->route('comment'));
 
-        return $comment && $this->user()->can('update', $comment);
-    }
+    return $comment && $this->user()->can('update', $comment);
+}
+```
 
 Vì tất cả các form request đều được mở rộng từ class request của Laravel, nên chúng ta có thể sử dụng phương thức `user` để truy cập vào người dùng hiện tại đang được authenticate. Hãy lưu ý cách gọi đến phương thức `route` trong ví dụ ở trên. Phương thức này cung cấp cho bạn quyền truy cập vào các tham số URI đã được định nghĩa trên route hiện tại, chẳng hạn như tham số `{comment}` trong ví dụ bên dưới:
 
-    Route::post('/comment/{comment}');
+```php
+Route::post('/comment/{comment}');
+```
 
 Do đó, nếu ứng dụng của bạn đang tận dụng [liên kết model route](/docs/{{version}}/routing#route-model-binding), thì code của bạn có thể trở nên ngắn gọn hơn nữa bằng cách truy cập vào một resolve model dưới dạng một thuộc tính của request:
 
-    return $this->user()->can('update', $this->comment);
+```php
+return $this->user()->can('update', $this->comment);
+```
 
 Nếu phương thức `authorize` trả về `false`, một HTTP response có status code là 403 sẽ được tự động trả về và phương thức trong controller của bạn sẽ không được thực thi.
 
 Nếu bạn có dự định xử lý logic authorization cho request nằm ở trong một phần khác của application, bạn có thể xoá hoàn toàn phương thức `authorize`, hoặc chỉ đơn giản là trả về `true`:
 
-    /**
-     * Determine if the user is authorized to make this request.
-     */
-    public function authorize(): bool
-    {
-        return true;
-    }
+```php
+/**
+ * Determine if the user is authorized to make this request.
+ */
+public function authorize(): bool
+{
+    return true;
+}
+```
 
 > [!NOTE]
 > Bạn có thể khai báo bất kỳ phụ thuộc nào mà bạn cần trong phương thức `authorize`. Những phụ thuộc đó sẽ được tự động resolve thông qua Laravel [service container](/docs/{{version}}/container).
@@ -478,106 +518,116 @@ Nếu bạn có dự định xử lý logic authorization cho request nằm ở 
 
 Bạn có thể tùy biến các thông báo lỗi được sử dụng bởi form request bằng cách ghi đè phương thức `messages`. Phương thức này sẽ trả về một mảng gồm các cặp thuộc tính / quy tắc và các thông báo lỗi tương ứng của chúng:
 
-    /**
-     * Get the error messages for the defined validation rules.
-     *
-     * @return array<string, string>
-     */
-    public function messages(): array
-    {
-        return [
-            'title.required' => 'A title is required',
-            'body.required' => 'A message is required',
-        ];
-    }
+```php
+/**
+ * Get the error messages for the defined validation rules.
+ *
+ * @return array<string, string>
+ */
+public function messages(): array
+{
+    return [
+        'title.required' => 'A title is required',
+        'body.required' => 'A message is required',
+    ];
+}
+```
 
 <a name="customizing-the-validation-attributes"></a>
 #### Tuỳ biến thuộc tính Validation
 
 Nhiều thông báo lỗi của quy tắc validation có sẵn của Laravel chứa phần biến `:attribute`. Nếu bạn muốn biến `:attribute` của message validation được thay thế bằng tên một thuộc tính tùy chỉnh, bạn có thể chỉ định các tên tùy chỉnh đó bằng cách ghi đè phương thức `attributes`. Phương thức này sẽ trả về một mảng gồm thuộc tính và tên:
 
-    /**
-     * Get custom attributes for validator errors.
-     *
-     * @return array<string, string>
-     */
-    public function attributes(): array
-    {
-        return [
-            'email' => 'email address',
-        ];
-    }
+```php
+/**
+ * Get custom attributes for validator errors.
+ *
+ * @return array<string, string>
+ */
+public function attributes(): array
+{
+    return [
+        'email' => 'email address',
+    ];
+}
+```
 
 <a name="preparing-input-for-validation"></a>
 ### Chuẩn bị dữ liệu cho Validation
 
 Nếu bạn cần chuẩn bị hoặc làm sạch dữ liệu trong request trước khi áp dụng các quy tắc validation của bạn, bạn có thể sử dụng phương thức `prepareForValidation`:
 
-    use Illuminate\Support\Str;
+```php
+use Illuminate\Support\Str;
 
-    /**
-     * Prepare the data for validation.
-     */
-    protected function prepareForValidation(): void
-    {
-        $this->merge([
-            'slug' => Str::slug($this->slug),
-        ]);
-    }
+/**
+ * Prepare the data for validation.
+ */
+protected function prepareForValidation(): void
+{
+    $this->merge([
+        'slug' => Str::slug($this->slug),
+    ]);
+}
+```
 
 Tương tự như vậy, nếu bạn cần chuẩn hóa bất kỳ dữ liệu nào của request sau khi xác thực hoàn tất, bạn có thể sử dụng phương thức `passedValidation`:
 
-    /**
-     * Handle a passed validation attempt.
-     */
-    protected function passedValidation(): void
-    {
-        $this->replace(['name' => 'Taylor']);
-    }
+```php
+/**
+ * Handle a passed validation attempt.
+ */
+protected function passedValidation(): void
+{
+    $this->replace(['name' => 'Taylor']);
+}
+```
 
 <a name="manually-creating-validators"></a>
 ## Tạo Validator thủ công
 
 Nếu bạn không muốn sử dụng phương thức `validate` theo request, bạn có thể tự tạo một instance validator bằng cách sử dụng [facade](/docs/{{version}}/facades) `Validator`. Phương thức `make` trên facade sẽ tạo ra một instance validator mới:
 
-    <?php
+```php
+<?php
 
-    namespace App\Http\Controllers;
+namespace App\Http\Controllers;
 
-    use Illuminate\Http\RedirectResponse;
-    use Illuminate\Http\Request;
-    use Illuminate\Support\Facades\Validator;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 
-    class PostController extends Controller
+class PostController extends Controller
+{
+    /**
+     * Store a new blog post.
+     */
+    public function store(Request $request): RedirectResponse
     {
-        /**
-         * Store a new blog post.
-         */
-        public function store(Request $request): RedirectResponse
-        {
-            $validator = Validator::make($request->all(), [
-                'title' => 'required|unique:posts|max:255',
-                'body' => 'required',
-            ]);
+        $validator = Validator::make($request->all(), [
+            'title' => 'required|unique:posts|max:255',
+            'body' => 'required',
+        ]);
 
-            if ($validator->fails()) {
-                return redirect('/post/create')
-                    ->withErrors($validator)
-                    ->withInput();
-            }
-
-            // Retrieve the validated input...
-            $validated = $validator->validated();
-
-            // Retrieve a portion of the validated input...
-            $validated = $validator->safe()->only(['name', 'email']);
-            $validated = $validator->safe()->except(['name', 'email']);
-
-            // Store the blog post...
-
-            return redirect('/posts');
+        if ($validator->fails()) {
+            return redirect('/post/create')
+                ->withErrors($validator)
+                ->withInput();
         }
+
+        // Retrieve the validated input...
+        $validated = $validator->validated();
+
+        // Retrieve a portion of the validated input...
+        $validated = $validator->safe()->only(['name', 'email']);
+        $validated = $validator->safe()->except(['name', 'email']);
+
+        // Store the blog post...
+
+        return redirect('/posts');
     }
+}
+```
 
 Tham số đầu tiên được truyền cho phương thức `make` là dữ liệu cần được validation. Tham số thứ hai là một mảng các quy tắc validation sẽ được áp dụng cho dữ liệu đó.
 
@@ -587,33 +637,41 @@ Sau khi xác định request validation bị thất bại, bạn có thể sử 
 
 Phương thức `stopOnFirstFailure` sẽ thông báo cho validator rằng nó sẽ phải ngừng kiểm tra các thuộc tính khác sau khi đã xảy ra một lỗi validation:
 
-    if ($validator->stopOnFirstFailure()->fails()) {
-        // ...
-    }
+```php
+if ($validator->stopOnFirstFailure()->fails()) {
+    // ...
+}
+```
 
 <a name="automatic-redirection"></a>
 ### Tự dộng chuyển hướng
 
 Nếu bạn muốn tự tạo một validator instance nhưng vẫn muốn tận dụng tính năng chuyển hướng tự động được cung cấp bởi phương thức `validate` của HTTP request, bạn có thể gọi phương thức `validate` trên một validator instance đã tồn tại. Nếu validation thất bại, người dùng sẽ tự động được chuyển hướng hoặc trong trường hợp request là XHR, thì một [response JSON sẽ được trả về](#validation-error-response-format):
 
-    Validator::make($request->all(), [
-        'title' => 'required|unique:posts|max:255',
-        'body' => 'required',
-    ])->validate();
+```php
+Validator::make($request->all(), [
+    'title' => 'required|unique:posts|max:255',
+    'body' => 'required',
+])->validate();
+```
 
 Bạn có thể sử dụng phương thức `validateWithBag` để lưu thông báo lỗi vào trong một [named error bag](#named-error-bags) nếu quá trình kiểm tra không thành công:
 
-    Validator::make($request->all(), [
-        'title' => 'required|unique:posts|max:255',
-        'body' => 'required',
-    ])->validateWithBag('post');
+```php
+Validator::make($request->all(), [
+    'title' => 'required|unique:posts|max:255',
+    'body' => 'required',
+])->validateWithBag('post');
+```
 
 <a name="named-error-bags"></a>
 ### Tên của Error Bags
 
 Nếu bạn có nhiều form trong một trang, bạn có thể muốn đặt tên cho `MessageBag` chứa các lỗi validation, cho phép bạn có thể truy xuất vào các thông báo lỗi cho một form cụ thể. Để đạt được điều này, hãy truyền tên đó làm tham số thứ hai cho phương thức `withErrors`:
 
-    return redirect('/register')->withErrors($validator, 'login');
+```php
+return redirect('/register')->withErrors($validator, 'login');
+```
 
 Sau đó, bạn có thể truy cập vào instance `MessageBag` đã được đặt tên từ biến `$errors`:
 
@@ -626,57 +684,67 @@ Sau đó, bạn có thể truy cập vào instance `MessageBag` đã được đ
 
 Nếu cần, bạn có thể cung cấp một tùy biến thông báo lỗi cho validation thay vì mặc định. Có một số cách để định nghĩa tùy biến một thông báo lỗi. Đầu tiên, bạn có thể truyền các thông báo lỗi đã được tùy biến làm tham số thứ ba cho phương thức `Validator::make`:
 
-    $validator = Validator::make($input, $rules, $messages = [
-        'required' => 'The :attribute field is required.',
-    ]);
+```php
+$validator = Validator::make($input, $rules, $messages = [
+    'required' => 'The :attribute field is required.',
+]);
+```
 
 Trong ví dụ này, `:attribute` sẽ được thay thế bằng tên thực sự của field mà được validation. Bạn cũng có thể sử dụng các attribute khác trong validation messages. Ví dụ:
 
-    $messages = [
-        'same' => 'The :attribute and :other must match.',
-        'size' => 'The :attribute must be exactly :size.',
-        'between' => 'The :attribute value :input is not between :min - :max.',
-        'in' => 'The :attribute must be one of the following types: :values',
-    ];
+```php
+$messages = [
+    'same' => 'The :attribute and :other must match.',
+    'size' => 'The :attribute must be exactly :size.',
+    'between' => 'The :attribute value :input is not between :min - :max.',
+    'in' => 'The :attribute must be one of the following types: :values',
+];
+```
 
 <a name="specifying-a-custom-message-for-a-given-attribute"></a>
 #### Specifying A Custom Message For A Given Attribute
 
 Thỉnh thoảng bạn có thể chỉ định một thông báo lỗi tùy biến chỉ cho một field cụ thể. Bạn có thể làm như vậy bằng cách dùng ký hiệu "chấm". Chỉ định tên của attribute trước và sau đó là đến tên của quy tắc:
 
-    $messages = [
-        'email.required' => 'We need to know your email address!',
-    ];
+```php
+$messages = [
+    'email.required' => 'We need to know your email address!',
+];
+```
 
 <a name="specifying-custom-attribute-values"></a>
 #### Specifying Custom Attribute Values
 
 Nhiều thông báo lỗi có sẵn của Laravel có chứa một biến `:attribute` có thể được thay thế bằng tên của một field hoặc một thuộc tính đang được validation. Để tùy chỉnh các giá trị được sử dụng để thay thế cho biến này cho các field cụ thể, bạn có thể truyền một mảng thuộc tính tùy biến làm tham số thứ tư cho phương thức `Validator::make`:
 
-    $validator = Validator::make($input, $rules, $messages, [
-        'email' => 'email address',
-    ]);
+```php
+$validator = Validator::make($input, $rules, $messages, [
+    'email' => 'email address',
+]);
+```
 
 <a name="performing-additional-validation"></a>
 ### Thực hiện Validation bổ sung
 
 Sometimes you need to perform additional validation after your initial validation is complete. You can accomplish this using the validator's `after` method. The `after` method accepts a closure or an array of callables which will be invoked after validation is complete. The given callables will receive an `Illuminate\Validation\Validator` instance, allowing you to raise additional error messages if necessary:
 
-    use Illuminate\Support\Facades\Validator;
+```php
+use Illuminate\Support\Facades\Validator;
 
-    $validator = Validator::make(/* ... */);
+$validator = Validator::make(/* ... */);
 
-    $validator->after(function ($validator) {
-        if ($this->somethingElseIsInvalid()) {
-            $validator->errors()->add(
-                'field', 'Something is wrong with this field!'
-            );
-        }
-    });
-
-    if ($validator->fails()) {
-        // ...
+$validator->after(function ($validator) {
+    if ($this->somethingElseIsInvalid()) {
+        $validator->errors()->add(
+            'field', 'Something is wrong with this field!'
+        );
     }
+});
+
+if ($validator->fails()) {
+    // ...
+}
+```
 
 Hãy chú ý rằng, phương thức `after` cũng chấp nhận một mảng các callback, which is particularly convenient if your "after validation" logic is encapsulated in invokable classes, which will receive an `Illuminate\Validation\Validator` instance via their `__invoke` method:
 
@@ -698,37 +766,47 @@ $validator->after([
 
 Sau khi validate dữ liệu request đến bằng cách sử dụng một request form hoặc instance validator, bạn có thể muốn lấy ra dữ liệu request đã thực sự trải qua quá trình validation. Điều này có thể được thực hiện bằng nhiều cách. Đầu tiên, bạn có thể gọi phương thức `validated` trên một request form hoặc instance validator. Phương thức này sẽ trả về một mảng dữ liệu đã được validate:
 
-    $validated = $request->validated();
+```php
+$validated = $request->validated();
 
-    $validated = $validator->validated();
+$validated = $validator->validated();
+```
 
 Ngoài ra, bạn có thể gọi phương thức `safe` trên một request form hoặc instance validator. Phương thức này sẽ trả về một instancen của `Illuminate\Support\ValidatedInput`. Đối tượng này có thêm các phương thức `only`, `except`, và `all` để lấy ra một tập con của dữ liệu được validate hoặc toàn bộ dữ liệu được validate:
 
-    $validated = $request->safe()->only(['name', 'email']);
+```php
+$validated = $request->safe()->only(['name', 'email']);
 
-    $validated = $request->safe()->except(['name', 'email']);
+$validated = $request->safe()->except(['name', 'email']);
 
-    $validated = $request->safe()->all();
+$validated = $request->safe()->all();
+```
 
 Ngoài ra, instance `Illuminate\Support\ValidatedInput` có thể lặp được và truy cập giống như một mảng:
 
-    // Validated data may be iterated...
-    foreach ($request->safe() as $key => $value) {
-        // ...
-    }
+```php
+// Validated data may be iterated...
+foreach ($request->safe() as $key => $value) {
+    // ...
+}
 
-    // Validated data may be accessed as an array...
-    $validated = $request->safe();
+// Validated data may be accessed as an array...
+$validated = $request->safe();
 
-    $email = $validated['email'];
+$email = $validated['email'];
+```
 
 Nếu bạn muốn thêm các field vào trong dữ liệu đã validate, bạn có thể gọi phương thức `merge`:
 
-    $validated = $request->safe()->merge(['name' => 'Taylor Otwell']);
+```php
+$validated = $request->safe()->merge(['name' => 'Taylor Otwell']);
+```
 
 Nếu bạn muốn lấy ra dữ liệu đã được validate dưới dạng một instance [collection](/docs/{{version}}/collections), bạn có thể gọi phương thức `collect`:
 
-    $collection = $request->safe()->collect();
+```php
+$collection = $request->safe()->collect();
+```
 
 <a name="working-with-error-messages"></a>
 ## Làm việc với Error Messages
@@ -740,42 +818,52 @@ Sau khi gọi phương thức `errors` trong một instance `Validator`, bạn s
 
 Để lấy thông báo lỗi đầu tiên cho một field, hãy sử dụng phương thức `first`:
 
-    $errors = $validator->errors();
+```php
+$errors = $validator->errors();
 
-    echo $errors->first('email');
+echo $errors->first('email');
+```
 
 <a name="retrieving-all-error-messages-for-a-field"></a>
 #### Lấy tất cả các lỗi của một field
 
 Nếu bạn cần lấy tất cả các thông báo lỗi cho một field, hãy sử dụng phương thức `get`:
 
-    foreach ($errors->get('email') as $message) {
-        // ...
-    }
+```php
+foreach ($errors->get('email') as $message) {
+    // ...
+}
+```
 
 Nếu bạn đang validate một mảng field, bạn có thể lấy tất cả các thông báo lỗi cho từng field trong mảng bằng ký tự `*`:
 
-    foreach ($errors->get('attachments.*') as $message) {
-        // ...
-    }
+```php
+foreach ($errors->get('attachments.*') as $message) {
+    // ...
+}
+```
 
 <a name="retrieving-all-error-messages-for-all-fields"></a>
 #### Lấy tất cả các lỗi của tất cả các field
 
 Để lấy một mảng tất cả các thông báo lỗi cho tất cả các field, hãy sử dụng phương thức `all`:
 
-    foreach ($errors->all() as $message) {
-        // ...
-    }
+```php
+foreach ($errors->all() as $message) {
+    // ...
+}
+```
 
 <a name="determining-if-messages-exist-for-a-field"></a>
 #### Xác định một thông báo có tồn tại của một field
 
 Phương thức `has` có thể được sử dụng để xác định xem có tồn tại thông báo lỗi nào cho field đã cho không:
 
-    if ($errors->has('email')) {
-        // ...
-    }
+```php
+if ($errors->has('email')) {
+    // ...
+}
+```
 
 <a name="specifying-custom-messages-in-language-files"></a>
 ### Chỉ định Message tuỳ chỉnh trong Language Files
@@ -794,21 +882,25 @@ Ngoài ra, bạn có thể copy file này sang thư mục ngôn ngữ khác đ�
 
 Bạn có thể tùy chỉnh các thông báo lỗi được sử dụng cho các kết hợp giữa thuộc tính và quy tắc được trong các file ngôn ngữ validation trong ứng dụng của bạn. Để làm như vậy, bạn hãy thêm các tùy chỉnh thông báo của bạn vào mảng `custom` của file ngôn ngữ `lang/xx/validation.php` của ứng dụng của bạn:
 
-    'custom' => [
-        'email' => [
-            'required' => 'We need to know your email address!',
-            'max' => 'Your email address is too long!'
-        ],
+```php
+'custom' => [
+    'email' => [
+        'required' => 'We need to know your email address!',
+        'max' => 'Your email address is too long!'
     ],
+],
+```
 
 <a name="specifying-attribute-in-language-files"></a>
 ### Chỉ định Attributes trong Language Files
 
 Nhiều thông báo lỗi có sẵn của Laravel có chứa một biến `:attribute` có thể được thay thế bằng tên của một field hoặc một thuộc tính đang được validation. Nếu bạn muốn phần `:attribute` trong thông báo validation của bạn được thay thế bằng một giá trị tùy biến, bạn có thể chỉ định tên attribute tùy biến này trong mảng `attributes` của file language `lang/xx/validation.php`:
 
-    'attributes' => [
-        'email' => 'email address',
-    ],
+```php
+'attributes' => [
+    'email' => 'email address',
+],
+```
 
 > [!WARNING]
 > Mặc định, framework Laravel không chứa thư mục `lang`. Nếu bạn muốn tùy chỉnh các file ngôn ngữ của Laravel, bạn có thể export ra chúng thông qua lệnh Artisan `lang:publish`.
@@ -818,9 +910,11 @@ Nhiều thông báo lỗi có sẵn của Laravel có chứa một biến `:attr
 
 Một số thông báo lỗi cua quy tắc validation có sẵn của Laravel có chứa một biến `:value` được thay thế cho giá trị hiện tại của một thuộc tính request. Tuy nhiên, đôi khi bạn có thể cần thay thế biến `:value` của thông báo validation bằng một giá trị tùy chỉnh. Ví dụ: hãy xem xét quy tắc sau sẽ yêu cầu rằng số thẻ tín dụng phải là bắt buộc nếu thuộc tính `payment_type` có giá trị là `cc`:
 
-    Validator::make($request->all(), [
-        'credit_card_number' => 'required_if:payment_type,cc'
-    ]);
+```php
+Validator::make($request->all(), [
+    'credit_card_number' => 'required_if:payment_type,cc'
+]);
+```
 
 Nếu rule validation này không thành công, thì nó sẽ tạo ra một thông báo lỗi như sau:
 
@@ -830,18 +924,20 @@ The credit card number field is required when payment type is cc.
 
 Thay vì hiển thị `cc` làm giá trị của payment type, bạn có thể chỉ định một giá trị tùy biến thân thiện với người dùng hơn trong file ngôn ngữ `lang/xx/validation.php` của bạn bằng cách định nghĩa mảng `values`:
 
-    'values' => [
-        'payment_type' => [
-            'cc' => 'credit card'
-        ],
+```php
+'values' => [
+    'payment_type' => [
+        'cc' => 'credit card'
     ],
+],
+```
 
 > [!WARNING]
 > Mặc định, framework Laravel không chứa thư mục `lang`. Nếu bạn muốn tùy chỉnh các file ngôn ngữ của Laravel, bạn có thể export ra chúng thông qua lệnh Artisan `lang:publish`.
 
 Sau khi định nghĩa giá trị này, rule validation sẽ tạo ra thông báo lỗi như sau:
 
-```none
+```text
 The credit card number field is required when payment type is credit card.
 ```
 
@@ -946,8 +1042,10 @@ Dưới đây là danh sách tất cả các quy tắc validation có sẵn và 
 [Array](#rule-array)
 [Between](#rule-between)
 [Contains](#rule-contains)
+[Doesnt Contain](#rule-doesnt-contain)
 [Distinct](#rule-distinct)
 [In Array](#rule-in-array)
+[In Array Keys](#rule-in-array-keys)
 [List](#rule-list)
 [Max](#rule-max)
 [Min](#rule-min)
@@ -977,6 +1075,7 @@ Dưới đây là danh sách tất cả các quy tắc validation có sẵn và 
 
 [Between](#rule-between)
 [Dimensions](#rule-dimensions)
+[Encoding](#rule-encoding)
 [Extensions](#rule-extensions)
 [File](#rule-file)
 [Image](#rule-image)
@@ -1000,6 +1099,7 @@ Dưới đây là danh sách tất cả các quy tắc validation có sẵn và 
 
 <div class="collection-method-list" markdown="1">
 
+[Any Of](#rule-anyof)
 [Bail](#rule-bail)
 [Exclude](#rule-exclude)
 [Exclude If](#rule-exclude-if)
@@ -1020,6 +1120,8 @@ Dưới đây là danh sách tất cả các quy tắc validation có sẵn và 
 [Present With All](#rule-present-with-all)
 [Prohibited](#rule-prohibited)
 [Prohibited If](#rule-prohibited-if)
+[Prohibited If Accepted](#rule-prohibited-if-accepted)
+[Prohibited If Declined](#rule-prohibited-if-declined)
 [Prohibited Unless](#rule-prohibited-unless)
 [Prohibits](#rule-prohibits)
 [Required](#rule-required)
@@ -1056,27 +1158,35 @@ Field được validation phải có bản ghi A hoặc AAAA hợp lệ theo hà
 
 Field được validation phải là một giá trị sau một ngày nhất định. Tham số date sẽ được truyền vào hàm PHP `strtotime` để được chuyển thành instance `DateTime` hợp lệ:
 
-    'start_date' => 'required|date|after:tomorrow'
+```php
+'start_date' => 'required|date|after:tomorrow'
+```
 
 Thay vì truyền một chuỗi date được chạy bởi hàm `strtotime`, bạn có thể chỉ định một field khác để so sánh với ngày:
 
-    'finish_date' => 'required|date|after:start_date'
+```php
+'finish_date' => 'required|date|after:start_date'
+```
 
 Để thuận tiện, các quy tắc dựa trên date có thể được xây dựng bằng cách sử dụng builder rule `date`:
 
-    use Illuminate\Validation\Rule;
+```php
+use Illuminate\Validation\Rule;
 
-    'start_date' => [
-        'required',
-        Rule::date()->after(today()->addDays(7)),
-    ],
+'start_date' => [
+    'required',
+    Rule::date()->after(today()->addDays(7)),
+],
+```
 
-Các phương thức `afterToday` và `todayOrAfter` có thể được sử dụng để diễn đạt một cách trôi chảy hơn, ngày đang validate phải là ngày hiện tại hoặc là một ngày trong tương lai:
+Các phương thức `afterToday` và `todayOrAfter` có thể được sử dụng để diễn đạt một cách trôi chảy hơn, ngày đang validate phải là ngày hiện tại, hoặc là một ngày trong tương lai:
 
-    'start_date' => [
-        'required',
-        Rule::date()->afterToday(),
-    ],
+```php
+'start_date' => [
+    'required',
+    Rule::date()->afterToday(),
+],
+```
 
 <a name="rule-after-or-equal"></a>
 #### after\_or\_equal:_date_
@@ -1085,17 +1195,36 @@ Field được validation phải là một giá trị sau hoặc bằng ngày đ
 
 Để thuận tiện, các quy tắc dựa trên date có thể được xây dựng bằng cách sử dụng builder rule `date`:
 
-    use Illuminate\Validation\Rule;
+```php
+use Illuminate\Validation\Rule;
 
-    'start_date' => [
-        'required',
-        Rule::date()->afterOrEqual(today()->addDays(7)),
-    ],
+'start_date' => [
+    'required',
+    Rule::date()->afterOrEqual(today()->addDays(7)),
+],
+```
+
+<a name="rule-anyof"></a>
+#### anyOf
+
+Quy tắc validation `Rule::anyOf` cho phép bạn chỉ định field đang được validate phải thỏa mãn bất kỳ bộ quy tắc validation nào được cung cấp. Ví dụ: quy tắc sau đây sẽ xác thực rằng field `username` phải là địa chỉ email hoặc một chuỗi ký tự chữ và số (bao gồm cả dấu gạch ngang) có độ dài ít nhất là 6 ký tự:
+
+```php
+use Illuminate\Validation\Rule;
+
+'username' => [
+    'required',
+    Rule::anyOf([
+        ['string', 'email'],
+        ['string', 'alpha_dash', 'min:6'],
+    ]),
+],
+```
 
 <a name="rule-alpha"></a>
 #### alpha
 
-Field được validation phải hoàn toàn là các ký tự chữ cái Unicode có trong [`\p{L}`](https://util.unicode.org/UnicodeJsps/list-unicodeset.jsp?a=%5B%3AL%3A%5D&g=&i=) và [`\p{M}`](https://util.unicode.org/UnicodeJsps/list-unicodeset.jsp?a=%5B%3AM%3A%5D&g=&i=).
+Field được validation phải hoàn toàn là các ký tự chữ cái Unicode có trong [\p{L}](https://util.unicode.org/UnicodeJsps/list-unicodeset.jsp?a=%5B%3AL%3A%5D&g=&i=) và [\p{M}](https://util.unicode.org/UnicodeJsps/list-unicodeset.jsp?a=%5B%3AM%3A%5D&g=&i=).
 
 Để giới hạn quy tắc validation này đối với các ký tự có trong phạm vi ASCII (`a-z` và `A-Z`), bạn có thể cung cấp thêm tùy chọn `ascii` cho quy tắc validation:
 
@@ -1106,9 +1235,9 @@ Field được validation phải hoàn toàn là các ký tự chữ cái Unicod
 <a name="rule-alpha-dash"></a>
 #### alpha_dash
 
-Field được validation phải hoàn toàn là các ký tự chữ và số Unicode có trong [`\p{L}`](https://util.unicode.org/UnicodeJsps/list-unicodeset.jsp?a=%5B%3AL%3A%5D&g=&i=), [`\p{M}`](https://util.unicode.org/UnicodeJsps/list-unicodeset.jsp?a=%5B%3AM%3A%5D&g=&i=), [`\p{N}`](https://util.unicode.org/UnicodeJsps/list-unicodeset.jsp?a=%5B%3AN%3A%5D&g=&i=), cũng như dấu gạch ngang ASCII (`-`) và dấu gạch dưới ASCII (`_`).
+Field được validation phải hoàn toàn là các ký tự chữ và số Unicode có trong [\p{L}](https://util.unicode.org/UnicodeJsps/list-unicodeset.jsp?a=%5B%3AL%3A%5D&g=&i=), [\p{M}](https://util.unicode.org/UnicodeJsps/list-unicodeset.jsp?a=%5B%3AM%3A%5D&g=&i=), [\p{N}](https://util.unicode.org/UnicodeJsps/list-unicodeset.jsp?a=%5B%3AN%3A%5D&g=&i=), cũng như dấu gạch ngang ASCII (`-`) và dấu gạch dưới ASCII (`_`).
 
-Để giới hạn quy tắc validation này đối với các ký tự có trong phạm vi ASCII (`a-z` và `A-Z`), bạn có thể cung cấp thêm tùy chọn `ascii` cho quy tắc validation:
+Để giới hạn quy tắc validation này đối với các ký tự có trong phạm vi ASCII (`a-z`, `A-Z`, và `0-9`), bạn có thể cung cấp thêm tùy chọn `ascii` cho quy tắc validation:
 
 ```php
 'username' => 'alpha_dash:ascii',
@@ -1117,9 +1246,9 @@ Field được validation phải hoàn toàn là các ký tự chữ và số Un
 <a name="rule-alpha-num"></a>
 #### alpha_num
 
-Field được validation phải hoàn toàn là các ký tự chữ và số Unicode có trong [`\p{L}`](https://util.unicode.org/UnicodeJsps/list-unicodeset.jsp?a=%5B%3AL%3A%5D&g=&i=), [`\p{M}`](https://util.unicode.org/UnicodeJsps/list-unicodeset.jsp?a=%5B%3AM%3A%5D&g=&i=), và [`\p{N}`](https://util.unicode.org/UnicodeJsps/list-unicodeset.jsp?a=%5B%3AN%3A%5D&g=&i=).
+Field được validation phải hoàn toàn là các ký tự chữ và số Unicode có trong [\p{L}](https://util.unicode.org/UnicodeJsps/list-unicodeset.jsp?a=%5B%3AL%3A%5D&g=&i=), [\p{M}](https://util.unicode.org/UnicodeJsps/list-unicodeset.jsp?a=%5B%3AM%3A%5D&g=&i=), và [\p{N}](https://util.unicode.org/UnicodeJsps/list-unicodeset.jsp?a=%5B%3AN%3A%5D&g=&i=).
 
-Để giới hạn quy tắc validation này đối với các ký tự có trong phạm vi ASCII (`a-z` và `A-Z`), bạn có thể cung cấp thêm tùy chọn `ascii` cho quy tắc validation:
+Để giới hạn quy tắc validation này đối với các ký tự có trong phạm vi ASCII (`a-z`, `A-Z`, và `0-9`), bạn có thể cung cấp thêm tùy chọn `ascii` cho quy tắc validation:
 
 ```php
 'username' => 'alpha_num:ascii',
@@ -1132,19 +1261,21 @@ Field được validation phải là một PHP `array`.
 
 Khi các giá trị được cung cấp thêm cho quy tắc `array`, thì mỗi khóa trong mảng input phải có trong danh sách các giá trị được cung cấp cho quy tắc. Trong ví dụ sau, khóa `admin` trong mảng input không hợp lệ vì nó không có trong danh sách các giá trị được cung cấp cho quy tắc `array`:
 
-    use Illuminate\Support\Facades\Validator;
+```php
+use Illuminate\Support\Facades\Validator;
 
-    $input = [
-        'user' => [
-            'name' => 'Taylor Otwell',
-            'username' => 'taylorotwell',
-            'admin' => true,
-        ],
-    ];
+$input = [
+    'user' => [
+        'name' => 'Taylor Otwell',
+        'username' => 'taylorotwell',
+        'admin' => true,
+    ],
+];
 
-    Validator::make($input, [
-        'user' => 'array:name,username',
-    ]);
+Validator::make($input, [
+    'user' => 'array:name,username',
+]);
+```
 
 Nói chung, bạn phải luôn chỉ định các khóa trong mảng được phép có mặt trong mảng của bạn.
 
@@ -1160,54 +1291,68 @@ Dừng chạy các validation rule cho field nếu lần validation đầu tiên
 
 Mặc dù quy tắc `bail` sẽ ngừng validate một field cụ thể khi nó gặp một lỗi validation, nhưng phương thức `stopOnFirstFailure` sẽ thông báo cho validator rằng nó sẽ ngừng validate tất cả các thuộc tính sau khi xảy ra một lỗi validation:
 
-    if ($validator->stopOnFirstFailure()->fails()) {
-        // ...
-    }
+```php
+if ($validator->stopOnFirstFailure()->fails()) {
+    // ...
+}
+```
 
 <a name="rule-before"></a>
 #### before:_date_
 
-Field được validation là một giá trị trước ngày đã cho. Tham số date sẽ được truyền vào hàm `strtotime` của PHP để được chuyển thành instance `DateTime` hợp lệ. Ngoài ra, giống như quy tắc [`after`](#rule-after), tên của một field khác cũng có thể được cung cấp dưới dạng như một giá trị kiểu `date`.
+Field được validation là một giá trị trước ngày đã cho. Tham số date sẽ được truyền vào hàm `strtotime` của PHP để được chuyển thành instance `DateTime` hợp lệ. Ngoài ra, giống như quy tắc [after](#rule-after), tên của một field khác cũng có thể được cung cấp dưới dạng như một giá trị kiểu `date`.
 
 Để thuận tiện, các quy tắc dựa trên date có thể được xây dựng bằng cách sử dụng builder rule `date`:
 
-    use Illuminate\Validation\Rule;
+```php
+use Illuminate\Validation\Rule;
 
-    'start_date' => [
-        'required',
-        Rule::date()->before(today()->subDays(7)),
-    ],
+'start_date' => [
+    'required',
+    Rule::date()->before(today()->subDays(7)),
+],
+```
 
 Các phương thức `beforeToday` và `todayOrBefore` có thể được sử dụng để diễn đạt một cách trôi chảy hơn, ngày đang validate phải là ngày hiện tại hoặc là một ngày trong quá khứ:
 
-    'start_date' => [
-        'required',
-        Rule::date()->beforeToday(),
-    ],
+```php
+'start_date' => [
+    'required',
+    Rule::date()->beforeToday(),
+],
+```
 
 <a name="rule-before-or-equal"></a>
 #### before\_or\_equal:_date_
 
-Field được validation là một giá trị trước hoặc bằng với ngày đã cho. Tham số date sẽ được truyền vào hàm `strtotime` của PHP để được chuyển thành instance `DateTime` hợp lệ. Ngoài ra, giống như quy tắc [`after`](#rule-after), tên của một field khác cũng có thể được cung cấp dưới dạng như một giá trị kiểu `date`.
+Field được validation là một giá trị trước hoặc bằng với ngày đã cho. Tham số date sẽ được truyền vào hàm `strtotime` của PHP để được chuyển thành instance `DateTime` hợp lệ. Ngoài ra, giống như quy tắc [after](#rule-after), tên của một field khác cũng có thể được cung cấp dưới dạng như một giá trị kiểu `date`.
 
 Để thuận tiện, các quy tắc dựa trên date có thể được xây dựng bằng cách sử dụng builder rule `date`:
 
-    use Illuminate\Validation\Rule;
+```php
+use Illuminate\Validation\Rule;
 
-    'start_date' => [
-        'required',
-        Rule::date()->beforeOrEqual(today()->subDays(7)),
-    ],
+'start_date' => [
+    'required',
+    Rule::date()->beforeOrEqual(today()->subDays(7)),
+],
+```
 
 <a name="rule-between"></a>
 #### between:_min_,_max_
 
-Field được validation phải có kích thước ở giữa (hoặc bằng) _min_ và _max_ đã cho. Chuỗi, số, mảng và file sẽ được so sánh theo cùng một quy tắc với quy tắc [`size`](#rule-size).
+Field được validation phải có kích thước ở giữa (hoặc bằng) _min_ và _max_ đã cho. Chuỗi, số, mảng và file sẽ được so sánh theo cùng một quy tắc với quy tắc [size](#rule-size).
 
 <a name="rule-boolean"></a>
 #### boolean
 
 Field được validation phải có thể được cast là boolean. Input được chấp nhận là `true`, `false`, `1`, `0`, `"1"`, và `"0"`.
+
+Bạn có thể sử dụng tham số `strict` để coi field này là hợp lệ khi giá trị của nó chỉ duy nhất là `true` hoặc `false`:
+
+```php
+'foo' => 'boolean:strict'
+```
 
 <a name="rule-confirmed"></a>
 #### confirmed
@@ -1219,14 +1364,47 @@ Bạn cũng có thể truyền vào một tên field confirmation tùy biến. V
 <a name="rule-contains"></a>
 #### contains:_foo_,_bar_,...
 
-Field được validation phải là một mảng chứa tất cả các giá trị được cung cấp.
+Field được validation phải là một mảng chứa tất cả các giá trị được cung cấp. Vì rule này sẽ yêu cầu bạn phải sử dụng hàm `implode` để tạo một mảng, nên phương thức `Rule::contains` có thể được sử dụng để xây dựng rule này một cách rõ ràng nhất:
+
+```php
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
+
+Validator::make($data, [
+    'roles' => [
+        'required',
+        'array',
+        Rule::contains(['admin', 'editor']),
+    ],
+]);
+```
+
+<a name="rule-doesnt-contain"></a>
+#### doesnt_contain:_foo_,_bar_,...
+
+Field được validation phải là một mảng không chứa bất kỳ giá trị tham số nào được cung cấp. Vì rule này sẽ yêu cầu bạn phải sử dụng hàm `implode` để tạo một mảng, nên phương thức `Rule::doesntContain` có thể được sử dụng để xây dựng rule này một cách rõ ràng nhất:
+
+```php
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
+
+Validator::make($data, [
+    'roles' => [
+        'required',
+        'array',
+        Rule::doesntContain(['admin', 'editor']),
+    ],
+]);
+```
 
 <a name="rule-current-password"></a>
 #### current_password
 
 Field được validation phải khớp với mật khẩu của người dùng hiện tại. Bạn có thể chỉ định [authentication guard](/docs/{{version}}/authentication) bằng cách sử dụng tham số đầu tiên của quy tắc:
 
-    'password' => 'current_password:api'
+```php
+'password' => 'current_password:api'
+```
 
 <a name="rule-date"></a>
 #### date
@@ -1245,23 +1423,27 @@ Field được validation phải khớp với _format_ đã cho. Bạn nên sử
 
 Để thuận tiện, các quy tắc dựa trên date có thể được xây dựng bằng cách sử dụng builder rule `date`:
 
-    use Illuminate\Validation\Rule;
+```php
+use Illuminate\Validation\Rule;
 
-    'start_date' => [
-        'required',
-        Rule::date()->format('Y-m-d'),
-    ],
+'start_date' => [
+    'required',
+    Rule::date()->format('Y-m-d'),
+],
+```
 
 <a name="rule-decimal"></a>
 #### decimal:_min_,_max_
 
 Field được validation phải là số và phải có số chữ số thập phân được chỉ định:
 
-    // Must have exactly two decimal places (9.99)...
-    'price' => 'decimal:2'
+```php
+// Must have exactly two decimal places (9.99)...
+'price' => 'decimal:2'
 
-    // Must have between 2 and 4 decimal places...
-    'price' => 'decimal:2,4'
+// Must have between 2 and 4 decimal places...
+'price' => 'decimal:2,4'
+```
 
 <a name="rule-declined"></a>
 #### declined
@@ -1293,43 +1475,55 @@ Số được validation phải có độ dài ở giữa _min_ và _max_ đã c
 
 File được validation là một image đáp ứng các điều kiện về kích thước hoặc các quy định được tạo bởi các tham số của quy tắc:
 
-    'avatar' => 'dimensions:min_width=100,min_height=200'
+```php
+'avatar' => 'dimensions:min_width=100,min_height=200'
+```
 
 Các điều kiện có thể được dùng là: _min\_width_, _max\_width_, _min\_height_, _max\_height_, _width_, _height_, _ratio_.
 
 Một điều kiện _ratio_ phải được biểu diễn dưới dạng chiều rộng chia cho chiều cao. Điều này có thể được quy định bằng một phân số như `3/2` hoặc nếu float là `1.5`:
 
-    'avatar' => 'dimensions:ratio=3/2'
+```php
+'avatar' => 'dimensions:ratio=3/2'
+```
 
 Vì quy tắc này yêu cầu một số tham số, nên nó thuận tiện hơn khi sử dụng phương thức `Rule::dimensions` để dễ dàng xây dựng các quy tắc:
 
-    use Illuminate\Support\Facades\Validator;
-    use Illuminate\Validation\Rule;
+```php
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 
-    Validator::make($data, [
-        'avatar' => [
-            'required',
-            Rule::dimensions()
-                ->maxWidth(1000)
-                ->maxHeight(500)
-                ->ratio(3 / 2),
-        ],
-    ]);
+Validator::make($data, [
+    'avatar' => [
+        'required',
+        Rule::dimensions()
+            ->maxWidth(1000)
+            ->maxHeight(500)
+            ->ratio(3 / 2),
+    ],
+]);
+```
 
 <a name="rule-distinct"></a>
 #### distinct
 
 Khi validation mảng, field được validation phải không được có bất kỳ giá trị trùng lặp nào:
 
-    'foo.*.id' => 'distinct'
+```php
+'foo.*.id' => 'distinct'
+```
 
 Mặc định, Distinct sẽ sử dụng các phép so sánh biến "lỏng lẻo". Để sử dụng so sánh "nghiêm ngặt", bạn có thể thêm tham số `strict` vào định nghĩa quy tắc validation của bạn:
 
-    'foo.*.id' => 'distinct:strict'
+```php
+'foo.*.id' => 'distinct:strict'
+```
 
 Bạn có thể thêm `ignore_case` vào các tham số của quy tắc validation để làm cho quy tắc bỏ qua các khác biệt về cách viết hoa:
 
-    'foo.*.id' => 'distinct:ignore_case'
+```php
+'foo.*.id' => 'distinct:ignore_case'
+```
 
 <a name="rule-doesnt-start-with"></a>
 #### doesnt_start_with:_foo_,_bar_,...
@@ -1344,16 +1538,18 @@ Field được validation không được kết thúc bằng một trong các gi
 <a name="rule-email"></a>
 #### email
 
-Field được validation phải ở định dạng một địa chỉ email. Quy tắc validation này sử dụng package [`egulias/email-validator`](https://github.com/egulias/EmailValidator) để validation. Mặc định, validation `RFCValidation` sẽ được áp dụng, nhưng bạn cũng có thể áp dụng các kiểu validation khác:
+Field được validation phải ở định dạng một địa chỉ email. Quy tắc validation này sử dụng package [egulias/email-validator](https://github.com/egulias/EmailValidator) để validation. Mặc định, validation `RFCValidation` sẽ được áp dụng, nhưng bạn cũng có thể áp dụng các kiểu validation khác:
 
-    'email' => 'email:rfc,dns'
+```php
+'email' => 'email:rfc,dns'
+```
 
 Ví dụ trên sẽ áp dụng validation `RFCValidation` và `DNSCheckValidation`. Dưới đây là một danh sách đầy đủ gồm các kiểu validation mà bạn có thể áp dụng:
 
 <div class="content-list" markdown="1">
 
-- `rfc`: `RFCValidation` - Kiểm tra địa chỉ email theo tiêu chuẩn RFC 5322.
-- `strict`: `NoRFCWarningsValidation` - Kiểm tra địa chỉ email theo tiêu chuẩn RFC 5322 và không chấp nhận các dấu chấm ở cuối hoặc nhiều dấu chấm liên tiếp.
+- `rfc`: `RFCValidation` - Kiểm tra địa chỉ email theo [các RFC đã được hỗ trợ](https://github.com/egulias/EmailValidator?tab=readme-ov-file#supported-rfcs).
+- `strict`: `NoRFCWarningsValidation` - Kiểm tra địa chỉ email theo [các RFC đã được hỗ trợ](https://github.com/egulias/EmailValidator?tab=readme-ov-file#supported-rfcs), sẽ thất bại nếu tìm thấy cảnh báo (ví dụ: không chấp nhận các dấu chấm ở cuối và nhiều dấu chấm liên tiếp).
 - `dns`: `DNSCheckValidation` - Đảm bảo domain của địa chỉ email phải có record MX hợp lệ.
 - `spoof`: `SpoofCheckValidation` - Đảm bảo địa chỉ email không chứa các ký tự Unicode lừa đảo hoặc các ký tự đồng hình.
 - `filter`: `FilterEmailValidation` - Đảm bảo địa chỉ email hợp lệ theo hàm `filter_var` của PHP.
@@ -1380,6 +1576,24 @@ $request->validate([
 > [!WARNING]
 > Validator `dns` và `spoof` sẽ yêu cầu extension `intl` của PHP.
 
+<a name="rule-encoding"></a>
+#### encoding:*encoding_type*
+
+Field được validation phải giống với mã encoding được chỉ định. Rule này sử dụng hàm `mb_check_encoding` của PHP để xác minh mã encoding của file hoặc giá trị chuỗi đã cho. Để thuận tiện, rule `encoding` có thể được xây dựng bằng cách dùng builder File rule của Laravel:
+
+```php
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rules\File;
+
+Validator::validate($input, [
+    'attachment' => [
+        'required',
+        File::types(['csv'])
+            ->encoding('utf-8'),
+    ],
+]);
+```
+
 <a name="rule-ends-with"></a>
 #### ends_with:_foo_,_bar_,...
 
@@ -1390,20 +1604,24 @@ Field được validation phải kết thúc bằng một trong các giá trị 
 
 Quy tắc `Enum` là quy tắc dựa trên class nhằm validate xem field đang được validation có chứa giá trị enum hợp lệ hay không. Quy tắc `Enum` sẽ chấp nhận tên của enum làm tham số khởi tạo duy nhất của nó. Khi kiểm tra các giá trị nguyên thủy như kiểu chuỗi hoặc kiểu số, thì một backed Enum phải được cung cấp cho quy tắc `Enum`:
 
-    use App\Enums\ServerStatus;
-    use Illuminate\Validation\Rule;
+```php
+use App\Enums\ServerStatus;
+use Illuminate\Validation\Rule;
 
-    $request->validate([
-        'status' => [Rule::enum(ServerStatus::class)],
-    ]);
+$request->validate([
+    'status' => [Rule::enum(ServerStatus::class)],
+]);
+```
 
 Các phương thức `only` và `except` của quy tắc `Enum` có thể được sử dụng để giới hạn các trường hợp enum nào được coi là hợp lệ:
 
-    Rule::enum(ServerStatus::class)
-        ->only([ServerStatus::Pending, ServerStatus::Active]);
+```php
+Rule::enum(ServerStatus::class)
+    ->only([ServerStatus::Pending, ServerStatus::Active]);
 
-    Rule::enum(ServerStatus::class)
-        ->except([ServerStatus::Pending, ServerStatus::Active]);
+Rule::enum(ServerStatus::class)
+    ->except([ServerStatus::Pending, ServerStatus::Active]);
+```
 
 Phương thức `when` có thể được sử dụng để thêm điều kiện cho quy tắc `Enum`:
 
@@ -1431,16 +1649,18 @@ Field được validation sẽ bị loại trừ khỏi dữ liệu request đư
 
 Nếu cần một logic loại trừ có điều kiện phức tạp, bạn có thể sử dụng phương thức `Rule::excludeIf`. Phương thức này sẽ chấp nhận một giá trị boolean hoặc một closure. Khi được cung cấp closure, closure sẽ trả về `true` hoặc `false` để chỉ ra liệu field đang validation có bị loại trừ hay không:
 
-    use Illuminate\Support\Facades\Validator;
-    use Illuminate\Validation\Rule;
+```php
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 
-    Validator::make($request->all(), [
-        'role_id' => Rule::excludeIf($request->user()->is_admin),
-    ]);
+Validator::make($request->all(), [
+    'role_id' => Rule::excludeIf($request->user()->is_admin),
+]);
 
-    Validator::make($request->all(), [
-        'role_id' => Rule::excludeIf(fn () => $request->user()->is_admin),
-    ]);
+Validator::make($request->all(), [
+    'role_id' => Rule::excludeIf(fn () => $request->user()->is_admin),
+]);
+```
 
 <a name="rule-exclude-unless"></a>
 #### exclude_unless:_anotherfield_,_value_
@@ -1465,7 +1685,9 @@ Field được validation phải tồn tại trong một bảng cơ sở dữ li
 <a name="basic-usage-of-exists-rule"></a>
 #### Cách sử dụng cơ bản của Exists Rule
 
-    'state' => 'exists:states'
+```php
+'state' => 'exists:states'
+```
 
 Nếu tùy chọn `column` không được chỉ định, thì tên field đó sẽ được sử dụng. Nên, trong trường hợp này, quy tắc sẽ validate rằng bảng cơ sở dữ liệu `state` sẽ chứa bản ghi có giá trị cột `state` khớp với giá trị thuộc tính `state` của request.
 
@@ -1474,44 +1696,64 @@ Nếu tùy chọn `column` không được chỉ định, thì tên field đó s
 
 Bạn có thể chỉ rõ tên cột cơ sở dữ liệu sẽ được sử dụng bởi quy tắc validation bằng cách set nó sau tên bảng cơ sở dữ liệu:
 
-    'state' => 'exists:states,abbreviation'
+```php
+'state' => 'exists:states,abbreviation'
+```
 
 Đôi khi, bạn có thể cần chỉ định một kết nối cơ sở dữ liệu cụ thể sẽ được sử dụng cho truy vấn `exists`. Bạn có thể thực hiện điều này bằng cách thêm tên kết nối vào tên bảng:
 
-    'email' => 'exists:connection.staff,email'
+```php
+'email' => 'exists:connection.staff,email'
+```
 
 Thay vì chỉ định trực tiếp tên bảng, bạn có thể chỉ định tên model Eloquent sẽ được sử dụng để xác định tên bảng:
 
-    'user_id' => 'exists:App\Models\User,id'
+```php
+'user_id' => 'exists:App\Models\User,id'
+```
 
 Nếu bạn muốn tùy chỉnh truy vấn được thực thi theo quy tắc validation, bạn có thể sử dụng class `Rule` để dễ dàng định nghĩa các quy tắc. Trong ví dụ này, chúng ta cũng sẽ định nghĩa các quy tắc validation là một mảng thay vì sử dụng ký tự `|` để phân định chúng:
 
-    use Illuminate\Database\Query\Builder;
-    use Illuminate\Support\Facades\Validator;
-    use Illuminate\Validation\Rule;
+```php
+use Illuminate\Database\Query\Builder;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 
-    Validator::make($data, [
-        'email' => [
-            'required',
-            Rule::exists('staff')->where(function (Builder $query) {
-                $query->where('account_id', 1);
-            }),
-        ],
-    ]);
+Validator::make($data, [
+    'email' => [
+        'required',
+        Rule::exists('staff')->where(function (Builder $query) {
+            $query->where('account_id', 1);
+        }),
+    ],
+]);
+```
 
 Bạn có thể chỉ định tên cột cơ sở dữ liệu sẽ được sử dụng bởi quy tắc `exists` được tạo bởi phương thức `Rule::exists` bằng cách cung cấp tên cột làm tham số thứ hai cho phương thức `exists`:
 
-    'state' => Rule::exists('states', 'abbreviation'),
+```php
+'state' => Rule::exists('states', 'abbreviation'),
+```
+
+Thỉnh thoảng, bạn có thể muốn xác thực một mảng giá trị có tồn tại trong database hay không. Bạn có thể làm như vậy bằng cách thêm cả rule `exists` và rule [array](#rule-array) vào field đang được validate:
+
+```php
+'states' => ['array', Rule::exists('states', 'abbreviation')],
+```
+
+Khi cả hai rule này được gán cho một field, Laravel sẽ tự động xây dựng một câu query duy nhất để xác định xem tất cả các giá trị đã cho có tồn tại trong bảng đã chỉ định hay không.
 
 <a name="rule-extensions"></a>
 #### extensions:_foo_,_bar_,...
 
 File đang được kiểm tra phải có phần extension tương ứng với một trong các phần extension được liệt kê:
 
-    'photo' => ['required', 'extensions:jpg,png'],
+```php
+'photo' => ['required', 'extensions:jpg,png'],
+```
 
 > [!WARNING]
-> Bạn không nên chỉ dựa vào việc kiểm tra file bằng phần extension. Quy tắc này thường được sử dụng kết hợp với các quy tắc [`mimes`](#rule-mimes) hoặc [`mimetypes`](#rule-mimetypes).
+> Bạn không nên chỉ dựa vào việc kiểm tra file bằng phần extension. Quy tắc này thường được sử dụng kết hợp với các quy tắc [mimes](#rule-mimes) hoặc [mimetypes](#rule-mimetypes).
 
 <a name="rule-file"></a>
 #### file
@@ -1526,12 +1768,12 @@ Field được validation phải không được trống khi nó có tồn tại
 <a name="rule-gt"></a>
 #### gt:_field_
 
-Field được validation phải lớn hơn _field_ hoặc _value_. đã cho. Hai field phải cùng loại. Các loại chuỗi, số, mảng và file sẽ được đánh giá bằng cách sử dụng các quy ước giống như quy ước của [`size`](#rule-size).
+Field được validation phải lớn hơn _field_ hoặc _value_. đã cho. Hai field phải cùng loại. Các loại chuỗi, số, mảng và file sẽ được đánh giá bằng cách sử dụng các quy ước giống như quy ước của [size](#rule-size).
 
 <a name="rule-gte"></a>
 #### gte:_field_
 
-Field được validation phải lớn hơn hoặc bằng _field_ hoặc _value_. đã cho. Hai field phải cùng loại. Các loại chuỗi, số, mảng và file sẽ được đánh giá bằng cách sử dụng các quy ước giống như quy ước của [`size`](#rule-size).
+Field được validation phải lớn hơn hoặc bằng _field_ hoặc _value_. đã cho. Hai field phải cùng loại. Các loại chuỗi, số, mảng và file sẽ được đánh giá bằng cách sử dụng các quy ước giống như quy ước của [size](#rule-size).
 
 <a name="rule-hex-color"></a>
 #### hex_color
@@ -1541,49 +1783,71 @@ Field được validation phải chứa một giá trị màu hợp lệ ở đ�
 <a name="rule-image"></a>
 #### image
 
-Field được validation phải là một image (jpg, jpeg, png, bmp, gif, svg, hoặc webp).
+Field được validation phải là một image (jpg, jpeg, png, bmp, gif, hoặc webp).
+
+> [!WARNING]
+> Mặc định, rule `image` không cho phép các file SVG do khả năng xảy ra lỗ hổng bảo mật XSS. Nếu bạn cần cho phép các file SVG, bạn có thể cung cấp tham số `allow_svg` cho rule `image` (`image:allow_svg`).
 
 <a name="rule-in"></a>
 #### in:_foo_,_bar_,...
 
 Field được validation phải có trong danh sách các giá trị đã cho. Vì quy tắc này thường yêu cầu bạn phải `implode` một mảng, nên phương thức `Rule::in` có thể được sử dụng để dễ dàng xây dựng quy tắc:
 
-    use Illuminate\Support\Facades\Validator;
-    use Illuminate\Validation\Rule;
+```php
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 
-    Validator::make($data, [
-        'zones' => [
-            'required',
-            Rule::in(['first-zone', 'second-zone']),
-        ],
-    ]);
+Validator::make($data, [
+    'zones' => [
+        'required',
+        Rule::in(['first-zone', 'second-zone']),
+    ],
+]);
+```
 
 Khi quy tắc `in` được kết hợp với quy tắc `array`, thì mỗi giá trị có trong mảng input phải có trong danh sách các giá trị được cung cấp cho quy tắc `in`. Trong ví dụ sau, code airport `LAS` có trong mảng input sẽ không hợp lệ vì nó không có trong trong danh sách các sân bay được cung cấp cho quy tắc `in`:
 
-    use Illuminate\Support\Facades\Validator;
-    use Illuminate\Validation\Rule;
+```php
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 
-    $input = [
-        'airports' => ['NYC', 'LAS'],
-    ];
+$input = [
+    'airports' => ['NYC', 'LAS'],
+];
 
-    Validator::make($input, [
-        'airports' => [
-            'required',
-            'array',
-        ],
-        'airports.*' => Rule::in(['NYC', 'LIT']),
-    ]);
+Validator::make($input, [
+    'airports' => [
+        'required',
+        'array',
+    ],
+    'airports.*' => Rule::in(['NYC', 'LIT']),
+]);
+```
 
 <a name="rule-in-array"></a>
 #### in_array:_anotherfield_.*
 
 Field được validation phải tồn tại trong các giá trị của _anotherfield_.
 
+<a name="rule-in-array-keys"></a>
+#### in_array_keys:_value_.*
+
+Field đang được validate phải là một mảng có chứa ít nhất một trong các giá trị _values_ dưới dạng một key có trong mảng:
+
+```php
+'config' => 'array|in_array_keys:timezone'
+```
+
 <a name="rule-integer"></a>
 #### integer
 
 Field được validation phải là một integer.
+
+Bạn có thể dùng thêm tham số `strict` để chỉ coi field này sẽ là hợp lệ nếu kiểu dữ liệu của nó là `integer`. Các string mà có chứa giá trị integer cũng sẽ bị coi là không hợp lệ:
+
+```php
+'age' => 'integer:strict'
+```
 
 > [!WARNING]
 > Quy tắc validation này không xác minh được input thuộc loại biến kiểu "số nguyên", nó chỉ xác minh là input thuộc loại được chấp nhận bởi quy tắc `FILTER_VALIDATE_INT` của PHP. Nếu bạn cần validate dữ liệu input dưới dạng số, vui lòng sử dụng quy tắc này kết hợp với [quy tắc validation `numeric`](#rule-numeric).
@@ -1611,12 +1875,12 @@ Field được validation phải là một chuỗi JSON.
 <a name="rule-lt"></a>
 #### lt:_field_
 
-Field được validation phải nhỏ hơn _field_ đã cho. Hai field phải cùng loại. Các loại chuỗi, số, mảng và file sẽ được đánh giá bằng cách sử dụng các quy ước giống như quy ước của [`size`](#rule-size).
+Field được validation phải nhỏ hơn _field_ đã cho. Hai field phải cùng loại. Các loại chuỗi, số, mảng và file sẽ được đánh giá bằng cách sử dụng các quy ước giống như quy ước của [size](#rule-size).
 
 <a name="rule-lte"></a>
 #### lte:_field_
 
-Field được validation phải nhỏ hơn hoặc bằng _field_ đã cho. Hai field phải cùng loại. Các loại chuỗi, số, mảng và file sẽ được đánh giá bằng cách sử dụng các quy ước giống như quy ước của [`size`](#rule-size).
+Field được validation phải nhỏ hơn hoặc bằng _field_ đã cho. Hai field phải cùng loại. Các loại chuỗi, số, mảng và file sẽ được đánh giá bằng cách sử dụng các quy ước giống như quy ước của [size](#rule-size).
 
 <a name="rule-lowercase"></a>
 #### lowercase
@@ -1636,7 +1900,7 @@ Field được validation phải là một địa chỉ MAC.
 <a name="rule-max"></a>
 #### max:_value_
 
-Field được validation phải nhỏ hơn hoặc bằng maximum của _value_. Chuỗi, số, mảng và file sẽ được so sánh theo cùng một quy tắc với quy tắc [`size`](#rule-size).
+Field được validation phải nhỏ hơn hoặc bằng maximum của _value_. Chuỗi, số, mảng và file sẽ được so sánh theo cùng một quy tắc với quy tắc [size](#rule-size).
 
 <a name="rule-max-digits"></a>
 #### max_digits:_value_
@@ -1648,7 +1912,9 @@ Số được validation phải có độ dài tối đa là _value_.
 
 File được validation phải khớp với một trong các loại MIME đã cho:
 
-    'video' => 'mimetypes:video/avi,video/mpeg,video/quicktime'
+```php
+'video' => 'mimetypes:video/avi,video/mpeg,video/quicktime'
+```
 
 Để xác định loại MIME của file được tải lên, nội dung của file sẽ được đọc và framework sẽ cố gắng đoán loại MIME, nó có thể khác với loại MIME của client cung cấp.
 
@@ -1657,7 +1923,9 @@ File được validation phải khớp với một trong các loại MIME đã c
 
 File được validation phải có loại MIME tương ứng với một trong các extension đã được liệt kê:
 
-    'photo' => 'mimes:jpeg,bmp,png'
+```php
+'photo' => 'mimes:jpeg,bmp,png'
+```
 
 Mặc dù bạn chỉ cần định nghĩa extension của file, nhưng thực ra quy tắc này sẽ validate loại MIME của file bằng cách đọc nội dung của file đó và đoán loại MIME của nó. Một danh sách đầy đủ các loại MIME và các extension tương ứng của chúng có thể được tìm thấy tại vị trí sau:
 
@@ -1666,12 +1934,12 @@ Mặc dù bạn chỉ cần định nghĩa extension của file, nhưng thực r
 <a name="mime-types-and-extensions"></a>
 #### MIME Types và Extensions
 
-Quy tắc kiểm tra này không xác minh sự giống nhau giữa loại MIME và phần extension mà người dùng đã gán cho file. Ví dụ, quy tắc kiểm tra `mimes:png` sẽ coi file chứa các nội dung PNG hợp lệ là một image PNG hợp lệ, ngay cả khi file đó có tên là `photo.txt`. Nếu bạn muốn kiểm tra phần extension do người dùng gán cho file, bạn có thể sử dụng quy tắc [`extensions`](#rule-extensions).
+Quy tắc kiểm tra này không xác minh sự giống nhau giữa loại MIME và phần extension mà người dùng đã gán cho file. Ví dụ, quy tắc kiểm tra `mimes:png` sẽ coi file chứa các nội dung PNG hợp lệ là một image PNG hợp lệ, ngay cả khi file đó có tên là `photo.txt`. Nếu bạn muốn kiểm tra phần extension do người dùng gán cho file, bạn có thể sử dụng quy tắc [extensions](#rule-extensions).
 
 <a name="rule-min"></a>
 #### min:_value_
 
-Field được validation phải có _value_ tối thiểu. Chuỗi, số, mảng và file sẽ được so sánh theo cùng một quy tắc với quy tắc [`size`](#rule-size).
+Field được validation phải có _value_ tối thiểu. Chuỗi, số, mảng và file sẽ được so sánh theo cùng một quy tắc với quy tắc [size](#rule-size).
 
 <a name="rule-min-digits"></a>
 #### min_digits:_value_
@@ -1713,14 +1981,16 @@ File được validation không được tồn tại _chỉ khi_ tất cả các
 
 Field được validation không được chứa trong một danh sách giá trị đã cho. Phương thức `Rule::notIn` có thể được sử dụng để dễ dàng xây dựng quy tắc:
 
-    use Illuminate\Validation\Rule;
+```php
+use Illuminate\Validation\Rule;
 
-    Validator::make($data, [
-        'toppings' => [
-            'required',
-            Rule::notIn(['sprinkles', 'cherries']),
-        ],
-    ]);
+Validator::make($data, [
+    'toppings' => [
+        'required',
+        Rule::notIn(['sprinkles', 'cherries']),
+    ],
+]);
+```
 
 <a name="rule-not-regex"></a>
 #### not_regex:_pattern_
@@ -1741,6 +2011,12 @@ Field được validation có thể là `null`.
 #### numeric
 
 Field được validation phải là [numeric](https://www.php.net/manual/en/function.is-numeric.php).
+
+Bạn có thể dùng thêm tham số `strict` để chỉ coi field này sẽ là hợp lệ nếu kiểu dữ liệu của nó là integer hoặc float. Các string numeric cũng sẽ bị coi là không hợp lệ:
+
+```php
+'amount' => 'numeric:strict'
+```
 
 <a name="rule-present"></a>
 #### present
@@ -1797,16 +2073,27 @@ Field được validation phải không tồn tại hoặc trống nếu trườ
 
 Nếu cần một logic cấm có điều kiện phức tạp, bạn có thể sử dụng phương thức `Rule::prohibitedIf`. Phương thức này sẽ chấp nhận một giá trị boolean hoặc một closure. Khi được cung cấp closure, closure sẽ trả về `true` hoặc `false` để chỉ ra liệu field đang validation có bị cấm hay không:
 
-    use Illuminate\Support\Facades\Validator;
-    use Illuminate\Validation\Rule;
+```php
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 
-    Validator::make($request->all(), [
-        'role_id' => Rule::prohibitedIf($request->user()->is_admin),
-    ]);
+Validator::make($request->all(), [
+    'role_id' => Rule::prohibitedIf($request->user()->is_admin),
+]);
 
-    Validator::make($request->all(), [
-        'role_id' => Rule::prohibitedIf(fn () => $request->user()->is_admin),
-    ]);
+Validator::make($request->all(), [
+    'role_id' => Rule::prohibitedIf(fn () => $request->user()->is_admin),
+]);
+```
+<a name="rule-prohibited-if-accepted"></a>
+#### prohibited_if_accepted:_anotherfield_,...
+
+Field đang được validate phải bị thiếu hoặc bị trống nếu field _anotherfield_ có giá trị bằng `"yes"`, `"on"`, `1`, `"1"`, `true`, hoặc `"true"`.
+
+<a name="rule-prohibited-if-declined"></a>
+#### prohibited_if_declined:_anotherfield_,...
+
+Field đang được validate phải bị thiếu hoặc bị trống nếu field _anotherfield_ có giá trị bằng `"no"`, `"off"`, `0`, `"0"`, `false`, hoặc `"false"`.
 
 <a name="rule-prohibited-unless"></a>
 #### prohibited_unless:_anotherfield_,_value_,...
@@ -1867,16 +2154,18 @@ Field được validation phải có tồn tại và không được trống n�
 
 Nếu bạn muốn tạo một điều kiện phức tạp hơn cho quy tắc `required_if`, thì bạn có thể sử dụng phương thức `Rule::requiredIf`. Phương thức này chấp nhận một boolean hoặc một closure. Khi bạn truyền vào một closure, thì closure này sẽ trả về một giá trị `true` hoặc `false` để xem field đang được validation có bắt buộc hay không:
 
-    use Illuminate\Support\Facades\Validator;
-    use Illuminate\Validation\Rule;
+```php
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 
-    Validator::make($request->all(), [
-        'role_id' => Rule::requiredIf($request->user()->is_admin),
-    ]);
+Validator::make($request->all(), [
+    'role_id' => Rule::requiredIf($request->user()->is_admin),
+]);
 
-    Validator::make($request->all(), [
-        'role_id' => Rule::requiredIf(fn () => $request->user()->is_admin),
-    ]);
+Validator::make($request->all(), [
+    'role_id' => Rule::requiredIf(fn () => $request->user()->is_admin),
+]);
+```
 
 <a name="rule-required-if-accepted"></a>
 #### required_if_accepted:_anotherfield_,...
@@ -1928,17 +2217,19 @@ _field_ đã cho phải match với field được validation.
 
 Field được validation phải có kích thước khớp với _value_ đã cho. Đối với dữ liệu chuỗi, _value_ tương ứng với số lượng ký tự. Đối với dữ liệu số, _value_ tương ứng với một giá trị số nguyên đã cho (thuộc tính cũng phải có quy tắc `numeric` hoặc `integer`). Đối với một mảng, _size_ tương ứng với `count` của mảng. Đối với file, _size_ tương ứng với kích thước file tính bằng kilobyte. Hãy xem một số ví dụ:
 
-    // Validate that a string is exactly 12 characters long...
-    'title' => 'size:12';
+```php
+// Validate that a string is exactly 12 characters long...
+'title' => 'size:12';
 
-    // Validate that a provided integer equals 10...
-    'seats' => 'integer|size:10';
+// Validate that a provided integer equals 10...
+'seats' => 'integer|size:10';
 
-    // Validate that an array has exactly 5 elements...
-    'tags' => 'array|size:5';
+// Validate that an array has exactly 5 elements...
+'tags' => 'array|size:5';
 
-    // Validate that an uploaded file is exactly 512 kilobytes...
-    'image' => 'file|size:512';
+// Validate that an uploaded file is exactly 512 kilobytes...
+'image' => 'file|size:512';
+```
 
 <a name="rule-starts-with"></a>
 #### starts_with:_foo_,_bar_,...
@@ -1957,11 +2248,13 @@ Field được validation phải là một định danh múi giờ hợp lệ th
 
 Các tham số [được chấp nhận bởi phương thức `DateTimeZone::listIdentifiers`](https://www.php.net/manual/en/datetimezone.listidentifiers.php) cũng có thể được cung cấp cho quy tắc kiểm tra này:
 
-    'timezone' => 'required|timezone:all';
+```php
+'timezone' => 'required|timezone:all';
 
-    'timezone' => 'required|timezone:Africa';
+'timezone' => 'required|timezone:Africa';
 
-    'timezone' => 'required|timezone:per_country,US';
+'timezone' => 'required|timezone:per_country,US';
+```
 
 <a name="rule-unique"></a>
 #### unique:_table_,_column_
@@ -1972,17 +2265,23 @@ Field được validation phải không tồn tại trong một bảng cơ sở 
 
 Thay vì chỉ định trực tiếp tên bảng, bạn có thể chỉ định tên model Eloquent sẽ được sử dụng để xác định tên bảng:
 
-    'email' => 'unique:App\Models\User,email_address'
+```php
+'email' => 'unique:App\Models\User,email_address'
+```
 
 Tùy chọn `column` có thể được sử dụng để chỉ định tên cột sẽ được sử dụng trong cơ sở dữ liệu. Nếu tùy chọn `column` không được chỉ định, thì tên field validation sẽ được sử dụng.
 
-    'email' => 'unique:users,email_address'
+```php
+'email' => 'unique:users,email_address'
+```
 
 **Khai báo database connection cụ thể**
 
 Đôi khi, bạn có thể cần cài đặt một custom connection cho các truy vấn cơ sở dữ liệu được tạo bởi Validator. TĐể thực hiện điều này, bạn có thể thêm tên connection vào tên bảng:
 
-    'email' => 'unique:connection.users,email_address'
+```php
+'email' => 'unique:connection.users,email_address'
+```
 
 **Bỏ qua một ID nhất định:**
 
@@ -1990,46 +2289,60 @@ Tùy chọn `column` có thể được sử dụng để chỉ định tên c�
 
 Để hướng dẫn validator bỏ qua ID của người dùng, chúng ta sẽ sử dụng class `Rule` để dễ dàng khai báo quy tắc. Trong ví dụ này, chúng ta cũng sẽ khai báo các quy tắc validation là một mảng thay vì sử dụng ký tự `|` để phân chia các quy tắc:
 
-    use Illuminate\Support\Facades\Validator;
-    use Illuminate\Validation\Rule;
+```php
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 
-    Validator::make($data, [
-        'email' => [
-            'required',
-            Rule::unique('users')->ignore($user->id),
-        ],
-    ]);
+Validator::make($data, [
+    'email' => [
+        'required',
+        Rule::unique('users')->ignore($user->id),
+    ],
+]);
+```
 
 > [!WARNING]
 > Bạn đừng bao giờ truyền bất kỳ input nào do người dùng kiểm soát vào trong phương thức `ignore`. Thay vào đó, bạn chỉ nên truyền một ID duy nhất do hệ thống tạo ra, chẳng hạn như ID hoặc UUID tăng tự động từ một instance model Eloquent. Nếu không, ứng dụng của bạn sẽ dễ bị tấn công bởi SQL injection.
 
 Thay vì truyền giá trị khóa của model cho phương thức `ignore`, bạn cũng có thể truyền toàn bộ instance của model đó cho phương thức. Và Laravel sẽ tự động trích xuất khóa của model đó:
 
-    Rule::unique('users')->ignore($user)
+```php
+Rule::unique('users')->ignore($user)
+```
 
 Nếu bảng của bạn sử dụng tên cột khóa chính khác với `id`, bạn có thể chỉ định tên của cột khi gọi phương thức `ignore`:
 
-    Rule::unique('users')->ignore($user->id, 'user_id')
+```php
+Rule::unique('users')->ignore($user->id, 'user_id')
+```
 
 Mặc định, quy tắc `unique` sẽ kiểm tra tính duy nhất của cột mà khớp với tên của thuộc tính đang được validation. Tuy nhiên, bạn có thể truyền tên một cột khác làm tham số thứ hai cho phương thức `unique`:
 
-    Rule::unique('users', 'email_address')->ignore($user->id)
+```php
+Rule::unique('users', 'email_address')->ignore($user->id)
+```
 
 **Thêm điều kiện where:**
 
 Bạn có thể khai báo thêm các điều kiện truy vấn bằng cách sử dụng câu lệnh truy vấn thông qua phương thức `where`. Ví dụ: hãy thêm một điều kiện truy vấn đưa ra phạm vi truy vấn là chỉ tìm kiếm các bản ghi có giá trị cột `account_id` là `1`:
 
-    'email' => Rule::unique('users')->where(fn (Builder $query) => $query->where('account_id', 1))
+```php
+'email' => Rule::unique('users')->where(fn (Builder $query) => $query->where('account_id', 1))
+```
 
-**Ignoring Soft Deleteded Records in Unique Checks:**
+**Ignoring Soft Deleted Records in Unique Checks:**
 
 Mặc định, quy tắc `unique` sẽ chứa cả các record đã bị soft delete khi xác định tính duy nhất. Để loại bỏ các record đã bị soft delete ra khỏi việc kiểm tra tính duy nhất, bạn có thể gọi phương thức `withoutTrashed`:
 
-    Rule::unique('users')->withoutTrashed();
+```php
+Rule::unique('users')->withoutTrashed();
+```
 
 Nếu model của bạn sử dụng tên cột khác với tên cột `deleted_at` cho các record đã bị soft delete, bạn có thể cung cấp tên cột đó khi gọi phương thức `withoutTrashed`:
 
-    Rule::unique('users')->withoutTrashed('was_deleted_at');
+```php
+Rule::unique('users')->withoutTrashed('was_deleted_at');
+```
 
 <a name="rule-uppercase"></a>
 #### uppercase
@@ -2059,6 +2372,12 @@ Field được validation phải là [mã định danh duy nhất toàn cầu c�
 
 Field được validation phải là một mã định danh (UUID) RFC 9562 (phiên bản 1, 3, 4,  5, 6, 7, hoặc 8).
 
+Bạn cũng có thể kiểm tra UUID đã cho phải giống với đặc tả của UUID và phiên bản của chúng:
+
+```php
+'uuid' => 'uuid:4'
+```
+
 <a name="conditionally-adding-rules"></a>
 ## Thêm điều kiện cho Rule
 
@@ -2067,30 +2386,36 @@ Field được validation phải là một mã định danh (UUID) RFC 9562 (phi
 
 Đôi khi bạn có thể muốn không kiểm tra một trường nhất định nếu một trường khác có giá trị đã cho. Bạn có thể thực hiện điều này bằng cách sử dụng quy tắc validation `exclude_if`. Trong ví dụ này, các trường `appointment_date` và `doctor_name` sẽ không bị kiểm tra nếu trường `has_appointment` có giá trị là `false`:
 
-    use Illuminate\Support\Facades\Validator;
+```php
+use Illuminate\Support\Facades\Validator;
 
-    $validator = Validator::make($data, [
-        'has_appointment' => 'required|boolean',
-        'appointment_date' => 'exclude_if:has_appointment,false|required|date',
-        'doctor_name' => 'exclude_if:has_appointment,false|required|string',
-    ]);
+$validator = Validator::make($data, [
+    'has_appointment' => 'required|boolean',
+    'appointment_date' => 'exclude_if:has_appointment,false|required|date',
+    'doctor_name' => 'exclude_if:has_appointment,false|required|string',
+]);
+```
 
 Ngoài ra, bạn có thể sử dụng quy tắc `exclude_unless` để không kiểm tra một trường nhất định trừ khi một trường khác có một giá trị đã cho:
 
-    $validator = Validator::make($data, [
-        'has_appointment' => 'required|boolean',
-        'appointment_date' => 'exclude_unless:has_appointment,true|required|date',
-        'doctor_name' => 'exclude_unless:has_appointment,true|required|string',
-    ]);
+```php
+$validator = Validator::make($data, [
+    'has_appointment' => 'required|boolean',
+    'appointment_date' => 'exclude_unless:has_appointment,true|required|date',
+    'doctor_name' => 'exclude_unless:has_appointment,true|required|string',
+]);
+```
 
 <a name="validating-when-present"></a>
 #### Validate khi tồn tại
 
 Trong một số trường hợp, bạn có thể muốn chạy kiểm tra validation đối với một field **chỉ** khi field đó có trong dữ liệu được validate. Để nhanh chóng thực hiện điều này, hãy thêm quy tắc `sometimes` vào danh sách quy tắc của bạn:
 
-    $validator = Validator::make($data, [
-        'email' => 'sometimes|required|email',
-    ]);
+```php
+$validator = Validator::make($data, [
+    'email' => 'sometimes|required|email',
+]);
+```
 
 Trong ví dụ trên, field `email` sẽ chỉ được validate nếu nó có trong mảng `$data`.
 
@@ -2102,26 +2427,32 @@ Trong ví dụ trên, field `email` sẽ chỉ được validate nếu nó có t
 
 Thỉnh thoảng bạn có thể muốn thêm các quy tắc validation dựa trên logic điều kiện phức tạp hơn. Ví dụ: bạn muốn bắt buộc nhập một field nếu một field khác có giá trị lớn hơn 100. Hoặc, bạn có thể cần hai field có giá trị mặc định, khi một field khác có tồn tại. Thêm các quy tắc validation này không phải là một điều khó. Đầu tiên, tạo một instance `Validator` với _static rules_ không bao giờ thay đổi:
 
-    use Illuminate\Support\Facades\Validator;
+```php
+use Illuminate\Support\Facades\Validator;
 
-    $validator = Validator::make($request->all(), [
-        'email' => 'required|email',
-        'games' => 'required|numeric',
-    ]);
+$validator = Validator::make($request->all(), [
+    'email' => 'required|email',
+    'games' => 'required|numeric',
+]);
+```
 
 Giả sử application web của chúng ta là dành cho người sưu tầm trò chơi. Nếu một nhà sưu tập trò chơi đăng ký với application của chúng ta và họ sở hữu hơn 100 trò chơi, chúng ta muốn họ giải thích lý do tại sao họ sở hữu nhiều trò chơi như vậy. Ví dụ, có thể họ điều hành một cửa hàng bán lại trò chơi, hoặc có thể họ chỉ thích thu thập trò chơi. Để có thêm điều kiện cho các yêu cầu này, chúng ta có thể sử dụng phương thức `sometimes` trên instance `Validator`.
 
-    use Illuminate\Support\Fluent;
+```php
+use Illuminate\Support\Fluent;
 
-    $validator->sometimes('reason', 'required|max:500', function (Fluent $input) {
-        return $input->games >= 100;
-    });
+$validator->sometimes('reason', 'required|max:500', function (Fluent $input) {
+    return $input->games >= 100;
+});
+```
 
 Tham số đầu tiên được truyền cho phương thức `sometimes` là tên của field mà chúng ta đang validate. Tham số thứ hai là một danh sách các quy tắc mà chúng ta muốn thêm. Và nếu closure được truyền làm tham số thứ ba trả về `true`, thì quy tắc mới được valdiate. Phương thức này làm cho nó dễ dàng để xây dựng các validate có điều kiện phức tạp. Bạn thậm chí có thể thêm các validate có điều kiện cho một số field cùng một lúc:
 
-    $validator->sometimes(['reason', 'cost'], 'required', function (Fluent $input) {
-        return $input->games >= 100;
-    });
+```php
+$validator->sometimes(['reason', 'cost'], 'required', function (Fluent $input) {
+    return $input->games >= 100;
+});
+```
 
 > [!NOTE]
 > Tham số `$input` được truyền cho closure của bạn sẽ là một instance của `Illuminate\Support\Fluent` và có thể được sử dụng để truy cập vào input hoặc field validation của bạn.
@@ -2131,47 +2462,51 @@ Tham số đầu tiên được truyền cho phương thức `sometimes` là tê
 
 Thỉnh thoảng bạn có thể muốn validate một field dựa trên một field khác có trong cùng một mảng lồng nhau và số thứ tự của field đó bạn không biết. Trong những tình huống này, bạn có thể cho phép closure của bạn nhận tham số thứ hai sẽ là một item có trong mảng đang được validate:
 
-    $input = [
-        'channels' => [
-            [
-                'type' => 'email',
-                'address' => 'abigail@example.com',
-            ],
-            [
-                'type' => 'url',
-                'address' => 'https://example.com',
-            ],
+```php
+$input = [
+    'channels' => [
+        [
+            'type' => 'email',
+            'address' => 'abigail@example.com',
         ],
-    ];
+        [
+            'type' => 'url',
+            'address' => 'https://example.com',
+        ],
+    ],
+];
 
-    $validator->sometimes('channels.*.address', 'email', function (Fluent $input, Fluent $item) {
-        return $item->type === 'email';
-    });
+$validator->sometimes('channels.*.address', 'email', function (Fluent $input, Fluent $item) {
+    return $item->type === 'email';
+});
 
-    $validator->sometimes('channels.*.address', 'url', function (Fluent $input, Fluent $item) {
-        return $item->type !== 'email';
-    });
+$validator->sometimes('channels.*.address', 'url', function (Fluent $input, Fluent $item) {
+    return $item->type !== 'email';
+});
+```
 
 Giống như tham số `$input` được truyền cho closure, tham số `$item` là một instance của `Illuminate\Support\Fluent` khi dữ liệu là một mảng; còn nếu không phải là một mảng thì nó là một chuỗi string.
 
 <a name="validating-arrays"></a>
 ## Validating mảng
 
-Như đã thảo luận trong [tài liệu về quy tắc validation `array`](#rule-array), quy tắc `array` sẽ chấp nhận một danh sách các khóa được phép có trong mảng. Nếu có thêm bất kỳ khóa nào có trong mảng, thì việc xác thực sẽ bị thất bại:
+Như đã thảo luận trong [tài liệu về quy tắc validation array](#rule-array), quy tắc `array` sẽ chấp nhận một danh sách các khóa được phép có trong mảng. Nếu có thêm bất kỳ khóa nào có trong mảng, thì việc xác thực sẽ bị thất bại:
 
-    use Illuminate\Support\Facades\Validator;
+```php
+use Illuminate\Support\Facades\Validator;
 
-    $input = [
-        'user' => [
-            'name' => 'Taylor Otwell',
-            'username' => 'taylorotwell',
-            'admin' => true,
-        ],
-    ];
+$input = [
+    'user' => [
+        'name' => 'Taylor Otwell',
+        'username' => 'taylorotwell',
+        'admin' => true,
+    ],
+];
 
-    Validator::make($input, [
-        'user' => 'array:name,username',
-    ]);
+Validator::make($input, [
+    'user' => 'array:name,username',
+]);
+```
 
 Nói chung, bạn phải luôn chỉ định các khóa trong mảng được phép có mặt trong mảng của bạn. Nếu không có, các phương thức `validate` và `validated` của validator sẽ trả về tất cả dữ liệu đã validate, bao gồm cả mảng và tất cả các key của nó, thậm chí nếu các khóa đó không được validate bởi các quy tắc validation mảng lồng nhau khác.
 
@@ -2180,93 +2515,107 @@ Nói chung, bạn phải luôn chỉ định các khóa trong mảng được ph
 
 Validate một mảng lồng nhau trên các field từ một form input không phải là một vấn đề khó khăn. Bạn có thể sử dụng "ký hiệu chấm" để validate các thuộc tính có trong một mảng. Ví dụ: nếu request HTTP chứa một field `photos[profile]`, bạn có thể validate nó như sau:
 
-    use Illuminate\Support\Facades\Validator;
+```php
+use Illuminate\Support\Facades\Validator;
 
-    $validator = Validator::make($request->all(), [
-        'photos.profile' => 'required|image',
-    ]);
+$validator = Validator::make($request->all(), [
+    'photos.profile' => 'required|image',
+]);
+```
 
 Bạn cũng có thể validate từng phần tử trong một mảng. Ví dụ: để validate rằng mỗi email có trong mảng input field đã cho là duy nhất, bạn có thể làm như sau:
 
-    $validator = Validator::make($request->all(), [
-        'person.*.email' => 'email|unique:users',
-        'person.*.first_name' => 'required_with:person.*.last_name',
-    ]);
+```php
+$validator = Validator::make($request->all(), [
+    'users.*.email' => 'email|unique:users',
+    'users.*.first_name' => 'required_with:users.*.last_name',
+]);
+```
 
 Tương tự, bạn có thể sử dụng ký tự `*` khi định nghĩa các [tuỳ chỉnh thông báo validation trong các file language của bạn](#custom-messages-for-specific-attributes), giúp dễ dàng sử dụng một thông báo validation duy nhất cho mảng dựa trên các field:
 
-    'custom' => [
-        'person.*.email' => [
-            'unique' => 'Each person must have a unique email address',
-        ]
-    ],
+```php
+'custom' => [
+    'person.*.email' => [
+        'unique' => 'Each person must have a unique email address',
+    ]
+],
+```
 
 <a name="accessing-nested-array-data"></a>
 #### Accessing Nested Array Data
 
 Thỉnh thoảng bạn có thể cần truy cập giá trị của một phần tử mảng lồng nhau nhất định khi gán các quy tắc validation cho thuộc tính. Bạn có thể thực hiện việc này bằng phương thức `Rule::forEach`. Phương thức `forEach` sẽ chấp nhận một closure sẽ được gọi cho mỗi lần lặp của thuộc tính mảng đang được validation và sẽ nhận vào giá trị của thuộc tính và tên thuộc tính được fully-expanded, rõ ràng. Closure sẽ trả về một mảng các quy tắc để gán cho phần tử mảng:
 
-    use App\Rules\HasPermission;
-    use Illuminate\Support\Facades\Validator;
-    use Illuminate\Validation\Rule;
+```php
+use App\Rules\HasPermission;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 
-    $validator = Validator::make($request->all(), [
-        'companies.*.id' => Rule::forEach(function (string|null $value, string $attribute) {
-            return [
-                Rule::exists(Company::class, 'id'),
-                new HasPermission('manage-company', $value),
-            ];
-        }),
-    ]);
+$validator = Validator::make($request->all(), [
+    'companies.*.id' => Rule::forEach(function (string|null $value, string $attribute) {
+        return [
+            Rule::exists(Company::class, 'id'),
+            new HasPermission('manage-company', $value),
+        ];
+    }),
+]);
+```
 
 <a name="error-message-indexes-and-positions"></a>
 ### Error Message Indexes và Positions
 
-Khi kiểm tra một mảng, bạn có thể muốn tham chiếu đến giá trị index hoặc vị trí của một item cụ thể bị validation lỗi trong thông báo lỗi do ứng dụng của bạn hiển thị. Để thực hiện việc này, bạn có thể thêm các biến `:index` (bắt đầu từ `0`) và biến `:position` (bắt đầu từ `1`) trong [thông báo validation tùy biến](#manual-customizing-the-error-messages):
+Khi kiểm tra một mảng, bạn có thể muốn tham chiếu đến giá trị index hoặc vị trí của một item cụ thể bị validation lỗi trong thông báo lỗi do ứng dụng của bạn hiển thị. Để thực hiện việc này, bạn có thể thêm các biến `:index` (bắt đầu từ `0`), `:position` (starts from `1`), or `:ordinal-position` (starts from `1st`) trong [thông báo validation tùy biến](#manual-customizing-the-error-messages):
 
-    use Illuminate\Support\Facades\Validator;
+```php
+use Illuminate\Support\Facades\Validator;
 
-    $input = [
-        'photos' => [
-            [
-                'name' => 'BeachVacation.jpg',
-                'description' => 'A photo of my beach vacation!',
-            ],
-            [
-                'name' => 'GrandCanyon.jpg',
-                'description' => '',
-            ],
+$input = [
+    'photos' => [
+        [
+            'name' => 'BeachVacation.jpg',
+            'description' => 'A photo of my beach vacation!',
         ],
-    ];
+        [
+            'name' => 'GrandCanyon.jpg',
+            'description' => '',
+        ],
+    ],
+];
 
-    Validator::validate($input, [
-        'photos.*.description' => 'required',
-    ], [
-        'photos.*.description.required' => 'Please describe photo #:position.',
-    ]);
+Validator::validate($input, [
+    'photos.*.description' => 'required',
+], [
+    'photos.*.description.required' => 'Please describe photo #:position.',
+]);
+```
 
 Với ví dụ trên, validation sẽ bị thất bại và người dùng sẽ thấy lỗi sau _"Please describe photo #2."_
 
 Nếu cần, bạn có thể tham chiếu đến các index và vị trí lồng nhau sâu hơn thông qua `second-index`, `second-position`, `third-index`, `third-position`...
 
-    'photos.*.attributes.*.string' => 'Invalid attribute for photo #:second-position.',
+```php
+'photos.*.attributes.*.string' => 'Invalid attribute for photo #:second-position.',
+```
 
 <a name="validating-files"></a>
 ## Validating Files
 
 Laravel cung cấp nhiều quy tắc validation có thể được sử dụng để validate các file upload, chẳng hạn như `mimes`, `image`, `min` và `max`. Mặc dù bạn có thể tự do chỉ định các quy tắc này riêng rẽ khi validate file, nhưng Laravel cũng cung cấp một validation rule builder dễ dàng mà bạn có thể thấy tiện lợi:
 
-    use Illuminate\Support\Facades\Validator;
-    use Illuminate\Validation\Rules\File;
+```php
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rules\File;
 
-    Validator::validate($input, [
-        'attachment' => [
-            'required',
-            File::types(['mp3', 'wav'])
-                ->min(1024)
-                ->max(12 * 1024),
-        ],
-    ]);
+Validator::validate($input, [
+    'attachment' => [
+        'required',
+        File::types(['mp3', 'wav'])
+            ->min(1024)
+            ->max(12 * 1024),
+    ],
+]);
+```
 
 <a name="validating-files-file-types"></a>
 #### Validating File Types
@@ -2289,7 +2638,9 @@ File::types(['mp3', 'wav'])
 <a name="validating-files-image-files"></a>
 #### Validating Image Files
 
-Để validate các file upload là hình ảnh, bạn có thể sử dụng phương thức `image` của quy tắc `File`. Quy tắc `File::image()` sẽ đảm bảo các file đang được validate là một hình ảnh (jpg, jpeg, png, bmp, gif, svg, hoặc webp):
+Nếu ứng dụng của bạn chấp nhận image được tải lên từ người dùng, bạn có thể sử dụng method constructor `image` của rule `File` để đảm bảo file đang được validate phải là một image (jpg, jpeg, png, bmp, gif, hoặc webp).
+
+Ngoài ra, rule `dimensions` có thể được sử dụng để giới hạn kích thước của image:
 
 ```php
 use Illuminate\Support\Facades\Validator;
@@ -2299,10 +2650,19 @@ use Illuminate\Validation\Rules\File;
 Validator::validate($input, [
     'photo' => [
         'required',
-        File::image(),
+        File::image()
+            ->min(1024)
+            ->max(12 * 1024)
+            ->dimensions(Rule::dimensions()->maxWidth(1000)->maxHeight(500)),
     ],
 ]);
 ```
+
+> [!NOTE]
+> Bạn có thể tìm thấy thêm thông tin về việc kiểm tra kích thước image trong [tài liệu về rule dimension](#rule-dimensions).
+
+> [!WARNING]
+> Mặc định, rule `image` không cho phép các file SVG do khả năng xảy ra lỗ hổng bảo mật XSS. Nếu bạn cần cho phép các file SVG, bạn có thể truyền `allowSvg: true` cho rule `image`: `File::image(allowSvg: true)`.
 
 <a name="validating-files-image-dimensions"></a>
 #### Validating Image Dimensions
@@ -2328,49 +2688,59 @@ File::image()->dimensions(
 
 Để đảm bảo mật khẩu có mức độ phức tạp phù hợp, bạn có thể sử dụng đối tượng quy tắc `Password` của Laravel:
 
-    use Illuminate\Support\Facades\Validator;
-    use Illuminate\Validation\Rules\Password;
+```php
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rules\Password;
 
-    $validator = Validator::make($request->all(), [
-        'password' => ['required', 'confirmed', Password::min(8)],
-    ]);
+$validator = Validator::make($request->all(), [
+    'password' => ['required', 'confirmed', Password::min(8)],
+]);
+```
 
 Đối tượng quy tắc `Password` cho phép bạn dễ dàng tùy chỉnh các yêu cầu về độ phức tạp của mật khẩu cho ứng dụng của bạn, chẳng hạn như chỉ định rằng mật khẩu sẽ yêu cầu ít nhất một chữ cái, một số, một ký hiệu hoặc một ký tự có kiểu viết hoa hỗn hợp:
 
-    // Require at least 8 characters...
-    Password::min(8)
+```php
+// Require at least 8 characters...
+Password::min(8)
 
-    // Require at least one letter...
-    Password::min(8)->letters()
+// Require at least one letter...
+Password::min(8)->letters()
 
-    // Require at least one uppercase and one lowercase letter...
-    Password::min(8)->mixedCase()
+// Require at least one uppercase and one lowercase letter...
+Password::min(8)->mixedCase()
 
-    // Require at least one number...
-    Password::min(8)->numbers()
+// Require at least one number...
+Password::min(8)->numbers()
 
-    // Require at least one symbol...
-    Password::min(8)->symbols()
+// Require at least one symbol...
+Password::min(8)->symbols()
+```
 
 Ngoài ra, bạn có thể yêu cầu rằng mật khẩu không bị lộ trong một vụ rò rỉ dữ liệu mật khẩu bằng phương thức `uncompromised`:
 
-    Password::min(8)->uncompromised()
+```php
+Password::min(8)->uncompromised()
+```
 
 Bên trong, đối tượng quy tắc `Password` sẽ sử dụng model [k-Anonymity](https://en.wikipedia.org/wiki/K-anonymity) để xác định xem mật khẩu có bị rò rỉ qua [haveibeenpwned.com](https://haveibeenpwned.com) mà không ảnh hưởng đến quyền riêng tư hoặc bảo mật của người dùng.
 
 Mặc định, nếu một mật khẩu xuất hiện ít nhất một lần trong một vụ rò rỉ dữ liệu thì mật khẩu đó sẽ bị coi là đã bị xâm phạm. Bạn có thể tùy chỉnh ngưỡng này bằng cách sử dụng tham số đầu tiên của phương thức `uncompromised`:
 
-    // Ensure the password appears less than 3 times in the same data leak...
-    Password::min(8)->uncompromised(3);
+```php
+// Ensure the password appears less than 3 times in the same data leak...
+Password::min(8)->uncompromised(3);
+```
 
 Tất nhiên, bạn có thể kết hợp tất cả các phương thức trong các ví dụ trên:
 
-    Password::min(8)
-        ->letters()
-        ->mixedCase()
-        ->numbers()
-        ->symbols()
-        ->uncompromised()
+```php
+Password::min(8)
+    ->letters()
+    ->mixedCase()
+    ->numbers()
+    ->symbols()
+    ->uncompromised()
+```
 
 <a name="defining-default-password-rules"></a>
 #### Defining Default Password Rules
@@ -2397,17 +2767,21 @@ public function boot(): void
 
 Sau đó, khi bạn muốn áp dụng các quy tắc mặc định cho một mật khẩu cụ thể đang được validation, bạn có thể gọi phương thức `defaults` mà không cần tham số:
 
-    'password' => ['required', Password::defaults()],
+```php
+'password' => ['required', Password::defaults()],
+```
 
 Đôi khi, bạn có thể muốn đính kèm thêm các quy tắc validation vào các quy tắc validation mật khẩu mặc định của bạn. Bạn có thể sử dụng phương thức `rules` để thực hiện điều này:
 
-    use App\Rules\ZxcvbnRule;
+```php
+use App\Rules\ZxcvbnRule;
 
-    Password::defaults(function () {
-        $rule = Password::min(8)->rules([new ZxcvbnRule]);
+Password::defaults(function () {
+    $rule = Password::min(8)->rules([new ZxcvbnRule]);
 
-        // ...
-    });
+    // ...
+});
+```
 
 <a name="custom-validation-rules"></a>
 ## Tuỳ biến Validation Rules
@@ -2423,147 +2797,163 @@ php artisan make:rule Uppercase
 
 Khi rule đã được tạo, chúng ta đã sẵn sàng xác định hành vi của nó. Một đối tượng rule sẽ chứa một phương thức duy nhất: `validate`. Phương thức này sẽ nhận tên thuộc tính, giá trị của nó và một lệnh callback sẽ được gọi khi có lỗi với thông báo lỗi validation:
 
-    <?php
+```php
+<?php
 
-    namespace App\Rules;
+namespace App\Rules;
 
-    use Closure;
-    use Illuminate\Contracts\Validation\ValidationRule;
+use Closure;
+use Illuminate\Contracts\Validation\ValidationRule;
 
-    class Uppercase implements ValidationRule
+class Uppercase implements ValidationRule
+{
+    /**
+     * Run the validation rule.
+     */
+    public function validate(string $attribute, mixed $value, Closure $fail): void
     {
-        /**
-         * Run the validation rule.
-         */
-        public function validate(string $attribute, mixed $value, Closure $fail): void
-        {
-            if (strtoupper($value) !== $value) {
-                $fail('The :attribute must be uppercase.');
-            }
+        if (strtoupper($value) !== $value) {
+            $fail('The :attribute must be uppercase.');
         }
     }
+}
+```
 
 Khi rule đã được định nghĩa xong, bạn có thể gán nó vào một validator bằng cách truyền một instance của đối tượng rule này cùng với các quy tắc validation khác của bạn:
 
-    use App\Rules\Uppercase;
+```php
+use App\Rules\Uppercase;
 
-    $request->validate([
-        'name' => ['required', 'string', new Uppercase],
-    ]);
+$request->validate([
+    'name' => ['required', 'string', new Uppercase],
+]);
+```
 
 #### Translating Validation Messages
 
 Thay vì cung cấp một thông báo lỗi theo đúng nghĩa đen cho closure `$fail`, bạn cũng có thể cung cấp [khóa dịch](/docs/{{version}}/localization) và bảo Laravel dịch thông báo lỗi đó:
 
-    if (strtoupper($value) !== $value) {
-        $fail('validation.uppercase')->translate();
-    }
+```php
+if (strtoupper($value) !== $value) {
+    $fail('validation.uppercase')->translate();
+}
+```
 
 Nếu cần, bạn cũng có thể cung cấp các biến và ngôn ngữ ưu tiên làm tham số thứ nhất và thứ hai cho phương thức `translate`:
 
-    $fail('validation.location')->translate([
-        'value' => $this->value,
-    ], 'fr')
+```php
+$fail('validation.location')->translate([
+    'value' => $this->value,
+], 'fr');
+```
 
 #### Accessing Additional Data
 
 Nếu class quy tắc validation tùy chỉnh của bạn cần truy cập vào tất cả dữ liệu khác đang được validation, thì class quy tắc của bạn có thể implement interface `Illuminate\Contracts\Validation\DataAwareRule`. Interface này yêu cầu class của bạn định nghĩa một phương thức `setData`. Phương thức này sẽ tự động được Laravel gọi (trước khi tiến hành validation) với tất cả dữ liệu được validation:
 
-    <?php
+```php
+<?php
 
-    namespace App\Rules;
+namespace App\Rules;
 
-    use Illuminate\Contracts\Validation\DataAwareRule;
-    use Illuminate\Contracts\Validation\ValidationRule;
+use Illuminate\Contracts\Validation\DataAwareRule;
+use Illuminate\Contracts\Validation\ValidationRule;
 
-    class Uppercase implements DataAwareRule, ValidationRule
+class Uppercase implements DataAwareRule, ValidationRule
+{
+    /**
+     * All of the data under validation.
+     *
+     * @var array<string, mixed>
+     */
+    protected $data = [];
+
+    // ...
+
+    /**
+     * Set the data under validation.
+     *
+     * @param  array<string, mixed>  $data
+     */
+    public function setData(array $data): static
     {
-        /**
-         * All of the data under validation.
-         *
-         * @var array<string, mixed>
-         */
-        protected $data = [];
+        $this->data = $data;
 
-        // ...
-
-        /**
-         * Set the data under validation.
-         *
-         * @param  array<string, mixed>  $data
-         */
-        public function setData(array $data): static
-        {
-            $this->data = $data;
-
-            return $this;
-        }
+        return $this;
     }
+}
+```
 
 Hoặc, nếu quy tắc validation của bạn yêu cầu quyền truy cập vào instance validator đang thực hiện validation, bạn có thể implement interface `ValidatorAwareRule`:
 
-    <?php
+```php
+<?php
 
-    namespace App\Rules;
+namespace App\Rules;
 
-    use Illuminate\Contracts\Validation\ValidationRule;
-    use Illuminate\Contracts\Validation\ValidatorAwareRule;
-    use Illuminate\Validation\Validator;
+use Illuminate\Contracts\Validation\ValidationRule;
+use Illuminate\Contracts\Validation\ValidatorAwareRule;
+use Illuminate\Validation\Validator;
 
-    class Uppercase implements ValidationRule, ValidatorAwareRule
+class Uppercase implements ValidationRule, ValidatorAwareRule
+{
+    /**
+     * The validator instance.
+     *
+     * @var \Illuminate\Validation\Validator
+     */
+    protected $validator;
+
+    // ...
+
+    /**
+     * Set the current validator.
+     */
+    public function setValidator(Validator $validator): static
     {
-        /**
-         * The validator instance.
-         *
-         * @var \Illuminate\Validation\Validator
-         */
-        protected $validator;
+        $this->validator = $validator;
 
-        // ...
-
-        /**
-         * Set the current validator.
-         */
-        public function setValidator(Validator $validator): static
-        {
-            $this->validator = $validator;
-
-            return $this;
-        }
+        return $this;
     }
+}
+```
 
 <a name="using-closures"></a>
 ### Using Closures
 
 Nếu bạn chỉ cần chức năng của quy tắc tùy chỉnh một lần trong suốt ứng dụng của bạn, bạn có thể sử dụng closure thay vì một đối tượng quy tắc. Closure sẽ nhận vào tên của thuộc tính, giá trị của thuộc tính và một callback `$fail` sẽ được gọi nếu validation thất bại:
 
-    use Illuminate\Support\Facades\Validator;
-    use Closure;
+```php
+use Illuminate\Support\Facades\Validator;
+use Closure;
 
-    $validator = Validator::make($request->all(), [
-        'title' => [
-            'required',
-            'max:255',
-            function (string $attribute, mixed $value, Closure $fail) {
-                if ($value === 'foo') {
-                    $fail("The {$attribute} is invalid.");
-                }
-            },
-        ],
-    ]);
+$validator = Validator::make($request->all(), [
+    'title' => [
+        'required',
+        'max:255',
+        function (string $attribute, mixed $value, Closure $fail) {
+            if ($value === 'foo') {
+                $fail("The {$attribute} is invalid.");
+            }
+        },
+    ],
+]);
+```
 
 <a name="implicit-rules"></a>
 ### Rule ẩn
 
-Mặc định, khi một thuộc tính đang được validate không xuất hiện hoặc chứa một chuỗi trống, thì các quy tắc validation thông thường, bao gồm cả các quy tắc tùy chỉnh, sẽ không được chạy. Ví dụ: quy tắc [`unique`](#rule-unique) sẽ không được chạy đối với một chuỗi trống:
+Mặc định, khi một thuộc tính đang được validate không xuất hiện hoặc chứa một chuỗi trống, thì các quy tắc validation thông thường, bao gồm cả các quy tắc tùy chỉnh, sẽ không được chạy. Ví dụ: quy tắc [unique](#rule-unique) sẽ không được chạy đối với một chuỗi trống:
 
-    use Illuminate\Support\Facades\Validator;
+```php
+use Illuminate\Support\Facades\Validator;
 
-    $rules = ['name' => 'unique:users,name'];
+$rules = ['name' => 'unique:users,name'];
 
-    $input = ['name' => ''];
+$input = ['name' => ''];
 
-    Validator::make($input, $rules)->passes(); // true
+Validator::make($input, $rules)->passes(); // true
+```
 
 Để một quy tắc tuỳ chỉnh chạy ngay cả khi một thuộc tính trống, quy tắc đó phải tưởng tượng rằng thuộc tính là bắt buộc. Để nhanh chóng tạo ra một đối tượng quy tắc ẩn mới, bạn có thể sử dụng lệnh Artisan `make:rule` với tùy chọn `--implicit`:
 

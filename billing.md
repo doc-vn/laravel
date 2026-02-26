@@ -52,17 +52,17 @@
     - [Tính phí với hoá đơn](#charge-with-invoice)
     - [Tạo Payment Intents](#creating-payment-intents)
     - [Hoàn trả](#refunding-charges)
+- [Hoá đơn](#invoices)
+    - [Lấy hoá đơn](#retrieving-invoices)
+    - [Hoá đơn tiếp theo](#upcoming-invoices)
+    - [Xem trước hóa đơn đăng ký](#previewing-subscription-invoices)
+    - [Tạo hoá đơn PDF](#generating-invoice-pdfs)
 - [Checkout](#checkout)
     - [Product Checkouts](#product-checkouts)
     - [Single Charge Checkouts](#single-charge-checkouts)
     - [Subscription Checkouts](#subscription-checkouts)
     - [Collecting Tax IDs](#collecting-tax-ids)
     - [Guest Checkouts](#guest-checkouts)
-- [Hoá đơn](#invoices)
-    - [Lấy hoá đơn](#retrieving-invoices)
-    - [Hoá đơn tiếp theo](#upcoming-invoices)
-    - [Xem trước hóa đơn đăng ký](#previewing-subscription-invoices)
-    - [Tạo hoá đơn PDF](#generating-invoice-pdfs)
 - [Xử lý lỗi thanh toán](#handling-failed-payments)
     - [Xác nhận thanh toán](#confirming-payments)
 - [Strong Customer Authentication (SCA)](#strong-customer-authentication)
@@ -82,7 +82,7 @@
 Khi nâng cấp lên phiên bản mới của Cashier, điều quan trọng là bạn phải xem kỹ [hướng dẫn nâng cấp](https://github.com/laravel/cashier-stripe/blob/master/UPGRADE.md).
 
 > [!WARNING]
-> Để tránh các thay đổi nghiêm trọng, Cashier sẽ sử dụng một phiên bản API Stripe cố định. Cashier 15 sẽ sử dụng phiên bản API Stripe `2023-10-16`. Phiên bản API Stripe này sẽ được cập nhật thành các bản phát hành nhỏ để sử dụng các tính năng và cải tiến mới của Stripe.
+> Để tránh các thay đổi nghiêm trọng, Cashier sẽ sử dụng một phiên bản API Stripe cố định. Cashier 16 sẽ sử dụng phiên bản API Stripe `2025-06-30.basil`. Phiên bản API Stripe này sẽ được cập nhật thành các bản phát hành nhỏ để sử dụng các tính năng và cải tiến mới của Stripe.
 
 <a name="installation"></a>
 ## Cài đặt
@@ -126,25 +126,29 @@ Cuối cùng, để đảm bảo Cashier xử lý đúng tất cả các event S
 
 Trước khi sử dụng Cashier, hãy thêm trait `Billable` vào định nghĩa billable model của bạn. Thông thường, đây sẽ là model `App\Models\User`. Trait này sẽ cung cấp các phương thức khác nhau cho phép bạn thực hiện các tác vụ thanh toán phổ biến, chẳng hạn như tạo subscription, áp dụng phiếu giảm giá hoặc cập nhật thông tin phương thức thanh toán:
 
-    use Laravel\Cashier\Billable;
+```php
+use Laravel\Cashier\Billable;
 
-    class User extends Authenticatable
-    {
-        use Billable;
-    }
+class User extends Authenticatable
+{
+    use Billable;
+}
+```
 
 Cashier sẽ giả định rằng billable model của bạn sẽ là class `App\Models\User` đi kèm với Laravel. Nếu bạn muốn thay đổi điều này, bạn có thể chỉ định một model khác thông qua phương thức `useCustomerModel`. Phương thức này thường được gọi trong phương thức `boot` của class `AppServiceProvider` của bạn:
 
-    use App\Models\Cashier\User;
-    use Laravel\Cashier\Cashier;
+```php
+use App\Models\Cashier\User;
+use Laravel\Cashier\Cashier;
 
-    /**
-     * Bootstrap any application services.
-     */
-    public function boot(): void
-    {
-        Cashier::useCustomerModel(User::class);
-    }
+/**
+ * Bootstrap any application services.
+ */
+public function boot(): void
+{
+    Cashier::useCustomerModel(User::class);
+}
+```
 
 > [!WARNING]
 > Nếu bạn đang sử dụng model khác, khác với model `App\Models\User` do Laravel cung cấp, bạn sẽ cần export và thay đổi [migration](#installation) được cung cấp để khớp với tên bảng của model thay thế mà bạn muốn.
@@ -186,15 +190,17 @@ CASHIER_CURRENCY_LOCALE=nl_BE
 
 Nhờ [Stripe Tax](https://stripe.com/tax), bạn có thể tự động tính thuế cho tất cả hóa đơn do Stripe tạo. Bạn có thể kích hoạt chức năng tính thuế tự động bằng cách gọi phương thức `calculateTaxes` trong phương thức `boot` của class `App\Providers\AppServiceProvider` trong ứng dụng của bạn:
 
-    use Laravel\Cashier\Cashier;
+```php
+use Laravel\Cashier\Cashier;
 
-    /**
-     * Bootstrap any application services.
-     */
-    public function boot(): void
-    {
-        Cashier::calculateTaxes();
-    }
+/**
+ * Bootstrap any application services.
+ */
+public function boot(): void
+{
+    Cashier::calculateTaxes();
+}
+```
 
 Sau khi chức năng tính thuế đã được bật, mọi đăng ký mới và mọi hóa đơn một lần sẽ được tính thuế tự động.
 
@@ -216,26 +222,30 @@ Các exception được tạo ra bởi lệnh gọi API tới Stripe sẽ đư�
 
 Bạn có thể thoải mái extend các model mà Cashier sử dụng bên trong bằng cách định nghĩa thêm model của riêng bạn và extend các model Cashier tương ứng:
 
-    use Laravel\Cashier\Subscription as CashierSubscription;
+```php
+use Laravel\Cashier\Subscription as CashierSubscription;
 
-    class Subscription extends CashierSubscription
-    {
-        // ...
-    }
+class Subscription extends CashierSubscription
+{
+    // ...
+}
+```
 
 Sau khi đã định nghĩa model của bạn, bạn có thể hướng dẫn Cashier sử dụng model tùy chỉnh của bạn thông qua class `Laravel\Cashier\Cashier`. Thông thường, bạn nên thông báo cho Cashier về các model tùy chỉnh của bạn trong phương thức `boot` của class `App\Providers\AppServiceProvider` của ứng dụng:
 
-    use App\Models\Cashier\Subscription;
-    use App\Models\Cashier\SubscriptionItem;
+```php
+use App\Models\Cashier\Subscription;
+use App\Models\Cashier\SubscriptionItem;
 
-    /**
-     * Bootstrap any application services.
-     */
-    public function boot(): void
-    {
-        Cashier::useSubscriptionModel(Subscription::class);
-        Cashier::useSubscriptionItemModel(SubscriptionItem::class);
-    }
+/**
+ * Bootstrap any application services.
+ */
+public function boot(): void
+{
+    Cashier::useSubscriptionModel(Subscription::class);
+    Cashier::useSubscriptionItemModel(SubscriptionItem::class);
+}
+```
 
 <a name="quickstart"></a>
 ## Bắt đầu nhanh
@@ -250,21 +260,23 @@ Việc cung cấp thanh toán sản phẩm và subscription thông qua ứng d�
 
 Để tính phí khách hàng cho các sản phẩm không định kỳ, tính phí một lần, chúng ta sẽ sử dụng Cashier để hướng dẫn khách hàng đến trang Stripe Checkout, nơi họ sẽ cần phải cung cấp thông tin thanh toán và xác nhận giao dịch mua của họ. Sau khi thanh toán qua Checkout, khách hàng sẽ được chuyển hướng đến URL thành công do bạn đăng ký trong ứng dụng của bạn:
 
-    use Illuminate\Http\Request;
+```php
+use Illuminate\Http\Request;
 
-    Route::get('/checkout', function (Request $request) {
-        $stripePriceId = 'price_deluxe_album';
+Route::get('/checkout', function (Request $request) {
+    $stripePriceId = 'price_deluxe_album';
 
-        $quantity = 1;
+    $quantity = 1;
 
-        return $request->user()->checkout([$stripePriceId => $quantity], [
-            'success_url' => route('checkout-success'),
-            'cancel_url' => route('checkout-cancel'),
-        ]);
-    })->name('checkout');
+    return $request->user()->checkout([$stripePriceId => $quantity], [
+        'success_url' => route('checkout-success'),
+        'cancel_url' => route('checkout-cancel'),
+    ]);
+})->name('checkout');
 
-    Route::view('/checkout/success', 'checkout.success')->name('checkout-success');
-    Route::view('/checkout/cancel', 'checkout.cancel')->name('checkout-cancel');
+Route::view('/checkout/success', 'checkout.success')->name('checkout-success');
+Route::view('/checkout/cancel', 'checkout.cancel')->name('checkout-cancel');
+```
 
 Như bạn có thể thấy trong ví dụ trên, chúng ta sẽ sử dụng phương thức `checkout` do Cashier cung cấp để chuyển hướng khách hàng đến Stripe Checkout với một "mã giá" nhất định. Khi sử dụng Stripe, "giá" ám chỉ [giá đã được định nghĩa cho các sản phẩm cụ thể](https://stripe.com/docs/products-prices/how-products-and-prices-work).
 
@@ -277,53 +289,57 @@ Khi bán sản phẩm, thông thường bạn sẽ theo dõi các đơn hàng đ
 
 Để thực hiện điều này, bạn có thể cung cấp một mảng `metadata` cho phương thức `checkout`. Hãy tưởng tượng một `Order` đang được chờ xử lý được tạo ra trong ứng dụng khi người dùng bắt đầu quá trình thanh toán. Hãy nhớ rằng, các model `Cart` và `Order` trong ví dụ này chỉ mang tính minh họa và không được Cashier cung cấp. Bạn có thể tự do triển khai các khái niệm này dựa trên nhu cầu của ứng dụng của bạn:
 
-    use App\Models\Cart;
-    use App\Models\Order;
-    use Illuminate\Http\Request;
+```php
+use App\Models\Cart;
+use App\Models\Order;
+use Illuminate\Http\Request;
 
-    Route::get('/cart/{cart}/checkout', function (Request $request, Cart $cart) {
-        $order = Order::create([
-            'cart_id' => $cart->id,
-            'price_ids' => $cart->price_ids,
-            'status' => 'incomplete',
-        ]);
+Route::get('/cart/{cart}/checkout', function (Request $request, Cart $cart) {
+    $order = Order::create([
+        'cart_id' => $cart->id,
+        'price_ids' => $cart->price_ids,
+        'status' => 'incomplete',
+    ]);
 
-        return $request->user()->checkout($order->price_ids, [
-            'success_url' => route('checkout-success').'?session_id={CHECKOUT_SESSION_ID}',
-            'cancel_url' => route('checkout-cancel'),
-            'metadata' => ['order_id' => $order->id],
-        ]);
-    })->name('checkout');
+    return $request->user()->checkout($order->price_ids, [
+        'success_url' => route('checkout-success').'?session_id={CHECKOUT_SESSION_ID}',
+        'cancel_url' => route('checkout-cancel'),
+        'metadata' => ['order_id' => $order->id],
+    ]);
+})->name('checkout');
+```
 
 Như bạn có thể thấy trong ví dụ trên, khi người dùng bắt đầu quy trình thanh toán, chúng ta sẽ cung cấp tất cả các mã giá Stripe liên quan đến cart hoặc order cho phương thức `checkout`. Tất nhiên, ứng dụng của bạn có trách nhiệm liên kết các item này với "shopping cart" hoặc order khi khách hàng thêm chúng. Chúng ta cũng cung cấp ID của order cho Stripe Checkout thông qua mảng `metadata`. Cuối cùng, chúng ta sẽ thêm biến template `CHECKOUT_SESSION_ID` vào route thành công. Khi Stripe chuyển hướng khách hàng trở lại ứng dụng của bạn, biến template này sẽ tự động chứa thông tin ID Checkout.
 
 Tiếp theo, hãy xem cách xây dựng route thành công. Đây là route mà người dùng sẽ được chuyển đến sau khi giao dịch mua của họ thành công thông qua Stripe Checkout. Trong route này, chúng ta có thể lấy ID Stripe Checkout và instance Stripe Checkout để có thể truy cập vào thông tin meta được cung cấp và cập nhật đơn hàng của khách hàng cho phù hợp:
 
-    use App\Models\Order;
-    use Illuminate\Http\Request;
-    use Laravel\Cashier\Cashier;
+```php
+use App\Models\Order;
+use Illuminate\Http\Request;
+use Laravel\Cashier\Cashier;
 
-    Route::get('/checkout/success', function (Request $request) {
-        $sessionId = $request->get('session_id');
+Route::get('/checkout/success', function (Request $request) {
+    $sessionId = $request->get('session_id');
 
-        if ($sessionId === null) {
-            return;
-        }
+    if ($sessionId === null) {
+        return;
+    }
 
-        $session = Cashier::stripe()->checkout->sessions->retrieve($sessionId);
+    $session = Cashier::stripe()->checkout->sessions->retrieve($sessionId);
 
-        if ($session->payment_status !== 'paid') {
-            return;
-        }
+    if ($session->payment_status !== 'paid') {
+        return;
+    }
 
-        $orderId = $session['metadata']['order_id'] ?? null;
+    $orderId = $session['metadata']['order_id'] ?? null;
 
-        $order = Order::findOrFail($orderId);
+    $order = Order::findOrFail($orderId);
 
-        $order->update(['status' => 'completed']);
+    $order->update(['status' => 'completed']);
 
-        return view('checkout-success', ['order' => $order]);
-    })->name('checkout-success');
+    return view('checkout-success', ['order' => $order]);
+})->name('checkout-success');
+```
 
 Vui lòng tham khảo tài liệu của Stripe để biết thêm thông tin về [dữ liệu chứa trong đối tượng Checkout](https://stripe.com/docs/api/checkout/sessions/object).
 
@@ -339,18 +355,20 @@ Việc cung cấp thanh toán sản phẩm và subscription thông qua ứng d�
 
 Trước tiên, hãy cùng khám phá cách khách hàng có thể đăng ký dịch vụ của chúng ta. Tất nhiên, bạn có thể tưởng tượng khách hàng có thể ấn vào nút "đăng ký" cho gói cơ bản trên trang giá của ứng dụng. Nút hoặc liên kết này sẽ hướng người dùng đến một route Laravel nhằm tạo Stripe Checkout cho gói họ đã chọn:
 
-    use Illuminate\Http\Request;
+```php
+use Illuminate\Http\Request;
 
-    Route::get('/subscription-checkout', function (Request $request) {
-        return $request->user()
-            ->newSubscription('default', 'price_basic_monthly')
-            ->trialDays(5)
-            ->allowPromotionCodes()
-            ->checkout([
-                'success_url' => route('your-success-route'),
-                'cancel_url' => route('your-cancel-route'),
-            ]);
-    });
+Route::get('/subscription-checkout', function (Request $request) {
+    return $request->user()
+        ->newSubscription('default', 'price_basic_monthly')
+        ->trialDays(5)
+        ->allowPromotionCodes()
+        ->checkout([
+            'success_url' => route('your-success-route'),
+            'cancel_url' => route('your-cancel-route'),
+        ]);
+});
+```
 
 Như bạn có thể thấy trong ví dụ trên, chúng ta sẽ chuyển hướng khách hàng đến trang Stripe Checkout cho phép họ đăng ký gói cơ bản của chúng ta. Sau khi thanh toán thành công hoặc hủy thanh toán, khách hàng sẽ được chuyển hướng trở lại URL mà chúng ta đã cung cấp cho phương thức `checkout`. Để biết khi nào đăng ký của khách hàng thực sự bắt đầu (vì một số phương thức thanh toán cần vài giây để xử lý), chúng ta cũng cần [cấu hình xử lý webhook của Cashier](#handling-stripe-webhooks).
 
@@ -379,37 +397,41 @@ Chúng ta thậm chí có thể dễ dàng xác định xem người dùng có �
 
 Để thuận tiện, bạn có thể muốn tạo một [middleware](/docs/{{version}}/middleware) để xác định xem request đến có phải từ một người dùng đã đăng ký rồi hay không. Sau khi middleware này được định nghĩa, bạn có thể dễ dàng gán nó cho một route để chặn những người dùng chưa đăng ký truy cập route:
 
-    <?php
+```php
+<?php
 
-    namespace App\Http\Middleware;
+namespace App\Http\Middleware;
 
-    use Closure;
-    use Illuminate\Http\Request;
-    use Symfony\Component\HttpFoundation\Response;
+use Closure;
+use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Response;
 
-    class Subscribed
+class Subscribed
+{
+    /**
+     * Handle an incoming request.
+     */
+    public function handle(Request $request, Closure $next): Response
     {
-        /**
-         * Handle an incoming request.
-         */
-        public function handle(Request $request, Closure $next): Response
-        {
-            if (! $request->user()?->subscribed()) {
-                // Redirect user to billing page and ask them to subscribe...
-                return redirect('/billing');
-            }
-
-            return $next($request);
+        if (! $request->user()?->subscribed()) {
+            // Redirect user to billing page and ask them to subscribe...
+            return redirect('/billing');
         }
+
+        return $next($request);
     }
+}
+```
 
 Sau khi middleware đã được định nghĩa, bạn có thể gán nó cho một route:
 
-    use App\Http\Middleware\Subscribed;
+```php
+use App\Http\Middleware\Subscribed;
 
-    Route::get('/dashboard', function () {
-        // ...
-    })->middleware([Subscribed::class]);
+Route::get('/dashboard', function () {
+    // ...
+})->middleware([Subscribed::class]);
+```
 
 <a name="quickstart-allowing-customers-to-manage-their-billing-plan"></a>
 #### Allowing Customers to Manage Their Billing Plan
@@ -426,11 +448,13 @@ Tất nhiên, khách hàng có thể muốn thay đổi gói đăng ký của m�
 
 Tiếp theo, hãy định nghĩa một route khởi tạo Stripe Customer Billing Portal và chuyển hướng người dùng đến Portal. Phương thức `redirectToBillingPortal` chấp nhận một URL mà người dùng sẽ được trả về khi thoát khỏi Portal:
 
-    use Illuminate\Http\Request;
+```php
+use Illuminate\Http\Request;
 
-    Route::get('/billing', function (Request $request) {
-        return $request->user()->redirectToBillingPortal(route('dashboard'));
-    })->middleware(['auth'])->name('billing');
+Route::get('/billing', function (Request $request) {
+    return $request->user()->redirectToBillingPortal(route('dashboard'));
+})->middleware(['auth'])->name('billing');
+```
 
 > [!NOTE]
 > Miễn là bạn đã cấu hình xử lý webhook của Cashier, Cashier sẽ tự động giữ các bảng cơ sở dữ liệu liên quan đến Cashier của ứng dụng của bạn đồng bộ thông qua các webhook đến từ Stripe. Vì vậy, ví dụ, khi người dùng hủy đăng ký của họ thông qua cổng thanh toán khách hàng của Stripe, Cashier sẽ nhận được webhook tương ứng và đánh dấu đăng ký là "đã bị hủy" trong cơ sở dữ liệu ứng dụng của bạn.
@@ -443,84 +467,112 @@ Tiếp theo, hãy định nghĩa một route khởi tạo Stripe Customer Billin
 
 Bạn có thể lấy ra một khách hàng bằng ID Stripe của họ thông qua phương thức `Cashier::findBillable`. Phương thức này sẽ trả về một instance của billable model:
 
-    use Laravel\Cashier\Cashier;
+```php
+use Laravel\Cashier\Cashier;
 
-    $user = Cashier::findBillable($stripeId);
+$user = Cashier::findBillable($stripeId);
+```
 
 <a name="creating-customers"></a>
 ### Tạo Customers
 
 Đôi khi, bạn có thể muốn tạo một Stripe customer mà không cần phải đăng ký. Bạn có thể thực hiện việc này bằng phương thức `createAsStripeCustomer`:
 
-    $stripeCustomer = $user->createAsStripeCustomer();
+```php
+$stripeCustomer = $user->createAsStripeCustomer();
+```
 
 Khi customer đã được tạo trong Stripe, bạn có thể bắt đầu subscription. Bạn có thể cung cấp mảng tùy chọn `$options` để truyền vào bất kỳ tham số [khách hàng nào được hỗ trợ bởi Stripe API](https://stripe.com/docs/api/customers/create):
 
-    $stripeCustomer = $user->createAsStripeCustomer($options);
+```php
+$stripeCustomer = $user->createAsStripeCustomer($options);
+```
 
 Bạn có thể sử dụng phương thức `asStripeCustomer` nếu bạn muốn trả về một đối tượng customer Stripe cho một billable model:
 
-    $stripeCustomer = $user->asStripeCustomer();
+```php
+$stripeCustomer = $user->asStripeCustomer();
+```
 
 Phương thức `createOrGetStripeCustomer` có thể được sử dụng nếu bạn muốn lấy Stripe customer cho một billable model nhất định nhưng không chắc chắn là liệu billable model đó đã là customer trong Stripe hay chưa. Phương thức này sẽ tạo ra một customer mới trong Stripe nếu customer đó chưa tồn tại:
 
-    $stripeCustomer = $user->createOrGetStripeCustomer();
+```php
+$stripeCustomer = $user->createOrGetStripeCustomer();
+```
 
 <a name="updating-customers"></a>
 ### Cập nhật Customers
 
 Đôi khi, bạn có thể muốn cập nhật trực tiếp thông tin cho customer của Stripe. Bạn có thể thực hiện việc này bằng phương thức `updateStripeCustomer`. Phương thức này chấp nhận một loạt [các tùy chọn cập nhật của khách hàng được API Stripe hỗ trợ](https://stripe.com/docs/api/customers/update):
 
-    $stripeCustomer = $user->updateStripeCustomer($options);
+```php
+$stripeCustomer = $user->updateStripeCustomer($options);
+```
 
 <a name="balances"></a>
 ### Số dư
 
 Stripe cho phép bạn gửi vào hoặc rút ra từ "số dư" của khách hàng. Sau đó, số dư này sẽ được gửi hoặc rút theo mỗi hóa đơn mới. Để kiểm tra tổng số dư của khách hàng, bạn có thể sử dụng phương thức `balance` có sẵn trên billable model của bạn. Phương thức `balance` sẽ trả về một chuỗi được định dạng biểu thị số dư bằng đơn vị tiền tệ của khách hàng:
 
-    $balance = $user->balance();
+```php
+$balance = $user->balance();
+```
 
 Để gửi vào số dư của khách hàng, bạn có thể cung cấp giá trị cho phương thức `creditBalance`. Nếu bạn muốn, bạn cũng có thể cung cấp một mô tả:
 
-    $user->creditBalance(-500, 'Premium customer top-up.');
+```php
+$user->creditBalance(500, 'Premium customer top-up.');
+```
 
 Cung cấp giá trị cho phương thức `debitBalance` sẽ tương ứng với rút số dư của khách hàng:
 
-    $user->debitBalance(300, 'Bad usage penalty.');
+```php
+$user->debitBalance(300, 'Bad usage penalty.');
+```
 
 Phương thức `applyBalance` sẽ tạo giao dịch số dư khách hàng mới cho khách hàng. Bạn có thể lấy các bản ghi giao dịch này bằng phương thức `balanceTransactions`, phương thức này có thể hữu ích để cung cấp nhật ký gửi và rút cho khách hàng xem:
 
-    // Retrieve all transactions...
-    $transactions = $user->balanceTransactions();
+```php
+// Retrieve all transactions...
+$transactions = $user->balanceTransactions();
 
-    foreach ($transactions as $transaction) {
-        // Transaction amount...
-        $amount = $transaction->amount(); // $2.31
+foreach ($transactions as $transaction) {
+    // Transaction amount...
+    $amount = $transaction->amount(); // $2.31
 
-        // Retrieve the related invoice when available...
-        $invoice = $transaction->invoice();
-    }
+    // Retrieve the related invoice when available...
+    $invoice = $transaction->invoice();
+}
+```
 
 <a name="tax-ids"></a>
 ### Tax IDs
 
 Cashier cũng cung cấp một cách dễ dàng để quản lý mã số thuế của khách hàng. Ví dụ: phương thức `taxIds` có thể được sử dụng để lấy ra tất cả các [ID thuế](https://stripe.com/docs/api/customer_tax_ids/object) được gán cho một khách hàng dưới dạng một collection:
 
-    $taxIds = $user->taxIds();
+```php
+$taxIds = $user->taxIds();
+```
 
 Bạn cũng có thể lấy ra ID thuế cụ thể cho một khách hàng bằng identifier của khách hàng đó:
 
-    $taxId = $user->findTaxId('txi_belgium');
+```php
+$taxId = $user->findTaxId('txi_belgium');
+```
 
 Bạn có thể tạo ra một mã số thuế mới bằng cách cung cấp [loại](https://stripe.com/docs/api/customer_tax_ids/object#tax_id_object-type) và giá trị cho phương thức `createTaxId`:
 
-    $taxId = $user->createTaxId('eu_vat', 'BE0123456789');
+```php
+$taxId = $user->createTaxId('eu_vat', 'BE0123456789');
+```
 
 Phương thức `createTaxId` sẽ ngay lập tức thêm ID VAT vào tài khoản của khách hàng. [Việc xác minh ID VAT cũng được thực hiện bởi Stripe](https://stripe.com/docs/invoicing/customer/tax-ids#validation); tuy nhiên, đây là một quá trình bất đồng bộ. Bạn có thể được nhận được thông báo về các cập nhật xác minh này bằng cách đăng ký event webhook `customer.tax_id.updated` và kiểm tra [các tham số ID VAT `verification`](https://stripe.com/docs/api/customer_tax_ids/object#tax_id_object-verification). Để biết thêm thông tin về cách xử lý webhook, vui lòng tham khảo [tài liệu về định nghĩa webhook handler](#handling-stripe-webhooks).
 
 Bạn có thể xóa ID thuế bằng phương thức `deleteTaxId`:
 
-    $user->deleteTaxId('txi_belgium');
+```php
+$user->deleteTaxId('txi_belgium');
+```
 
 <a name="syncing-customer-data-with-stripe"></a>
 ### Đồng bộ dữ liệu khác hành với Stripe
@@ -529,57 +581,67 @@ Thông thường, khi người dùng ứng dụng của bạn cập nhật tên,
 
 Để tự động hóa việc này, bạn có thể định nghĩa một event listener trên billable model của bạn tương tác với event `updated` của model. Sau đó, trong event listener đó của bạn có thể gọi phương thức `syncStripeCustomerDetails` trên model:
 
-    use App\Models\User;
-    use function Illuminate\Events\queueable;
+```php
+use App\Models\User;
+use function Illuminate\Events\queueable;
 
-    /**
-     * The "booted" method of the model.
-     */
-    protected static function booted(): void
-    {
-        static::updated(queueable(function (User $customer) {
-            if ($customer->hasStripeId()) {
-                $customer->syncStripeCustomerDetails();
-            }
-        }));
-    }
+/**
+ * The "booted" method of the model.
+ */
+protected static function booted(): void
+{
+    static::updated(queueable(function (User $customer) {
+        if ($customer->hasStripeId()) {
+            $customer->syncStripeCustomerDetails();
+        }
+    }));
+}
+```
 
 Bây giờ, mỗi khi model khách hàng của bạn được cập nhật, thông tin của nó sẽ được đồng bộ với Stripe. Để thuận tiện, Cashier sẽ tự động đồng bộ thông tin khách hàng của bạn với Stripe khi tạo khách hàng.
 
 Bạn có thể tùy chỉnh các cột được sử dụng để đồng bộ thông tin khách hàng với Stripe bằng cách ghi đè nhiều phương thức do Cashier cung cấp. Ví dụ: bạn có thể ghi đè phương thức `stripeName` để tùy chỉnh thuộc tính sẽ được coi là "tên" của khách hàng khi Cashier đồng bộ thông tin khách hàng với Stripe:
 
-    /**
-     * Get the customer name that should be synced to Stripe.
-     */
-    public function stripeName(): string|null
-    {
-        return $this->company_name;
-    }
+```php
+/**
+ * Get the customer name that should be synced to Stripe.
+ */
+public function stripeName(): string|null
+{
+    return $this->company_name;
+}
+```
 
-Tương tự, bạn có thể ghi đè các phương thức `stripeEmail`, `stripePhone`, `stripeAddress` và `stripePreferredLocales`. Các phương thức này sẽ đồng bộ thông tin khách hàng với các tham số khách hàng tương ứng khi [cập nhật đối tượng khách hàng Stripe](https://stripe.com/docs/api/customers/update). Nếu bạn muốn kiểm soát hoàn toàn quy trình đồng hóa thông tin khách hàng này, bạn có thể ghi đè phương thức `syncStripeCustomerDetails`.
+Tương tự, bạn có thể ghi đè các phương thức `stripeEmail`, `stripePhone` (Tối đa 20 ký tự), `stripeAddress` và `stripePreferredLocales`. Các phương thức này sẽ đồng bộ thông tin khách hàng với các tham số khách hàng tương ứng khi [cập nhật đối tượng khách hàng Stripe](https://stripe.com/docs/api/customers/update). Nếu bạn muốn kiểm soát hoàn toàn quy trình đồng hóa thông tin khách hàng này, bạn có thể ghi đè phương thức `syncStripeCustomerDetails`.
 
 <a name="billing-portal"></a>
 ### Cổng thanh toán
 
 Stripe cung cấp [một cách dễ dàng để thiết lập một cổng thanh toán](https://stripe.com/docs/billing/subscriptions/customer-portal) để customer của bạn có thể quản lý subscription, phương thức thanh toán và xem lại lịch sử thanh toán của họ. Bạn có thể chuyển hướng người dùng của bạn đến cổng thanh toán bằng cách gọi phương thức `redirectToBillingPortal` trên billable model từ controller hoặc route:
 
-    use Illuminate\Http\Request;
+```php
+use Illuminate\Http\Request;
 
-    Route::get('/billing-portal', function (Request $request) {
-        return $request->user()->redirectToBillingPortal();
-    });
+Route::get('/billing-portal', function (Request $request) {
+    return $request->user()->redirectToBillingPortal();
+});
+```
 
 Mặc định, khi người dùng kết thúc việc quản lý subscription của họ, họ sẽ có thể quay lại route `home` của ứng dụng của bạn thông qua một link trong cổng thanh toán Stripe. Bạn có thể cung cấp URL tùy biến mà người dùng sẽ được quay lại bằng cách truyền URL làm tham số cho phương thức `redirectToBillingPortal`:
 
-    use Illuminate\Http\Request;
+```php
+use Illuminate\Http\Request;
 
-    Route::get('/billing-portal', function (Request $request) {
-        return $request->user()->redirectToBillingPortal(route('billing'));
-    });
+Route::get('/billing-portal', function (Request $request) {
+    return $request->user()->redirectToBillingPortal(route('billing'));
+});
+```
 
 Nếu bạn muốn tạo URL cho cổng thanh toán mà không cần phải tạo response chuyển hướng HTTP, bạn có thể gọi phương thức `billingPortalUrl`:
 
-    $url = $user->billingPortalUrl(route('billing'));
+```php
+$url = $request->user()->billingPortalUrl(route('billing'));
+```
 
 <a name="payment-methods"></a>
 ## Phương thức thanh toán
@@ -594,9 +656,11 @@ Nếu bạn muốn tạo URL cho cổng thanh toán mà không cần phải tạ
 
 Khi lưu trữ thông tin thẻ tín dụng của khách hàng để đăng ký sử dụng trong tương lai, "Setup Intent" của Stripe API sẽ phải được sử dụng để thu thập thông tin chi tiết về phương thức thanh toán của khách hàng. "Setup Intent" cho biết ý định tính phí phương thức thanh toán của khách hàng. Trait `Billable` của Cashier có chứa một phương thức `createSetupIntent` để dễ dàng tạo một Setup Intent mới. Bạn nên gọi phương thức này từ route hoặc controller sẽ hiển thị form thu thập chi tiết phương thức thanh toán cho khách hàng của bạn:
 
-    return view('update-payment-method', [
-        'intent' => $user->createSetupIntent()
-    ]);
+```php
+return view('update-payment-method', [
+    'intent' => $user->createSetupIntent()
+]);
+```
 
 Sau khi bạn đã tạo xong Setup Intent và truyền nó đến view, bạn nên gắn secret của intent đó vào trong element sẽ thu thập phương thức thanh toán. Ví dụ: hãy xem xét form "cập nhật phương thức thanh toán" này:
 
@@ -715,51 +779,69 @@ Nếu thẻ được xác minh thành công, bạn có thể truyền `paymentMe
 
 Phương thức `PaymentMethods` trên instance billable model sẽ trả về một collection các instance `Laravel\Cashier\PaymentMethod`:
 
-    $paymentMethods = $user->paymentMethods();
+```php
+$paymentMethods = $user->paymentMethods();
+```
 
 Mặc định, phương thức này sẽ trả về tất cả các phương thức thanh toán của các loại. Để lấy ra phương thức thanh toán của một loại cụ thể, bạn có thể chuyển `type` làm tham số cho phương thức:
 
-    $paymentMethods = $user->paymentMethods('sepa_debit');
+```php
+$paymentMethods = $user->paymentMethods('sepa_debit');
+```
 
 Để lấy phương thức thanh toán mặc định của customer, phương thức `defaultPaymentMethod` có thể được sử dụng:
 
-    $paymentMethod = $user->defaultPaymentMethod();
+```php
+$paymentMethod = $user->defaultPaymentMethod();
+```
 
 Bạn có thể lấy ra một phương thức thanh toán cụ thể mà được gắn với một billable model bằng cách sử dụng phương thức `findPaymentMethod`:
 
-    $paymentMethod = $user->findPaymentMethod($paymentMethodId);
+```php
+$paymentMethod = $user->findPaymentMethod($paymentMethodId);
+```
 
 <a name="payment-method-presence"></a>
 ### Phương thức thanh toán hiện có
 
 Để xác định xem một billable model có phương thức thanh toán mặc định được gắn với tài khoản của họ hay không, hãy gọi phương thức `hasDefaultPaymentMethod`:
 
-    if ($user->hasDefaultPaymentMethod()) {
-        // ...
-    }
+```php
+if ($user->hasDefaultPaymentMethod()) {
+    // ...
+}
+```
 
 Bạn có thể sử dụng phương thức `hasPaymentMethod` để xác định xem billable model có ít nhất một phương thức thanh toán được gắn với tài khoản của họ hay không:
 
-    if ($user->hasPaymentMethod()) {
-        // ...
-    }
+```php
+if ($user->hasPaymentMethod()) {
+    // ...
+}
+```
 
 Phương thức này sẽ xác định xem billable model có bất kỳ phương thức thanh toán nào hay không. Để xác định xem một phương thức thanh toán của một loại cụ thể có tồn tại cho model hay không, bạn có thể chuyển `type` làm tham số cho phương thức:
 
-    if ($user->hasPaymentMethod('sepa_debit')) {
-        // ...
-    }
+```php
+if ($user->hasPaymentMethod('sepa_debit')) {
+    // ...
+}
+```
 
 <a name="updating-the-default-payment-method"></a>
 ### Cập nhật phương thức thanh toán mặc định
 
 Phương thức `updateDefaultPaymentMethod` có thể được sử dụng để cập nhật thông tin về phương thức thanh toán mặc định của khách hàng. Phương thức này chấp nhận một identifier phương thức thanh toán của Stripe và sẽ gắn phương thức thanh toán mới làm phương thức thanh toán hóa đơn mặc định:
 
-    $user->updateDefaultPaymentMethod($paymentMethod);
+```php
+$user->updateDefaultPaymentMethod($paymentMethod);
+```
 
 Để đồng bộ thông tin phương thức thanh toán mặc định của bạn với thông tin phương thức thanh toán mặc định của khách hàng trong Stripe, bạn có thể sử dụng phương thức `updateDefaultPaymentMethodFromStripe`:
 
-    $user->updateDefaultPaymentMethodFromStripe();
+```php
+$user->updateDefaultPaymentMethodFromStripe();
+```
 
 > [!WARNING]
 > Phương thức thanh toán mặc định của khách hàng chỉ có thể được sử dụng để lập hóa đơn và tạo một subscription mới. Do những hạn chế áp đặt bởi Stripe, nó sẽ không thể được sử dụng cho các khoản tính phí một lần.
@@ -769,7 +851,9 @@ Phương thức `updateDefaultPaymentMethod` có thể được sử dụng đ�
 
 Để thêm một phương thức thanh toán mới, bạn có thể gọi phương thức `addPaymentMethod` trên một model billable model, và truyền identifier phương thức thanh toán:
 
-    $user->addPaymentMethod($paymentMethod);
+```php
+$user->addPaymentMethod($paymentMethod);
+```
 
 > [!NOTE]
 > Để tìm hiểu cách lấy identifier phương thức thanh toán, vui lòng xem lại [tài liệu lưu trữ phương thức thanh toán](#storing-payment-methods).
@@ -779,19 +863,27 @@ Phương thức `updateDefaultPaymentMethod` có thể được sử dụng đ�
 
 Để xóa một phương thức thanh toán, bạn có thể gọi phương thức `delete` trên instance `Laravel\Cashier\PaymentMethod` mà bạn muốn xóa:
 
-    $paymentMethod->delete();
+```php
+$paymentMethod->delete();
+```
 
 Phương thức `deletePaymentMethod` sẽ xóa một phương thức thanh toán cụ thể ra khỏi billable model:
 
-    $user->deletePaymentMethod('pm_visa');
+```php
+$user->deletePaymentMethod('pm_visa');
+```
 
 Phương thức `deletePaymentMethods` sẽ xóa tất cả thông tin về phương thức thanh toán cho một billable model:
 
-    $user->deletePaymentMethods();
+```php
+$user->deletePaymentMethods();
+```
 
 Mặc định, phương thức này sẽ xóa tất cả các phương thức thanh toán của các loại. Để xóa tất cả các phương thức thanh toán thuộc một loại cụ thể, bạn có thể chuyển `type` làm tham số cho phương thức:
 
-    $user->deletePaymentMethods('sepa_debit');
+```php
+$user->deletePaymentMethods('sepa_debit');
+```
 
 > [!WARNING]
 >  Nếu người dùng có một subscription đang hoạt động, ứng dụng của bạn không nên cho phép họ xóa phương thức thanh toán mặc định của họ.
@@ -806,15 +898,17 @@ Subscription cung cấp một cách để thiết lập thanh toán định kỳ
 
 Để tạo một subscription, trước tiên hãy lấy ra một instance billable model của bạn, thường là một instance của `App\Models\User`. Khi bạn đã lấy được instance của model, bạn có thể sử dụng phương thức `newSubscription` để tạo ra một subscription cho model:
 
-    use Illuminate\Http\Request;
+```php
+use Illuminate\Http\Request;
 
-    Route::post('/user/subscribe', function (Request $request) {
-        $request->user()->newSubscription(
-            'default', 'price_monthly'
-        )->create($request->paymentMethodId);
+Route::post('/user/subscribe', function (Request $request) {
+    $request->user()->newSubscription(
+        'default', 'price_monthly'
+    )->create($request->paymentMethodId);
 
-        // ...
-    });
+    // ...
+});
+```
 
 Tham số đầu tiên được truyền đến phương thức `newSubscription` phải là loại internal của subscription. Nếu ứng dụng của bạn chỉ cung cấp một loại subscription, bạn có thể gọi nó là `default` hoặc `primary`. Loại subscription này chỉ dành cho việc sử dụng trong ứng dụng và không nhằm mục đích hiển thị cho người dùng. Ngoài ra, nó không được chứa khoảng trắng và nó cũng không được thay đổi sau khi tạo subscription. Tham số thứ hai là giá cụ thể mà người dùng đang subscription. Giá trị này phải tương ứng với identifier của giá trong Stripe.
 
@@ -828,86 +922,110 @@ Phương thức `create` sẽ chấp nhận [một identifier phương thức th
 
 Thay vì tự động thu các khoản thanh toán định kỳ của khách hàng, bạn có thể hướng dẫn Stripe gửi hóa đơn qua email cho khách hàng mỗi khi khoản thanh toán định kỳ của khách hàng đến hạn. Sau đó, khách hàng có thể thanh toán hóa đơn theo cách thủ công khi khách hàng nhận được hóa đơn. Khách hàng sẽ không cần phải cung cấp phương thức thanh toán khi nhận các khoản thanh toán định kỳ qua hóa đơn:
 
-    $user->newSubscription('default', 'price_monthly')->createAndSendInvoice();
+```php
+$user->newSubscription('default', 'price_monthly')->createAndSendInvoice();
+```
 
 Về thời gian khách hàng phải thanh toán hóa đơn trước khi gói đăng ký của họ bị hủy được xác định tùy chọn `days_until_due`. Mặc định, thời gian đó sẽ là 30 ngày; tuy nhiên, bạn có thể cung cấp một giá trị cụ thể cho tùy chọn này nếu muốn:
 
-    $user->newSubscription('default', 'price_monthly')->createAndSendInvoice([], [
-        'days_until_due' => 30
-    ]);
+```php
+$user->newSubscription('default', 'price_monthly')->createAndSendInvoice([], [
+    'days_until_due' => 30
+]);
+```
 
 <a name="subscription-quantities"></a>
 #### Quantities
 
 Nếu muốn set [số lượng](https://stripe.com/docs/billing/subscriptions/quantities) cụ thể cho gói subscription, bạn nên gọi phương thức `quantity` trên subscription builder trước khi tạo subscription:
 
-    $user->newSubscription('default', 'price_monthly')
-        ->quantity(5)
-        ->create($paymentMethod);
+```php
+$user->newSubscription('default', 'price_monthly')
+    ->quantity(5)
+    ->create($paymentMethod);
+```
 
 <a name="additional-details"></a>
 #### Additional Details
 
 Nếu bạn muốn thêm chi tiết về các tùy chọn [customer](https://stripe.com/docs/api/customers/create) hoặc [subscription](https://stripe.com/docs/api/subscriptions/create) được hỗ trợ bởi Stripe, bạn có thể làm bằng cách truyền chúng làm tham số thứ hai và tham số thứ ba cho phương thức `create`:
 
-    $user->newSubscription('default', 'price_monthly')->create($paymentMethod, [
-        'email' => $email,
-    ], [
-        'metadata' => ['note' => 'Some extra information.'],
-    ]);
+```php
+$user->newSubscription('default', 'price_monthly')->create($paymentMethod, [
+    'email' => $email,
+], [
+    'metadata' => ['note' => 'Some extra information.'],
+]);
+```
 
 <a name="coupons"></a>
 #### Coupons
 
 Nếu bạn muốn áp dụng phiếu giảm giá khi tạo subscription, bạn có thể sử dụng phương thức `withCoupon`:
 
-    $user->newSubscription('default', 'price_monthly')
-        ->withCoupon('code')
-        ->create($paymentMethod);
+```php
+$user->newSubscription('default', 'price_monthly')
+    ->withCoupon('code')
+    ->create($paymentMethod);
+```
 
 Hoặc, nếu bạn muốn áp dụng [mã khuyến mại Stripe](https://stripe.com/docs/billing/subscriptions/discounts/codes), bạn có thể sử dụng phương thức `withPromotionCode`:
 
-    $user->newSubscription('default', 'price_monthly')
-        ->withPromotionCode('promo_code_id')
-        ->create($paymentMethod);
+```php
+$user->newSubscription('default', 'price_monthly')
+    ->withPromotionCode('promo_code_id')
+    ->create($paymentMethod);
+```
 
 ID mã khuyến mại đã cho phải là ID của API Stripe được gán cho mã khuyến mại chứ không phải mã khuyến mại dành cho khách hàng. Nếu bạn cần tìm ID mã khuyến mãi dựa theo mã khuyến mãi mà khách hàng nhập vào, bạn có thể sử dụng phương thức `findPromotionCode`:
 
-    // Find a promotion code ID by its customer facing code...
-    $promotionCode = $user->findPromotionCode('SUMMERSALE');
+```php
+// Find a promotion code ID by its customer facing code...
+$promotionCode = $user->findPromotionCode('SUMMERSALE');
 
-    // Find an active promotion code ID by its customer facing code...
-    $promotionCode = $user->findActivePromotionCode('SUMMERSALE');
+// Find an active promotion code ID by its customer facing code...
+$promotionCode = $user->findActivePromotionCode('SUMMERSALE');
+```
 
 Trong ví dụ trên, đối tượng `$promotionCode` được trả về là một instance của `Laravel\Cashier\PromotionCode`. Class này có một đối tượng `Stripe\PromotionCode` bên dưới. Bạn có thể lấy ra phiếu giảm giá liên quan đến mã khuyến mãi này bằng cách gọi phương thức `coupon`:
 
-    $coupon = $user->findPromotionCode('SUMMERSALE')->coupon();
+```php
+$coupon = $user->findPromotionCode('SUMMERSALE')->coupon();
+```
 
 Instance phiếu giảm giá này cho phép bạn xác định xem số tiền được giảm là bao nhiêu và phiếu giảm giá này là phiếu giảm giá theo mức cố định hay là giảm giá dựa theo tỷ lệ phần trăm:
 
-    if ($coupon->isPercentage()) {
-        return $coupon->percentOff().'%'; // 21.5%
-    } else {
-        return $coupon->amountOff(); // $5.99
-    }
+```php
+if ($coupon->isPercentage()) {
+    return $coupon->percentOff().'%'; // 21.5%
+} else {
+    return $coupon->amountOff(); // $5.99
+}
+```
 
 Bạn cũng có thể lấy ra các khoản giảm giá hiện đang được áp dụng cho khách hàng hoặc subscription:
 
-    $discount = $billable->discount();
+```php
+$discount = $billable->discount();
 
-    $discount = $subscription->discount();
+$discount = $subscription->discount();
+```
 
 Các instance `Laravel\Cashier\Discount` được trả về có một instance đối tượng `Stripe\Discount` bên dưới. Bạn có thể lấy ra phiếu giảm giá liên quan đến đợt giảm giá này bằng cách gọi phương thức `coupon`:
 
-    $coupon = $subscription->discount()->coupon();
+```php
+$coupon = $subscription->discount()->coupon();
+```
 
 Nếu bạn muốn áp dụng một phiếu giảm giá hoặc một mã khuyến mãi mới cho một khách hàng hoặc một đăng ký, bạn có thể thực hiện việc này thông qua các phương thức `applyCoupon` hoặc `applyPromotionCode`:
 
-    $billable->applyCoupon('coupon_id');
-    $billable->applyPromotionCode('promotion_code_id');
+```php
+$billable->applyCoupon('coupon_id');
+$billable->applyPromotionCode('promotion_code_id');
 
-    $subscription->applyCoupon('coupon_id');
-    $subscription->applyPromotionCode('promotion_code_id');
+$subscription->applyCoupon('coupon_id');
+$subscription->applyPromotionCode('promotion_code_id');
+```
 
 Hãy nhớ rằng bạn nên sử dụng ID của API Stripe được gán cho mã khuyến mãi chứ không phải mã khuyến mãi mà khách hàng nhập vào. Chỉ có thể áp dụng một phiếu giảm giá hoặc mã khuyến mãi cho một khách hàng hoặc một subscription tại một thời điểm nhất định.
 
@@ -918,11 +1036,13 @@ Hãy nhớ rằng bạn nên sử dụng ID của API Stripe được gán cho m
 
 Nếu bạn muốn thêm một subscription cho một khách hàng đã có sẵn phương thức thanh toán mặc định, bạn có thể gọi phương thức `add` trên subscription builder:
 
-    use App\Models\User;
+```php
+use App\Models\User;
 
-    $user = User::find(1);
+$user = User::find(1);
 
-    $user->newSubscription('default', 'price_monthly')->add();
+$user->newSubscription('default', 'price_monthly')->add();
+```
 
 <a name="creating-subscriptions-from-the-stripe-dashboard"></a>
 #### Creating Subscriptions From The Stripe Dashboard
@@ -938,67 +1058,81 @@ Cuối cùng, bạn phải luôn đảm bảo chỉ thêm một active đăng k�
 
 Khi customer đã subscription vào application của bạn, bạn có thể dễ dàng kiểm tra trạng thái subscription của họ bằng nhiều phương thức thuận tiện khác nhau. Đầu tiên, phương thức `subscribed` sẽ trả về `true` nếu customer đó có active subscription, ngay cả khi subscription hiện tại đang trong thời gian dùng thử. Phương thức `subscribed` chấp nhận loại của subscription làm tham số đầu tiên của nó:
 
-    if ($user->subscribed('default')) {
-        // ...
-    }
+```php
+if ($user->subscribed('default')) {
+    // ...
+}
+```
 
 Phương thức `subscribed` cũng là một cách tuyệt vời cho một [route middleware](/docs/{{version}}/middleware), cho phép bạn lọc quyền truy cập vào các route hoặc các controller dựa trên trạng thái subscription của người dùng:
 
-    <?php
+```php
+<?php
 
-    namespace App\Http\Middleware;
+namespace App\Http\Middleware;
 
-    use Closure;
-    use Illuminate\Http\Request;
-    use Symfony\Component\HttpFoundation\Response;
+use Closure;
+use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Response;
 
-    class EnsureUserIsSubscribed
+class EnsureUserIsSubscribed
+{
+    /**
+     * Handle an incoming request.
+     *
+     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
+     */
+    public function handle(Request $request, Closure $next): Response
     {
-        /**
-         * Handle an incoming request.
-         *
-         * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
-         */
-        public function handle(Request $request, Closure $next): Response
-        {
-            if ($request->user() && ! $request->user()->subscribed('default')) {
-                // This user is not a paying customer...
-                return redirect('/billing');
-            }
-
-            return $next($request);
+        if ($request->user() && ! $request->user()->subscribed('default')) {
+            // This user is not a paying customer...
+            return redirect('/billing');
         }
+
+        return $next($request);
     }
+}
+```
 
 Nếu bạn muốn xác định xem người dùng đó có còn trong thời gian dùng thử hay không, bạn có thể sử dụng phương thức `onTrial`. Phương thức này có thể hữu ích để xác định xem bạn có nên hiển thị cảnh báo cho người dùng biết rằng họ vẫn đang trong thời gian dùng thử:
 
-    if ($user->subscription('default')->onTrial()) {
-        // ...
-    }
+```php
+if ($user->subscription('default')->onTrial()) {
+    // ...
+}
+```
 
 Phương thức `subscribedToProduct` có thể được sử dụng để xác định xem người dùng có đăng ký một sản phẩm nhất định hay không dựa vào identifier của sản phẩm Stripe đó. Trong Stripe, các sản phẩm là tập hợp giá. Trong ví dụ này, chúng ta sẽ xác định xem đăng ký `default` của người dùng đang active đăng ký sản phẩm "premium" trong ứng dụng của chúng ta hay không. Identifier sản phẩm Stripe nhất định phải tương ứng với một trong các identifier sản phẩm có trong bảng điều khiển Stripe:
 
-    if ($user->subscribedToProduct('prod_premium', 'default')) {
-        // ...
-    }
+```php
+if ($user->subscribedToProduct('prod_premium', 'default')) {
+    // ...
+}
+```
 
 Bằng cách truyền một mảng cho phương thức `subscribedToProduct`, bạn có thể xác định xem đăng ký `default` của người dùng có active đăng ký các sản phẩm "basic" hay "premium" của ứng dụng hay không:
 
-    if ($user->subscribedToProduct(['prod_basic', 'prod_premium'], 'default')) {
-        // ...
-    }
+```php
+if ($user->subscribedToProduct(['prod_basic', 'prod_premium'], 'default')) {
+    // ...
+}
+```
 
 Phương thức `subscribedToPrice` có thể được sử dụng để xác định xem đăng ký của khách hàng có tương ứng với một ID giá hay không:
 
-    if ($user->subscribedToPrice('price_basic_monthly', 'default')) {
-        // ...
-    }
+```php
+if ($user->subscribedToPrice('price_basic_monthly', 'default')) {
+    // ...
+}
+```
 
 Phương thức `recurring` có thể được sử dụng để xác định xem người dùng hiện tại có đang đăng ký và không còn trong thời gian dùng thử hay không:
 
-    if ($user->subscription('default')->recurring()) {
-        // ...
-    }
+```php
+if ($user->subscription('default')->recurring()) {
+    // ...
+}
+```
 
 > [!WARNING]
 > Nếu người dùng có hai subscription cùng loại, thì subscription gần đây nhất sẽ luôn được trả về bằng phương thức `subscription`. Ví dụ: một người dùng có thể có hai record subscription có loại `default`; tuy nhiên, một trong các subscription có thể là subscription cũ và đã hết hạn, trong khi subscription còn lại là subscription hiện tại và đang hoạt động. Subscription gần đây nhất sẽ luôn được trả lại trong khi các subscription cũ hơn sẽ được lưu trong cơ sở dữ liệu để xem lại lịch sử.
@@ -1008,21 +1142,27 @@ Phương thức `recurring` có thể được sử dụng để xác định xe
 
 Để xác định xem người dùng đã từng có subscription nhưng đã bị hủy đăng ký đó hay không, bạn có thể sử dụng phương thức `canceled`:
 
-    if ($user->subscription('default')->canceled()) {
-        // ...
-    }
+```php
+if ($user->subscription('default')->canceled()) {
+    // ...
+}
+```
 
 Bạn cũng có thể xác định xem người dùng đã hủy subscription của họ hay chưa, hay vẫn còn trong "thời gian có hiệu lực" cho đến khi subscription hết hạn. Ví dụ: nếu người dùng hủy subscription vào ngày 5 tháng 3 mà dự kiến ban đầu là sẽ hết hạn vào ngày 10 tháng 3, thì người dùng sẽ ở trong "thời gian có hiệu lực" của họ cho đến ngày 10 tháng 3. Lưu ý rằng phương thức `subscribed` vẫn trả về `true` trong thời gian này:
 
-    if ($user->subscription('default')->onGracePeriod()) {
-        // ...
-    }
+```php
+if ($user->subscription('default')->onGracePeriod()) {
+    // ...
+}
+```
 
 Để xác định xem người dùng đã hủy subscription và không còn trong "thời gian subscription" của họ, bạn có thể sử dụng phương thức `ended`:
 
-    if ($user->subscription('default')->ended()) {
-         // ...
-    }
+```php
+if ($user->subscription('default')->ended()) {
+    // ...
+}
+```
 
 <a name="incomplete-and-past-due-status"></a>
 #### Incomplete and Past Due Status
@@ -1031,13 +1171,15 @@ Nếu subscription yêu cầu một hành động thanh toán phụ sau khi đư
 
 Tương tự, nếu hành động thanh toán phụ được yêu cầu khi hoán đổi prices subscription sẽ được đánh dấu là `past_due`. Khi subscription của bạn ở một trong hai trạng thái này, subscription sẽ không được active cho đến khi khách hàng xác nhận thanh toán. Để xác định xem subscription có được thanh toán hay chưa, bạn có thể thực hiện bằng cách sử dụng phương thức `hasIncompletePayment` trên billable model hoặc một instance subscription:
 
-    if ($user->hasIncompletePayment('default')) {
-         // ...
-    }
+```php
+if ($user->hasIncompletePayment('default')) {
+    // ...
+}
 
-    if ($user->subscription('default')->hasIncompletePayment()) {
-         // ...
-    }
+if ($user->subscription('default')->hasIncompletePayment()) {
+    // ...
+}
+```
 
 Khi một subscription có một khoản thanh toán chưa hoàn thành, bạn nên hướng người dùng đến trang xác nhận thanh toán của Cashier, và truyền identifier của `latestPayment`. Bạn có thể sử dụng phương thức `latestPayment` có sẵn trên instance subscription để lấy identifier này:
 
@@ -1049,16 +1191,18 @@ Khi một subscription có một khoản thanh toán chưa hoàn thành, bạn n
 
 Nếu bạn muốn một subscription vẫn được coi là hoạt động khi nó ở trạng thái `past_due` hoặc trạng thái `incomplete`, bạn có thể sử dụng phương thức `keepPastDueSubscriptionsActive` và phương thức `keepIncompleteSubscriptionsActive` do Cashier cung cấp. Thông thường, phương thức này nên được gọi trong phương thức `register` trong `App\Providers\AppServiceProvider` của bạn:
 
-    use Laravel\Cashier\Cashier;
+```php
+use Laravel\Cashier\Cashier;
 
-    /**
-     * Register any application services.
-     */
-    public function register(): void
-    {
-        Cashier::keepPastDueSubscriptionsActive();
-        Cashier::keepIncompleteSubscriptionsActive();
-    }
+/**
+ * Register any application services.
+ */
+public function register(): void
+{
+    Cashier::keepPastDueSubscriptionsActive();
+    Cashier::keepIncompleteSubscriptionsActive();
+}
+```
 
 > [!WARNING]
 > Khi một subscription ở trạng thái `incomplete`, bạn sẽ không thể thay đổi subscription cho đến khi xác nhận thanh toán. Do đó, các phương thức `swap` và `updateQuantity` sẽ đưa ra một ngoại lệ khi subscription ở trạng thái `incomplete`.
@@ -1068,57 +1212,69 @@ Nếu bạn muốn một subscription vẫn được coi là hoạt động khi 
 
 Hầu hết các trạng thái subscription đều có sẵn dưới dạng query scope để bạn có thể dễ dàng truy vấn cơ sở dữ liệu của bạn để lấy ra các subscription có trạng thái nhất định:
 
-    // Get all active subscriptions...
-    $subscriptions = Subscription::query()->active()->get();
+```php
+// Get all active subscriptions...
+$subscriptions = Subscription::query()->active()->get();
 
-    // Get all of the canceled subscriptions for a user...
-    $subscriptions = $user->subscriptions()->canceled()->get();
+// Get all of the canceled subscriptions for a user...
+$subscriptions = $user->subscriptions()->canceled()->get();
+```
 
 Dưới đây là danh sách đầy đủ các scope khả dụng:
 
-    Subscription::query()->active();
-    Subscription::query()->canceled();
-    Subscription::query()->ended();
-    Subscription::query()->incomplete();
-    Subscription::query()->notCanceled();
-    Subscription::query()->notOnGracePeriod();
-    Subscription::query()->notOnTrial();
-    Subscription::query()->onGracePeriod();
-    Subscription::query()->onTrial();
-    Subscription::query()->pastDue();
-    Subscription::query()->recurring();
+```php
+Subscription::query()->active();
+Subscription::query()->canceled();
+Subscription::query()->ended();
+Subscription::query()->incomplete();
+Subscription::query()->notCanceled();
+Subscription::query()->notOnGracePeriod();
+Subscription::query()->notOnTrial();
+Subscription::query()->onGracePeriod();
+Subscription::query()->onTrial();
+Subscription::query()->pastDue();
+Subscription::query()->recurring();
+```
 
 <a name="changing-prices"></a>
 ### Thay đổi gói
 
 Sau khi khách hàng đăng ký ứng dụng của bạn, đôi khi họ có thể muốn thay đổi sang một subscription mới. Để hoán đổi một khách hàng sang một mức giá mới, hãy truyền identifier của giá Stripe cho phương thức `swap`. Khi hoán đổi giá, nó sẽ giả định rằng người dùng muốn kích hoạt lại subscription của họ nếu nó đã bị hủy trước đó. Identifier giá nhất định phải tương ứng với identifier giá Stripe có sẵn trong bảng điều khiển Stripe:
 
-    use App\Models\User;
+```php
+use App\Models\User;
 
-    $user = App\Models\User::find(1);
+$user = App\Models\User::find(1);
 
-    $user->subscription('default')->swap('price_yearly');
+$user->subscription('default')->swap('price_yearly');
+```
 
 Nếu customer đang trong thời gian dùng thử, thì thời gian dùng thử sẽ được duy trì. Ngoài ra, nếu có "nhiều" subscription tồn tại, thì những subscription đó cũng sẽ vẫn được duy trì.
 
 Nếu bạn muốn thay đổi prices và hủy tất cả các price dùng thử mà customer hiện đang sử dụng, bạn có thể gọi phương thức `skipTrial`:
 
-    $user->subscription('default')
-        ->skipTrial()
-        ->swap('price_yearly');
+```php
+$user->subscription('default')
+    ->skipTrial()
+    ->swap('price_yearly');
+```
 
 Nếu bạn muốn thay đổi prices và lập hóa đơn ngay cho customer thay vì đợi đến chu kỳ thanh toán tiếp theo của họ, bạn có thể sử dụng phương pháp `swapAndInvoice`:
 
-    $user = User::find(1);
+```php
+$user = User::find(1);
 
-    $user->subscription('default')->swapAndInvoice('price_yearly');
+$user->subscription('default')->swapAndInvoice('price_yearly');
+```
 
 <a name="prorations"></a>
 #### Prorations
 
 Mặc định, Stripe sẽ tính phí khi hoán đổi giữa các prices. Phương thức `noProrate` có thể được sử dụng để cập nhật price của subscription mà không bị tính phí:
 
-    $user->subscription('default')->noProrate()->swap('price_yearly');
+```php
+$user->subscription('default')->noProrate()->swap('price_yearly');
+```
 
 Để biết thêm thông tin về tính phí subscription, hãy tham khảo [tài liệu Stripe](https://stripe.com/docs/billing/subscriptions/prorations).
 
@@ -1130,27 +1286,33 @@ Mặc định, Stripe sẽ tính phí khi hoán đổi giữa các prices. Phư�
 
 Thỉnh thoảng subscription có thể bị ảnh hưởng bởi "số lượng". Ví dụ: một ứng dụng quản lý dự án có thể tính phí $10 mỗi tháng cho mỗi dự án. Bạn có thể sử dụng các phương thức `incrementQuantity` và `decrementQuantity` để dễ dàng tăng hoặc giảm số lượng đăng ký của bạn:
 
-    use App\Models\User;
+```php
+use App\Models\User;
 
-    $user = User::find(1);
+$user = User::find(1);
 
-    $user->subscription('default')->incrementQuantity();
+$user->subscription('default')->incrementQuantity();
 
-    // Add five to the subscription's current quantity...
-    $user->subscription('default')->incrementQuantity(5);
+// Add five to the subscription's current quantity...
+$user->subscription('default')->incrementQuantity(5);
 
-    $user->subscription('default')->decrementQuantity();
+$user->subscription('default')->decrementQuantity();
 
-    // Subtract five from the subscription's current quantity...
-    $user->subscription('default')->decrementQuantity(5);
+// Subtract five from the subscription's current quantity...
+$user->subscription('default')->decrementQuantity(5);
+```
 
 Ngoài ra, bạn cũng có thể set một số lượng cụ thể bằng phương thức `updateQuantity`:
 
-    $user->subscription('default')->updateQuantity(10);
+```php
+$user->subscription('default')->updateQuantity(10);
+```
 
 Phương thức `noProrate` có thể được sử dụng để cập nhật số lượng của subscription mà không cần chia tỷ lệ phí:
 
-    $user->subscription('default')->noProrate()->updateQuantity(10);
+```php
+$user->subscription('default')->noProrate()->updateQuantity(10);
+```
 
 Để biết thêm thông tin về số lượng đăng ký, hãy tham khảo [tài liệu của Stripe](https://stripe.com/docs/subscriptions/quantities).
 
@@ -1159,7 +1321,9 @@ Phương thức `noProrate` có thể được sử dụng để cập nhật s�
 
 Nếu subscription của bạn là [subscription nhiều sản phẩm](#subscriptions-with-multiple-products), bạn nên truyền tên của giá cùng số lượng mà bạn muốn tăng hoặc giảm làm tham số thứ hai cho các phương thức tăng hoặc giảm:
 
-    $user->subscription('default')->incrementQuantity(1, 'price_chat');
+```php
+$user->subscription('default')->incrementQuantity(1, 'price_chat');
+```
 
 <a name="subscriptions-with-multiple-products"></a>
 ### Subscription với nhiều sản phẩm
@@ -1168,44 +1332,56 @@ Nếu subscription của bạn là [subscription nhiều sản phẩm](#subscrip
 
 Bạn có thể chỉ định nhiều loại sản phẩm cho một gói subscription nhất định bằng cách truyền vào một mảng giá làm tham số thứ hai cho phương thức `newSubscription`:
 
-    use Illuminate\Http\Request;
+```php
+use Illuminate\Http\Request;
 
-    Route::post('/user/subscribe', function (Request $request) {
-        $request->user()->newSubscription('default', [
-            'price_monthly',
-            'price_chat',
-        ])->create($request->paymentMethodId);
+Route::post('/user/subscribe', function (Request $request) {
+    $request->user()->newSubscription('default', [
+        'price_monthly',
+        'price_chat',
+    ])->create($request->paymentMethodId);
 
-        // ...
-    });
+    // ...
+});
+```
 
 Trong ví dụ trên, khách hàng sẽ có hai mức giá được đính kèm với một subscription `default`. Cả hai mức giá sẽ được tính theo khoảng thời gian thanh toán tương ứng. Nếu cần, bạn có thể sử dụng thêm phương thức `quantity` để chỉ ra số lượng cụ thể cho từng mức giá:
 
-    $user = User::find(1);
+```php
+$user = User::find(1);
 
-    $user->newSubscription('default', ['price_monthly', 'price_chat'])
-        ->quantity(5, 'price_chat')
-        ->create($paymentMethod);
+$user->newSubscription('default', ['price_monthly', 'price_chat'])
+    ->quantity(5, 'price_chat')
+    ->create($paymentMethod);
+```
 
 Nếu bạn muốn thêm một mức giá khác vào trong một subscription có sẵn, bạn có thể gọi phương thức `addPrice` của subscription:
 
-    $user = User::find(1);
+```php
+$user = User::find(1);
 
-    $user->subscription('default')->addPrice('price_chat');
+$user->subscription('default')->addPrice('price_chat');
+```
 
 Ví dụ trên sẽ thêm price mới và khách hàng sẽ phải thanh toán cho price đó vào chu kỳ thanh toán tiếp theo của họ. Nếu bạn muốn lập hóa đơn ngay cho khách hàng, bạn có thể sử dụng phương thức `addPriceAndInvoice`:
 
-    $user->subscription('default')->addPriceAndInvoice('price_chat');
+```php
+$user->subscription('default')->addPriceAndInvoice('price_chat');
+```
 
 Nếu bạn muốn thêm một price với một số lượng cụ thể, bạn có thể truyền số lượng đó làm tham số thứ hai của phương thức `addPrice` hoặc `addPriceAndInvoice`:
 
-    $user = User::find(1);
+```php
+$user = User::find(1);
 
-    $user->subscription('default')->addPrice('price_chat', 5);
+$user->subscription('default')->addPrice('price_chat', 5);
+```
 
 Bạn có thể xóa giá ra khỏi subscription bằng phương thức `removePrice`:
 
-    $user->subscription('default')->removePrice('price_chat');
+```php
+$user->subscription('default')->removePrice('price_chat');
+```
 
 > [!WARNING]
 > Bạn không thể xóa cái giá cuối cùng còn lại trông một subscription. Thay vào đó, bạn chỉ cần hủy subscription.
@@ -1215,50 +1391,60 @@ Bạn có thể xóa giá ra khỏi subscription bằng phương thức `removeP
 
 Bạn cũng có thể thay đổi giá mà được đính kèm trong subscription nhiều sản phẩm. Ví dụ: hãy tưởng tượng một khách hàng có thể đăng ký `price_basic` với thêm một sản phẩm bổ sung `price_chat` và bạn muốn nâng cấp khách hàng từ `price_basic` lên giá `price_pro`:
 
-    use App\Models\User;
+```php
+use App\Models\User;
 
-    $user = User::find(1);
+$user = User::find(1);
 
-    $user->subscription('default')->swap(['price_pro', 'price_chat']);
+$user->subscription('default')->swap(['price_pro', 'price_chat']);
+```
 
 Khi thực hiện ví dụ ở trên, subscription item với `price_basic` sẽ bị xóa và subscription item mà có `price_chat` sẽ vẫn được giữ nguyên. Ngoài ra, một subscription item mới cho `price_pro` sẽ được tạo ra.
 
 Bạn cũng có thể chỉ định thêm các tùy chọn cho subscription item bằng cách truyền vào một mảng gồm các cặp key và giá trị cho phương thức `swap`. Ví dụ: bạn có thể cần chỉ định thêm số lượng price subscription:
 
-    $user = User::find(1);
+```php
+$user = User::find(1);
 
-    $user->subscription('default')->swap([
-        'price_pro' => ['quantity' => 5],
-        'price_chat'
-    ]);
+$user->subscription('default')->swap([
+    'price_pro' => ['quantity' => 5],
+    'price_chat'
+]);
+```
 
 Nếu bạn muốn thay đổi một giá duy nhất trên một subscription, bạn có thể thực hiện việc này bằng cách sử dụng phương thức `swap` trên chính subscription item đó. Cách tiếp cận này đặc biệt hữu ích nếu bạn muốn giữ lại tất cả các dữ liệu hiện có trên các giá khác của subscription:
 
-    $user = User::find(1);
+```php
+$user = User::find(1);
 
-    $user->subscription('default')
-        ->findItemOrFail('price_basic')
-        ->swap('price_pro');
+$user->subscription('default')
+    ->findItemOrFail('price_basic')
+    ->swap('price_pro');
+```
 
 <a name="proration"></a>
 #### Proration
 
 Mặc định, Stripe sẽ tính phí theo tỷ lệ khi thêm hoặc xóa price ra khỏi một subscription mà đăng ký nhiều sản phẩm. Nếu bạn muốn thực hiện điều chỉnh một price mà không cần theo tỷ lệ, bạn nên kết hợp thêm phương thức `noProrate` vào code thay đổi price của bạn:
 
-    $user->subscription('default')->noProrate()->removePrice('price_chat');
+```php
+$user->subscription('default')->noProrate()->removePrice('price_chat');
+```
 
 <a name="swapping-quantities"></a>
 #### Quantities
 
 Nếu bạn muốn cập nhật số lượng price trên các subscription riêng lẻ, bạn có thể thực hiện việc này bằng cách sử dụng [phương thức quantity](#subscription-quantity) và truyền thêm ID của price đó làm tham số cho phương thức:
 
-    $user = User::find(1);
+```php
+$user = User::find(1);
 
-    $user->subscription('default')->incrementQuantity(5, 'price_chat');
+$user->subscription('default')->incrementQuantity(5, 'price_chat');
 
-    $user->subscription('default')->decrementQuantity(3, 'price_chat');
+$user->subscription('default')->decrementQuantity(3, 'price_chat');
 
-    $user->subscription('default')->updateQuantity(10, 'price_chat');
+$user->subscription('default')->updateQuantity(10, 'price_chat');
+```
 
 > [!WARNING]
 > Khi một subscription có nhiều giá, thì các thuộc tính `stripe_price` và `quantity` trên model `Subscription` sẽ là `null`. Để truy cập vào một thuộc tính giá cụ thể, bạn nên sử dụng quan hệ `items` có sẵn trên model `Subscription`.
@@ -1268,21 +1454,25 @@ Nếu bạn muốn cập nhật số lượng price trên các subscription riê
 
 Khi một subscription có nhiều price, nó sẽ có nhiều subscription "items" được lưu trữ trong bảng `subscription_items` trong cơ sở dữ liệu của bạn. Bạn có thể truy cập vào những thứ này thông qua quan hệ `items` trên subscription:
 
-    use App\Models\User;
+```php
+use App\Models\User;
 
-    $user = User::find(1);
+$user = User::find(1);
 
-    $subscriptionItem = $user->subscription('default')->items->first();
+$subscriptionItem = $user->subscription('default')->items->first();
 
-    // Retrieve the Stripe price and quantity for a specific item...
-    $stripePrice = $subscriptionItem->stripe_price;
-    $quantity = $subscriptionItem->quantity;
+// Retrieve the Stripe price and quantity for a specific item...
+$stripePrice = $subscriptionItem->stripe_price;
+$quantity = $subscriptionItem->quantity;
+```
 
 Bạn cũng có thể lấy ra một price cụ thể bằng phương thức `findItemOrFail`:
 
-    $user = User::find(1);
+```php
+$user = User::find(1);
 
-    $subscriptionItem = $user->subscription('default')->findItemOrFail('price_chat');
+$subscriptionItem = $user->subscription('default')->findItemOrFail('price_chat');
+```
 
 <a name="multiple-subscriptions"></a>
 ### Multiple Subscriptions
@@ -1291,23 +1481,29 @@ Stripe cho phép khách hàng của bạn có thể subscription nhiều loại 
 
 Khi ứng dụng của bạn tạo các đăng ký, bạn có thể cung cấp loại của đăng ký cho phương thức `newSubscription`. Loại có thể là bất kỳ chuỗi nào mà đại diện cho loại đăng ký mà người dùng đang muốn sử dụng:
 
-    use Illuminate\Http\Request;
+```php
+use Illuminate\Http\Request;
 
-    Route::post('/swimming/subscribe', function (Request $request) {
-        $request->user()->newSubscription('swimming')
-            ->price('price_swimming_monthly')
-            ->create($request->paymentMethodId);
+Route::post('/swimming/subscribe', function (Request $request) {
+    $request->user()->newSubscription('swimming')
+        ->price('price_swimming_monthly')
+        ->create($request->paymentMethodId);
 
-        // ...
-    });
+    // ...
+});
+```
 
 Trong ví dụ trên, chúng ta đã đăng ký bơi hàng tháng cho khách hàng. Nhưng, sau này có thể họ muốn chuyển sang đăng ký theo dạng hàng năm. Khi điều chỉnh đăng ký của khách hàng, chúng ta có thể chỉ cần hoán đổi giá của đăng ký `swimming`:
 
-    $user->subscription('swimming')->swap('price_swimming_yearly');
+```php
+$user->subscription('swimming')->swap('price_swimming_yearly');
+```
 
 Tất nhiên, bạn cũng có thể hủy đăng ký:
 
-    $user->subscription('swimming')->cancel();
+```php
+$user->subscription('swimming')->cancel();
+```
 
 <a name="usage-based-billing"></a>
 ### Thanh toán theo mức độ sử dụng
@@ -1316,57 +1512,69 @@ Tất nhiên, bạn cũng có thể hủy đăng ký:
 
 Để bắt đầu sử dụng thanh toán theo mức độ sử dụng, trước tiên bạn cần tạo ra một sản phẩm mới trong bảng điều khiển Stripe của bạn cùng với một [billing model dựa trên mức sử dụng](https://docs.stripe.com/billing/subscriptions/usage-based/implementation-guide) và một [bộ đo](https://docs.stripe.com/billing/subscriptions/usage-based/recording-usage#configure-meter). Sau khi tạo bộ đo, hãy lưu tên event và ID bộ đo, những thông tin bạn sẽ cần để báo cáo và lấy ra mức sử dụng. Sau đó, sử dụng phương thức `meteredPrice` để thêm ID của giá đo lường vào đăng ký của khách hàng:
 
-    use Illuminate\Http\Request;
+```php
+use Illuminate\Http\Request;
 
-    Route::post('/user/subscribe', function (Request $request) {
-        $request->user()->newSubscription('default')
-            ->meteredPrice('price_metered')
-            ->create($request->paymentMethodId);
+Route::post('/user/subscribe', function (Request $request) {
+    $request->user()->newSubscription('default')
+        ->meteredPrice('price_metered')
+        ->create($request->paymentMethodId);
 
-        // ...
-    });
+    // ...
+});
+```
 
 Bạn cũng có thể bắt đầu subscription theo đo lường thông qua [Stripe Checkout](#checkout):
 
-    $checkout = Auth::user()
-        ->newSubscription('default', [])
-        ->meteredPrice('price_metered')
-        ->checkout();
+```php
+$checkout = Auth::user()
+    ->newSubscription('default', [])
+    ->meteredPrice('price_metered')
+    ->checkout();
 
-    return view('your-checkout-view', [
-        'checkout' => $checkout,
-    ]);
+return view('your-checkout-view', [
+    'checkout' => $checkout,
+]);
+```
 
 <a name="reporting-usage"></a>
 #### Reporting Usage
 
 Khi khách hàng của bạn sử dụng ứng dụng của bạn, bạn sẽ báo cáo việc sử dụng của họ cho Stripe biết để Stripe có thể được lập hóa đơn một cách chính xác. Để báo cáo mức sử dụng của một event, bạn có thể sử dụng phương thức `reportMeterEvent` trên model `Billable` của bạn:
 
-    $user = User::find(1);
+```php
+$user = User::find(1);
 
-    $user->reportMeterEvent('emails-sent');
+$user->reportMeterEvent('emails-sent');
+```
 
 Mặc định, "số lượng sử dụng" sẽ là 1 và được thêm vào trong thời hạn thanh toán. Ngoài ra, bạn có thể truyền thêm một lượng cụ thể "mức độ sử dụng" vào mức sử dụng của khách hàng trong thời hạn thanh toán:
 
-    $user = User::find(1);
+```php
+$user = User::find(1);
 
-    $user->reportMeterEvent('emails-sent', quantity: 15);
+$user->reportMeterEvent('emails-sent', quantity: 15);
+```
 
 Để lấy ra một bản tóm tắt event của khách hàng cho một bộ đo nhất định, bạn có thể sử dụng phương thức `meterEventSummaries` của instance `Billable`:
 
-    $user = User::find(1);
+```php
+$user = User::find(1);
 
-    $meterUsage = $user->meterEventSummaries($meterId);
+$meterUsage = $user->meterEventSummaries($meterId);
 
-    $meterUsage->first()->aggregated_value // 10
+$meterUsage->first()->aggregated_value // 10
+```
 
 Bạn hãy tham khảo thêm [tài liệu về object tóm tắt event](https://docs.stripe.com/api/billing/meter-event_summary/object) của Stripe để biết thêm thông tin chi tiết của object này.
 
 Để [liệt kê ra tất cả các bộ đo](https://docs.stripe.com/api/billing/meter/list), bạn có thể sử dụng phương thức `meters` của instance `Billable`:
 
-    $user = User::find(1);
+```php
+$user = User::find(1);
 
-    $user->meters();
+$user->meters();
+```
 
 <a name="subscription-taxes"></a>
 ### Thuế của Subscription
@@ -1376,31 +1584,35 @@ Bạn hãy tham khảo thêm [tài liệu về object tóm tắt event](https://
 
 Để khai báo thuế suất mà người dùng sẽ phải trả cho một subscription, bạn nên implement phương thức `taxRates` trên model billable của bạn và trả về một mảng chứa ID thuế suất Stripe. Bạn có thể định nghĩa các thuế suất này trong [bảng điều khiển Stripe của bạn](https://dashboard.stripe.com/test/tax-rates):
 
-    /**
-     * The tax rates that should apply to the customer's subscriptions.
-     *
-     * @return array<int, string>
-     */
-    public function taxRates(): array
-    {
-        return ['txr_id'];
-    }
+```php
+/**
+ * The tax rates that should apply to the customer's subscriptions.
+ *
+ * @return array<int, string>
+ */
+public function taxRates(): array
+{
+    return ['txr_id'];
+}
+```
 
 Phương thức `taxRates` cho phép bạn áp dụng thuế suất trên từng customer, có thể hữu ích cho một người dùng trải dài trên nhiều quốc gia với nhiều loại thuế suất.
 
 Nếu bạn đang cung cấp subscription với nhiều sản phẩm, bạn có thể định nghĩa các mức thuế suất khác nhau cho từng price bằng cách implement một phương thức `priceTaxRates` trên billable model của bạn:
 
-    /**
-     * The tax rates that should apply to the customer's subscriptions.
-     *
-     * @return array<string, array<int, string>>
-     */
-    public function priceTaxRates(): array
-    {
-        return [
-            'price_monthly' => ['txr_id'],
-        ];
-    }
+```php
+/**
+ * The tax rates that should apply to the customer's subscriptions.
+ *
+ * @return array<string, array<int, string>>
+ */
+public function priceTaxRates(): array
+{
+    return [
+        'price_monthly' => ['txr_id'],
+    ];
+}
+```
 
 > [!WARNING]
 > Phương thức `taxRates` chỉ áp dụng cho các loại phí subscription. Nếu bạn sử dụng Cashier để thực hiện các khoản tính phí "một lần", bạn sẽ cần phải chỉ định một loại thuế suất cụ thể tại thời điểm đó.
@@ -1410,7 +1622,9 @@ Nếu bạn đang cung cấp subscription với nhiều sản phẩm, bạn có 
 
 Khi thay đổi hard-code ID thuế suất được trả về từ phương thức `taxRates`, thì cài đặt thuế có trên bất kỳ subscription nào hiện có cho người dùng vẫn sẽ được giữ nguyên. Nếu bạn muốn cập nhật giá trị thuế cho các subscription hiện có với các giá trị `taxRates` mới, bạn nên gọi phương thức `syncTaxRates` trên instance subscription của người dùng:
 
-    $user->subscription('default')->syncTaxRates();
+```php
+$user->subscription('default')->syncTaxRates();
+```
 
 Điều này cũng sẽ đồng bộ bất kỳ thuế suất item nào có trong subscription với nhiều sản phẩm. Nếu ứng dụng của bạn đang cung cấp subscription với nhiều sản phẩm, thì bạn nên đảm bảo là billable model của bạn đã implement phương thức `priceTaxRates` như [đã thảo luận ở trên](#subscription-taxes).
 
@@ -1419,13 +1633,15 @@ Khi thay đổi hard-code ID thuế suất được trả về từ phương th�
 
 Cashier cũng cung cấp các phương thức `isNotTaxExempt`, `isTaxExempt` và `reverseChargeApplies` để xác định xem khách hàng có được miễn thuế hay không. Các phương thức này sẽ gọi Stripe API để xác định trạng thái miễn thuế của khách hàng:
 
-    use App\Models\User;
+```php
+use App\Models\User;
 
-    $user = User::find(1);
+$user = User::find(1);
 
-    $user->isTaxExempt();
-    $user->isNotTaxExempt();
-    $user->reverseChargeApplies();
+$user->isTaxExempt();
+$user->isNotTaxExempt();
+$user->reverseChargeApplies();
+```
 
 > [!WARNING]
 > Các phương thức này cũng có sẵn trên tất cả các đối tượng `Laravel\Cashier\Invoice`. Tuy nhiên, khi gọi đối tượng `Invoice`, thì các phương thức đó sẽ xác định trạng thái miễn trừ tại thời điểm mà tạo hóa đơn.
@@ -1435,17 +1651,19 @@ Cashier cũng cung cấp các phương thức `isNotTaxExempt`, `isTaxExempt` v�
 
 Mặc định, ngày cố định thanh toán là ngày đã tạo ra subscription hoặc nếu có thời gian dùng thử, thì ngày dùng thử kết thúc sẽ là ngày thanh toán. Nếu bạn muốn sửa ngày cố định thanh toán, bạn có thể sử dụng phương thức `anchorBillingCycleOn`:
 
-    use Illuminate\Http\Request;
+```php
+use Illuminate\Http\Request;
 
-    Route::post('/user/subscribe', function (Request $request) {
-        $anchor = Carbon::parse('first day of next month');
+Route::post('/user/subscribe', function (Request $request) {
+    $anchor = Carbon::parse('first day of next month');
 
-        $request->user()->newSubscription('default', 'price_monthly')
-            ->anchorBillingCycleOn($anchor->startOfDay())
-            ->create($request->paymentMethodId);
+    $request->user()->newSubscription('default', 'price_monthly')
+        ->anchorBillingCycleOn($anchor->startOfDay())
+        ->create($request->paymentMethodId);
 
-        // ...
-    });
+    // ...
+});
+```
 
 Để biết thêm thông tin về cách quản lý chu kỳ thanh toán của subscription, hãy tham khảo [tài liệu về chu kỳ thanh toán của Stripe](https://stripe.com/docs/billing/subscriptions/billing-cycle)
 
@@ -1454,7 +1672,9 @@ Mặc định, ngày cố định thanh toán là ngày đã tạo ra subscripti
 
 Để hủy một subscription, hãy gọi phương thức `cancel` trên subscription của người dùng:
 
-    $user->subscription('default')->cancel();
+```php
+$user->subscription('default')->cancel();
+```
 
 Khi một subscription bị hủy, Cashier sẽ tự động set cột `ends_at` trong bảng `subscriptions` cơ sở dữ liệu của bạn. Cột này được sử dụng để biết xem khi nào phương thức `subscribed` sẽ bắt đầu trả về `false`.
 
@@ -1462,36 +1682,48 @@ Ví dụ: nếu khách hàng hủy subscription vào ngày 1 tháng 3, nhưng su
 
 Bạn có thể biết những người dùng đã hủy subscription của họ nhưng vẫn đang trong "thời gian subscription có hiệu lực" bằng cách sử dụng phương thức `onGracePeriod`:
 
-    if ($user->subscription('default')->onGracePeriod()) {
-        // ...
-    }
+```php
+if ($user->subscription('default')->onGracePeriod()) {
+    // ...
+}
+```
 
 Nếu bạn muốn hủy subscription ngay lập tức, hãy gọi phương thức `cancelNow` trên subscription của người dùng:
 
-    $user->subscription('default')->cancelNow();
+```php
+$user->subscription('default')->cancelNow();
+```
 
 Nếu bạn muốn hủy đăng ký ngay lập tức và lập hóa đơn cho bất kỳ mục hóa đơn nào theo tỷ lệ sử dụng chưa được lập hóa đơn còn lại hoặc các mục hóa đơn theo tỷ lệ mới hoặc đang chờ xử lý, hãy gọi phương thức `cancelNowAndInvoice` trên subscription của người dùng:
 
-    $user->subscription('default')->cancelNowAndInvoice();
+```php
+$user->subscription('default')->cancelNowAndInvoice();
+```
 
 Bạn cũng có thể chọn hủy đăng ký tại một thời điểm cụ thể:
 
-    $user->subscription('default')->cancelAt(
-        now()->addDays(10)
-    );
+```php
+$user->subscription('default')->cancelAt(
+    now()->plus(days: 10)
+);
+```
 
 Cuối cùng, bạn nên hủy đăng ký người dùng trước khi xóa model người dùng được liên kết với đăng ký đó:
 
-    $user->subscription('default')->cancelNow();
+```php
+$user->subscription('default')->cancelNow();
 
-    $user->delete();
+$user->delete();
+```
 
 <a name="resuming-subscriptions"></a>
 ### Resume Subscription
 
 Nếu một khách hàng đã hủy đăng ký của họ và bạn muốn tiếp tục đăng ký đó, bạn có thể gọi phương thức `resume` trên subscription đó. Khách hàng vẫn phải ở trong "thời gian gia hạn" để tiếp tục đăng ký:
 
-    $user->subscription('default')->resume();
+```php
+$user->subscription('default')->resume();
+```
 
 Nếu customer đã hủy subscription nhưng sau đó lại muốn resume tiếp subscription đó trước khi subscription hết hạn, customer sẽ không bị tính tiền ngay lập tức. Thay vào đó, subscription của họ sẽ được kích hoạt lại và họ sẽ thanh toán theo đúng chu kỳ thanh toán ban đầu của họ.
 
@@ -1503,15 +1735,17 @@ Nếu customer đã hủy subscription nhưng sau đó lại muốn resume tiế
 
 Nếu bạn muốn cung cấp thời gian dùng thử cho khách hàng của bạn trong khi vẫn muốn thu thập thông tin thanh toán của khách hàng, bạn nên sử dụng phương thức `trialDays` khi tạo subscription của bạn:
 
-    use Illuminate\Http\Request;
+```php
+use Illuminate\Http\Request;
 
-    Route::post('/user/subscribe', function (Request $request) {
-        $request->user()->newSubscription('default', 'price_monthly')
-            ->trialDays(10)
-            ->create($request->paymentMethodId);
+Route::post('/user/subscribe', function (Request $request) {
+    $request->user()->newSubscription('default', 'price_monthly')
+        ->trialDays(10)
+        ->create($request->paymentMethodId);
 
-        // ...
-    });
+    // ...
+});
+```
 
 Phương thức này sẽ set ngày kết thúc của thời gian dùng thử vào trong bản ghi subscription trong cơ sở dữ liệu, và sẽ bảo với Stripee là sẽ không tính phí khách hàng cho đến khi hết ngày dùng thử. Khi sử dụng phương thức `trialDays`, Cashier sẽ ghi đè lên bất kỳ khoảng thời gian dùng thử nào được cấu hình cho price trong Stripe.
 
@@ -1520,35 +1754,43 @@ Phương thức này sẽ set ngày kết thúc của thời gian dùng thử v�
 
 Phương thức `trialUntil` cho phép bạn cung cấp một instance `DateTime` để chỉ định khi nào thời gian dùng thử kết thúc:
 
-    use Carbon\Carbon;
+```php
+use Illuminate\Support\Carbon;
 
-    $user->newSubscription('default', 'price_monthly')
-        ->trialUntil(Carbon::now()->addDays(10))
-        ->create($paymentMethod);
+$user->newSubscription('default', 'price_monthly')
+    ->trialUntil(Carbon::now()->plus(days: 10))
+    ->create($paymentMethod);
+```
 
 Bạn có thể xác định xem người dùng hiện tại có đang trong thời gian dùng thử hay không bằng cách sử dụng phương thức `onTrial` trên instance người dùng hoặc phương thức `onTrial` trên instance subscription. Hai ví dụ dưới đây có kết quả tương đương:
 
-    if ($user->onTrial('default')) {
-        // ...
-    }
+```php
+if ($user->onTrial('default')) {
+    // ...
+}
 
-    if ($user->subscription('default')->onTrial()) {
-        // ...
-    }
+if ($user->subscription('default')->onTrial()) {
+    // ...
+}
+```
 
 Bạn có thể sử dụng phương thức `endTrial` để kết thúc ngay một bản dùng thử subscription:
 
-    $user->subscription('default')->endTrial();
+```php
+$user->subscription('default')->endTrial();
+```
 
 Để xác định xem bản dùng thử hiện tại đã hết hạn hay chưa, bạn có thể sử dụng phương thức `hasExpiredTrial`:
 
-    if ($user->hasExpiredTrial('default')) {
-        // ...
-    }
+```php
+if ($user->hasExpiredTrial('default')) {
+    // ...
+}
 
-    if ($user->subscription('default')->hasExpiredTrial()) {
-        // ...
-    }
+if ($user->subscription('default')->hasExpiredTrial()) {
+    // ...
+}
+```
 
 <a name="defining-trial-days-in-stripe-cashier"></a>
 #### Defining Trial Days In Stripe / Cashier
@@ -1560,58 +1802,70 @@ Bạn có thể chọn định nghĩa số ngày dùng thử nhận được khi
 
 Nếu bạn muốn cung cấp thời gian dùng thử mà không muốn thu thập thông tin thanh toán của người dùng, bạn có thể set cột `trial_ends_at` trong bản ghi của người dùng thành ngày kết thúc dùng thử mà bạn mong muốn. Điều này thường được thực hiện trong quá trình đăng ký người dùng:
 
-    use App\Models\User;
+```php
+use App\Models\User;
 
-    $user = User::create([
-        // ...
-        'trial_ends_at' => now()->addDays(10),
-    ]);
+$user = User::create([
+    // ...
+    'trial_ends_at' => now()->plus(days: 10),
+]);
+```
 
 > [!WARNING]
 > Hãy thêm [date cast](/docs/{{version}}/eloquent-mutators##date-casting) cho thuộc tính `trial_ends_at` trong định nghĩa của billable model của bạn.
 
 Cashier sẽ coi các loại dùng thử như thế này là "dùng thử đại trà", vì nó sẽ không được gắn với bất kỳ thông tin subscription nào. Phương thức `onTrial` trên instance billable model sẽ trả về `true` nếu ngày hiện tại không vượt quá giá trị của ngày `trial_ends_at`:
 
-    if ($user->onTrial()) {
-        // User is within their trial period...
-    }
+```php
+if ($user->onTrial()) {
+    // User is within their trial period...
+}
+```
 
 Khi bạn đã sẵn sàng tạo một subscription thực sự cho người dùng, bạn có thể sử dụng phương thức `newSubscription` như bình thường:
 
-    $user = User::find(1);
+```php
+$user = User::find(1);
 
-    $user->newSubscription('default', 'price_monthly')->create($paymentMethod);
+$user->newSubscription('default', 'price_monthly')->create($paymentMethod);
+```
 
 Để lấy ra ngày kết thúc dùng thử của người dùng, bạn có thể sử dụng phương thức `trialEndsAt`. Phương thức này sẽ trả về một instancen Carbon date nếu người dùng đang dùng thử hoặc là `null` nếu họ không dùng thử. Bạn cũng có thể truyền một tham số tùy chọn loại subscription nếu bạn muốn biết ngày kết thúc dùng thử cho một subscription cụ thể khác, khác với subscription mặc định:
 
-    if ($user->onTrial()) {
-        $trialEndsAt = $user->trialEndsAt('main');
-    }
+```php
+if ($user->onTrial()) {
+    $trialEndsAt = $user->trialEndsAt('main');
+}
+```
 
 Bạn cũng có thể sử dụng phương thức `onGenericTrial` nếu bạn muốn biết cụ thể là người dùng đang trong thời gian dùng thử "bình thường" và chưa tạo subscription thực tế:
 
-    if ($user->onGenericTrial()) {
-        // User is within their "generic" trial period...
-    }
+```php
+if ($user->onGenericTrial()) {
+    // User is within their "generic" trial period...
+}
+```
 
 <a name="extending-trials"></a>
 ### Mở rộng thời gian dùng thử
 
 Phương thức `extendTrial` cho phép bạn kéo dài thời gian dùng thử của một subscription sau khi subscription được tạo. Nếu bản dùng thử đã hết hạn và khách hàng đã được lập hóa đơn cho subscription, bạn vẫn có thể cung cấp cho họ thêm thời gian dùng thử. Thời gian sử dụng trong thời gian dùng thử sẽ được trừ vào hóa đơn tiếp theo của khách hàng.
 
-    use App\Models\User;
+```php
+use App\Models\User;
 
-    $subscription = User::find(1)->subscription('default');
+$subscription = User::find(1)->subscription('default');
 
-    // End the trial 7 days from now...
-    $subscription->extendTrial(
-        now()->addDays(7)
-    );
+// End the trial 7 days from now...
+$subscription->extendTrial(
+    now()->plus(days: 7)
+);
 
-    // Add an additional 5 days to the trial...
-    $subscription->extendTrial(
-        $subscription->trial_ends_at->addDays(5)
-    );
+// Add an additional 5 days to the trial...
+$subscription->extendTrial(
+    $subscription->trial_ends_at->plus(days: 5)
+);
+```
 
 <a name="handling-stripe-webhooks"></a>
 ## Xử lý Stripe Webhooks
@@ -1666,11 +1920,13 @@ php artisan cashier:webhook --disabled
 
 Vì các webhook của Stripe cần bỏ qua bước [bảo vệ CSRF](/docs/{{version}}/csrf) của Laravel, bạn nên đảm bảo Laravel sẽ không thử validate CSRF token cho các webhook mà được Stripe gửi đến. Để thực hiện việc này, bạn nên bỏ `stripe/*` khỏi cơ chế bảo vệ CSRF trong file `bootstrap/app.php` của ứng dụng:
 
-    ->withMiddleware(function (Middleware $middleware) {
-        $middleware->validateCsrfTokens(except: [
-            'stripe/*',
-        ]);
-    })
+```php
+->withMiddleware(function (Middleware $middleware): void {
+    $middleware->validateCsrfTokens(except: [
+        'stripe/*',
+    ]);
+})
+```
 
 <a name="defining-webhook-event-handlers"></a>
 ### Định nghĩa xử lý event Webhook
@@ -1682,24 +1938,26 @@ Cashier sẽ tự động xử lý việc hủy đăng ký nếu như các kho�
 
 Cả hai sự kiện này đều chứa toàn bộ payload của webhook Stripe. Ví dụ: nếu bạn muốn xử lý webhook `invoice.payment_succeeded`, thì bạn có thể đăng ký [listener](/docs/{{version}}/events#defining-listeners) xử lý sự kiện đó:
 
-    <?php
+```php
+<?php
 
-    namespace App\Listeners;
+namespace App\Listeners;
 
-    use Laravel\Cashier\Events\WebhookReceived;
+use Laravel\Cashier\Events\WebhookReceived;
 
-    class StripeEventListener
+class StripeEventListener
+{
+    /**
+     * Handle received Stripe webhooks.
+     */
+    public function handle(WebhookReceived $event): void
     {
-        /**
-         * Handle received Stripe webhooks.
-         */
-        public function handle(WebhookReceived $event): void
-        {
-            if ($event->payload['type'] === 'invoice.payment_succeeded') {
-                // Handle the incoming event...
-            }
+        if ($event->payload['type'] === 'invoice.payment_succeeded') {
+            // Handle the incoming event...
         }
     }
+}
+```
 
 <a name="verifying-webhook-signatures"></a>
 ### Kiểm tra Webhook Signatures
@@ -1716,35 +1974,43 @@ Cả hai sự kiện này đều chứa toàn bộ payload của webhook Stripe.
 
 Nếu bạn muốn tính phí một lần đối với khách hàng, bạn có thể sử dụng phương thức `charge` trên một instance billable model. Bạn sẽ cần [cung cấp identifier phương thức thanh toán](#payment-methods-for-single-charges) làm tham số thứ hai cho phương thức `charge`:
 
-    use Illuminate\Http\Request;
+```php
+use Illuminate\Http\Request;
 
-    Route::post('/purchase', function (Request $request) {
-        $stripeCharge = $request->user()->charge(
-            100, $request->paymentMethodId
-        );
+Route::post('/purchase', function (Request $request) {
+    $stripeCharge = $request->user()->charge(
+        100, $request->paymentMethodId
+    );
 
-        // ...
-    });
+    // ...
+});
+```
 
 Phương thức `charge` chấp nhận một mảng làm tham số thứ ba của nó, cho phép bạn truyền vào bất kỳ tùy chọn nào mà bạn muốn cho việc tạo phí của Stripe. Bạn có thể tìm thêm về các thông tin tùy chọn có sẵn khi tạo khoản phí trong [tài liệu Stripe](https://stripe.com/docs/api/charges/create):
 
-    $user->charge(100, $paymentMethod, [
-        'custom_option' => $value,
-    ]);
+```php
+$user->charge(100, $paymentMethod, [
+    'custom_option' => $value,
+]);
+```
 
 Bạn cũng có thể sử dụng phương thức `charge` mà không cần có customer hoặc người dùng. Để thực hiện điều này, hãy gọi phương thức `charge` trên một instance mới của billable model trong ứng dụng của bạn:
 
-    use App\Models\User;
+```php
+use App\Models\User;
 
-    $stripeCharge = (new User)->charge(100, $paymentMethod);
+$stripeCharge = (new User)->charge(100, $paymentMethod);
+```
 
 Phương thức `charge` sẽ đưa ra một ngoại lệ nếu việc tính phí không thành công. Nếu tính phí thành công, thì một instance của `Laravel\Cashier\Payment` sẽ được trả về từ phương thức:
 
-    try {
-        $payment = $user->charge(100, $paymentMethod);
-    } catch (Exception $e) {
-        // ...
-    }
+```php
+try {
+    $payment = $user->charge(100, $paymentMethod);
+} catch (Exception $e) {
+    // ...
+}
+```
 
 > [!WARNING]
 > Phương thức `charge` chấp nhận số tiền thanh toán được ghi theo loại đơn vị thấp nhất của loại tiền tệ mà trong ứng dụng của bạn sử dụng. Ví dụ: nếu khách hàng thanh toán bằng Đô la Mỹ thì số tiền thanh toán phải được ghi theo đơn vị xu.
@@ -1754,27 +2020,35 @@ Phương thức `charge` sẽ đưa ra một ngoại lệ nếu việc tính ph�
 
 Thỉnh thoảng bạn có thể cần phải tạo tính phí một lần và cung cấp hóa đơn PDF cho khách hàng của bạn. Phương thức `invoicePrice` cho phép bạn làm điều đó. Ví dụ: hãy gửi hóa đơn cho khách hàng của bạn là năm chiếc áo phông mới:
 
-    $user->invoicePrice('price_tshirt', 5);
+```php
+$user->invoicePrice('price_tshirt', 5);
+```
 
 Hóa đơn sẽ được tính ngay lập tức cho phương thức thanh toán mặc định của người dùng. Phương thức `invoicePrice` cũng chấp nhận một mảng làm tham số thứ ba của nó. Mảng này sẽ chứa các tùy chọn thanh toán cho các hàng được thanh toán. Tham số thứ tư được phương thức chấp nhận cũng là một mảng sẽ chấp nhận các tùy chọn thanh toán cho chính hóa đơn đó:
 
-    $user->invoicePrice('price_tshirt', 5, [
-        'discounts' => [
-            ['coupon' => 'SUMMER21SALE']
-        ],
-    ], [
-        'default_tax_rates' => ['txr_id'],
-    ]);
+```php
+$user->invoicePrice('price_tshirt', 5, [
+    'discounts' => [
+        ['coupon' => 'SUMMER21SALE']
+    ],
+], [
+    'default_tax_rates' => ['txr_id'],
+]);
+```
 
 Tương tự như `invoicePrice`, bạn có thể sử dụng phương thức `tabPrice` để tạo khoản phí một lần cho nhiều mặt hàng (tối đa là 250 mặt hàng trên mỗi hóa đơn) bằng cách thêm chúng vào "tab" của khách hàng rồi lập hóa đơn cho khách hàng đó. Ví dụ: chúng ta có thể lập hóa đơn cho khách hàng với năm cái áo sơ mi và hai cái cốc:
 
-    $user->tabPrice('price_tshirt', 5);
-    $user->tabPrice('price_mug', 2);
-    $user->invoice();
+```php
+$user->tabPrice('price_tshirt', 5);
+$user->tabPrice('price_mug', 2);
+$user->invoice();
+```
 
 Ngoài ra, bạn có thể sử dụng phương thức `invoiceFor` để tính phí "một lần" đối với phương thức thanh toán mặc định của khách hàng:
 
-    $user->invoiceFor('One Time Fee', 500);
+```php
+$user->invoiceFor('One Time Fee', 500);
+```
 
 Mặc dù phương thức `invoiceFor` có sẵn để bạn sử dụng nhưng bạn nên sử dụng phương thức `invoicePrice` và phương thức `tabPrice` cùng với mức giá được xác định trước. Bằng cách đó, bạn sẽ có quyền truy cập vào các phân tích và dữ liệu tốt hơn trong bảng điều khiển Stripe của bạn về doanh số bán hàng trên từng sản phẩm.
 
@@ -1786,29 +2060,33 @@ Mặc dù phương thức `invoiceFor` có sẵn để bạn sử dụng nhưng 
 
 Bạn có thể tạo một payment intent Stripe mới bằng cách gọi phương thức `pay` trên một instance billable model. Việc gọi phương thức này sẽ tạo ra một payment intent được bao trong một instance `Laravel\Cashier\Payment`:
 
-    use Illuminate\Http\Request;
+```php
+use Illuminate\Http\Request;
 
-    Route::post('/pay', function (Request $request) {
-        $payment = $request->user()->pay(
-            $request->get('amount')
-        );
+Route::post('/pay', function (Request $request) {
+    $payment = $request->user()->pay(
+        $request->get('amount')
+    );
 
-        return $payment->client_secret;
-    });
+    return $payment->client_secret;
+});
+```
 
 Sau khi tạo xong payment intent, bạn có thể trả về một client secret cho frontend của ứng dụng để người dùng có thể hoàn tất thanh toán trong trình duyệt của họ. Để đọc thêm về cách xây dựng toàn bộ luồng thanh toán bằng cách sử dụng  payment intent của Stripe, vui lòng tham khảo [tài liệu của Stripe](https://stripe.com/docs/payments/accept-a-payment?platform=web).
 
 Khi sử dụng phương thức `pay`, các phương thức thanh toán mặc định được cho phép trong bảng điều khiển Stripe của bạn sẽ được hiển thị cho khách hàng. Ngoài ra, nếu bạn chỉ muốn cho phép sử dụng một số phương thức thanh toán nhất định, bạn có thể sử dụng phương thức `payWith`:
 
-    use Illuminate\Http\Request;
+```php
+use Illuminate\Http\Request;
 
-    Route::post('/pay', function (Request $request) {
-        $payment = $request->user()->payWith(
-            $request->get('amount'), ['card', 'bancontact']
-        );
+Route::post('/pay', function (Request $request) {
+    $payment = $request->user()->payWith(
+        $request->get('amount'), ['card', 'bancontact']
+    );
 
-        return $payment->client_secret;
-    });
+    return $payment->client_secret;
+});
+```
 
 > [!WARNING]
 > Phương thức `pay` và `payWith` chấp nhận số tiền thanh toán được ghi theo loại đơn vị thấp nhất của loại tiền tệ mà trong ứng dụng của bạn sử dụng. Ví dụ: nếu khách hàng thanh toán bằng Đô la Mỹ thì số tiền thanh toán phải được ghi theo đơn vị xu.
@@ -1818,9 +2096,11 @@ Khi sử dụng phương thức `pay`, các phương thức thanh toán mặc đ
 
 Nếu bạn cần hoàn trả một phí đã được thanh toán trong Stripe, bạn có thể sử dụng phương thức `refund`. Phương thức này chấp nhận một [ID của Payment Intent Stripe](#payment-methods-for-single-charges) làm tham số đầu tiên của nó:
 
-    $payment = $user->charge(100, $paymentMethodId);
+```php
+$payment = $user->charge(100, $paymentMethodId);
 
-    $user->refund($payment->id);
+$user->refund($payment->id);
+```
 
 <a name="invoices"></a>
 ## Hoá đơn
@@ -1830,52 +2110,68 @@ Nếu bạn cần hoàn trả một phí đã được thanh toán trong Stripe,
 
 Bạn có thể dễ dàng lấy ra một mảng các hóa đơn của một model billable bằng cách sử dụng phương thức `invoices`. Phương thức `invoices` trả về một collection các instance `Laravel\Cashier\Invoice`:
 
-    $invoices = $user->invoices();
+```php
+$invoices = $user->invoices();
+```
 
 Nếu bạn muốn thêm các hóa đơn đang chờ xử lý vào trong kết quả, bạn có thể sử dụng phương thức `invoicesIncludingPending`:
 
-    $invoices = $user->invoicesIncludingPending();
+```php
+$invoices = $user->invoicesIncludingPending();
+```
 
 Bạn có thể sử dụng phương thức `findInvoice` để lấy ra một hóa đơn cụ thể bằng ID chính nó:
 
-    $invoice = $user->findInvoice($invoiceId);
+```php
+$invoice = $user->findInvoice($invoiceId);
+```
 
 <a name="displaying-invoice-information"></a>
 #### Displaying Invoice Information
 
 Khi liệt kê hóa đơn cho khách hàng, bạn có thể sử dụng các phương thức của hóa đơn để hiển thị thông tin hóa đơn. Ví dụ: bạn có thể muốn liệt kê tất cả các hóa đơn có trong một bảng, cho phép người dùng dễ dàng tải xuống bất kỳ cái nào trong số chúng:
 
-    <table>
-        @foreach ($invoices as $invoice)
-            <tr>
-                <td>{{ $invoice->date()->toFormattedDateString() }}</td>
-                <td>{{ $invoice->total() }}</td>
-                <td><a href="/user/invoice/{{ $invoice->id }}">Download</a></td>
-            </tr>
-        @endforeach
-    </table>
+```blade
+<table>
+    @foreach ($invoices as $invoice)
+        <tr>
+            <td>{{ $invoice->date()->toFormattedDateString() }}</td>
+            <td>{{ $invoice->total() }}</td>
+            <td><a href="/user/invoice/{{ $invoice->id }}">Download</a></td>
+        </tr>
+    @endforeach
+</table>
+```
 
 <a name="upcoming-invoices"></a>
 ### Hoá đơn tiếp theo
 
 Để lấy ra các hóa đơn sắp tới cho khách hàng, bạn có thể sử dụng phương thức `upcomingInvoice`:
 
-    $invoice = $user->upcomingInvoice();
+```php
+$invoice = $user->upcomingInvoice();
+```
 
 Tương tự, nếu khách hàng có nhiều subscription, bạn cũng có thể lấy ra hóa đơn sắp tới cho một subscription cụ thể:
 
-    $invoice = $user->subscription('default')->upcomingInvoice();
+```php
+$invoice = $user->subscription('default')->upcomingInvoice();
+```
 
 <a name="previewing-subscription-invoices"></a>
 ### Xem trước hóa đơn đăng ký
 
 Sử dụng phương thức `previewInvoice`, bạn có thể xem trước các hóa đơn trước khi thực hiện thay đổi giá. Điều này sẽ cho phép bạn xác định xem hóa đơn của khách hàng sẽ như thế nào khi thay đổi giá được thực hiện:
 
-    $invoice = $user->subscription('default')->previewInvoice('price_yearly');
+```php
+$invoice = $user->subscription('default')->previewInvoice('price_yearly');
+```
 
 Bạn có thể truyền một mảng giá cho phương thức `previewInvoice` để xem trước nhiều hóa đơn với nhiều mức giá khác nhau:
 
-    $invoice = $user->subscription('default')->previewInvoice(['price_yearly', 'price_metered']);
+```php
+$invoice = $user->subscription('default')->previewInvoice(['price_yearly', 'price_metered']);
+```
 
 <a name="generating-invoice-pdfs"></a>
 ### Tạo hoá đơn PDF
@@ -1888,50 +2184,58 @@ composer require dompdf/dompdf
 
 Từ trong một route hoặc một controller, bạn có thể sử dụng phương thức `downloadInvoice` để tạo một bản PDF cho hóa đơn đã cho để khách hàng có thể tải xuống. Phương thức này sẽ tự động tạo ra một response HTTP cần thiết để download gửi file hoá đơn:
 
-    use Illuminate\Http\Request;
+```php
+use Illuminate\Http\Request;
 
-    Route::get('/user/invoice/{invoice}', function (Request $request, string $invoiceId) {
-        return $request->user()->downloadInvoice($invoiceId);
-    });
+Route::get('/user/invoice/{invoice}', function (Request $request, string $invoiceId) {
+    return $request->user()->downloadInvoice($invoiceId);
+});
+```
 
 Mặc định, tất cả dữ liệu trên hóa đơn được lấy từ thông tin khách hàng và dữ liệu hóa đơn này được lưu trữ trong Stripe. Tên file dựa trên giá trị được cấu hình trong `app.name` của bạn. Tuy nhiên, bạn có thể tùy chỉnh một số dữ liệu này bằng cách cung cấp một mảng làm tham số thứ hai cho phương thức `downloadInvoice`. Mảng này cho phép bạn tùy chỉnh thông tin như chi tiết về công ty và sản phẩm của bạn:
 
-    return $request->user()->downloadInvoice($invoiceId, [
-        'vendor' => 'Your Company',
-        'product' => 'Your Product',
-        'street' => 'Main Str. 1',
-        'location' => '2000 Antwerp, Belgium',
-        'phone' => '+32 499 00 00 00',
-        'email' => 'info@example.com',
-        'url' => 'https://example.com',
-        'vendorVat' => 'BE123456789',
-    ]);
+```php
+return $request->user()->downloadInvoice($invoiceId, [
+    'vendor' => 'Your Company',
+    'product' => 'Your Product',
+    'street' => 'Main Str. 1',
+    'location' => '2000 Antwerp, Belgium',
+    'phone' => '+32 499 00 00 00',
+    'email' => 'info@example.com',
+    'url' => 'https://example.com',
+    'vendorVat' => 'BE123456789',
+]);
+```
 
 Phương thức `downloadInvoice` cũng cho phép đặt tên file tùy chỉnh thông qua tham số thứ ba của nó. Tên file này sẽ tự động có hậu tố là `.pdf`:
 
-    return $request->user()->downloadInvoice($invoiceId, [], 'my-invoice');
+```php
+return $request->user()->downloadInvoice($invoiceId, [], 'my-invoice');
+```
 
 <a name="custom-invoice-render"></a>
 #### Custom Invoice Renderer
 
 Cashier cũng cho phép bạn sử dụng tùy chỉnh trình tạo hóa đơn. Mặc định, Cashier sử dụng implementation `DompdfInvoiceRenderer`, sử dụng thư viện PHP [dompdf](https://github.com/dompdf/dompdf) để tạo hóa đơn cho Cashier. Tuy nhiên, bạn có thể sử dụng bất kỳ trình tạo nào mà bạn muốn bằng cách implementation interface `Laravel\Cashier\Contracts\InvoiceRenderer`. Ví dụ: bạn có thể muốn hiển thị PDF hóa đơn bằng cách sử dụng lệnh gọi API tới service hiển thị PDF của third-party:
 
-    use Illuminate\Support\Facades\Http;
-    use Laravel\Cashier\Contracts\InvoiceRenderer;
-    use Laravel\Cashier\Invoice;
+```php
+use Illuminate\Support\Facades\Http;
+use Laravel\Cashier\Contracts\InvoiceRenderer;
+use Laravel\Cashier\Invoice;
 
-    class ApiInvoiceRenderer implements InvoiceRenderer
+class ApiInvoiceRenderer implements InvoiceRenderer
+{
+    /**
+     * Render the given invoice and return the raw PDF bytes.
+     */
+    public function render(Invoice $invoice, array $data = [], array $options = []): string
     {
-        /**
-         * Render the given invoice and return the raw PDF bytes.
-         */
-        public function render(Invoice $invoice, array $data = [], array $options = []): string
-        {
-            $html = $invoice->view($data)->render();
+        $html = $invoice->view($data)->render();
 
-            return Http::get('https://example.com/html-to-pdf', ['html' => $html])->get()->body();
-        }
+        return Http::get('https://example.com/html-to-pdf', ['html' => $html])->get()->body();
     }
+}
+```
 
 Khi bạn đã implement xong contract tạo hóa đơn, bạn nên cập nhật giá trị cấu hình `cashier.invoices.renderer` trong file cấu hình `config/cashier.php` của ứng dụng. Giá trị cấu hình này phải được set thành tên class implement trình tạo hoá đơn tùy chỉnh của bạn.
 
@@ -1947,73 +2251,85 @@ Tài liệu sau đây sẽ chứa các thông tin về cách bắt đầu sử d
 
 Bạn có thể thực hiện thanh toán cho một sản phẩm hiện được tạo trong bảng điều khiển Stripe của bạn bằng phương thức `checkout` trên một billable model. Phương thức `checkout` sẽ bắt đầu một session Stripe Checkout mới. Mặc định, bạn bắt buộc phải truyền một ID giá Stripe:
 
-    use Illuminate\Http\Request;
+```php
+use Illuminate\Http\Request;
 
-    Route::get('/product-checkout', function (Request $request) {
-        return $request->user()->checkout('price_tshirt');
-    });
+Route::get('/product-checkout', function (Request $request) {
+    return $request->user()->checkout('price_tshirt');
+});
+```
 
 Nếu cần, bạn cũng có thể chỉ định số lượng sản phẩm:
 
-    use Illuminate\Http\Request;
+```php
+use Illuminate\Http\Request;
 
-    Route::get('/product-checkout', function (Request $request) {
-        return $request->user()->checkout(['price_tshirt' => 15]);
-    });
+Route::get('/product-checkout', function (Request $request) {
+    return $request->user()->checkout(['price_tshirt' => 15]);
+});
+```
 
 Khi một khách hàng truy cập vào route này, họ sẽ được chuyển hướng đến trang thanh toán của Stripe. Mặc định, khi người dùng hoàn thành hoặc hủy mua hàng, họ sẽ được chuyển hướng đến vị trí route `home` của bạn, nhưng bạn có thể chỉ định các URL được gọi lại này bằng cách sử dụng các tùy chọn `success_url` và `cancel_url`:
 
-    use Illuminate\Http\Request;
+```php
+use Illuminate\Http\Request;
 
-    Route::get('/product-checkout', function (Request $request) {
-        return $request->user()->checkout(['price_tshirt' => 1], [
-            'success_url' => route('your-success-route'),
-            'cancel_url' => route('your-cancel-route'),
-        ]);
-    });
+Route::get('/product-checkout', function (Request $request) {
+    return $request->user()->checkout(['price_tshirt' => 1], [
+        'success_url' => route('your-success-route'),
+        'cancel_url' => route('your-cancel-route'),
+    ]);
+});
+```
 
 Khi định nghĩa tùy chọn thanh toán `success_url`, bạn có thể hướng dẫn Stripe thêm một ID session thanh toán làm một tham số trong URL khi gọi URL này của bạn. Để làm như vậy, hãy thêm chuỗi ký tự `{CHECKOUT_SESSION_ID}` vào key `success_url` của bạn. Stripe sẽ thay thế biến này bằng ID session thanh toán thực tế:
 
-    use Illuminate\Http\Request;
-    use Stripe\Checkout\Session;
-    use Stripe\Customer;
+```php
+use Illuminate\Http\Request;
+use Stripe\Checkout\Session;
+use Stripe\Customer;
 
-    Route::get('/product-checkout', function (Request $request) {
-        return $request->user()->checkout(['price_tshirt' => 1], [
-            'success_url' => route('checkout-success').'?session_id={CHECKOUT_SESSION_ID}',
-            'cancel_url' => route('checkout-cancel'),
-        ]);
-    });
+Route::get('/product-checkout', function (Request $request) {
+    return $request->user()->checkout(['price_tshirt' => 1], [
+        'success_url' => route('checkout-success').'?session_id={CHECKOUT_SESSION_ID}',
+        'cancel_url' => route('checkout-cancel'),
+    ]);
+});
 
-    Route::get('/checkout-success', function (Request $request) {
-        $checkoutSession = $request->user()->stripe()->checkout->sessions->retrieve($request->get('session_id'));
+Route::get('/checkout-success', function (Request $request) {
+    $checkoutSession = $request->user()->stripe()->checkout->sessions->retrieve($request->get('session_id'));
 
-        return view('checkout.success', ['checkoutSession' => $checkoutSession]);
-    })->name('checkout-success');
+    return view('checkout.success', ['checkoutSession' => $checkoutSession]);
+})->name('checkout-success');
+```
 
 <a name="checkout-promotion-codes"></a>
 #### Promotion Codes
 
 Mặc định, Stripe Checkout không cho phép [mã khuyến mại cho người dùng](https://stripe.com/docs/billing/subscriptions/discounts/codes). May mắn thay, có một cách dễ dàng để bật những tính năng này cho trang thanh toán của bạn. Để làm như vậy, bạn có thể gọi phương thức `allowPromotionCodes`:
 
-    use Illuminate\Http\Request;
+```php
+use Illuminate\Http\Request;
 
-    Route::get('/product-checkout', function (Request $request) {
-        return $request->user()
-            ->allowPromotionCodes()
-            ->checkout('price_tshirt');
-    });
+Route::get('/product-checkout', function (Request $request) {
+    return $request->user()
+        ->allowPromotionCodes()
+        ->checkout('price_tshirt');
+});
+```
 
 <a name="single-charge-checkouts"></a>
 ### Single Charge Checkouts
 
 Bạn cũng có thể thực hiện một khoản phí đơn giản cho một sản phẩm đặc biệt chưa được tạo trong bảng điều khiển Stripe của bạn. Để làm như vậy, bạn có thể sử dụng phương thức `checkoutCharge` trên một billable model và truyền cho nó số tiền, tên sản phẩm và số lượng tùy chọn. Khi khách hàng truy cập vào route này, họ sẽ được chuyển hướng đến trang thanh toán của Stripe:
 
-    use Illuminate\Http\Request;
+```php
+use Illuminate\Http\Request;
 
-    Route::get('/charge-checkout', function (Request $request) {
-        return $request->user()->checkoutCharge(1200, 'T-Shirt', 5);
-    });
+Route::get('/charge-checkout', function (Request $request) {
+    return $request->user()->checkoutCharge(1200, 'T-Shirt', 5);
+});
+```
 
 > [!WARNING]
 > Khi sử dụng phương thức `checkoutCharge`, Stripe sẽ luôn tạo ra một sản phẩm và một giá mới trong trang tổng quan Stripe của bạn. Do đó, chúng tôi khuyên bạn nên tạo trước các sản phẩm trong bảng điều khiển Stripe của bạn và sử dụng phương thức `checkout` để thay thế.
@@ -2026,37 +2342,43 @@ Bạn cũng có thể thực hiện một khoản phí đơn giản cho một s�
 
 Bạn cũng có thể sử dụng Stripe Checkout để bắt đầu một subscription. Sau khi định nghĩa subscription của bạn bằng các phương thức tạo subscription của Cashier, bạn có thể gọi phương thức `checkout `. Khi khách hàng truy cập route này, họ sẽ được chuyển hướng đến trang thanh toán của Stripe:
 
-    use Illuminate\Http\Request;
+```php
+use Illuminate\Http\Request;
 
-    Route::get('/subscription-checkout', function (Request $request) {
-        return $request->user()
-            ->newSubscription('default', 'price_monthly')
-            ->checkout();
-    });
+Route::get('/subscription-checkout', function (Request $request) {
+    return $request->user()
+        ->newSubscription('default', 'price_monthly')
+        ->checkout();
+});
+```
 
 Cũng giống như với thanh toán sản phẩm, bạn có thể tùy chỉnh các URL success và cancel:
 
-    use Illuminate\Http\Request;
+```php
+use Illuminate\Http\Request;
 
-    Route::get('/subscription-checkout', function (Request $request) {
-        return $request->user()
-            ->newSubscription('default', 'price_monthly')
-            ->checkout([
-                'success_url' => route('your-success-route'),
-                'cancel_url' => route('your-cancel-route'),
-            ]);
-    });
+Route::get('/subscription-checkout', function (Request $request) {
+    return $request->user()
+        ->newSubscription('default', 'price_monthly')
+        ->checkout([
+            'success_url' => route('your-success-route'),
+            'cancel_url' => route('your-cancel-route'),
+        ]);
+});
+```
 
 Tất nhiên, bạn cũng có thể kích hoạt mã khuyến mãi để thanh toán subscription:
 
-    use Illuminate\Http\Request;
+```php
+use Illuminate\Http\Request;
 
-    Route::get('/subscription-checkout', function (Request $request) {
-        return $request->user()
-            ->newSubscription('default', 'price_monthly')
-            ->allowPromotionCodes()
-            ->checkout();
-    });
+Route::get('/subscription-checkout', function (Request $request) {
+    return $request->user()
+        ->newSubscription('default', 'price_monthly')
+        ->allowPromotionCodes()
+        ->checkout();
+});
+```
 
 > [!WARNING]
 > Rất tiếc, Stripe Checkout không hỗ trợ tất cả các tùy chọn thanh toán subscription khi subscription được bắt đầu. Việc sử dụng phương thức `anchorBillingCycleOn` trên subscription builder, sẽ set hành vi tính phí cho khoảng thời gian còn lại hoặc là sẽ set hành vi thanh toán sẽ không bị ảnh hưởng trong các session Stripe Checkout. Vui lòng tham khảo [tài liệu về API session của Stripe Checkout](https://stripe.com/docs/api/checkout/sessions/create) để xem qua những thông số nào sẽ khả dụng.
@@ -2066,9 +2388,11 @@ Tất nhiên, bạn cũng có thể kích hoạt mã khuyến mãi để thanh t
 
 Tất nhiên, bạn có thể định nghĩa một thời gian dùng thử khi xây dựng một subscription bằng Stripe Checkout:
 
-    $checkout = Auth::user()->newSubscription('default', 'price_monthly')
-        ->trialDays(3)
-        ->checkout();
+```php
+$checkout = Auth::user()->newSubscription('default', 'price_monthly')
+    ->trialDays(3)
+    ->checkout();
+```
 
 Tuy nhiên, thời gian dùng thử ít nhất phải là 48 giờ, đây là lượng thời gian dùng thử tối thiểu mà Stripe Checkout hỗ trợ.
 
@@ -2082,7 +2406,9 @@ Hãy nhớ rằng Stripe và Cashier cập nhật trạng thái subscription qua
 
 Checkout cũng hỗ trợ thu thập Tax ID của khách hàng. Để bật tính năng này trong một session thanh toán, hãy gọi phương thức `collectTaxIds` khi tạo session:
 
-    $checkout = $user->collectTaxIds()->checkout('price_tshirt');
+```php
+$checkout = $user->collectTaxIds()->checkout('price_tshirt');
+```
 
 Khi phương thức này được gọi, một checkbox sẽ được hiển thị cho khách hàng cho phép họ biết liệu họ có đang mua hàng với tư cách là một công ty hay không. Nếu có, họ sẽ cung cấp Tax ID của họ.
 
@@ -2094,31 +2420,35 @@ Khi phương thức này được gọi, một checkbox sẽ được hiển th�
 
 Sử dụng phương thức `Checkout::guest`, bạn có thể bắt đầu các session thanh toán cho những khách hàng không có "tài khoản" trong ứng dụng của bạn:
 
-    use Illuminate\Http\Request;
-    use Laravel\Cashier\Checkout;
+```php
+use Illuminate\Http\Request;
+use Laravel\Cashier\Checkout;
 
-    Route::get('/product-checkout', function (Request $request) {
-        return Checkout::guest()->create('price_tshirt', [
-            'success_url' => route('your-success-route'),
-            'cancel_url' => route('your-cancel-route'),
-        ]);
-    });
+Route::get('/product-checkout', function (Request $request) {
+    return Checkout::guest()->create('price_tshirt', [
+        'success_url' => route('your-success-route'),
+        'cancel_url' => route('your-cancel-route'),
+    ]);
+});
+```
 
 Tương tự như khi tạo session thanh toán cho người dùng hiện tại, bạn có thể sử dụng thêm các phương thức có sẵn trên instance session `Laravel\Cashier\CheckoutBuilder` để tùy chỉnh session thanh toán cho khách hàng:
 
-    use Illuminate\Http\Request;
-    use Laravel\Cashier\Checkout;
+```php
+use Illuminate\Http\Request;
+use Laravel\Cashier\Checkout;
 
-    Route::get('/product-checkout', function (Request $request) {
-        return Checkout::guest()
-            ->withPromotionCode('promo-code')
-            ->create('price_tshirt', [
-                'success_url' => route('your-success-route'),
-                'cancel_url' => route('your-cancel-route'),
-            ]);
-    });
+Route::get('/product-checkout', function (Request $request) {
+    return Checkout::guest()
+        ->withPromotionCode('promo-code')
+        ->create('price_tshirt', [
+            'success_url' => route('your-success-route'),
+            'cancel_url' => route('your-cancel-route'),
+        ]);
+});
+```
 
-Sau khi quá trình thanh toán hoàn tất, Stripe có thể gửi sự kiện webhook `checkout.session.completed`, vì vậy hãy đảm bảo là bạn đã [cấu hình webhook Stripe](https://dashboard.stripe.com/webhooks) để thực sự gửi sự kiện này vào ứng dụng của bạn. Sau khi bật webhook trong bảng điều khiển Stripe, bạn có thể [xử lý webhook bằng Cashier](#handling-stripe-webhooks). Đối tượng có trong payload của webhook này sẽ là một [đối tượng `checkout`](https://stripe.com/docs/api/checkout/sessions/object) mà bạn có thể dùng để kiểm tra đơn đặt hàng của khách hàng.
+Sau khi quá trình thanh toán hoàn tất, Stripe có thể gửi sự kiện webhook `checkout.session.completed`, vì vậy hãy đảm bảo là bạn đã [cấu hình webhook Stripe](https://dashboard.stripe.com/webhooks) để thực sự gửi sự kiện này vào ứng dụng của bạn. Sau khi bật webhook trong bảng điều khiển Stripe, bạn có thể [xử lý webhook bằng Cashier](#handling-stripe-webhooks). Đối tượng có trong payload của webhook này sẽ là một [đối tượng checkout](https://stripe.com/docs/api/checkout/sessions/object) mà bạn có thể dùng để kiểm tra đơn đặt hàng của khách hàng.
 
 <a name="handling-failed-payments"></a>
 ## Xử lý lỗi thanh toán
@@ -2127,17 +2457,19 @@ Thỉnh thoảng, thanh toán cho các subscription hoặc các khoản phí m�
 
 Một là, bạn có thể chuyển hướng khách hàng của bạn đến trang xác nhận thanh toán chuyên dụng đi kèm với Cashier. Trang này đã liên kết với một named route được đăng ký thông qua service provider của Cashier. Vì vậy, bạn có thể catch ngoại lệ `IncompletePayment` và chuyển hướng người dùng đến trang xác nhận thanh toán:
 
-    use Laravel\Cashier\Exceptions\IncompletePayment;
+```php
+use Laravel\Cashier\Exceptions\IncompletePayment;
 
-    try {
-        $subscription = $user->newSubscription('default', 'price_monthly')
-            ->create($paymentMethod);
-    } catch (IncompletePayment $exception) {
-        return redirect()->route(
-            'cashier.payment',
-            [$exception->payment->id, 'redirect' => route('home')]
-        );
-    }
+try {
+    $subscription = $user->newSubscription('default', 'price_monthly')
+        ->create($paymentMethod);
+} catch (IncompletePayment $exception) {
+    return redirect()->route(
+        'cashier.payment',
+        [$exception->payment->id, 'redirect' => route('home')]
+    );
+}
+```
 
 Trên trang xác nhận thanh toán, khách hàng sẽ được nhắc nhập lại thông tin thẻ tín dụng của họ và thực hiện thêm bất kỳ hành động nào theo yêu cầu của Stripe, chẳng hạn như xác nhận "3D Secure". Sau khi xác nhận thanh toán, người dùng sẽ được chuyển hướng đến URL được cung cấp bởi thông số `redirect` được chỉ định ở trên. Khi chuyển hướng, các biến url `message` (string) và `success` (integer) sẽ được thêm vào URL. Trang thanh toán hiện tại hỗ trợ các loại phương thức thanh toán sau:
 
@@ -2160,40 +2492,46 @@ Các ngoại lệ thanh toán có thể được đưa ra cho các phương th�
 
 Việc xác định xem subscription hiện tại có khoản thanh toán chưa hoàn thành hay không có thể được thực hiện bằng cách sử dụng phương thức `hasIncompletePayment` trên một billable model hoặc một instance subscription:
 
-    if ($user->hasIncompletePayment('default')) {
-        // ...
-    }
+```php
+if ($user->hasIncompletePayment('default')) {
+    // ...
+}
 
-    if ($user->subscription('default')->hasIncompletePayment()) {
-        // ...
-    }
+if ($user->subscription('default')->hasIncompletePayment()) {
+    // ...
+}
+```
 
 Bạn có thể lấy được trạng thái cụ thể của khoản thanh toán chưa hoàn tất bằng cách kiểm tra thuộc tính `payment` trong instance ngoại lệ:
 
-    use Laravel\Cashier\Exceptions\IncompletePayment;
+```php
+use Laravel\Cashier\Exceptions\IncompletePayment;
 
-    try {
-        $user->charge(1000, 'pm_card_threeDSecure2Required');
-    } catch (IncompletePayment $exception) {
-        // Get the payment intent status...
-        $exception->payment->status;
+try {
+    $user->charge(1000, 'pm_card_threeDSecure2Required');
+} catch (IncompletePayment $exception) {
+    // Get the payment intent status...
+    $exception->payment->status;
 
-        // Check specific conditions...
-        if ($exception->payment->requiresPaymentMethod()) {
-            // ...
-        } elseif ($exception->payment->requiresConfirmation()) {
-            // ...
-        }
+    // Check specific conditions...
+    if ($exception->payment->requiresPaymentMethod()) {
+        // ...
+    } elseif ($exception->payment->requiresConfirmation()) {
+        // ...
     }
+}
+```
 
 <a name="confirming-payments"></a>
 ### Xác nhận thanh toán
 
 Một số phương thức thanh toán yêu cầu thêm dữ liệu bổ sung để xác nhận thanh toán. Ví dụ, các phương thức thanh toán SEPA yêu cầu thêm dữ liệu "mandate" trong quá trình thanh toán. Bạn có thể cung cấp dữ liệu này cho Cashier bằng phương thức `withPaymentConfirmationOptions`:
 
-    $subscription->withPaymentConfirmationOptions([
-        'mandate_data' => '...',
-    ])->swap('price_xxx');
+```php
+$subscription->withPaymentConfirmationOptions([
+    'mandate_data' => '...',
+])->swap('price_xxx');
+```
 
 Bạn có thể tham khảo [tài liệu API Stripe](https://stripe.com/docs/api/payment_intents/confirm) để xem qua tất cả các tùy chọn được chấp nhận khi xác nhận thanh toán.
 
@@ -2238,21 +2576,27 @@ CASHIER_PAYMENT_NOTIFICATION=Laravel\Cashier\Notifications\ConfirmPayment
 
 Nhiều đối tượng của Cashier là các wrapper của các đối tượng Stripe SDK. Nếu bạn muốn tương tác trực tiếp với các đối tượng Stripe, bạn có thể lấy ra chúng bằng phương thức `asStripe`:
 
-    $stripeSubscription = $subscription->asStripeSubscription();
+```php
+$stripeSubscription = $subscription->asStripeSubscription();
 
-    $stripeSubscription->application_fee_percent = 5;
+$stripeSubscription->application_fee_percent = 5;
 
-    $stripeSubscription->save();
+$stripeSubscription->save();
+```
 
 Bạn cũng có thể sử dụng phương thức `updateStripeSubscription` để cập nhật trực tiếp một subscription Stripe:
 
-    $subscription->updateStripeSubscription(['application_fee_percent' => 5]);
+```php
+$subscription->updateStripeSubscription(['application_fee_percent' => 5]);
+```
 
 Bạn có thể gọi phương thức `stripe` trên class `Cashier` nếu bạn muốn sử dụng trực tiếp client `Stripe\StripeClient`. Ví dụ: bạn có thể sử dụng phương thức này để truy cập vào instance `StripeClient` và lấy ra danh sách giá từ tài khoản Stripe của bạn:
 
-    use Laravel\Cashier\Cashier;
+```php
+use Laravel\Cashier\Cashier;
 
-    $prices = Cashier::stripe()->prices->all();
+$prices = Cashier::stripe()->prices->all();
+```
 
 <a name="testing"></a>
 ## Testing
@@ -2263,7 +2607,9 @@ Khi testing, hãy nhớ rằng bản thân Cashier đã có sẵn một bộ tes
 
 Để bắt đầu, hãy thêm phiên bản **testing** của Stripe secret vào file `phpunit.xml` của bạn:
 
-    <env name="STRIPE_SECRET" value="sk_test_<your-key>"/>
+```xml
+<env name="STRIPE_SECRET" value="sk_test_<your-key>"/>
+```
 
 Bây giờ, bất cứ khi nào bạn tương tác với Cashier trong khi testing, nó sẽ gửi các request API thực tế đến môi trường testing của Stripe của bạn. Để thuận tiện, bạn nên tạo ra trước các subscription và các price cho tài khoản testing Stripe của bạn mà sau đó bạn có thể sử dụng các subscription đó hoặc các price đó trong quá trình testing.
 

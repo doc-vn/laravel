@@ -36,14 +36,14 @@
 
 [Laravel Sail](https://github.com/laravel/sail) là một giao diện command-line nhẹ để tương tác với môi trường phát triển Docker của Laravel. Sail cung cấp điểm khởi đầu tuyệt vời để xây dựng ứng dụng Laravel bằng PHP, MySQL và Redis mà không yêu cầu bất cứ kinh nghiệm Docker nào.
 
-Về cơ bản, Sail là file `docker-compose.yml` và script `sail` được lưu ở thư mục root của project của bạn. Script `sail` cung cấp một CLI với các phương thức thuận tiện để tương tác với các Docker container được định nghĩa bởi file `docker-compose.yml`.
+Về cơ bản, Sail là file `compose.yaml` và script `sail` được lưu ở thư mục root của project của bạn. Script `sail` cung cấp một CLI với các phương thức thuận tiện để tương tác với các Docker container được định nghĩa bởi file `compose.yaml`.
 
 Laravel Sail được hỗ trợ trên macOS, Linux và Windows (thông qua [WSL2](https://docs.microsoft.com/en-us/windows/wsl/about)).
 
 <a name="installation"></a>
 ## Cài đặt và setup
 
-Laravel Sail được cài đặt tự động cùng với tất cả các ứng dụng Laravel mới nên bạn có thể bắt đầu sử dụng nó ngay lập tức. Để tìm hiểu cách tạo ra một ứng dụng Laravel mới, vui lòng tham khảo [tài liệu cài đặt](/docs/{{version}}/installation#docker-installation-using-sail) của Laravel cho hệ điều hành của bạn. Trong quá trình cài đặt, bạn sẽ được yêu cầu chọn những service được Sail hỗ trợ mà ứng dụng của bạn sẽ tương tác cùng.
+Laravel Sail được cài đặt tự động cùng với tất cả các ứng dụng Laravel mới nên bạn có thể bắt đầu sử dụng nó ngay lập tức.
 
 <a name="installing-sail-into-existing-applications"></a>
 ### Cài đặt Sail vào trong application hiện tại
@@ -54,7 +54,7 @@ Nếu bạn quan tâm đến việc sử dụng Sail với ứng dụng Laravel 
 composer require laravel/sail --dev
 ```
 
-Sau khi Sail đã được cài đặt, bạn có thể chạy lệnh Artisan `sail:install`. Lệnh này sẽ export file `docker-compose.yml` của Sail vào thư mục root của ứng dụng của bạn và bạn có thể sửa file `.env` của bạn bằng các biến môi trường cần thiết để kết nối với các service của Docker:
+Sau khi Sail đã được cài đặt, bạn có thể chạy lệnh Artisan `sail:install`. Lệnh này sẽ export file `compose.yaml` của Sail vào thư mục root của ứng dụng của bạn và bạn có thể sửa file `.env` của bạn bằng các biến môi trường cần thiết để kết nối với các service của Docker:
 
 ```shell
 php artisan sail:install
@@ -67,7 +67,7 @@ Cuối cùng, bạn có thể bắt đầu Sail. Để tiếp tục tìm hiểu 
 ```
 
 > [!WARNING]
-> Nếu bạn đang sử dụng Docker Desktop cho Linux, bạn nên sử dụng Docker context `default` bằng cách chạy lệnh sau: `docker context use default`.
+> Nếu bạn đang sử dụng Docker Desktop cho Linux, bạn nên sử dụng Docker context `default` bằng cách chạy lệnh sau: `docker context use default`. Ngoài ra, nếu bạn gặp lỗi truy cập file ở trong các container, bạn có thể cần set biến môi trường `SUPERVISOR_PHP_USER` thành `root`.
 
 <a name="adding-additional-services"></a>
 #### Adding Additional Services
@@ -126,9 +126,9 @@ sail up
 <a name="starting-and-stopping-sail"></a>
 ## Starting và Stopping Sail
 
-File `docker-compose.yml` của Laravel Sail định nghĩa nhiều container Docker hoạt động cùng nhau để giúp bạn xây dựng các ứng dụng Laravel. Mỗi container này là một mục trong cấu hình `services` của file `docker-compose.yml` của bạn. Container `laravel.test` là container ứng dụng chính sẽ chạy ứng dụng của bạn.
+File `compose.yaml` của Laravel Sail định nghĩa nhiều container Docker hoạt động cùng nhau để giúp bạn xây dựng các ứng dụng Laravel. Mỗi container này là một mục trong cấu hình `services` của file `compose.yaml` của bạn. Container `laravel.test` là container ứng dụng chính sẽ chạy ứng dụng của bạn.
 
-Trước khi khởi động Sail, bạn phải đảm bảo rằng không có máy chủ web hoặc cơ sở dữ liệu nào khác đang chạy trên máy tính local của bạn. Để khởi động tất cả các container Docker được định nghĩa trong file `docker-compose.yml` của ứng dụng, bạn nên chạy lệnh `up`:
+Trước khi khởi động Sail, bạn phải đảm bảo rằng không có máy chủ web hoặc cơ sở dữ liệu nào khác đang chạy trên máy tính local của bạn. Để khởi động tất cả các container Docker được định nghĩa trong file `compose.yaml` của ứng dụng, bạn nên chạy lệnh `up`:
 
 ```shell
 sail up
@@ -183,24 +183,6 @@ Các lệnh của Composer có thể được chạy bằng lệnh `composer`. C
 sail composer require laravel/sanctum
 ```
 
-<a name="installing-composer-dependencies-for-existing-projects"></a>
-#### Installing Composer Dependencies For Existing Applications
-
-Nếu bạn đang phát triển một ứng dụng với một nhóm của bạn, bạn có thể không phải là người đầu tiên tạo ra ứng dụng Laravel. Do đó, không có library Composer nào của ứng dụng, kể cả Sail, sẽ được cài đặt sau khi bạn clone repository của ứng dụng vào máy tính local của bạn.
-
-Bạn có thể cài đặt các phần library của ứng dụng bằng cách điều hướng đến thư mục của ứng dụng và thực hiện lệnh sau. Lệnh này sử dụng một container Docker nhỏ chứa PHP và Composer để cài đặt các phần library của ứng dụng:
-
-```shell
-docker run --rm \
-    -u "$(id -u):$(id -g)" \
-    -v "$(pwd):/var/www/html" \
-    -w /var/www/html \
-    laravelsail/php84-composer:latest \
-    composer install --ignore-platform-reqs
-```
-
-Khi sử dụng image `laravelsail/phpXX-composer`, bạn nên sử dụng cùng một phiên bản PHP mà bạn đang định sử dụng cho ứng dụng của bạn (`80`, `81`, `82`, `83`, hoặc `84`).
-
 <a name="executing-artisan-commands"></a>
 ### Chạy Artisan Commands
 
@@ -233,7 +215,7 @@ sail yarn
 <a name="mysql"></a>
 ### MySQL
 
-Như bạn có thể nhận thấy, file `docker-compose.yml` của ứng dụng của bạn chứa một mục cho container MySQL. Container này sử dụng một [Docker volume](https://docs.docker.com/storage/volumes/) để lưu trữ dữ liệu trong cơ sở dữ liệu của bạn và nó sẽ được duy trì ngay cả khi dừng hoặc khởi động lại container.
+Như bạn có thể nhận thấy, file `compose.yaml` của ứng dụng của bạn chứa một mục cho container MySQL. Container này sử dụng một [Docker volume](https://docs.docker.com/storage/volumes/) để lưu trữ dữ liệu trong cơ sở dữ liệu của bạn và nó sẽ được duy trì ngay cả khi dừng hoặc khởi động lại container.
 
 Ngoài ra, lần đầu tiên container MySQL khởi động, nó sẽ tạo hai cơ sở dữ liệu cho bạn. Cơ sở dữ liệu đầu tiên được đặt tên bằng giá trị của biến môi trường `DB_DATABASE` và dành cho phát triển local của bạn. Cơ sở dữ liệu thứ hai là cơ sở dữ liệu test chuyên dụng có tên là `testing` và sẽ đảm bảo rằng các bài test của bạn không can thiệp vào dữ liệu phát triển của bạn.
 
@@ -244,7 +226,7 @@ Sau khi khởi động container, bạn có thể kết nối với instance MyS
 <a name="mongodb"></a>
 ### MongoDB
 
-Nếu bạn chọn cài đặt service [MongoDB](https://www.mongodb.com/) khi cài đặt Sail, file `docker-compose.yml` của ứng dụng của bạn có chứa sẵn một mục cho container [MongoDB Atlas Local](https://www.mongodb.com/docs/atlas/cli/current/atlas-cli-local-cloud/) cung cấp cơ sở dữ liệu document MongoDB với các tính năng của Atlas như [Search Indexes](https://www.mongodb.com/docs/atlas/atlas-search/). Container này sử dụng một [Docker volume](https://docs.docker.com/storage/volumes/) để dữ liệu có thể được lưu trữ trong cơ sở dữ liệu của bạn được duy trì ngay cả khi dừng và khởi động lại các container của bạn.
+Nếu bạn chọn cài đặt service [MongoDB](https://www.mongodb.com/) khi cài đặt Sail, file `compose.yaml` của ứng dụng của bạn có chứa sẵn một mục cho container [MongoDB Atlas Local](https://www.mongodb.com/docs/atlas/cli/current/atlas-cli-local-cloud/) cung cấp cơ sở dữ liệu document MongoDB với các tính năng của Atlas như [Search Indexes](https://www.mongodb.com/docs/atlas/atlas-search/). Container này sử dụng một [Docker volume](https://docs.docker.com/storage/volumes/) để dữ liệu có thể được lưu trữ trong cơ sở dữ liệu của bạn được duy trì ngay cả khi dừng và khởi động lại các container của bạn.
 
 Sau khi bạn đã khởi động các container của bạn, bạn có thể kết nối đến instance MongoDB trong ứng dụng của bạn bằng cách set biến môi trường `MONGODB_URI` trong file `.env` của ứng dụng thành `mongodb://mongodb:27017`. Mặc định, xác thực sẽ bị tắt disable, nhưng bạn có thể set các biến môi trường `MONGODB_USERNAME` và `MONGODB_PASSWORD` để enable xác thực trước khi khởi động container `mongodb`. Sau đó, thêm thông tin xác thực vào chuỗi kết nối:
 
@@ -261,28 +243,28 @@ MONGODB_URI=mongodb://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@mongodb:27017
 <a name="redis"></a>
 ### Redis
 
-File `docker-compose.yml` của ứng dụng của bạn cũng chứa một mục cho container [Redis](https://redis.io). Container này sử dụng một [Docker volume](https://docs.docker.com/storage/volumes/) để lưu trữ dữ liệu instance Redis của bạn và nó sẽ được duy trì ngay cả khi dừng hoặc khởi động lại container của bạn. Sau khi khởi động container, bạn có thể kết nối với instance Redis trong ứng dụng của bạn bằng cách set biến môi trường `REDIS_HOST` trong file `.env` của ứng dụng thành `redis`.
+File `compose.yaml` của ứng dụng của bạn cũng chứa một mục cho container [Redis](https://redis.io). Container này sử dụng một [Docker volume](https://docs.docker.com/storage/volumes/) để lưu trữ dữ liệu instance Redis của bạn và nó sẽ được duy trì ngay cả khi dừng hoặc khởi động lại container của bạn. Sau khi khởi động container, bạn có thể kết nối với instance Redis trong ứng dụng của bạn bằng cách set biến môi trường `REDIS_HOST` trong file `.env` của ứng dụng thành `redis`.
 
 Để kết nối đến cơ sở dữ liệu Redis của ứng dụng từ máy local, bạn có thể sử dụng ứng dụng quản lý cơ sở dữ liệu như [TablePlus](https://tableplus.com). Mặc định, cơ sở dữ liệu Redis có thể truy cập được tại `localhost` cổng 6379.
 
 <a name="valkey"></a>
 ### Valkey
 
-Nếu bạn chọn cài đặt service Valkey khi cài đặt Sail, file `docker-compose.yml` của ứng dụng của bạn sẽ chứa một mục cho [Valkey](https://valkey.io/). Container này sử dụng một [Docker volume](https://docs.docker.com/storage/volumes/) để dữ liệu được lưu trữ trong instance Valkey của bạn và được duy trì ngay cả khi dừng và khởi động lại các container của bạn. Bạn có thể kết nối với container này trong ứng dụng của bạn bằng cách set biến môi trường `REDIS_HOST` trong file `.env` của ứng dụng thành `valkey`.
+Nếu bạn chọn cài đặt service Valkey khi cài đặt Sail, file `compose.yaml` của ứng dụng của bạn sẽ chứa một mục cho [Valkey](https://valkey.io/). Container này sử dụng một [Docker volume](https://docs.docker.com/storage/volumes/) để dữ liệu được lưu trữ trong instance Valkey của bạn và được duy trì ngay cả khi dừng và khởi động lại các container của bạn. Bạn có thể kết nối với container này trong ứng dụng của bạn bằng cách set biến môi trường `REDIS_HOST` trong file `.env` của ứng dụng thành `valkey`.
 
 Để kết nối đến cơ sở dữ liệu Valkey của ứng dụng từ máy local của bạn, bạn có thể sử dụng ứng dụng quản lý cơ sở dữ liệu như [TablePlus](https://tableplus.com). Mặc định, cơ sở dữ liệu Valkey có thể truy cập được tại `localhost` cổng 6379.
 
 <a name="meilisearch"></a>
 ### Meilisearch
 
-Nếu bạn chọn cài đặt service [Meilisearch](https://www.meilisearch.com) khi cài đặt Sail, file `docker-compose.yml` của ứng dụng của bạn sẽ chứa một mục cho công cụ tìm kiếm mạnh mẽ này, nó đã được [tích hợp](https://github.com/meilisearch/meilisearch-laravel-scout) sẵn trong [Laravel Scout](/docs/{{version}}/scout). Sau khi khởi động container, bạn có thể kết nối đến instance Meilisearch trong ứng dụng của bạn bằng cách set biến môi trường `MEILISEARCH_HOST` thành `http://meilisearch:7700`.
+Nếu bạn chọn cài đặt service [Meilisearch](https://www.meilisearch.com) khi cài đặt Sail, file `compose.yaml` của ứng dụng của bạn sẽ chứa một mục cho công cụ tìm kiếm mạnh mẽ này, nó đã được [tích hợp](https://github.com/meilisearch/meilisearch-laravel-scout) sẵn trong [Laravel Scout](/docs/{{version}}/scout). Sau khi khởi động container, bạn có thể kết nối đến instance Meilisearch trong ứng dụng của bạn bằng cách set biến môi trường `MEILISEARCH_HOST` thành `http://meilisearch:7700`.
 
 Từ máy local của bạn, bạn có thể truy cập vào trang admin dựa trên web của Meilisearch bằng cách vào `http://localhost:7700` trong trình duyệt web của bạn.
 
 <a name="typesense"></a>
 ### Typesense
 
-Nếu bạn chọn cài đặt service [Typesense](https://typesense.org) khi cài đặt Sail, file `docker-compose.yml` của ứng dụng sẽ chứa một mục cho công cụ tìm kiếm mã nguồn mở này và được tích hợp sẵn với [Laravel Scout](/docs/{{version}}/scout#typesense). Sau khi khởi động container, bạn có thể kết nối với phiên bản Typesense trong ứng dụng của bạn bằng cách set các biến môi trường sau:
+Nếu bạn chọn cài đặt service [Typesense](https://typesense.org) khi cài đặt Sail, file `compose.yaml` của ứng dụng sẽ chứa một mục cho công cụ tìm kiếm mã nguồn mở này và được tích hợp sẵn với [Laravel Scout](/docs/{{version}}/scout#typesense). Sau khi khởi động container, bạn có thể kết nối với phiên bản Typesense trong ứng dụng của bạn bằng cách set các biến môi trường sau:
 
 ```ini
 TYPESENSE_HOST=typesense
@@ -296,7 +278,7 @@ Từ máy local của bạn, bạn có thể truy cập API của Typesense qua 
 <a name="file-storage"></a>
 ## File Storage
 
-Nếu bạn dự định sử dụng Amazon S3 để lưu trữ file trong khi chạy ứng dụng của bạn trong môi trường production, bạn có thể muốn cài đặt service [MinIO](https://min.io) khi cài đặt Sail. MinIO cung cấp API tương thích với S3 mà bạn có thể sử dụng để phát triển local bằng driver storage file `s3` của Laravel mà không cần tạo bucket lưu trữ "thử nghiệm" trong môi trường S3 production của bạn. Nếu bạn muốn chọn cài đặt MinIO trong khi cài đặt Sail, phần cấu hình MinIO sẽ được thêm vào file `docker-compose.yml` của ứng dụng của bạn.
+Nếu bạn dự định sử dụng Amazon S3 để lưu trữ file trong khi chạy ứng dụng của bạn trong môi trường production, bạn có thể muốn cài đặt service [MinIO](https://min.io) khi cài đặt Sail. MinIO cung cấp API tương thích với S3 mà bạn có thể sử dụng để phát triển local bằng driver storage file `s3` của Laravel mà không cần tạo bucket lưu trữ "thử nghiệm" trong môi trường S3 production của bạn. Nếu bạn muốn chọn cài đặt MinIO trong khi cài đặt Sail, phần cấu hình MinIO sẽ được thêm vào file `compose.yaml` của ứng dụng của bạn.
 
 Mặc định, file cấu hình `filesystems` của ứng dụng của bạn đã chứa cấu hình disk cho disk `s3`. Ngoài việc sử dụng disk này để tương tác với Amazon S3, bạn có thể sử dụng disk này để tương tác với bất kỳ dịch vụ lưu trữ file nào mà tương thích với S3 chẳng hạn như MinIO bằng cách sửa các biến môi trường liên quan đến kiểm soát cấu hình của nó. Ví dụ: khi sử dụng MinIO, cấu hình biến môi trường filesystem của bạn phải được định nghĩa như sau:
 
@@ -347,7 +329,7 @@ Mặc định, Sail sẽ tạo một cơ sở dữ liệu `testing` chuyên dụ
 <a name="laravel-dusk"></a>
 ### Laravel Dusk
 
-[Laravel Dusk](/docs/{{version}}/dusk) cung cấp API testing và automation browser dễ sử dụng và mang tính hàm ý. Nhờ Sail, bạn có thể chạy các bài test này mà không cần cài đặt Selenium hoặc các công cụ khác trên máy tính local của bạn. Để bắt đầu, hãy uncomment service Selenium trong file `docker-compose.yml` của ứng dụng của bạn:
+[Laravel Dusk](/docs/{{version}}/dusk) cung cấp API testing và automation browser dễ sử dụng và mang tính hàm ý. Nhờ Sail, bạn có thể chạy các bài test này mà không cần cài đặt Selenium hoặc các công cụ khác trên máy tính local của bạn. Để bắt đầu, hãy uncomment service Selenium trong file `compose.yaml` của ứng dụng của bạn:
 
 ```yaml
 selenium:
@@ -360,7 +342,7 @@ selenium:
         - sail
 ```
 
-Tiếp theo, hãy đảm bảo là service `laravel.test` trong file `docker-compose.yml` trong ứng dụng của bạn có một mục `depends_on` cho `selenium`:
+Tiếp theo, hãy đảm bảo là service `laravel.test` trong file `compose.yaml` trong ứng dụng của bạn có một mục `depends_on` cho `selenium`:
 
 ```yaml
 depends_on:
@@ -394,7 +376,7 @@ selenium:
 <a name="previewing-emails"></a>
 ## Previewing Emails
 
-File `docker-compose.yml` mặc định của Laravel Sail có chứa một mục cho service [Mailpit](https://github.com/axllent/mailpit). Mailpit sẽ chặn các email được gửi đi bởi ứng dụng của bạn trong quá trình phát triển local và cung cấp giao diện web thuận tiện để bạn có thể xem các email đã được gửi trong trình duyệt của bạn. Khi sử dụng Sail, máy chủ mặc định của Mailpit là `mailpit` và trên cổng 1025:
+File `compose.yaml` mặc định của Laravel Sail có chứa một mục cho service [Mailpit](https://github.com/axllent/mailpit). Mailpit sẽ chặn các email được gửi đi bởi ứng dụng của bạn trong quá trình phát triển local và cung cấp giao diện web thuận tiện để bạn có thể xem các email đã được gửi trong trình duyệt của bạn. Khi sử dụng Sail, máy chủ mặc định của Mailpit là `mailpit` và trên cổng 1025:
 
 ```ini
 MAIL_HOST=mailpit
@@ -424,7 +406,7 @@ sail tinker
 <a name="sail-php-versions"></a>
 ## PHP Versions
 
-Sail hiện hỗ trợ chạy ứng dụng của bạn thông qua PHP 8.4, 8.3, 8.2, 8.1, hoặc PHP 8.0. Phiên bản PHP mặc định được Sail sử dụng hiện tại là PHP 8.4. Để thay đổi phiên bản PHP được sử dụng để chạy ứng dụng của bạn, bạn nên cập nhật định nghĩa `build` của container `laravel.test` trong file `docker-compose.yml` của ứng dụng:
+Sail hiện hỗ trợ chạy ứng dụng của bạn thông qua PHP 8.4, 8.3, 8.2, 8.1, hoặc PHP 8.0. Phiên bản PHP mặc định được Sail sử dụng hiện tại là PHP 8.4. Để thay đổi phiên bản PHP được sử dụng để chạy ứng dụng của bạn, bạn nên cập nhật định nghĩa `build` của container `laravel.test` trong file `compose.yaml` của ứng dụng:
 
 ```yaml
 # PHP 8.4
@@ -443,13 +425,13 @@ context: ./vendor/laravel/sail/runtimes/8.1
 context: ./vendor/laravel/sail/runtimes/8.0
 ```
 
-Ngoài ra, bạn có thể muốn cập nhật tên `image` của bạn để phản ánh phiên bản PHP đang được ứng dụng của bạn sử dụng. Tùy chọn này cũng được định nghĩa trong file `docker-compose.yml` trong ứng dụng của bạn:
+Ngoài ra, bạn có thể muốn cập nhật tên `image` của bạn để phản ánh phiên bản PHP đang được ứng dụng của bạn sử dụng. Tùy chọn này cũng được định nghĩa trong file `compose.yaml` trong ứng dụng của bạn:
 
 ```yaml
 image: sail-8.2/app
 ```
 
-Sau khi cập nhật file `docker-compose.yml` của ứng dụng, bạn nên build lại image container của bạn:
+Sau khi cập nhật file `compose.yaml` của ứng dụng, bạn nên build lại image container của bạn:
 
 ```shell
 sail build --no-cache
@@ -460,7 +442,7 @@ sail up
 <a name="sail-node-versions"></a>
 ## Node Versions
 
-Mặc định, Sail cài đặt Node 20. Để thay đổi phiên bản Node được cài đặt khi build image của bạn, bạn có thể cập nhật định nghĩa `build.args` của service `laravel.test` trong file `docker-compose.yml` của ứng dụng của bạn:
+Mặc định, Sail cài đặt Node 22. Để thay đổi phiên bản Node được cài đặt khi build image của bạn, bạn có thể cập nhật định nghĩa `build.args` của service `laravel.test` trong file `compose.yaml` của ứng dụng của bạn:
 
 ```yaml
 build:
@@ -469,7 +451,7 @@ build:
         NODE_VERSION: '18'
 ```
 
-Sau khi cập nhật file `docker-compose.yml` của ứng dụng, bạn nên build lại image container của bạn:
+Sau khi cập nhật file `compose.yaml` của ứng dụng, bạn nên build lại image container của bạn:
 
 ```shell
 sail build --no-cache
@@ -488,9 +470,11 @@ sail share
 
 Khi chia sẻ trang web của bạn thông qua lệnh `share`, bạn nên cấu hình các proxy đáng tin cậy của ứng dụng của bạn dùng phương thức middleware `trustProxies` trong file `bootstrap/app.php` của ứng dụng của bạn. Nếu không, các helper tạo URL như `url` và `route` sẽ không thể xác định HTTP host chính xác sẽ được sử dụng trong quá trình tạo URL:
 
-    ->withMiddleware(function (Middleware $middleware) {
-        $middleware->trustProxies(at: '*');
-    })
+```php
+->withMiddleware(function (Middleware $middleware): void {
+    $middleware->trustProxies(at: '*');
+})
+```
 
 Nếu bạn muốn chọn subdomain cho trang web được chia sẻ của bạn, bạn có thể cung cấp tùy chọn `subdomain` khi chạy lệnh `share`:
 
@@ -527,7 +511,7 @@ sail build --no-cache
 
 Bên trong, biến môi trường `XDEBUG_CONFIG` sẽ được định nghĩa là `client_host=host.docker.internal` để Xdebug sẽ được cấu hình đúng cho Mac và Windows (WSL2). Nếu máy local của bạn đang chạy Linux và đang sử dụng Docker 20.10+, thì `host.docker.internal` sẽ có sẵn và không cần bạn phải cấu hình.
 
-Đối với các phiên bản Docker cũ hơn 20.10, `host.docker.internal` không được hỗ trợ trên Linux và bạn sẽ cần tự định nghĩa IP của host. Để làm điều này, hãy cấu hình một IP tĩnh cho container của bạn bằng cách định nghĩa một network tùy chỉnh trong file `docker-compose.yml` của bạn:
+Đối với các phiên bản Docker cũ hơn 20.10, `host.docker.internal` không được hỗ trợ trên Linux và bạn sẽ cần tự định nghĩa IP của host. Để làm điều này, hãy cấu hình một IP tĩnh cho container của bạn bằng cách định nghĩa một network tùy chỉnh trong file `compose.yaml` của bạn:
 
 ```yaml
 networks:
@@ -581,7 +565,7 @@ Vì Sail chỉ là Docker nên bạn có thể tự do tùy chỉnh hầu hết 
 sail artisan sail:publish
 ```
 
-Sau khi chạy lệnh này, Dockerfiles và các file cấu hình khác được Laravel Sail sử dụng sẽ được lưu vào trong thư mục `docker` trong thư mục root của ứng dụng của bạn. Sau khi tùy chỉnh cài đặt của Sail, bạn có thể muốn thay đổi tên image cho container ứng dụng trong file `docker-compose.yml` của ứng dụng. Sau khi làm như vậy, hãy build lại container ứng dụng của bạn bằng lệnh `build`. Gán một tên duy nhất cho image ứng dụng sẽ đặc biệt quan trọng nếu bạn đang sử dụng Sail để phát triển nhiều ứng dụng Laravel trên một máy local:
+Sau khi chạy lệnh này, Dockerfiles và các file cấu hình khác được Laravel Sail sử dụng sẽ được lưu vào trong thư mục `docker` trong thư mục root của ứng dụng của bạn. Sau khi tùy chỉnh cài đặt của Sail, bạn có thể muốn thay đổi tên image cho container ứng dụng trong file `compose.yaml` của ứng dụng. Sau khi làm như vậy, hãy build lại container ứng dụng của bạn bằng lệnh `build`. Gán một tên duy nhất cho image ứng dụng sẽ đặc biệt quan trọng nếu bạn đang sử dụng Sail để phát triển nhiều ứng dụng Laravel trên một máy local:
 
 ```shell
 sail build --no-cache

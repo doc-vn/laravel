@@ -18,6 +18,7 @@
     - [Ports](#ports)
     - [Process Management](#process-management)
     - [Scaling](#scaling)
+- [Events](#events)
 
 <a name="introduction"></a>
 ## Giới thiệu
@@ -29,7 +30,7 @@
 
 Bạn có thể cài đặt Reverb bằng cách sử dụng lệnh Artisan `install:broadcasting`:
 
-```
+```shell
 php artisan install:broadcasting
 ```
 
@@ -91,7 +92,7 @@ Trong nhiều trường hợp, kết nối WebSocket secure có thể được x
 
 Tuy nhiên, thỉnh thoảng việc server Reverb xử lý trực tiếp các kết nối secure có thể hữu ích, chẳng hạn như trong quá trình phát triển ở local. Nếu bạn đang sử dụng chức năng secure site của [Laravel Herd](https://herd.laravel.com), hoặc bạn đang sử dụng [Laravel Valet](/docs/{{version}}/valet) và đã chạy [lệnh secure](/docs/{{version}}/valet#securing-sites) trên ứng dụng của bạn, bạn có thể sử dụng chứng chỉ Herd hoặc Valet được tạo cho trang web của bạn để secure các kết nối Reverb. Để thực hiện điều này, hãy set biến môi trường `REVERB_HOST` thành hostname của trang web hoặc truyền tùy chọn hostname khi khởi động server Reverb:
 
-```sh
+```shell
 php artisan reverb:start --host="0.0.0.0" --port=8080 --hostname="laravel.test"
 ```
 
@@ -112,7 +113,7 @@ Bạn cũng có thể tự mình chọn một chứng chỉ bằng cách định
 
 Server Reverb có thể được khởi động bằng lệnh Artisan `reverb:start`:
 
-```sh
+```shell
 php artisan reverb:start
 ```
 
@@ -120,7 +121,7 @@ Mặc định, server Reverb sẽ được khởi động tại `0.0.0.0:8080`, 
 
 Nếu bạn cần chỉ định host hoặc cổng riêng, bạn có thể thực hiện điều này thông qua tùy chọn `--host` và `--port` khi khởi động server:
 
-```sh
+```shell
 php artisan reverb:start --host=127.0.0.1 --port=9000
 ```
 
@@ -141,7 +142,7 @@ REVERB_PORT=443
 
 Để cải thiện hiệu suất, mặc định Reverb sẽ không xuất bất kỳ thông tin debug nào. Nếu bạn muốn xem luồng dữ liệu đi qua server Reverb, bạn có thể thêm tùy chọn `--debug` vào lệnh `reverb:start`:
 
-```sh
+```shell
 php artisan reverb:start --debug
 ```
 
@@ -152,7 +153,7 @@ Vì Reverb là một tiến trình chạy lâu dài nên những thay đổi tro
 
 Lệnh `reverb:restart` sẽ đảm bảo tất cả các kết nối sẽ được kết thúc trước khi máy chủ được dừng. Nếu bạn đang chạy Reverb với trình quản lý process như Supervisor, thì máy chủ sẽ tự động được trình quản lý process khởi động lại sau khi tất cả các kết nối đã kết thúc:
 
-```sh
+```shell
 php artisan reverb:restart
 ```
 
@@ -176,7 +177,7 @@ use Laravel\Reverb\Pulse\Recorders\ReverbMessages;
         'sample_rate' => 1,
     ],
 
-    ...
+    // ...
 ],
 ```
 
@@ -210,7 +211,7 @@ Mỗi kết nối WebSocket sẽ được lưu trong bộ nhớ cho đến khi c
 
 Trên hệ điều hành Unix, bạn có thể xác định số lượng file được phép mở bằng lệnh `ulimit`:
 
-```sh
+```shell
 ulimit -n
 ```
 
@@ -229,7 +230,7 @@ Về cơ bản, Reverb sử dụng vòng lặp event ReactPHP để quản lý c
 
 Reverb sẽ tự động chuyển sang các vòng lặp khác được hỗ trợ bởi `ext-uv` khi sẵn sàng. Extension PHP này đều có thể cài đặt qua PECL:
 
-```sh
+```shell
 pecl install uv
 ```
 
@@ -284,7 +285,7 @@ Cấu hình trên cho phép tạo tối đa 10000 Nginx worker cho mỗi process
 
 Các hệ điều hành dựa trên Unix thường sẽ giới hạn số lượng cổng có thể mở trên máy chủ. Bạn có thể xem phạm vi được phép mở thông qua lệnh sau:
 
- ```sh
+```shell
 cat /proc/sys/net/ipv4/ip_local_port_range
 # 32768	60999
 ```
@@ -316,3 +317,30 @@ REVERB_SCALING_ENABLED=true
 Tiếp theo, bạn nên có một máy chủ Redis trung tâm mà tất cả các máy chủ Reverb sẽ giao tiếp đến. Reverb sẽ sử dụng [kết nối Redis mặc định được cấu hình cho ứng dụng của bạn](/docs/{{version}}/redis#configuration) để publish tin nhắn đến tất cả các máy chủ Reverb của bạn.
 
 Sau khi bật tùy chọn mở rộng của Reverb và cấu hình máy chủ Redis, bạn chỉ cần gọi lệnh `reverb:start` trên tất cả các máy chủ Reverb của bạn. Các máy chủ Reverb này nên được đặt phía sau một load balancer để phân bổ đều các request giữa các máy chủ.
+
+<a name="events"></a>
+## Events
+
+Reverb gửi đi các internal event trong suốt vòng đời của một kết nối và quá trình xử lý tin nhắn. Bạn có thể [lắng nghe các event này](/docs/{{version}}/events) này để thực hiện các hành động khi các kết nối được quản lý hoặc các tin nhắn được trao đổi.
+
+Các event sau đây sẽ được Reverb gửi đi:
+
+#### `Laravel\Reverb\Events\ChannelCreated`
+
+Được gửi khi một channel được tạo. Điều này thường xảy ra khi kết nối đăng ký lần đầu tiên vào một channel. Event nhận vào một instance `Laravel\Reverb\Protocols\Pusher\Channel`.
+
+#### `Laravel\Reverb\Events\ChannelRemoved`
+
+Được gửi khi một channel bị xóa. Điều này thường xảy ra khi kết nối cuối cùng hủy đăng ký một channel. Event nhận vào một instance `Laravel\Reverb\Protocols\Pusher\Channel`.
+
+#### `Laravel\Reverb\Events\ConnectionPruned`
+
+Được gửi khi một kết nối cũ bị server xoá. Event nhận vào một instance `Laravel\Reverb\Contracts\Connection`.
+
+#### `Laravel\Reverb\Events\MessageReceived`
+
+Được gửi khi nhận được một tin nhắn từ một kết nối client. Event nhận vào một instance `Laravel\Reverb\Contracts\Connection` và một chuỗi `$message` raw.
+
+#### `Laravel\Reverb\Events\MessageSent`
+
+Được gửi khi một tin nhắn được gửi tới một kết nối client. Event nhận vào một instance `Laravel\Reverb\Contracts\Connection` và một chuỗi `$message` raw.

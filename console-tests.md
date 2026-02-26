@@ -33,30 +33,36 @@ public function test_console_command(): void
 
 Bạn có thể sử dụng phương thức `assertNotExitCode` để kiểm tra rằng lệnh đã thoát với một exit code nhất định:
 
-    $this->artisan('inspire')->assertNotExitCode(1);
+```php
+$this->artisan('inspire')->assertNotExitCode(1);
+```
 
 Tất nhiên, tất cả các lệnh terminal thường thoát với một status code là `0` khi chúng thành công và exit code khác 0 khi chúng thất bại. Do đó, để thuận tiện, bạn có thể sử dụng kiểm tra `assertSuccessful` và `assertFailed` để kiểm tra rằng một lệnh nhất định đã thoát với exit code thành công hay không:
 
-    $this->artisan('inspire')->assertSuccessful();
+```php
+$this->artisan('inspire')->assertSuccessful();
 
-    $this->artisan('inspire')->assertFailed();
+$this->artisan('inspire')->assertFailed();
+```
 
 <a name="input-output-expectations"></a>
 ## Kỳ vọng input và output
 
 Laravel cho phép bạn dễ dàng "mô phỏng" cách nhập của người dùng trên các cửa sổ dòng lệnh bằng phương thức `expectsQuestion`. Ngoài ra, bạn cũng có thể sử dụng các phương thức `assertExitCode` và `expectsOutput` để chỉ định các exit code và các text mà bạn mong muốn được xuất hiện trên cửa sổ dòng lệnh. Ví dụ: hãy xem lệnh console sau:
 
-    Artisan::command('question', function () {
-        $name = $this->ask('What is your name?');
+```php
+Artisan::command('question', function () {
+    $name = $this->ask('What is your name?');
 
-        $language = $this->choice('Which language do you program in?', [
-            'PHP',
-            'Ruby',
-            'Python',
-        ]);
+    $language = $this->choice('Which language do you program in?', [
+        'PHP',
+        'Ruby',
+        'Python',
+    ]);
 
-        $this->line('Your name is '.$name.' and you program in '.$language.'.');
-    });
+    $this->line('Your name is '.$name.' and you program in '.$language.'.');
+});
+```
 
 Bạn có thể kiểm tra lệnh này bằng cách sử dụng bài test dưới đây:
 
@@ -133,8 +139,8 @@ test('console command', function () {
 public function test_console_command(): void
 {
     $this->artisan('example')
-            ->doesntExpectOutput()
-            ->assertExitCode(0);
+        ->doesntExpectOutput()
+        ->assertExitCode(0);
 }
 ```
 
@@ -155,8 +161,8 @@ test('console command', function () {
 public function test_console_command(): void
 {
     $this->artisan('example')
-            ->expectsOutputToContain('Taylor')
-            ->assertExitCode(0);
+        ->expectsOutputToContain('Taylor')
+        ->assertExitCode(0);
 }
 ```
 
@@ -165,23 +171,27 @@ public function test_console_command(): void
 
 Khi viết một lệnh để kiểm tra một confirmation dưới dạng câu trả lời "có" hoặc "không", bạn có thể sử dụng phương thức `expectsConfirmation`:
 
-    $this->artisan('module:import')
-        ->expectsConfirmation('Do you really wish to run this command?', 'no')
-        ->assertExitCode(1);
+```php
+$this->artisan('module:import')
+    ->expectsConfirmation('Do you really wish to run this command?', 'no')
+    ->assertExitCode(1);
+```
 
 <a name="table-expectations"></a>
 #### Table Expectations
 
 Nếu lệnh của bạn hiển thị một bảng thông tin bằng cách sử dụng phương thức `table` của Artisan, thì việc viết các kỳ vọng output cho toàn bộ bảng có thể rất phức tạp. Thay vào đó, bạn có thể sử dụng phương thức `expectsTable`. Phương thức này sẽ chấp nhận header của bảng làm tham số đầu tiên và dữ liệu của bảng đó làm tham số thứ hai:
 
-    $this->artisan('users:all')
-        ->expectsTable([
-            'ID',
-            'Email',
-        ], [
-            [1, 'taylor@example.com'],
-            [2, 'abigail@example.com'],
-        ]);
+```php
+$this->artisan('users:all')
+    ->expectsTable([
+        'ID',
+        'Email',
+    ], [
+        [1, 'taylor@example.com'],
+        [2, 'abigail@example.com'],
+    ]);
+```
 
 <a name="console-events"></a>
 ## Console Events
@@ -193,7 +203,7 @@ Mặc định, các event `Illuminate\Console\Events\CommandStarting` và `Illum
 
 use Illuminate\Foundation\Testing\WithConsoleEvents;
 
-uses(WithConsoleEvents::class);
+pest()->use(WithConsoleEvents::class);
 
 // ...
 ```

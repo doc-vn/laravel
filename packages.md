@@ -6,14 +6,15 @@
 - [Service Provider](#service-providers)
 - [Resources](#resources)
     - [Cấu hình](#configuration)
+    - [Routes](#routes)
     - [Migration](#migrations)
-    - [Route](#routes)
     - [Language File](#language-files)
     - [View](#views)
     - [View Components](#view-components)
     - [Lệnh Artisan "About"](#about-artisan-command)
 - [Lệnh](#commands)
     - [Optimize Commands](#optimize-commands)
+    - [Reload Commands](#reload-commands)
 - [Public Assets](#public-assets)
 - [Publishing File Groups](#publishing-file-groups)
 
@@ -93,19 +94,23 @@ Một service provider sẽ được extend từ class `Illuminate\Support\Servi
 
 Thông thường, bạn sẽ cần export file cấu hình của package vào thư mục `config` của application. Điều này cho phép người dùng package của bạn dễ dàng ghi đè các tùy chọn cấu hình mặc định mà bạn đã thiết lập. Để các file cấu hình của bạn có thể export, hãy gọi phương thức `publishes` từ trong phương thức `boot` của service provider của bạn:
 
-    /**
-     * Bootstrap any package services.
-     */
-    public function boot(): void
-    {
-        $this->publishes([
-            __DIR__.'/../config/courier.php' => config_path('courier.php'),
-        ]);
-    }
+```php
+/**
+ * Bootstrap any package services.
+ */
+public function boot(): void
+{
+    $this->publishes([
+        __DIR__.'/../config/courier.php' => config_path('courier.php'),
+    ]);
+}
+```
 
 Bây giờ, khi người dùng chạy lệnh `vendor:publish` của Laravel, thì file cấu hình của bạn sẽ được sao chép đến vị trí export đã được chỉ định. Khi file cấu hình của bạn đã được export, thì các giá trị của nó cũng có thể được truy cập như bất kỳ file cấu hình bình thường nào khác:
 
-    $value = config('courier.option');
+```php
+$value = config('courier.option');
+```
 
 > [!WARNING]
 > Bạn không nên định nghĩa closures trong file cấu hình của bạn. Vì nó sẽ không thể chuyển đổi chính xác khi người dùng chạy lệnh Artisan `config:cache`.
@@ -117,15 +122,17 @@ Bạn cũng có thể merge file cấu hình package của bạn với một b�
 
 Phương thức `mergeConfigFrom` sẽ chấp nhận một đường dẫn đến file cấu hình package của bạn làm tham số đầu tiên và tên của bản sao file cấu hình của ứng dụng làm tham số thứ hai:
 
-    /**
-     * Register any application services.
-     */
-    public function register(): void
-    {
-        $this->mergeConfigFrom(
-            __DIR__.'/../config/courier.php', 'courier'
-        );
-    }
+```php
+/**
+ * Register any package services.
+ */
+public function register(): void
+{
+    $this->mergeConfigFrom(
+        __DIR__.'/../config/courier.php', 'courier'
+    );
+}
+```
 
 > [!WARNING]
 > Phương thức này chỉ merge ở mức độ đầu tiên của mảng. Nếu người dùng của bạn định nghĩa một mảng cấu hình lồng nhau, thì các tùy chọn bị thiếu sẽ không được merge.
@@ -135,45 +142,53 @@ Phương thức `mergeConfigFrom` sẽ chấp nhận một đường dẫn đế
 
 Nếu package của bạn chứa các route, thì bạn có thể load chúng bằng phương thức `loadRoutesFrom`. Phương thức này sẽ tự động kiểm tra xem các route hiện tại của application có đang được lưu trong bộ nhớ cache hay không và sẽ không tải lại file route của bạn nếu file route đó đã được lưu trong bộ nhớ cache:
 
-    /**
-     * Bootstrap any package services.
-     */
-    public function boot(): void
-    {
-        $this->loadRoutesFrom(__DIR__.'/../routes/web.php');
-    }
+```php
+/**
+ * Bootstrap any package services.
+ */
+public function boot(): void
+{
+    $this->loadRoutesFrom(__DIR__.'/../routes/web.php');
+}
+```
 
 <a name="migrations"></a>
 ### Migration
 
 Nếu package của bạn chứa [database migrations](/docs/{{version}}/migrations), bạn có thể sử dụng phương thức `publishesMigrations` để thông báo cho Laravel biết thư mục hoặc file mà có chứa các migration. Khi Laravel publish các migration, nó sẽ tự động cập nhật timestamp trong tên file của chúng để phản ánh ngày và giờ hiện tại:
 
-    /**
-     * Bootstrap any package services.
-     */
-    public function boot(): void
-    {
-        $this->publishesMigrations([
-            __DIR__.'/../database/migrations' => database_path('migrations'),
-        ]);
-    }
+```php
+/**
+ * Bootstrap any package services.
+ */
+public function boot(): void
+{
+    $this->publishesMigrations([
+        __DIR__.'/../database/migrations' => database_path('migrations'),
+    ]);
+}
+```
 
 <a name="language-files"></a>
 ### Language File
 
 Nếu package của bạn chứa các [language files](/docs/{{version}}/localization), bạn có thể sử dụng phương thức `loadTranslationsFrom` để thông báo cho Laravel biết cách load chúng. Ví dụ: nếu package của bạn có tên là `courier`, thì bạn nên thêm code sau vào phương thức `boot` của service provider:
 
-    /**
-     * Bootstrap any package services.
-     */
-    public function boot(): void
-    {
-        $this->loadTranslationsFrom(__DIR__.'/../lang', 'courier');
-    }
+```php
+/**
+ * Bootstrap any package services.
+ */
+public function boot(): void
+{
+    $this->loadTranslationsFrom(__DIR__.'/../lang', 'courier');
+}
+```
 
 Các bản translation của package của bạn sẽ được tham chiếu bằng cách sử dụng quy ước cú pháp như sau `package::file.line`. Vì vậy, bạn có thể load dòng `welcome` của package `courier` từ file `messages` như sau:
 
-    echo trans('courier::messages.welcome');
+```php
+echo trans('courier::messages.welcome');
+```
 
 Bạn có thể đăng ký các file JSON translation cho package của bạn bằng phương thức `loadJsonTranslationsFrom`. Phương thức này chấp nhận đường dẫn đến thư mục chứa các file JSON translation cho package của bạn:
 
@@ -192,17 +207,19 @@ public function boot(): void
 
 Nếu bạn muốn export các file language của package của bạn sang thư mục `lang/vendor` của application, bạn có thể sử dụng phương thức `publishes` của service provider. Phương thức `publishes` chấp nhận một mảng các đường dẫn đến file translation của package và vị trí export mà bạn mong muốn. Ví dụ, để export các file language cho package `courier`, bạn có thể làm như sau:
 
-    /**
-     * Bootstrap any package services.
-     */
-    public function boot(): void
-    {
-        $this->loadTranslationsFrom(__DIR__.'/../lang', 'courier');
+```php
+/**
+ * Bootstrap any package services.
+ */
+public function boot(): void
+{
+    $this->loadTranslationsFrom(__DIR__.'/../lang', 'courier');
 
-        $this->publishes([
-            __DIR__.'/../lang' => $this->app->langPath('vendor/courier'),
-        ]);
-    }
+    $this->publishes([
+        __DIR__.'/../lang' => $this->app->langPath('vendor/courier'),
+    ]);
+}
+```
 
 Bây giờ, khi người dùng package của bạn chạy lệnh Artisan `vendor:publish` của Laravel, file language của package của bạn sẽ được export đến vị trí export đã được khai báo.
 
@@ -211,19 +228,23 @@ Bây giờ, khi người dùng package của bạn chạy lệnh Artisan `vendor
 
 Để đăng ký [views](/docs/{{version}}/views) của package với Laravel, bạn cần cho Laravel biết vị trí của các view. Bạn có thể làm điều này bằng cách sử dụng phương thức `loadViewsFrom` của service provider. Phương thức `loadViewsFrom` chấp nhận hai tham số: một là đường dẫn đến các view template và hai là tên của package của bạn. Ví dụ: nếu tên của package của bạn là `courier`, thì bạn nên thêm dòng sau vào phương thức `boot` của service provider:
 
-    /**
-     * Bootstrap any package services.
-     */
-    public function boot(): void
-    {
-        $this->loadViewsFrom(__DIR__.'/../resources/views', 'courier');
-    }
+```php
+/**
+ * Bootstrap any package services.
+ */
+public function boot(): void
+{
+    $this->loadViewsFrom(__DIR__.'/../resources/views', 'courier');
+}
+```
 
 Các view package được tham chiếu bằng cách sử dụng quy ước cú pháp như sau `package::view`. Vì vậy, khi đường dẫn view của bạn đã được đăng ký vào trong một service provider, bạn có thể load view `dashboard` từ package `courier` như sau:
 
-    Route::get('/dashboard', function () {
-        return view('courier::dashboard');
-    });
+```php
+Route::get('/dashboard', function () {
+    return view('courier::dashboard');
+});
+```
 
 <a name="overriding-package-views"></a>
 #### Overriding Package Views
@@ -235,17 +256,19 @@ Khi bạn sử dụng phương thức `loadViewsFrom`, Laravel sẽ đăng ký h
 
 Nếu bạn muốn export các view vào thư mục `resources/views/vendor` của application, bạn có thể sử dụng phương thức` publishes` của service provider. Phương thức `publishes` chấp nhận một mảng các đường dẫn view package của bạn và vị trí export mà bạn mong muốn:
 
-    /**
-     * Bootstrap the package services.
-     */
-    public function boot(): void
-    {
-        $this->loadViewsFrom(__DIR__.'/../resources/views', 'courier');
+```php
+/**
+ * Bootstrap the package services.
+ */
+public function boot(): void
+{
+    $this->loadViewsFrom(__DIR__.'/../resources/views', 'courier');
 
-        $this->publishes([
-            __DIR__.'/../resources/views' => resource_path('views/vendor/courier'),
-        ]);
-    }
+    $this->publishes([
+        __DIR__.'/../resources/views' => resource_path('views/vendor/courier'),
+    ]);
+}
+```
 
 Bây giờ, nếu người dùng package của bạn chạy lệnh Artisan `vendor:publish` của Laravel, thì các view package của bạn sẽ được export đến vị trí export mà bạn đã khai báo.
 
@@ -254,16 +277,18 @@ Bây giờ, nếu người dùng package của bạn chạy lệnh Artisan `vend
 
 Nếu bạn đang xây dựng một package sử dụng các component Blade hoặc lưu các component trong các thư mục mà không theo quy ước sẵn của Laravel, bạn sẽ cần phải tự đăng ký class component của bạn và bí danh tag HTML của nó để Laravel biết nơi tìm component. Bạn nên đăng ký các component của bạn trong phương thức `boot` của service provider trong package:
 
-    use Illuminate\Support\Facades\Blade;
-    use VendorPackage\View\Components\AlertComponent;
+```php
+use Illuminate\Support\Facades\Blade;
+use VendorPackage\View\Components\AlertComponent;
 
-    /**
-     * Bootstrap your package's services.
-     */
-    public function boot(): void
-    {
-        Blade::component('package-alert', AlertComponent::class);
-    }
+/**
+ * Bootstrap your package's services.
+ */
+public function boot(): void
+{
+    Blade::component('package-alert', AlertComponent::class);
+}
+```
 
 Sau khi component của bạn đã được đăng ký, nó có thể được hiển thị bằng cách sử dụng bí danh tag của nó:
 
@@ -276,15 +301,17 @@ Sau khi component của bạn đã được đăng ký, nó có thể được h
 
 Ngoài ra, bạn có thể sử dụng phương thức `componentNamespace` để tự động load các class component theo quy ước. Ví dụ: package `Nightshade` có thể có các component `Calendar` và `ColorPicker` nằm trong namespace là `Nightshade\Views\Components`:
 
-    use Illuminate\Support\Facades\Blade;
+```php
+use Illuminate\Support\Facades\Blade;
 
-    /**
-     * Bootstrap your package's services.
-     */
-    public function boot(): void
-    {
-        Blade::componentNamespace('Nightshade\\Views\\Components', 'nightshade');
-    }
+/**
+ * Bootstrap your package's services.
+ */
+public function boot(): void
+{
+    Blade::componentNamespace('Nightshade\\Views\\Components', 'nightshade');
+}
+```
 
 Điều này sẽ cho phép sử dụng các package component theo namespace của họ bằng cách sử dụng cú pháp như sau: `package-name::`:
 
@@ -298,7 +325,7 @@ Blade sẽ tự động phát hiện class được liên kết với component 
 <a name="anonymous-components"></a>
 #### Anonymous Components
 
-Nếu package của bạn chứa các component ẩn, thì chúng phải được lưu trong thư mục `components` của thư mục "views" trong package của bạn (như được chỉ định bởi phương thưc [`loadViewsFrom`](#views)). Sau đó, bạn có thể hiển thị chúng bằng cách thêm tiền tố tên component với namespace view của package:
+Nếu package của bạn chứa các component ẩn, thì chúng phải được lưu trong thư mục `components` của thư mục "views" trong package của bạn (như được chỉ định bởi phương thưc [loadViewsFrom](#views)). Sau đó, bạn có thể hiển thị chúng bằng cách thêm tiền tố tên component với namespace view của package:
 
 ```blade
 <x-courier::alert />
@@ -309,69 +336,94 @@ Nếu package của bạn chứa các component ẩn, thì chúng phải đượ
 
 Lệnh Artisan `about` có sẵn của Laravel cung cấp tóm tắt về môi trường và cấu hình của ứng dụng. Các package có thể thêm thông tin bổ sung vào output của lệnh này thông qua class `AboutCommand`. Thông thường, thông tin này có thể được thêm vào từ phương thức `boot` của service provider trong package của bạn:
 
-    use Illuminate\Foundation\Console\AboutCommand;
+```php
+use Illuminate\Foundation\Console\AboutCommand;
 
-    /**
-     * Bootstrap any application services.
-     */
-    public function boot(): void
-    {
-        AboutCommand::add('My Package', fn () => ['Version' => '1.0.0']);
-    }
+/**
+ * Bootstrap any package services.
+ */
+public function boot(): void
+{
+    AboutCommand::add('My Package', fn () => ['Version' => '1.0.0']);
+}
+```
 
 <a name="commands"></a>
 ## Lệnh
 
 Để đăng ký các lệnh Artisan trong package của bạn với Laravel, bạn có thể sử dụng phương thức `Command`. Phương thức này chấp nhận một mảng tên class của các lệnh. Khi các lệnh đã được đăng ký, bạn có thể chạy chúng bằng cách sử dụng [Artisan CLI](/docs/{{version}}/artisan):
 
-    use Courier\Console\Commands\InstallCommand;
-    use Courier\Console\Commands\NetworkCommand;
+```php
+use Courier\Console\Commands\InstallCommand;
+use Courier\Console\Commands\NetworkCommand;
 
-    /**
-     * Bootstrap any package services.
-     */
-    public function boot(): void
-    {
-        if ($this->app->runningInConsole()) {
-            $this->commands([
-                InstallCommand::class,
-                NetworkCommand::class,
-            ]);
-        }
+/**
+ * Bootstrap any package services.
+ */
+public function boot(): void
+{
+    if ($this->app->runningInConsole()) {
+        $this->commands([
+            InstallCommand::class,
+            NetworkCommand::class,
+        ]);
     }
+}
+```
 
 <a name="optimize-commands"></a>
 ### Optimize Commands
 
-Lệnh [`optimize`](/docs/{{version}}/deployment#optimization) của Laravel sẽ cache các cấu hình, event, route và view của ứng dụng. Sử dụng phương thức `optimizes`, bạn có thể đăng ký các lệnh Artisan riêng của package mà bạn muốn được gọi khi lệnh `optimize` và lệnh `optimize:clear` được chạy:
+Lệnh [optimize](/docs/{{version}}/deployment#optimization) của Laravel sẽ cache các cấu hình, event, route và view của ứng dụng. Sử dụng phương thức `optimizes`, bạn có thể đăng ký các lệnh Artisan riêng của package mà bạn muốn được gọi khi lệnh `optimize` và lệnh `optimize:clear` được chạy:
 
-    /**
-     * Bootstrap any package services.
-     */
-    public function boot(): void
-    {
-        if ($this->app->runningInConsole()) {
-            $this->optimizes(
-                optimize: 'package:optimize',
-                clear: 'package:clear-optimizations',
-            );
-        }
+```php
+/**
+ * Bootstrap any package services.
+ */
+public function boot(): void
+{
+    if ($this->app->runningInConsole()) {
+        $this->optimizes(
+            optimize: 'package:optimize',
+            clear: 'package:clear-optimizations',
+        );
     }
+}
+```
+
+<a name="reload-commands"></a>
+### Reload Commands
+
+Lệnh [reload](/docs/{{version}}/deployment#reloading-services) của Laravel sẽ kết thúc bất kỳ service nào đang chạy để chúng có thể được tự động khởi động lại bởi trình giám sát process của hệ thống. Sử dụng phương thức `reloads`, bạn có thể đăng ký các lệnh Artisan riêng của package mà bạn muốn được gọi khi lệnh `reload` được thực thi:
+
+```php
+/**
+ * Bootstrap any package services.
+ */
+public function boot(): void
+{
+    if ($this->app->runningInConsole()) {
+        $this->reloads('package:reload');
+    }
+}
+```
 
 <a name="public-assets"></a>
 ## Public Assets
 
 Package của bạn có thể có các asset như JavaScript, CSS và hình ảnh. Để export các asset này vào thư mục `public` của application, hãy sử dụng phương thức `publishes` của service provider. Trong ví dụ này, chúng ta cũng sẽ thêm một tag group `public`, tag này có thể dễ dàng được sử dụng để export các group liên quan:
 
-    /**
-     * Bootstrap any package services.
-     */
-    public function boot(): void
-    {
-        $this->publishes([
-            __DIR__.'/../public' => public_path('vendor/courier'),
-        ], 'public');
-    }
+```php
+/**
+ * Bootstrap any package services.
+ */
+public function boot(): void
+{
+    $this->publishes([
+        __DIR__.'/../public' => public_path('vendor/courier'),
+    ], 'public');
+}
+```
 
 Bây giờ, khi người dùng package của bạn chạy lệnh `vendor:publish`, asset sẽ được copy vào vị trí export mà bạn đã khai báo. Nhưng thông thường, người dùng sẽ cần ghi đè lên các asset mỗi khi package được cập nhật, nên bạn có thể sử dụng flag `--force`:
 
@@ -384,22 +436,30 @@ php artisan vendor:publish --tag=public --force
 
 Bạn có thể muốn export riêng rẽ các group asset và các resources của package. Chẳng hạn, bạn có thể muốn cho phép người dùng của bạn export các file cấu hình của package mà không phải export asset của package. Bạn có thể làm điều này bằng cách "gắn tag" cho chúng khi bạn gọi phương thức `publishes` từ service provider của package. Ví dụ: hãy sử dụng các tag để định nghĩa hai group cho package `courier` (`courier-config` và `courier-migrations`) trong phương thức `boot` của service provider của package:
 
-    /**
-     * Bootstrap any package services.
-     */
-    public function boot(): void
-    {
-        $this->publishes([
-            __DIR__.'/../config/package.php' => config_path('package.php')
-        ], 'courier-config');
+```php
+/**
+ * Bootstrap any package services.
+ */
+public function boot(): void
+{
+    $this->publishes([
+        __DIR__.'/../config/package.php' => config_path('package.php')
+    ], 'courier-config');
 
-        $this->publishesMigrations([
-            __DIR__.'/../database/migrations/' => database_path('migrations')
-        ], 'courier-migrations');
-    }
+    $this->publishesMigrations([
+        __DIR__.'/../database/migrations/' => database_path('migrations')
+    ], 'courier-migrations');
+}
+```
 
 Bây giờ người dùng của bạn có thể export các group này một cách riêng rẽ bằng cách tham chiếu tag của chúng khi chạy lệnh `vendor:publish`:
 
 ```shell
 php artisan vendor:publish --tag=courier-config
+```
+
+Người dùng của bạn cũng có thể export ra tất cả các file được định nghĩa bởi service provider của package bằng cách sử dụng flag `--provider`:
+
+```shell
+php artisan vendor:publish --provider="Your\Package\ServiceProvider"
 ```
