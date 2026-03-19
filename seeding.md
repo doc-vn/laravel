@@ -28,29 +28,31 @@ Một class seeder chỉ chứa một phương thức mặc định là: `run`. 
 
 Ví dụ, hãy sửa class `DatabaseSeeder` mặc định và thêm một câu số câu lệnh thêm cơ sở dữ liệu vào trong phương thức `run`:
 
-    <?php
+```php
+<?php
 
-    namespace Database\Seeders;
+namespace Database\Seeders;
 
-    use Illuminate\Database\Seeder;
-    use Illuminate\Support\Facades\DB;
-    use Illuminate\Support\Facades\Hash;
-    use Illuminate\Support\Str;
+use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
-    class DatabaseSeeder extends Seeder
+class DatabaseSeeder extends Seeder
+{
+    /**
+     * Run the database seeders.
+     */
+    public function run(): void
     {
-        /**
-         * Run the database seeders.
-         */
-        public function run(): void
-        {
-            DB::table('users')->insert([
-                'name' => Str::random(10),
-                'email' => Str::random(10).'@example.com',
-                'password' => Hash::make('password'),
-            ]);
-        }
+        DB::table('users')->insert([
+            'name' => Str::random(10),
+            'email' => Str::random(10).'@example.com',
+            'password' => Hash::make('password'),
+        ]);
     }
+}
+```
 
 > [!NOTE]
 > Bạn có thể khai báo bất kỳ phụ thuộc nào mà bạn cần trong phương thức `run`. Những phụ thuộc đó sẽ được tự động resolve thông qua Laravel [service container](/docs/{{version}}/container).
@@ -62,23 +64,56 @@ Tất nhiên, việc khai báo thủ công các thuộc tính cho từng model s
 
 Ví dụ: hãy tạo 50 người dùng và mỗi người dùng đó có một quan hệ post:
 
-    use App\Models\User;
+```php
+use App\Models\User;
 
-    /**
-     * Run the database seeders.
-     */
-    public function run(): void
-    {
-        User::factory()
-            ->count(50)
-            ->hasPosts(1)
-            ->create();
-    }
+/**
+ * Run the database seeders.
+ */
+public function run(): void
+{
+    User::factory()
+        ->count(50)
+        ->hasPosts(1)
+        ->create();
+}
+```
 
 <a name="calling-additional-seeders"></a>
 ### Gọi thêm file Seeder
 
 Trong class `DatabaseSeeder`, bạn có thể sử dụng phương thức `call` để gọi các class seed khác. Sử dụng phương thức `call` cho phép bạn chia nhỏ cơ sở dữ liệu của bạn thành nhiều file, để không có một class seeder nào trở nên quá lớn. Phương thức `call` chấp nhận một mảng các class seeder sẽ được thực thi:
+
+```php
+/**
+ * Run the database seeders.
+ */
+public function run(): void
+{
+    $this->call([
+        UserSeeder::class,
+        PostSeeder::class,
+        CommentSeeder::class,
+    ]);
+}
+```
+
+<a name="muting-model-events"></a>
+### Tắt Model Event
+
+Trong khi chạy seed, bạn có thể muốn ngăn các model gửi event. Bạn có thể thực hiện điều này bằng cách sử dụng trait `WithoutModelEvents`. Khi được sử dụng, trait `WithoutModelEvents` này sẽ đảm bảo không có event model nào được gửi đi, ngay cả khi các class seed bổ sung được thực thi thông qua chạy phương thức `call`:
+
+```php
+<?php
+
+namespace Database\Seeders;
+
+use Illuminate\Database\Seeder;
+use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+
+class DatabaseSeeder extends Seeder
+{
+    use WithoutModelEvents;
 
     /**
      * Run the database seeders.
@@ -87,37 +122,10 @@ Trong class `DatabaseSeeder`, bạn có thể sử dụng phương thức `call`
     {
         $this->call([
             UserSeeder::class,
-            PostSeeder::class,
-            CommentSeeder::class,
         ]);
     }
-
-<a name="muting-model-events"></a>
-### Tắt Model Event
-
-Trong khi chạy seed, bạn có thể muốn ngăn các model gửi event. Bạn có thể thực hiện điều này bằng cách sử dụng trait `WithoutModelEvents`. Khi được sử dụng, trait `WithoutModelEvents` này sẽ đảm bảo không có event model nào được gửi đi, ngay cả khi các class seed bổ sung được thực thi thông qua chạy phương thức `call`:
-
-    <?php
-
-    namespace Database\Seeders;
-
-    use Illuminate\Database\Seeder;
-    use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-
-    class DatabaseSeeder extends Seeder
-    {
-        use WithoutModelEvents;
-
-        /**
-         * Run the database seeders.
-         */
-        public function run(): void
-        {
-            $this->call([
-                UserSeeder::class,
-            ]);
-        }
-    }
+}
+```
 
 <a name="running-seeders"></a>
 ## Chạy Seeder

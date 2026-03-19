@@ -73,16 +73,18 @@ php artisan migrate
 
 Sau khi chạy `telescope:install`, bạn nên xóa đăng ký service provider `TelescopeServiceProvider` ra khỏi file cấu hình `bootstrap/providers.php` của application của bạn. Thay vào đó, hãy tự đăng ký service provider của Telescope vào trong phương thức `register` của class `App\Providers\AppServiceProvider`. Chúng tôi sẽ đảm bảo môi trường hiện tại là `local` trước khi đăng ký provider:
 
-    /**
-     * Register any application services.
-     */
-    public function register(): void
-    {
-        if ($this->app->environment('local') && class_exists(\Laravel\Telescope\TelescopeServiceProvider::class)) {
-            $this->app->register(\Laravel\Telescope\TelescopeServiceProvider::class);
-            $this->app->register(TelescopeServiceProvider::class);
-        }
+```php
+/**
+ * Register any application services.
+ */
+public function register(): void
+{
+    if ($this->app->environment('local') && class_exists(\Laravel\Telescope\TelescopeServiceProvider::class)) {
+        $this->app->register(\Laravel\Telescope\TelescopeServiceProvider::class);
+        $this->app->register(TelescopeServiceProvider::class);
     }
+}
+```
 
 Cuối cùng, bạn cũng nên ngăn package Telescope [tự động đăng ký](/docs/{{version}}/packages#package-discovery) bằng cách thêm code sau vào file `composer.json` của bạn:
 
@@ -103,43 +105,51 @@ Sau khi export asset của Telescope, file cấu hình chính của Telescope s�
 
 Nếu muốn, bạn có thể tắt hoàn toàn việc thu thập dữ liệu của Telescope bằng cách sử dụng tùy chọn cấu hình `enabled`:
 
-    'enabled' => env('TELESCOPE_ENABLED', true),
+```php
+'enabled' => env('TELESCOPE_ENABLED', true),
+```
 
 <a name="data-pruning"></a>
 ### Bỏ bớt Data
 
 Nếu không bỏ bớt data, thì bảng `telescope_entries` có thể bị tăng các bản ghi một cách nhanh chóng. Để giảm thiểu điều này, bạn nên lập một [lịch](/docs/{{version}}/scheduling) để chạy lệnh Artisan `telescope:prune` mỗi ngày:
 
-    use Illuminate\Support\Facades\Schedule;
+```php
+use Illuminate\Support\Facades\Schedule;
 
-    Schedule::command('telescope:prune')->daily();
+Schedule::command('telescope:prune')->daily();
+```
 
 Mặc định, tất cả các dữ liệu cũ hơn 24 giờ sẽ bị lược bỏ. Bạn cũng có thể sử dụng tùy chọn `hours` khi gọi lệnh để định nghĩa thời gian lưu trữ dữ liệu của Telescope. Ví dụ: lệnh sau sẽ xóa tất cả các bản ghi được tạo từ 48 giờ trước:
 
-    use Illuminate\Support\Facades\Schedule;
+```php
+use Illuminate\Support\Facades\Schedule;
 
-    Schedule::command('telescope:prune --hours=48')->daily();
+Schedule::command('telescope:prune --hours=48')->daily();
+```
 
 <a name="dashboard-authorization"></a>
 ### Dashboard Authorization
 
 Trang tổng quan của Telescope có thể truy cập thông qua route `/telescope`. Mặc định, bạn sẽ chỉ có thể truy cập được trang tổng quan này trong môi trường `local`. Trong file `app/Providers/TelescopeServiceProvider.php` của bạn, sẽ có một định nghĩa [authorization gate](/docs/{{version}}/authorization#gates). Authorization gate này sẽ kiểm soát quyền truy cập vào Telescope trong các môi trường **không phải là local**. Bạn có thể thoải mái sửa gate này nếu cần để hạn chế quyền truy cập vào cài đặt telescope của bạn:
 
-    use App\Models\User;
+```php
+use App\Models\User;
 
-    /**
-     * Register the Telescope gate.
-     *
-     * This gate determines who can access Telescope in non-local environments.
-     */
-    protected function gate(): void
-    {
-        Gate::define('viewTelescope', function (User $user) {
-            return in_array($user->email, [
-                'taylor@laravel.com',
-            ]);
-        });
-    }
+/**
+ * Register the Telescope gate.
+ *
+ * This gate determines who can access Telescope in non-local environments.
+ */
+protected function gate(): void
+{
+    Gate::define('viewTelescope', function (User $user) {
+        return in_array($user->email, [
+            'taylor@laravel.com',
+        ]);
+    });
+}
+```
 
 > [!WARNING]
 > Bạn nên đảm bảo là bạn đã thay đổi biến môi trường `APP_ENV` thành `production` trong môi trường production của bạn. Nếu không, các cài đặt Telescope của bạn sẽ bị công khai trên môi trường internet.
@@ -175,102 +185,113 @@ php artisan telescope:publish
 
 Bạn có thể lọc dữ liệu được Telescope ghi lại thông qua lệnh closure `filter` đã được định nghĩa trong class `App\Providers\TelescopeServiceProvider` của bạn. Mặc định, lệnh closure này sẽ ghi lại tất cả các dữ liệu trong môi trường `local` và các ngoại lệ, các job bị thất bại, các task schedule và dữ liệu có các thẻ được giám sát trong tất cả các môi trường khác:
 
-    use Laravel\Telescope\IncomingEntry;
-    use Laravel\Telescope\Telescope;
+```php
+use Laravel\Telescope\IncomingEntry;
+use Laravel\Telescope\Telescope;
 
-    /**
-     * Register any application services.
-     */
-    public function register(): void
-    {
-        $this->hideSensitiveRequestDetails();
+/**
+ * Register any application services.
+ */
+public function register(): void
+{
+    $this->hideSensitiveRequestDetails();
 
-        Telescope::filter(function (IncomingEntry $entry) {
-            if ($this->app->environment('local')) {
-                return true;
-            }
+    Telescope::filter(function (IncomingEntry $entry) {
+        if ($this->app->environment('local')) {
+            return true;
+        }
 
-            return $entry->isReportableException() ||
-                $entry->isFailedJob() ||
-                $entry->isScheduledTask() ||
-                $entry->isSlowQuery() ||
-                $entry->hasMonitoredTag();
-        });
-    }
+        return $entry->isReportableException() ||
+            $entry->isFailedJob() ||
+            $entry->isScheduledTask() ||
+            $entry->isSlowQuery() ||
+            $entry->hasMonitoredTag();
+    });
+}
+```
 
 <a name="filtering-batches"></a>
 ### Batches
 
 Trong khi lệnh closure `filter` dùng để lọc dữ liệu cho các mục riêng lẻ, thì bạn có thể sử dụng phương thức `filterBatch` để đăng ký một lệnh closure để lọc tất cả dữ liệu cho một request hoặc một lệnh console. Nếu lệnh closure này trả về giá trị `true`, thì tất cả các mục sẽ được ghi lại bởi Telescope:
 
-    use Illuminate\Support\Collection;
-    use Laravel\Telescope\IncomingEntry;
-    use Laravel\Telescope\Telescope;
+```php
+use Illuminate\Support\Collection;
+use Laravel\Telescope\IncomingEntry;
+use Laravel\Telescope\Telescope;
 
-    /**
-     * Register any application services.
-     */
-    public function register(): void
-    {
-        $this->hideSensitiveRequestDetails();
+/**
+ * Register any application services.
+ */
+public function register(): void
+{
+    $this->hideSensitiveRequestDetails();
 
-        Telescope::filterBatch(function (Collection $entries) {
-            if ($this->app->environment('local')) {
-                return true;
-            }
+    Telescope::filterBatch(function (Collection $entries) {
+        if ($this->app->environment('local')) {
+            return true;
+        }
 
-            return $entries->contains(function (IncomingEntry $entry) {
-                return $entry->isReportableException() ||
-                    $entry->isFailedJob() ||
-                    $entry->isScheduledTask() ||
-                    $entry->isSlowQuery() ||
-                    $entry->hasMonitoredTag();
-                });
-        });
-    }
+        return $entries->contains(function (IncomingEntry $entry) {
+            return $entry->isReportableException() ||
+                $entry->isFailedJob() ||
+                $entry->isScheduledTask() ||
+                $entry->isSlowQuery() ||
+                $entry->hasMonitoredTag();
+            });
+    });
+}
+```
 
 <a name="tagging"></a>
 ## Tagging
 
 Telescope cho phép bạn tìm kiếm các entry theo "tag". Thông thường, các tag là các tên class của model Eloquent hoặc ID người dùng đã được xác thực mà Telescope tự động thêm vào các entry. Đôi khi, bạn có thể muốn đính kèm thêm các tag tùy chỉnh của bạn vào các entry. Để thực hiện điều này, bạn có thể sử dụng phương thức `Telescope::tag`. Phương thức `tag` chấp nhận một lệnh closure sẽ trả về một mảng tag. Các tag được closure trả về sẽ được merge với bất kỳ tag nào khác được Telescope tự động gắn vào entry. Thông thường, bạn nên gọi phương thức `tag` trong phương thức `register` của class `App\Providers\TelescopeServiceProvider` của bạn:
 
-    use Laravel\Telescope\IncomingEntry;
-    use Laravel\Telescope\Telescope;
+```php
+use Laravel\Telescope\EntryType;
+use Laravel\Telescope\IncomingEntry;
+use Laravel\Telescope\Telescope;
 
-    /**
-     * Register any application services.
-     */
-    public function register(): void
-    {
-        $this->hideSensitiveRequestDetails();
+/**
+ * Register any application services.
+ */
+public function register(): void
+{
+    $this->hideSensitiveRequestDetails();
 
-        Telescope::tag(function (IncomingEntry $entry) {
-            return $entry->type === 'request'
-                ? ['status:'.$entry->content['response_status']]
-                : [];
-        });
-     }
+    Telescope::tag(function (IncomingEntry $entry) {
+        return $entry->type === EntryType::REQUEST
+            ? ['status:'.$entry->content['response_status']]
+            : [];
+    });
+}
+```
 
 <a name="available-watchers"></a>
 ## Available Watchers
 
 Telescope "watcher" sẽ thu thập dữ liệu ứng dụng của bạn khi một request hoặc một lệnh console được thực thi. Bạn có thể tùy chỉnh danh sách watcher mà bạn muốn bật trong file cấu hình `config/telescope.php` của bạn:
 
-    'watchers' => [
-        Watchers\CacheWatcher::class => true,
-        Watchers\CommandWatcher::class => true,
-        ...
-    ],
+```php
+'watchers' => [
+    Watchers\CacheWatcher::class => true,
+    Watchers\CommandWatcher::class => true,
+    // ...
+],
+```
 
 Một số watcher cũng cho phép bạn cung cấp thêm các tùy chọn tùy chỉnh:
 
-    'watchers' => [
-        Watchers\QueryWatcher::class => [
-            'enabled' => env('TELESCOPE_QUERY_WATCHER', true),
-            'slow' => 100,
-        ],
-        ...
+```php
+'watchers' => [
+    Watchers\QueryWatcher::class => [
+        'enabled' => env('TELESCOPE_QUERY_WATCHER', true),
+        'slow' => 100,
     ],
+    // ...
+],
+```
 
 <a name="batch-watcher"></a>
 ### Batch Watcher
@@ -287,13 +308,15 @@ Cache watcher sẽ ghi lại dữ liệu khi một cache key được hit, bị 
 
 Command watcher sẽ ghi lại các tham số, tùy chọn, exit code và output bất cứ khi nào lệnh Artisan được thực thi. Nếu bạn muốn bỏ một số lệnh ra khỏi watcher, bạn có thể chỉ định lệnh đó trong tùy chọn `ignore` trong file `config/telescope.php` của bạn:
 
-    'watchers' => [
-        Watchers\CommandWatcher::class => [
-            'enabled' => env('TELESCOPE_COMMAND_WATCHER', true),
-            'ignore' => ['key:generate'],
-        ],
-        ...
+```php
+'watchers' => [
+    Watchers\CommandWatcher::class => [
+        'enabled' => env('TELESCOPE_COMMAND_WATCHER', true),
+        'ignore' => ['key:generate'],
     ],
+    // ...
+],
+```
 
 <a name="dump-watcher"></a>
 ### Dump Watcher
@@ -315,13 +338,15 @@ Exception watcher sẽ ghi lại dữ liệu và message lỗi cho bất kỳ ex
 
 Gate watcher sẽ ghi lại dữ liệu và kết quả check của [gate và policy](/docs/{{version}}/authorization) bởi ứng dụng của bạn. Nếu bạn muốn watcher bỏ qua một số kiểm tra nhất định, bạn có thể chỉ định những kiểm tra này trong tùy chọn `ignore_abilities` của file `config/telescope.php` của bạn:
 
-    'watchers' => [
-        Watchers\GateWatcher::class => [
-            'enabled' => env('TELESCOPE_GATE_WATCHER', true),
-            'ignore_abilities' => ['viewNova'],
-        ],
-        ...
+```php
+'watchers' => [
+    Watchers\GateWatcher::class => [
+        'enabled' => env('TELESCOPE_GATE_WATCHER', true),
+        'ignore_abilities' => ['viewNova'],
     ],
+    // ...
+],
+```
 
 <a name="http-client-watcher"></a>
 ### HTTP Client Watcher
@@ -340,14 +365,16 @@ Log watcher sẽ ghi lại dữ liệu [log](/docs/{{version}}/logging) cho bấ
 
 Mặc định, Telescope sẽ chỉ ghi log ở mức `error` trở lên. Tuy nhiên, bạn có thể sửa tùy chọn `level` trong file cấu hình `config/telescope.php` của ứng dụng để sửa đổi hành vi này:
 
-    'watchers' => [
-        Watchers\LogWatcher::class => [
-            'enabled' => env('TELESCOPE_LOG_WATCHER', true),
-            'level' => 'debug',
-        ],
-
-        // ...
+```php
+'watchers' => [
+    Watchers\LogWatcher::class => [
+        'enabled' => env('TELESCOPE_LOG_WATCHER', true),
+        'level' => 'debug',
     ],
+
+    // ...
+],
+```
 
 <a name="mail-watcher"></a>
 ### Mail Watcher
@@ -359,24 +386,28 @@ Mail watcher cho phép bạn xem trước trong trình duyệt các [email](/doc
 
 Model watcher sẽ ghi lại những thay đổi của model bất cứ khi nào một [model event](/docs/{{version}}/eloquent#events) Eloquent được gửi đi. Bạn có thể chỉ định các event nào của model sẽ được ghi lại thông qua tùy chọn `events` của watcher:
 
-    'watchers' => [
-        Watchers\ModelWatcher::class => [
-            'enabled' => env('TELESCOPE_MODEL_WATCHER', true),
-            'events' => ['eloquent.created*', 'eloquent.updated*'],
-        ],
-        ...
+```php
+'watchers' => [
+    Watchers\ModelWatcher::class => [
+        'enabled' => env('TELESCOPE_MODEL_WATCHER', true),
+        'events' => ['eloquent.created*', 'eloquent.updated*'],
     ],
+    // ...
+],
+```
 
 Nếu bạn muốn ghi lại số lượng model được tái tạo lại trong một request nhất định, hãy bật tùy chọn `hydrations`:
 
-    'watchers' => [
-        Watchers\ModelWatcher::class => [
-            'enabled' => env('TELESCOPE_MODEL_WATCHER', true),
-            'events' => ['eloquent.created*', 'eloquent.updated*'],
-            'hydrations' => true,
-        ],
-        ...
+```php
+'watchers' => [
+    Watchers\ModelWatcher::class => [
+        'enabled' => env('TELESCOPE_MODEL_WATCHER', true),
+        'events' => ['eloquent.created*', 'eloquent.updated*'],
+        'hydrations' => true,
     ],
+    // ...
+],
+```
 
 <a name="notification-watcher"></a>
 ### Notification Watcher
@@ -388,13 +419,15 @@ Notification watcher sẽ ghi lại tất cả các [thông báo](/docs/{{versio
 
 Query watcher sẽ ghi lại các raw SQL, binding và thời gian thực thi cho tất cả các truy vấn được ứng dụng của bạn chạy. Watcher cũng gắn thẻ vào bất kỳ truy vấn nào mà chậm hơn 100 milliseconds là `slow`. Bạn có thể tùy chỉnh ngưỡng mà truy vấn được coi là chậm bằng cách sử dụng tùy chọn `slow` của watcher:
 
-    'watchers' => [
-        Watchers\QueryWatcher::class => [
-            'enabled' => env('TELESCOPE_QUERY_WATCHER', true),
-            'slow' => 50,
-        ],
-        ...
+```php
+'watchers' => [
+    Watchers\QueryWatcher::class => [
+        'enabled' => env('TELESCOPE_QUERY_WATCHER', true),
+        'slow' => 50,
     ],
+    // ...
+],
+```
 
 <a name="redis-watcher"></a>
 ### Redis Watcher
@@ -406,13 +439,15 @@ Redis watcher sẽ ghi lại tất cả các lệnh [Redis](/docs/{{version}}/re
 
 Request watcher sẽ ghi lại dữ liệu request, header, session và response được liên kết với bất kỳ request nào được ứng dụng của bạn xử lý. Bạn có thể giới hạn dữ liệu response được ghi lại thông qua tùy chọn `size_limit` (tính bằng kilobytes):
 
-    'watchers' => [
-        Watchers\RequestWatcher::class => [
-            'enabled' => env('TELESCOPE_REQUEST_WATCHER', true),
-            'size_limit' => env('TELESCOPE_RESPONSE_SIZE_LIMIT', 64),
-        ],
-        ...
+```php
+'watchers' => [
+    Watchers\RequestWatcher::class => [
+        'enabled' => env('TELESCOPE_REQUEST_WATCHER', true),
+        'size_limit' => env('TELESCOPE_RESPONSE_SIZE_LIMIT', 64),
     ],
+    // ...
+],
+```
 
 <a name="schedule-watcher"></a>
 ### Schedule Watcher
@@ -429,17 +464,21 @@ View watcher sẽ ghi lại tên, đường dẫn, dữ liệu và "composers" c
 
 Trang tổng quan của Telescope sẽ hiển thị ảnh đại diện của người dùng cho những người dùng đã xác thực khi một mục nào đó được lưu. Mặc định, Telescope sẽ lấy ảnh đại diện bằng dịch vụ Gravatar web. Tuy nhiên, bạn có thể tùy chỉnh URL hình đại diện bằng cách đăng ký một lệnh callback trong class `App\Providers\TelescopeServiceProvider` của bạn. Lệnh callback này sẽ nhận vào một ID và một địa chỉ email của người dùng và sẽ trả về URL hình ảnh đại diện của người dùng:
 
-    use App\Models\User;
-    use Laravel\Telescope\Telescope;
+```php
+use App\Models\User;
+use Laravel\Telescope\Telescope;
 
-    /**
-     * Register any application services.
-     */
-    public function register(): void
-    {
-        // ...
+/**
+ * Register any application services.
+ */
+public function register(): void
+{
+    // ...
 
-        Telescope::avatar(function (string $id, string $email) {
-            return '/avatars/'.User::find($id)->avatar_path;
-        });
-    }
+    Telescope::avatar(function (?string $id, ?string $email) {
+        return ! is_null($id)
+            ? '/avatars/'.User::find($id)->avatar_path
+            : '/generic-avatar.jpg';
+    });
+}
+```

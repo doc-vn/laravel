@@ -276,13 +276,13 @@ valet unisolate
 
 Valet đã chứa một lệnh để chia sẻ các trang web ở local của bạn với thế giới, cung cấp một cách dễ dàng để kiểm tra trang web của bạn trên các thiết bị di động hoặc chia sẻ nó với các thành viên trong team của bạn hoặc khách hàng.
 
-Mặc định, Valet hỗ trợ chia sẻ các trang web của bạn thông qua ngrok hoặc Expose. Trước khi chia sẻ một trang web, bạn nên cập nhật cấu hình Valet của bạn bằng lệnh `share-tool` thông qua chỉ định `ngrok` hoặc `expose`:
+Mặc định, Valet hỗ trợ chia sẻ các trang web của bạn thông qua ngrok hoặc Expose. Trước khi chia sẻ một trang web, bạn nên cập nhật cấu hình Valet của bạn bằng lệnh `share-tool` thông qua chỉ định `ngrok`, `expose`, hoặc  `cloudflared`:
 
 ```shell
 valet share-tool ngrok
 ```
 
-Nếu bạn chọn một công cụ và nó chưa được cài đặt thông qua Homebrew (cho ngrok) hoặc Composer (cho Expose), Valet vẫn sẽ tự động nhắc bạn cài đặt nó. Tất nhiên, cả hai công cụ đều yêu cầu bạn xác thực tài khoản ngrok hoặc Expose của bạn trước khi bạn có thể bắt đầu chia sẻ các trang web.
+Nếu bạn chọn một công cụ và nó chưa được cài đặt thông qua Homebrew (cho ngrok) hoặc Composer (cho Expose và cloudflared), Valet vẫn sẽ tự động nhắc bạn cài đặt nó. Tất nhiên, cả hai công cụ đều yêu cầu bạn xác thực tài khoản ngrok hoặc Expose của bạn trước khi bạn có thể bắt đầu chia sẻ các trang web.
 
 Để chia sẻ một trang web, hãy trỏ đến thư mục chứa trang web đó trong terminal của bạn và chạy lệnh `share` của Valet. Một URL sẽ được copy vào clipboard của bạn và sẵn sàng paste vào bất kỳ đâu, ví dụ như vào trong trình duyệt của bạn hoặc là chia sẻ với team của bạn:
 
@@ -332,19 +332,21 @@ Khi bạn đã cập nhật cấu hình Nginx của bạn, hãy chạy lệnh `v
 
 Một số ứng dụng sử dụng các framework khác có thể phụ thuộc vào các biến môi trường trên server nhưng lại không cung cấp cách thức để các biến đó được cấu hình trong project của bạn. Valet cho phép bạn cấu hình các biến môi trường cho trang web bằng cách thêm một file `.valet-env.php` vào trong thư mục gốc của project của bạn. File này sẽ trả về một mảng trang web gồm các cặp biến môi trường sẽ được thêm vào mảng global `$_SERVER` cho mỗi trang web được chỉ định trong mảng:
 
-    <?php
+```php
+<?php
 
-    return [
-        // Set $_SERVER['key'] to "value" for the laravel.test site...
-        'laravel' => [
-            'key' => 'value',
-        ],
+return [
+    // Set $_SERVER['key'] to "value" for the laravel.test site...
+    'laravel' => [
+        'key' => 'value',
+    ],
 
-        // Set $_SERVER['key'] to "value" for all sites...
-        '*' => [
-            'key' => 'value',
-        ],
-    ];
+    // Set $_SERVER['key'] to "value" for all sites...
+    '*' => [
+        'key' => 'value',
+    ],
+];
+```
 
 <a name="proxying-services"></a>
 ## Proxying Services
@@ -391,32 +393,36 @@ Phương thức `serves` sẽ trả về `true` nếu driver của bạn sẽ x�
 
 Ví dụ: hãy nghĩ rằng, chúng ta đang viết một driver `WordPressValetDriver`. Phương thức `serves` của chúng ta có thể trông giống như thế này:
 
-    /**
-     * Determine if the driver serves the request.
-     */
-    public function serves(string $sitePath, string $siteName, string $uri): bool
-    {
-        return is_dir($sitePath.'/wp-admin');
-    }
+```php
+/**
+ * Determine if the driver serves the request.
+ */
+public function serves(string $sitePath, string $siteName, string $uri): bool
+{
+    return is_dir($sitePath.'/wp-admin');
+}
+```
 
 <a name="the-isstaticfile-method"></a>
 #### Phương thức `isStaticFile`
 
 `IsStaticFile` sẽ xác định xem request đến có phải là file "static" hay không, chẳng hạn như hình ảnh hoặc stylesheet. Nếu file là static, phương thức sẽ trả về đường dẫn đến file static trên disk. Nếu request đến không phải cho file static, phương thức sẽ trả về `false`:
 
-    /**
-     * Determine if the incoming request is for a static file.
-     *
-     * @return string|false
-     */
-    public function isStaticFile(string $sitePath, string $siteName, string $uri)
-    {
-        if (file_exists($staticFilePath = $sitePath.'/public/'.$uri)) {
-            return $staticFilePath;
-        }
-
-        return false;
+```php
+/**
+ * Determine if the incoming request is for a static file.
+ *
+ * @return string|false
+ */
+public function isStaticFile(string $sitePath, string $siteName, string $uri)
+{
+    if (file_exists($staticFilePath = $sitePath.'/public/'.$uri)) {
+        return $staticFilePath;
     }
+
+    return false;
+}
+```
 
 > [!WARNING]
 > phương thức `isStaticFile` sẽ chỉ được gọi nếu phương thức `serves` trả về `true` và request URI không phải là `/`.
@@ -426,39 +432,43 @@ Ví dụ: hãy nghĩ rằng, chúng ta đang viết một driver `WordPressValet
 
 Phương thức `frontControllPath` sẽ trả về đường dẫn "front controller" của application, thường là file "index.php" hoặc tương đương:
 
-    /**
-     * Get the fully resolved path to the application's front controller.
-     */
-    public function frontControllerPath(string $sitePath, string $siteName, string $uri): string
-    {
-        return $sitePath.'/public/index.php';
-    }
+```php
+/**
+ * Get the fully resolved path to the application's front controller.
+ */
+public function frontControllerPath(string $sitePath, string $siteName, string $uri): string
+{
+    return $sitePath.'/public/index.php';
+}
+```
 
 <a name="local-drivers"></a>
 ### Local Drivers
 
 Nếu bạn muốn định nghĩa một Valet driver tùy chỉnh cho một application, hãy tạo một file `LocalValetDriver.php` trong thư mục gốc của application. Valet driver tùy chỉnh của bạn có thể extent từ class `ValetDriver` hoặc extent từ một driver nào đó của một application hiện có, chẳng hạn như` LaravelValetDriver`:
 
-    use Valet\Drivers\LaravelValetDriver;
+```php
+use Valet\Drivers\LaravelValetDriver;
 
-    class LocalValetDriver extends LaravelValetDriver
+class LocalValetDriver extends LaravelValetDriver
+{
+    /**
+     * Determine if the driver serves the request.
+     */
+    public function serves(string $sitePath, string $siteName, string $uri): bool
     {
-        /**
-         * Determine if the driver serves the request.
-         */
-        public function serves(string $sitePath, string $siteName, string $uri): bool
-        {
-            return true;
-        }
-
-        /**
-         * Get the fully resolved path to the application's front controller.
-         */
-        public function frontControllerPath(string $sitePath, string $siteName, string $uri): string
-        {
-            return $sitePath.'/public_html/index.php';
-        }
+        return true;
     }
+
+    /**
+     * Get the fully resolved path to the application's front controller.
+     */
+    public function frontControllerPath(string $sitePath, string $siteName, string $uri): string
+    {
+        return $sitePath.'/public_html/index.php';
+    }
+}
+```
 
 <a name="other-valet-commands"></a>
 ## Các lệnh Valet khác

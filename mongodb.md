@@ -47,7 +47,8 @@ MONGODB_URI="mongodb://localhost:27017"
 MONGODB_DATABASE="laravel_app"
 ```
 
-Để chạy MongoDB trên cloud, bạn hãy cân nhắc sử dụng [MongoDB Atlas](https://www.mongodb.com/cloud/atlas). Để truy cập vào cluster MongoDB Atlas từ ứng dụng của bạn ở local, bạn sẽ cần [thêm địa chỉ IP của bạn vào trong cài đặt mạng của cluster](https://www.mongodb.com/docs/atlas/security/add-ip-address-to-list/).
+Để chạy MongoDB trên cloud, bạn hãy cân nhắc sử dụng [MongoDB Atlas](https://www.mongodb.com/cloud/atlas).
+Để truy cập vào cluster MongoDB Atlas từ ứng dụng của bạn ở local, bạn sẽ cần [thêm địa chỉ IP của bạn vào trong cài đặt mạng của cluster](https://www.mongodb.com/docs/atlas/security/add-ip-address-to-list/).
 
 Chuỗi kết nối cho MongoDB Atlas có thể được thiết lập trong file `.env` của bạn:
 
@@ -92,7 +93,7 @@ Sau khi quá trình cấu hình hoàn tất, bạn có thể sử dụng package
 - [Viết các truy vấn phức tạp](https://www.mongodb.com/docs/drivers/php/laravel-mongodb/current/query-builder/) sử dụng query builder.
 - [Cache driver](https://www.mongodb.com/docs/drivers/php/laravel-mongodb/current/cache/) `mongodb` được tối ưu hóa để sử dụng các tính năng của MongoDB như TTL index để tự động xóa các item cache đã hết hạn.
 - [Gửi và xử lý các job trong queue](https://www.mongodb.com/docs/drivers/php/laravel-mongodb/current/queues/) với queue driver `mongodb`.
-- [Lưu trữ file trong GridFS](https://www.mongodb.com/docs/drivers/php/laravel-mongodb/current/gridfs/), thông qua [GridFS Adapter cho Flysystem](https://flysystem.thephpleague.com/docs/adapter/gridfs/).
+- [Lưu trữ file trong GridFS](https://www.mongodb.com/docs/drivers/php/laravel-mongodb/current/filesystems/), thông qua [GridFS Adapter cho Flysystem](https://flysystem.thephpleague.com/docs/adapter/gridfs/).
 - Hầu hết các package của bên thứ ba sử dụng kết nối cơ sở dữ liệu hoặc Eloquent đều có thể được sử dụng với MongoDB.
 
 Để tiếp tục tìm hiểu về cách sử dụng MongoDB và Laravel, hãy tham khảo [hướng dẫn bắt đầu nhanh](https://www.mongodb.com/docs/drivers/php/laravel-mongodb/current/quick-start/) của MongoDB.

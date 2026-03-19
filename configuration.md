@@ -97,7 +97,9 @@ APP_NAME="My Application"
 
 Khi ứng dụng của bạn nhận một request, thì tất cả các biến môi trường ở trong file `.env` sẽ đều được load vào `$_ENV` PHP super-global. Tuy nhiên, bạn cũng có thể dùng hàm `env` trong helper để nhận về các biến môi trường. Trong thực tế, nếu bạn nhìn vào file config của Laravel, bạn sẽ nhận thấy có nhiều config đang được dùng helper trên:
 
-    'debug' => env('APP_DEBUG', false),
+```php
+'debug' => (bool) env('APP_DEBUG', false),
+```
 
 Tham số thứ hai được truyền vào trong hàm `env` là giá trị mặc định. Giá trị này sẽ được trả về nếu như biến môi trường của bạn không tồn tại.
 
@@ -106,19 +108,23 @@ Tham số thứ hai được truyền vào trong hàm `env` là giá trị mặc
 
 Môi trường hiện tại có thể được xác định thông biến `APP_ENV` trong file `.env`. Bạn có thể lấy giá trị đó thông qua hàm `environment` trong [facade](/docs/{{version}}/facades) `App`:
 
-    use Illuminate\Support\Facades\App;
+```php
+use Illuminate\Support\Facades\App;
 
-    $environment = App::environment();
+$environment = App::environment();
+```
 
 Bạn cũng có thể truyền vào hàm `environment` tên của một môi trường để xác định xem môi trường hiện tại có đúng là môi trường đó hay không. Hàm đó sẽ trả về `true` nếu tên môi trường trùng với tên môi trường đang được định nghĩa trong file `.env` hiện tại.
 
-    if (App::environment('local')) {
-        // Môi trường hiện tại là local
-    }
+```php
+if (App::environment('local')) {
+    // Môi trường hiện tại là local
+}
 
-    if (App::environment(['local', 'staging'])) {
-        // Môi trường hiện tại có thể là local hoặc staging
-    }
+if (App::environment(['local', 'staging'])) {
+    // Môi trường hiện tại có thể là local hoặc staging
+}
+```
 
 > [!NOTE]
 > Môi trường hiện tại của application có thể bị ghi đè bởi một biến môi trường `APP_ENV` khác ở mức độ server.
@@ -192,28 +198,35 @@ php artisan env:decrypt --force
 
 Bạn có thể dễ dàng gọi biến mà bạn đã cấu hình bằng facade `Config` hoặc hàm `config` từ mọi nơi trong application của bạn. Giá trị config có thể được gọi thông qua dấu "chấm", nó sẽ chứa tên file config và tên biến mà bạn muốn nhận về. Và bạn cũng có thể tạo một giá trị mặc định, nếu giá trị config đó không tồn tại:
 
-    use Illuminate\Support\Facades\Config;
+```php
+use Illuminate\Support\Facades\Config;
 
-    $value = Config::get('app.timezone');
+$value = Config::get('app.timezone');
 
-    $value = config('app.timezone');
+$value = config('app.timezone');
 
-    // Retrieve a default value if the configuration value does not exist...
-    $value = config('app.timezone', 'Asia/Seoul');
+// Retrieve a default value if the configuration value does not exist...
+$value = config('app.timezone', 'Asia/Seoul');
+```
 
 Để tạo một giá trị config khi đang chạy, bạn có thể gọi phương thức set của facade `Config` hoặc truyền một array vào hàm `config`:
 
-    Config::set('app.timezone', 'America/Chicago');
+```php
+Config::set('app.timezone', 'America/Chicago');
 
-    config(['app.timezone' => 'America/Chicago']);
+config(['app.timezone' => 'America/Chicago']);
+```
 
 Để hỗ trợ phân tích, facade `Config` cũng cung cấp các phương thức lấy ra cấu hình theo kiểu. Nếu giá trị cấu hình được lấy ra không khớp với kiểu bạn mong muốn, một ngoại lệ sẽ được đưa ra:
 
-    Config::string('config-key');
-    Config::integer('config-key');
-    Config::float('config-key');
-    Config::boolean('config-key');
-    Config::array('config-key');
+```php
+Config::string('config-key');
+Config::integer('config-key');
+Config::float('config-key');
+Config::boolean('config-key');
+Config::array('config-key');
+Config::collection('config-key');
+```
 
 <a name="configuration-caching"></a>
 ## Caching các biến config
@@ -357,4 +370,4 @@ Mỗi khi application của bạn vào trong chế độ bảo trì, thì sẽ k
 <a name="alternatives-to-maintenance-mode"></a>
 #### Lựa chọn thay thế chế độ bảo trì
 
-Vì chế độ bảo trì sẽ yêu cầu application của ban sẽ ngường hoạt động một khoảng thời gian, nên có một lựa chọn thay thế là dùng [Laravel Vapor](https://vapor.laravel.com) và [Envoyer](https://envoyer.io) để giúp bạn vừa có thể nâng cấp application của bạn vừa không khiến application của bạn ngừng hoạt động.
+Vì chế độ bảo trì sẽ yêu cầu application của ban sẽ ngường hoạt động một khoảng thời gian, nên bạn hãy cân nhắc chạy ứng dụng của bạn trên một nền tảng được quản lý hoàn toàn như [Laravel Cloud](https://cloud.laravel.com) để giúp bạn vừa có thể nâng cấp application của bạn mà vừa không khiến application của bạn ngừng hoạt động.

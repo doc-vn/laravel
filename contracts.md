@@ -11,7 +11,7 @@
 
 "Contract" của Laravel là một bộ interface dùng để định nghĩa các core service mà framework cung cấp. Ví dụ: một `Illuminate\Contracts\Queue\Queue` contract định nghĩa các phương thức cần thiết cho việc queueing job, trong khi `Illuminate\Contracts\Mail\Mailer` contract định nghĩa các phương thức cần thiết để gửi e-mail.
 
-Mỗi contract có một implementation tương ứng được cung cấp bởi framework. Ví dụ: Laravel cung cấp một implementation queue với nhiều driver khác nhau và một implementation mailer được phát triển bởi [Symfony Mailer](https://symfony.com/doc/7.0/mailer.html).
+Mỗi contract có một implementation tương ứng được cung cấp bởi framework. Ví dụ: Laravel cung cấp một implementation queue với nhiều driver khác nhau và một implementation mailer được phát triển bởi [Symfony Mailer](https://symfony.com/doc/current/mailer.html).
 
 Tất cả các contract của Laravel đều được lưu trữ trong [GitHub của chúng](https://github.com/illuminate/contracts). Điều này cung cấp một điểm tham chiếu nhanh cho tất cả các contract có sẵn, cũng như tách rời package để có thể được sử dụng khi xây dựng các package tương tác với các dịch vụ Laravel.
 
@@ -38,31 +38,33 @@ Có nhiều loại class trong Laravel được resolve thông qua [service cont
 
 Ví dụ, hãy xem event listener này:
 
-    <?php
+```php
+<?php
 
-    namespace App\Listeners;
+namespace App\Listeners;
 
-    use App\Events\OrderWasPlaced;
-    use App\Models\User;
-    use Illuminate\Contracts\Redis\Factory;
+use App\Events\OrderWasPlaced;
+use App\Models\User;
+use Illuminate\Contracts\Redis\Factory;
 
-    class CacheOrderInformation
+class CacheOrderInformation
+{
+    /**
+     * Create the event listener.
+     */
+    public function __construct(
+        protected Factory $redis,
+    ) {}
+
+    /**
+     * Handle the event.
+     */
+    public function handle(OrderWasPlaced $event): void
     {
-        /**
-         * Create a new event handler instance.
-         */
-        public function __construct(
-            protected Factory $redis,
-        ) {}
-
-        /**
-         * Handle the event.
-         */
-        public function handle(OrderWasPlaced $event): void
-        {
-            // ...
-        }
+        // ...
     }
+}
+```
 
 Khi event listener được resolve, service container sẽ đọc các khai báo có trong hàm khởi tạo của class và đưa vào các giá trị phù hợp. Để tìm hiểu thêm về việc đăng ký trong service container, hãy xem [tài liệu này](/docs/{{version}}/container).
 

@@ -22,6 +22,7 @@
 - [Clear terminal](#clear)
 - [Cài đặt cho Terminal](#terminal-considerations)
 - [Môi trường không hỗ trợ và cách dự phòng](#fallbacks)
+- [Testing](#testing)
 
 <a name="introduction"></a>
 ## Giới thiệu
@@ -812,6 +813,7 @@ Nếu bạn cần kiểm soát chi tiết hơn đối với một prompt có tro
 ```php
 use function Laravel\Prompts\form;
 use function Laravel\Prompts\outro;
+use function Laravel\Prompts\text;
 
 $responses = form()
     ->text('What is your name?', required: true, name: 'name')
@@ -857,13 +859,13 @@ Hàm `spin` sẽ hiển thị một spinner cùng với một thông báo tùy c
 use function Laravel\Prompts\spin;
 
 $response = spin(
-    message: 'Fetching response...',
-    callback: fn () => Http::get('http://example.com')
+    callback: fn () => Http::get('http://example.com'),
+    message: 'Fetching response...'
 );
 ```
 
 > [!WARNING]
-> Hàm `spin` sẽ cần một PHP extension `pcntl` để tạo hiệu ứng động cho spinner. Khi extension này chưa được cài đặt, thì phiên bản tĩnh của spinner sẽ được xuất hiện thay thế.
+> Hàm `spin` sẽ cần một PHP extension [PCNTL](https://www.php.net/manual/en/book.pcntl.php) để tạo hiệu ứng động cho spinner. Khi extension này chưa được cài đặt, thì phiên bản tĩnh của spinner sẽ được xuất hiện thay thế.
 
 <a name="progress"></a>
 ## Progress Bars
@@ -922,7 +924,7 @@ $progress->finish();
 
 Hàm `clear` có thể được sử dụng để làm sạch terminal của người dùng:
 
-```
+```php
 use function Laravel\Prompts\clear;
 
 clear();
@@ -946,7 +948,7 @@ Nếu độ dài của bất kỳ label, tùy chọn hoặc validation message n
 
 Laravel Prompts hỗ trợ macOS, Linux và Windows cùng với WSL. Do những hạn chế trong phiên bản PHP dành cho Windows, hiện tại không thể sử dụng Laravel Prompts trên Windows mà không có WSL.
 
-Vì lý do này, Laravel Prompts hỗ trợ việc triển khai thay thế như [Symfony Console Question Helper](https://symfony.com/doc/7.0/components/console/helpers/questionhelper.html).
+Vì lý do này, Laravel Prompts hỗ trợ việc triển khai thay thế như [Symfony Console Question Helper](https://symfony.com/doc/current/components/console/helpers/questionhelper.html).
 
 > [!NOTE]
 > Khi sử dụng Laravel Prompts với framework Laravel, các phương án dự phòng cho từng prompt đã được cấu hình sẵn cho bạn và sẽ tự động được kích hoạt trong các môi trường không được hỗ trợ.
@@ -1000,3 +1002,49 @@ TextPrompt::fallbackUsing(function (TextPrompt $prompt) use ($input, $output) {
 ```
 
 Các phương thức dự phòng phải được cấu hình riêng cho từng class prompt. Lệnh closure sẽ nhận vào một instance của class prompt và phải trả về kiểu dữ liệu phù hợp cho prompt đó.
+
+<a name="testing"></a>
+## Testing
+
+Laravel cung cấp nhiều phương thức khác nhau để kiểm tra xem command của bạn có hiển thị các thông báo Prompt như bạn mong muốn hay không:
+
+```php tab=Pest
+test('report generation', function () {
+    $this->artisan('report:generate')
+        ->expectsPromptsInfo('Welcome to the application!')
+        ->expectsPromptsWarning('This action cannot be undone')
+        ->expectsPromptsError('Something went wrong')
+        ->expectsPromptsAlert('Important notice!')
+        ->expectsPromptsIntro('Starting process...')
+        ->expectsPromptsOutro('Process completed!')
+        ->expectsPromptsTable(
+            headers: ['Name', 'Email'],
+            rows: [
+                ['Taylor Otwell', 'taylor@example.com'],
+                ['Jason Beggs', 'jason@example.com'],
+            ]
+        )
+        ->assertExitCode(0);
+});
+```
+
+```php tab=PHPUnit
+public function test_report_generation(): void
+{
+    $this->artisan('report:generate')
+        ->expectsPromptsInfo('Welcome to the application!')
+        ->expectsPromptsWarning('This action cannot be undone')
+        ->expectsPromptsError('Something went wrong')
+        ->expectsPromptsAlert('Important notice!')
+        ->expectsPromptsIntro('Starting process...')
+        ->expectsPromptsOutro('Process completed!')
+        ->expectsPromptsTable(
+            headers: ['Name', 'Email'],
+            rows: [
+                ['Taylor Otwell', 'taylor@example.com'],
+                ['Jason Beggs', 'jason@example.com'],
+            ]
+        )
+        ->assertExitCode(0);
+}
+```

@@ -3,9 +3,7 @@
 - [Giới thiệu](#introduction)
 - [Validation trực tiếp](#live-validation)
     - [Dùng với Vue](#using-vue)
-    - [Dùng với Vue và Inertia](#using-vue-and-inertia)
     - [Dùng với React](#using-react)
-    - [Dùng với React và Inertia](#using-react-and-inertia)
     - [Dùng với Alpine và Blade](#using-alpine)
     - [Cấu hình Axios](#configuring-axios)
 - [Tuỳ chỉnh Validation Rules](#customizing-validation-rules)
@@ -16,9 +14,12 @@
 <a name="introduction"></a>
 ## Giới thiệu
 
-Laravel Precognition cho phép bạn dự đoán kết quả của một request HTTP khi gửi lên server. Một trong những ứng dụng chính của Precognition là khả năng cung cấp xác thực "trực tiếp" cho ứng dụng JavaScript frontend mà không cần phải copy các quy tắc validation từ backend của ứng dụng. Precognition kết hợp đặc biệt tốt với [starter kits](/docs/{{version}}/starter-kits) dựa trên Inertia của Laravel.
+Laravel Precognition cho phép bạn dự đoán kết quả của một request HTTP khi gửi lên server. Một trong những ứng dụng chính của Precognition là khả năng cung cấp xác thực "trực tiếp" cho ứng dụng JavaScript frontend mà không cần phải copy các quy tắc validation từ backend của ứng dụng.
 
 Khi Laravel nhận được một "request precognitive", nó sẽ thực hiện tất cả các middleware của route và resolve các library controller của route, bao gồm cả validation [request form](/docs/{{version}}/validation#form-request-validation) - nhưng nó sẽ không thực sự thực thi bất kỳ phương thức nào của controller.
+
+> [!NOTE]
+> Kể từ phiên bản Inertia 2.3, hỗ trợ Precognition đã được tích hợp sẵn. Vui lòng tham khảo [tài liệu Inertia Forms](https://inertiajs.com/docs/v2/the-basics/forms) để biết thêm thông tin. Các phiên bản Inertia cũ hơn yêu cầu Precognition 0.x.
 
 <a name="live-validation"></a>
 ## Validation trực tiếp
@@ -187,38 +188,6 @@ Bạn có thể xác định một request form có đang được xử lý hay 
 </button>
 ```
 
-<a name="using-vue-and-inertia"></a>
-### Dùng với Vue và Inertia
-
-> [!NOTE]
-> Nếu bạn muốn bắt đầu phát triển ứng dụng Laravel với Vue và Inertia, hãy cân nhắc sử dụng một trong các [bộ khởi động starter kit](/docs/{{version}}/starter-kits) của chúng tôi. Bộ khởi động starter kit của Laravel sẽ cung cấp một nền tảng xác thực gồm backend và frontend cho ứng dụng Laravel của bạn.
-
-Trước khi sử dụng Precognition với Vue và Inertia, hãy nhớ xem qua tài liệu chung của chúng tôi về [sử dụng Precognition với Vue](#using-vue). Khi sử dụng Vue với Inertia, bạn sẽ cần cài đặt thư viện Precognition tương thích với Inertia thông qua NPM:
-
-```shell
-npm install laravel-precognition-vue-inertia
-```
-
-Sau khi cài đặt xong, hàm `useForm` của Precognition sẽ trả về một [helper form](https://inertiajs.com/forms#form-helper) Inertia với các chức năng xác thực đã được nói ở trên.
-
-Phương thức `submit` của helper form đã được tinh giản, loại bỏ các nhu cầu về chỉ định phương thức HTTP hoặc URL. Thay vào đó, bạn có thể truyền một [tùy chọn truy cập](https://inertiajs.com/manual-visits) của Inertia làm tham số đầu tiên và duy nhất. Ngoài ra, phương thức `submit` sẽ không trả về Promise như trong ví dụ Vue ở trên. Mà thay vào đó, bạn có thể cung cấp bất kỳ [event callback](https://inertiajs.com/manual-visits#event-callbacks) nào được Inertia hỗ trợ vào trong các tùy chọn truy cập được cung cấp cho phương thức `submit`:
-
-```vue
-<script setup>
-import { useForm } from 'laravel-precognition-vue-inertia';
-
-const form = useForm('post', '/users', {
-    name: '',
-    email: '',
-});
-
-const submit = () => form.submit({
-    preserveScroll: true,
-    onSuccess: () => form.reset(),
-});
-</script>
-```
-
 <a name="using-react"></a>
 ### Dùng với React
 
@@ -330,7 +299,7 @@ Nếu bạn đang validate một tập hợp dữ liệu input form thông qua P
     id="avatar"
     type="file"
     onChange={(e) => {
-        form.setData('avatar', e.target.value);
+        form.setData('avatar', e.target.files[0]);
 
         form.forgetError('avatar');
     }}
@@ -376,40 +345,6 @@ Bạn có thể xác định một request form có đang được xử lý hay 
 <button disabled={form.processing}>
     Submit
 </button>
-```
-
-<a name="using-react-and-inertia"></a>
-### Dùng với React và Inertia
-
-> [!NOTE]
-> Nếu bạn muốn bắt đầu phát triển ứng dụng Laravel với React và Inertia, hãy cân nhắc sử dụng một trong các [bộ khởi động starter kit](/docs/{{version}}/starter-kits) của chúng tôi. Bộ khởi động starter kit của Laravel sẽ cung cấp một nền tảng xác thực gồm backend và frontend cho ứng dụng Laravel của bạn.
-
-Trước khi sử dụng Precognition với React và Inertia, hãy nhớ xem qua tài liệu chung của chúng tôi về [sử dụng Precognition với React](#using-react). Khi sử dụng React với Inertia, bạn sẽ cần cài đặt thư viện Precognition tương thích với Inertia thông qua NPM:
-
-```shell
-npm install laravel-precognition-react-inertia
-```
-
-Sau khi cài đặt xong, hàm `useForm` của Precognition sẽ trả về một [helper form](https://inertiajs.com/forms#form-helper) Inertia với các chức năng xác thực đã được nói ở trên.
-
-Phương thức `submit` của helper form đã được tinh giản, loại bỏ các nhu cầu về chỉ định phương thức HTTP hoặc URL. Thay vào đó, bạn có thể truyền một [tùy chọn truy cập](https://inertiajs.com/manual-visits) của Inertia làm tham số đầu tiên và duy nhất. Ngoài ra, phương thức `submit` sẽ không trả về Promise như trong ví dụ React ở trên. Mà thay vào đó, bạn có thể cung cấp bất kỳ [event callback](https://inertiajs.com/manual-visits#event-callbacks) nào được Inertia hỗ trợ vào trong các tùy chọn truy cập được cung cấp cho phương thức `submit`:
-
-```js
-import { useForm } from 'laravel-precognition-react-inertia';
-
-const form = useForm('post', '/users', {
-    name: '',
-    email: '',
-});
-
-const submit = (e) => {
-    e.preventDefault();
-
-    form.submit({
-        preserveScroll: true,
-        onSuccess: () => form.reset(),
-    });
-};
 ```
 
 <a name="using-alpine"></a>
@@ -580,7 +515,7 @@ Ngoài ra, nếu bạn muốn gửi form qua XHR, bạn có thể sử dụng h�
         submit() {
             this.form.submit()
                 .then(response => {
-                    form.reset();
+                    this.form.reset();
 
                     alert('User created.')
                 })
@@ -615,9 +550,6 @@ window.axios.defaults.headers.common['Authorization'] = authToken;
 
 client.use(window.axios)
 ```
-
-> [!WARNING]
-> Các thư viện Precognition mà theo cấu trúc Inertia sẽ chỉ sử dụng instance Axios đã được cấu hình cho các request xác thực. Còn việc gửi form sẽ luôn được gửi bởi Inertia.
 
 <a name="customizing-validation-rules"></a>
 ## Tuỳ chỉnh Validation Rules

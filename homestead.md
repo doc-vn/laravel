@@ -36,6 +36,9 @@
 <a name="introduction"></a>
 ## Giới thiệu
 
+> [!WARNING]
+> Laravel Homestead là một package cũ hiện không còn được phát triển. [Laravel Sail](/docs/{{version}}/sail) có thể được sử dụng như một giải pháp thay thế hiện đại hơn.
+
 Laravel cố gắng làm cho toàn bộ trải nghiệm phát triển PHP của bạn trở nên thú vị, bao gồm cả môi trường phát triển local của bạn. [Laravel Homestead](https://github.com/laravel/homestead) là một Vagrant box đóng gói sẵn, chính thức, cung cấp cho bạn một môi trường phát triển tuyệt vời mà không yêu cầu bạn phải cài đặt PHP, server web hoặc bất kỳ phần mềm server nào khác trên máy local của bạn.
 
 [Vagrant](https://www.vagrantup.com) cung cấp một cách thức đơn giản, nhẹ nhàng để quản lý và cung cấp máy ảo. Vagrant box hoàn toàn sẵn sàng để dùng. Nếu xảy ra sự cố, bạn có thể xoá và tạo lại một box mới trong vài phút!
@@ -266,7 +269,9 @@ Homestead sẽ publish hostname dùng `mDNS` để tự động phân giải hos
 
 Sử dụng hostname tự động sẽ hoạt động tốt nhất cho [cài đặt từng dự án](#per-project-installation) của Homestead. Nếu bạn lưu nhiều trang web trên cùng một phiên bản Homestead, bạn có thể thêm "tên miền" cho các trang web Nginx của bạn vào file `hosts` trên máy của bạn. File `hosts` sẽ chuyển hướng các request đến các trang Homestead của bạn vào máy ảo Homestead của bạn. Trên macOS và Linux, file này được lưu tại `/etc/hosts`. Trên Windows, file đó được lưu tại `C:\Windows\System32\drivers\etc\hosts`. Các dòng mà bạn cần thêm vào trong file này sẽ trông như sau:
 
-    192.168.56.56  homestead.test
+```text
+192.168.56.56  homestead.test
+```
 
 Hãy chắc chắn rằng địa chỉ IP được liệt kê là địa chỉ được cài đặt trong file `Homestead.yaml` của bạn. Khi bạn đã thêm tên miền vào file `hosts` của bạn và khởi chạy Vagrant, bạn có thể truy cập trang web thông qua trình duyệt web của bạn:
 
@@ -473,8 +478,10 @@ sites:
 
 Nếu Vagrant không tự động quản lý file "hosts" cho bạn, thì bạn có thể cần thêm thông tin site mới vào file host như sau. Trên Mac và Linux, file này được lưu tại `/etc/hosts`. Trên Windows, file đó được lưu tại `C:\Windows\System32\drivers\etc\hosts`.
 
-    192.168.56.56  homestead.test
-    192.168.56.56  another.test
+```text
+192.168.56.56  homestead.test
+192.168.56.56  another.test
+```
 
 Khi mà một site mới đã được thêm vào, hãy chạy lại lệnh terminal `vagrant reload --provision` từ thư mục Homestead của bạn.
 
@@ -616,7 +623,9 @@ Một database `homestead` sẽ được cấu hình cho cả MySQL và PostgreS
 
 Homestead có thể tự động backup cơ sở dữ liệu của bạn khi Vagrant box của bạn bị destroy. Để sử dụng tính năng này, bạn sẽ phải sử dụng Vagrant 2.1.0 trở lên. Hoặc, nếu bạn đang sử dụng phiên bản Vagrant cũ hơn, bạn phải cài đặt plug-in `vagrant-triggers`. Để bật backup cơ sở dữ liệu tự động, hãy thêm dòng sau vào file `Homestead.yaml` của bạn:
 
-    backup: true
+```yaml
+backup: true
+```
 
 Sau khi đã được cấu hình, Homestead sẽ export cơ sở dữ liệu của bạn sang các thư mục `.backup/mysql_backup` và `.backup/postgres_backup` khi lệnh `vagrant destroy` được thực thi. Bạn có thể tìm thấy những thư mục này trong thư mục mà bạn đã clone Homestead hoặc trong thư mục gốc của project nếu bạn đang sử dụng phương thức [cài đặt Homestead cho từng dự án](#per-project-installation).
 
@@ -686,7 +695,7 @@ Các giá trị `policy` được hỗ trợ là: `none`, `download`, `upload`, 
 <a name="laravel-dusk"></a>
 ### Laravel Dusk
 
-Để chạy test [Laravel Dusk](/docs/{{version}}/dusk) trong Homestead, bạn nên bật [feature `webdriver`](#installing-optional-features) trong file cấu hình Homestead của bạn:
+Để chạy test [Laravel Dusk](/docs/{{version}}/dusk) trong Homestead, bạn nên bật [feature webdriver](#installing-optional-features) trong file cấu hình Homestead của bạn:
 
 ```yaml
 features:
@@ -747,7 +756,9 @@ xdebug.start_with_request = yes
 
 Để debug một ứng dụng PHP CLI, hãy sử dụng alias shell `xphp` trong máy ảo Homestead của bạn:
 
-    xphp /path/to/script
+```shell
+xphp /path/to/script
+```
 
 <a name="profiling-applications-with-blackfire"></a>
 ### Profiling Applications với Blackfire

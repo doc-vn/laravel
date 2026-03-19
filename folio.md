@@ -33,13 +33,13 @@ Ví dụ, để tạo một trang có thể truy cập tại địa chỉ URL `/
 
 Để bắt đầu, hãy cài đặt Folio vào project của bạn bằng trình quản lý package Composer:
 
-```bash
+```shell
 composer require laravel/folio
 ```
 
 Sau khi cài đặt xong Folio, bạn có thể chạy lệnh Artisan `folio:install`, để cài đặt service provider của Folio vào ứng dụng của bạn. Service provider này sẽ đăng ký một thư mục mới nơi folio sẽ tìm kiếm các route / page:
 
-```bash
+```shell
 php artisan folio:install
 ```
 
@@ -99,7 +99,7 @@ Sau khi template Blade đã được đặt vào trong thư mục có gắn vớ
 
 Để xem nhanh danh sách tất cả các page / route Folio của bạn, bạn có thể gọi lệnh Artisan `folio:list`:
 
-```bash
+```shell
 php artisan folio:list
 ```
 
@@ -108,7 +108,7 @@ php artisan folio:list
 
 Bạn có thể tạo một route lồng nhau bằng cách tạo một hoặc nhiều thư mục trong một hoặc nhiều trong một thư mục khác của Folio. Ví dụ, để tạo một trang có thể truy cập qua `/user/profile`, hãy tạo một template `profile.blade.php` trong thư mục `pages/user`:
 
-```bash
+```shell
 php artisan folio:page user/profile
 
 # pages/user/profile.blade.php → /user/profile
@@ -119,7 +119,7 @@ php artisan folio:page user/profile
 
 Thỉnh thoảng, bạn có thể muốn tạo một trang thành "mặc định" của một thư mục. Bằng cách đặt một template `index.blade.php` vào trong một thư mục Folio, mọi request đến thư mục gốc của thư mục đó sẽ được route ngay đến trang đó:
 
-```bash
+```shell
 php artisan folio:page index
 # pages/index.blade.php → /
 
@@ -132,7 +132,7 @@ php artisan folio:page users/index
 
 Thông thường, bạn sẽ cần phải có các tham số URL của request được đưa vào trang của bạn để bạn có thể tương tác với chúng. Ví dụ, bạn có thể cần lấy "ID" của người dùng có profile đang được hiển thị. Để thực hiện điều này, bạn có thể khai báo một tham số của trang trong dấu ngoặc vuông:
 
-```bash
+```shell
 php artisan folio:page "users/[id]"
 
 # pages/users/[id].blade.php → /users/1
@@ -148,7 +148,7 @@ Các tham số đã được khai báo thể được truy cập dưới dạng 
 
 Để khai báo nhiều tham số, bạn có thể thêm tiền tố vào tham số được khai báo bằng ba dấu chấm `...`:
 
-```bash
+```shell
 php artisan folio:page "users/[...ids]"
 
 # pages/users/[...ids].blade.php → /users/1/2/3
@@ -169,7 +169,7 @@ Khi khai báo nhiều tham số, các tham số được khai báo sẽ được
 
 Nếu một tham số wildcard trong template trang của bạn tương ứng với một trong các model Eloquent của ứng dụng, Folio sẽ tự động tận dụng khả năng liên kết model route của Laravel và sẽ thử tích hợp instance model đó vào trong trang của bạn:
 
-```bash
+```shell
 php artisan folio:page "users/[User]"
 
 # pages/users/[User].blade.php → /users/1
@@ -193,7 +193,7 @@ Trên Windows, bạn nên sử dụng ký tự `-` để tách tên model ra kh�
 
 Mặc định, Folio sẽ tìm kiếm model của bạn trong thư mục `app/Models` của ứng dụng. Tuy nhiên, nếu cần, bạn có thể chỉ định tên class model đủ điều kiện trong filename template của bạn:
 
-```bash
+```shell
 php artisan folio:page "users/[.App.Models.User]"
 
 # pages/users/[.App.Models.User].blade.php → /users/1

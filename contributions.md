@@ -28,7 +28,7 @@ Mã nguồn của Laravel được quản lý trên GitHub và có các reposito
 
 - [Laravel Application](https://github.com/laravel/laravel)
 - [Laravel Art](https://github.com/laravel/art)
-- [Laravel Breeze](https://github.com/laravel/breeze)
+- [Laravel Boost](https://github.com/laravel/boost)
 - [Laravel Documentation](https://github.com/laravel/docs)
 - [Laravel Dusk](https://github.com/laravel/dusk)
 - [Laravel Cashier Stripe](https://github.com/laravel/cashier)
@@ -39,7 +39,6 @@ Mã nguồn của Laravel được quản lý trên GitHub và có các reposito
 - [Laravel Framework](https://github.com/laravel/framework)
 - [Laravel Homestead](https://github.com/laravel/homestead) ([Build Scripts](https://github.com/laravel/settler))
 - [Laravel Horizon](https://github.com/laravel/horizon)
-- [Laravel Jetstream](https://github.com/laravel/jetstream)
 - [Laravel Passport](https://github.com/laravel/passport)
 - [Laravel Pennant](https://github.com/laravel/pennant)
 - [Laravel Pint](https://github.com/laravel/pint)
@@ -50,7 +49,9 @@ Mã nguồn của Laravel được quản lý trên GitHub và có các reposito
 - [Laravel Scout](https://github.com/laravel/scout)
 - [Laravel Socialite](https://github.com/laravel/socialite)
 - [Laravel Telescope](https://github.com/laravel/telescope)
-- [Laravel Website](https://github.com/laravel/laravel.com)
+- [Laravel Livewire Starter Kit](https://github.com/laravel/livewire-starter-kit)
+- [Laravel React Starter Kit](https://github.com/laravel/react-starter-kit)
+- [Laravel Vue Starter Kit](https://github.com/laravel/vue-starter-kit)
 
 </div>
 
@@ -81,9 +82,9 @@ Kênh `#internals` của [Laravel Discord server](https://discord.gg/laravel) s�
 <a name="which-branch"></a>
 ## Branch nào?
 
-**Tất cả** các bản sửa lỗi phải được gửi đến phiên bản mới nhất được hỗ trợ sửa lỗi (hiện tại là `11.x`). Các bản sửa lỗi sẽ **không** được gửi đến branch `master` trừ khi chúng sửa các tính năng đã tồn tại trong bản phát hành sắp tới.
+**Tất cả** các bản sửa lỗi phải được gửi đến phiên bản mới nhất được hỗ trợ sửa lỗi (hiện tại là `12.x`). Các bản sửa lỗi sẽ **không** được gửi đến branch `master` trừ khi chúng sửa các tính năng đã tồn tại trong bản phát hành sắp tới.
 
-Các tính năng **phụ** có **tương thích** với bản phát hành hiện tại thì có thể được gửi đến branch ổn định mới nhất (hiện tại là `11.x`).
+Các tính năng **phụ** có **tương thích** với bản phát hành hiện tại thì có thể được gửi đến branch ổn định mới nhất (hiện tại là `12.x`).
 
 Các tính năng **chính** mới hoặc các tính năng có những thay đổi nghiêm trọng phải luôn được gửi đến branch `master`, nơi chứa code của các bản phát hành sắp tới.
 
@@ -107,44 +108,50 @@ Laravel tuân theo tiêu chuẩn coding [PSR-2](https://github.com/php-fig/fig-s
 
 Dưới đây là một ví dụ mẫu về Laravel documentation hợp lệ. Lưu ý rằng đằng sau thuộc tính `@param` là hai khoảng trắng, tiếp theo là kiểu của tham số, và hai khoảng trắng và cuối cùng là tên biến:
 
-    /**
-     * Register a binding with the container.
-     *
-     * @param  string|array  $abstract
-     * @param  \Closure|string|null  $concrete
-     * @param  bool  $shared
-     * @return void
-     *
-     * @throws \Exception
-     */
-    public function bind($abstract, $concrete = null, $shared = false)
-    {
-        // ...
-    }
+```php
+/**
+ * Register a binding with the container.
+ *
+ * @param  string|array  $abstract
+ * @param  \Closure|string|null  $concrete
+ * @param  bool  $shared
+ * @return void
+ *
+ * @throws \Exception
+ */
+public function bind($abstract, $concrete = null, $shared = false)
+{
+    // ...
+}
+```
 
 Các thuộc tính `@param` hoặc `@return` có thể trở nên dư thừa khi bạn đã khai báo các kiểu dữ liệu cụ thể, vì vậy chúng có thể bị xóa:
 
-    /**
-     * Execute the job.
-     */
-    public function handle(AudioProcessor $processor): void
-    {
-        //
-    }
+```php
+/**
+ * Execute the job.
+ */
+public function handle(AudioProcessor $processor): void
+{
+    // ...
+}
+```
 
 Tuy nhiên, khi khai báo kiểu dữ liệu dạng chung, vui lòng chỉ định kiểu dữ liệu chung đó thông qua việc sử dụng thuộc tính `@param` hoặc `@return`:
 
-    /**
-     * Get the attachments for the message.
-     *
-     * @return array<int, \Illuminate\Mail\Mailables\Attachment>
-     */
-    public function attachments(): array
-    {
-        return [
-            Attachment::fromStorage('/path/to/file'),
-        ];
-    }
+```php
+/**
+ * Get the attachments for the message.
+ *
+ * @return array<int, \Illuminate\Mail\Mailables\Attachment>
+ */
+public function attachments(): array
+{
+    return [
+        Attachment::fromStorage('/path/to/file'),
+    ];
+}
+```
 
 <a name="styleci"></a>
 ### StyleCI

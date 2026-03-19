@@ -37,7 +37,7 @@
 
 Bạn có thể cài đặt Pulse bằng trình quản lý package Composer:
 
-```sh
+```shell
 composer require laravel/pulse
 ```
 
@@ -63,7 +63,7 @@ Sau khi migration cơ sở dữ liệu của Pulse hoàn tất, bạn có thể 
 
 Nhiều tùy chọn cấu hình của Pulse có thể được kiểm soát bằng các biến môi trường. Để xem các tùy chọn có sẵn, đăng ký recorder mới hoặc cấu hình các tùy chọn nâng cao, bạn có thể export file cấu hình `config/pulse.php`:
 
-```sh
+```shell
 php artisan vendor:publish --tag=pulse-config
 ```
 
@@ -97,7 +97,7 @@ public function boot(): void
 
 Các card và layout của bảng điều khiển Pulse có thể được cấu hình bằng cách export ra các view. Các view sẽ được export vào `resources/views/vendor/pulse/dashboard.blade.php`:
 
-```sh
+```shell
 php artisan vendor:publish --tag=pulse-dashboard
 ```
 
@@ -256,7 +256,7 @@ php artisan pulse:check
 
 Vì lệnh `pulse:check` là một process chạy liên tục, nên nếu process đó không được khởi động lại, thì nó sẽ không thấy được sự thay đổi code của bạn. Bạn nên khởi động lại lệnh một cách bình thường bằng cách gọi lệnh `pulse:restart` trong quá trình deploy ứng dụng:
 
-```sh
+```shell
 php artisan pulse:restart
 ```
 
@@ -298,7 +298,7 @@ Bạn có thể tùy ý điều chỉnh [tỷ lệ lấy mẫu](#sampling) và c
 <a name="queues-recorder"></a>
 #### Queues
 
-Recorder `Queues` sẽ ghi lại thông tin về queue ứng dụng của bạn để hiển thị trên [Queues](#queues-card).
+Recorder `Queues` sẽ ghi lại thông tin về queue trong ứng dụng của bạn để hiển thị trên [Queues](#queues-card).
 
 Bạn có thể tùy ý điều chỉnh [tỷ lệ lấy mẫu](#sampling) và các jobs pattern sẽ bị bỏ qua.
 
@@ -404,7 +404,7 @@ Nếu không có pattern nào khớp với URL của request, thì giá trị `'
 <a name="servers-recorder"></a>
 #### Servers
 
-Recorder `Servers` sẽ ghi lại mức độ sử dụng CPU, bộ nhớ và kho lưu trữ của các server chạy cho ứng dụng của bạn để hiển thị trên card [Servers](#servers-card). Recorder này yêu cầu [lệnh `pulse:check`](#capturing-entries) phải được chạy trên mỗi server mà bạn muốn giám sát.
+Recorder `Servers` sẽ ghi lại mức độ sử dụng CPU, bộ nhớ và kho lưu trữ của các server chạy cho ứng dụng của bạn để hiển thị trên card [Servers](#servers-card). Recorder này yêu cầu [lệnh pulse:check](#capturing-entries) phải được chạy trên mỗi server mà bạn muốn giám sát.
 
 Mỗi server phải có một tên duy nhất. Mặc định, Pulse sẽ sử dụng giá trị được trả về bởi hàm `gethostname` của PHP. Nếu bạn muốn tùy chỉnh, bạn có thể set biến môi trường `PULSE_SERVER_NAME`:
 
@@ -476,15 +476,18 @@ PULSE_DB_CONNECTION=pulse
 
 Mặc định, Pulse sẽ lưu các mục trực tiếp vào [configured database connection](#using-a-different-database) sau khi HTTP response được gửi về client hoặc một job đã được xử lý xong; tuy nhiên, bạn có thể sử dụng driver Redis của Pulse để gửi các mục đến stream Redis. Tính năng này có thể được kích hoạt bằng cách cấu hình biến môi trường `PULSE_INGEST_DRIVER`:
 
-```
+```ini
 PULSE_INGEST_DRIVER=redis
 ```
 
 Mặc định, Pulse sẽ sử dụng [kết nối Redis](/docs/{{version}}/redis#configuration) mặc định của bạn, nhưng bạn có thể tùy chỉnh kết nối này thông qua biến môi trường `PULSE_REDIS_CONNECTION`:
 
-```
+```ini
 PULSE_REDIS_CONNECTION=pulse
 ```
+
+> [!WARNING]
+> Khi sử dụng driver Redis ingest, bản cài đặt Pulse của bạn phải luôn sử dụng một kết nối Redis khác, khác với kết nối Redis của queue, nếu có.
 
 Khi sử dụng Redis, bạn có thể sẽ cần chạy lệnh `pulse:work` để theo dõi stream và di chuyển các mục từ Redis vào các bảng cơ sở dữ liệu của Pulse.
 
@@ -497,7 +500,7 @@ php artisan pulse:work
 
 Vì lệnh `pulse:work` là một process chạy liên tục, nên nếu process đó không được khởi động lại, thì nó sẽ không thấy được sự thay đổi code của bạn. Bạn nên khởi động lại lệnh một cách bình thường bằng cách gọi lệnh `pulse:restart` trong quá trình deploy ứng dụng:
 
-```sh
+```shell
 php artisan pulse:restart
 ```
 
@@ -509,7 +512,7 @@ php artisan pulse:restart
 
 Mặc định, Pulse sẽ ghi lại mọi event liên quan xảy ra trong ứng dụng của bạn. Đối với những ứng dụng có lưu lượng truy cập cao, điều này có thể dẫn đến việc cần tổng hợp hàng triệu row cơ sở dữ liệu trong bảng điều khiển, đặc biệt là trong thời gian dài.
 
-Thay vào đó, bạn có thể chọn bật "lấy mẫu" trên một số recorder dữ liệu Pulse. Ví dụ: set tỉ lệ lấy mẫu là `0.1` trên recorder [`User Requests`](#user-requests-recorder) thì sẽ đồng nghĩa với việc bạn chỉ ghi lại khoảng 10% các request đến ứng dụng của bạn. Trong bảng điều khiển, các giá trị sẽ được tính theo tỉ lệ trên và thêm tiền tố `~` để biểu thị rằng chúng là giá trị gần đúng.
+Thay vào đó, bạn có thể chọn bật "lấy mẫu" trên một số recorder dữ liệu Pulse. Ví dụ: set tỉ lệ lấy mẫu là `0.1` trên recorder [User Requests](#user-requests-recorder) thì sẽ đồng nghĩa với việc bạn chỉ ghi lại khoảng 10% các request đến ứng dụng của bạn. Trong bảng điều khiển, các giá trị sẽ được tính theo tỉ lệ trên và thêm tiền tố `~` để biểu thị rằng chúng là giá trị gần đúng.
 
 Nhìn chung, bạn càng có nhiều mục cho một số liệu cụ thể thì bạn càng có thể set một tỉ lệ lấy mẫu thấp mà không làm giảm quá nhiều độ chính xác.
 
@@ -647,31 +650,24 @@ Khi card này đã được thêm vào bảng điều khiển, Pulse sẽ tự �
 <a name="custom-card-styling-tailwind"></a>
 #### Tailwind CSS
 
-Khi sử dụng Tailwind CSS, bạn nên tạo ra một file cấu hình Tailwind chuyên dụng để tránh load file CSS không cần thiết hoặc xung đột với các class Tailwind của Pulse:
-
-```js
-export default {
-    darkMode: 'class',
-    important: '#top-sellers',
-    content: [
-        './resources/views/livewire/pulse/top-sellers.blade.php',
-    ],
-    corePlugins: {
-        preflight: false,
-    },
-};
-```
-
-Sau đó, bạn có thể chỉ định file cấu hình trong file CSS của bạn:
+Khi sử dụng Tailwind CSS, bạn nên tạo ra một file CSS entrypoint. Ví dụ sau đây sẽ loại bỏ style cơ bản [Preflight](https://tailwindcss.com/docs/preflight) của Tailwind vì chúng đã có sẵn trong Pulse, đồng thời giới hạn phạm vi của Tailwind bằng CSS selector để tránh xung đột với các class Tailwind của Pulse:
 
 ```css
-@config "../../tailwind.top-sellers.config.js";
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss/theme.css";
+
+@custom-variant dark (&:where(.dark, .dark *));
+@source "./../../views/livewire/pulse/top-sellers.blade.php";
+
+@theme {
+  /* ... */
+}
+
+#top-sellers {
+  @import "tailwindcss/utilities.css" source(none);
+}
 ```
 
-Bạn cũng sẽ cần phải thêm các thuộc tính `id` hoặc `class` vào trong view card của bạn để khớp với bộ selector được chuyển đến [`important` selector strategy](https://tailwindcss.com/docs/configuration#selector-strategy) của Tailwind:
+Bạn cũng sẽ cần phải thêm các thuộc tính `id` hoặc `class` vào trong view card của bạn để khớp với bộ CSS selector file entrypoint của bạn:
 
 ```blade
 <x-pulse::card id="top-sellers" :cols="$cols" :rows="$rows" class="$class">
@@ -729,7 +725,7 @@ class TopSellers extends Card
 
 Phương thức `aggregate` sẽ trả về một collection các đối tượng `stdClass` của PHP. Mỗi đối tượng sẽ chứa thuộc tính `key` đã được ghi lại trước đó cùng với các khóa cho mỗi số liệu được yêu cầu:
 
-```
+```blade
 @foreach ($topSellers as $seller)
     {{ $seller->key }}
     {{ $seller->sum }}

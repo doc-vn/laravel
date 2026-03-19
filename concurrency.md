@@ -7,33 +7,7 @@
 <a name="introduction"></a>
 ## Giới thiệu
 
-> [!WARNING]
-> Facade `Concurrency` của Laravel hiện đang trong giai đoạn chạy thử trong khi đó chúng tôi sẽ thu thập ý kiến phản hồi từ cộng đồng.
-
 Thỉnh thoảng bạn có thể cần chạy nhiều task nặng mà không phụ thuộc vào bên khác. Trong nhiều trường hợp, hiệu suất có thể được cải thiện bằng cách chạy đồng thời các task đó. Facade `Concurrency` của Laravel sẽ cung cấp một API đơn giản, thuận tiện để chạy các task đó.
-
-<a name="concurrency-compatibility"></a>
-#### Concurrency Compatibility
-
-Nếu bạn đã nâng cấp lên Laravel 11.x từ ứng dụng Laravel 10.x, bạn có thể cần thêm `ConcurrencyServiceProvider` vào mảng `providers` trong file cấu hình `config/app.php` của ứng dụng:
-
-```php
-'providers' => ServiceProvider::defaultProviders()->merge([
-    /*
-     * Package Service Providers...
-     */
-    Illuminate\Concurrency\ConcurrencyServiceProvider::class, // [tl! add]
-
-    /*
-     * Application Service Providers...
-     */
-    App\Providers\AppServiceProvider::class,
-    App\Providers\AuthServiceProvider::class,
-    // App\Providers\BroadcastServiceProvider::class,
-    App\Providers\EventServiceProvider::class,
-    App\Providers\RouteServiceProvider::class,
-])->toArray(),
-```
 
 <a name="how-it-works"></a>
 #### How it Works
@@ -44,7 +18,7 @@ Facade `Concurrency` hỗ trợ ba driver: `process` (mặc định), `fork` và
 
 Driver `fork` mang lại hiệu suất tốt so với driver `process` mặc định, nhưng nó chỉ có thể được sử dụng trong CLI của PHP, vì PHP không hỗ trợ fork cho các request web. Trước khi sử dụng driver `fork`, bạn cần cài đặt package `spatie/fork`:
 
-```bash
+```shell
 composer require spatie/fork
 ```
 
@@ -73,7 +47,7 @@ $results = Concurrency::driver('fork')->run(...);
 
 Hoặc, để thay đổi driver mặc định, bạn có thể export file cấu hình `concurrency` thông qua lệnh Artisan `config:publish` và cập nhật tùy chọn `default` trong file đó:
 
-```bash
+```shell
 php artisan config:publish concurrency
 ```
 

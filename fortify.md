@@ -41,14 +41,14 @@ Như đã đề cập trước đây, Laravel Fortify là một triển khai bac
 
 **Bạn không bắt buộc phải sử dụng Fortify để sử dụng các chức năng xác thực của Laravel.** Bạn luôn được tự do tương tác với các service xác thực của Laravel bằng cách làm theo tài liệu có sẵn trong [authentication](/docs/{{version}}/authentication), [reset password](/docs/{{version}}/passwords), và [xác minh email](/docs/{{version}}/verification).
 
-Nếu bạn chưa quen với Laravel, bạn có thể muốn xem qua starter kit [Laravel Breeze](/docs/{{version}}/starter-kits) trước khi thử sử dụng Laravel Fortify. Laravel Breeze sẽ cung cấp một scaffolding xác thực cho ứng dụng của bạn bao gồm cả giao diện người dùng được tạo bằng [Tailwind CSS](https://tailwindcss.com). Không giống như Fortify, Breeze export các route và controller trực tiếp vào ứng dụng của bạn. Điều này cho phép bạn có thể nghiên cứu và làm quen với các chức năng xác thực của Laravel trước khi cho phép Laravel Fortify triển khai các chức năng này cho bạn.
+Nếu bạn chưa quen với Laravel, bạn có thể muốn xem qua [bộ starter kit ứng dụng của chúng tôi](/docs/{{version}}/starter-kits). Starter kit ứng dụng của Laravel sử dụng Fortify ở bên trong để cung cấp một scaffolding xác thực cho ứng dụng của bạn bao gồm cả giao diện người dùng được tạo bằng [Tailwind CSS](https://tailwindcss.com). Điều này cho phép bạn có thể nghiên cứu và làm quen với các chức năng xác thực của Laravel.
 
-Về cơ bản, Laravel Fortify sử dụng các route và controller của Laravel Breeze và cung cấp chúng dưới dạng một package không chứa giao diện người dùng. Điều này cho phép bạn vẫn nhanh chóng xây dựng việc triển khai backend của phần xác thực ứng dụng của bạn mà không bị ràng buộc với bất kỳ quan điểm cụ thể nào về giao diện người dùng.
+Về cơ bản, Laravel Fortify sử dụng các route và controller của starter kit ứng dụng của Laravel và cung cấp chúng dưới dạng một package không chứa giao diện người dùng. Điều này cho phép bạn vẫn nhanh chóng xây dựng việc triển khai backend của phần xác thực ứng dụng của bạn mà không bị ràng buộc với bất kỳ quan điểm cụ thể nào về giao diện người dùng.
 
 <a name="when-should-i-use-fortify"></a>
 ### Khi nào dùng Fortify?
 
-Bạn có thể tự hỏi khi nào thì thích hợp để sử dụng Laravel Fortify. Đầu tiên, nếu bạn đang sử dụng [bộ starter kit application](/docs/{{version}}/starter-kits) của Laravel, thì bạn không cần phải cài đặt Laravel Fortify vì tất cả bộ starter kit ứng dụng của Laravel đã cung cấp đầy đủ các triển khai xác thực .
+Bạn có thể tự hỏi khi nào thì thích hợp để sử dụng Laravel Fortify. Đầu tiên, nếu bạn đang sử dụng [bộ starter kit application](/docs/{{version}}/starter-kits) của Laravel, thì bạn không cần phải cài đặt Laravel Fortify vì tất cả bộ starter kit ứng dụng của Laravel đều dùng Fortify và đã cung cấp đầy đủ các triển khai xác thực .
 
 Nếu bạn không sử dụng bộ starter kit và ứng dụng của bạn cần các tính năng xác thực, thì bạn có hai tùy chọn: triển khai các tính năng xác thực của ứng dụng bằng tay hoặc sử dụng Laravel Fortify để cung cấp backend triển khai cho các tính năng này.
 
@@ -91,7 +91,7 @@ php artisan migrate
 <a name="fortify-features"></a>
 ### Fortify Features
 
-File cấu hình `fortify` có chứa một mảng cấu hình `features`. Mảng này định nghĩa các route và các backend chức năng mà Fortify sẽ mặc định thực thị. Nếu bạn không sử dụng Fortify cùng với [Laravel Jetstream](https://jetstream.laravel.com), chúng tôi khuyên bạn chỉ nên bật các tính năng sau, đây là các tính năng xác thực cơ bản được cung cấp bởi hầu hết các ứng dụng Laravel:
+File cấu hình `fortify` có chứa một mảng cấu hình `features`. Mảng này định nghĩa các route và các backend chức năng mà Fortify sẽ mặc định thực thị. Chúng tôi khuyên bạn chỉ nên bật các tính năng sau, đây là các tính năng xác thực cơ bản được cung cấp bởi hầu hết các ứng dụng Laravel:
 
 ```php
 'features' => [
@@ -122,19 +122,21 @@ Nếu bạn chọn tắt view của Fortify và bạn muốn làm tính năng se
 
 Tất cả logic rendering của view xác thực có thể được tùy chỉnh bằng cách sử dụng các phương thức có sẵn thông qua class `Laravel\Fortify\Fortify`. Thông thường, bạn nên gọi phương thức này từ phương thức `boot` của class `App\Providers\FortifyServiceProvider` của ứng dụng của bạn. Fortify sẽ đảm nhiệm việc định nghĩa route `/login` trả về view này:
 
-    use Laravel\Fortify\Fortify;
+```php
+use Laravel\Fortify\Fortify;
 
-    /**
-     * Bootstrap any application services.
-     */
-    public function boot(): void
-    {
-        Fortify::loginView(function () {
-            return view('auth.login');
-        });
+/**
+ * Bootstrap any application services.
+ */
+public function boot(): void
+{
+    Fortify::loginView(function () {
+        return view('auth.login');
+    });
 
-        // ...
-    }
+    // ...
+}
+```
 
 Template đăng nhập của bạn phải chứa một form gửi request POST tới `/login`. Route `/login` này sẽ yêu cầu một chuỗi `email` hoặc một chuỗi `username` và một `password`. Tên của trường email hoặc username phải khớp với giá trị `username` trong file cấu hình `config/fortify.php`. Ngoài ra, trường boolean `remember` có thể được cung cấp để cho biết người dùng có muốn sử dụng chức năng "remember me" do Laravel cung cấp hay không.
 
@@ -261,7 +263,7 @@ class User extends Authenticatable
 {
     use Notifiable, TwoFactorAuthenticatable;
 }
- ```
+```
 
 Tiếp theo, bạn nên tạo thêm một màn hình trong ứng dụng của bạn, chỗ mà người dùng có thể quản lý cài đặt xác thực hai lớp của họ. Màn hình này sẽ cho phép người dùng bật hoặc tắt xác thực hai lớp, cũng như tạo lại mã khôi phục xác thực hai lớp của họ.
 

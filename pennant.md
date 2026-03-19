@@ -273,37 +273,41 @@ class PodcastController
 
 Phương thức `when` có thể được sử dụng để thực hiện một closure nhất định nếu một chức năng đang hoạt động. Ngoài ra, một closure thứ hai cũng có thể được cung cấp và sẽ được thực hiện nếu chức năng này chưa hoạt động:
 
-    <?php
+```php
+<?php
 
-    namespace App\Http\Controllers;
+namespace App\Http\Controllers;
 
-    use App\Features\NewApi;
-    use Illuminate\Http\Request;
-    use Illuminate\Http\Response;
-    use Laravel\Pennant\Feature;
+use App\Features\NewApi;
+use Illuminate\Http\Request;
+use Illuminate\Http\Response;
+use Laravel\Pennant\Feature;
 
-    class PodcastController
+class PodcastController
+{
+    /**
+     * Display a listing of the resource.
+     */
+    public function index(Request $request): Response
     {
-        /**
-         * Display a listing of the resource.
-         */
-        public function index(Request $request): Response
-        {
-            return Feature::when(NewApi::class,
-                fn () => $this->resolveNewApiResponse($request),
-                fn () => $this->resolveLegacyApiResponse($request),
-            );
-        }
-
-        // ...
+        return Feature::when(NewApi::class,
+            fn () => $this->resolveNewApiResponse($request),
+            fn () => $this->resolveLegacyApiResponse($request),
+        );
     }
+
+    // ...
+}
+```
 
 Phương thức `unless` đóng vai trò là phương thức ngược lại của phương thức `when`, thực thi lệnh closure đầu tiên nếu chức năng không hoạt động:
 
-    return Feature::unless(NewApi::class,
-        fn () => $this->resolveLegacyApiResponse($request),
-        fn () => $this->resolveNewApiResponse($request),
-    );
+```php
+return Feature::unless(NewApi::class,
+    fn () => $this->resolveLegacyApiResponse($request),
+    fn () => $this->resolveNewApiResponse($request),
+);
+```
 
 <a name="the-has-features-trait"></a>
 ### Trait `HasFeatures`
@@ -497,7 +501,9 @@ Khi kiểm tra một chức năng, Pennant sẽ tạo một bộ nhớ cache cho
 
 Nếu bạn cần xóa cache trong bộ nhớ, bạn có thể sử dụng phương thức `flushCache` do facade `Feature` cung cấp:
 
-    Feature::flushCache();
+```php
+Feature::flushCache();
+```
 
 <a name="scope"></a>
 ## Scope
@@ -517,7 +523,7 @@ Tất nhiên, phạm vi của chức năng không bị giới hạn ở mỗi "n
 
 ```php
 use App\Models\Team;
-use Carbon\Carbon;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Lottery;
 use Laravel\Pennant\Feature;
 
@@ -698,17 +704,21 @@ Lệnh Blade có sẵn của Pennant cũng giúp bạn dễ dàng hiển thị n
 
 Khi gọi phương thức [điều kiện `when`](#conditional-execution), giá trị khác của chức năng sẽ được cung cấp cho hàm closure đầu tiên:
 
-    Feature::when('purchase-button',
-        fn ($color) => /* ... */,
-        fn () => /* ... */,
-    );
+```php
+Feature::when('purchase-button',
+    fn ($color) => /* ... */,
+    fn () => /* ... */,
+);
+```
 
 Tương tự như vậy, khi gọi phương thức điều kiện `unless`, giá trị khác của chức năng sẽ được cung cấp cho hàm closure tùy chọn thứ hai:
 
-    Feature::unless('purchase-button',
-        fn () => /* ... */,
-        fn ($color) => /* ... */,
-    );
+```php
+Feature::unless('purchase-button',
+    fn () => /* ... */,
+    fn ($color) => /* ... */,
+);
+```
 
 <a name="retrieving-multiple-features"></a>
 ## Lấy Multiple Features
@@ -740,25 +750,27 @@ Tuy nhiên, các chức năng dựa trên class mà được đăng ký động 
 
 Nếu bạn muốn đảm bảo các class chức năng luôn có khi sử dụng phương thức `all`, bạn có thể sử dụng hàm discovery của Pennant. Để bắt đầu, hãy gọi phương thức `discover` trong một service provider của ứng dụng:
 
-    <?php
+```php
+<?php
 
-    namespace App\Providers;
+namespace App\Providers;
 
-    use Illuminate\Support\ServiceProvider;
-    use Laravel\Pennant\Feature;
+use Illuminate\Support\ServiceProvider;
+use Laravel\Pennant\Feature;
 
-    class AppServiceProvider extends ServiceProvider
+class AppServiceProvider extends ServiceProvider
+{
+    /**
+     * Bootstrap any application services.
+     */
+    public function boot(): void
     {
-        /**
-         * Bootstrap any application services.
-         */
-        public function boot(): void
-        {
-            Feature::discover();
+        Feature::discover();
 
-            // ...
-        }
+        // ...
     }
+}
+```
 
 Phương thức `discover` sẽ đăng ký tất cả các class chức năng có trong thư mục `app/Features` của ứng dụng. Phương thức `all` giờ đây sẽ thêm các class này vào trong kết quả, bất kể chúng đã được kiểm tra trong request hiện tại hay chưa:
 
@@ -894,7 +906,7 @@ Feature::purge();
 
 Vì việc xóa các chức năng có thể hữu ích như một phần của quy trình deploy ứng dụng, Pennant có chứa một lệnh Artisan `pennant:purge` sẽ xóa các chức năng được cung cấp ra khỏi bộ lưu trữ:
 
-```sh
+```shell
 php artisan pennant:purge new-api
 
 php artisan pennant:purge new-api purchase-button
@@ -902,13 +914,13 @@ php artisan pennant:purge new-api purchase-button
 
 Bạn cũng có thể xóa tất cả các chức năng _trừ_ những chức năng có trong danh sách chức năng nhất định. Ví dụ, hãy tưởng tượng bạn muốn xóa tất cả các chức năng nhưng vẫn giữ lại các chức năng "new-api" và "purchase-button" trong bộ lưu trữ. Để thực hiện điều này, bạn có thể truyền tên các chức năng đó vào tùy chọn `--except`:
 
-```sh
+```shell
 php artisan pennant:purge --except=new-api --except=purchase-button
 ```
 
 Để thuận tiện, lệnh `pennant:purge` cũng hỗ trợ flag `--except-registered`. Flag này cho biết tất cả các chức năng, ngoại trừ những chức năng đã được đăng ký trong một service provider, còn lại tất cả đều được xóa:
 
-```sh
+```shell
 php artisan pennant:purge --except-registered
 ```
 
@@ -1065,16 +1077,18 @@ class AppServiceProvider extends ServiceProvider
 
 Sau khi driver đã được đăng ký, bạn có thể sử dụng driver `redis` trong file cấu hình `config/pennant.php` của ứng dụng:
 
-    'stores' => [
+```php
+'stores' => [
 
-        'redis' => [
-            'driver' => 'redis',
-            'connection' => null,
-        ],
-
-        // ...
-
+    'redis' => [
+        'driver' => 'redis',
+        'connection' => null,
     ],
+
+    // ...
+
+],
+```
 
 <a name="defining-features-externally"></a>
 ### Định nghĩa Features bên ngoài
@@ -1164,7 +1178,6 @@ public function boot(): void
 {
     Event::listen(UnexpectedNullScopeEncountered::class, fn () => abort(500));
 }
-
 ```
 
 ### `Laravel\Pennant\Events\FeatureUpdated`

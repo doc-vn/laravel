@@ -11,9 +11,10 @@
     - [Lưu cache event](#caching-events)
     - [Lưu cache route](#optimizing-route-loading)
     - [Lưu cache view](#optimizing-view-loading)
+- [Reloading Services](#reloading-services)
 - [Chế độ debug](#debug-mode)
 - [Route trạng thái](#the-health-route)
-- [Dễ dàng triển khai với Forge và Vapor](#deploying-with-forge-or-vapor)
+- [Triển khai với Laravel Cloud và Forge](#deploying-with-cloud-or-forge)
 
 <a name="introduction"></a>
 ## Giới thiệu
@@ -50,7 +51,7 @@ Laravel framework có một số yêu cầu về hệ thống. Bạn nên đảm
 <a name="nginx"></a>
 ### Nginx
 
-Nếu bạn đang deploy application của bạn đến một server đang chạy Nginx, bạn có thể sử dụng file cấu hình sau đây để làm điểm bắt đầu cho cấu hình web server của bạn. Nhiều khả năng, file này sẽ cần được tùy chỉnh tùy thuộc vào cấu hình server của bạn. **Nếu bạn muốn được hỗ trợ trong việc quản lý server của bạn, hãy xem xét sử dụng dịch vụ triển khai và quản lý server Laravel, chẳng hạn như [Laravel Forge](https://forge.laravel.com).**
+Nếu bạn đang deploy application của bạn đến một server đang chạy Nginx, bạn có thể sử dụng file cấu hình sau đây để làm điểm bắt đầu cho cấu hình web server của bạn. Nhiều khả năng, file này sẽ cần được tùy chỉnh tùy thuộc vào cấu hình server của bạn. **Nếu bạn muốn được hỗ trợ trong việc quản lý server của bạn, hãy xem xét sử dụng một nền tảng được quản lý hoàn toàn như [Laravel Cloud](https://cloud.laravel.com).**
 
 Hãy đảm bảo, giống như cấu hình bên dưới, server web của bạn sẽ hướng tất cả các request đến file `public/index.php` của ứng dụng của bạn. Bạn đừng bao giờ cố gắng di chuyển file `index.php` đến thư mục gốc của dự án của bạn, vì việc phân phát request của ứng dụng từ thư mục gốc của dự án sẽ làm lộ nhiều file cấu hình nhạy cảm lên Internet:
 
@@ -168,6 +169,20 @@ php artisan view:cache
 
 Lệnh này biên dịch tất cả các view Blade của bạn để chúng không cần phải biên dịch mỗi khi có request đến, cải thiện hiệu suất cho mỗi request trả về một view.
 
+<a name="reloading-services"></a>
+## Reloading Services
+
+> [!NOTE]
+Khi deploy lên [Laravel Cloud](https://cloud.laravel.com), bạn không cần phải sử dụng lệnh `reload`, vì việc reload lại tất cả các service sẽ được xử lý tự động.
+
+Sau khi deploy một version mới của ứng dụng, bất kỳ service nào đang chạy lâu như queue worker, Laravel Reverb, hoặc Laravel Octane đều nên được reload hoặc restart để sử dụng code mới. Laravel cung cấp một lệnh Artisan `reload` duy nhất sẽ dừng các service này:
+
+```shell
+php artisan reload
+```
+
+Nếu bạn không sử dụng [Laravel Cloud](https://cloud.laravel.com), bạn nên tự cấu hình một process monitor để có thể phát hiện khi các process của bạn bị lỗi và tự động khởi động lại chúng.
+
 <a name="debug-mode"></a>
 ## Chế độ debug
 
@@ -183,29 +198,30 @@ Laravel có sẵn một route kiểm tra trạng thái có thể được sử d
 
 Mặc định, route kiểm tra trạng thái được chạy tại `/up` và sẽ trả về response HTTP 200 nếu ứng dụng đã khởi động mà không có bất kỳ ngoại lệ nào. Nếu không, response HTTP 500 sẽ được trả về. Bạn có thể cấu hình URI cho route này trong file `bootstrap/app` của ứng dụng:
 
-    ->withRouting(
-        web: __DIR__.'/../routes/web.php',
-        commands: __DIR__.'/../routes/console.php',
-        health: '/up', // [tl! remove]
-        health: '/status', // [tl! add]
-    )
+```php
+->withRouting(
+    web: __DIR__.'/../routes/web.php',
+    commands: __DIR__.'/../routes/console.php',
+    health: '/up', // [tl! remove]
+    health: '/status', // [tl! add]
+)
+```
 
 Khi các request HTTP được gửi đến route này, Laravel cũng sẽ gửi một event `Illuminate\Foundation\Events\DiagnosingHealth`, cho phép bạn thực hiện các kiểm tra trạng thái bổ sung liên quan đến ứng dụng. Trong [listener](/docs/{{version}}/events) của event này, bạn có thể kiểm tra trạng thái cơ sở dữ liệu hoặc bộ nhớ cache của ứng dụng. Nếu phát hiện sự cố với ứng dụng, bạn chỉ cần đưa ra một ngoại lệ từ listener.
 
-<a name="deploying-with-forge-or-vapor"></a>
-## Dễ dàng triển khai với Forge và Vapor
+<a name="deploying-with-cloud-or-forge"></a>
+## Deploying With Laravel Cloud or Forge
+
+<a name="laravel-cloud"></a>
+#### Laravel Cloud
+
+Nếu bạn muốn một nền tảng deploy được quản lý hoàn toàn, tự động mở rộng và được tinh chỉnh cho Laravel, hãy tham khảo [Laravel Cloud](https://cloud.laravel.com). Laravel Cloud là một nền tảng deploy mạnh mẽ dành cho Laravel, cung cấp và quản lý các dịch vụ compute, cơ sở dữ liệu, bộ nhớ cache và lưu trữ object.
+
+Hãy chạy ứng dụng Laravel của bạn trên Cloud và trải nghiệm sự đơn giản trong việc mở rộng. Laravel Cloud được tinh chỉnh bởi chính những người tạo ra Laravel để hoạt động mượt mà với framework, giúp bạn có thể tiếp tục phát triển các ứng dụng Laravel theo đúng cách mà bạn vẫn thường làm.
 
 <a name="laravel-forge"></a>
 #### Laravel Forge
 
-Nếu bạn chưa sẵn sàng để quản lý cấu hình server của bạn hoặc không thoải mái với cấu hình các dịch vụ khác nhau cần thiết để chạy ứng dụng Laravel, [Laravel Forge](https://forge.laravel.com) là một điều thay thế tuyệt vời.
+Nếu bạn muốn tự quản lý server của bạn nhưng không thoải mái với việc cấu hình các dịch vụ khác nhau cần thiết để chạy ứng dụng Laravel, [Laravel Forge](https://forge.laravel.com) là một nền tảng quản lý server VPS dành cho các ứng dụng Laravel.
 
 Laravel Forge có thể tạo server trên các nhà cung cấp khác nhau như DigitalOcean, Linode, AWS, v.v. Ngoài ra, Forge có thể cài đặt và quản lý tất cả các công cụ cần thiết để xây dựng các ứng dụng Laravel, như Nginx, MySQL, Redis, Memcached, Beanstalk,...
-
-> [!NOTE]
-> Bạn muốn có hướng dẫn đầy đủ về cách deploy với Laravel Forge? Hãy xem [Laravel Bootcamp](https://bootcamp.laravel.com/deploying) và [loạt video về Forge có trên Laracasts](https://laracasts.com/series/learn-laravel-forge-2022-edition).
-
-<a name="laravel-vapor"></a>
-#### Laravel Vapor
-
-Nếu bạn muốn một nền tảng deploy hoàn toàn không có server, và tự động lớn dần theo thời gian, hãy xem xét sử dụng [Laravel Vapor](https://vapor.laravel.com). Laravel Vapor là một nền tảng deploy không có server cho Laravel, và được cung cấp bởi AWS. Chạy ứng dụng Laravel của bạn trên Vapor và yêu thích sự đơn giản có thể mở rộng đến vô tận của serverless. Laravel Vapor được những người tạo ra Laravel tinh chỉnh để hoạt động liền mạch với framework, do đó bạn có thể tiếp tục viết các ứng dụng Laravel của bạn giống hệt với những điều bạn đã từng làm.

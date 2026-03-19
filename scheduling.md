@@ -31,30 +31,36 @@ Lệnh schedule của Laravel cung cấp một cách tiếp cận mới để qu
 
 Bạn có thể định nghĩa tất cả các task đã được schedule của bạn trong file `routes/console.php` của application của bạn. Để bắt đầu, chúng ta hãy xem một ví dụ về schedule cho một task. Trong ví dụ này, chúng ta sẽ schedule một closure được gọi mỗi ngày vào lúc nửa đêm. Trong closure, chúng ta sẽ thực hiện một truy vấn vào cơ sở dữ liệu để xóa bảng:
 
-    <?php
+```php
+<?php
 
-    use Illuminate\Support\Facades\DB;
-    use Illuminate\Support\Facades\Schedule;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schedule;
 
-    Schedule::call(function () {
-        DB::table('recent_users')->delete();
-    })->daily();
+Schedule::call(function () {
+    DB::table('recent_users')->delete();
+})->daily();
+```
 
 Ngoài việc tạo schedule bằng closures, bạn cũng có thể schedule cho [các đối tượng invokable](http://php.net/manual/en/language.oop5.magic.php#object.invoke). Đối tượng invokable là các class PHP đơn giản có chứa phương thức `__invoke`:
 
-    Schedule::call(new DeleteRecentUsers)->daily();
+```php
+Schedule::call(new DeleteRecentUsers)->daily();
+```
 
 Nếu bạn muốn dành riêng file `routes/console.php` của bạn chỉ để định nghĩa các lệnh, bạn có thể sử dụng phương thức `withSchedule` trong file `bootstrap/app.php` của ứng dụng để định nghĩa các task được schedule của bạn. Phương thức này chấp nhận một closure nhận một instance của scheduler:
 
-    use Illuminate\Console\Scheduling\Schedule;
+```php
+use Illuminate\Console\Scheduling\Schedule;
 
-    ->withSchedule(function (Schedule $schedule) {
-        $schedule->call(new DeleteRecentUsers)->daily();
-    })
+->withSchedule(function (Schedule $schedule) {
+    $schedule->call(new DeleteRecentUsers)->daily();
+})
+```
 
 Nếu bạn muốn xem tổng quan về các scheduled task của bạn và lần tiếp theo chúng được chạy, bạn có thể sử dụng lệnh Artisan `schedule:list`:
 
-```bash
+```shell
 php artisan schedule:list
 ```
 
@@ -65,54 +71,66 @@ Ngoài việc tạo schedule cho closures, bạn cũng có thể tạo schedule 
 
 Khi lên lịch cho các lệnh Artisan bằng cách sử dụng tên class của lệnh, bạn có thể truyền thêm một mảng các tham số command-line cần được cung cấp cho lệnh khi nó được gọi:
 
-    use App\Console\Commands\SendEmailsCommand;
-    use Illuminate\Support\Facades\Schedule;
+```php
+use App\Console\Commands\SendEmailsCommand;
+use Illuminate\Support\Facades\Schedule;
 
-    Schedule::command('emails:send Taylor --force')->daily();
+Schedule::command('emails:send Taylor --force')->daily();
 
-    Schedule::command(SendEmailsCommand::class, ['Taylor', '--force'])->daily();
+Schedule::command(SendEmailsCommand::class, ['Taylor', '--force'])->daily();
+```
 
 <a name="scheduling-artisan-closure-commands"></a>
 #### Scheduling Artisan Closure Commands
 
 Nếu bạn muốn schedule một lệnh Artisan đang được định nghĩa bởi một closure, bạn có thể nối thêm các phương thức liên quan đến việc tạo schedule sau định nghĩa của lệnh:
 
-    Artisan::command('delete:recent-users', function () {
-        DB::table('recent_users')->delete();
-    })->purpose('Delete recent users')->daily();
+```php
+Artisan::command('delete:recent-users', function () {
+    DB::table('recent_users')->delete();
+})->purpose('Delete recent users')->daily();
+```
 
 Nếu bạn muốn truyền tham số vào lệnh closure, bạn có thể cung cấp chúng cho phương thức `schedule`:
 
-    Artisan::command('emails:send {user} {--force}', function ($user) {
-        // ...
-    })->purpose('Send emails to the specified user')->schedule(['Taylor', '--force'])->daily();
+```php
+Artisan::command('emails:send {user} {--force}', function ($user) {
+    // ...
+})->purpose('Send emails to the specified user')->schedule(['Taylor', '--force'])->daily();
+```
 
 <a name="scheduling-queued-jobs"></a>
 ### Schedule Queued Job
 
 Phương thức `job` có thể được sử dụng để tạo schedule cho một [queued job](/docs/{{version}}/queues). Phương thức này cung cấp một cách thuận tiện để tạo schedule queued job mà không cần phải sử dụng phương thức `call` để định nghĩa closure cho queue job:
 
-    use App\Jobs\Heartbeat;
-    use Illuminate\Support\Facades\Schedule;
+```php
+use App\Jobs\Heartbeat;
+use Illuminate\Support\Facades\Schedule;
 
-    Schedule::job(new Heartbeat)->everyFiveMinutes();
+Schedule::job(new Heartbeat)->everyFiveMinutes();
+```
 
 Tùy chọn tham số thứ hai và thứ ba có thể được cung cấp cho phương thức `job` để chỉ định tên queue và kết nối của queue sẽ được sử dụng để queue job:
 
-    use App\Jobs\Heartbeat;
-    use Illuminate\Support\Facades\Schedule;
+```php
+use App\Jobs\Heartbeat;
+use Illuminate\Support\Facades\Schedule;
 
-    // Dispatch the job to the "heartbeats" queue on the "sqs" connection...
-    Schedule::job(new Heartbeat, 'heartbeats', 'sqs')->everyFiveMinutes();
+// Dispatch the job to the "heartbeats" queue on the "sqs" connection...
+Schedule::job(new Heartbeat, 'heartbeats', 'sqs')->everyFiveMinutes();
+```
 
 <a name="scheduling-shell-commands"></a>
 ### Lệnh Shell Schedule
 
 Phương thức `exec` có thể được sử dụng để ra lệnh cho hệ điều hành:
 
-    use Illuminate\Support\Facades\Schedule;
+```php
+use Illuminate\Support\Facades\Schedule;
 
-    Schedule::exec('node /home/forge/script.js')->daily();
+Schedule::exec('node /home/forge/script.js')->daily();
+```
 
 <a name="schedule-frequency-options"></a>
 ### Tuỳ chọn tần suất Schedule
@@ -150,6 +168,7 @@ Chúng ta đã xem một số ví dụ về cách mà bạn có thể cấu hìn
 | `->dailyAt('13:00');`              | Chạy task hàng ngày vào lúc 13:00.                               |
 | `->twiceDaily(1, 13);`             | Chạy task hàng ngày vào lúc 1:00 và 13:00.                       |
 | `->twiceDailyAt(1, 13, 15);`       | Chạy task hàng ngày vào lúc 1:15 và 13:15.                       |
+| `->daysOfMonth([1, 10, 20]);`      | Chạy task vào các ngày cụ thể trong tháng.                       |
 | `->weekly();`                      | Chạy task hàng tuần vào chủ nhật lúc 00:00.                      |
 | `->weeklyOn(1, '8:00');`           | Chạy task hàng tuần vào thứ hai lúc 8:00.                        |
 | `->monthly();`                     | Chạy task vào ngày đầu tiên của tháng lúc 00:00.                 |
@@ -166,19 +185,21 @@ Chúng ta đã xem một số ví dụ về cách mà bạn có thể cấu hìn
 
 Các phương thức này có thể được kết hợp thêm các ràng buộc để tạo ra các schedule có thể được điều chỉnh tốt hơn, ví dụ như chỉ chạy vào một số ngày nhất định trong tuần. Ví dụ, bạn có thể schedule một lệnh chạy vào thứ hai hàng tuần thì bạn có thể làm như sau:
 
-    use Illuminate\Support\Facades\Schedule;
+```php
+use Illuminate\Support\Facades\Schedule;
 
-    // Run once per week on Monday at 1 PM...
-    Schedule::call(function () {
-        // ...
-    })->weekly()->mondays()->at('13:00');
+// Run once per week on Monday at 1 PM...
+Schedule::call(function () {
+    // ...
+})->weekly()->mondays()->at('13:00');
 
-    // Run hourly from 8 AM to 5 PM on weekdays...
-    Schedule::command('foo')
-        ->weekdays()
-        ->hourly()
-        ->timezone('America/Chicago')
-        ->between('8:00', '17:00');
+// Run hourly from 8 AM to 5 PM on weekdays...
+Schedule::command('foo')
+    ->weekdays()
+    ->hourly()
+    ->timezone('America/Chicago')
+    ->between('8:00', '17:00');
+```
 
 Dưới đây là một danh sách các ràng buộc schedule có thể được thêm:
 
@@ -208,50 +229,62 @@ Dưới đây là một danh sách các ràng buộc schedule có thể được
 
 Phương thức `days` có thể được sử dụng để giới hạn việc thực hiện một task trong những ngày cụ thể có trong một tuần. Ví dụ: bạn có thể tạo lịch chạy một lệnh mỗi giờ vào ngày chủ nhật và thứ tư:
 
-    use Illuminate\Support\Facades\Schedule;
+```php
+use Illuminate\Support\Facades\Schedule;
 
-    Schedule::command('emails:send')
-        ->hourly()
-        ->days([0, 3]);
+Schedule::command('emails:send')
+    ->hourly()
+    ->days([0, 3]);
+```
 
 Ngoài ra, bạn có thể sử dụng các hằng số có sẵn trên class `Illuminate\Console\Scheduling\Schedule` khi định nghĩa ngày mà một task sẽ chạy:
 
-    use Illuminate\Support\Facades;
-    use Illuminate\Console\Scheduling\Schedule;
+```php
+use Illuminate\Support\Facades;
+use Illuminate\Console\Scheduling\Schedule;
 
-    Facades\Schedule::command('emails:send')
-        ->hourly()
-        ->days([Schedule::SUNDAY, Schedule::WEDNESDAY]);
+Facades\Schedule::command('emails:send')
+    ->hourly()
+    ->days([Schedule::SUNDAY, Schedule::WEDNESDAY]);
+```
 
 <a name="between-time-constraints"></a>
 #### Between Time Constraints
 
 Phương thức `between` có thể được sử dụng để giới hạn việc thực thi của một task dựa vào một khoảng thời gian có trong ngày:
 
-    Schedule::command('emails:send')
-        ->hourly()
-        ->between('7:00', '22:00');
+```php
+Schedule::command('emails:send')
+    ->hourly()
+    ->between('7:00', '22:00');
+```
 
 Tương tự, phương thức `unlessBetween` có thể được sử dụng để chạy ngược lại việc thực thi của một task trong một khoảng thời gian:
 
-    Schedule::command('emails:send')
-        ->hourly()
-        ->unlessBetween('23:00', '4:00');
+```php
+Schedule::command('emails:send')
+    ->hourly()
+    ->unlessBetween('23:00', '4:00');
+```
 
 <a name="truth-test-constraints"></a>
 #### Truth Test Constraints
 
 Phương thức `when` có thể được sử dụng để hạn chế việc thực hiện một task dựa trên kết quả của một điều kiện nhất định. Nói cách khác, nếu closure đã cho trả về giá trị `true`, tác vụ sẽ thực thi, miễn là không có điều kiện ràng buộc nào khác ngăn task đó chạy:
 
-    Schedule::command('emails:send')->daily()->when(function () {
-        return true;
-    });
+```php
+Schedule::command('emails:send')->daily()->when(function () {
+    return true;
+});
+```
 
 Phương thức `skip` có thể được xem là ngược lại với phương thức `when`. Nếu phương thức `skip` trả về giá trị `true`, scheduled task đó sẽ không được thực thi:
 
-    Schedule::command('emails:send')->daily()->skip(function () {
-        return true;
-    });
+```php
+Schedule::command('emails:send')->daily()->skip(function () {
+    return true;
+});
+```
 
 Khi sử dụng kết hợp nhiều phương thức `when`, lệnh đã được schedule sẽ chỉ được thực thi nếu tất cả các điều kiện `when` đều trả về giá trị `true`.
 
@@ -260,26 +293,32 @@ Khi sử dụng kết hợp nhiều phương thức `when`, lệnh đã được
 
 Phương thức `environments` có thể được sử dụng để chỉ thực thi các task trong các môi trường đã cho (được định nghĩa bởi [biến môi trường](/docs/{{version}}/configuration#environment-configuration) `APP_ENV` ):
 
-    Schedule::command('emails:send')
-        ->daily()
-        ->environments(['staging', 'production']);
+```php
+Schedule::command('emails:send')
+    ->daily()
+    ->environments(['staging', 'production']);
+```
 
 <a name="timezones"></a>
 ### Timezones
 
 Sử dụng phương thức `timezone`, bạn có thể chỉ định thời gian của một task schedule sẽ được sử dụng trong một timezone nhất định:
 
-    use Illuminate\Support\Facades\Schedule;
+```php
+use Illuminate\Support\Facades\Schedule;
 
-    Schedule::command('report:generate')
-        ->timezone('America/New_York')
-        ->at('2:00')
+Schedule::command('report:generate')
+    ->timezone('America/New_York')
+    ->at('2:00')
+```
 
 Nếu bạn đang muốn chỉ định liên tục một múi giờ cho tất cả các task schedule của bạn, bạn có thể chỉ định timezone nào sẽ được gán cho tất cả các schedule bằng cách định nghĩa tùy chọn `schedule_timezone` trong file cấu hình `app` của ứng dụng của bạn:
 
-    'timezone' => 'UTC',
+```php
+'timezone' => 'UTC',
 
-    'schedule_timezone' => 'America/Chicago',
+'schedule_timezone' => 'America/Chicago',
+```
 
 > [!WARNING]
 > Hãy nhớ rằng một số timezone sử dụng quy ước giờ mùa hè. Khi các thay đổi về quy ước giờ mùa hè xảy ra, schedule task của bạn có thể chạy hai lần hoặc thậm chí là hoàn toàn không chạy. Vì lý do này, chúng tôi khuyên bạn nên tránh tạo schedule timezone khi có thể.
@@ -289,15 +328,19 @@ Nếu bạn đang muốn chỉ định liên tục một múi giờ cho tất c�
 
 Mặc định, các task đã được schedule sẽ được chạy, ngay cả khi instance trước đó của task vẫn đang được chạy. Để ngăn điều này xảy ra, bạn có thể sử dụng phương thức `withoutOverlapping`:
 
-    use Illuminate\Support\Facades\Schedule;
+```php
+use Illuminate\Support\Facades\Schedule;
 
-    Schedule::command('emails:send')->withoutOverlapping();
+Schedule::command('emails:send')->withoutOverlapping();
+```
 
 Ở ví dụ trên, [Lệnh Artisan](/docs/{{version}}/artisan) `emails:send` sẽ được chạy mỗi phút nếu nó chưa được chạy. Phương thức `withoutOverlapping` đặc biệt hữu ích nếu bạn có một task phức tạp cần nhiều thời gian để thực hiện, và bạn không thể dự đoán chính xác task đó sẽ mất bao nhiêu thời gian để hoàn thành.
 
 Nếu cần, bạn có thể chỉ định số phút mà sau khi task được thực hiện thì khóa "chống lặp" hết hạn. Mặc định, khóa này sẽ hết hạn sau 24 giờ:
 
-    Schedule::command('emails:send')->withoutOverlapping(10);
+```php
+Schedule::command('emails:send')->withoutOverlapping(10);
+```
 
 Ở hậu trường, phương thức `withoutOverlapping` sẽ sử dụng [cache](/docs/{{version}}/cache) của ứng dụng của bạn để lấy khóa. Nếu cần, bạn có thể xóa các khóa cache này bằng lệnh Artisan `schedule:clear-cache`. Điều này thường chỉ cần thiết nếu một task bị kẹt do sự cố bất ngờ từ máy chủ.
 
@@ -311,12 +354,20 @@ Nếu schedule của ứng dụng của bạn đang chạy trên nhiều server,
 
 Để yêu cầu task chỉ được chạy trên một server, hãy sử dụng phương thức `onOneServer` khi bạn định nghĩa task schedule. Server đầu tiên nhận được task sẽ dùng một atomic lock trên job đó để ngăn các server khác chạy cùng một task vào cùng một thời điểm:
 
-    use Illuminate\Support\Facades\Schedule;
+```php
+use Illuminate\Support\Facades\Schedule;
 
-    Schedule::command('report:generate')
-        ->fridays()
-        ->at('17:00')
-        ->onOneServer();
+Schedule::command('report:generate')
+    ->fridays()
+    ->at('17:00')
+    ->onOneServer();
+```
+
+Bạn có thể sử dụng phương thức `useCache` để tùy chỉnh cache store sẽ được scheduler sử dụng để lấy các atomic lock cần thiết cho các task chạy trên một server duy nhất:
+
+```php
+Schedule::useCache('database');
+```
 
 <a name="naming-unique-jobs"></a>
 #### Naming Single Server Jobs
@@ -349,11 +400,13 @@ Schedule::call(fn () => User::resetApiRequestCount())
 
 Mặc định, nhiều task được schedule vào cùng một thời gian sẽ phải chạy theo tuần tự dựa trên thứ tự mà chúng được định nghĩa trong phương thức `schedule` của bạn. Nếu bạn có những task cần phải chạy dài, thì điều này có thể khiến các task tiếp theo sẽ chạy muộn hơn so với dự kiến. Nếu bạn muốn chạy các task trong background để tất cả chúng có thể được chạy đồng thời, thì bạn có thể sử dụng phương thức `runInBackground`:
 
-    use Illuminate\Support\Facades\Schedule;
+```php
+use Illuminate\Support\Facades\Schedule;
 
-    Schedule::command('analytics:report')
-        ->daily()
-        ->runInBackground();
+Schedule::command('analytics:report')
+    ->daily()
+    ->runInBackground();
+```
 
 > [!WARNING]
 > Phương thức `runInBackground` chỉ có thể được sử dụng khi task được tạo thông qua phương thức `command` và `exec`.
@@ -363,7 +416,9 @@ Mặc định, nhiều task được schedule vào cùng một thời gian sẽ 
 
 Các scheduled task của application của bạn sẽ không được chạy khi application của bạn ở [trong chế độ bảo trì](/docs/{{version}}/configuration#maintenance-mode), vì chúng tôi không muốn các task của bạn gây trở ngại với bất kỳ bảo trì nào mà bạn đang thực hiện trên server chưa được hoàn thành. Tuy nhiên, nếu bạn muốn task chạy ngay cả trong chế độ bảo trì, bạn có thể gọi phương thức `evenInMaintenanceMode` khi định nghĩa task:
 
-    Schedule::command('emails:send')->evenInMaintenanceMode();
+```php
+Schedule::command('emails:send')->evenInMaintenanceMode();
+```
 
 <a name="schedule-groups"></a>
 ### Schedule Groups
@@ -389,7 +444,7 @@ Schedule::daily()
 
 Hiện tại, chúng ta đã học cách định nghĩa các scheduled task, hãy thảo luận về cách thực sự chạy chúng trên máy chủ của chúng ta. Lệnh `schedule:run` Artisan sẽ đánh giá tất cả các scheduled task của bạn và xác định xem chúng có cần chạy hay không dựa trên thời gian hiện tại của máy chủ.
 
-Vì vậy, khi sử dụng scheduler của Laravel, chúng ta chỉ cần thêm một mục cấu hình cron duy nhất vào máy chủ để chạy lệnh `schedule:run` mỗi phút. Nếu bạn không biết cách thêm các mục cron vào máy chủ của bạn, hãy cân nhắc sử dụng một dịch vụ như [Laravel Forge](https://forge.laravel.com) để có thể quản lý các mục cron cho bạn:
+Vì vậy, khi sử dụng scheduler của Laravel, chúng ta chỉ cần thêm một mục cấu hình cron duy nhất vào máy chủ để chạy lệnh `schedule:run` mỗi phút. Nếu bạn không biết cách thêm các mục cron vào máy chủ của bạn, hãy cân nhắc sử dụng một nền tảng quản lý chẳng hạn như [Laravel Cloud](https://cloud.laravel.com), nơi có thể quản lý việc thực thi các task đã được schedule cho bạn:
 
 ```shell
 * * * * * cd /path-to-your-project && php artisan schedule:run >> /dev/null 2>&1
@@ -400,21 +455,25 @@ Vì vậy, khi sử dụng scheduler của Laravel, chúng ta chỉ cần thêm 
 
 Trên hầu hết các hệ điều hành, cron job bị giới hạn bởi số lần chạy tối đa trong mỗi phút. Tuy nhiên, scheduler của Laravel cho phép bạn schedule các tác vụ chạy trong các khoảng thời gian thường xuyên hơn, thậm chí là một lần mỗi giây:
 
-    use Illuminate\Support\Facades\Schedule;
+```php
+use Illuminate\Support\Facades\Schedule;
 
-    Schedule::call(function () {
-        DB::table('recent_users')->delete();
-    })->everySecond();
+Schedule::call(function () {
+    DB::table('recent_users')->delete();
+})->everySecond();
+```
 
 Khi các tác vụ chạy theo giây được định nghĩa trong ứng dụng của bạn, lệnh `schedule:run` sẽ tiếp tục chạy cho đến khi hết số phút hiện tại thay vì thoát ngay lập tức. Điều này cho phép command gọi tất cả các tác vụ chạy theo giây trong suốt số phút.
 
 Vì các tác vụ chạy theo giây có thể mất nhiều thời gian chạy hơn dự kiến và ​​có thể làm chậm quá trình thực hiện các tác vụ chạy theo giây sau đó, nên chúng tôi khuyến khích tất cả các tác vụ chạy theo giây nên được gửi đến các queued job hoặc background command để xử lý các tác vụ đó:
 
-    use App\Jobs\DeleteRecentUsers;
+```php
+use App\Jobs\DeleteRecentUsers;
 
-    Schedule::job(new DeleteRecentUsers)->everyTenSeconds();
+Schedule::job(new DeleteRecentUsers)->everyTenSeconds();
 
-    Schedule::command('users:delete')->everyTenSeconds()->runInBackground();
+Schedule::command('users:delete')->everyTenSeconds()->runInBackground();
+```
 
 <a name="interrupting-sub-minute-tasks"></a>
 #### Ngắt quãng các tác vụ theo giây
@@ -441,30 +500,38 @@ php artisan schedule:work
 
 Laravel schedule cung cấp một số phương thức thuận tiện để làm việc với output được tạo ra bởi schedule task. Đầu tiên, bằng cách sử dụng phương thức `sendOutputTo`, bạn có thể gửi output tới một file để kiểm tra sau khi chạy:
 
-    use Illuminate\Support\Facades\Schedule;
+```php
+use Illuminate\Support\Facades\Schedule;
 
-    Schedule::command('emails:send')
-        ->daily()
-        ->sendOutputTo($filePath);
+Schedule::command('emails:send')
+    ->daily()
+    ->sendOutputTo($filePath);
+```
 
 Nếu bạn muốn thêm output vào một file đã có, bạn có thể sử dụng phương thức `appendOutputTo`:
 
-    Schedule::command('emails:send')
-        ->daily()
-        ->appendOutputTo($filePath);
+```php
+Schedule::command('emails:send')
+    ->daily()
+    ->appendOutputTo($filePath);
+```
 
 Sử dụng phương thức `emailOutputTo`, bạn có thể gửi email output đến một địa chỉ email mà bạn đã chọn. Trước khi gửi email output của một task, bạn nên cấu hình [e-mail services](/docs/{{version}}/mail) của Laravel:
 
-    Schedule::command('report:generate')
-        ->daily()
-        ->sendOutputTo($filePath)
-        ->emailOutputTo('taylor@example.com');
+```php
+Schedule::command('report:generate')
+    ->daily()
+    ->sendOutputTo($filePath)
+    ->emailOutputTo('taylor@example.com');
+```
 
 Nếu bạn muốn chỉ gửi email nếu scheduled Artisan hoặc system command kết thúc với exit code khác 0, hãy sử dụng phương thức `emailOutputOnFailure`:
 
-    Schedule::command('report:generate')
-        ->daily()
-        ->emailOutputOnFailure('taylor@example.com');
+```php
+Schedule::command('report:generate')
+    ->daily()
+    ->emailOutputOnFailure('taylor@example.com');
+```
 
 > [!WARNING]
 > Các phương thức `emailOutputTo`, `emailOutputOnFailure`, `sendOutputTo` và `appendOutputTo` sẽ chỉ được dùng với phương thức `command` và phương thức `exec`.
@@ -474,69 +541,81 @@ Nếu bạn muốn chỉ gửi email nếu scheduled Artisan hoặc system comma
 
 Sử dụng các phương thức `before` và `after`, bạn có thể khai báo các code mà sẽ được thực thi trước và sau khi scheduled task được chạy:
 
-    use Illuminate\Support\Facades\Schedule;
+```php
+use Illuminate\Support\Facades\Schedule;
 
-    Schedule::command('emails:send')
-        ->daily()
-        ->before(function () {
-            // The task is about to execute...
-        })
-        ->after(function () {
-            // The task has executed...
-        });
+Schedule::command('emails:send')
+    ->daily()
+    ->before(function () {
+        // The task is about to execute...
+    })
+    ->after(function () {
+        // The task has executed...
+    });
+```
 
 Phương thức `onSuccess` và `onFailure` cho phép bạn chỉ định một đoạn code cụ thể sẽ được thực thi nếu scheduled task chạy thành công hoặc bị thất bại. Một thất bại sẽ xảy ra khi lệnh Artisan hoặc system command kết thúc với exit code khác 0:
 
-    Schedule::command('emails:send')
-        ->daily()
-        ->onSuccess(function () {
-            // The task succeeded...
-        })
-        ->onFailure(function () {
-            // The task failed...
-        });
+```php
+Schedule::command('emails:send')
+    ->daily()
+    ->onSuccess(function () {
+        // The task succeeded...
+    })
+    ->onFailure(function () {
+        // The task failed...
+    });
+```
 
 Nếu lệnh của bạn trả về output, bạn có thể truy cập vào output trong hook `after`, `onSuccess` hoặc `onFailure` bằng cách khai báo một instance `Illuminate\Support\Stringable` làm tham số `$output` trong khi định nghĩa closure của hook:
 
-    use Illuminate\Support\Stringable;
+```php
+use Illuminate\Support\Stringable;
 
-    Schedule::command('emails:send')
-        ->daily()
-        ->onSuccess(function (Stringable $output) {
-            // The task succeeded...
-        })
-        ->onFailure(function (Stringable $output) {
-            // The task failed...
-        });
+Schedule::command('emails:send')
+    ->daily()
+    ->onSuccess(function (Stringable $output) {
+        // The task succeeded...
+    })
+    ->onFailure(function (Stringable $output) {
+        // The task failed...
+    });
+```
 
 <a name="pinging-urls"></a>
 #### Pinging URLs
 
 Sử dụng các phương thức `pingBefore` và `thenPing`, schedule có thể tự động ping đến một URL đã cho trước hoặc sau khi task được chạy. Phương thức này sẽ hữu ích để thông báo cho một dịch vụ bên ngoài, chẳng hạn như [Laravel Envoyer](https://envoyer.io), rằng scheduled task của bạn đang bắt đầu hoặc đã kết thúc chạy:
 
-    Schedule::command('emails:send')
-        ->daily()
-        ->pingBefore($url)
-        ->thenPing($url);
+```php
+Schedule::command('emails:send')
+    ->daily()
+    ->pingBefore($url)
+    ->thenPing($url);
+```
 
 Phương thức `pingOnSuccess` và `pingOnFailure` có thể được sử dụng để ping đến một URL nhất định nếu task chạy thành công hoặc bị thất bại. Một thất bại sẽ xảy ra khi lệnh Artisan hoặc system command kết thúc với exit code khác 0:
 
-    Schedule::command('emails:send')
-        ->daily()
-        ->pingOnSuccess($successUrl)
-        ->pingOnFailure($failureUrl);
+```php
+Schedule::command('emails:send')
+    ->daily()
+    ->pingOnSuccess($successUrl)
+    ->pingOnFailure($failureUrl);
+```
 
 Các phương thức `pingBeforeIf`,`thenPingIf`,`pingOnSuccessIf`, và `pingOnFailureIf` chỉ có thể được sử dụng để ping đến một URL nếu một điều kiện đưa vào là `true`:
 
-    Schedule::command('emails:send')
-        ->daily()
-        ->pingBeforeIf($condition, $url)
-        ->thenPingIf($condition, $url);
+```php
+Schedule::command('emails:send')
+    ->daily()
+    ->pingBeforeIf($condition, $url)
+    ->thenPingIf($condition, $url);
 
-    Schedule::command('emails:send')
-        ->daily()
-        ->pingOnSuccessIf($condition, $successUrl)
-        ->pingOnFailureIf($condition, $failureUrl);
+Schedule::command('emails:send')
+    ->daily()
+    ->pingOnSuccessIf($condition, $successUrl)
+    ->pingOnFailureIf($condition, $failureUrl);
+```
 
 <a name="events"></a>
 ## Events
@@ -545,12 +624,12 @@ Laravel gửi đi nhiều [event](/docs/{{version}}/events) khác nhau trong qu�
 
 <div class="overflow-auto">
 
-| Event Name |
-| --- |
-| `Illuminate\Console\Events\ScheduledTaskStarting` |
-| `Illuminate\Console\Events\ScheduledTaskFinished` |
+| Event Name                                                  |
+| ----------------------------------------------------------- |
+| `Illuminate\Console\Events\ScheduledTaskStarting`           |
+| `Illuminate\Console\Events\ScheduledTaskFinished`           |
 | `Illuminate\Console\Events\ScheduledBackgroundTaskFinished` |
-| `Illuminate\Console\Events\ScheduledTaskSkipped` |
-| `Illuminate\Console\Events\ScheduledTaskFailed` |
+| `Illuminate\Console\Events\ScheduledTaskSkipped`            |
+| `Illuminate\Console\Events\ScheduledTaskFailed`             |
 
 </div>

@@ -38,21 +38,6 @@
 
 Laravel tích hợp liền mạch với Vite bằng cách cung cấp plugin chính thức và lệnh Blade để load các asset của bạn cho mục đích development và production.
 
-> [!NOTE]
-> Bạn có đang chạy Laravel Mix không? Vite đã thay thế Laravel Mix trong các cài đặt Laravel mới. Để biết thêm tài liệu về Mix, vui lòng truy cập vào trang web [Laravel Mix](https://laravel-mix.com/). Nếu bạn muốn chuyển sang Vite, vui lòng xem [hướng dẫn migration](https://github.com/laravel/vite-plugin/blob/main/UPGRADE.md#migrating-from-laravel-mix-to-vite) của chúng tôi.
-
-<a name="vite-or-mix"></a>
-#### Choosing Between Vite And Laravel Mix
-
-Trước khi chuyển sang Vite, các ứng dụng Laravel mới sử dụng [Mix](https://laravel-mix.com/), được hỗ trợ bởi [webpack](https://webpack.js.org/), khi đóng gói asset. Vite tập trung vào việc cung cấp trải nghiệm nhanh hơn và hiệu quả hơn khi xây dựng các ứng dụng JavaScript đa dạng. Nếu bạn đang phát triển một Single Page Application (SPA), chứa cả những ứng dụng được phát triển bằng các công cụ như [Inertia](https://inertiajs.com), Vite sẽ là lựa chọn hoàn hảo.
-
-Vite cũng hoạt động tốt với các ứng dụng được render từ server-side có JavaScript "sprinkles", chứa cả những ứng dụng sử dụng [Livewire](https://livewire.laravel.com). Tuy nhiên, nó thiếu một số tính năng mà Laravel Mix hỗ trợ, chẳng hạn như khả năng sao chép các asset vào các bản build mà không được tham chiếu trực tiếp trong ứng dụng JavaScript của bạn.
-
-<a name="migrating-back-to-mix"></a>
-#### Migrating Back To Mix
-
-Bạn đã bắt đầu một ứng dụng Laravel mới bằng cách sử dụng Vite scaffolding của chúng tôi nhưng cần chuyển về Laravel Mix và webpack? Không vấn đề gì. Vui lòng tham khảo [hướng dẫn chính thức về việc migrate từ Vite sang Mix](https://github.com/laravel/vite-plugin/blob/main/UPGRADE.md#migrating-from-vite-to-laravel-mix) của chúng tôi.
-
 <a name="installation"></a>
 ## Installation và Setup
 
@@ -64,14 +49,14 @@ Bạn đã bắt đầu một ứng dụng Laravel mới bằng cách sử dụn
 
 Bạn phải đảm bảo là Node.js (16+) và NPM đã được cài đặt trước khi chạy Vite và plugin Laravel:
 
-```sh
+```shell
 node -v
 npm -v
 ```
 
 Bạn có thể dễ dàng cài đặt phiên bản mới nhất của Node và NPM bằng phần mềm cài đặt đồ họa từ [trang web chính thức của Node](https://nodejs.org/en/download/). Hoặc, nếu bạn đang sử dụng [Laravel Sail](https://laravel.com/docs/{{version}}/sail), bạn có thể gọi Node và NPM thông qua Sail:
 
-```sh
+```shell
 ./vendor/bin/sail node -v
 ./vendor/bin/sail npm -v
 ```
@@ -81,7 +66,7 @@ Bạn có thể dễ dàng cài đặt phiên bản mới nhất của Node và 
 
 Trong bản cài đặt Laravel mới, bạn sẽ tìm thấy file `package.json` trong thư mục root của ứng dụng. Mặc định, file `package.json` đã chứa mọi thứ mà bạn cần để bắt đầu sử dụng Vite và plugin Laravel. Bạn có thể cài đặt các library giao diện người dùng của ứng dụng thông qua NPM:
 
-```sh
+```shell
 npm install
 ```
 
@@ -175,7 +160,7 @@ export default defineConfig({
 });
 ```
 
-Nếu bạn không thể tạo chứng chỉ cho hệ thống của bạn, bạn có thể cài đặt và cấu hình [plugin `@vitejs/plugin-basic-ssl`](https://github.com/vitejs/vite-plugin-basic-ssl). Khi sử dụng chứng chỉ này, bạn sẽ cần chấp nhận cảnh báo chứng chỉ cho máy chủ phát triển của Vite trong trình duyệt của bạn và link "Local" trong console khi chạy lệnh `npm run dev`.
+Nếu bạn không thể tạo chứng chỉ cho hệ thống của bạn, bạn có thể cài đặt và cấu hình [plugin @vitejs/plugin-basic-ssl](https://github.com/vitejs/vite-plugin-basic-ssl). Khi sử dụng chứng chỉ này, bạn sẽ cần chấp nhận cảnh báo chứng chỉ cho máy chủ phát triển của Vite trong trình duyệt của bạn và link "Local" trong console khi chạy lệnh `npm run dev`.
 
 <a name="configuring-hmr-in-sail-on-wsl2"></a>
 #### Running the Development Server in Sail on WSL2
@@ -195,7 +180,7 @@ export default defineConfig({
 });
 ```
 
-Nếu những thay đổi trong file của bạn không được phản ánh trong trình duyệt khi máy chủ phát triển đang chạy, bạn cũng có thể cần cấu hình tùy chọn [`server.watch.usePolling`](https://vitejs.dev/config/server-options.html#server-watch) của Vite.
+Nếu những thay đổi trong file của bạn không được phản ánh trong trình duyệt khi máy chủ phát triển đang chạy, bạn cũng có thể cần cấu hình tùy chọn [server.watch.usePolling](https://vitejs.dev/config/server-options.html#server-watch) của Vite.
 
 <a name="loading-your-scripts-and-styles"></a>
 ### Loading script và style của bạn
@@ -310,7 +295,7 @@ export default defineConfig({
 
 Nếu bạn muốn xây dựng giao diện người dùng của bạn bằng cách sử dụng framework [Vue](https://vuejs.org/), thì bạn cũng sẽ cần phải cài đặt plugin `@vitejs/plugin-vue`:
 
-```sh
+```shell
 npm install --save-dev @vitejs/plugin-vue
 ```
 
@@ -347,14 +332,14 @@ export default defineConfig({
 ```
 
 > [!NOTE]
-> [Bộ công cụ khởi tạo](/docs/{{version}}/starter-kits) của Laravel đã chứa cấu hình Laravel, Vue và Vite phù hợp. Hãy xem [Laravel Breeze](/docs/{{version}}/starter-kits#breeze-and-inertia) để biết cách nhanh nhất để bắt đầu với Laravel, Vue và Vite.
+> [Bộ công cụ khởi tạo](/docs/{{version}}/starter-kits) của Laravel đã chứa cấu hình Laravel, Vue và Vite phù hợp. Những bộ khởi tạo này là cách nhanh nhất để bắt đầu với Laravel, Vue và Vite.
 
 <a name="react"></a>
 ### React
 
 Nếu bạn muốn xây dựng giao diện người dùng của bạn bằng framework [React](https://reactjs.org/), thì bạn cũng sẽ cần cài đặt plugin `@vitejs/plugin-react`:
 
-```sh
+```shell
 npm install --save-dev @vitejs/plugin-react
 ```
 
@@ -385,7 +370,7 @@ Bạn cũng sẽ cần phải thêm lệnh Blade `@viteReactRefresh` cùng với
 Lệnh `@viteReactRefresh` phải được gọi trước lệnh `@vite`.
 
 > [!NOTE]
-> [Bộ khởi tạo](/docs/{{version}}/starter-kits) của Laravel đã chứa cấu hình Laravel, React và Vite phù hợp. Hãy xem [Laravel Breeze](/docs/{{version}}/starter-kits#breeze-and-inertia) để biết cách nhanh nhất để bắt đầu với Laravel, React và Vite.
+> [Bộ công cụ khởi tạo](/docs/{{version}}/starter-kits) của Laravel đã chứa cấu hình Laravel, React và Vite phù hợp. Những bộ công cụ khởi tạo này là cách nhanh nhất để bắt đầu với Laravel, React và Vite.
 
 <a name="inertia"></a>
 ### Inertia
@@ -410,7 +395,7 @@ createInertiaApp({
 Nếu bạn đang sử dụng tính năng code splitting của Vite với Inertia, chúng tôi khuyên bạn nên cấu hình [asset prefetching](#asset-prefetching).
 
 > [!NOTE]
-> [Bộ công cụ khởi tạo](/docs/{{version}}/starter-kits) của Laravel đã chứa cấu hình Laravel, Inertia và Vite phù hợp. Hãy xem [Laravel Breeze](/docs/{{version}}/starter-kits#breeze-and-inertia) để biết cách nhanh nhất để bắt đầu với Laravel, Inertia và Vite.
+> [Bộ công cụ khởi tạo](/docs/{{version}}/starter-kits) của Laravel đã chứa cấu hình Laravel, Inertia và Vite phù hợp. Những bộ khởi tạo này là cách nhanh nhất để bắt đầu với Laravel, Inertia và Vite.
 
 <a name="url-processing"></a>
 ### URL Processing
@@ -421,7 +406,7 @@ Khi tham chiếu đường dẫn asset tương đối, bạn nên nhớ rằng �
 
 Hãy xem cấu trúc project sau:
 
-```nothing
+```text
 public/
   taylor.png
 resources/
@@ -445,19 +430,16 @@ Ví dụ sau đây minh họa cách Vite xử lý URL tương đối và tuyệt
 <a name="working-with-stylesheets"></a>
 ## Working với Stylesheets
 
-Bạn có thể tìm hiểu thêm về hỗ trợ CSS của Vite trong [tài liệu Vite](https://vitejs.dev/guide/features.html#css). Nếu bạn đang sử dụng các plugin PostCSS như [Tailwind](https://tailwindcss.com), bạn có thể tạo file `postcss.config.js` trong thư mục root của dự án và Vite sẽ tự động áp dụng file đó:
+> [!NOTE]
+> [Bộ khởi tạo](/docs/{{version}}/starter-kits) của Laravel đã chứa sẵn cấu hình Tailwind và Vite phù hợp. Hoặc, nếu bạn muốn sử dụng Tailwind và Laravel mà không cần sử dụng một trong các bộ khởi tạo của chúng tôi, hãy xem [hướng dẫn cài đặt Tailwind cho Laravel](https://tailwindcss.com/docs/guides/laravel).
 
-```js
-export default {
-    plugins: {
-        tailwindcss: {},
-        autoprefixer: {},
-    },
-};
+Tất cả các ứng dụng Laravel đều có chứa Tailwind và một file `vite.config.js` đã được cấu hình. Vì vậy, bạn chỉ cần khởi động server phát triển Vite hoặc chạy lệnh Composer `dev`, lệnh này sẽ khởi động server phát triển Laravel và Vite:
+
+```shell
+composer run dev
 ```
 
-> [!NOTE]
-> [Bộ khởi tạo](/docs/{{version}}/starter-kits) của Laravel đã chứa sẵn cấu hình Tailwind, PostCSS và Vite phù hợp. Hoặc, nếu bạn muốn sử dụng Tailwind và Laravel mà không cần sử dụng một trong các bộ khởi tạo của chúng tôi, hãy xem [hướng dẫn cài đặt Tailwind cho Laravel](https://tailwindcss.com/docs/guides/laravel).
+CSS của ứng dụng của bạn có thể được đặt trong file `resources/css/app.css`.
 
 <a name="working-with-blade-and-routes"></a>
 ## Working với Blade và Routes
@@ -528,7 +510,7 @@ export default defineConfig({
 });
 ```
 
-Về cơ bản, plugin Laravel Vite sẽ sử dụng package [`vite-plugin-full-reload`](https://github.com/ElMassimo/vite-plugin-full-reload), cung cấp một số tùy chọn cấu hình nâng cao để tinh chỉnh hành vi của tính năng này. Nếu bạn cần mức tùy chỉnh này, bạn có thể cung cấp định nghĩa `config`:
+Về cơ bản, plugin Laravel Vite sẽ sử dụng package [vite-plugin-full-reload](https://github.com/ElMassimo/vite-plugin-full-reload), cung cấp một số tùy chọn cấu hình nâng cao để tinh chỉnh hành vi của tính năng này. Nếu bạn cần mức tùy chỉnh này, bạn có thể cung cấp định nghĩa `config`:
 
 ```js
 import { defineConfig } from 'vite';
@@ -552,13 +534,15 @@ export default defineConfig({
 
 Trong các ứng dụng JavaScript, việc [tạo bí danh](#aliases) cho các thư mục hay được sử dụng là điều rất phổ biến. Tuy nhiên, bạn cũng có thể tạo bí danh để sử dụng trong Blade bằng cách sử dụng phương thức `macro` trên class `Illuminate\Support\Facades\Vite`. Thông thường, "macro" phải được định nghĩa trong phương thức `boot` của [service provider](/docs/{{version}}/providers):
 
-    /**
-     * Bootstrap any application services.
-     */
-    public function boot(): void
-    {
-        Vite::macro('image', fn (string $asset) => $this->asset("resources/images/{$asset}"));
-    }
+```php
+/**
+ * Bootstrap any application services.
+ */
+public function boot(): void
+{
+    Vite::macro('image', fn (string $asset) => $this->asset("resources/images/{$asset}"));
+}
+```
 
 Sau khi macro đã được định nghĩa xong, nó có thể được gọi nó trong các template của bạn. Ví dụ, chúng ta có thể sử dụng macro `image` được định nghĩa ở trên để tham chiếu đến một asset nằm tại `resources/images/logo.png`:
 
@@ -646,7 +630,7 @@ ASSET_URL=https://cdn.example.com
 
 Sau khi cấu hình URL asset, tất cả các URL được viết lại cho asset của bạn sẽ được thêm tiền tố bằng giá trị đã cấu hình:
 
-```nothing
+```text
 https://cdn.example.com/build/assets/app.9dce8d17.js
 ```
 
@@ -747,19 +731,19 @@ export default defineConfig({
 
 Sau đó, để build và khởi động máy chủ SSR, bạn có thể chạy các lệnh sau:
 
-```sh
+```shell
 npm run build
 node bootstrap/ssr/ssr.js
 ```
 
 Nếu bạn đang sử dụng [SSR với Inertia](https://inertiajs.com/server-side-rendering), bạn có thể sử dụng lệnh Artisan `inertia:start-ssr` để khởi động máy chủ SSR:
 
-```sh
+```shell
 php artisan inertia:start-ssr
 ```
 
 > [!NOTE]
-> [Bộ công cụ khởi tạo](/docs/{{version}}/starter-kits) của Laravel đã chứa cấu hình Laravel, Inertia SSR và Vite phù hợp. Hãy xem [Laravel Breeze](/docs/{{version}}/starter-kits#breeze-and-inertia) để biết cách nhanh nhất để bắt đầu với Laravel, Inertia SSR và Vite.
+> [Bộ công cụ khởi tạo](/docs/{{version}}/starter-kits) của Laravel đã chứa cấu hình Laravel, Inertia SSR và Vite phù hợp. Những bộ công cụ khởi tạo này là cách nhanh nhất để bắt đầu với Laravel, Inertia SSR và Vite.
 
 <a name="script-and-style-attributes"></a>
 ## Script và Style Tag Attributes
@@ -767,7 +751,7 @@ php artisan inertia:start-ssr
 <a name="content-security-policy-csp-nonce"></a>
 ### Content Security Policy (CSP) Nonce
 
-Nếu bạn muốn đưa một [thuộc tính `nonce`](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/nonce) vào trong tag script và style của bạn như một phần của [chính sách bảo mật nội dung](https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP), bạn có thể tạo hoặc chỉ định một nonce bằng phương thức `useCspNonce` trong [middleware](/docs/{{version}}/middleware) tùy chỉnh:
+Nếu bạn muốn đưa một [thuộc tính nonce](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/nonce) vào trong tag script và style của bạn như một phần của [chính sách bảo mật nội dung](https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP), bạn có thể tạo hoặc chỉ định một nonce bằng phương thức `useCspNonce` trong [middleware](/docs/{{version}}/middleware) tùy chỉnh:
 
 ```php
 <?php
@@ -814,7 +798,7 @@ Vite::useCspNonce($nonce);
 <a name="subresource-integrity-sri"></a>
 ### Subresource Integrity (SRI)
 
-Nếu file manifest Vite của bạn có chứa các hàm hash `integrity` cho các asset của bạn, Laravel sẽ tự động thêm thuộc tính `integrity` vào bất kỳ thẻ script và style nào mà nó tạo ra để thực thi [Subresource Integrity](https://developer.mozilla.org/en-US/docs/Web/Security/Subresource_Integrity). Mặc định, Vite sẽ không chứa hàm hash `integrity` trong file manifest của nó, nhưng bạn có thể bật nó bằng cách cài đặt plugin [`vite-plugin-manifest-sri`](https://www.npmjs.com/package/vite-plugin-manifest-sri) NPM:
+Nếu file manifest Vite của bạn có chứa các hàm hash `integrity` cho các asset của bạn, Laravel sẽ tự động thêm thuộc tính `integrity` vào bất kỳ thẻ script và style nào mà nó tạo ra để thực thi [Subresource Integrity](https://developer.mozilla.org/en-US/docs/Web/Security/Subresource_Integrity). Mặc định, Vite sẽ không chứa hàm hash `integrity` trong file manifest của nó, nhưng bạn có thể bật nó bằng cách cài đặt plugin [vite-plugin-manifest-sri](https://www.npmjs.com/package/vite-plugin-manifest-sri) NPM:
 
 ```shell
 npm install --save-dev vite-plugin-manifest-sri
@@ -854,7 +838,7 @@ Vite::useIntegrityKey(false);
 <a name="arbitrary-attributes"></a>
 ### Arbitrary Attributes
 
-Nếu bạn cần chứa các thuộc tính bổ sung vào tag script và style của bạn, chẳng hạn như thuộc tính [`data-turbo-track`](https://turbo.hotwired.dev/handbook/drive#reloading-when-assets-change), bạn có thể chỉ định chúng thông qua các phương thức `useScriptTagAttributes` và `useStyleTagAttributes`. Thông thường, các phương thức này sẽ được gọi từ một [service provider](/docs/{{version}}/providers):
+Nếu bạn cần chứa các thuộc tính bổ sung vào tag script và style của bạn, chẳng hạn như thuộc tính [data-turbo-track](https://turbo.hotwired.dev/handbook/drive#reloading-when-assets-change), bạn có thể chỉ định chúng thông qua các phương thức `useScriptTagAttributes` và `useStyleTagAttributes`. Thông thường, các phương thức này sẽ được gọi từ một [service provider](/docs/{{version}}/providers):
 
 ```php
 use Illuminate\Support\Facades\Vite;

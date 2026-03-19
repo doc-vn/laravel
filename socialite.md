@@ -11,6 +11,7 @@
     - [Slack Bot Scopes](#slack-bot-scopes)
     - [Tham số tuỳ chọn](#optional-parameters)
 - [Lấy ra thông tin User](#retrieving-user-details)
+- [Testing](#testing)
 
 <a name="introduction"></a>
 ## Giới thiệu
@@ -41,11 +42,13 @@ Trước khi sử dụng Socialite, bạn sẽ cần phải thêm thông tin cá
 
 Các thông tin này phải được set trong file cấu hình `config/services.php` của application của bạn và sử dụng các key `facebook`, `x`, `linkedin-openid`, `google`, `github`, `gitlab`, `bitbucket`, `slack`, hoặc `slack-openid`, tùy thuộc vào provider application của bạn yêu cầu. Ví dụ:
 
-    'github' => [
-        'client_id' => env('GITHUB_CLIENT_ID'),
-        'client_secret' => env('GITHUB_CLIENT_SECRET'),
-        'redirect' => 'http://example.com/callback-url',
-    ],
+```php
+'github' => [
+    'client_id' => env('GITHUB_CLIENT_ID'),
+    'client_secret' => env('GITHUB_CLIENT_SECRET'),
+    'redirect' => 'http://example.com/callback-url',
+],
+```
 
 > [!NOTE]
 > Nếu tùy chọn `redirect` chứa một relative path, nó sẽ tự động được resolve thành một absolute path.
@@ -58,17 +61,19 @@ Các thông tin này phải được set trong file cấu hình `config/services
 
 Để authenticate người dùng bằng OAuth provider! bạn sẽ cần hai route: một là để chuyển hướng người dùng đến provider OAuth và một route khác để nhận các callback từ provider sau khi authenticate thành công. Route mẫu ở bên dưới sẽ minh họa việc triển khai cả hai route này:
 
-    use Laravel\Socialite\Facades\Socialite;
+```php
+use Laravel\Socialite\Socialite;
 
-    Route::get('/auth/redirect', function () {
-        return Socialite::driver('github')->redirect();
-    });
+Route::get('/auth/redirect', function () {
+    return Socialite::driver('github')->redirect();
+});
 
-    Route::get('/auth/callback', function () {
-        $user = Socialite::driver('github')->user();
+Route::get('/auth/callback', function () {
+    $user = Socialite::driver('github')->user();
 
-        // $user->token
-    });
+    // $user->token
+});
+```
 
 Phương thức `redirect` được cung cấp bởi facade `Socialite` sẽ đảm nhiệm việc chuyển hướng người dùng đến provider OAuth, trong khi phương thức `user` sẽ kiểm tra request gửi về và lấy ra thông tin của người dùng từ provider sau khi họ đã chấp nhận cho authenticate.
 
@@ -77,26 +82,28 @@ Phương thức `redirect` được cung cấp bởi facade `Socialite` sẽ đ�
 
 Sau khi người dùng được lấy ra từ OAuth provider, bạn có thể xác định xem người dùng đó có tồn tại trong cơ sở dữ liệu ứng dụng của bạn hay không và [xác thực người dùng](/docs/{{version}}/authentication#authenticate-a-user-instance) đó. Nếu người dùng không tồn tại trong cơ sở dữ liệu ứng dụng của bạn, thông thường bạn sẽ tạo một record mới trong cơ sở dữ liệu của bạn để đại diện cho người dùng đó:
 
-    use App\Models\User;
-    use Illuminate\Support\Facades\Auth;
-    use Laravel\Socialite\Facades\Socialite;
+```php
+use App\Models\User;
+use Illuminate\Support\Facades\Auth;
+use Laravel\Socialite\Facades\Socialite;
 
-    Route::get('/auth/callback', function () {
-        $githubUser = Socialite::driver('github')->user();
+Route::get('/auth/callback', function () {
+    $githubUser = Socialite::driver('github')->user();
 
-        $user = User::updateOrCreate([
-            'github_id' => $githubUser->id,
-        ], [
-            'name' => $githubUser->name,
-            'email' => $githubUser->email,
-            'github_token' => $githubUser->token,
-            'github_refresh_token' => $githubUser->refreshToken,
-        ]);
+    $user = User::updateOrCreate([
+        'github_id' => $githubUser->id,
+    ], [
+        'name' => $githubUser->name,
+        'email' => $githubUser->email,
+        'github_token' => $githubUser->token,
+        'github_refresh_token' => $githubUser->refreshToken,
+    ]);
 
-        Auth::login($user);
+    Auth::login($user);
 
-        return redirect('/dashboard');
-    });
+    return redirect('/dashboard');
+});
+```
 
 > [!NOTE]
 > Để biết thêm chi tiết về những thông tin người dùng mà có sẵn từ các OAuth provider, vui lòng tham khảo tài liệu về [lấy ra chi tiết người dùng](#retrieving-user-details).
@@ -106,17 +113,21 @@ Sau khi người dùng được lấy ra từ OAuth provider, bạn có thể x�
 
 Trước khi chuyển hướng người dùng, bạn cũng có thể sử dụng phương thức `scopes` để chỉ định "scope" được đưa vào trong request xác thực. Phương thức này sẽ merge tất cả các các scope đã được chỉ định trước đó với scope mà bạn đang chỉ định hiện tại:
 
-    use Laravel\Socialite\Facades\Socialite;
+```php
+use Laravel\Socialite\Facades\Socialite;
 
-    return Socialite::driver('github')
-        ->scopes(['read:user', 'public_repo'])
-        ->redirect();
+return Socialite::driver('github')
+    ->scopes(['read:user', 'public_repo'])
+    ->redirect();
+```
 
 Bạn có thể ghi đè tất cả các scope đã có trong authentication request bằng phương thức `setScopes`:
 
-    return Socialite::driver('github')
-        ->setScopes(['read:user', 'public_repo'])
-        ->redirect();
+```php
+return Socialite::driver('github')
+    ->setScopes(['read:user', 'public_repo'])
+    ->redirect();
+```
 
 <a name="slack-bot-scopes"></a>
 ### Slack Bot Scopes
@@ -134,14 +145,18 @@ Mặc định, driver `slack` sẽ tạo token `user` và việc gọi phương 
 
 Bot token chủ yếu hữu ích nếu ứng dụng của bạn phải gửi một thông báo đến một external Slack workspace do người dùng ứng dụng của bạn sở hữu. Để tạo một bot token, hãy gọi phương thức `asBotUser` trước khi chuyển hướng người dùng đến Slack để xác thực:
 
-    return Socialite::driver('slack')
-        ->asBotUser()
-        ->setScopes(['chat:write', 'chat:write.public', 'chat:write.customize'])
-        ->redirect();
+```php
+return Socialite::driver('slack')
+    ->asBotUser()
+    ->setScopes(['chat:write', 'chat:write.public', 'chat:write.customize'])
+    ->redirect();
+```
 
 Ngoài ra, bạn phải gọi phương thức `asBotUser` trước khi gọi phương thức `user` để sau khi Slack chuyển hướng người dùng trở lại ứng dụng của bạn sau khi người dùng đó xác thực xong:
 
-    $user = Socialite::driver('slack')->asBotUser()->user();
+```php
+$user = Socialite::driver('slack')->asBotUser()->user();
+```
 
 Khi tạo một bot token, phương thức `user` vẫn sẽ trả về một instance `Laravel\Socialite\Two\User`; tuy nhiên, chỉ có thuộc tính `token` được cung cấp. Token này có thể được lưu lại để [gửi thông báo đến Slack workspace của người dùng đã xác thực](/docs/{{version}}/notifications#notifying-external-slack-workspaces).
 
@@ -150,11 +165,13 @@ Khi tạo một bot token, phương thức `user` vẫn sẽ trả về một in
 
 Một số OAuth provider hỗ trợ các tham số tùy chọn khác trong request chuyển hướng. Để thêm bất kỳ tham số tùy chọn nào vào trong request, hãy gọi phương thức `with` với một mảng:
 
-    use Laravel\Socialite\Facades\Socialite;
+```php
+use Laravel\Socialite\Socialite;
 
-    return Socialite::driver('google')
-        ->with(['hd' => 'example.com'])
-        ->redirect();
+return Socialite::driver('google')
+    ->with(['hd' => 'example.com'])
+    ->redirect();
+```
 
 > [!WARNING]
 > Khi sử dụng phương thức `with`, bạn nên cẩn thận để không truyền bất kỳ từ khóa nào đã được dùng như `state` hoặc `response_type`.
@@ -166,36 +183,40 @@ Sau khi người dùng được chuyển hướng trở lại route callback xá
 
 Các thuộc tính và các phương thức có trong object này vẫn còn phụ thuộc vào việc OAuth provider mà bạn đang xác thực có hỗ trợ OAuth 1.0 hay OAuth 2.0 hay không:
 
-    use Laravel\Socialite\Facades\Socialite;
+```php
+use Laravel\Socialite\Socialite;
 
-    Route::get('/auth/callback', function () {
-        $user = Socialite::driver('github')->user();
+Route::get('/auth/callback', function () {
+    $user = Socialite::driver('github')->user();
 
-        // OAuth 2.0 providers...
-        $token = $user->token;
-        $refreshToken = $user->refreshToken;
-        $expiresIn = $user->expiresIn;
+    // OAuth 2.0 providers...
+    $token = $user->token;
+    $refreshToken = $user->refreshToken;
+    $expiresIn = $user->expiresIn;
 
-        // OAuth 1.0 providers...
-        $token = $user->token;
-        $tokenSecret = $user->tokenSecret;
+    // OAuth 1.0 providers...
+    $token = $user->token;
+    $tokenSecret = $user->tokenSecret;
 
-        // All providers...
-        $user->getId();
-        $user->getNickname();
-        $user->getName();
-        $user->getEmail();
-        $user->getAvatar();
-    });
+    // All providers...
+    $user->getId();
+    $user->getNickname();
+    $user->getName();
+    $user->getEmail();
+    $user->getAvatar();
+});
+```
 
 <a name="retrieving-user-details-from-a-token-oauth2"></a>
 #### Retrieving User Details From A Token
 
 Nếu bạn đã có một access token hợp lệ của một người dùng, bạn có thể lấy ra thông tin chi tiết của người dùng đó bằng phương thức `userFromToken` của Socialite:
 
-    use Laravel\Socialite\Facades\Socialite;
+```php
+use Laravel\Socialite\Socialite;
 
-    $user = Socialite::driver('github')->userFromToken($token);
+$user = Socialite::driver('github')->userFromToken($token);
+```
 
 Nếu bạn đang dùng Facebook Limited Login thông qua một ứng dụng iOS, Facebook sẽ trả về một OIDC token thay vì một access token. Giống như một access token, OIDC token có thể được cung cấp cho phương thức `userFromToken` để lấy thông tin chi tiết của người dùng.
 
@@ -204,6 +225,71 @@ Nếu bạn đang dùng Facebook Limited Login thông qua một ứng dụng iOS
 
 Phương thức `stateless` có thể được sử dụng để vô hiệu hóa việc xác minh trạng thái của session. Điều này hữu ích khi thêm xác thực social vào stateless API mà không sử dụng session dựa trên cookie:
 
-    use Laravel\Socialite\Facades\Socialite;
+```php
+use Laravel\Socialite\Socialite;
 
-    return Socialite::driver('google')->stateless()->user();
+return Socialite::driver('google')->stateless()->user();
+```
+
+<a name="testing"></a>
+## Testing
+
+Laravel Socialite cung cấp một cách thuận tiện để kiểm tra các luồng xác thực OAuth mà không cần thực hiện các request thực tế tới các provider OAuth. Phương thức `fake` cho phép bạn giả lập hành vi của provider OAuth và định nghĩa dữ liệu người dùng sẽ được trả về.
+
+<a name="faking-the-redirect"></a>
+#### Faking the Redirect
+
+Để kiểm tra xem ứng dụng của bạn có chuyển hướng người dùng đến provider OAuth một cách chính xác hay không, bạn có thể gọi phương thức `fake` trước khi thực hiện request tới route chuyển hướng của bạn. Điều này sẽ khiến Socialite trả về một chuyển hướng đến một URL xác thực giả thay vì chuyển hướng đến provider OAuth thực:
+
+```php
+use Laravel\Socialite\Socialite;
+
+test('user is redirected to github', function () {
+    Socialite::fake('github');
+
+    $response = $this->get('/auth/github/redirect');
+
+    $response->assertRedirect();
+});
+```
+
+<a name="faking-the-callback"></a>
+#### Faking the Callback
+
+Để kiểm tra route callback của ứng dụng của bạn, bạn có thể gọi phương thức `fake` và cung cấp một instance `User` nên được trả về khi ứng dụng của bạn yêu cầu thông tin chi tiết của người dùng từ provider. Instance `User` có thể được tạo bằng phương thức `map`:
+
+```php
+use Laravel\Socialite\Socialite;
+use Laravel\Socialite\Two\User;
+
+test('user can login with github', function () {
+    Socialite::fake('github', (new User)->map([
+        'id' => 'github-123',
+        'name' => 'Jason Beggs',
+        'email' => 'jason@example.com',
+    ]));
+
+    $response = $this->get('/auth/github/callback');
+
+    $response->assertRedirect('/dashboard');
+
+    $this->assertDatabaseHas('users', [
+        'name' => 'Jason Beggs',
+        'email' => 'jason@example.com',
+        'github_id' => 'github-123',
+    ]);
+});
+```
+
+Mặc định, instance `User` cũng sẽ chứa một thuộc tính `token`. Nếu cần, bạn có thể tự chỉ định thêm các thuộc tính khác trên instance `User`:
+
+```php
+$fakeUser = (new User)->map([
+    'id' => 'github-123',
+    'name' => 'Jason Beggs',
+    'email' => 'jason@example.com',
+])->setToken('fake-token')
+  ->setRefreshToken('fake-refresh-token')
+  ->setExpiresIn(3600)
+  ->setApprovedScopes(['read', 'write'])
+```

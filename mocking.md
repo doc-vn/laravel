@@ -27,7 +27,7 @@ test('something can be mocked', function () {
     $this->instance(
         Service::class,
         Mockery::mock(Service::class, function (MockInterface $mock) {
-            $mock->shouldReceive('process')->once();
+            $mock->expects('process');
         })
     );
 });
@@ -43,7 +43,7 @@ public function test_something_can_be_mocked(): void
     $this->instance(
         Service::class,
         Mockery::mock(Service::class, function (MockInterface $mock) {
-            $mock->shouldReceive('process')->once();
+            $mock->expects('process');
         })
     );
 }
@@ -51,59 +51,67 @@ public function test_something_can_be_mocked(): void
 
 Để làm cho việc này thuận tiện hơn, bạn có thể sử dụng phương thức `mock` được cung cấp bởi class test case của Laravel. Trong ví dụ ở dưới đây sẽ tương đương với ví dụ ở trên:
 
-    use App\Service;
-    use Mockery\MockInterface;
+```php
+use App\Service;
+use Mockery\MockInterface;
 
-    $mock = $this->mock(Service::class, function (MockInterface $mock) {
-        $mock->shouldReceive('process')->once();
-    });
+$mock = $this->mock(Service::class, function (MockInterface $mock) {
+    $mock->expects('process');
+});
+```
 
 Bạn có thể sử dụng phương thức `partialMock` khi bạn chỉ cần làm giả một vài phương thức của một đối tượng. Các phương thức không bị làm giả sẽ được thực thi bình thường khi được gọi:
 
-    use App\Service;
-    use Mockery\MockInterface;
+```php
+use App\Service;
+use Mockery\MockInterface;
 
-    $mock = $this->partialMock(Service::class, function (MockInterface $mock) {
-        $mock->shouldReceive('process')->once();
-    });
+$mock = $this->partialMock(Service::class, function (MockInterface $mock) {
+    $mock->expects('process');
+});
+```
 
 Tương tự, nếu bạn muốn [spy](http://docs.mockery.io/en/latest/reference/spies.html) một đối tượng, class test case của Laravel cũng cung cấp phương thức `spy` là một phương thức wrapper cho phương thức `Mockery::spy`. Spy cũng giống như những mock; tuy nhiên, spy sẽ ghi lại mọi tương tác giữa spy và code đang được kiểm tra, cho phép bạn đưa ra yêu cầu sau khi code được chạy xong:
 
-    use App\Service;
+```php
+use App\Service;
 
-    $spy = $this->spy(Service::class);
+$spy = $this->spy(Service::class);
 
-    // ...
+// ...
 
-    $spy->shouldHaveReceived('process');
+$spy->shouldHaveReceived('process');
+```
 
 <a name="mocking-facades"></a>
 ## Giả Facades
 
 Không giống như các phương thức static call truyền thống, [facades](/docs/{{version}}/facades) (bao gồm cả [real-time facades](/docs/{{version}}/facades#real-time-facades)) cũng có thể bị làm giả. Điều này cung cấp một lợi thế lớn so với các phương thức static truyền thống và cho phép bạn khả năng test nếu bạn đang sử dụng khai báo phụ thuộc. Khi test, bạn có thể muốn làm giả việc gọi đến facade của Laravel trong controller của bạn. Ví dụ, hãy xem hành động của controller sau:
 
-    <?php
+```php
+<?php
 
-    namespace App\Http\Controllers;
+namespace App\Http\Controllers;
 
-    use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Cache;
 
-    class UserController extends Controller
+class UserController extends Controller
+{
+    /**
+     * Retrieve a list of all users of the application.
+     */
+    public function index(): array
     {
-        /**
-         * Retrieve a list of all users of the application.
-         */
-        public function index(): array
-        {
-            $value = Cache::get('key');
+        $value = Cache::get('key');
 
-            return [
-                // ...
-            ];
-        }
+        return [
+            // ...
+        ];
     }
+}
+```
 
-Chúng ta có thể làm giả việc gọi đến facade `Cache` bằng cách sử dụng phương thức `shouldReceive`, nó sẽ trả về một instance giả của [Mockery](https://github.com/padraic/mockery). Vì các facade được resolve và quản lý bởi [service container](/docs/{{version}}/container), nên chúng có khả năng test cao hơn nhiều so với một class static thông thường. Ví dụ: chúng ta hãy làm giả việc gọi đến phương thức `get` của facade `Cache`:
+Chúng ta có thể làm giả việc gọi đến facade `Cache` bằng cách sử dụng phương thức `expects`, nó sẽ trả về một instance giả của [Mockery](https://github.com/padraic/mockery). Vì các facade được resolve và quản lý bởi [service container](/docs/{{version}}/container), nên chúng có khả năng test cao hơn nhiều so với một class static thông thường. Ví dụ: chúng ta hãy làm giả việc gọi đến phương thức `get` của facade `Cache`:
 
 ```php tab=Pest
 <?php
@@ -111,8 +119,7 @@ Chúng ta có thể làm giả việc gọi đến facade `Cache` bằng cách s
 use Illuminate\Support\Facades\Cache;
 
 test('get index', function () {
-    Cache::shouldReceive('get')
-        ->once()
+    Cache::expects('get')
         ->with('key')
         ->andReturn('value');
 
@@ -134,8 +141,7 @@ class UserControllerTest extends TestCase
 {
     public function test_get_index(): void
     {
-        Cache::shouldReceive('get')
-            ->once()
+        Cache::expects('get')
             ->with('key')
             ->andReturn('value');
 
@@ -159,21 +165,21 @@ Nếu bạn muốn [spy](http://docs.mockery.io/en/latest/reference/spies.html) 
 
 use Illuminate\Support\Facades\Cache;
 
-test('values are be stored in cache', function () {
+test('values are stored in cache', function () {
     Cache::spy();
 
     $response = $this->get('/');
 
     $response->assertStatus(200);
 
-    Cache::shouldHaveReceived('put')->once()->with('name', 'Taylor', 10);
+    Cache::shouldHaveReceived('put')->with('name', 'Taylor', 10);
 });
 ```
 
 ```php tab=PHPUnit
 use Illuminate\Support\Facades\Cache;
 
-public function test_values_are_be_stored_in_cache(): void
+public function test_values_are_stored_in_cache(): void
 {
     Cache::spy();
 
@@ -181,7 +187,7 @@ public function test_values_are_be_stored_in_cache(): void
 
     $response->assertStatus(200);
 
-    Cache::shouldHaveReceived('put')->once()->with('name', 'Taylor', 10);
+    Cache::shouldHaveReceived('put')->with('name', 'Taylor', 10);
 }
 ```
 
@@ -205,7 +211,7 @@ test('time can be manipulated', function () {
     $this->travel(-5)->hours();
 
     // Travel to an explicit time...
-    $this->travelTo(now()->subHours(6));
+    $this->travelTo(now()->minus(hours: 6));
 
     // Return back to the present time...
     $this->travelBack();
@@ -228,7 +234,7 @@ public function test_time_can_be_manipulated(): void
     $this->travel(-5)->hours();
 
     // Travel to an explicit time...
-    $this->travelTo(now()->subHours(6));
+    $this->travelTo(now()->minus(hours: 6));
 
     // Return back to the present time...
     $this->travelBack();
@@ -237,27 +243,31 @@ public function test_time_can_be_manipulated(): void
 
 Bạn cũng có thể cung cấp một closure cho các phương thức di chuyển thời gian. Closure sẽ được gọi với thời gian đã được chỉ định. Sau khi closure được chạy, thời gian sẽ tiếp tục trở về bình thường:
 
-    $this->travel(5)->days(function () {
-        // Test something five days into the future...
-    });
+```php
+$this->travel(5)->days(function () {
+    // Test something five days into the future...
+});
 
-    $this->travelTo(now()->subDays(10), function () {
-        // Test something during a given moment...
-    });
+$this->travelTo(now()->mins(days: 10), function () {
+    // Test something during a given moment...
+});
+```
 
 Phương thức `freezeTime` có thể được sử dụng để giữ thời gian hiện tại. Tương tự, phương thức `freezeSecond` sẽ giữ thời gian hiện tại nhưng tại thời điểm bắt đầu của giây:
 
-    use Illuminate\Support\Carbon;
+```php
+use Illuminate\Support\Carbon;
 
-    // Freeze time and resume normal time after executing closure...
-    $this->freezeTime(function (Carbon $time) {
-        // ...
-    });
+// Freeze time and resume normal time after executing closure...
+$this->freezeTime(function (Carbon $time) {
+    // ...
+});
 
-    // Freeze time at the current second and resume normal time after executing closure...
-    $this->freezeSecond(function (Carbon $time) {
-        // ...
-    })
+// Freeze time at the current second and resume normal time after executing closure...
+$this->freezeSecond(function (Carbon $time) {
+    // ...
+})
+```
 
 Như bạn có thể thấy, tất cả các phương thức được thảo luận ở trên chủ yếu hữu ích để kiểm tra hành động của ứng dụng mà nhạy cảm với thời gian, chẳng hạn như khóa các bài đăng không hoạt động trên một diễn đàn:
 

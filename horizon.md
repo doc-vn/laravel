@@ -3,9 +3,15 @@
 - [Giới thiệu](#introduction)
 - [Cài đặt](#installation)
     - [Cấu hình](#configuration)
-    - [Balancing Strategies](#balancing-strategies)
     - [Authorization vào bảng điều khiển](#dashboard-authorization)
+    - [Max Job Attempts](#max-job-attempts)
+    - [Job Timeout](#job-timeout)
+    - [Job Backoff](#job-backoff)
     - [Silenced Jobs](#silenced-jobs)
+- [Balancing Strategies](#balancing-strategies)
+    - [Auto Balancing](#auto-balancing)
+    - [Simple Balancing](#simple-balancing)
+    - [No Balancing](#no-balancing)
 - [Cập nhật Horizon](#upgrading)
 - [Chạy Horizon](#running-horizon)
     - [Deploy Horizon](#deploying-horizon)
@@ -31,7 +37,7 @@ Khi sử dụng Horizon, tất cả các cấu hình queue worker của bạn đ
 ## Cài đặt
 
 > [!WARNING]
-> Laravel Horizon yêu cầu bạn sử dụng [Redis](https://redis.io) để hỗ trợ queue của bạn. Vì thế, bạn nên đảm bảo rằng queue connection của bạn đã được set thành `redis` trong file cấu hình `config/queue.php` trong apllication của bạn.
+> Laravel Horizon yêu cầu bạn sử dụng [Redis](https://redis.io) để hỗ trợ queue của bạn. Vì thế, bạn nên đảm bảo rằng queue connection của bạn đã được set thành `redis` trong file cấu hình `config/queue.php` trong apllication của bạn. Hiện tại, horizon không tương thích với Redis Cluster.
 
 Bạn có thể sử dụng Composer để cài đặt Horizon vào project Laravel của bạn:
 
@@ -58,35 +64,39 @@ Sau khi export asset của Horizon xong, file cấu hình của nó sẽ đượ
 
 Sau khi cài đặt, tùy chọn cấu hình Horizon chính mà bạn nên xem là tùy chọn cấu hình `environments`. Tùy chọn cấu hình này là một mảng các môi trường mà ứng dụng của bạn có thể chạy trên đó và ngoài ra, nó còn định nghĩa các tùy chọn worker process cho từng loại môi trường đó. Mặc định, tuỳ chọn này chứa môi trường `production` và `local`. Tuy nhiên, bạn có thể thoải mái thêm nhiều môi trường hơn nếu cần:
 
-    'environments' => [
-        'production' => [
-            'supervisor-1' => [
-                'maxProcesses' => 10,
-                'balanceMaxShift' => 1,
-                'balanceCooldown' => 3,
-            ],
-        ],
-
-        'local' => [
-            'supervisor-1' => [
-                'maxProcesses' => 3,
-            ],
+```php
+'environments' => [
+    'production' => [
+        'supervisor-1' => [
+            'maxProcesses' => 10,
+            'balanceMaxShift' => 1,
+            'balanceCooldown' => 3,
         ],
     ],
+
+    'local' => [
+        'supervisor-1' => [
+            'maxProcesses' => 3,
+        ],
+    ],
+],
+```
 
 Bạn cũng có thể định nghĩa một wildcard (`*`) cho môi trường, wildcard này sẽ được sử dụng khi không tìm thấy môi trường nào phù hợp:
 
-    'environments' => [
-        // ...
+```php
+'environments' => [
+    // ...
 
-        '*' => [
-            'supervisor-1' => [
-                'maxProcesses' => 3,
-            ],
+    '*' => [
+        'supervisor-1' => [
+            'maxProcesses' => 3,
         ],
     ],
+],
+```
 
-Khi bạn khởi động Horizon, nó sẽ sử dụng các tùy chọn cấu hình worker process tương ứng với môi trường mà ứng dụng của bạn được chạy. Thông thường, môi trường được xác định bằng giá trị của [biến môi trường](/docs/{{version}}/configuration#determining-the-current-environment) `APP_ENV`. Ví dụ: môi trường Horizon mặc định`local` được cấu hình để bắt đầu với ba worker process và tự động cân bằng số lượng worker process được chỉ định cho mỗi queue. Môi trường `sản xuất` mặc định sẽ được cấu hình để bắt đầu tối đa 10 worker process và tự động cân bằng số lượng worker process được chỉ định cho mỗi queue.
+Khi bạn khởi động Horizon, nó sẽ sử dụng các tùy chọn cấu hình worker process tương ứng với môi trường mà ứng dụng của bạn được chạy. Thông thường, môi trường được xác định bằng giá trị của [biến môi trường](/docs/{{version}}/configuration#determining-the-current-environment) `APP_ENV`. Ví dụ: môi trường Horizon mặc định`local` được cấu hình để bắt đầu với ba worker process và tự động cân bằng số lượng worker process được chỉ định cho mỗi queue. Môi trường `production` mặc định sẽ được cấu hình để bắt đầu tối đa 10 worker process và tự động cân bằng số lượng worker process được chỉ định cho mỗi queue.
 
 > [!WARNING]
 > Bạn nên đảm bảo tuỳ chọn `environments` trong file cấu hình `horizon` chứa các mục cho mỗi [environment](/docs/{{version}}/configuration#environment-configuration) mà bạn định chạy trên Horizon.
@@ -103,96 +113,323 @@ Bạn có thể thêm các supervisor vào một môi trường nhất định n
 
 Trong khi ứng dụng của bạn đang ở [chế độ bảo trì](/docs/{{version}}/configuration#maintenance-mode), các queued job sẽ không được Horizon xử lý trừ khi có tùy chọn `force` của supervisor được định nghĩa là `true` trong file cấu hình Horizon:
 
-    'environments' => [
-        'production' => [
-            'supervisor-1' => [
-                // ...
-                'force' => true,
-            ],
+```php
+'environments' => [
+    'production' => [
+        'supervisor-1' => [
+            // ...
+            'force' => true,
         ],
     ],
+],
+```
 
 <a name="default-values"></a>
 #### Default Values
 
 Trong file cấu hình mặc định của Horizon, bạn có thể thấy tùy chọn cấu hình `defaults`. Tùy chọn cấu hình này chỉ định các giá trị mặc định cho [supervisor](#supervisors) trong ứng dụng của bạn. Các giá trị cấu hình mặc định của supervisor sẽ được hợp nhất vào một cấu hình của supervisor cho từng môi trường cụ thể, cho phép bạn tránh lặp lại không cần thiết khi định nghĩa supervisor của bạn.
 
-<a name="balancing-strategies"></a>
-### Balancing Strategies
-
-Horizon cho phép bạn chọn từ ba chiến lược balance: `simple`, `auto`, và `false`. Chiến lược `simple` sẽ chia đều các incoming job giữa các process:
-
-    'balance' => 'simple',
-
-Chiến lược `auto` sẽ được cấu hình làm cấu hình mặc định, và sẽ điều chỉnh số lượng process worker trên mỗi queue dựa trên khối lượng job hiện tại của queue. Ví dụ: nếu queue `notifications` của bạn có 1.000 job đang chờ trong khi queue `render` của bạn thì trống không làm gì, thì Horizon sẽ phân bổ nhiều worker hơn vào queue `notifications` của bạn cho đến khi queue đó trống.
-
-Khi sử dụng chiến lược `auto`, vì bạn có thể định nghĩa các tùy chọn cấu hình `minProcesses` và `maxProcesses` để kiểm soát số lượng process tối thiểu trên mỗi queue và tổng số process worker tối đa mà Horizon có thể mở rộng:
-
-    'environments' => [
-        'production' => [
-            'supervisor-1' => [
-                'connection' => 'redis',
-                'queue' => ['default'],
-                'balance' => 'auto',
-                'autoScalingStrategy' => 'time',
-                'minProcesses' => 1,
-                'maxProcesses' => 10,
-                'balanceMaxShift' => 1,
-                'balanceCooldown' => 3,
-                'tries' => 3,
-            ],
-        ],
-    ],
-
-Giá trị cấu hình `autoScalingStrategy` sẽ xác định xem Horizon sẽ thêm worker process vào queue nào dựa trên tổng thời gian cần thiết để thực hiện hết job trong queue (chiến lược `time`) hay theo tổng số job có trong queue (chiến lược `size`).
-
-Các giá trị cấu hình `balanceMaxShift` và `balanceCooldown` sẽ xác định cách Horizon sẽ scale như thế nào để đáp ứng nhu cầu của worker. Trong ví dụ trên, tối đa một process mới sẽ được tạo hoặc hủy sau ba giây. Bạn có thể tự do điều chỉnh các giá trị này nếu cần, dựa theo nhu cầu của ứng dụng của bạn.
-
-Khi tùy chọn `balance` được set thành `false`, thì hành vi mặc định của Laravel sẽ được sử dụng, trong đó các queue sẽ được xử lý theo thứ tự mà chúng đã được liệt kê trong cấu hình của bạn.
-
 <a name="dashboard-authorization"></a>
 ### Authorization vào bảng điều khiển
 
 Bảng điều khiển Horizon có thể được truy cập thông qua route `/horizon`. Mặc định, bạn sẽ chỉ có thể truy cập trang tổng quan này trong môi trường `local`. Tuy nhiên, trong file `app/Providers/HorizonServiceProvider.php` của bạn, có một định nghĩa [gate authorization](/docs/{{version}}/authorization#gates). Gate authorization này sẽ kiểm soát quyền truy cập vào Horizon trong các môi trường **không phải là local**. Bạn có thể thoải mái sửa gate này nếu cần để hạn chế quyền truy cập vào các cài đặt Horizon của bạn:
 
-    /**
-     * Register the Horizon gate.
-     *
-     * This gate determines who can access Horizon in non-local environments.
-     */
-    protected function gate(): void
-    {
-        Gate::define('viewHorizon', function (User $user) {
-            return in_array($user->email, [
-                'taylor@laravel.com',
-            ]);
-        });
-    }
+```php
+/**
+ * Register the Horizon gate.
+ *
+ * This gate determines who can access Horizon in non-local environments.
+ */
+protected function gate(): void
+{
+    Gate::define('viewHorizon', function (User $user) {
+        return in_array($user->email, [
+            'taylor@laravel.com',
+        ]);
+    });
+}
+```
 
 <a name="alternative-authentication-strategies"></a>
 #### Alternative Authentication Strategies
 
 Hãy nhớ rằng Laravel sẽ tự động đưa người dùng đã xác thực vào gate closure. Nếu ứng dụng của bạn đang cung cấp bảo mật cho Horizon thông qua một phương thức khác, chẳng hạn như hạn chế IP, thì người dùng Horizon của bạn có thể không cần "đăng nhập". Do đó, bạn sẽ cần phải thay đổi format `function (User $user)` của closure ở trên thành `function (User $user = null)` để yêu cầu Laravel không yêu cầu xác thực.
 
+<a name="max-job-attempts"></a>
+### Max Job Attempts
+
+> [!NOTE]
+> Trước khi tinh chỉnh các lựa chọn này, bạn hãy đảm bảo là bạn đã biết các [queue services](/docs/{{version}}/queues#max-job-attempts-and-timeout) mặc định của Laravel và khái niệm 'attempts'.
+
+Bạn có thể định nghĩa số lần thử tối đa mà một job có thể thực hiện trong cấu hình của supervisor:
+
+```php
+'environments' => [
+    'production' => [
+        'supervisor-1' => [
+            // ...
+            'tries' => 10,
+        ],
+    ],
+],
+```
+
+> [!NOTE]
+> Tùy chọn này tương tự như tùy chọn `--tries` khi sử dụng lệnh Artisan để xử lý các queue.
+
+Việc điều chỉnh tùy chọn `tries` là rất quan trọng khi sử dụng các middleware như `WithoutOverlapping` hoặc `RateLimited` vì chúng sẽ thực hiện các lần thử. Để xử lý việc này, hãy điều chỉnh giá trị cấu hình `tries` ở cấp độ supervisor hoặc bằng cách định nghĩa thuộc tính `$tries` trong class job.
+
+Nếu bạn không thiết lập tùy chọn `tries`, Horizon sẽ mặc định là thử một lần duy nhất, trừ khi class job có định nghĩa thuộc tính `$tries`, thuộc tính này sẽ được ưu tiên hơn cấu hình của Horizon.
+
+Việc thiết lập `tries` hoặc `$tries` bằng 0 sẽ cho phép thực hiện số lần thử không giới hạn, điều này rất lý tưởng khi số lượng lần thử là không xác định. Để ngăn chặn các lỗi xảy ra vô hạn, bạn có thể giới hạn số lượng exception được phép xảy ra bằng cách thiết lập thuộc tính `$maxExceptions` trong class job.
+
+<a name="job-timeout"></a>
+### Job Timeout
+
+Tương tự, bạn có thể thiết lập giá trị `timeout` ở cấp độ supervisor, giá trị này xác định số giây mà một worker process có thể chạy một job trước khi nó bị buộc phải dừng lại. Sau khi bị dừng, job sẽ được thử lại hoặc bị đánh dấu là thất bại, tùy thuộc vào cấu hình queue của bạn:
+
+```php
+'environments' => [
+    'production' => [
+        'supervisor-1' => [
+            // ...¨
+            'timeout' => 60,
+        ],
+    ],
+],
+```
+
+> [!WARNING]
+Khi sử dụng chiến lược balance `auto`, Horizon sẽ coi các worker đang trong quá trình xử lý là bị "giữ" và sẽ buộc chúng dừng lại sau khi hết thời gian timeout của Horizon trong quá trình scale down. Luôn đảm bảo rằng thời gian timeout của Horizon luôn lớn hơn bất kỳ thời gian timeout nào ở cấp độ job, nếu không các job có thể bị chấm dứt khi đang thực hiện. Ngoài ra, giá trị `timeout` nên luôn ngắn hơn ít nhất vài giây so với giá trị `retry_after` được định nghĩa trong file cấu hình `config/queue.php` của bạn. Nếu không, các job có thể bị xử lý hai lần.
+
+<a name="job-backoff"></a>
+### Job Backoff
+
+Bạn có thể định nghĩa giá trị `backoff` ở cấp độ supervisor để xác định thời gian Horizon nên đợi trước khi thử lại một job gặp phải exception:
+
+```php
+'environments' => [
+    'production' => [
+        'supervisor-1' => [
+            // ...
+            'backoff' => 10,
+        ],
+    ],
+],
+```
+
+Bạn cũng có thể cấu hình "exponential" backoff bằng cách sử dụng một mảng cho giá trị `backoff`. Trong ví dụ này, thời gian chờ thử lại sẽ là 1 giây cho lần thử lại đầu tiên, 5 giây cho lần thử lại thứ hai, 10 giây cho lần thử lại thứ ba và 10 giây cho các lần thử lại tiếp theo nếu vẫn còn số lần thử:
+
+```php
+'environments' => [
+    'production' => [
+        'supervisor-1' => [
+            // ...
+            'backoff' => [1, 5, 10],
+        ],
+    ],
+],
+```
+
 <a name="silenced-jobs"></a>
 ### Silenced Jobs
 
 Thỉnh thoảng, bạn có thể không quan tâm đến việc xem một số job nhất định được gửi bởi ứng dụng của bạn hoặc các package của bên thứ ba. Thay vì những job này sẽ chiếm không gian trong danh sách "job đã hoàn thành" của bạn, bạn có thể tắt chúng. Để bắt đầu, hãy thêm tên class của job vào tùy chọn cấu hình `silenced` trong file cấu hình `horizon` của ứng dụng của bạn:
 
-    'silenced' => [
-        App\Jobs\ProcessPodcast::class,
-    ],
+```php
+'silenced' => [
+    App\Jobs\ProcessPodcast::class,
+],
+```
+
+Ngoài việc tắt một class job riêng lẻ, Horizon cũng hỗ trợ tắt các job dựa trên [tag](#tags). Điều này có thể hữu ích nếu bạn muốn ẩn nhiều job có chung một tag:
+
+```php
+'silenced_tags' => [
+    'notifications'
+],
+```
 
 Ngoài ra, job mà bạn muốn tắt có thể implement interface `Laravel\Horizon\Contracts\Silenced`. Nếu một job mà đã implement interface này, nó sẽ tự động ở chế độ im lặng, ngay cả khi nó không có trong mảng cấu hình `silenced`:
 
-    use Laravel\Horizon\Contracts\Silenced;
+```php
+use Laravel\Horizon\Contracts\Silenced;
 
-    class ProcessPodcast implements ShouldQueue, Silenced
-    {
-        use Queueable;
+class ProcessPodcast implements ShouldQueue, Silenced
+{
+    use Queueable;
 
-        // ...
-    }
+    // ...
+}
+```
+
+<a name="balancing-strategies"></a>
+## Balancing Strategies
+
+Mỗi supervisor có thể xử lý một hoặc nhiều queue, nhưng không giống như hệ thống queue mặc định của Laravel, Horizon cho phép bạn lựa chọn một trong ba chiến lược cân bằng worker: `auto`, `simple`, và `false`.
+
+<a name="auto-balancing"></a>
+### Auto Balancing
+
+Chiến lược `auto`, là chiến lược mặc định, sẽ điều chỉnh số lượng worker process cho mỗi queue dựa trên khối lượng công việc hiện tại của queue đó. Ví dụ: nếu queue `notifications` của bạn có 1.000 job đang chờ xử lý trong khi queue `default` của bạn đang trống, Horizon sẽ phân bổ thêm worker cho queue `notifications` cho đến khi queue này hết.
+
+Khi sử dụng chiến lược `auto`, bạn cũng có thể cấu hình các tùy chọn `minProcesses` và `maxProcesses`:
+
+<div class="content-list" markdown="1">
+
+- `minProcesses` sẽ định nghĩa số lượng worker process tối thiểu cho mỗi queue. Giá trị này phải lớn hơn hoặc bằng 1.
+- `maxProcesses` sẽ định nghĩa tổng số lượng worker process tối đa mà Horizon có thể mở rộng trên tất cả các queue. Giá trị này thường phải lớn hơn số lượng queue nhân với giá trị `minProcesses`. Để ngăn supervisor tạo ra bất kỳ process nào, bạn có thể set giá trị này bằng 0.
+
+</div>
+
+Ví dụ, bạn có thể cấu hình Horizon để duy trì ít nhất một process cho mỗi queue và mở rộng lên tổng cộng tối đa 10 worker process:
+
+```php
+'environments' => [
+    'production' => [
+        'supervisor-1' => [
+            'connection' => 'redis',
+            'queue' => ['default', 'notifications'],
+            'balance' => 'auto',
+            'autoScalingStrategy' => 'time',
+            'minProcesses' => 1,
+            'maxProcesses' => 10,
+            'balanceMaxShift' => 1,
+            'balanceCooldown' => 3,
+        ],
+    ],
+],
+```
+
+Tùy chọn cấu hình `autoScalingStrategy` sẽ xác định cách Horizon sẽ phân bổ thêm các worker process cho các queue. Bạn có thể chọn giữa hai chiến lược:
+
+<div class="content-list" markdown="1">
+
+- Chiến lược `time` sẽ phân bổ worker dựa trên tổng thời gian ước tính cần thiết để xử lý hết queue.
+- Chiến lược `size` sẽ phân bổ worker dựa trên tổng số lượng job có trong queue.
+
+</div>
+
+Các giá trị cấu hình `balanceMaxShift` và `balanceCooldown` sẽ xác định tốc độ Horizon sẽ điều chỉnh scale như thế nào để đáp ứng nhu cầu worker. Trong ví dụ trên, tối đa một process mới sẽ được tạo ra hoặc bị hủy bỏ sau mỗi ba giây. Bạn có thể tự do tinh chỉnh các giá trị này khi cần thiết dựa trên nhu cầu của ứng dụng.
+
+<a name="auto-queue-priorities"></a>
+#### Queue Priorities and Auto Balancing
+
+Khi sử dụng chiến lược balance `auto`, Horizon không áp đặt mức độ ưu tiên giữa các queue. Thứ tự của các queue trong cấu hình của supervisor không ảnh hưởng đến cách các worker process được phân bổ. Thay vào đó, Horizon dựa vào `autoScalingStrategy` đã chọn để phân bổ động các worker process dựa trên tải của queue.
+
+Ví dụ, trong cấu hình sau, queue `high` không được ưu tiên hơn queue `default`, mặc dù nó xuất hiện đầu tiên trong danh sách:
+
+```php
+'environments' => [
+    'production' => [
+        'supervisor-1' => [
+            // ...
+            'queue' => ['high', 'default'],
+            'minProcesses' => 1,
+            'maxProcesses' => 10,
+        ],
+    ],
+],
+```
+
+Nếu bạn cần set độ ưu tiên giữa các queue, bạn có thể định nghĩa nhiều supervisor và phân bổ tài nguyên xử lý một cách rõ ràng:
+
+```php
+'environments' => [
+    'production' => [
+        'supervisor-1' => [
+            // ...
+            'queue' => ['default'],
+            'minProcesses' => 1,
+            'maxProcesses' => 10,
+        ],
+        'supervisor-2' => [
+            // ...
+            'queue' => ['images'],
+            'minProcesses' => 1,
+            'maxProcesses' => 1,
+        ],
+    ],
+],
+```
+
+Trong ví dụ này, queue `default` có thể mở rộng lên đến 10 process, trong khi queue `images` bị giới hạn ở một process. Cấu hình này đảm bảo rằng các queue của bạn có thể mở rộng một cách độc lập.
+
+> [!NOTE]
+> Khi gửi các job tiêu tốn nhiều tài nguyên, thỉnh thoảng cách tốt nhất là chỉ định chúng vào một queue riêng biệt với giá trị `maxProcesses` được giới hạn. Nếu không, các job này có thể tiêu thụ quá nhiều tài nguyên CPU và làm hệ thống của bạn bị quá tải.
+
+<a name="simple-balancing"></a>
+### Simple Balancing
+
+Chiến lược `simple` sẽ phân bổ các worker process đồng đều giữa các queue được chỉ định. Với chiến lược này, Horizon không tự động scale số lượng worker process. Thay vào đó, nó sử dụng một số lượng process cố định:
+
+```php
+'environments' => [
+    'production' => [
+        'supervisor-1' => [
+            // ...
+            'queue' => ['default', 'notifications'],
+            'balance' => 'simple',
+            'processes' => 10,
+        ],
+    ],
+],
+```
+
+Trong ví dụ trên, Horizon sẽ chỉ định 5 process cho mỗi queue và chia đều tổng số 10 process.
+
+Nếu bạn muốn kiểm soát số lượng worker process được chỉ định cho từng queue theo một cách riêng biệt, bạn có thể định nghĩa nhiều supervisor:
+
+```php
+'environments' => [
+    'production' => [
+        'supervisor-1' => [
+            // ...
+            'queue' => ['default'],
+            'balance' => 'simple',
+            'processes' => 10,
+        ],
+        'supervisor-notifications' => [
+            // ...
+            'queue' => ['notifications'],
+            'balance' => 'simple',
+            'processes' => 2,
+        ],
+    ],
+],
+```
+
+Với cấu hình này, Horizon sẽ chỉ định 10 process cho queue `default` và 2 process cho queue `notifications`.
+
+<a name="no-balancing"></a>
+### No Balancing
+
+Khi tùy chọn `balance` được thiết lập thành `false`, Horizon sẽ xử lý các queue theo đúng thứ tự mà chúng được liệt kê, tương tự như hệ thống queue mặc định của Laravel. Tuy nhiên, nó vẫn sẽ điều chỉnh số lượng worker process nếu các job bắt đầu tích tụ:
+
+```php
+'environments' => [
+    'production' => [
+        'supervisor-1' => [
+            // ...
+            'queue' => ['default', 'notifications'],
+            'balance' => false,
+            'minProcesses' => 1,
+            'maxProcesses' => 10,
+        ],
+    ],
+],
+```
+
+Trong ví dụ trên, các job trong queue `default` sẽ luôn được ưu tiên hơn các job trong queue `notifications`. Ví dụ, nếu có 1.000 job trong queue `default` và chỉ có 10 job trong queue `notifications`, Horizon sẽ xử lý hết toàn bộ các job có trong queue `default` trước khi xử lý bất kỳ job nào có trong queue `notifications`.
+
+Bạn có thể kiểm soát khả năng scale các worker process của Horizon bằng cách sử dụng các tùy chọn `minProcesses` và `maxProcesses`:
+
+<div class="content-list" markdown="1">
+
+- `minProcesses` xác định số lượng worker process tối thiểu có trong tổng số worker process. Giá trị này phải lớn hơn hoặc bằng 1.
+- `maxProcesses` xác định tổng số lượng worker process tối đa mà Horizon có thể scale lên.
+
+</div>
 
 <a name="upgrading"></a>
 #### Cập nhật Horizon
@@ -263,7 +500,7 @@ sudo apt-get install supervisor
 ```
 
 > [!NOTE]
-> Nếu bạn không muốn tự cấu hình Supervisor, hãy xem xét việc sử dụng [Laravel Forge](https://forge.laravel.com), nó sẽ tự động cài đặt và cấu hình Supervisor cho các dự án Laravel của bạn.
+> Nếu bạn không muốn tự cấu hình Supervisor, hãy xem xét việc sử dụng [Laravel Cloud](https://cloud.laravel.com), công cụ này có thể quản lý các process background cho ứng dụng Laravel của bạn.
 
 <a name="supervisor-configuration"></a>
 #### Supervisor Configuration
@@ -306,80 +543,88 @@ sudo supervisorctl start horizon
 <a name="tags"></a>
 ## Tags
 
-Horizon cho phép bạn gán các “tags” cho các job, bao gồm cả mailables, event broadcast, notification và queued event listener. Trong thực tế, Horizon sẽ tự động gắn tag cho tất cả các job tùy thuộc vào các model Eloquent được gắn vào job. Ví dụ, hãy xem job sau:
+Horizon cho phép bạn gán các "tags" cho các job, bao gồm cả mailables, event broadcast, notification và queued event listener. Trong thực tế, Horizon sẽ tự động gắn tag cho tất cả các job tùy thuộc vào các model Eloquent được gắn vào job. Ví dụ, hãy xem job sau:
 
-    <?php
+```php
+<?php
 
-    namespace App\Jobs;
+namespace App\Jobs;
 
-    use App\Models\Video;
-    use Illuminate\Contracts\Queue\ShouldQueue;
-    use Illuminate\Foundation\Queue\Queueable;
+use App\Models\Video;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Foundation\Queue\Queueable;
 
-    class RenderVideo implements ShouldQueue
+class RenderVideo implements ShouldQueue
+{
+    use Queueable;
+
+    /**
+     * Create a new job instance.
+     */
+    public function __construct(
+        public Video $video,
+    ) {}
+
+    /**
+     * Execute the job.
+     */
+    public function handle(): void
     {
-        use Queueable;
-
-        /**
-         * Create a new job instance.
-         */
-        public function __construct(
-            public Video $video,
-        ) {}
-
-        /**
-         * Execute the job.
-         */
-        public function handle(): void
-        {
-            // ...
-        }
+        // ...
     }
+}
+```
 
 Nếu job này được queue với một instance `App\Models\Video` có thuộc tính `id` là `1`, thì nó sẽ tự động nhận tag là `App\Models\Video:1`. Điều này là do Horizon sẽ tìm kiếm các thuộc tính của job xem có model Eloquent nào không. Nếu có một model Eloquent được tìm thấy, thì Horizon sẽ gắn tag job bằng cách sử dụng tên class model và khóa của model đó:
 
-    use App\Jobs\RenderVideo;
-    use App\Models\Video;
+```php
+use App\Jobs\RenderVideo;
+use App\Models\Video;
 
-    $video = Video::find(1);
+$video = Video::find(1);
 
-    RenderVideo::dispatch($video);
+RenderVideo::dispatch($video);
+```
 
 <a name="manually-tagging-jobs"></a>
 #### Manually Tagging Jobs
 
 Nếu bạn muốn tự định nghĩa tag cho một trong các đối tượng queueable của bạn, bạn có thể định nghĩa một phương thức `tags` trên class:
 
-    class RenderVideo implements ShouldQueue
+```php
+class RenderVideo implements ShouldQueue
+{
+    /**
+     * Get the tags that should be assigned to the job.
+     *
+     * @return array<int, string>
+     */
+    public function tags(): array
     {
-        /**
-         * Get the tags that should be assigned to the job.
-         *
-         * @return array<int, string>
-         */
-        public function tags(): array
-        {
-            return ['render', 'video:'.$this->video->id];
-        }
+        return ['render', 'video:'.$this->video->id];
     }
+}
+```
 
 <a name="manually-tagging-event-listeners"></a>
 #### Manually Tagging Event Listeners
 
 Khi lấy ra các tag cho queued event listener, Horizon sẽ tự động truyền instance event tới phương thức `tags`, cho phép bạn thêm dữ liệu event vào các tag:
 
-    class SendRenderNotifications implements ShouldQueue
+```php
+class SendRenderNotifications implements ShouldQueue
+{
+    /**
+     * Get the tags that should be assigned to the listener.
+     *
+     * @return array<int, string>
+     */
+    public function tags(VideoRendered $event): array
     {
-        /**
-         * Get the tags that should be assigned to the listener.
-         *
-         * @return array<int, string>
-         */
-        public function tags(VideoRendered $event): array
-        {
-            return ['video:'.$event->video->id];
-        }
+        return ['video:'.$event->video->id];
     }
+}
+```
 
 <a name="notifications"></a>
 ## Thông báo
@@ -389,37 +634,51 @@ Khi lấy ra các tag cho queued event listener, Horizon sẽ tự động truy�
 
 Nếu bạn muốn nhận được thông báo khi một trong các queue của bạn có thời gian chờ quá lâu, bạn có thể sử dụng các phương thức `Horizon::routeMailNotificationsTo`, `Horizon::routeSlackNotificationsTo`, và `Horizon::routeSmsNotificationsTo`. Bạn có thể gọi các phương thức này từ `App\Providers\HorizonServiceProvider`:
 
-    /**
-     * Bootstrap any application services.
-     */
-    public function boot(): void
-    {
-        parent::boot();
+```php
+/**
+ * Bootstrap any application services.
+ */
+public function boot(): void
+{
+    parent::boot();
 
-        Horizon::routeSmsNotificationsTo('15556667777');
-        Horizon::routeMailNotificationsTo('example@example.com');
-        Horizon::routeSlackNotificationsTo('slack-webhook-url', '#channel');
-    }
+    Horizon::routeSmsNotificationsTo('15556667777');
+    Horizon::routeMailNotificationsTo('example@example.com');
+    Horizon::routeSlackNotificationsTo('slack-webhook-url', '#channel');
+}
+```
 
 <a name="configuring-notification-wait-time-thresholds"></a>
 #### Configuring Notification Wait Time Thresholds
 
 Bạn có thể cài đặt số giây thì sẽ được coi là "chờ lâu" trong file cấu hình `config/horizon.php` trong application của bạn. Tùy chọn cấu hình `waits` trong file này cho phép bạn kiểm soát ngưỡng chờ cho mỗi connection và queue. Bất kỳ sự kết hợp nào giữa connection và queue mà không định nghĩa trước giá trị này sẽ mặc định ở ngưỡng là 60 giây:
 
-    'waits' => [
-        'redis:critical' => 30,
-        'redis:default' => 60,
-        'redis:batch' => 120,
-    ],
+```php
+'waits' => [
+    'redis:critical' => 30,
+    'redis:default' => 60,
+    'redis:batch' => 120,
+],
+```
+
+Việc thiết lập ngưỡng của một queue về `0` sẽ vô hiệu hóa các thông báo chờ lâu cho queue đó.
 
 <a name="metrics"></a>
 ## Số liệu
 
 Horizon có chứa một bảng điều khiển cung cấp các thông tin về số liệu job, thời gian chờ và lưu lượng của queue. Để hiển thị bảng điều khiển này, bạn nên cài đặt lệnh Artisan `snapshot` của Horizon chạy năm phút một lần trong file `routes/console.php` của application của bạn:
 
-    use Illuminate\Support\Facades\Schedule;
+```php
+use Illuminate\Support\Facades\Schedule;
 
-    Schedule::command('horizon:snapshot')->everyFiveMinutes();
+Schedule::command('horizon:snapshot')->everyFiveMinutes();
+```
+
+Nếu bạn muốn xóa tất cả các số liệu, bạn có thể sử dụng lệnh Artisan `horizon:clear-metrics`:
+
+```shell
+php artisan horizon:clear-metrics
+```
 
 <a name="deleting-failed-jobs"></a>
 ## Xoá job thất bại

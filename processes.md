@@ -8,6 +8,7 @@
 - [Processes bất đồng bộ](#asynchronous-processes)
     - [Process ID và Signal](#process-ids-and-signals)
     - [Output Process bất đồng bộ ](#asynchronous-process-output)
+    - [Timeout Process bất đồng bộ](#asynchronous-process-timeouts)
 - [Processes đồng thời](#concurrent-processes)
     - [Naming Pool Processes](#naming-pool-processes)
     - [Pool Process ID và Signal](#pool-process-ids-and-signals)
@@ -22,7 +23,7 @@
 <a name="introduction"></a>
 ## Giới thiệu
 
-Laravel cung cấp một API tối giản, rõ ràng xoay quanh [component Symfony Process](https://symfony.com/doc/7.0/components/process.html), cho phép bạn dễ dàng gọi các process bên ngoài từ ứng dụng Laravel của bạn. Các tính năng process của Laravel tập trung vào các trường hợp sử dụng phổ biến nhất và mang lại trải nghiệm tuyệt vời cho nhà phát triển.
+Laravel cung cấp một API tối giản, rõ ràng xoay quanh [component Symfony Process](https://symfony.com/doc/current/components/process.html), cho phép bạn dễ dàng gọi các process bên ngoài từ ứng dụng Laravel của bạn. Các tính năng process của Laravel tập trung vào các trường hợp sử dụng phổ biến nhất và mang lại trải nghiệm tuyệt vời cho nhà phát triển.
 
 <a name="invoking-processes"></a>
 ## Gọi Processes
@@ -42,17 +43,18 @@ Tất nhiên, instance `Illuminate\Contracts\Process\ProcessResult` được tr�
 ```php
 $result = Process::run('ls -la');
 
+$result->command();
 $result->successful();
 $result->failed();
-$result->exitCode();
 $result->output();
 $result->errorOutput();
+$result->exitCode();
 ```
 
 <a name="throwing-exceptions"></a>
 #### Throwing Exceptions
 
-Nếu bạn có kết quả process và muốn đưa ra một instance của `Illuminate\Process\Exceptions\ProcessFailedException` nếu exit code lớn hơn 0 (báo hiệu sự cố), bạn có thể sử dụng các phương thức `throw` và `throwIf`. Nếu process không lỗi, instance kết quả process sẽ được trả về:
+Nếu bạn có kết quả process và muốn đưa ra một instance của `Illuminate\Process\Exceptions\ProcessFailedException` nếu exit code lớn hơn 0 (báo hiệu sự cố), bạn có thể sử dụng các phương thức `throw` và `throwIf`. Nếu process không lỗi, instance `ProcessResult` sẽ được trả về:
 
 ```php
 $result = Process::run('ls -la')->throw();
@@ -131,6 +133,9 @@ Phương thức `tty` có thể được sử dụng để bật chế độ TTY
 ```php
 Process::forever()->tty()->run('vim');
 ```
+
+> [!WARNING]
+> Chế độ TTY không hỗ trợ trên Windows.
 
 <a name="process-output"></a>
 ### Process Output
@@ -218,7 +223,7 @@ Laravel cũng cho phép bạn gán một khóa cho từng process trong một pi
 $result = Process::pipe(function (Pipe $pipe) {
     $pipe->as('first')->command('cat example.txt');
     $pipe->as('second')->command('grep -i "laravel"');
-})->start(function (string $type, string $output, string $key) {
+}, function (string $type, string $output, string $key) {
     // ...
 });
 ```
@@ -238,7 +243,7 @@ while ($process->running()) {
 $result = $process->wait();
 ```
 
-Như bạn có thể đã nhận thấy, bạn có thể gọi phương thức `wait` để đợi cho đến khi process được thực thi xong và lấy instance kết quả của process đó:
+Như bạn có thể đã nhận thấy, bạn có thể gọi phương thức `wait` để đợi cho đến khi process được thực thi xong và lấy ra instance `ProcessResult` đó:
 
 ```php
 $process = Process::timeout(120)->start('bash import.sh');
@@ -301,6 +306,23 @@ $process->waitUntil(function (string $type, string $output) {
 });
 ```
 
+<a name="asynchronous-process-timeouts"></a>
+### Timeout Process bất đồng bộ
+
+Trong khi một process bất đồng bộ đang chạy, bạn có thể kiểm tra xem process đó đã bị timeout hay chưa bằng cách sử dụng phương thức `ensureNotTimedOut`. Phương thức này sẽ đưa ra một [ngoại lệ timeout](#timeouts) nếu process đã quá thời gian timeout:
+
+```php
+$process = Process::timeout(120)->start('bash import.sh');
+
+while ($process->running()) {
+    $process->ensureNotTimedOut();
+
+    // ...
+
+    sleep(1);
+}
+```
+
 <a name="concurrent-processes"></a>
 ## Processes đồng thời
 
@@ -327,7 +349,7 @@ while ($pool->running()->isNotEmpty()) {
 $results = $pool->wait();
 ```
 
-Như bạn thấy, bạn có thể đợi tất cả các process trong group hoàn thành việc chạy và trả về kết quả của chúng thông qua phương thức `wait`. Phương thức `wait` sẽ trả về một đối tượng có thể truy cập được trong mảng, cho phép bạn truy cập vào instance kết quả của từng process trong group bằng khóa của nó:
+Như bạn thấy, bạn có thể đợi tất cả các process trong group hoàn thành việc chạy và trả về kết quả của chúng thông qua phương thức `wait`. Phương thức `wait` sẽ trả về một đối tượng có thể truy cập được trong mảng, cho phép bạn truy cập vào instance `ProcessResult` của từng process trong group bằng khóa của nó:
 
 ```php
 $results = $pool->wait();
@@ -407,8 +429,8 @@ Khi testing route này, chúng ta có thể hướng dẫn Laravel trả về m�
 ```php tab=Pest
 <?php
 
-use Illuminate\Process\PendingProcess;
 use Illuminate\Contracts\Process\ProcessResult;
+use Illuminate\Process\PendingProcess;
 use Illuminate\Support\Facades\Process;
 
 test('process is invoked', function () {
@@ -432,8 +454,8 @@ test('process is invoked', function () {
 
 namespace Tests\Feature;
 
-use Illuminate\Process\PendingProcess;
 use Illuminate\Contracts\Process\ProcessResult;
+use Illuminate\Process\PendingProcess;
 use Illuminate\Support\Facades\Process;
 use Tests\TestCase;
 
@@ -605,7 +627,7 @@ use Illuminate\Support\Facades\Process;
 Process::assertRanTimes('ls -la', times: 3);
 ```
 
-Phương thức `assertRanTimes` cũng chấp nhận một closure, phương thức này sẽ nhận một instance của một process và một kết quả của process, cho phép bạn kiểm tra các tùy chọn được cấu hình cho process đó. Nếu closure này trả về `true` và process được gọi với số lần đã được chỉ định, thì kiểm tra sẽ "pass":
+Phương thức `assertRanTimes` cũng chấp nhận một closure, phương thức này sẽ nhận một instance của `PendingProcess` và một instance của `ProcessResult`, cho phép bạn kiểm tra các tùy chọn được cấu hình cho process đó. Nếu closure này trả về `true` và process được gọi với số lần đã được chỉ định, thì kiểm tra sẽ "pass":
 
 ```php
 Process::assertRanTimes(function (PendingProcess $process, ProcessResult $result) {
@@ -618,16 +640,18 @@ Process::assertRanTimes(function (PendingProcess $process, ProcessResult $result
 
 Nếu bạn muốn đảm bảo rằng tất cả các process được gọi đều đã được fake kết quả trong một bài test riêng lẻ hoặc tất cả các bài test, bạn có thể gọi phương thức `preventStrayProcesses`. Sau khi gọi phương thức này, bất kỳ process nào mà không có kết quả fake tương ứng thì process đó sẽ đưa ra một ngoại lệ thay vì khởi chạy một process thực tế:
 
-    use Illuminate\Support\Facades\Process;
+```php
+use Illuminate\Support\Facades\Process;
 
-    Process::preventStrayProcesses();
+Process::preventStrayProcesses();
 
-    Process::fake([
-        'ls *' => 'Test output...',
-    ]);
+Process::fake([
+    'ls *' => 'Test output...',
+]);
 
-    // Fake response is returned...
-    Process::run('ls -la');
+// Fake response is returned...
+Process::run('ls -la');
 
-    // An exception is thrown...
-    Process::run('bash import.sh');
+// An exception is thrown...
+Process::run('bash import.sh');
+```

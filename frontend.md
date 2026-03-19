@@ -5,7 +5,7 @@
     - [PHP và Blade](#php-and-blade)
     - [Livewire](#livewire)
     - [Starter Kits](#php-starter-kits)
-- [Dùng Vue hoặc React](#using-vue-react)
+- [Dùng React hoặc Vue](#using-react-or-vue)
     - [Inertia](#inertia)
     - [Starter Kits](#inertia-starter-kits)
 - [Đóng gói assets](#bundling-assets)
@@ -102,21 +102,21 @@ Nếu bạn mới làm quen với Laravel, chúng tôi khuyên bạn nên làm q
 <a name="php-starter-kits"></a>
 ### Starter Kits
 
-Nếu bạn muốn xây dựng frontend của bạn bằng PHP và Livewire, bạn có thể tận dụng [starter kits](/docs/{{version}}/starter-kits) Breeze hoặc Jetstream của chúng tôi để khởi tạo quá trình phát triển ứng dụng của bạn. Cả hai bộ khởi tạo này đều hỗ trợ các flow xác thực backend và frontend cho ứng dụng của bạn bằng [Blade](/docs/{{version}}/blade) và [Tailwind](https://tailwindcss.com) để bạn có thể dễ dàng bắt đầu xây dựng bước tiếp theo của bạn.
+Nếu bạn muốn xây dựng frontend của bạn bằng PHP và Livewire, bạn có thể tận dụng [Livewire starter kit](/docs/{{version}}/starter-kits) của chúng tôi để khởi tạo quá trình phát triển ứng dụng của bạn.
 
-<a name="using-vue-react"></a>
-## Dùng Vue hoặc React
+<a name="using-react-or-vue"></a>
+## Dùng React hoặc Vue
 
-Mặc dù có thể xây dựng frontend hiện đại bằng Laravel và Livewire, nhưng nhiều nhà phát triển vẫn thích tận dụng sức mạnh của một số framework JavaScript như Vue hoặc React. Điều này cho phép các nhà phát triển tận dụng hệ sinh thái phong phú của các package và công cụ JavaScript có sẵn thông qua NPM.
+Mặc dù có thể xây dựng frontend hiện đại bằng Laravel và Livewire, nhưng nhiều nhà phát triển vẫn thích tận dụng sức mạnh của một số framework JavaScript như React hoặc Vue. Điều này cho phép các nhà phát triển tận dụng hệ sinh thái phong phú của các package và công cụ JavaScript có sẵn thông qua NPM.
 
-Tuy nhiên, nếu không có công cụ bổ sung, việc ghép Laravel với Vue hoặc React sẽ khiến chúng ta phải giải quyết nhiều vấn đề phức tạp như điều hướng bên client, tái tạo lại dữ liệu và xác thực. Điều hướng bên client thường được đơn giản hóa bằng cách sử dụng các framework Vue hoặc React như [Nuxt](https://nuxt.com/) và [Next](https://nextjs.org/); tuy nhiên, tái tạo lại dữ liệu và xác thực vẫn là những vấn đề phức tạp và cồng kềnh cần được giải quyết khi ghép một framework backend như Laravel với các framework giao diện người dùng.
+Tuy nhiên, nếu không có công cụ bổ sung, việc ghép Laravel với React hoặc Vue sẽ khiến chúng ta phải giải quyết nhiều vấn đề phức tạp như điều hướng bên client, tái tạo lại dữ liệu và xác thực. Điều hướng bên client thường được đơn giản hóa bằng cách sử dụng các framework React hoặc Vue như [Next](https://nextjs.org/) và [Nuxt](https://nuxt.com/); tuy nhiên, tái tạo lại dữ liệu và xác thực vẫn là những vấn đề phức tạp và cồng kềnh cần được giải quyết khi ghép một framework backend như Laravel với các framework giao diện người dùng.
 
 Ngoài ra, các nhà phát triển phải duy trì hai repository code riêng, thường cần phải phối hợp bảo trì, phát hành và triển khai trên cả hai repository. Mặc dù những vấn đề này không phải là không thể vượt qua, nhưng chúng tôi không tin rằng đây là cách hiệu quả hoặc thú vị để phát triển ứng dụng.
 
 <a name="inertia"></a>
 ### Inertia
 
-Rất may, Laravel cũng cung cấp những điều tốt nhất cho cả hai thế giới. [Inertia](https://inertiajs.com) sẽ thu hẹp khoảng cách giữa ứng dụng Laravel của bạn và giao diện người dùng Vue hoặc React hiện đại của bạn, cho phép bạn xây dựng giao diện người dùng hiện đại, hoàn chỉnh bằng Vue hoặc React trong khi vẫn tận dụng các route và  các controller Laravel để điều hướng, cung cấp dữ liệu và xác thực — tất cả trong một repository code duy nhất. Với cách tiếp cận này, bạn có thể tận hưởng toàn bộ sức mạnh của cả Laravel và Vue / React mà không làm giảm khả năng của bất kỳ công cụ nào.
+Rất may, Laravel cũng cung cấp những điều tốt nhất cho cả hai thế giới. [Inertia](https://inertiajs.com) sẽ thu hẹp khoảng cách giữa ứng dụng Laravel của bạn và giao diện người dùng React hoặc Vue hiện đại của bạn, cho phép bạn xây dựng giao diện người dùng hiện đại, hoàn chỉnh bằng React hoặc Vue trong khi vẫn tận dụng các route và  các controller Laravel để điều hướng, cung cấp dữ liệu và xác thực — tất cả trong một repository code duy nhất. Với cách tiếp cận này, bạn có thể tận hưởng toàn bộ sức mạnh của cả Laravel và React hoặc Vue mà không làm giảm khả năng của bất kỳ công cụ nào.
 
 Sau khi cài đặt Inertia vào ứng dụng Laravel của bạn, bạn sẽ viết các route và controller như bình thường. Tuy nhiên, thay vì trả về một template Blade từ controller của bạn, bạn sẽ trả về một trang Inertia:
 
@@ -125,7 +125,6 @@ Sau khi cài đặt Inertia vào ứng dụng Laravel của bạn, bạn sẽ vi
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
 use App\Models\User;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -137,59 +136,49 @@ class UserController extends Controller
      */
     public function show(string $id): Response
     {
-        return Inertia::render('Users/Profile', [
+        return Inertia::render('users/show', [
             'user' => User::findOrFail($id)
         ]);
     }
 }
 ```
 
-Trang Inertia tương ứng với một component Vue hoặc React, thường được lưu trữ trong thư mục `resources/js/Pages` của ứng dụng của bạn. Dữ liệu được cung cấp cho trang thông qua phương thức `Inertia::render` sẽ được sử dụng để tái tạo lại thành thuộc tính "props" trong component của trang:
+Trang Inertia tương ứng với một component React hoặc Vue, thường được lưu trữ trong thư mục `resources/js/pages` của ứng dụng của bạn. Dữ liệu được cung cấp cho trang thông qua phương thức `Inertia::render` sẽ được sử dụng để tái tạo lại thành thuộc tính "props" trong component của trang:
 
-```vue
-<script setup>
-import Layout from '@/Layouts/Authenticated.vue';
-import { Head } from '@inertiajs/vue3';
+```jsx
+import Layout from '@/layouts/authenticated';
+import { Head } from '@inertiajs/react';
 
-const props = defineProps(['user']);
-</script>
-
-<template>
-    <Head title="User Profile" />
-
-    <Layout>
-        <template #header>
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                Profile
-            </h2>
-        </template>
-
-        <div class="py-12">
-            Hello, {{ user.name }}
-        </div>
-    </Layout>
-</template>
+export default function Show({ user }) {
+    return (
+        <Layout>
+            <Head title="Welcome" />
+            <h1>Welcome</h1>
+            <p>Hello {user.name}, welcome to Inertia.</p>
+        </Layout>
+    )
+}
 ```
 
-Như bạn có thể thấy, Inertia cho phép bạn tận dụng toàn bộ sức mạnh của Vue hoặc React khi xây dựng front-end, đồng thời cung cấp cầu nối nhẹ nhàng giữa back-end chạy bằng Laravel và front-end chạy bằng JavaScript.
+Như bạn có thể thấy, Inertia cho phép bạn tận dụng toàn bộ sức mạnh của React hoặc Vue khi xây dựng front-end, đồng thời cung cấp cầu nối nhẹ nhàng giữa back-end chạy bằng Laravel và front-end chạy bằng JavaScript.
 
 #### Server-Side Rendering
 
-Nếu bạn lo ngại về việc chuyển sang Inertia vì ứng dụng của bạn yêu cầu tạo trang html bên phía máy chủ, đừng lo lắng. Inertia cũng [hỗ trợ tạo trang từ phía máy chủ](https://inertiajs.com/server-side-rendering). Và khi deploy ứng dụng của bạn thông qua [Laravel Forge](https://forge.laravel.com), bạn có thể dễ dàng đảm bảo rằng quy trình tạo trang từ phía máy chủ của Inertia luôn được chạy.
+Nếu bạn lo ngại về việc chuyển sang Inertia vì ứng dụng của bạn yêu cầu tạo trang html bên phía máy chủ, đừng lo lắng. Inertia cũng [hỗ trợ tạo trang từ phía máy chủ](https://inertiajs.com/server-side-rendering). Và khi deploy ứng dụng của bạn thông qua [Laravel Cloud](https://cloud.laravel.com) hoặc [Laravel Forge](https://forge.laravel.com), bạn có thể dễ dàng đảm bảo rằng quy trình tạo trang từ phía máy chủ của Inertia luôn được chạy.
 
 <a name="inertia-starter-kits"></a>
 ### Starter Kits
 
-Nếu bạn muốn xây dựng frontend của bạn bằng Inertia và Vue / React, bạn có thể tận dụng [bộ khởi tạo](/docs/{{version}}/starter-kits#breeze-and-inertia) Breeze hoặc Jetstream của chúng tôi để bắt đầu quá trình phát triển ứng dụng của bạn. Cả hai bộ khởi tạo này đều hỗ trợ flow xác thực cả về backend lẫn frontend cho ứng dụng bằng Inertia, Vue / React, [Tailwind](https://tailwindcss.com) và [Vite](https://vitejs.dev) để bạn có thể bắt đầu xây dựng bước tiếp theo của bạn.
+Nếu bạn muốn xây dựng frontend của bạn bằng Inertia và Vue hoặc React, bạn có thể tận dụng [application starter kit React hoặc Vue](/docs/{{version}}/starter-kits) của chúng tôi để bắt đầu quá trình phát triển ứng dụng của bạn. Cả hai bộ khởi tạo này đều hỗ trợ flow xác thực cả về backend lẫn frontend cho ứng dụng bằng Inertia, Vue hoặc React, [Tailwind](https://tailwindcss.com) và [Vite](https://vitejs.dev) để bạn có thể bắt đầu xây dựng bước tiếp theo của bạn.
 
 <a name="bundling-assets"></a>
 ## Đóng gói assets
 
 Bất kể bạn chọn phát triển frontend của bạn bằng Blade và Livewire hay Inertia và Vue hoặc React, bạn có thể sẽ cần phải đóng gói CSS của ứng dụng vào các asset sẵn sàng cho production. Tất nhiên, nếu bạn chọn xây dựng frontend của ứng dụng bằng Vue hoặc React, bạn cũng sẽ cần phải đóng gói các component của bạn vào các asset JavaScript sẵn sàng cho trình duyệt.
 
-Mặc định, Laravel sử dụng [Vite](https://vitejs.dev) để đóng gói asset của bạn. Vite cung cấp thời gian build cực nhanh và Hot Module Replacement (HMR) gần như tức thời trong quá trình phát triển ở local. Trong tất cả các ứng dụng Laravel mới, và cả những ứng dụng sử dụng [bộ khởi tạo](/docs/{{version}}/starter-kits) của chúng tôi, bạn sẽ tìm thấy file `vite.config.js`, file này sẽ load plugin Laravel Vite nhẹ của chúng tôi giúp Vite trở nên thú vị khi sử dụng với các ứng dụng Laravel.
+Mặc định, Laravel sử dụng [Vite](https://vitejs.dev) để đóng gói asset của bạn. Vite cung cấp thời gian build cực nhanh và Hot Module Replacement (HMR) gần như tức thời trong quá trình phát triển ở local. Trong tất cả các ứng dụng Laravel mới, và cả những ứng dụng sử dụng [bộ starter kit](/docs/{{version}}/starter-kits) của chúng tôi, bạn sẽ tìm thấy file `vite.config.js`, file này sẽ load plugin Laravel Vite nhẹ của chúng tôi giúp Vite trở nên thú vị khi sử dụng với các ứng dụng Laravel.
 
-Cách nhanh nhất để bắt đầu với Laravel và Vite là bắt đầu phát triển ứng dụng của bạn bằng [Laravel Breeze](/docs/{{version}}/starter-kits#laravel-breeze), bộ công cụ khởi tạo đơn giản nhất của chúng tôi giúp bạn khởi tạo ứng dụng của mình bằng cách cung cấp nền tảng xác thực bằng cả frontend lẫn cả backend.
+Cách nhanh nhất để bắt đầu với Laravel và Vite là bắt đầu phát triển ứng dụng của bạn bằng [bộ starter kit](/docs/{{version}}/starter-kits) của chúng tôi để giúp bạn khởi tạo ứng dụng của mình bằng cách cung cấp nền tảng xác thực bằng cả frontend lẫn cả backend.
 
 > [!NOTE]
 > Để biết thêm tài liệu chi tiết về việc sử dụng Vite cùng Laravel, vui lòng xem thêm [tài liệu chuyên dụng về cách đóng gói và cách biên dịch asset của bạn](/docs/{{version}}/vite).

@@ -21,7 +21,7 @@ Trước khi tiếp tục, hãy thảo luận về cách reset lại cơ sở d�
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
 test('basic example', function () {
     $response = $this->get('/');
@@ -98,7 +98,7 @@ use Database\Seeders\OrderStatusSeeder;
 use Database\Seeders\TransactionStatusSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
 test('orders can be created', function () {
     // Run the DatabaseSeeder...
@@ -157,32 +157,36 @@ class ExampleTest extends TestCase
 
 Ngoài ra, bạn có thể hướng dẫn Laravel tự động khởi tạo cơ sở dữ liệu trước mỗi lần kiểm tra bằng cách sử dụng trait `RefreshDatabase`. Bạn có thể thực hiện việc này bằng cách định nghĩa thuộc tính `$seed` trên class test cơ sở của bạn:
 
-    <?php
+```php
+<?php
 
-    namespace Tests;
+namespace Tests;
 
-    use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
+use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 
-    abstract class TestCase extends BaseTestCase
-    {
-        /**
-         * Indicates whether the default seeder should run before each test.
-         *
-         * @var bool
-         */
-        protected $seed = true;
-    }
+abstract class TestCase extends BaseTestCase
+{
+    /**
+     * Indicates whether the default seeder should run before each test.
+     *
+     * @var bool
+     */
+    protected $seed = true;
+}
+```
 
 Khi thuộc tính `$seed` là `true`, thì bài test sẽ chạy class `Database\Seeders\DatabaseSeeder` trước mỗi bài test và sử dụng trait `RefreshDatabase`. Tuy nhiên, bạn có thể chỉ định một seeder cụ thể sẽ được thực thi bằng cách định nghĩa thuộc tính `$seeder` trên class test của bạn:
 
-    use Database\Seeders\OrderStatusSeeder;
+```php
+use Database\Seeders\OrderStatusSeeder;
 
-    /**
-     * Run a specific seeder before each test.
-     *
-     * @var string
-     */
-    protected $seeder = OrderStatusSeeder::class;
+/**
+ * Run a specific seeder before each test.
+ *
+ * @var string
+ */
+protected $seeder = OrderStatusSeeder::class;
+```
 
 <a name="available-assertions"></a>
 ## Assertion có sẵn
@@ -194,76 +198,94 @@ Laravel cung cấp một số assertion cơ sở dữ liệu cho các test chứ
 
 Yêu cầu một bảng trong cơ sở dữ liệu phải chứa một số record đã cho:
 
-    $this->assertDatabaseCount('users', 5);
+```php
+$this->assertDatabaseCount('users', 5);
+```
 
 <a name="assert-database-empty"></a>
 #### assertDatabaseEmpty
 
 Yêu cầu một bảng trong cơ sở dữ liệu không chứa record nào:
 
-    $this->assertDatabaseEmpty('users');
+```php
+$this->assertDatabaseEmpty('users');
+```
 
 <a name="assert-database-has"></a>
 #### assertDatabaseHas
 
 Yêu cầu một bảng trong cơ sở dữ liệu sẽ chứa các record khớp với các ràng buộc truy vấn khóa và giá trị đã cho:
 
-    $this->assertDatabaseHas('users', [
-        'email' => 'sally@example.com',
-    ]);
+```php
+$this->assertDatabaseHas('users', [
+    'email' => 'sally@example.com',
+]);
+```
 
 <a name="assert-database-missing"></a>
 #### assertDatabaseMissing
 
 Yêu cầu một bảng trong cơ sở dữ liệu không chứa các record khớp với các ràng buộc truy vấn khóa và giá trị đã cho:
 
-    $this->assertDatabaseMissing('users', [
-        'email' => 'sally@example.com',
-    ]);
+```php
+$this->assertDatabaseMissing('users', [
+    'email' => 'sally@example.com',
+]);
+```
 
 <a name="assert-deleted"></a>
 #### assertSoftDeleted
 
 Phương thức `assertSoftDeleted` có thể được sử dụng để yêu cầu một model Eloquent nhất định đã bị "soft deleted":
 
-    $this->assertSoftDeleted($user);
+```php
+$this->assertSoftDeleted($user);
+```
 
 <a name="assert-not-deleted"></a>
 #### assertNotSoftDeleted
 
 Phương thức `assertNotSoftDeleted` có thể được sử dụng để yêu cầu một model Eloquent nhất định chưa bị "soft deleted":
 
-    $this->assertNotSoftDeleted($user);
+```php
+$this->assertNotSoftDeleted($user);
+```
 
 <a name="assert-model-exists"></a>
 #### assertModelExists
 
-Yêu cầu một model nhất định sẽ tồn tại trong cơ sở dữ liệu:
+Yêu cầu một model hoặc một collection model sẽ tồn tại trong cơ sở dữ liệu:
 
-    use App\Models\User;
+```php
+use App\Models\User;
 
-    $user = User::factory()->create();
+$user = User::factory()->create();
 
-    $this->assertModelExists($user);
+$this->assertModelExists($user);
+```
 
 <a name="assert-model-missing"></a>
 #### assertModelMissing
 
-Yêu cầu một model nhất định sẽ không tồn tại trong cơ sở dữ liệu:
+Yêu cầu một model hoặc một collection model sẽ không tồn tại trong cơ sở dữ liệu:
 
-    use App\Models\User;
+```php
+use App\Models\User;
 
-    $user = User::factory()->create();
+$user = User::factory()->create();
 
-    $user->delete();
+$user->delete();
 
-    $this->assertModelMissing($user);
+$this->assertModelMissing($user);
+```
 
 <a name="expects-database-query-count"></a>
 #### expectsDatabaseQueryCount
 
 Phương thức `expectsDatabaseQueryCount` có thể được gọi khi bắt đầu bài test để chỉ định tổng số truy vấn vào cơ sở dữ liệu mà bạn dự kiến sẽ chạy trong quá trình test. Nếu số lượng truy vấn được thực hiện thực tế không khớp với kỳ vọng này thì bài test sẽ thất bại:
 
-    $this->expectsDatabaseQueryCount(5);
+```php
+$this->expectsDatabaseQueryCount(5);
 
-    // Test...
+// Test...
+```
