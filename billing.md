@@ -79,7 +79,7 @@
 <a name="upgrading-cashier"></a>
 ## Cập nhật Cashier
 
-Khi nâng cấp lên phiên bản mới của Cashier, điều quan trọng là bạn phải xem kỹ [hướng dẫn nâng cấp](https://github.com/laravel/cashier-stripe/blob/master/UPGRADE.md).
+Khi nâng cấp lên phiên bản mới của Cashier, điều quan trọng là bạn phải xem kỹ [hướng dẫn nâng cấp](https://github.com/laravel/cashier-stripe/blob/16.x/UPGRADE.md).
 
 > [!WARNING]
 > Để tránh các thay đổi nghiêm trọng, Cashier sẽ sử dụng một phiên bản API Stripe cố định. Cashier 16 sẽ sử dụng phiên bản API Stripe `2025-06-30.basil`. Phiên bản API Stripe này sẽ được cập nhật thành các bản phát hành nhỏ để sử dụng các tính năng và cải tiến mới của Stripe.
@@ -1922,7 +1922,7 @@ Vì các webhook của Stripe cần bỏ qua bước [bảo vệ CSRF](/docs/{{v
 
 ```php
 ->withMiddleware(function (Middleware $middleware): void {
-    $middleware->validateCsrfTokens(except: [
+    $middleware->preventRequestForgery(except: [
         'stripe/*',
     ]);
 })

@@ -73,6 +73,8 @@ Route::get('/user', function (Request $request) {
 })->middleware('auth:sanctum');
 ```
 
+Tất nhiên, bạn hoàn toàn có thể bỏ middleware `auth:sanctum` ra khỏi các route mà cần cho phép truy cập công khai.
+
 Các route có trong `routes/api.php` là stateless và được gán vào [group middleware](/docs/{{version}}/middleware#laravels-default-middleware-groups) `api`. Ngoài ra, prefix URI `/api` được tự động áp dụng cho các route này, vì vậy bạn không cần phải tự áp dụng cho từng route có trong file. Bạn có thể thay đổi prefix này bằng cách sửa file `bootstrap/app.php` của ứng dụng:
 
 ```php
@@ -544,9 +546,6 @@ Route::domain('{account}.example.com')->group(function () {
 });
 ```
 
-> [!WARNING]
-> Để đảm bảo có thể truy cập được vào các route tên miền phụ của bạn, bạn nên đăng ký các route tên miền phụ của bạn trước khi đăng ký các route tên miền gốc. Điều này sẽ ngăn các route miền gốc ghi đè vào các route tên miền phụ có cùng đường dẫn URI.
-
 <a name="route-group-prefixes"></a>
 ### Tiền tố cho Route
 
@@ -891,7 +890,7 @@ Vì lệnh callback của giới hạn tỷ lệ sẽ nhận vào một instance
 
 ```php
 RateLimiter::for('uploads', function (Request $request) {
-    return $request->user()->vipCustomer()
+    return $request->user()?->vipCustomer()
         ? Limit::none()
         : Limit::perMinute(100);
 });

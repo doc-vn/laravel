@@ -10,6 +10,7 @@
 - [Tools](#tools)
     - [Tạo Tools](#creating-tools)
     - [Tool Input Schemas](#tool-input-schemas)
+    - [Tool Output Schemas](#tool-output-schemas)
     - [Validating Tool Arguments](#validating-tool-arguments)
     - [Tool Dependency Injection](#tool-dependency-injection)
     - [Tool Annotations](#tool-annotations)
@@ -24,11 +25,14 @@
     - [Prompt Responses](#prompt-responses)
 - [Resources](#resources)
     - [Tạo Resources](#creating-resources)
+    - [Resource Templates](#resource-templates)
     - [Resource URI and MIME Type](#resource-uri-and-mime-type)
     - [Resource Request](#resource-request)
     - [Resource Dependency Injection](#resource-dependency-injection)
+    - [Resource Annotations](#resource-annotations)
     - [Đăng ký Conditional Resource](#conditional-resource-registration)
     - [Resource Responses](#resource-responses)
+- [Metadata](#metadata)
 - [Authentication](#authentication)
     - [OAuth 2.1](#oauth)
     - [Sanctum](#sanctum)
@@ -71,15 +75,21 @@ Bạn có thể tạo một MCP server bằng lệnh Artisan `make:mcp-server`. 
 php artisan make:mcp-server WeatherServer
 ```
 
-Lệnh này sẽ tạo ra một class server mới trong thư mục `app/Mcp/Servers`. Class server được tạo sẽ kế thừa class base `Laravel\Mcp\Server` của Laravel MCP và cung cấp các thuộc tính để đăng ký tool, resource và prompt:
+Lệnh này sẽ tạo ra một class server mới trong thư mục `app/Mcp/Servers`. Class server được tạo sẽ kế thừa class `Laravel\Mcp\Server` base của Laravel MCP và cung cấp các thuộc tính để cấu hình server cũng như đăng ký tool, resource và prompt:
 
 ```php
 <?php
 
 namespace App\Mcp\Servers;
 
+use Laravel\Mcp\Server\Attributes\Instructions;
+use Laravel\Mcp\Server\Attributes\Name;
+use Laravel\Mcp\Server\Attributes\Version;
 use Laravel\Mcp\Server;
 
+#[Name('Weather Server')]
+#[Version('1.0.0')]
+#[Instructions('This server provides weather information and forecasts.')]
 class WeatherServer extends Server
 {
     /**
@@ -88,7 +98,7 @@ class WeatherServer extends Server
      * @var array<int, class-string<\Laravel\Mcp\Server\Tool>>
      */
     protected array $tools = [
-        // ExampleTool::class,
+        // GetCurrentWeatherTool::class,
     ];
 
     /**
@@ -97,7 +107,7 @@ class WeatherServer extends Server
      * @var array<int, class-string<\Laravel\Mcp\Server\Resource>>
      */
     protected array $resources = [
-        // ExampleResource::class,
+        // WeatherGuidelinesResource::class,
     ];
 
     /**
@@ -106,7 +116,7 @@ class WeatherServer extends Server
      * @var array<int, class-string<\Laravel\Mcp\Server\Prompt>>
      */
     protected array $prompts = [
-        // ExamplePrompt::class,
+        // DescribeWeatherPrompt::class,
     ];
 }
 ```
@@ -138,7 +148,7 @@ Mcp::web('/mcp/weather', WeatherServer::class)
 <a name="local-servers"></a>
 ### Local Servers
 
-Local server chạy như các lệnh Artisan, hoàn hảo cho việc phát triển, kiểm thử hoặc các tích hợp trợ lý AI local. Đăng ký một local server bằng phương thức `local`:
+Local server sẽ chạy dưới dạng các lệnh Artisan, rất phù hợp để xây dựng các trợ lý AI local như [Laravel Boost](/docs/{{version}}/installation#installing-laravel-boost). Bạn có thể đăng ký một local server bằng phương thức `local`:
 
 ```php
 use App\Mcp\Servers\WeatherServer;
@@ -147,16 +157,54 @@ use Laravel\Mcp\Facades\Mcp;
 Mcp::local('weather', WeatherServer::class);
 ```
 
-Sau khi đã đăng ký, thông thường bạn không cần phải tự chạy lệnh `mcp:start` một cách thủ công. Thay vào đó, hãy cấu hình MCP client (AI agent) của bạn để khởi động server. Lệnh `mcp:start` được thiết kế để có thể gọi được bởi client, nó sẽ xử lý việc khởi động và dừng server khi cần thiết:
-
-```shell
-php artisan mcp:start weather
-```
+Sau khi đã đăng ký, thông thường bạn không cần phải tự chạy lệnh Artisan `mcp:start` một cách thủ công. Thay vào đó, hãy cấu hình MCP client (AI agent) của bạn để khởi động server hoặc sử dụng [MCP Inspector](#mcp-inspector).
 
 <a name="tools"></a>
 ## Tools
 
-Tool cho phép server của bạn hiển thị các chức năng mà AI client có thể gọi. Chúng cho phép các model thực hiện các hành động, chạy code hoặc tương tác với các hệ thống bên ngoài.
+Tool cho phép server của bạn hiển thị các chức năng mà AI client có thể gọi. Chúng cho phép các model thực hiện các hành động, chạy code hoặc tương tác với các hệ thống bên ngoài:
+
+```php
+<?php
+
+namespace App\Mcp\Tools;
+
+use Illuminate\Contracts\JsonSchema\JsonSchema;
+use Laravel\Mcp\Request;
+use Laravel\Mcp\Response;
+use Laravel\Mcp\Server\Attributes\Description;
+use Laravel\Mcp\Server\Tool;
+
+#[Description('Fetches the current weather forecast for a specified location.')]
+class CurrentWeatherTool extends Tool
+{
+    /**
+     * Handle the tool request.
+     */
+    public function handle(Request $request): Response
+    {
+        $location = $request->get('location');
+
+        // Get weather...
+
+        return Response::text('The weather is...');
+    }
+
+    /**
+     * Get the tool's input schema.
+     *
+     * @return array<string, \Illuminate\JsonSchema\Types\Type>
+     */
+    public function schema(JsonSchema $schema): array
+    {
+        return [
+            'location' => $schema->string()
+                ->description('The location to get the weather for.')
+                ->required(),
+        ];
+    }
+}
+```
 
 <a name="creating-tools"></a>
 ### Tạo Tools
@@ -193,35 +241,28 @@ class WeatherServer extends Server
 <a name="tool-name-title-description"></a>
 #### Tool Name, Title, and Description
 
-Mặc định, tên và tiêu đề của tool sẽ được lấy từ tên class. Ví dụ: `CurrentWeatherTool` sẽ có tên là `current-weather` và tiêu đề là `Current Weather Tool`. Bạn có thể tùy chỉnh các giá trị này bằng cách định nghĩa các thuộc tính `$name` và `$title` của tool:
+Mặc định, tên và tiêu đề của tool sẽ được lấy từ tên class. Ví dụ: `CurrentWeatherTool` sẽ có tên là `current-weather` và tiêu đề là `Current Weather Tool`. Bạn có thể tùy chỉnh các giá trị này bằng cách sử dụng các thuộc tính `Name` và `Title`:
 
 ```php
+use Laravel\Mcp\Server\Attributes\Name;
+use Laravel\Mcp\Server\Attributes\Title;
+
+#[Name('get-optimistic-weather')]
+#[Title('Get Optimistic Weather Forecast')]
 class CurrentWeatherTool extends Tool
 {
-    /**
-     * The tool's name.
-     */
-    protected string $name = 'get-optimistic-weather';
-
-    /**
-     * The tool's title.
-     */
-    protected string $title = 'Get Optimistic Weather Forecast';
-
     // ...
 }
 ```
 
-Mô tả của tool không được tự động tạo ra. Bạn nên cung cấp một mô tả ý nghĩa bằng cách định nghĩa một thuộc tính `$description` trên tool của bạn:
+Mô tả của tool không được tự động tạo ra. Bạn nên cung cấp một mô tả có ý nghĩa bằng cách sử dụng thuộc tính `Description`:
 
 ```php
+use Laravel\Mcp\Server\Attributes\Description;
+
+#[Description('Fetches the current weather forecast for a specified location.')]
 class CurrentWeatherTool extends Tool
 {
-    /**
-     * The tool's description.
-     */
-    protected string $description = 'Fetches the current weather forecast for a specified location.';
-
     //
 }
 ```
@@ -232,14 +273,14 @@ class CurrentWeatherTool extends Tool
 <a name="tool-input-schemas"></a>
 ### Tool Input Schemas
 
-Tool có thể định nghĩa các input schema để chỉ định những tham số mà chúng chấp nhận từ các AI client. Sử dụng builder `Illuminate\JsonSchema\JsonSchema` của Laravel để định nghĩa các yêu cầu input cho tool của bạn:
+Tool có thể định nghĩa các input schema để chỉ định những tham số mà chúng chấp nhận từ các AI client. Sử dụng builder `Illuminate\Contracts\JsonSchema\JsonSchema` của Laravel để định nghĩa các yêu cầu input cho tool của bạn:
 
 ```php
 <?php
 
 namespace App\Mcp\Tools;
 
-use Illuminate\JsonSchema\JsonSchema;
+use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Laravel\Mcp\Server\Tool;
 
 class CurrentWeatherTool extends Tool
@@ -247,7 +288,7 @@ class CurrentWeatherTool extends Tool
     /**
      * Get the tool's input schema.
      *
-     * @return array<string, JsonSchema>
+     * @return array<string, \Illuminate\JsonSchema\Types\Type>
      */
     public function schema(JsonSchema $schema): array
     {
@@ -256,9 +297,49 @@ class CurrentWeatherTool extends Tool
                 ->description('The location to get the weather for.')
                 ->required(),
 
-            'units' => $schema->enum(['celsius', 'fahrenheit'])
+            'units' => $schema->string()
+                ->enum(['celsius', 'fahrenheit'])
                 ->description('The temperature units to use.')
                 ->default('celsius'),
+        ];
+    }
+}
+```
+
+<a name="tool-output-schemas"></a>
+### Tool Output Schemas
+
+Tool có thể định nghĩa [output schema](https://modelcontextprotocol.io/specification/2025-06-18/server/tools#output-schema) để chỉ định cấu trúc các response của chúng. Điều này giúp tích hợp tốt hơn với các AI client cần kết quả tool có thể cấu trúc được. Sử dụng phương thức `outputSchema` để định nghĩa cấu trúc output cho tool của bạn:
+
+```php
+<?php
+
+namespace App\Mcp\Tools;
+
+use Illuminate\Contracts\JsonSchema\JsonSchema;
+use Laravel\Mcp\Server\Tool;
+
+class CurrentWeatherTool extends Tool
+{
+    /**
+     * Get the tool's output schema.
+     *
+     * @return array<string, \Illuminate\JsonSchema\Types\Type>
+     */
+    public function outputSchema(JsonSchema $schema): array
+    {
+        return [
+            'temperature' => $schema->number()
+                ->description('Temperature in Celsius')
+                ->required(),
+
+            'conditions' => $schema->string()
+                ->description('Weather conditions')
+                ->required(),
+
+            'humidity' => $schema->integer()
+                ->description('Humidity percentage')
+                ->required(),
         ];
     }
 }
@@ -394,6 +475,25 @@ Các annotation có sẵn là:
 | `#[IsIdempotent]`  | boolean | Cho biết các lần gọi lặp lại với cùng một tham số thì không có tác dụng thêm nào khác (khi không phải read-only).  |
 | `#[IsOpenWorld]`   | boolean | Cho biết tool có thể tương tác với các thực thể bên ngoài.                                                         |
 
+Giá trị của các annotation có thể được thiết lập một cách rõ ràng bằng các tham số boolean:
+
+```php
+use Laravel\Mcp\Server\Tools\Annotations\IsReadOnly;
+use Laravel\Mcp\Server\Tools\Annotations\IsDestructive;
+use Laravel\Mcp\Server\Tools\Annotations\IsOpenWorld;
+use Laravel\Mcp\Server\Tools\Annotations\IsIdempotent;
+use Laravel\Mcp\Server\Tool;
+
+#[IsReadOnly(true)]
+#[IsDestructive(false)]
+#[IsOpenWorld(false)]
+#[IsIdempotent(true)]
+class CurrentWeatherTool extends Tool
+{
+    //
+}
+```
+
 <a name="conditional-tool-registration"></a>
 ### Đăng ký Conditional Tool
 
@@ -449,6 +549,28 @@ public function handle(Request $request): Response
 return Response::error('Unable to fetch weather data. Please try again.');
 ```
 
+Để trả về nội dung hình ảnh hoặc âm thanh, hãy sử dụng các phương thức `image` và `audio`:
+
+```php
+return Response::image(file_get_contents(storage_path('weather/radar.png')), 'image/png');
+
+return Response::audio(file_get_contents(storage_path('weather/alert.mp3')), 'audio/mp3');
+```
+
+Bạn cũng có thể load nội dung hình ảnh và âm thanh trực tiếp từ một disk trong filesystem của Laravel bằng phương thức `fromStorage`. MIME type của file sẽ được tự động nhận diện:
+
+```php
+return Response::fromStorage('weather/radar.png');
+```
+
+Nếu cần, bạn có thể chỉ định một disk cụ thể hoặc ghi đè MIME type:
+
+```php
+return Response::fromStorage('weather/radar.png', disk: 's3');
+
+return Response::fromStorage('weather/radar.png', mimeType: 'image/webp');
+```
+
 <a name="multiple-content-responses"></a>
 #### Multiple Content Responses
 
@@ -472,6 +594,30 @@ public function handle(Request $request): array
         Response::text('**Detailed Forecast**\n- Morning: 65°F\n- Afternoon: 78°F\n- Evening: 70°F')
     ];
 }
+```
+
+<a name="structured-responses"></a>
+#### Structured Responses
+
+Tool có thể trả về [nội dung có cấu trúc](https://modelcontextprotocol.io/specification/2025-06-18/server/tools#structured-content) thông qua phương thức `structured`. Điều này cung cấp dữ liệu có cấu trúc cho các AI client trong khi vẫn duy trì khả năng tương thích dưới dạng văn bản JSON:
+
+```php
+return Response::structured([
+    'temperature' => 22.5,
+    'conditions' => 'Partly cloudy',
+    'humidity' => 65,
+]);
+```
+
+Nếu bạn cần cung cấp văn bản tùy chỉnh cùng với nội dung có cấu trúc, hãy sử dụng phương thức `withStructuredContent` trên response factory:
+
+```php
+return Response::make(
+    Response::text('Weather is 22.5°C and sunny')
+)->withStructuredContent([
+    'temperature' => 22.5,
+    'conditions' => 'Sunny',
+]);
 ```
 
 <a name="streaming-responses"></a>
@@ -555,35 +701,28 @@ class WeatherServer extends Server
 <a name="prompt-name-title-and-description"></a>
 #### Prompt Name, Title, and Description
 
-Mặc định, tên và tiêu đề của prompt được lấy từ tên class. Ví dụ: `DescribeWeatherPrompt` sẽ có tên là `describe-weather` và tiêu đề là `Describe Weather Prompt`. Bạn có thể tùy chỉnh các giá trị này bằng cách định nghĩa các thuộc tính `$name` và `$title` trên prompt của bạn:
+Mặc định, tên và tiêu đề của prompt được lấy từ tên class. Ví dụ: `DescribeWeatherPrompt` sẽ có tên là `describe-weather` và tiêu đề là `Describe Weather Prompt`. Bạn có thể tùy chỉnh các giá trị này bằng cách sử dụng các thuộc tính `Name` và `Title`:
 
 ```php
+use Laravel\Mcp\Server\Attributes\Name;
+use Laravel\Mcp\Server\Attributes\Title;
+
+#[Name('weather-assistant')]
+#[Title('Weather Assistant Prompt')]
 class DescribeWeatherPrompt extends Prompt
 {
-    /**
-     * The prompt's name.
-     */
-    protected string $name = 'weather-assistant';
-
-    /**
-     * The prompt's title.
-     */
-    protected string $title = 'Weather Assistant Prompt';
-
     // ...
 }
 ```
 
-Mô tả của prompt không được tự động tạo ra. Bạn nên cung cấp một mô tả ý nghĩa bằng cách định nghĩa một thuộc tính `$description` trên các prompt của bạn:
+Mô tả của prompt không được tự động tạo ra. Bạn nên cung cấp một mô tả có ý nghĩa bằng cách sử dụng thuộc tính `Description`:
 
 ```php
+use Laravel\Mcp\Server\Attributes\Description;
+
+#[Description('Generates a natural-language explanation of the weather for a given location.')]
 class DescribeWeatherPrompt extends Prompt
 {
-    /**
-     * The prompt's description.
-     */
-    protected string $description = 'Generates a natural-language explanation of the weather for a given location.';
-
     //
 }
 ```
@@ -826,41 +965,137 @@ class WeatherServer extends Server
 <a name="resource-name-title-and-description"></a>
 #### Resource Name, Title, and Description
 
-Mặc định, tên và tiêu đề của resource được lấy từ tên class. Ví dụ: `WeatherGuidelinesResource` sẽ có tên là `weather-guidelines` và tiêu đề là `Weather Guidelines Resource`. Bạn có thể tùy chỉnh các giá trị này bằng cách định nghĩa các thuộc tính `$name` và `$title` trên resource của bạn:
+Mặc định, tên và tiêu đề của resource được lấy từ tên class. Ví dụ: `WeatherGuidelinesResource` sẽ có tên là `weather-guidelines` và tiêu đề là `Weather Guidelines Resource`. Bạn có thể tùy chỉnh các giá trị này bằng cách sử dụng các thuộc tính `Name` và `Title`:
 
 ```php
+use Laravel\Mcp\Server\Attributes\Name;
+use Laravel\Mcp\Server\Attributes\Title;
+
+#[Name('weather-api-docs')]
+#[Title('Weather API Documentation')]
 class WeatherGuidelinesResource extends Resource
 {
-    /**
-     * The resource's name.
-     */
-    protected string $name = 'weather-api-docs';
-
-    /**
-     * The resource's title.
-     */
-    protected string $title = 'Weather API Documentation';
-
     // ...
 }
 ```
 
-Mô tả của resource không được tự động tạo ra. Bạn nên cung cấp một mô tả ý nghĩa bằng cách định nghĩa một thuộc tính `$description` trên các prompt của bạn:
+Mô tả resource không được tự động tạo ra. Bạn nên luôn cung cấp một mô tả có ý nghĩa bằng cách sử dụng thuộc tính `Description`:
 
 ```php
+use Laravel\Mcp\Server\Attributes\Description;
+
+#[Description('Comprehensive guidelines for using the Weather API.')]
 class WeatherGuidelinesResource extends Resource
 {
-    /**
-     * The resource's description.
-     */
-    protected string $description = 'Comprehensive guidelines for using the Weather API.';
-
     //
 }
 ```
 
 > [!NOTE]
-> Mô tả là một phần quan trọng trong metadata của resource, vì nó giúp các mô hình AI hiểu khi nào và làm thế nào để sử dụng resource một cách hiệu quả.
+> Mô tả là một phần quan trọng trong metadata của resource, vì nó giúp các model AI hiểu khi nào và làm thế nào để sử dụng resource một cách hiệu quả.
+
+<a name="resource-templates"></a>
+### Resource Templates
+
+[Resource template](https://modelcontextprotocol.io/specification/2025-06-18/server/resources#resource-templates) cho phép server của bạn tạo các resource động khớp với các pattern URI có biến. Thay vì định nghĩa một URI tĩnh cho mỗi resource, bạn có thể tạo một resource duy nhất để xử lý nhiều URI dựa trên một pattern cụ thể.
+
+<a name="creating-resource-templates"></a>
+#### Creating Resource Templates
+
+Để tạo một resource template, hãy implement interface `HasUriTemplate` trong class resource của bạn và định nghĩa một phương thức `uriTemplate` trả về một instance `UriTemplate`:
+
+```php
+<?php
+
+namespace App\Mcp\Resources;
+
+use Laravel\Mcp\Request;
+use Laravel\Mcp\Response;
+use Laravel\Mcp\Server\Attributes\Description;
+use Laravel\Mcp\Server\Attributes\MimeType;
+use Laravel\Mcp\Server\Contracts\HasUriTemplate;
+use Laravel\Mcp\Server\Resource;
+use Laravel\Mcp\Support\UriTemplate;
+
+#[Description('Access user files by ID')]
+#[MimeType('text/plain')]
+class UserFileResource extends Resource implements HasUriTemplate
+{
+    /**
+     * Get the URI template for this resource.
+     */
+    public function uriTemplate(): UriTemplate
+    {
+        return new UriTemplate('file://users/{userId}/files/{fileId}');
+    }
+
+    /**
+     * Handle the resource request.
+     */
+    public function handle(Request $request): Response
+    {
+        $userId = $request->get('userId');
+        $fileId = $request->get('fileId');
+
+        // Fetch and return the file content...
+
+        return Response::text($content);
+    }
+}
+```
+
+Khi một resource implement interface `HasUriTemplate`, nó sẽ được đăng ký như một resource template thay vì là một resource tĩnh. Các AI client sau đó có thể yêu cầu resource bằng các URI khớp với pattern template, các biến từ URI sẽ được tự động trích xuất và đưa vào trong phương thức `handle` của resource.
+
+<a name="uri-template-syntax"></a>
+#### URI Template Syntax
+
+URI template sử dụng các biến được set trong dấu ngoặc nhọn để định nghĩa các biến trong URI:
+
+```php
+new UriTemplate('file://users/{userId}');
+new UriTemplate('file://users/{userId}/files/{fileId}');
+new UriTemplate('https://api.example.com/{version}/{resource}/{id}');
+```
+
+<a name="accessing-template-variables"></a>
+#### Accessing Template Variables
+
+Khi một URI khớp với resource template của bạn, các biến sẽ được trích xuất và tự động được thêm vào request và có thể lấy ra được bằng phương thức `get`:
+
+```php
+<?php
+
+namespace App\Mcp\Resources;
+
+use Laravel\Mcp\Request;
+use Laravel\Mcp\Response;
+use Laravel\Mcp\Server\Contracts\HasUriTemplate;
+use Laravel\Mcp\Server\Resource;
+use Laravel\Mcp\Support\UriTemplate;
+
+class UserProfileResource extends Resource implements HasUriTemplate
+{
+    public function uriTemplate(): UriTemplate
+    {
+        return new UriTemplate('file://users/{userId}/profile');
+    }
+
+    public function handle(Request $request): Response
+    {
+        // Access the extracted variable
+        $userId = $request->get('userId');
+
+        // Access the full URI if needed
+        $uri = $request->uri();
+
+        // Fetch user profile...
+
+        return Response::text("Profile for user {$userId}");
+    }
+}
+```
+
+Đối tượng `Request` cung cấp cả các biến được trích xuất và URI gốc, mang lại cho bạn đầy đủ ngữ cảnh để bạn xử lý request resource.
 
 <a name="resource-uri-and-mime-type"></a>
 ### Resource URI and MIME Type
@@ -869,26 +1104,21 @@ Mỗi resource được xác định bởi một URI duy nhất và có một MI
 
 Mặc định, URI của resource được tạo dựa trên tên của resource, vì vậy `WeatherGuidelinesResource` sẽ có URI là `weather://resources/weather-guidelines`. MIME type mặc định là `text/plain`.
 
-Bạn có thể tùy chỉnh các giá trị này bằng cách định nghĩa các thuộc tính `$uri` và `$mimeType` trên resource của bạn:
+Bạn có thể tùy chỉnh các giá trị này bằng cách sử dụng các thuộc tính `Uri` và `MimeType`:
 
 ```php
 <?php
 
 namespace App\Mcp\Resources;
 
+use Laravel\Mcp\Server\Attributes\MimeType;
+use Laravel\Mcp\Server\Attributes\Uri;
 use Laravel\Mcp\Server\Resource;
 
+#[Uri('weather://resources/guidelines')]
+#[MimeType('application/pdf')]
 class WeatherGuidelinesResource extends Resource
 {
-    /**
-     * The resource's URI.
-     */
-    protected string $uri = 'weather://resources/guidelines';
-
-    /**
-     * The resource's MIME type.
-     */
-    protected string $mimeType = 'application/pdf';
 }
 ```
 
@@ -972,6 +1202,39 @@ class WeatherGuidelinesResource extends Resource
 }
 ```
 
+<a name="resource-annotations"></a>
+### Resource Annotations
+
+Bạn có thể nâng cấp các resource bằng các [annotation](https://modelcontextprotocol.io/specification/2025-06-18/schema#resourceannotations) để cung cấp thêm metadata cho các AI client. Các annotation được thêm vào resource thông qua các thuộc tính:
+
+```php
+<?php
+
+namespace App\Mcp\Resources;
+
+use Laravel\Mcp\Enums\Role;
+use Laravel\Mcp\Server\Annotations\Audience;
+use Laravel\Mcp\Server\Annotations\LastModified;
+use Laravel\Mcp\Server\Annotations\Priority;
+use Laravel\Mcp\Server\Resource;
+
+#[Audience(Role::User)]
+#[LastModified('2025-01-12T15:00:58Z')]
+#[Priority(0.9)]
+class UserDashboardResource extends Resource
+{
+    //
+}
+```
+
+Các annotation có sẵn là:
+
+| Annotation        | Type              | Description                                                                   |
+| ----------------- | ----------------- | ----------------------------------------------------------------------------- |
+| `#[Audience]`     | Role hoặc mảng    | Chỉ định đối tượng nhắm tới (`Role::User`, `Role::Assistant`, hoặc cả hai).   |
+| `#[Priority]`     | float             | Điểm số bằng số từ 0.0 đến 1.0 thể hiện mức độ quan trọng của resource.       |
+| `#[LastModified]` | string            | Timestamp ISO 8601 cho biết lần cuối resource được cập nhật.                  |
+
 <a name="conditional-resource-registration"></a>
 ### Đăng ký Conditional Resource
 
@@ -1030,22 +1293,19 @@ public function handle(Request $request): Response
 return Response::blob(file_get_contents(storage_path('weather/radar.png')));
 ```
 
-Khi trả về nội dung blob, MIME type sẽ được xác định bởi giá trị của thuộc tính `$mimeType` trên class resource:
+Khi trả về nội dung blob, MIME type sẽ được xác định bởi MIME type mà bạn đã cấu hình cho resource:
 
 ```php
 <?php
 
 namespace App\Mcp\Resources;
 
+use Laravel\Mcp\Server\Attributes\MimeType;
 use Laravel\Mcp\Server\Resource;
 
+#[MimeType('image/png')]
 class WeatherGuidelinesResource extends Resource
 {
-    /**
-     * The resource's MIME type.
-     */
-    protected string $mimeType = 'image/png';
-
     //
 }
 ```
@@ -1059,19 +1319,76 @@ class WeatherGuidelinesResource extends Resource
 return Response::error('Unable to fetch weather data for the specified location.');
 ```
 
+<a name="metadata"></a>
+## Metadata
+
+Laravel MCP cũng hỗ trợ field `_meta` như được định nghĩa trong [đặc tả MCP](https://modelcontextprotocol.io/specification/2025-06-18/basic#meta), field này có thể được yêu cầu bởi một số MCP client hoặc một số MCP server. Metadata có thể được áp dụng cho tất cả các chức năng của MCP, bao gồm tool, resource, prompt và cả các response tương ứng.
+
+Bạn có thể thêm metadata vào từng nội dung response bằng phương thức `withMeta`:
+
+```php
+use Laravel\Mcp\Request;
+use Laravel\Mcp\Response;
+
+/**
+ * Handle the tool request.
+ */
+public function handle(Request $request): Response
+{
+    return Response::text('The weather is sunny.')
+        ->withMeta(['source' => 'weather-api', 'cached' => true]);
+}
+```
+
+Đối với metadata kết quả áp dụng cho toàn bộ response, hãy bọc các response của bạn bằng `Response::make` và gọi `withMeta` trên instance response được trả về:
+
+```php
+use Laravel\Mcp\Request;
+use Laravel\Mcp\Response;
+use Laravel\Mcp\ResponseFactory;
+
+/**
+ * Handle the tool request.
+ */
+public function handle(Request $request): ResponseFactory
+{
+    return Response::make(
+        Response::text('The weather is sunny.')
+    )->withMeta(['request_id' => '12345']);
+}
+```
+
+Để thêm metadata vào tool, resource hoặc prompt, hãy định nghĩa một thuộc tính `$meta` trong class:
+
+```php
+use Laravel\Mcp\Server\Attributes\Description;
+use Laravel\Mcp\Server\Tool;
+
+#[Description('Fetches the current weather forecast.')]
+class CurrentWeatherTool extends Tool
+{
+    protected ?array $meta = [
+        'version' => '2.0',
+        'author' => 'Weather Team',
+    ];
+
+    // ...
+}
+```
+
 <a name="authentication"></a>
 ## Authentication
 
-Bạn có thể xác thực các web MCP server bằng middleware giống như cách bạn làm với các route. Điều này sẽ yêu cầu người dùng phải xác thực trước khi sử dụng bất kỳ khả năng nào của server.
+Giống như các route thông thường, bạn có thể xác thực các web MCP server bằng middleware. Xác thực MCP server sẽ yêu cầu người dùng phải xác thực trước khi sử dụng bất kỳ khả năng nào của server.
 
-Có hai cách để xác thực quyền truy cập vào MCP server của bạn: xác thực dựa trên token đơn giản thông qua [Laravel Sanctum](/docs/{{version}}/sanctum), hoặc bất kỳ API token nào khác được truyền qua header HTTP `Authorization`. Hoặc, bạn có thể xác thực qua OAuth bằng cách sử dụng [Laravel Passport](/docs/{{version}}/passport).
+Có hai cách để xác thực quyền truy cập vào MCP server của bạn: xác thực dựa trên token đơn giản thông qua [Laravel Sanctum](/docs/{{version}}/sanctum), hoặc bất kỳ token nào khác được truyền qua header HTTP `Authorization`. Hoặc, bạn có thể xác thực qua OAuth bằng cách sử dụng [Laravel Passport](/docs/{{version}}/passport).
 
 <a name="oauth"></a>
 ### OAuth 2.1
 
-Cách mạnh mẽ nhất để bảo vệ các MCP server chạy trên nền web của bạn là sử dụng OAuth thông qua [Laravel Passport](/docs/{{version}}/passport).
+Cách mạnh mẽ nhất để bảo vệ các MCP server dựa trên nền tảng web là sử dụng OAuth thông qua [Laravel Passport](/docs/{{version}}/passport).
 
-Khi xác thực MCP server của bạn qua OAuth, bạn sẽ gọi phương thức `Mcp::oauthRoutes` trong file `routes/ai.php` để đăng ký các route của OAuth2 và đăng ký các route client cần thiết. Sau đó, dùng middleware `auth:api` của Passport cho route `Mcp::web` trong file `routes/ai.php` của bạn:
+Khi xác thực MCP server của bạn qua OAuth, hãy gọi phương thức `Mcp::oauthRoutes` trong file `routes/ai.php` để đăng ký các route của OAuth2 và đăng ký các route client cần thiết. Sau đó, dùng middleware `auth:api` của Passport cho route `Mcp::web` trong file `routes/ai.php` của bạn:
 
 ```php
 use App\Mcp\Servers\WeatherExample;
@@ -1085,7 +1402,7 @@ Mcp::web('/mcp/weather', WeatherExample::class)
 
 view#### New Passport Installation
 
-Nếu ứng dụng của bạn chưa sử dụng Laravel Passport, hãy bắt đầu bằng cách làm theo các [bước cài đặt và triển khai](/docs/{{version}}/passport#installation) của Passport. Bạn nên có một model `OAuthenticatable`, một guard xác thực mới và các key của passport trước khi tiếp tục.
+Nếu ứng dụng của bạn chưa sử dụng Laravel Passport, hãy làm theo [hướng dẫn cài đặt và triển khai Passport](/docs/{{version}}/passport#installation) để thêm Passport vào ứng dụng của bạn. Bạn nên chuẩn bị sẵn model `OAuthenticatable`, một guard xác thực mới và các key của passport trước khi tiếp tục.
 
 Tiếp theo, bạn nên export các view authorization của Passport mà Laravel MCP cung cấp:
 
@@ -1120,7 +1437,7 @@ View này sẽ được hiển thị cho người dùng trong quá trình xác t
 
 Nếu ứng dụng của bạn đã sử dụng Laravel Passport, Laravel MCP sẽ hoạt động liền mạch trong bản cài đặt Passport hiện có của bạn, nhưng các scope tùy chỉnh hiện không được hỗ trợ vì OAuth chủ yếu được sử dụng như một lớp chuyển đổi sang model xác thực cở bản.
 
-Laravel MCP, thông qua phương thức `Mcp::oauthRoutes()` như đã thảo luận ở trên, sẽ thêm, và sử dụng một scope `mcp:use` duy nhất.
+Laravel MCP, thông qua phương thức `Mcp::oauthRoutes` như đã thảo luận ở trên, sẽ thêm, và sử dụng một scope `mcp:use` duy nhất.
 
 #### Passport vs. Sanctum
 
@@ -1178,9 +1495,13 @@ Bạn có thể test các MCP server của bạn bằng MCP Inspector có sẵn 
 
 [MCP Inspector](https://modelcontextprotocol.io/docs/tools/inspector) là một công cụ tương tác để test và debug các MCP server của bạn. Sử dụng nó để kết nối với server của bạn, kiểm tra quá trình xác thực và dùng thử các tool, resource cũng như prompt.
 
-Bạn có thể chạy inspector cho bất kỳ server nào đã được đăng ký (ví dụ: một local server tên là "weather"):
+Bạn có thể chạy inspector cho bất kỳ server nào đã được đăng ký:
 
 ```shell
+# Web server...
+php artisan mcp:inspector mcp/weather
+
+# Local server named "weather"...
 php artisan mcp:inspector weather
 ```
 

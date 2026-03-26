@@ -108,7 +108,7 @@ Eloquent sẽ xác định khóa ngoại của quan hệ dựa trên tên model 
 return $this->hasOne(Phone::class, 'foreign_key');
 ```
 
-Ngoài ra, Eloquent cũng giả định rằng khóa ngoại này phải có giá trị trùng với giá trị cột primary key của model cha. Nói cách khác, Eloquent sẽ tìm giá trị `id` của user trong cột `user_id` trong bảng `Phone`. Nếu bạn muốn quan hệ này sử dụng một giá trị primary key khác ngoài `id` hoặc thuộc tính `$primaryKey` của model của bạn, bạn có thể truyền vào một tham số thứ ba cho phương thức `hasOne`:
+Ngoài ra, Eloquent cũng giả định rằng khóa ngoại này phải có giá trị trùng với giá trị cột primary key của model cha. Nói cách khác, Eloquent sẽ tìm giá trị `id` của user trong cột `user_id` trong bảng `Phone`. Nếu bạn muốn quan hệ này sử dụng một giá trị khoá khác, khác `id` hoặc khoá chính của model của bạn, bạn có thể truyền vào một tham số thứ ba cho phương thức `hasOne`:
 
 ```php
 return $this->hasOne(Phone::class, 'foreign_key', 'local_key');
@@ -945,12 +945,12 @@ return $this->belongsToMany(Role::class)
 <a name="ordering-queries-via-intermediate-table-columns"></a>
 ### Sắp xếp thông qua bảng trung gian
 
-Bạn có thể sắp xếp các kết quả được trả về bởi quan hệ `belongsToMany` bằng cách sử dụng phương thức `orderByPivot`. Trong ví dụ sau, chúng ta sẽ lấy ra tất cả các huy hiệu mới nhất của người dùng:
+Bạn có thể sắp xếp các kết quả được trả về bởi quan hệ `belongsToMany` bằng cách sử dụng phương thức `orderByPivot` và `orderByPivotDesc`. Trong ví dụ sau, chúng ta sẽ lấy ra tất cả các huy hiệu mới nhất của người dùng:
 
 ```php
 return $this->belongsToMany(Badge::class)
-                ->where('rank', 'gold')
-                ->orderByPivot('created_at', 'desc');
+    ->where('rank', 'gold')
+    ->orderByPivotDesc('created_at');
 ```
 
 <a name="defining-custom-intermediate-table-models"></a>
@@ -1001,15 +1001,17 @@ class RoleUser extends Pivot
 <a name="custom-pivot-models-and-incrementing-ids"></a>
 #### Custom Pivot Models And Incrementing IDs
 
-Nếu bạn đã định nghĩa một quan hệ nhiều-nhiều sử dụng model pivot tùy chỉnh và model pivot đó có khóa chính tự động tăng, bạn nên đảm bảo là class model pivot tùy chỉnh của bạn đã định nghĩa thuộc tính `incrementing` là `true `.
+Nếu bạn đã định nghĩa một quan hệ nhiều-nhiều sử dụng model pivot tùy chỉnh và model pivot đó có khóa chính tự động tăng, bạn nên đảm bảo là class model pivot tùy chỉnh của bạn sử dụng thuộc tính `Table` với `incrementing` được set thành `true`:
 
 ```php
-/**
- * Indicates if the IDs are auto-incrementing.
- *
- * @var bool
- */
-public $incrementing = true;
+use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Database\Eloquent\Relations\Pivot;
+
+#[Table(incrementing: true)]
+class RoleUser extends Pivot
+{
+    // ...
+}
 ```
 
 <a name="polymorphic-relationships"></a>
@@ -2561,25 +2563,20 @@ $user->roles()->updateExistingPivot($roleId, [
 
 Khi một model định nghĩa một quan hệ `belongsTo` hoặc `belongsToMany` tới một model khác, chẳng hạn như một `Comment` nằm trong một `Post`, đôi khi bạn sẽ cần cập nhật timestamp của model cha khi model con được cập nhật.
 
-Ví dụ, khi một model `Comment` được cập nhật, bạn có thể muốn tự động "touch" vào cột timestamp `update_at` của model `Post` để nó được set thành ngày và giờ hiện tại. Để thực hiện điều này, bạn có thể thêm một thuộc tính `touches` vào model con của bạn và chứa tên của các quan hệ sẽ được cập nhật timestamp `updated_at` của chúng khi model con được cập nhật:
+Ví dụ, khi một model `Comment` được cập nhật, bạn có thể muốn tự động "touch" vào cột timestamp `update_at` của model `Post` để nó được set thành ngày và giờ hiện tại. Để thực hiện điều này, bạn có thể dùng thuộc tính `Touches` trên model con của bạn và chứa tên của các quan hệ sẽ được cập nhật timestamp `updated_at` của chúng khi model con được cập nhật:
 
 ```php
 <?php
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Attributes\Touches;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+#[Touches(['post'])]
 class Comment extends Model
 {
-    /**
-     * All of the relationships to be touched.
-     *
-     * @var array
-     */
-    protected $touches = ['post'];
-
     /**
      * Get the post that the comment belongs to.
      */

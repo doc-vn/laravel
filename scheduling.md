@@ -11,6 +11,7 @@
     - [Chạy task trên một server](#running-tasks-on-one-server)
     - [Background Tasks](#background-tasks)
     - [Chế độ bảo trì](#maintenance-mode)
+    - [Tạm dừng Scheduled Tasks](#pausing-scheduled-tasks)
     - [Schedule Groups](#schedule-groups)
 - [Chạy Scheduler](#running-the-scheduler)
     - [Scheduled Task theo giây](#sub-minute-scheduled-tasks)
@@ -418,6 +419,27 @@ Các scheduled task của application của bạn sẽ không được chạy kh
 
 ```php
 Schedule::command('emails:send')->evenInMaintenanceMode();
+```
+
+<a name="pausing-scheduled-tasks"></a>
+### Tạm dừng Scheduled Tasks
+
+Bạn có thể tạm dừng việc xử lý các scheduled task mà không cần thay đổi source code của bạn bằng cách sử dụng lệnh Artisan `schedule:pause`:
+
+```shell
+php artisan schedule:pause
+```
+
+Trong khi scheduler đang bị tạm dừng, sẽ không có task nào được thực thi. Bạn có thể tiếp tục việc xử lý các task bằng cách sử dụng lệnh `schedule:continue`:
+
+```shell
+php artisan schedule:continue
+```
+
+Nếu một task vẫn cần được chạy trong khi scheduler đang bị tạm dừng, bạn có thể đánh dấu nó bằng phương thức `evenWhenPaused`:
+
+```php
+Schedule::command('emails:send')->evenWhenPaused();
 ```
 
 <a name="schedule-groups"></a>

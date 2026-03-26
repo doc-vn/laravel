@@ -199,7 +199,7 @@ Connection activity is recorded by polling for new updates on a periodic basis. 
 Do bản chất hoạt động lâu dài của máy chủ WebSocket, bạn có thể cần phải thực hiện một số tối ưu hóa cho máy chủ và môi trường lưu trữ của bạn để đảm bảo máy chủ Reverb có thể xử lý hiệu quả số lượng lớn kết nối tối ưu cho các tài nguyên có sẵn trên máy chủ của bạn.
 
 > [!NOTE]
-> Nếu trang web của bạn được quản lý bởi [Laravel Forge](https://forge.laravel.com), bạn có thể tự động tối ưu máy chủ của bạn cho Reverb trực tiếp từ bảng điều khiển "Ứng dụng". Bằng cách bật tích hợp Reverb, Forge sẽ đảm bảo máy chủ của bạn sẵn sàng hoạt động, bao gồm cả cài đặt mọi extension cần thiết và tăng số lượng kết nối.
+> [Laravel Cloud](https://cloud.laravel.com) cung cấp một cơ sở hạ tầng WebSocket được quản lý toàn bộ dựa trên các cụm Laravel Reverb, cho phép bạn mở rộng và triển khai các ứng dụng hỗ trợ Reverb mà không cần phải quản lý cơ sở hạ tầng.
 
 <a name="open-files"></a>
 ### Mở Files

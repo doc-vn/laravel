@@ -122,7 +122,7 @@ php artisan make:command SendEmails
 <a name="command-structure"></a>
 ### Cấu trúc Command
 
-Sau khi đã tạo xong command, bạn hãy định nghĩa các giá trị phù hợp cho các thuộc tính `signature` và `description`. Các thuộc tính này sẽ được hiển thị thông tin command của bạn trên màn hình `list`. Thuộc tính `signature` cũng cho phép bạn định nghĩa [kỳ vọng input đầu vào cho command của bạn](#defining-input-expectations). Phương thức `handle` sẽ được gọi khi lệnh của bạn được thực thi. Bạn có thể cài đặt logic của bạn vào trong phương thức này.
+Sau khi đã tạo xong command, bạn hãy định nghĩa định dạng và mô tả của command bằng cách sử dụng các thuộc tính `Signature` và `Description`. Thuộc tính `Signature` cũng cho phép bạn định nghĩa [kỳ vọng input đầu vào cho command của bạn](#defining-input-expectations). Phương thức `handle` sẽ được gọi khi lệnh của bạn được thực thi. Bạn có thể cài đặt logic của bạn vào trong phương thức này.
 
 Chúng ta hãy xem một ví dụ về command. Lưu ý rằng chúng ta có thể yêu cầu bất kỳ service nào mà chúng ta muốn thông qua hàm `handle` của command. Laravel [service container](/docs/{{version}}/container) sẽ tự động inject tất cả các phụ thuộc đã được khai báo có trong phương thức đó:
 
@@ -133,24 +133,14 @@ namespace App\Console\Commands;
 
 use App\Models\User;
 use App\Support\DripEmailer;
+use Illuminate\Console\Attributes\Description;
+use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
 
+#[Signature('mail:send {user}')]
+#[Description('Send a marketing email to a user')]
 class SendEmails extends Command
 {
-    /**
-     * The name and signature of the console command.
-     *
-     * @var string
-     */
-    protected $signature = 'mail:send {user}';
-
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
-    protected $description = 'Send a marketing email to a user';
-
     /**
      * Execute the console command.
      */

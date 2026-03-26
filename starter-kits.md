@@ -4,10 +4,12 @@
 - [Tạo một ứng dụng bằng Starter Kit](#creating-an-application)
 - [Các Starter Kit có sẵn](#available-starter-kits)
     - [React](#react)
+    - [Svelte](#svelte)
     - [Vue](#vue)
     - [Livewire](#livewire)
 - [Tuỳ chỉnh Starter Kit](#starter-kit-customization)
     - [React](#react-customization)
+    - [Svelte](#svelte-customization)
     - [Vue](#vue-customization)
     - [Livewire](#livewire-customization)
 - [Authentication](#authentication)
@@ -64,6 +66,15 @@ Inertia cho phép bạn xây dựng các ứng dụng React single page hiện �
 
 Bộ công cụ khởi tạo React sử dụng React 19, TypeScript, Tailwind và thư viện [shadcn/ui](https://ui.shadcn.com).
 
+<a name="svelte"></a>
+### Svelte
+
+Bộ công cụ khởi tạo Svelte của chúng tôi cung cấp một khởi đầu hiện đại và mạnh mẽ để xây dựng các ứng dụng Laravel với frontend Svelte thông qua [Inertia](https://inertiajs.com).
+
+Inertia cho phép bạn xây dựng các ứng dụng Svelte single page hiện đại bằng cách sử dụng routing và controller phía server truyền thống. Điều này giúp bạn tận hưởng sức mạnh frontend của Svelte kết hợp với hiệu năng backend tuyệt vời của Laravel và tốc độ biên dịch cực nhanh của Vite.
+
+Bộ công cụ khởi tạo Svelte sử dụng Svelte 5, TypeScript, Tailwind và thư viện component [shadcn-svelte](https://www.shadcn-svelte.com/).
+
 <a name="vue"></a>
 ### Vue
 
@@ -78,7 +89,7 @@ Bộ công cụ khởi tạo Vue sử dụng Vue Composition API, TypeScript, Ta
 
 Bộ công cụ khởi tạo Livewire của chúng tôi cung cấp một khởi đầu hoàn hảo để xây dựng các ứng dụng Laravel với frontend [Laravel Livewire](https://livewire.laravel.com).
 
-Livewire là một cách mạnh mẽ để xây dựng các giao diện frontend động và phản ứng linh hoạt chỉ bằng PHP. Nó cực kỳ phù hợp cho các đội ngũ chủ yếu sử dụng Blade template và đang tìm kiếm một giải pháp thay thế đơn giản hơn cho các framework SPA chạy bằng JavaScript như React và Vue.
+Livewire là một cách mạnh mẽ để xây dựng các giao diện frontend động và phản ứng linh hoạt chỉ bằng PHP. Nó cực kỳ phù hợp cho các đội ngũ chủ yếu sử dụng Blade template và đang tìm kiếm một giải pháp thay thế đơn giản hơn cho các framework SPA chạy bằng JavaScript như React, Svelte, và Vue.
 
 Bộ công cụ khởi tạo Livewire sử dụng Livewire, Tailwind và thư viện [Flux UI](https://fluxui.dev).
 
@@ -156,6 +167,72 @@ import AuthLayoutTemplate from '@/layouts/auth/auth-simple-layout'; // [tl! remo
 import AuthLayoutTemplate from '@/layouts/auth/auth-split-layout'; // [tl! add]
 ```
 
+<a name="svelte-customization"></a>
+### Svelte
+
+Bộ công cụ khởi tạo Svelte của chúng tôi được xây dựng bằng Inertia 2, Svelte 5, Tailwind và [shadcn-svelte](https://www.shadcn-svelte.com/). Giống như tất cả các bộ công cụ khởi tạo khác của chúng tôi, toàn bộ code backend và frontend đều nằm trong ứng dụng của bạn để bạn có thể tùy chỉnh bất kỳ thứ gì bạn muốn.
+
+Phần lớn code frontend nằm trong thư mục `resources/js`. Bạn có thể tự do chỉnh sửa bất kỳ đoạn code nào để tùy chỉnh giao diện và hành vi của ứng dụng:
+
+```text
+resources/js/
+├── components/    # Reusable Svelte components
+├── layouts/       # Application layouts
+├── lib/           # Utility functions and configuration and Svelte rune modules
+├── pages/         # Page components
+└── types/         # TypeScript definitions
+```
+
+Để export thêm các component shadcn-svelte, trước tiên hãy [tìm component mà bạn muốn sử dụng](https://www.shadcn-svelte.com). Sau đó, hãy tiến hành bằng cách sử dụng lệnh `npx`:
+
+```shell
+npx shadcn-svelte@latest add switch
+```
+
+Trong ví dụ này, câu lệnh sẽ export component Switch vào `resources/js/components/ui/switch/switch.svelte`. Sau khi component đã được export, bạn có thể sử dụng nó trong bất kỳ trang nào của bạn:
+
+```svelte
+<script lang="ts">
+    import { Switch } from '@/components/ui/switch'
+</script>
+
+<div>
+    <Switch />
+</div>
+```
+
+<a name="svelte-available-layouts"></a>
+#### Available Layouts
+
+Bộ công cụ khởi tạo Svelte có chứa hai layout chính khác nhau để bạn lựa chọn: layout "sidebar" và layout "header". Layout sidebar là mặc định, nhưng bạn có thể chuyển sang layout header bằng cách thay đổi layout được import ở phía trên cùng trong file `resources/js/layouts/AppLayout.svelte` của ứng dụng:
+
+```js
+import AppLayout from '@/layouts/app/AppSidebarLayout.svelte'; // [tl! remove]
+import AppLayout from '@/layouts/app/AppHeaderLayout.svelte'; // [tl! add]
+```
+
+<a name="svelte-sidebar-variants"></a>
+#### Sidebar Variants
+
+Layout sidebar có chứa ba biến thể khác nhau: biến thể sidebar mặc định, biến thể "inset" và biến thể "floating". Bạn có thể lựa chọn biến thể mà bạn thích bằng cách thay đổi component `resources/js/components/AppSidebar.svelte`:
+
+```text
+<Sidebar collapsible="icon" variant="sidebar"> [tl! remove]
+<Sidebar collapsible="icon" variant="inset"> [tl! add]
+```
+
+<a name="svelte-authentication-page-layout-variants"></a>
+#### Authentication Page Layout Variants
+
+Các trang xác thực đi kèm với bộ công cụ khởi tạo Svelte, chẳng hạn như trang đăng nhập và trang đăng ký, cũng có chứa ba biến thể layout khác nhau: "simple", "card" và "split".
+
+Để thay đổi layout xác thực của bạn, hãy thay đổi layout được import ở phía trên cùng trong file `resources/js/layouts/AuthLayout.svelte` của ứng dụng:
+
+```js
+import AuthLayout from '@/layouts/auth/AuthSimpleLayout.svelte'; // [tl! remove]
+import AuthLayout from '@/layouts/auth/AuthSplitLayout.svelte'; // [tl! add]
+```
+
 <a name="vue-customization"></a>
 ### Vue
 
@@ -183,7 +260,7 @@ Trong ví dụ này, câu lệnh sẽ export component Switch vào `resources/js
 
 ```vue
 <script setup lang="ts">
-import { Switch } from '@/Components/ui/switch'
+import { Switch } from '@/components/ui/switch'
 </script>
 
 <template>
@@ -228,37 +305,32 @@ import AuthLayout from '@/layouts/auth/AuthSplitLayout.vue'; // [tl! add]
 <a name="livewire-customization"></a>
 ### Livewire
 
-Bộ công cụ khởi tạo Livewire của chúng tôi được xây dựng bằng Livewire 3, Tailwind và [Flux UI](https://fluxui.dev/). Giống như tất cả các bộ công cụ khởi tạo khác của chúng tôi, toàn bộ code backend và frontend đều nằm trong ứng dụng của bạn để bạn có thể tùy chỉnh bất kỳ thứ gì bạn muốn.
-
-#### Livewire and Volt
+Bộ công cụ khởi tạo Livewire của chúng tôi được xây dựng bằng Livewire 4, Tailwind và [Flux UI](https://fluxui.dev/). Giống như tất cả các bộ công cụ khởi tạo khác của chúng tôi, toàn bộ code backend và frontend đều nằm trong ứng dụng của bạn để bạn có thể tùy chỉnh bất kỳ thứ gì bạn muốn.
 
 Phần lớn code frontend nằm trong thư mục `resources/views`. Bạn có thể tự do chỉnh sửa bất kỳ đoạn code nào để tùy chỉnh giao diện và hành vi của ứng dụng:
 
 ```text
 resources/views
-├── components            # Reusable Livewire components
+├── components            # Reusable components
 ├── flux                  # Customized Flux components
-├── livewire              # Livewire pages
+├── layouts               # Application layouts
+├── pages                 # Livewire pages
 ├── partials              # Reusable Blade partials
 ├── dashboard.blade.php   # Authenticated user dashboard
 ├── welcome.blade.php     # Guest user welcome page
 ```
 
-#### Traditional Livewire Components
-
-Code frontend nằm trong thư mục `resources/views`, trong khi thư mục `app/Livewire` chứa logic backend tương ứng cho các component Livewire.
-
 <a name="livewire-available-layouts"></a>
 #### Available Layouts
 
-Bộ công cụ khởi tạo Livewire có chứa hai layout chính khác nhau để bạn có thể lựa chọn: layout "sidebar" và layout "header". Layout sidebar là layout mặc định, nhưng bạn có thể chuyển sang layout header bằng cách thay đổi layout được sử dụng trong file `resources/views/components/layouts/app.blade.php` của ứng dụng. Ngoài ra, bạn nên thêm thuộc tính `container` vào component Flux main:
+Bộ công cụ khởi tạo Livewire có chứa hai layout chính khác nhau để bạn có thể lựa chọn: layout "sidebar" và layout "header". Layout sidebar là layout mặc định, nhưng bạn có thể chuyển sang layout header bằng cách thay đổi layout được sử dụng trong file `resources/views/layouts/app.blade.php` của ứng dụng. Ngoài ra, bạn nên thêm thuộc tính `container` vào component Flux main:
 
 ```blade
-<x-layouts.app.header>
+<x-layouts::app.header>
     <flux:main container>
         {{ $slot }}
     </flux:main>
-</x-layouts.app.header>
+</x-layouts::app.header>
 ```
 
 <a name="livewire-authentication-page-layout-variants"></a>
@@ -266,12 +338,12 @@ Bộ công cụ khởi tạo Livewire có chứa hai layout chính khác nhau đ
 
 Các trang xác thực đi kèm với bộ công cụ khởi tạo Livewire, chẳng hạn như trang đăng nhập và trang đăng ký, cũng có chứa ba biến thể layout khác nhau: "simple", "card" và "split".
 
-Để thay đổi layout xác thực của bạn, hãy thay đổi layout được sử dụng trong file `resources/views/components/layouts/auth.blade.php` của ứng dụng:
+Để thay đổi layout xác thực của bạn, hãy thay đổi layout được sử dụng trong file `resources/views/layouts/auth.blade.php` của ứng dụng:
 
 ```blade
-<x-layouts.auth.split>
+<x-layouts::auth.split>
     {{ $slot }}
-</x-layouts.auth.split>
+</x-layouts::auth.split>
 ```
 
 <a name="authentication"></a>
@@ -323,7 +395,7 @@ use Laravel\Fortify\Features;
 
 Để disable một chức năng, hãy comment hoặc xóa chức năng đó ra khỏi mảng `features`. Ví dụ: hãy xóa `Features::registration()` để tắt chức năng đăng ký.
 
-Khi sử dụng bộ công cụ khởi tạo [React](#react) hoặc [Vue](#vue), bạn cũng sẽ cần xóa mọi tham chiếu đến các route của chức năng đã bị disable trong code frontend của bạn. Ví dụ: nếu bạn tắt chức năng xác minh email, bạn nên xóa các phần import và tham chiếu đến các route `verification` trong các component Vue hoặc React của bạn. Điều này là cần thiết vì các bộ công cụ khởi tạo này sử dụng Wayfinder để điều hướng an toàn, nó tự động tạo ra các định nghĩa route lúc build. Nhưng nếu bạn tham chiếu đến các route không còn tồn tại, ứng dụng của bạn sẽ không thể build thành công.
+Khi sử dụng bộ công cụ khởi tạo [React](#react), [Svelte](#svelte) hoặc [Vue](#vue), bạn cũng sẽ cần xóa mọi tham chiếu đến các route của chức năng đã bị disable trong code frontend của bạn. Ví dụ: nếu bạn tắt chức năng xác minh email, bạn nên xóa các phần import và tham chiếu đến các route `verification` trong các component React, Svelte, hoặc Vue của bạn. Điều này là cần thiết vì các bộ công cụ khởi tạo này sử dụng Wayfinder để điều hướng an toàn, nó tự động tạo ra các định nghĩa route lúc build. Nhưng nếu bạn tham chiếu đến các route không còn tồn tại, ứng dụng của bạn sẽ không thể build thành công.
 
 <a name="customizing-actions"></a>
 ### Tuỳ chỉnh User Creation và Password Reset
@@ -381,7 +453,7 @@ RateLimiter::for('login', function ($request) {
 <a name="workos"></a>
 ## WorkOS AuthKit Authentication
 
-Mặc định, các bộ công cụ khởi tạo React, Vue và Livewire đều sử dụng hệ thống xác thực có sẵn của Laravel để cung cấp các chức năng đăng nhập, đăng ký, reset mật khẩu, xác minh email và nhiều hơn nữa. Ngoài ra, chúng tôi cũng cung cấp một biến thể sử dụng [WorkOS AuthKit](https://authkit.com) cho mỗi bộ công cụ khởi tạo, cung cấp các chức năng:
+Mặc định, các bộ công cụ khởi tạo React, Svelte, Vue và Livewire đều sử dụng hệ thống xác thực có sẵn của Laravel để cung cấp các chức năng đăng nhập, đăng ký, reset mật khẩu, xác minh email và nhiều hơn nữa. Ngoài ra, chúng tôi cũng cung cấp một biến thể sử dụng [WorkOS AuthKit](https://authkit.com) cho mỗi bộ công cụ khởi tạo, cung cấp các chức năng:
 
 <div class="content-list" markdown="1">
 
@@ -421,7 +493,7 @@ Ngoài ra, chúng tôi khuyên bạn nên cấu hình thời gian kết thúc se
 <a name="inertia-ssr"></a>
 ### Inertia SSR
 
-Các bộ công cụ khởi tạo React và Vue tương thích với khả năng [server-side rendering](https://inertiajs.com/server-side-rendering) của Inertia. Để build một bundle tương thích với Inertia SSR cho ứng dụng của bạn, hãy chạy lệnh `build:ssr`:
+Các bộ công cụ khởi tạo React, Svelte, và Vue tương thích với khả năng [server-side rendering](https://inertiajs.com/server-side-rendering) của Inertia. Để build một bundle tương thích với Inertia SSR cho ứng dụng của bạn, hãy chạy lệnh `build:ssr`:
 
 ```shell
 npm run build:ssr

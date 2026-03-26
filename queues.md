@@ -330,7 +330,7 @@ class UpdateSearchIndex implements ShouldQueue, ShouldBeUnique
 
 Trong ví dụ trên, job `UpdateSearchIndex` là unique. Vì vậy, job sẽ không được gửi đi nếu một instance khác của job đã có trong queue và chưa được xử lý xong.
 
-Trong một số trường hợp nhất định, bạn có thể muốn định nghĩa một "key" cụ thể để làm cho job trở nên unique hoặc bạn có thể muốn chỉ định một khoảng thời gian chờ mà vượt qua khoảng thời gian đó job sẽ không còn unique nữa. Để thực hiện điều này, bạn có thể định nghĩa các thuộc tính hoặc phương thức `uniqueId` và `uniqueFor` trên class job của bạn:
+Trong một số trường hợp nhất định, bạn có thể muốn định nghĩa một "key" cụ thể để làm cho job trở nên unique hoặc bạn có thể muốn chỉ định một khoảng thời gian chờ mà vượt qua khoảng thời gian đó job sẽ không còn unique nữa. Để thực hiện điều này, bạn có thể dùng thuộc tính `UniqueFor` và định nghĩa một phương thức `uniqueId` trên class job của bạn:
 
 ```php
 <?php
@@ -339,7 +339,9 @@ namespace App\Jobs;
 
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
+use Illuminate\Queue\Attributes\UniqueFor;
 
+#[UniqueFor(3600)]
 class UpdateSearchIndex implements ShouldQueue, ShouldBeUnique
 {
     /**
@@ -350,13 +352,6 @@ class UpdateSearchIndex implements ShouldQueue, ShouldBeUnique
     public $product;
 
     /**
-     * The number of seconds after which the job's unique lock will be released.
-     *
-     * @var int
-     */
-    public $uniqueFor = 3600;
-
-    /**
      * Get the unique ID for the job.
      */
     public function uniqueId(): string
@@ -365,7 +360,6 @@ class UpdateSearchIndex implements ShouldQueue, ShouldBeUnique
     }
 }
 ```
-
 Trong ví dụ trên, job `UpdateSearchIndex` là unique theo ID product. Vì vậy, mọi job mới được gửi mà có cùng ID product sẽ bị bỏ qua cho đến khi job hiện tại hoàn tất xử lý. Ngoài ra, nếu job hiện tại không được xử lý trong vòng một giờ, khóa unique sẽ được giải phóng và một job khác có cùng khóa unique có thể được gửi đến queue.
 
 > [!WARNING]
@@ -557,7 +551,7 @@ public function middleware(): array
 }
 ```
 
-Việc đưa một job có giới hạn tỷ lệ trở lại queue sẽ vẫn làm tăng tổng số `attempts` của job đó. Bạn có thể muốn điều chỉnh các thuộc tính `tries` và `maxExceptions` trên class job của bạn cho phù hợp. Hoặc, bạn có thể muốn sử dụng [phương thức retryUntil](#time-based-attempts) để định nghĩa khoảng thời gian cho đến khi job không còn được thực hiện nữa.
+Việc đưa một job có giới hạn tỷ lệ trở lại queue sẽ vẫn làm tăng tổng số `attempts` của job đó. Bạn có thể muốn điều chỉnh các thuộc tính `Tries` và `MaxExceptions` trên class job của bạn cho phù hợp. Hoặc, bạn có thể muốn sử dụng [phương thức retryUntil](#time-based-attempts) để định nghĩa khoảng thời gian cho đến khi job không còn được thực hiện nữa.
 
 Sử dụng phương thức `releaseAfter`, bạn cũng có thể chỉ định số giây cần phải trôi qua trước khi job được release và được thử lại lần nữa:
 
@@ -587,8 +581,25 @@ public function middleware(): array
 }
 ```
 
-> [!NOTE]
-> Nếu đang sử dụng Redis, bạn có thể sử dụng middleware `Illuminate\Queue\Middleware\RateLimitedWithRedis`, middleware này được tinh chỉnh cho Redis và hiệu quả hơn middleware giới hạn tỷ lệ cơ bản.
+<a name="rate-limiting-with-redis"></a>
+#### Rate Limiting With Redis
+
+Nếu đang sử dụng Redis, bạn có thể sử dụng middleware `Illuminate\Queue\Middleware\RateLimitedWithRedis`, middleware này được tinh chỉnh cho Redis và hiệu quả hơn middleware giới hạn tỷ lệ cơ bản:
+
+```php
+use Illuminate\Queue\Middleware\RateLimitedWithRedis;
+
+public function middleware(): array
+{
+    return [new RateLimitedWithRedis('backups')];
+}
+```
+
+Phương thức `connection` có thể được sử dụng để xác định kết nối Redis nào mà middleware nên sử dụng:
+
+```php
+return [(new RateLimitedWithRedis('backups'))->connection('limiter')];
+```
 
 <a name="preventing-job-overlaps"></a>
 ### Chặn Job chồng nhau
@@ -611,7 +622,7 @@ public function middleware(): array
 }
 ```
 
-Việc release một job chồng nhau trở lại queue vẫn sẽ làm tăng tổng số lần thử của job đó. Bạn có thể muốn điều chỉnh các thuộc tính `tries` và `maxExceptions` trong class job của bạn cho phù hợp. Ví dụ: nếu để thuộc tính `tries` là 1 như mặc định thì sẽ ngăn các job chồng nhau được thử lại sau đó.
+Việc release một job chồng nhau trở lại queue vẫn sẽ làm tăng tổng số lần thử của job đó. Bạn có thể muốn điều chỉnh các thuộc tính `Tries` và `MaxExceptions` trong class job của bạn cho phù hợp. Ví dụ: nếu để `Tries` là 1 như mặc định thì sẽ ngăn các job chồng nhau được thử lại sau đó.
 
 Bất kỳ job nào mà cùng loại chồng nhau sẽ được giải phóng trở lại queue. Bạn cũng có thể chỉ định số giây mà job phải đợi trước khi job đó sẽ được thử lại:
 
@@ -810,8 +821,25 @@ public function middleware(): array
 }
 ```
 
-> [!NOTE]
-> Nếu bạn đang sử dụng Redis, bạn có thể sử dụng middleware `Illuminate\Queue\Middleware\ThrottlesExceptionsWithRedis`, middleware này được tinh chỉnh cho Redis và hiệu quả hơn middleware bình thường.
+<a name="throttling-exceptions-with-redis"></a>
+#### Throttling Exceptions With Redis
+
+Nếu bạn đang sử dụng Redis, bạn có thể sử dụng middleware `Illuminate\Queue\Middleware\ThrottlesExceptionsWithRedis`, middleware này được tinh chỉnh cho Redis và hiệu quả hơn middleware bình thường:
+
+```php
+use Illuminate\Queue\Middleware\ThrottlesExceptionsWithRedis;
+
+public function middleware(): array
+{
+    return [new ThrottlesExceptionsWithRedis(10, 10 * 60)];
+}
+```
+
+Phương thức `connection` có thể được sử dụng để xác định kết nối Redis nào mà middleware nên sử dụng:
+
+```php
+return [(new ThrottlesExceptionsWithRedis(10, 10 * 60))->connection('limiter')];
+```
 
 <a name="skipping-jobs"></a>
 ### Bỏ qua Job
@@ -1238,6 +1266,49 @@ class ProcessPodcast implements ShouldQueue
 }
 ```
 
+<a name="queue-routing"></a>
+#### Queue Routing
+
+Bạn có thể sử dụng phương thức `route` của facade `Queue` để xác định một connection và queue mặc định cho các job class nhất định. Điều này hữu ích khi bạn muốn đảm bảo một số job nhất định luôn sử dụng các queue đã định sẵn mà không cần khai báo connection hoặc queue ngay trên chính job đó.
+
+Ngoài việc route các job class, bạn cũng có thể truyền một interface, trait hoặc class cha vào phương thức `route`. Khi bạn làm điều này, bất kỳ job nào mà implement interface đó hoặc sử dụng trait đó hoặc kế thừa class cha đó sẽ tự động sử dụng connection và queue mà bạn đã cấu hình.
+
+Thông thường, bạn nên gọi phương thức `route` từ phương thức `boot` của một service provider:
+
+```php
+use App\Concerns\RequiresVideo;
+use App\Jobs\ProcessPodcast;
+use App\Jobs\ProcessVideo;
+use Illuminate\Support\Facades\Queue;
+
+/**
+ * Bootstrap any application services.
+ */
+public function boot(): void
+{
+    Queue::route(ProcessPodcast::class, connection: 'redis', queue: 'podcasts');
+    Queue::route(RequiresVideo::class, queue: 'video');
+}
+```
+
+Khi một connection được khai báo mà không có queue, thì job sẽ được gửi đến queue mặc định:
+
+```php
+Queue::route(ProcessPodcast::class, connection: 'redis');
+```
+
+Bạn cũng có thể route nhiều job class cùng một lúc bằng cách truyền một mảng vào phương thức `route`:
+
+```php
+Queue::route([
+    ProcessPodcast::class => ['podcasts', 'redis'], // Queue and connection
+    ProcessVideo::class => 'videos', // Queue only (uses default connection)
+]);
+```
+
+> [!NOTE]
+> Việc route queue vẫn có thể được ghi đè bởi chính job đó.
+
 <a name="max-job-attempts-and-timeout"></a>
 ### Khai báo số lần chạy Job tối đa / giá trị timeout
 
@@ -1273,21 +1344,19 @@ php artisan queue:work --tries=3
 
 Nếu một job vượt quá số lần thử tối đa, nó sẽ bị coi là một job "thất bại". Để biết thêm thông tin về cách xử lý những job thất bại, hãy tham khảo [tài liệu về job thất bại](#dealing-with-failed-jobs). Nếu `--tries=0` được cung cấp cho lệnh `queue:work`, thì job đó sẽ được thử lại vô số lần.
 
-Bạn có thể thực hiện một cách tiếp cận chi tiết hơn bằng cách định nghĩa số lần chạy tối đa mà một job có thể thử trên chính class của job. Nếu số lần chạy tối đa được chỉ định trong job, thì nó sẽ ưu tiên giá trị `--tries` này hơn là giá trị được cung cấp trên dòng lệnh:
+Bạn có thể thực hiện một cách tiếp cận chi tiết hơn bằng cách định nghĩa số lần chạy tối đa mà một job có thể thử trên chính class của job bằng cách dùng thuộc tính `Tries`. Nếu số lần chạy tối đa được chỉ định trong job, thì nó sẽ ưu tiên giá trị `--tries` này hơn là giá trị được cung cấp trên dòng lệnh:
 
 ```php
 <?php
 
 namespace App\Jobs;
 
+use Illuminate\Queue\Attributes\Tries;
+
+#[Tries(5)]
 class ProcessPodcast implements ShouldQueue
 {
-    /**
-     * The number of times the job may be attempted.
-     *
-     * @var int
-     */
-    public $tries = 5;
+    // ...
 }
 ```
 
@@ -1323,12 +1392,12 @@ public function retryUntil(): DateTime
 If both `retryUntil` and `tries` are defined, Laravel gives precedence to the `retryUntil` method.
 
 > [!NOTE]
-> Bạn cũng có thể định nghĩa một thuộc tính `tries` hoặc phương thức `retryUntil` trên các [queued event listener](/docs/{{version}}/events#queued-event-listeners) và [queued notifications](/docs/{{version}}/notifications#queueing-notifications) của bạn.
+> Bạn cũng có thể định nghĩa một thuộc tính `Tries` hoặc phương thức `retryUntil` trên các [queued event listener](/docs/{{version}}/events#queued-event-listeners) và [queued notifications](/docs/{{version}}/notifications#queueing-notifications) của bạn.
 
 <a name="max-exceptions"></a>
 #### Max Exceptions
 
-Thỉnh thoảng bạn có thể muốn chỉ định một job có thể được thử lại nhiều lần, nhưng sẽ thất bại nếu trong các lần thử lại được kích hoạt bởi một số lượng exception chưa được xử lý nhất định (ngược lại với việc được giải phóng trực tiếp bằng phương thức `release`). Để thực hiện điều này, bạn có thể định nghĩa một thuộc tính `maxExceptions` trên class job của bạn:
+Thỉnh thoảng bạn có thể muốn chỉ định một job có thể được thử lại nhiều lần, nhưng sẽ thất bại nếu trong các lần thử lại được kích hoạt bởi một số lượng exception chưa được xử lý nhất định (ngược lại với việc được giải phóng trực tiếp bằng phương thức `release`). Để thực hiện điều này, bạn có thể dùng thuộc tính `Tries` và thuộc tính `maxExceptions` trên class job của bạn:
 
 ```php
 <?php
@@ -1337,25 +1406,15 @@ namespace App\Jobs;
 
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
+use Illuminate\Queue\Attributes\MaxExceptions;
+use Illuminate\Queue\Attributes\Tries;
 use Illuminate\Support\Facades\Redis;
 
+#[Tries(25)]
+#[MaxExceptions(3)]
 class ProcessPodcast implements ShouldQueue
 {
     use Queueable;
-
-    /**
-     * The number of times the job may be attempted.
-     *
-     * @var int
-     */
-    public $tries = 25;
-
-    /**
-     * The maximum number of unhandled exceptions to allow before failing.
-     *
-     * @var int
-     */
-    public $maxExceptions = 3;
 
     /**
      * Execute the job.
@@ -1387,21 +1446,19 @@ php artisan queue:work --timeout=30
 
 Nếu job vượt quá số lần thử tối đa do liên tục hết thời gian chờ, nó sẽ bị đánh dấu là thất bại.
 
-Bạn cũng có thể định nghĩa thời gian hết hạn của một job trên chính class của job đó. Nếu thời gian hết hạn được khai báo trong job, nó sẽ được ưu tiên hơn bất kỳ thời gian hết hạn nào được khai báo trên dòng lệnh:
+Bạn cũng có thể định nghĩa thời gian hết hạn của một job bằng cách dùng thuộc tính `Timeout` trên chính class của job. Nếu thời gian hết hạn được khai báo trong job, nó sẽ được ưu tiên hơn bất kỳ thời gian hết hạn nào được khai báo trên dòng lệnh:
 
 ```php
 <?php
 
 namespace App\Jobs;
 
+use Illuminate\Queue\Attributes\Timeout;
+
+#[Timeout(120)]
 class ProcessPodcast implements ShouldQueue
 {
-    /**
-     * The number of seconds the job can run before timing out.
-     *
-     * @var int
-     */
-    public $timeout = 120;
+    // ...
 }
 ```
 
@@ -1413,15 +1470,20 @@ Thỉnh thoảng, các process IO blocking như socket hoặc outgoing HTTP conn
 <a name="failing-on-timeout"></a>
 #### Failing On Timeout
 
-Nếu bạn muốn chỉ định một job phải được đánh dấu là [thất bại](#dealing-with-failed-jobs) khi hết thời gian chờ, bạn có thể định nghĩa thuộc tính `$failOnTimeout` trên class job:
+Nếu bạn muốn chỉ định một job phải được đánh dấu là [thất bại](#dealing-with-failed-jobs) khi hết thời gian chờ, bạn có thể dùng thuộc tính `FailOnTimeout` trên class job:
 
 ```php
-/**
- * Indicate if the job should be marked as failed on timeout.
- *
- * @var bool
- */
-public $failOnTimeout = true;
+<?php
+
+namespace App\Jobs;
+
+use Illuminate\Queue\Attributes\FailOnTimeout;
+
+#[FailOnTimeout]
+class ProcessPodcast implements ShouldQueue
+{
+    // ...
+}
 ```
 
 > [!NOTE]
@@ -1637,14 +1699,14 @@ use App\Models\User;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
+use Illuminate\Queue\Attributes\Tries;
 use Illuminate\Queue\Middleware\FailOnException;
 use Illuminate\Support\Facades\Http;
 
+#[Tries(3)]
 class SyncChatHistory implements ShouldQueue
 {
     use Queueable;
-
-    public $tries = 3;
 
     /**
      * Create a new job instance.
@@ -1682,7 +1744,9 @@ class SyncChatHistory implements ShouldQueue
 <a name="job-batching"></a>
 ## Job Batching
 
-Job batching của Laravel cho phép bạn dễ dàng thực hiện một loạt job và sau đó thực hiện một số hành động khi một loạt job đó đã hoàn thành việc thực thi. Trước khi bắt đầu, bạn nên tạo một migration cơ sở dữ liệu để tạo một bảng mà sẽ chứa các thông tin meta về các batch job của bạn, chẳng hạn như tỷ lệ hoàn thành của chúng. Migration này có thể được tạo bằng lệnh Artisan `make:queue-batches-table`:
+Tính năng job batching của Laravel cho phép bạn dễ dàng thực thi một nhóm job cùng lúc và thực hiện một số hành động nhất định ngay khi nhóm job đó đã hoàn thành việc thực thi.
+
+Trước khi bắt đầu, bạn nên tạo một migration cơ sở dữ liệu để tạo một bảng mà sẽ chứa các thông tin meta về các batch job của bạn, chẳng hạn như tỷ lệ hoàn thành của chúng. Migration này có thể được tạo bằng lệnh Artisan `make:queue-batches-table`:
 
 ```shell
 php artisan make:queue-batches-table
@@ -1752,7 +1816,7 @@ $batch = Bus::batch([
 })->then(function (Batch $batch) {
     // All jobs completed successfully...
 })->catch(function (Batch $batch, Throwable $e) {
-    // First batch job failure detected...
+    // Batch job failure detected...
 })->finally(function (Batch $batch) {
     // The batch has finished executing...
 })->dispatch();
@@ -1840,7 +1904,7 @@ Bus::chain([
 <a name="adding-jobs-to-batches"></a>
 ### Thêm Jobs vào Batches
 
-Thỉnh thoảng việc thêm một job vào trong một batch từ bên trong một job có thể có hữu ích. Điều này có thể có hữu ích khi bạn cần xử lý hàng nghìn job mà có thể mất quá nhiều thời gian để gửi đi trong một request web. Vì vậy, thay vào đó, bạn có thể muốn gửi một loạt job "loader" đầu tiên để cung cấp cho batch đó rồi sẽ thêm nhiều job hơn nữa vào sau đó:
+Thỉnh thoảng việc thêm một job vào trong một batch từ bên trong một job có thể có hữu ích. Điều này có thể có hữu ích khi bạn cần xử lý hàng nghìn job mà có thể mất quá nhiều thời gian để gửi đi trong một request web. Vì vậy, thay vào đó, bạn có thể muốn gửi một nhóm job "loader" đầu tiên để cung cấp cho batch đó rồi sẽ thêm nhiều job hơn nữa vào sau đó:
 
 ```php
 $batch = Bus::batch([
@@ -2022,7 +2086,7 @@ use Illuminate\Support\Facades\Schedule;
 Schedule::command('queue:prune-batches --hours=48')->daily();
 ```
 
-Thỉnh thoảng, bảng `jobs_batches` của bạn có thể tích lũy các record batch cho các batch chưa được hoàn thành, chẳng hạn như các batch có job không thành công và job đó chưa bao giờ được thử lại thành công. Bạn có thể hướng dẫn lệnh `queue:prune-batches` để xoá các record batch chưa hoàn thành này bằng tùy chọn `unfinished`:
+Thỉnh thoảng, bảng `job_batches` của bạn có thể tích lũy các record batch cho các batch chưa được hoàn thành, chẳng hạn như các batch có job không thành công và job đó chưa bao giờ được thử lại thành công. Bạn có thể hướng dẫn lệnh `queue:prune-batches` để xoá các record batch chưa hoàn thành này bằng tùy chọn `unfinished`:
 
 ```php
 use Illuminate\Support\Facades\Schedule;
@@ -2030,7 +2094,7 @@ use Illuminate\Support\Facades\Schedule;
 Schedule::command('queue:prune-batches --hours=48 --unfinished=72')->daily();
 ```
 
-Tương tự như vậy, bảng `jobs_batches` của bạn cũng có thể tích lũy các record batch đã bị hủy một cách rất nhanh. Bạn có thể hướng dẫn lệnh `queue:prune-batches` để xoá bỏ một phần các batch record đã bị hủy bằng tùy chọn `cancelled`:
+Tương tự như vậy, bảng `job_batches` của bạn cũng có thể tích lũy các record batch đã bị hủy một cách rất nhanh. Bạn có thể hướng dẫn lệnh `queue:prune-batches` để xoá bỏ một phần các batch record đã bị hủy bằng tùy chọn `cancelled`:
 
 ```php
 use Illuminate\Support\Facades\Schedule;
@@ -2377,7 +2441,7 @@ Các file cấu hình của Supervisor thường được lưu trong thư mục 
 ```ini
 [program:laravel-worker]
 process_name=%(program_name)s_%(process_num)02d
-command=php /home/forge/app.com/artisan queue:work sqs --sleep=3 --tries=3 --max-time=3600
+command=php /home/forge/app.com/artisan queue:work --sleep=3 --tries=3 --max-time=3600
 autostart=true
 autorestart=true
 stopasgroup=true
@@ -2422,7 +2486,7 @@ php artisan make:queue-failed-table
 php artisan migrate
 ```
 
-Khi chạy một process [queue worker](#running-the-queue-worker), bạn có thể khai báo số lần chạy tối đa mà một job được chạy bằng cách sử dụng switch `--tries` trên lệnh `queue:work`. Nếu bạn không khai báo giá trị tùy chọn `--tries`, thì các job sẽ chỉ được chạy một lần duy nhất hoặc nhiều lần theo quy định của thuộc tính `$tries` trong class job:
+Khi chạy một process [queue worker](#running-the-queue-worker), bạn có thể khai báo số lần chạy tối đa mà một job được chạy bằng cách sử dụng switch `--tries` trên lệnh `queue:work`. Nếu bạn không khai báo giá trị tùy chọn `--tries`, thì các job sẽ chỉ được chạy một lần duy nhất hoặc nhiều lần theo quy định của thuộc tính `Tries` trong class job:
 
 ```shell
 php artisan queue:work redis --tries=3
@@ -2434,15 +2498,20 @@ Dùng tuỳ chọn `--backoff`, bạn có thể chỉ định cho Laravel biết
 php artisan queue:work redis --tries=3 --backoff=3
 ```
 
-Nếu bạn muốn cấu hình Laravel sẽ đợi bao nhiêu giây trước khi thử lại job khi bị gặp ngoại lệ, bạn có thể làm như vậy bằng cách định nghĩa một thuộc tính `backoff` trong class job của bạn:
+Nếu bạn muốn cấu hình Laravel sẽ đợi bao nhiêu giây trước khi thử lại job khi bị gặp ngoại lệ, bạn có thể dùng thuộc tính `Backoff` trong class job của bạn:
 
 ```php
-/**
- * The number of seconds to wait before retrying the job.
- *
- * @var int
- */
-public $backoff = 3;
+<?php
+
+namespace App\Jobs;
+
+use Illuminate\Queue\Attributes\Backoff;
+
+#[Backoff(3)]
+class ProcessPodcast implements ShouldQueue
+{
+    // ...
+}
 ```
 
 Nếu bạn yêu cầu các logic phức tạp hơn để xác định thời gian thử lại của job, bạn có thể định nghĩa một phương thức `backoff` trên class job của bạn:
@@ -2457,17 +2526,19 @@ public function backoff(): int
 }
 ```
 
-Bạn có thể dễ dàng cấu hình thời gian thử lại "theo cấp số nhân" bằng cách trả về một mảng các giá trị thời gian thử lại từ phương thức `backoff`. Trong ví dụ này, độ trễ thử lại sẽ là 1 giây cho lần thử đầu tiên, và 5 giây cho lần thử lại thứ hai, 10 giây cho lần thử lại thứ ba, và 10 giây cho mỗi lần thử lại tiếp theo nếu còn nhiều lần thử tiếp theo hơn:
+Bạn có thể dễ dàng cấu hình thời gian thử lại "theo cấp số nhân" bằng cách định nghĩa một mảng các giá trị thời gian thử lại. Trong ví dụ này, độ trễ thử lại sẽ là 1 giây cho lần thử đầu tiên, và 5 giây cho lần thử lại thứ hai, 10 giây cho lần thử lại thứ ba, và 10 giây cho mỗi lần thử lại tiếp theo nếu còn nhiều lần thử tiếp theo hơn:
 
 ```php
-/**
-* Calculate the number of seconds to wait before retrying the job.
-*
-* @return array<int, int>
-*/
-public function backoff(): array
+<?php
+
+namespace App\Jobs;
+
+use Illuminate\Queue\Attributes\Backoff;
+
+#[Backoff([1, 5, 10])]
+class ProcessPodcast implements ShouldQueue
 {
-    return [1, 5, 10];
+    // ...
 }
 ```
 
@@ -2590,15 +2661,20 @@ php artisan queue:flush --hours=48
 
 Khi tích hợp một model Eloquent vào một job, model đó sẽ tự động được serialize trước khi được đưa vào queue và được lấy lại từ cơ sở dữ liệu khi job được xử lý. Tuy nhiên, nếu model đã bị xóa trong khi job đang chờ worker xử lý thì job của bạn có thể thất bại với lỗi `ModelNotFoundException`.
 
-Để thuận tiện, bạn có thể chọn tự động xóa các job mà có model bị thiếu bằng cách set thuộc tính `deleteWhenMissingModels` trong job của bạn thành `true`. Khi thuộc tính này được set thành `true`, Laravel sẽ lặng lẽ xoá job mà không đưa ra ngoại lệ:
+Để thuận tiện, bạn có thể chọn tự động xóa các job mà có model bị thiếu bằng cách sử dụng thuộc tính `DeleteWhenMissingModels` trên job class của bạn. Khi thuộc tính này xuất hiện, Laravel sẽ lặng lẽ xoá job mà không đưa ra bất kỳ ngoại lệ nào:
 
 ```php
-/**
- * Delete the job if its models no longer exist.
- *
- * @var bool
- */
-public $deleteWhenMissingModels = true;
+<?php
+
+namespace App\Jobs;
+
+use Illuminate\Queue\Attributes\DeleteWhenMissingModels;
+
+#[DeleteWhenMissingModels]
+class ProcessPodcast implements ShouldQueue
+{
+    // ...
+}
 ```
 
 <a name="pruning-failed-jobs"></a>
@@ -2736,7 +2812,7 @@ public function boot(): void
     Event::listen(function (QueueBusy $event) {
         Notification::route('mail', 'dev@example.com')
             ->notify(new QueueHasLongWaitTime(
-                $event->connection,
+                $event->connectionName,
                 $event->queue,
                 $event->size
             ));
@@ -2769,8 +2845,11 @@ test('orders can be shipped', function () {
     // Assert a job was pushed to a given queue...
     Queue::assertPushedOn('queue-name', ShipOrder::class);
 
+    // Assert a job was pushed
+    Queue::assertPushed(ShipOrder::class);
+
     // Assert a job was pushed twice...
-    Queue::assertPushed(ShipOrder::class, 2);
+    Queue::assertPushedTimes(ShipOrder::class, 2);
 
     // Assert a job was not pushed...
     Queue::assertNotPushed(AnotherJob::class);
@@ -2810,8 +2889,11 @@ class ExampleTest extends TestCase
         // Assert a job was pushed to a given queue...
         Queue::assertPushedOn('queue-name', ShipOrder::class);
 
+        // Assert a job was pushed
+        Queue::assertPushed(ShipOrder::class);
+
         // Assert a job was pushed twice...
-        Queue::assertPushed(ShipOrder::class, 2);
+        Queue::assertPushedTimes(ShipOrder::class, 2);
 
         // Assert a job was not pushed...
         Queue::assertNotPushed(AnotherJob::class);
@@ -2856,7 +2938,7 @@ test('orders can be shipped', function () {
     // Perform order shipping...
 
     // Assert a job was pushed twice...
-    Queue::assertPushed(ShipOrder::class, 2);
+    Queue::assertPushedTimes(ShipOrder::class, 2);
 });
 ```
 
@@ -2870,7 +2952,7 @@ public function test_orders_can_be_shipped(): void
     // Perform order shipping...
 
     // Assert a job was pushed twice...
-    Queue::assertPushed(ShipOrder::class, 2);
+    Queue::assertPushedTimes(ShipOrder::class, 2);
 }
 ```
 
@@ -2979,6 +3061,30 @@ Bus::fake();
 Bus::assertBatched(function (PendingBatch $batch) {
     return $batch->name == 'Import CSV' &&
            $batch->jobs->count() === 10;
+});
+```
+
+Phương thức `hasJobs` có thể được sử dụng trên pending batch để xác minh rằng batch đó có chứa các job mà bạn mong muốn hay không. Phương thức này chấp nhận một mảng chứa các instance job, tên class hoặc closure:
+
+```php
+Bus::assertBatched(function (PendingBatch $batch) {
+    return $batch->hasJobs([
+        new ProcessCsvRow(row: 1),
+        new ProcessCsvRow(row: 2),
+        new ProcessCsvRow(row: 3),
+    ]);
+});
+```
+
+Khi sử dụng closure, closure đó sẽ nhận vào instance của job. Loại job mà bạn mong muốn sẽ được suy luận từ khai báo của closure:
+
+```php
+Bus::assertBatched(function (PendingBatch $batch) {
+    return $batch->hasJobs([
+        fn (ProcessCsvRow $job) => $job->row === 1,
+        fn (ProcessCsvRow $job) => $job->row === 2,
+        fn (ProcessCsvRow $job) => $job->row === 3,
+    ]);
 });
 ```
 

@@ -96,6 +96,14 @@ return response($content)
     ]);
 ```
 
+Bạn có thể xóa các header cụ thể ra khỏi một response gửi về client bằng cách sử dụng phương thức `withoutHeader`:
+
+```php
+return response($content)->withoutHeader('X-Debug');
+
+return response($content)->withoutHeader(['X-Debug', 'X-Powered-By']);
+```
+
 <a name="cache-control-middleware"></a>
 #### Cache Control Middleware
 
@@ -401,7 +409,7 @@ Route::post('/chat', function () {
 <a name="consuming-streamed-responses"></a>
 ### Consuming Streamed Responses
 
-Các stream response có thể được sử dụng bằng package npm `stream` của Laravel, cung cấp một API thuận tiện để tương tác với các stream response và event của Laravel. Để bắt đầu, hãy cài đặt package `@laravel/stream-react` hoặc `@laravel/stream-vue`:
+Các stream response có thể được sử dụng bằng package npm `stream` của Laravel, cung cấp một API thuận tiện để tương tác với các stream response và event của Laravel. Để bắt đầu, hãy cài đặt package `@laravel/stream-react`, `@laravel/stream-vue`, hoặc `@laravel/stream-svelte`:
 
 ```shell tab=React
 npm install @laravel/stream-react
@@ -409,6 +417,10 @@ npm install @laravel/stream-react
 
 ```shell tab=Vue
 npm install @laravel/stream-vue
+```
+
+```shell tab=Svelte
+npm install @laravel/stream-svelte
 ```
 
 Sau đó, `useStream` có thể được sử dụng để nhận event stream. Sau khi cung cấp URL stream của bạn, hook sẽ tự động cập nhật biến `data` với các nội dung response được nối lại với nhau khi nội dung được trả về từ ứng dụng Laravel của bạn:
@@ -457,6 +469,31 @@ const sendMessage = () => {
         <button @click="sendMessage">Send Message</button>
     </div>
 </template>
+```
+
+```svelte tab=Svelte
+<script>
+import { useStream } from "@laravel/stream-svelte";
+
+const stream = useStream("chat");
+
+const sendMessage = () => {
+    stream.send({
+        message: `Current timestamp: ${Date.now()}`,
+    });
+};
+</script>
+
+<div>
+    <div>{$stream.data}</div>
+    {#if $stream.isFetching}
+        <div>Connecting...</div>
+    {/if}
+    {#if $stream.isStreaming}
+        <div>Generating...</div>
+    {/if}
+    <button onclick={sendMessage}>Send Message</button>
+</div>
 ```
 
 Khi dữ liệu được gửi lại trong stream thông qua `send`, kết nối hiện tại tới stream sẽ bị hủy trước khi gửi dữ liệu mới. Tất cả các request đều được gửi dưới dạng request JSON `POST`.
@@ -508,6 +545,26 @@ const { data } = useStream("chat", {
 </template>
 ```
 
+```svelte tab=Svelte
+<script>
+import { useStream } from "@laravel/stream-svelte";
+
+const stream = useStream("chat", {
+    id: undefined,
+    initialInput: undefined,
+    headers: undefined,
+    csrfToken: undefined,
+    onResponse: (response) => {},
+    onData: (data) => {},
+    onCancel: () => {},
+    onFinish: () => {},
+    onError: (error) => {},
+});
+</script>
+
+<div>{$stream.data}</div>
+```
+
 `onResponse` sẽ được kích hoạt sau khi phản hồi ban đầu từ stream thành công và [Response](https://developer.mozilla.org/en-US/docs/Web/API/Response) raw sẽ được truyền vào callback. `onData` sẽ được gọi mỗi khi chunk dữ liệu được nhận - chunk hiện tại sẽ được truyền vào callback. `onFinish` sẽ được gọi khi stream kết thúc hoặc khi có lỗi xảy ra trong chu kỳ fetch và read.
 
 Mặc định, request không được tạo tới stream khi khởi tạo. Bạn có thể truyền payload ban đầu cho stream bằng cách sử dụng tùy chọn `initialInput`:
@@ -542,6 +599,20 @@ const { data } = useStream("chat", {
 </template>
 ```
 
+```svelte tab=Svelte
+<script>
+import { useStream } from "@laravel/stream-svelte";
+
+const stream = useStream("chat", {
+    initialInput: {
+        message: "Introduce yourself.",
+    },
+});
+</script>
+
+<div>{$stream.data}</div>
+```
+
 Để có thể hủy một stream, bạn có thể sử dụng phương thức `cancel` được trả về từ hook:
 
 ```tsx tab=React
@@ -572,6 +643,19 @@ const { data, cancel } = useStream("chat");
         <button @click="cancel">Cancel</button>
     </div>
 </template>
+```
+
+```svelte tab=Svelte
+<script>
+import { useStream } from "@laravel/stream-svelte";
+
+const stream = useStream("chat");
+</script>
+
+<div>
+    <div>{$stream.data}</div>
+    <button onclick={() => stream.cancel()}>Cancel</button>
+</div>
 ```
 
 Mỗi khi hook `useStream` được sử dụng, thì một `id` ngẫu nhiên sẽ được tạo ra để xác định stream. ID này sẽ được gửi lên server trong mỗi request thông qua header `X-STREAM-ID`. Khi sử dụng cùng một stream từ nhiều component khác nhau, bạn có thể đọc và viết vào stream đó bằng cách cung cấp `id` của riêng bạn:
@@ -639,6 +723,39 @@ const { isFetching, isStreaming } = useStream("chat", { id: props.id });
         <div v-if="isStreaming">Generating...</div>
     </div>
 </template>
+```
+
+```svelte tab=Svelte
+<!-- App.svelte -->
+<script>
+import { useStream } from "@laravel/stream-svelte";
+import StreamStatus from "./StreamStatus.svelte";
+
+const stream = useStream("chat");
+</script>
+
+<div>
+    <div>{$stream.data}</div>
+    <StreamStatus id={stream.id} />
+</div>
+
+<!-- StreamStatus.svelte -->
+<script>
+import { useStream } from "@laravel/stream-svelte";
+
+let { id } = $props();
+
+const stream = useStream("chat", { id });
+</script>
+
+<div>
+    {#if $stream.isFetching}
+        <div>Connecting...</div>
+    {/if}
+    {#if $stream.isStreaming}
+        <div>Generating...</div>
+    {/if}
+</div>
 ```
 
 <a name="streamed-json-responses"></a>
@@ -722,6 +839,31 @@ const loadUsers = () => {
 </template>
 ```
 
+```svelte tab=Svelte
+<script>
+import { useJsonStream } from "@laravel/stream-svelte";
+
+const stream = useJsonStream("users");
+
+const loadUsers = () => {
+    stream.send({
+        query: "taylor",
+    });
+};
+</script>
+
+<div>
+    <ul>
+        {#if $stream.data?.users}
+            {#each $stream.data.users as user (user.id)}
+                <li>{user.id}: {user.name}</li>
+            {/each}
+        {/if}
+    </ul>
+    <button onclick={loadUsers}>Load Users</button>
+</div>
+```
+
 <a name="event-streams"></a>
 ### Event Streams (SSE)
 
@@ -753,7 +895,7 @@ yield new StreamedEvent(
 <a name="consuming-event-streams"></a>
 #### Consuming Event Streams
 
-Các event stream có thể được sử dụng bằng package npm `stream` của Laravel, cung cấp một API thuận tiện để tương tác với các event stream của Laravel. Để bắt đầu, hãy cài đặt package `@laravel/stream-react` hoặc `@laravel/stream-vue`:
+Các event stream có thể được sử dụng bằng package npm `stream` của Laravel, cung cấp một API thuận tiện để tương tác với các event stream của Laravel. Để bắt đầu, hãy cài đặt package `@laravel/stream-react`, `@laravel/stream-vue`, hoặc `@laravel/stream-svelte`:
 
 ```shell tab=React
 npm install @laravel/stream-react
@@ -761,6 +903,10 @@ npm install @laravel/stream-react
 
 ```shell tab=Vue
 npm install @laravel/stream-vue
+```
+
+```shell tab=Svelte
+npm install @laravel/stream-svelte
 ```
 
 Sau đó, `useEventStream` có thể được sử dụng để nhận event stream. Sau khi cung cấp URL stream của bạn, hook sẽ tự động cập nhật biến `message` với nội dung response được nối lại với nhau khi chúng được trả về từ ứng dụng Laravel của bạn:
@@ -785,6 +931,16 @@ const { message } = useEventStream("/chat");
 <template>
   <div>{{ message }}</div>
 </template>
+```
+
+```svelte tab=Svelte
+<script>
+import { useEventStream } from "@laravel/stream-svelte";
+
+const eventStream = useEventStream("/chat");
+</script>
+
+<div>{$eventStream.message}</div>
 ```
 
 Tham số thứ hai được truyền cho `useEventStream` là một object options nơi mà bạn có thể sử dụng để tùy chỉnh hành vi nhận stream. Các giá trị mặc định cho object này được ghi bên dưới:
@@ -829,6 +985,28 @@ const { message } = useEventStream("/chat", {
   },
   endSignal: "</stream>",
   glue: " ",
+});
+</script>
+```
+
+```svelte tab=Svelte
+<script>
+import { useEventStream } from "@laravel/stream-svelte";
+
+const eventStream = useEventStream("/chat", {
+    eventName: "update",
+    onMessage: (event) => {
+        //
+    },
+    onError: (error) => {
+        //
+    },
+    onComplete: () => {
+        //
+    },
+    endSignal: "</stream>",
+    glue: " ",
+    replace: false,
 });
 </script>
 ```

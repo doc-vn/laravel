@@ -48,6 +48,7 @@ Laravel chứa một loạt các hàm PHP global "helper". Nhiều trong số c�
 [Arr::dot](#method-array-dot)
 [Arr::every](#method-array-every)
 [Arr::except](#method-array-except)
+[Arr::exceptValues](#method-array-except-values)
 [Arr::exists](#method-array-exists)
 [Arr::first](#method-array-first)
 [Arr::flatten](#method-array-flatten)
@@ -68,6 +69,7 @@ Laravel chứa một loạt các hàm PHP global "helper". Nhiều trong số c�
 [Arr::mapSpread](#method-array-map-spread)
 [Arr::mapWithKeys](#method-array-map-with-keys)
 [Arr::only](#method-array-only)
+[Arr::onlyValues](#method-array-only-values)
 [Arr::partition](#method-array-partition)
 [Arr::pluck](#method-array-pluck)
 [Arr::prepend](#method-array-prepend)
@@ -424,6 +426,33 @@ $array = ['name' => 'Desk', 'price' => 100];
 $filtered = Arr::except($array, ['price']);
 
 // ['name' => 'Desk']
+```
+
+<a name="method-array-except-values"></a>
+#### `Arr::exceptValues()` {.collection-method}
+
+Hàm `Arr::exceptValues` sẽ loại bỏ các giá trị đã được chỉ định ra khỏi một mảng:
+
+```php
+use Illuminate\Support\Arr;
+
+$array = ['foo', 'bar', 'baz', 'qux'];
+
+$filtered = Arr::exceptValues($array, ['foo', 'baz']);
+
+// ['bar', 'qux']
+```
+
+Bạn cũng có thể truyền một giá trị `true` vào tham số `strict` để sử dụng so sánh nghiêm ngặt khi lọc:
+
+```php
+use Illuminate\Support\Arr;
+
+$array = [1, '1', 2, '2'];
+
+$filtered = Arr::exceptValues($array, [1, 2], strict: true);
+
+// ['1', '2']
 ```
 
 <a name="method-array-exists"></a>
@@ -830,6 +859,33 @@ $array = ['name' => 'Desk', 'price' => 100, 'orders' => 10];
 $slice = Arr::only($array, ['name', 'price']);
 
 // ['name' => 'Desk', 'price' => 100]
+```
+
+<a name="method-array-only-values"></a>
+#### `Arr::onlyValues()` {.collection-method}
+
+Hàm `Arr::onlyValues` sẽ chỉ trả về các giá trị đã được chỉ định từ một mảng:
+
+```php
+use Illuminate\Support\Arr;
+
+$array = ['foo', 'bar', 'baz', 'qux'];
+
+$filtered = Arr::onlyValues($array, ['foo', 'baz']);
+
+// ['foo', 'baz']
+```
+
+Bạn cũng có thể truyền giá trị `true` vào tham số `strict` để sử dụng so sánh nghiêm ngặt khi lọc:
+
+```php
+use Illuminate\Support\Arr;
+
+$array = [1, '1', 2, '2'];
+
+$filtered = Arr::onlyValues($array, [1, 2], strict: true);
+
+// [1, 2]
 ```
 
 <a name="method-array-partition"></a>
@@ -1291,7 +1347,7 @@ $classes = Arr::toCssClasses($array);
 <a name="method-array-to-css-styles"></a>
 #### `Arr::toCssStyles()` {.collection-method}
 
-Hàm `Arr::toCssStyles` sẽ compile có điều kiện một chuỗi CSS style. Phương thức này chấp nhận một mảng các class trong đó khóa của mảng đó sẽ chứa class hoặc các class bạn muốn thêm, trong khi giá trị là một biểu thức boolean. Nếu phần tử của mảng đó có khóa là một số, thì nó sẽ luôn được thêm vào trong danh sách class được render:
+Hàm `Arr::toCssStyles` sẽ compile có điều kiện một chuỗi CSS style. Phương thức này chấp nhận một mảng các khai báo CSS trong đó khóa của mảng đó sẽ chứa khai báo CSS mà bạn muốn thêm, trong khi giá trị là một biểu thức boolean. Nếu phần tử của mảng đó có khóa là một số, thì nó sẽ luôn được thêm vào trong chuỗi CSS style đã được compile:
 
 ```php
 use Illuminate\Support\Arr;
@@ -3196,7 +3252,7 @@ Thỉnh thoảng, bạn có thể muốn đánh giá việc thực hiện lệnh
 <a name="dates"></a>
 ### Date và Time
 
-Laravel có chứa [Carbon](https://carbon.nesbot.com/docs/), một thư viện xử lý ngày và giờ mạnh mẽ. Để tạo một instance `Carbon` mới, bạn có thể gọi hàm `now`. Hàm này có sẵn trong toàn bộ ứng dụng Laravel của bạn:
+Laravel có chứa [Carbon](https://carbon.nesbot.com/guide/getting-started/introduction.html), một thư viện xử lý ngày và giờ mạnh mẽ. Để tạo một instance `Carbon` mới, bạn có thể gọi hàm `now`. Hàm này có sẵn trong toàn bộ ứng dụng Laravel của bạn:
 
 ```php
 $now = now();
@@ -3222,7 +3278,7 @@ return now()->minus(hours: 8);
 return now()->minus(weeks: 4);
 ```
 
-Để thảo luận kỹ hơn về Carbon và các tính năng của nó, vui lòng tham khảo [tài liệu chính thức của Carbon](https://carbon.nesbot.com/docs/).
+Để thảo luận kỹ hơn về Carbon và các tính năng của nó, vui lòng tham khảo [tài liệu chính thức của Carbon](https://carbon.nesbot.com/guide/getting-started/introduction.html).
 
 <a name="interval-functions"></a>
 #### Interval Functions
@@ -3665,6 +3721,7 @@ Class `Uri` cũng cho phép bạn dễ dàng kiểm tra các thành phần khác
 
 ```php
 $scheme = $uri->scheme();
+$authority = $uri->authority();
 $host = $uri->host();
 $port = $uri->port();
 $path = $uri->path();

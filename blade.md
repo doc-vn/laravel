@@ -62,7 +62,7 @@ Route::get('/', function () {
 <a name="supercharging-blade-with-livewire"></a>
 ### Supercharging Blade cùng với Livewire
 
-Bạn muốn đưa các template Blade của bạn lên một tầm cao mới và dễ dàng xây dựng các giao diện động? Hãy xem [Laravel Livewire](https://livewire.laravel.com). Livewire cho phép bạn viết các component Blade được tăng cường chức năng động mà thông thường chỉ có thể thực hiện được thông qua các framework front-end như React hoặc Vue, cung cấp một phương án tuyệt vời để xây dựng các giao diện front-end hiện đại, độ tương tác cao mà không cần đến sự phức tạp, render phía client hoặc xây dựng các bước của nhiều framework JavaScript.
+Bạn muốn đưa các template Blade của bạn lên một tầm cao mới và dễ dàng xây dựng các giao diện động? Hãy xem [Laravel Livewire](https://livewire.laravel.com). Livewire cho phép bạn viết các component Blade được tăng cường chức năng động mà thông thường chỉ có thể thực hiện được thông qua các framework front-end như React, Svelte, hoặc Vue, cung cấp một phương án tuyệt vời để xây dựng các giao diện front-end hiện đại, độ tương tác cao mà không cần đến sự phức tạp, render phía client hoặc xây dựng các bước của nhiều framework JavaScript.
 
 <a name="displaying-data"></a>
 ## Hiển thị dữ liệu

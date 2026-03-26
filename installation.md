@@ -45,6 +45,14 @@ Laravel có khả năng mở rộng đáng kinh ngạc. Nhờ tính chất thân
 
 Cần mở rộng quy mô cực lớn? Các nền tảng như [Laravel Cloud](https://cloud.laravel.com) cho phép bạn chạy ứng dụng Laravel của bạn ở quy mô gần như vô hạn.
 
+#### An Agent Ready Framework
+
+Các quy ước đặc thù và cấu trúc được định nghĩa rõ ràng của Laravel sẽ khiến nó trở thành một framework lý tưởng cho việc [phát triển được hỗ trợ bởi AI](/docs/{{version}}/ai) thông qua các công cụ như Cursor và Claude Code. Khi bạn yêu cầu một AI agent thêm một controller, nó biết chính xác vị trí cần đặt. Khi bạn cần một migration mới, các quy ước đặt tên và vị trí file đều có thể dự đoán được. Sự nhất quán này giúp loại bỏ những phỏng đoán thường gây ra khó khăn cho các công cụ AI trong các framework khác.
+
+Bên cạnh việc tổ chức file, cú pháp súc tích và tài liệu hướng dẫn toàn diện của Laravel cung cấp cho các AI agent bối cảnh cần thiết để tạo ra mã nguồn chính xác và đúng chuẩn. Các tính năng như quan hệ Eloquent, form request và middleware đều tuân theo các pattern mà các agent có thể hiểu và tái tạo một cách đáng tin cậy. Kết quả là code do AI tạo ra trông giống như được viết bởi một nhà phát triển Laravel chuyên nghiệp, chứ không phải được chắp vá từ các đoạn code PHP chung chung.
+
+Để tìm hiểu thêm về lý do tại sao Laravel là lựa chọn hoàn hảo cho phát triển hỗ trợ bởi AI, hãy xem tài liệu của chúng tôi về [phát triển agentic](/docs/{{version}}/ai).
+
 #### A Community Framework
 
 Laravel kết hợp các package tốt nhất trong hệ sinh thái PHP để cung cấp framework mạnh mẽ và thân thiện nhất với nhà phát triển. Ngoài ra, hàng nghìn nhà phát triển tài năng từ khắp nơi trên thế giới đã [đóng góp cho framework](https://github.com/laravel/framework). Ai biết được, thậm chí có thể bạn sẽ trở thành người đóng góp cho Laravel.
@@ -207,8 +215,7 @@ Bạn có thể tìm hiểu thêm về Herd bằng cách xem [tài liệu của 
 <a name="ide-support"></a>
 ## IDE Support
 
-Bạn có thể thoải mái sử dụng bất kỳ trình code editor nào mà bạn muốn khi phát triển các ứng dụng Laravel.
-Nếu bạn đang tìm kiếm một editor nhẹ và có khả năng mở rộng, [VS Code](https://code.visualstudio.com) hoặc [Cursor](https://cursor.com) kết hợp với [Laravel VS Code Extension](https://marketplace.visualstudio.com/items?itemName=laravel.vscode-laravel) official cung cấp khả năng hỗ trợ Laravel tuyệt vời với các tính năng như highlight cú pháp, snippet, tích hợp lệnh artisan và tự động hoàn thành thông minh cho các Eloquent model, route, middleware, asset, config và Inertia.js.
+Bạn có thể thoải mái sử dụng bất kỳ trình code editor nào mà bạn muốn khi phát triển các ứng dụng Laravel. Nếu bạn đang tìm kiếm một editor nhẹ và có khả năng mở rộng, [VS Code](https://code.visualstudio.com) hoặc [Cursor](https://cursor.com) kết hợp với [Laravel VS Code Extension](https://marketplace.visualstudio.com/items?itemName=laravel.vscode-laravel) official cung cấp khả năng hỗ trợ Laravel tuyệt vời với các tính năng như highlight cú pháp, snippet, tích hợp lệnh artisan và tự động hoàn thành thông minh cho các Eloquent model, route, middleware, asset, config và Inertia.js.
 
 Để có sự hỗ trợ toàn diện và mạnh mẽ cho Laravel, hãy tham khảo [PhpStorm](https://www.jetbrains.com/phpstorm/laravel/?utm_source=laravel.com&utm_medium=link&utm_campaign=laravel-2025&utm_content=partner&ref=laravel-2025), một IDE từ JetBrains. Hỗ trợ framework Laravel mặc định của PhpStorm có chứa Blade template, tự động hoàn thành thông minh cho các Eloquent model, route, view, translation và component, cùng với khả năng tạo code mạnh mẽ và điều hướng linh hoạt trong các dự án Laravel.
 
@@ -228,7 +235,7 @@ Boost cũng chứa các hướng dẫn AI do Laravel phát triển nhằm giúp 
 <a name="installing-laravel-boost"></a>
 ### Installing Laravel Boost
 
-Boost có thể được cài đặt trong các ứng dụng Laravel 10, 11 và 12 chạy PHP 8.1 trở lên. Để bắt đầu, hãy cài đặt Boost như một development dependency:
+Boost có thể được cài đặt trong các ứng dụng Laravel 10, 11, 12, và 13 chạy PHP 8.1 trở lên. Để bắt đầu, hãy cài đặt Boost như một development dependency:
 
 ```shell
 composer require laravel/boost --dev
@@ -244,6 +251,11 @@ Installer sẽ tự động nhận diện IDE và các AI agent của bạn, cho
 
 > [!NOTE]
 Để tìm hiểu thêm về Boost, hãy xem [repository Laravel Boost trên GitHub](https://github.com/laravel/boost).
+
+<a name="adding-custom-ai-guidelines"></a>
+#### Adding Custom AI Guidelines
+
+Để bổ sung các hướng dẫn AI tùy chỉnh của riêng bạn vào Laravel Boost, hãy thêm các file `.blade.php` hoặc `.md` vào thư mục `.ai/guidelines/*` của ứng dụng. Những file này sẽ tự động được thêm vào các hướng dẫn của Laravel Boost khi bạn chạy lệnh `boost:install`.
 
 <a name="next-steps"></a>
 ## Bước tiếp theo

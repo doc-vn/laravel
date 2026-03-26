@@ -2,14 +2,14 @@
 
 - [Cấu trúc phiên bản](#versioning-scheme)
 - [Chính sách hỗ trợ](#support-policy)
-- [Laravel 12](#laravel-12)
+- [Laravel 13](#laravel-13)
 
 <a name="versioning-scheme"></a>
 ## Cấu trúc phiên bản
 
 Laravel và các package khác của nó tuân theo [Phiên bản Semantic](https://semver.org). Các phiên bản được phát hành chính thức của framework được phát hành một năm một lần (~Q1), trong khi các bản phát hành nhỏ hơn và các bản sửa lỗi có thể được phát hành thường xuyên hơn, có thể là mỗi tuần. Các bản phát hành nhỏ và các bản sửa lỗi sẽ **không bao giờ** chứa các thay đổi mà có thể dẫn đến hệ thống của bạn bị lỗi.
 
-Khi sủ dụng framework Laravel hoặc các component của nó từ application của bạn hoặc từ package, bạn phải luôn luôn sử dụng một ràng buộc phiên bản, chẳng hạn như là `^12.0`, Vì các bản phát hành chính thức của Laravel có thể chứa các thay đổi mà có thể làm hệ thống của bạn bị lỗi. Tuy nhiên, chúng tôi sẽ cố gắng đảm bảo rằng: bạn có thể cập nhật lên bản phát hành chính thức trong một ngày hoặc ít hơn.
+Khi sủ dụng framework Laravel hoặc các component của nó từ application của bạn hoặc từ package, bạn phải luôn luôn sử dụng một ràng buộc phiên bản, chẳng hạn như là `^13.0`, Vì các bản phát hành chính thức của Laravel có thể chứa các thay đổi mà có thể làm hệ thống của bạn bị lỗi. Tuy nhiên, chúng tôi sẽ cố gắng đảm bảo rằng: bạn có thể cập nhật lên bản phát hành chính thức trong một ngày hoặc ít hơn.
 
 <a name="named-arguments"></a>
 #### Named Arguments
@@ -45,25 +45,141 @@ Khi sủ dụng framework Laravel hoặc các component của nó từ applicati
 
 (*) Supported PHP versions
 
-<a name="laravel-11"></a>
-## Laravel 12
+<a name="laravel-13"></a>
+## Laravel 13
 
-Laravel 12 tiếp tục những cải tiến đã có trong Laravel 11.x bằng cách cập nhật các thư viện và giới thiệu các starter kit mới cho React, Vue và Livewire, bao gồm các tùy chọn sử dụng [WorkOS AuthKit](https://authkit.com) để xác thực người dùng. Phiên bản WorkOS của các starter kit của chúng tôi sẽ cung cấp các tính năng xác thực qua mạng xã hội, passkey và hỗ trợ SSO.
+Laravel 13 tiếp tục chu kỳ phát hành hàng năm của Laravel với sự tập trung vào các luồng công việc AI-native, các giá trị mặc định mạnh mẽ hơn và các API dành cho nhà phát triển thuận tiện hơn. Bản phát hành này chứa các chức năng AI chính thức, các resource JSON:API, khả năng tìm kiếm ngữ nghĩa, vector và các cải tiến gia tăng trên các hệ thống queue, cache và bảo mật.
 
 <a name="minimal-breaking-changes"></a>
 ### Minimal Breaking Changes
 
-Trọng tâm của chúng tôi trong lần phát hành này là giảm thiểu các breaking change. Thay vào đó, chúng tôi sẽ cố gắng mang lại những cải tiến liên tục về chất lượng trong suốt cả năm mà không làm hỏng các ứng dụng hiện có.
+Trọng tâm của chúng tôi trong lần phát hành này là giảm thiểu các thay đổi lớn có thể gây lỗi. Thay vào đó, chúng tôi sẽ cố gắng mang lại những cải tiến liên tục về chất lượng trong suốt cả năm mà không làm ảnh hưởng đến các ứng dụng hiện có.
 
-Do đó, bản phát hành Laravel 12 là một "bản phát hành bảo trì" tương đối nhỏ để nâng cấp các dependency hiện có. Xét theo khía cạnh này, hầu hết các ứng dụng Laravel có thể nâng cấp lên Laravel 12 mà không cần bất kỳ thay đổi code nào của ứng dụng.
+Do đó, bản phát hành Laravel 13 là một bản nâng cấp tương đối nhỏ về mặt công sức thực hiện, trong khi vẫn mang lại các khả năng mới đáng kể. Xét theo khía cạnh này, hầu hết các ứng dụng Laravel có thể nâng cấp lên Laravel 13 mà không cần thực hiện bất kỳ thay đổi code nào.
 
-<a name="new-application-starter-kits"></a>
-### New Application Starter Kits
+<a name="php-8"></a>
+### PHP 8.3
 
-Laravel 12 giới thiệu các [application starter kits](/docs/{{version}}/starter-kits) mới cho React, Vue và Livewire. Starter kit React và Vue sẽ sử dụng Inertia 2, TypeScript, [shadcn/ui](https://ui.shadcn.com) và Tailwind, trong khi starter kit Livewire sẽ sử dụng thư viện component [Flux UI](https://fluxui.dev) dựa trên Tailwind và Laravel Volt.
+Laravel 13.x sẽ yêu cầu phiên bản PHP tối thiểu là 8.3.
 
-Các starter kit React, Vue và Livewire đều sử dụng hệ thống xác thực có sẵn của Laravel để cung cấp các tính năng đăng nhập, đăng ký, reset mật khẩu, xác minh email và hơn thế nữa. Ngoài ra, chúng tôi cũng giới thiệu một biến thể [được hỗ trợ bởi WorkOS AuthKit](https://authkit.com) cho mỗi starter kit, cung cấp các tính năng xác thực qua mạng xã hội, passkey và hỗ trợ SSO. WorkOS cung cấp tính năng xác thực miễn phí cho các ứng dụng có tối đa 1 triệu người dùng hoạt động hàng tháng.
+<a name="ai-sdk"></a>
+### Laravel AI SDK
 
-Với việc giới thiệu các application starter kit mới này, Laravel Breeze và Laravel Jetstream sẽ không còn nhận được các bản cập nhật nữa.
+Laravel 13 giới thiệu bộ [Laravel AI SDK](https://laravel.com/ai) chính thức, cung cấp một API thống nhất cho việc tạo văn bản, các tool cho agent, embedding, âm thanh, hình ảnh và tích hợp vector-store.
 
-Để bắt đầu với các starter kit mới của chúng tôi, hãy xem [tài liệu về starter kit](/docs/{{version}}/starter-kits).
+Với AI SDK, bạn có thể xây dựng các tính năng AI mà không phụ thuộc vào bất kỳ nhà cung cấp nào, đồng thời vẫn giữ được trải nghiệm nhà phát triển Laravel-native nhất quán.
+
+Ví dụ: một agent cơ bản có thể được thực hiện chỉ với một lệnh duy nhất:
+
+```php
+use App\Ai\Agents\SalesCoach;
+
+$response = SalesCoach::make()->prompt('Analyze this sales transcript...');
+
+return (string) $response;
+```
+
+Laravel AI SDK cũng có thể tạo ra hình ảnh, âm thanh và embedding:
+
+Đối với các trường hợp sử dụng tạo hình ảnh, SDK cung cấp một API rõ ràng để tạo hình ảnh từ các câu lệnh bằng ngôn ngữ tự nhiên:
+
+```php
+use Laravel\Ai\Image;
+
+$image = Image::of('A donut sitting on the kitchen counter')->generate();
+
+$rawContent = (string) $image;
+```
+
+Đối với trải nghiệm giọng nói, bạn có thể tạo âm thanh tự nhiên từ văn bản cho các trợ lý AI, lời dẫn truyện và các tính năng hỗ trợ khác:
+
+```php
+use Laravel\Ai\Audio;
+
+$audio = Audio::of('I love coding with Laravel.')->generate();
+
+$rawContent = (string) $audio;
+```
+
+Và đối với các luồng công việc tìm kiếm ngữ nghĩa và lấy ra, bạn có thể tạo embedding trực tiếp từ các chuỗi string:
+
+```php
+use Illuminate\Support\Str;
+
+$embeddings = Str::of('Napa Valley has great wine.')->toEmbeddings();
+```
+
+<a name="json-api"></a>
+### JSON:API Resources
+
+Laravel cũng thêm các [resource JSON:API](/docs/{{version}}/eloquent-resources#jsonapi-resources) chính thức, giúp trả về các response tuân thủ đặc tả JSON:API một cách đơn giản.
+
+Resource JSON:API sẽ xử lý việc chuyển đổi đối tượng resource, bao gồm các quan hệ, lọc field, link và các header response tuân thủ JSON:API.
+
+<a name="request-forgery-protection"></a>
+### Request Forgery Protection
+
+Về bảo mật, middleware [ngăn chặn giả mạo request](/docs/{{version}}/csrf#preventing-csrf-requests) của Laravel đã được tăng cường và chính thức trở thành `PreventRequestForgery`, bổ sung các tính năng xác minh request nhận biết qua origin trong khi vẫn duy trì khả năng tương thích với tính năng bảo vệ CSRF dựa trên token.
+
+<a name="queue-routing"></a>
+### Queue Routing
+
+Laravel 13 bổ sung tính năng [queue routing theo class](/docs/{{version}}/queues#queue-routing) thông qua `Queue::route(...)`, cho phép bạn định nghĩa các quy tắc routing queue, kết nối mặc định cho các job cụ thể ở một nơi duy nhất:
+
+```php
+Queue::route(ProcessPodcast::class, connection: 'redis', queue: 'podcasts');
+```
+
+<a name="php-attributes"></a>
+### Expanded PHP Attributes
+
+Laravel 13 tiếp tục mở rộng hỗ trợ PHP attribute chính thức trên toàn bộ framework, giúp cho các việc cấu hình và các hành động phổ biến của Laravel trở nên dễ khai báo hơn và được đặt cùng vị trí với các class và phương thức của bạn.
+
+Các attribute đáng chú ý như các attribute cho controller và authorization như [`#[Middleware]`](/docs/{{version}}/controllers#controller-middleware) và [`#[Authorize]`](/docs/{{version}}/controllers#authorize-attribute), cũng như các thuộc tính điều khiển job cho queue như [`#[Tries]`](/docs/{{version}}/queues#max-job-attempts-and-timeout), [`#[Backoff]`](/docs/{{version}}/queues#dealing-with-failed-jobs), [`#[Timeout]`](/docs/{{version}}/queues#max-job-attempts-and-timeout) và [`#[FailOnTimeout]`](/docs/{{version}}/queues#failing-on-timeout).
+
+Ví dụ: Các bài kiểm tra middleware và policy của controller hiện có thể được khai báo trực tiếp trên các class và phương thức:
+
+```php
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Comment;
+use App\Models\Post;
+use Illuminate\Routing\Attributes\Controllers\Authorize;
+use Illuminate\Routing\Attributes\Controllers\Middleware;
+
+#[Middleware('auth')]
+class CommentController
+{
+    #[Middleware('subscribed')]
+    #[Authorize('create', [Comment::class, 'post'])]
+    public function store(Post $post)
+    {
+        // ...
+    }
+}
+```
+
+Các attribute bổ sung cũng đã được giới thiệu trong các API của Eloquent, event, thông báo, validation, testing và chuyển hoá resource API, cung cấp cho bạn một tùy chọn tốt hơn trong nhiều mặt của framework.
+
+<a name="cache-touch"></a>
+### Cache TTL Extension
+
+Laravel hiện đã tích hợp [`Cache::touch(...)`](/docs/{{version}}/cache), cho phép bạn gia hạn thời gian (TTL) của một item cache mà không cần phải lấy ra và lưu lại giá trị của nó.
+
+<a name="semantic-search"></a>
+### Semantic / Vector Search
+
+Laravel 13 làm sâu sắc thêm câu chuyện tìm kiếm ngữ nghĩa với sự hỗ trợ truy vấn vector, các luồng công việc embedding và các API liên quan được tài liệu hóa trong [search](/docs/{{version}}/search#semantic-vector-search), [truy vấn](/docs/{{version}}/queries#vector-similarity-clauses) và [AI SDK](/docs/{{version}}/ai-sdk#embeddings).
+
+Các tính năng này giúp việc xây dựng các trải nghiệm tìm kiếm được hỗ trợ bởi AI bằng PostgreSQL + `pgvector` trở nên đơn giản, bao gồm cả tìm kiếm tương đồng dựa trên các vector embedding được tạo trực tiếp từ các chuỗi string.
+
+Ví dụ: bạn có thể chạy các tìm kiếm tương đồng về mặt ngữ nghĩa trực tiếp từ query builder:
+
+```php
+$documents = DB::table('documents')
+    ->whereVectorSimilarTo('embedding', 'Best wineries in Napa Valley')
+    ->limit(10)
+    ->get();
+```

@@ -119,7 +119,6 @@ Trong phần lớn tài liệu collection còn lại này, chúng ta sẽ thảo
 [combine](#method-combine)
 [concat](#method-concat)
 [contains](#method-contains)
-[containsOneItem](#method-containsoneitem)
 [containsStrict](#method-containsstrict)
 [count](#method-count)
 [countBy](#method-countBy)
@@ -154,6 +153,8 @@ Trong phần lớn tài liệu collection còn lại này, chúng ta sẽ thảo
 [groupBy](#method-groupby)
 [has](#method-has)
 [hasAny](#method-hasany)
+[hasMany](#method-hasmany)
+[hasSole](#method-hassole)
 [implode](#method-implode)
 [intersect](#method-intersect)
 [intersectUsing](#method-intersectusing)
@@ -575,29 +576,6 @@ $collection->contains('product', 'Bookcase');
 Phương thức `contains` sử dụng các phép so sánh "lỏng lẻo" khi kiểm tra các giá trị của item, nghĩa là một chuỗi có giá trị integer sẽ được coi là bằng với một số integer có cùng giá trị. Sử dụng phương thức [containsStrict](#method-containsstrict) để so sánh "nghiêm ngặt".
 
 Đối ngược với phương thức `contains`, hãy xem phương thức [doesntContain](#method-doesntcontain).
-
-<a name="method-containsoneitem"></a>
-#### `containsOneItem()` {.collection-method}
-
-Phương thức `containsOneItem` sẽ xác định xem collection có chứa một item hay không:
-
-```php
-collect([])->containsOneItem();
-
-// false
-
-collect(['1'])->containsOneItem();
-
-// true
-
-collect(['1', '2'])->containsOneItem();
-
-// false
-
-collect([1, 2, 3])->containsOneItem(fn (int $item) => $item === 2);
-
-// true
-```
 
 <a name="method-containsstrict"></a>
 #### `containsStrict()` {.collection-method}
@@ -1437,6 +1415,51 @@ $collection->hasAny(['name', 'price']);
 // false
 ```
 
+<a name="method-hasmany"></a>
+#### `hasMany()` {.collection-method}
+
+Phương thức `hasMany` sẽ xác định xem collection có chứa nhiều hơn một item hay không:
+
+```php
+collect([])->hasMany();
+
+// false
+
+collect(['1'])->hasMany();
+
+// false
+
+collect([1, 2, 3])->hasMany();
+
+// true
+
+collect([
+    ['age' => 2],
+    ['age' => 3],
+])->hasMany(fn ($item) => $item['age'] === 2)
+
+// false
+```
+
+<a name="method-hassole"></a>
+#### `hasSole()` {.collection-method}
+
+Phương thức `hasSole` xác định xem collection có chứa một item duy nhất hay không, có thêm một tùy chọn là khớp với một tiêu chí nào đó:
+
+```php
+collect([])->hasSole();
+
+// false
+
+collect(['1'])->hasSole();
+
+// true
+
+collect([1, 2, 3])->hasSole(fn (int $item) => $item === 2);
+
+// true
+```
+
 <a name="method-implode"></a>
 #### `implode()` {.collection-method}
 
@@ -1958,7 +1981,10 @@ $merged->all();
 Phương thức `min` sẽ trả về giá trị nhỏ nhất của một key đã cho:
 
 ```php
-$min = collect([['foo' => 10], ['foo' => 20]])->min('foo');
+$min = collect([
+    ['foo' => 10],
+    ['foo' => 20]
+])->min('foo');
 
 // 10
 
@@ -3578,7 +3604,7 @@ Phương thức `value` trả về một collection mới với các key đã đ
 ```php
 $collection = collect([
     10 => ['product' => 'Desk', 'price' => 200],
-    11 => ['product' => 'Desk', 'price' => 200],
+    11 => ['product' => 'Speaker', 'price' => 400],
 ]);
 
 $values = $collection->values();
@@ -3588,7 +3614,7 @@ $values->all();
 /*
     [
         0 => ['product' => 'Desk', 'price' => 200],
-        1 => ['product' => 'Desk', 'price' => 200],
+        1 => ['product' => 'Speaker', 'price' => 400],
     ]
 */
 ```

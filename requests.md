@@ -256,6 +256,18 @@ if ($request->expectsJson()) {
 }
 ```
 
+Nếu bạn cần xác định xem request có ưu tiên Markdown hay chỉ chấp nhận Markdown nằm trong một số định dạng được chấp nhận hay không, bạn có thể sử dụng phương thức `wantsMarkdown` và `acceptsMarkdown`, chẳng hạn như khi chạy các AI agent hoặc các client khác sử dụng response Markdown:
+
+```php
+if ($request->wantsMarkdown()) {
+    // The client's most preferred content type is text/markdown...
+}
+
+if ($request->acceptsMarkdown()) {
+    // The client accepts Markdown responses...
+}
+```
+
 <a name="psr7-requests"></a>
 ### PSR-7 Requests
 
@@ -822,11 +834,11 @@ Mặc định, Laravel sẽ respond tất cả các request mà nó nhận đư�
 
 Thông thường, bạn nên cấu hình máy chủ web của bạn, chẳng hạn như Nginx hoặc Apache, để chỉ gửi request đến ứng dụng giống với một hostname nhất định. Tuy nhiên, nếu bạn không có khả năng tùy chỉnh trực tiếp máy chủ web của bạn và cần hướng dẫn Laravel chỉ phản hồi với một số hostname nhất định, bạn có thể làm như vậy bằng cách bật middleware `Illuminate\Http\Middleware\TrustHosts` trong ứng dụng của bạn.
 
-Để kích hoạt middleware `TrustHosts`, bạn nên gọi phương thức middleware `trustHosts` trong file `bootstrap/app.php` của ứng dụng của bạn. Sử dụng tham số `at` của phương thức này, bạn có thể chỉ định hostname mà ứng dụng của bạn sẽ phản hồi. Các request đến với các header `Host` khác sẽ bị từ chối:
+Để kích hoạt middleware `TrustHosts`, bạn nên gọi phương thức middleware `trustHosts` trong file `bootstrap/app.php` của ứng dụng của bạn. Sử dụng tham số `at` của phương thức này, bạn có thể chỉ định hostname mà ứng dụng của bạn sẽ phản hồi. Chuỗi hostname sẽ được xử lý như là một biểu thức chính quy. Các request đến với các header `Host` khác sẽ bị từ chối:
 
 ```php
 ->withMiddleware(function (Middleware $middleware): void {
-    $middleware->trustHosts(at: ['laravel.test']);
+    $middleware->trustHosts(at: ['^laravel\.test$']);
 })
 ```
 
@@ -834,7 +846,7 @@ Mặc định, các request đến từ subdomain của URL ứng dụng cũng s
 
 ```php
 ->withMiddleware(function (Middleware $middleware): void {
-    $middleware->trustHosts(at: ['laravel.test'], subdomains: false);
+    $middleware->trustHosts(at: ['^laravel\.test$'], subdomains: false);
 })
 ```
 

@@ -230,6 +230,26 @@ Các tùy chọn `retry_interval`, `max_retries`, `backoff_algorithm`, `backoff_
 ],
 ```
 
+Predis 3.4.0 và các phiên bản mới hơn sẽ hỗ trợ cấu hình retry và backoff được tích hợp sẵn thông qua class `Retry`. Bạn hãy cấu hình nó bằng cách sử dụng tùy chọn `retry` với một trong các chiến lược sau: `NoBackoff`, `EqualBackoff`, hoặc `ExponentialBackoff`:
+
+```php
+use Predis\Retry;
+use Predis\Retry\Strategy\ExponentialBackoff;
+
+'default' => [
+    'url' => env('REDIS_URL'),
+    // ...
+    'retry' => new Retry(
+        new ExponentialBackoff(
+            env('REDIS_BACKOFF_BASE', 100),
+            env('REDIS_BACKOFF_CAP', 1000),
+            true, // Enables jitter
+        ),
+        env('REDIS_MAX_RETRIES', 3)
+    )
+],
+```
+
 <a name="unix-socket-connections"></a>
 #### Unix Socket Connections
 

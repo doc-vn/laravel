@@ -707,6 +707,22 @@ $response
     );
 ```
 
+Nếu bạn muốn thực hiện các lệnh kiểm tra giống nhau đối với mọi phần tử có trong một collection JSON, bạn có thể sử dụng phương thức `each`:
+
+```php
+$response
+  ->assertJson(fn (AssertableJson $json) =>
+      $json->has(3)
+          ->each(fn (AssertableJson $json) =>
+              $json->whereType('id', 'integer')
+                  ->whereType('name', 'string')
+                  ->whereType('email', 'string')
+                  ->missing('password')
+                  ->etc()
+          )
+  );
+```
+
 <a name="scoping-json-collection-assertions"></a>
 #### Scoping JSON Collection Assertions
 
@@ -1025,6 +1041,7 @@ Class `Illuminate\Testing\TestResponse` của Laravel cung cấp nhiều phươn
 [assertFound](#assert-found)
 [assertGone](#assert-gone)
 [assertHeader](#assert-header)
+[assertHeaderContains](#assert-header-contains)
 [assertHeaderMissing](#assert-header-missing)
 [assertInternalServerError](#assert-internal-server-error)
 [assertJson](#assert-json)
@@ -1256,6 +1273,15 @@ Yêu cầu header và giá trị đã cho phải có trong response:
 
 ```php
 $response->assertHeader($headerName, $value = null);
+```
+
+<a name="assert-header-contains"></a>
+#### assertHeaderContains
+
+Yêu cầu header đã cho phải chứa một giá trị chuỗi nhất định:
+
+```php
+$response->assertHeaderContains($headerName, $value);
 ```
 
 <a name="assert-header-missing"></a>

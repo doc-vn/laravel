@@ -425,7 +425,7 @@ public function boot(): void
 }
 ```
 
-Bây giờ, khi người dùng package của bạn chạy lệnh `vendor:publish`, asset sẽ được copy vào vị trí export mà bạn đã khai báo. Nhưng thông thường, người dùng sẽ cần ghi đè lên các asset mỗi khi package được cập nhật, nên bạn có thể sử dụng flag `--force`:
+Bây giờ, khi người dùng package của bạn chạy lệnh `vendor:publish`, asset sẽ được copy vào vị trí export mà bạn đã khai báo. Nhưng thông thường, người dùng sẽ cần ghi đè lên các asset mỗi khi package được cập nhật, họ có thể sử dụng flag `--force`:
 
 ```shell
 php artisan vendor:publish --tag=public --force

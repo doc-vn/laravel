@@ -1360,7 +1360,7 @@ Vì các webhook của Paddle cần được bỏ qua bước [bảo vệ CSRF](
 
 ```php
 ->withMiddleware(function (Middleware $middleware): void {
-    $middleware->validateCsrfTokens(except: [
+    $middleware->preventRequestForgery(except: [
         'paddle/*',
     ]);
 })

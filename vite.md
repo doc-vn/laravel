@@ -11,6 +11,7 @@
   - [Aliases](#aliases)
   - [Vue](#vue)
   - [React](#react)
+  - [Svelte](#svelte)
   - [Inertia](#inertia)
   - [URL Processing](#url-processing)
 - [Working với Stylesheets](#working-with-stylesheets)
@@ -73,7 +74,7 @@ npm install
 <a name="configuring-vite"></a>
 ### Cấu hình Vite
 
-Vite được cấu hình thông qua file `vite.config.js` trong thư mục root của dự án. Bạn có thể tùy chỉnh file này tùy theo nhu cầu của bạn và cũng có thể cài đặt bất kỳ plugin nào khác mà ứng dụng của bạn yêu cầu, chẳng hạn như `@vitejs/plugin-vue` hoặc `@vitejs/plugin-react`.
+Vite được cấu hình thông qua file `vite.config.js` trong thư mục root của dự án. Bạn có thể tùy chỉnh file này tùy theo nhu cầu của bạn và cũng có thể cài đặt bất kỳ plugin nào khác mà ứng dụng của bạn yêu cầu, chẳng hạn như `@vitejs/plugin-react`, `@sveltejs/vite-plugin-svelte` hoặc `@vitejs/plugin-vue`.
 
 Plugin Laravel Vite yêu cầu bạn chỉ định đầu vào cho ứng dụng của bạn. Đây có thể là các file JavaScript hoặc CSS và cả các ngôn ngữ tiền xử lý như TypeScript, JSX, TSX và Sass.
 
@@ -372,10 +373,41 @@ Lệnh `@viteReactRefresh` phải được gọi trước lệnh `@vite`.
 > [!NOTE]
 > [Bộ công cụ khởi tạo](/docs/{{version}}/starter-kits) của Laravel đã chứa cấu hình Laravel, React và Vite phù hợp. Những bộ công cụ khởi tạo này là cách nhanh nhất để bắt đầu với Laravel, React và Vite.
 
+<a name="svelte"></a>
+### Svelte
+
+Nếu bạn muốn xây dựng frontend của bạn bằng framework [Svelte](https://svelte.dev/), thì bạn cũng sẽ cần cài đặt plugin `@sveltejs/vite-plugin-svelte`:
+
+```shell
+npm install --save-dev @sveltejs/vite-plugin-svelte
+```
+
+Sau đó, bạn có thể đưa plugin này vào trong file cấu hình `vite.config.js` của bạn.
+
+```js
+import { svelte } from '@sveltejs/vite-plugin-svelte';
+import laravel from 'laravel-vite-plugin';
+import { defineConfig } from 'vite';
+
+export default defineConfig({
+  plugins: [
+    laravel({
+      input: ['resources/js/app.ts'],
+      ssr: 'resources/js/ssr.ts',
+      refresh: true,
+    }),
+    svelte(),
+  ],
+});
+```
+
+> [!NOTE]
+> [Các bộ khởi tạo](/docs/{{version}}/starter-kits) của Laravel đã chứa sẵn cấu hình cho Laravel, Svelte và Vite phù hợp. Những bộ khởi tạo này là cách nhanh nhất để bắt đầu ứng dụng Laravel với Svelte và Vite.
+
 <a name="inertia"></a>
 ### Inertia
 
-Plugin Laravel Vite cung cấp hàm `resolvePageComponent` tiện lợi để giúp bạn resolve các component page Inertia của bạn. Dưới đây là ví dụ về helper được sử dụng với Vue 3; tuy nhiên, bạn cũng có thể sử dụng hàm này trong các framework khác như React:
+Plugin Laravel Vite cung cấp hàm `resolvePageComponent` tiện lợi để giúp bạn resolve các component page Inertia của bạn. Dưới đây là ví dụ về helper được sử dụng với Vue 3; tuy nhiên, bạn cũng có thể sử dụng hàm này trong các framework khác như React hoặc Svelte:
 
 ```js
 import { createApp, h } from 'vue';
@@ -449,13 +481,13 @@ CSS của ứng dụng của bạn có thể được đặt trong file `resourc
 
 Khi tham chiếu đến asset trong JavaScript hoặc CSS của bạn, Vite sẽ tự động xử lý và tạo version cho chúng. Ngoài ra, khi xây dựng các ứng dụng dựa trên Blade, Vite cũng có thể xử lý và tạo version cho các asset tĩnh mà bạn chỉ tham chiếu trong các template Blade.
 
-Tuy nhiên, để thực hiện được điều này, bạn cần phải cho Vite biết về asset của bạn bằng cách import asset tĩnh đó vào đầu nhập của ứng dụng. Ví dụ, nếu bạn muốn xử lý và version tất cả hình ảnh được lưu trong `resources/images` và tất cả các phông chữ được lưu trong `resources/fonts`, bạn nên thêm nội dung đó vào đầu nhập `resources/js/app.js` của ứng dụng:
+Tuy nhiên, để thực hiện được điều này, bạn cần phải cho Vite biết về các asset của bạn bằng cách khai báo chúng trong tùy chọn `assets` của plugin. Ví dụ: nếu bạn muốn xử lý và tạo version cho tất cả hình ảnh được lưu trong `resources/images` và tất cả các font chữ được lưu trong `resources/fonts`, bạn nên thêm nội dung sau vào cấu hình Vite của bạn:
 
 ```js
-import.meta.glob([
-  '../images/**',
-  '../fonts/**',
-]);
+laravel({
+    input: 'resources/js/app.js',
+    assets: ['resources/images/**', 'resources/fonts/**'],
+})
 ```
 
 Các asset này hiện sẽ được Vite xử lý khi chạy `npm run build`. Sau đó, bạn có thể tham chiếu các asset này vào trong các template Blade bằng phương thức `Vite::asset`, phương thức này sẽ trả về URL đã version hoá cho một asset nhất định:
@@ -463,6 +495,9 @@ Các asset này hiện sẽ được Vite xử lý khi chạy `npm run build`. S
 ```blade
 <img src="{{ Vite::asset('resources/images/logo.png') }}">
 ```
+
+> [!NOTE]
+> Các phiên bản trước phiên bản 3 của plugin Laravel Vite, các asset static phải được import vào trong ứng dụng của bạn bằng `import.meta.glob`. Tuy nhiên, tùy chọn `assets` đã được giới thiệu trong Vite 8.
 
 <a name="blade-refreshing-on-save"></a>
 ### Refreshing On Save

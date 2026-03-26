@@ -276,9 +276,9 @@ public function viaQueues(): array
 ```
 
 <a name="customizing-queued-notification-job-properties"></a>
-#### Customizing Queued Notification Job Properties
+#### Customizing Queued Notification Job Attributes
 
-Bạn có thể tùy chỉnh hành vi của queued job bằng cách định nghĩa các thuộc tính trên class notification của bạn. Các thuộc tính này sẽ được kế thừa bởi queued job gửi notification đó:
+Bạn có thể tùy chỉnh hành vi của queued job bằng cách định nghĩa các thuộc tính queue trên class notification của bạn. Các thuộc tính này sẽ được kế thừa bởi queued job gửi notification đó:
 
 ```php
 <?php
@@ -288,31 +288,16 @@ namespace App\Notifications;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
+use Illuminate\Queue\Attributes\MaxExceptions;
+use Illuminate\Queue\Attributes\Timeout;
+use Illuminate\Queue\Attributes\Tries;
 
+#[Tries(5)]
+#[Timeout(120)]
+#[MaxExceptions(3)]
 class InvoicePaid extends Notification implements ShouldQueue
 {
     use Queueable;
-
-    /**
-     * The number of times the notification may be attempted.
-     *
-     * @var int
-     */
-    public $tries = 5;
-
-    /**
-     * The number of seconds the notification can run before timing out.
-     *
-     * @var int
-     */
-    public $timeout = 120;
-
-    /**
-     * The maximum number of unhandled exceptions to allow before failing.
-     *
-     * @var int
-     */
-    public $maxExceptions = 3;
 
     // ...
 }
@@ -441,6 +426,21 @@ Tuy nhiên, nếu bạn muốn đưa ra một kiểm tra cuối cùng về việ
 public function shouldSend(object $notifiable, string $channel): bool
 {
     return $this->invoice->isPaid();
+}
+```
+
+<a name="after-sending-notifications"></a>
+#### After Sending Notifications
+
+Nếu bạn muốn thực hiện một code sau khi một thông báo được gửi đi, bạn có thể định nghĩa một phương thức `afterSending` trong class notification. Phương thức này sẽ nhận vào đối tượng notifiable, tên channel và response từ channel đó:
+
+```php
+/**
+ * Handle the notification after it has been sent.
+ */
+public function afterSending(object $notifiable, string $channel, mixed $response): void
+{
+    // ...
 }
 ```
 

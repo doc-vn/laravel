@@ -56,6 +56,7 @@ Laravel có chứa nhiều hàm khác nhau để thao tác với các giá trị
 [Str::finish](#method-str-finish)
 [Str::fromBase64](#method-str-from-base64)
 [Str::headline](#method-str-headline)
+[Str::initials](#method-str-initials)
 [Str::inlineMarkdown](#method-str-inline-markdown)
 [Str::is](#method-str-is)
 [Str::isAscii](#method-str-is-ascii)
@@ -165,6 +166,7 @@ Laravel có chứa nhiều hàm khác nhau để thao tác với các giá trị
 [fromBase64](#method-fluent-str-from-base64)
 [hash](#method-fluent-str-hash)
 [headline](#method-fluent-str-headline)
+[initials](#method-fluent-str-initials)
 [inlineMarkdown](#method-fluent-str-inline-markdown)
 [is](#method-fluent-str-is)
 [isAscii](#method-fluent-str-is-ascii)
@@ -741,6 +743,23 @@ $headline = Str::headline('steve_jobs');
 $headline = Str::headline('EmailNotificationSent');
 
 // Email Notification Sent
+```
+
+<a name="method-str-initials"></a>
+#### `Str::initials()` {.collection-method}
+
+Hàm `Str::initials` sẽ trả về các chữ cái đầu của các từ có trong một chuỗi nhất định, bạn cũng có thể có thêm tùy chọn viết hoa cho chúng:
+
+```php
+use Illuminate\Support\Str;
+
+$initials = Str::initials('taylor otwell');
+
+// to
+
+$initials = Str::initials('taylor otwell', capitalize: true);
+
+// TO
 ```
 
 <a name="method-str-inline-markdown"></a>
@@ -2569,6 +2588,19 @@ $headline = Str::of('EmailNotificationSent')->headline();
 // Email Notification Sent
 ```
 
+<a name="method-fluent-str-initials"></a>
+#### `initials` {.collection-method}
+
+Hàm `initials` sẽ chuyển đổi chuỗi thành chuỗi gồm có các chữ cái đầu có trong chuỗi đã cho:
+
+```php
+use Illuminate\Support\Str;
+
+$initials = Str::of('Taylor Otwell')->initials()->upper();
+
+// TO
+```
+
 <a name="method-fluent-str-inline-markdown"></a>
 #### `inlineMarkdown` {.collection-method}
 
@@ -3726,7 +3758,7 @@ $string = Str::of('tony stark')
 // 'Tony Stark'
 ```
 
-Nếu cần, bạn có thể truyền một closure khác làm tham số thứ ba cho phương thức `when`. Closure này sẽ thực hiện nếu chuỗi không chứa giá trị đã cho.
+Nếu cần, bạn có thể truyền một closure khác làm tham số thứ ba. Closure sẽ được gọi nếu chuỗi không chứa giá trị đã cho.
 
 Bạn cũng có thể truyền một mảng các giá trị để xác định xem chuỗi đã cho có chứa bất kỳ giá trị nào có trong mảng hay không:
 
@@ -3759,7 +3791,7 @@ $string = Str::of('tony stark')
 // 'Tony Stark'
 ```
 
-Nếu cần thiết, bạn có thể truyền một closure khác làm tham số thứ ba cho phương thức `when`. Closure này sẽ được thực thi nếu tham số điều kiện là `false`.
+Nếu cần thiết, bạn có thể truyền một closure khác làm tham số thứ ba. Closure sẽ được gọi nếu tham số điều kiện là `false`.
 
 <a name="method-fluent-str-when-doesnt-end-with"></a>
 #### `whenDoesntEndWith` {.collection-method}
