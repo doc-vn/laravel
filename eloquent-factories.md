@@ -122,20 +122,17 @@ protected static function newFactory()
 }
 ```
 
-Sau đó, định nghĩa thuộc tính `model` trên factory tương ứng:
+Sau đó, sử dụng thuộc tính `UseModel` cho factory tương ứng để chỉ ra model:
 
 ```php
 use App\Administration\Flight;
+use Illuminate\Database\Eloquent\Factories\Attributes\UseModel;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
+#[UseModel(Flight::class)]
 class FlightFactory extends Factory
 {
-    /**
-     * The name of the factory's corresponding model.
-     *
-     * @var class-string<\Illuminate\Database\Eloquent\Model>
-     */
-    protected $model = Flight::class;
+    // ...
 }
 ```
 
@@ -390,7 +387,7 @@ $user = User::factory()
             ->state(function (array $attributes, User $user) {
                 return ['user_type' => $user->type];
             })
-        )
+    )
     ->create();
 ```
 

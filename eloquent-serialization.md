@@ -85,46 +85,41 @@ Khi một model Eloquent được chuyển đổi thành JSON, các quan hệ m�
 <a name="hiding-attributes-from-json"></a>
 ## Ẩn thuộc tính từ JSON
 
-Thỉnh thoảng bạn cũng có thể muốn giới hạn các thuộc tính, chẳng hạn như mật khẩu, được chứa trong mảng hoặc JSON của model của bạn. Để làm như vậy, hãy thêm một thuộc tính `$hidden` vào model của bạn. Các thuộc tính được liệt kê trong mảng của thuộc tính `$hidden` sẽ không được chuyển đổi khi model của bạn được chuyển đổi:
+Thỉnh thoảng bạn cũng có thể muốn giới hạn các thuộc tính, chẳng hạn như mật khẩu, được chứa trong mảng hoặc JSON của model của bạn. Để làm như vậy, bạn có thể sử dụng thuộc tính `Hidden` trên model của bạn. Các thuộc tính được liệt kê trong thuộc tính `Hidden` sẽ không được chuyển đổi khi model của bạn được chuyển đổi:
 
 ```php
 <?php
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Model;
 
+#[Hidden(['password'])]
 class User extends Model
 {
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var array<string>
-     */
-    protected $hidden = ['password'];
+    // ...
 }
 ```
+
 
 > [!NOTE]
 > Để ẩn các quan hệ, hãy thêm tên phương thức của quan hệ đó vào thuộc tính `$hidden` của model Eloquent của bạn.
 
-Ngoài ra, bạn có thể sử dụng thuộc tính `visible` để định nghĩa một danh sách các thuộc tính có thể hiển thị trong mảng hoặc JSON của bạn. Tất cả các thuộc tính không có mặt trong mảng `$visible` sẽ bị ẩn khi model được chuyển đổi thành một mảng hoặc một JSON:
+Ngoài ra, bạn có thể sử dụng thuộc tính `Visible` để định nghĩa một danh sách các thuộc tính có thể hiển thị trong mảng hoặc JSON của bạn. Tất cả các thuộc tính không có mặt trong thuộc tính `Visible` sẽ bị ẩn khi model được chuyển đổi thành một mảng hoặc một JSON:
 
 ```php
 <?php
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Attributes\Visible;
 use Illuminate\Database\Eloquent\Model;
 
+#[Visible(['first_name', 'last_name'])]
 class User extends Model
 {
-    /**
-     * The attributes that should be visible in arrays.
-     *
-     * @var array
-     */
-    protected $visible = ['first_name', 'last_name'];
+    // ...
 }
 ```
 
@@ -182,23 +177,20 @@ class User extends Model
 }
 ```
 
-Nếu bạn muốn accessor luôn được thêm vào mảng hoặc chuổi JSON của model, bạn có thể thêm tên thuộc tính đó vào thuộc tính `appends` của model của bạn. Lưu ý rằng tên thuộc tính thường được tham chiếu thường sử dụng quy ước "snake case", mặc dù phương phức PHP của accessor được định nghĩa theo kiểu "camel case":
+Nếu bạn muốn accessor luôn được thêm vào mảng hoặc chuổi JSON của model, bạn có thể dùng thuộc tính `Appends` trên model của bạn. Lưu ý rằng tên thuộc tính thường được tham chiếu thường sử dụng quy ước "snake case", mặc dù phương phức PHP của accessor được định nghĩa theo kiểu "camel case":
 
 ```php
 <?php
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Attributes\Appends;
 use Illuminate\Database\Eloquent\Model;
 
+#[Appends(['is_admin'])]
 class User extends Model
 {
-    /**
-     * The accessors to append to the model's array form.
-     *
-     * @var array
-     */
-    protected $appends = ['is_admin'];
+    // ...
 }
 ```
 
@@ -215,6 +207,12 @@ return $user->append('is_admin')->toArray();
 return $user->mergeAppends(['is_admin', 'status'])->toArray();
 
 return $user->setAppends(['is_admin'])->toArray();
+```
+
+Tương tự như vậy, nếu bạn muốn xóa tất cả các thuộc tính đã được thêm vào từ một model, bạn có thể sử dụng phương thức `withoutAppends`:
+
+```php
+return $user->withoutAppends()->toArray();
 ```
 
 <a name="date-serialization"></a>

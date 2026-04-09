@@ -128,78 +128,58 @@ class Flight extends Model
 
 Sau khi xem qua ví dụ trên, bạn có thể nhận thấy rằng chúng ta đã không cho Eloquent biết bảng cơ sở dữ liệu nào tương ứng với model `Flight` của chúng ta. Mặc định, "snake case" cộng với tên số nhiều của class sẽ được sử dụng làm tên bảng trừ khi bạn khai báo một tên khác. Vì vậy, trong trường hợp này, Eloquent sẽ giả định rằng: model `Flight` sẽ lưu các bản ghi vào trong bảng `flights`, trong khi model `AirTrafficController` sẽ lưu các bản ghi vào trong bảng `air_traffic_controllers`.
 
-Nếu bảng cơ sở dữ liệu tương ứng của model của bạn không phù hợp với quy ước này, bạn có thể chỉ định tên bảng của model theo cách thủ công bằng cách định nghĩa thuộc tính `table` trên model:
+Nếu bảng cơ sở dữ liệu tương ứng của model của bạn không phù hợp với quy ước này, bạn có thể chỉ định tên bảng của model theo cách thủ công bằng cách sử dụng thuộc tính `Table`:
 
 ```php
 <?php
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Model;
 
+#[Table('my_flights')]
 class Flight extends Model
 {
-    /**
-     * The table associated with the model.
-     *
-     * @var string
-     */
-    protected $table = 'my_flights';
+    // ...
 }
 ```
+
 
 <a name="primary-keys"></a>
 ### Primary Keys
 
-Eloquent cũng sẽ giả định rằng mỗi bảng cơ sở dữ liệu tương ứng của model có một cột khóa chính có tên là `id`. Nếu cần thiết, bạn có thể định nghĩa một thuộc tính protected `$primaryKey` trên model của bạn để chỉ định một cột khác đóng vai trò làm khóa chính của model:
+Eloquent cũng sẽ giả định rằng mỗi bảng cơ sở dữ liệu tương ứng của model có một cột khóa chính có tên là `id`. Nếu cần thiết, bạn có thể chỉ định một cột khác đóng vai trò làm khóa chính của model bằng cách sử dụng tham số `key` trong thuộc tính `Table`:
 
 ```php
 <?php
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Model;
 
+#[Table(key: 'flight_id')]
 class Flight extends Model
 {
-    /**
-     * The primary key associated with the table.
-     *
-     * @var string
-     */
-    protected $primaryKey = 'flight_id';
+    // ...
 }
 ```
 
-Ngoài ra, Eloquent cũng giả định rằng khóa chính là một giá trị integer tăng dần đều, có nghĩa là Eloquent sẽ được tự động cast khóa chính thành một số nguyên. Nếu bạn muốn sử dụng khóa chính không tăng dần hoặc không phải dạng integer, thì khoá chính của bạn phải được định nghĩa trong thuộc tính public `$incrementing` trên model của bạn và set nó là `false`:
+Ngoài ra, Eloquent cũng giả định rằng khóa chính là một giá trị integer tăng dần đều, có nghĩa là Eloquent sẽ được tự động cast khóa chính thành một số nguyên. Nếu bạn muốn sử dụng khóa chính không tăng dần hoặc không phải dạng integer, bạn có thể chỉ định tham số `keyType` và `incrementing` ở trong thuộc tính `Table`:
 
 ```php
 <?php
 
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Database\Eloquent\Model;
+
+#[Table(key: 'uuid', keyType: 'string', incrementing: false)]
 class Flight extends Model
 {
-    /**
-     * Indicates if the model's ID is auto-incrementing.
-     *
-     * @var bool
-     */
-    public $incrementing = false;
-}
-```
-
-Nếu khóa chính của model của bạn không phải là dạng integer, thì bạn nên định nghĩa một thuộc tính protected `$keyType` trên model của bạn. Thuộc tính này phải có giá trị là `string`:
-
-```php
-<?php
-
-class Flight extends Model
-{
-    /**
-     * The data type of the primary key ID.
-     *
-     * @var string
-     */
-    protected $keyType = 'string';
+    // ...
 }
 ```
 
@@ -228,10 +208,10 @@ class Article extends Model
 
 $article = Article::create(['title' => 'Traveling to Europe']);
 
-$article->id; // "8f8e8478-9035-4d23-b9a7-62f4d2612ce5"
+$article->id; // "018f2b5c-6a7f-7b12-9d6f-2f8a4e0c9c11"
 ```
 
-Mặc định, trait `HasUuids` sẽ tạo ra [UUID "có thể sắp xếp"](/docs/{{version}}/strings#method-str-ordered-uuid) cho model của bạn. Các UUID này hiệu quả cho việc lưu trữ index trong cơ sở dữ liệu vì chúng có thể được sắp xếp theo kiểu từ điển.
+Mặc định, trait `HasUuids` sẽ tạo ra id dạng [UUIDv7](/docs/{{version}}/strings#method-str-uuid7) cho model của bạn. Các UUID này hiệu quả cho việc lưu trữ index trong cơ sở dữ liệu vì chúng có thể được sắp xếp theo kiểu từ điển.
 
 Bạn có thể ghi đè process tạo UUID cho một model nhất định bằng cách định nghĩa một phương thức `newUniqueId` trên model. Ngoài ra, bạn có thể chỉ định cột nào đó sẽ nhận UUID bằng cách định nghĩa phương thức `uniqueIds` trên model:
 
@@ -278,43 +258,37 @@ $article->id; // "01gd4d3tgrrfqeda94gdbtdk5c"
 <a name="timestamps"></a>
 ### Timestamps
 
-Mặc định, Eloquent mong đợi các cột `created_at` và `updated_at` tồn tại trong bảng cơ sở dữ liệu tương ứng với model của bạn. Eloquent sẽ tự động set các giá trị của các cột này khi các model được tạo hoặc cập nhật. Nếu bạn không muốn Eloquent tự động quản lý các cột này, bạn nên định nghĩa thuộc tính `$timestamps` trong model của bạn với giá trị `false`:
+Mặc định, Eloquent mong đợi các cột `created_at` và `updated_at` tồn tại trong bảng cơ sở dữ liệu tương ứng với model của bạn. Eloquent sẽ tự động set các giá trị của các cột này khi các model được tạo hoặc cập nhật. Nếu bạn không muốn Eloquent tự động quản lý các cột này, bạn có thể set `timestamps` thành `false` trong thuộc tính `Table` của model:
 
 ```php
 <?php
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Model;
 
+#[Table(timestamps: false)]
 class Flight extends Model
 {
-    /**
-     * Indicates if the model should be timestamped.
-     *
-     * @var bool
-     */
-    public $timestamps = false;
+    // ...
 }
 ```
 
-Nếu bạn cần tùy biến định dạng timestamp của model của bạn, hãy định nghĩa thuộc tính `$dateFormat` trong model của bạn. Thuộc tính này sẽ định nghĩa cách mà các thuộc tính date được lưu vào trong cơ sở dữ liệu cũng như định dạng của chúng khi model được chuyển đổi thành các loại dữ liệu như một mảng hoặc một dạng JSON:
+Nếu bạn cần tùy biến định dạng timestamp của model của bạn, bạn có thể sử dụng tham số `dateFormat` trong thuộc tính `Table`. Điều này sẽ định nghĩa cách mà các thuộc tính date được lưu vào trong cơ sở dữ liệu cũng như định dạng của chúng khi model được chuyển đổi thành các loại dữ liệu như một mảng hoặc một dạng JSON:
 
 ```php
 <?php
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Model;
 
+#[Table(dateFormat: 'U')]
 class Flight extends Model
 {
-    /**
-     * The storage format of the model's date columns.
-     *
-     * @var string
-     */
-    protected $dateFormat = 'U';
+    // ...
 }
 ```
 
@@ -325,8 +299,19 @@ Nếu bạn cần tùy biến tên của các cột được sử dụng để l
 
 class Flight extends Model
 {
-    const CREATED_AT = 'creation_date';
-    const UPDATED_AT = 'updated_date';
+    /**
+     * The name of the "created at" column.
+     *
+     * @var string|null
+     */
+    public const CREATED_AT = 'creation_date';
+
+    /**
+     * The name of the "updated at" column.
+     *
+     * @var string|null
+     */
+    public const UPDATED_AT = 'updated_date';
 }
 ```
 
@@ -339,23 +324,20 @@ Model::withoutTimestamps(fn () => $post->increment('reads'));
 <a name="database-connections"></a>
 ### Database Connection
 
-Mặc định, tất cả các model Eloquent sẽ sử dụng kết nối cơ sở dữ liệu mặc định đã được cấu hình trong application của bạn. Nếu bạn muốn khai báo một kết nối khác sẽ được sử dụng khi tương tác với một model cụ thể, thì bạn nên định nghĩa thuộc tính `$connection` trên model:
+Mặc định, tất cả các model Eloquent sẽ sử dụng kết nối cơ sở dữ liệu mặc định đã được cấu hình trong application của bạn. Nếu bạn muốn khai báo một kết nối khác sẽ được sử dụng khi tương tác với một model cụ thể, thì bạn có thể sử dụng thuộc tính `Connection`:
 
 ```php
 <?php
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Attributes\Connection;
 use Illuminate\Database\Eloquent\Model;
 
+#[Connection('mysql')]
 class Flight extends Model
 {
-    /**
-     * The database connection that should be used by the model.
-     *
-     * @var string
-     */
-    protected $connection = 'mysql';
+    // ...
 }
 ```
 
@@ -766,7 +748,7 @@ $flight = Flight::create([
 ]);
 ```
 
-Tuy nhiên, trước khi làm như vậy, bạn sẽ cần phải khai báo thuộc tính `fillable` hoặc `guarded` trên model, vì mặc định, tất cả các model Eloquent đều được bảo vệ để chống lại việc mass-assignment. Để tìm hiểu thêm về mass assignment, vui lòng tham khảo [tài liệu mass assignment](#mass-assignment).
+Tuy nhiên, trước khi làm như vậy, bạn sẽ cần phải khai báo thuộc tính `Fillable` hoặc `Guarded` trên model, vì mặc định, tất cả các model Eloquent đều được bảo vệ để chống lại việc mass-assignment. Để tìm hiểu thêm về mass assignment, vui lòng tham khảo [tài liệu mass assignment](#mass-assignment).
 
 <a name="updates"></a>
 ### Cập nhật
@@ -936,27 +918,24 @@ $flight = Flight::create([
 ]);
 ```
 
-Tuy nhiên, trước khi làm như vậy, bạn sẽ cần phải khai báo thuộc tính `fillable` hoặc `guarded` trên model, vì mặc định, tất cả các model Eloquent đều được bảo vệ để chống lại việc mass-assignment.
+Tuy nhiên, trước khi làm như vậy, bạn sẽ cần phải khai báo thuộc tính `Fillable` hoặc `Guarded` trên model, vì mặc định, tất cả các model Eloquent đều được bảo vệ để chống lại việc mass-assignment.
 
 Lỗ hổng mass assignment xảy ra khi người dùng truyền một field HTTP request và các field này thay đổi giá trị một cột trong cơ sở dữ liệu của bạn mà bạn không mong muốn. Ví dụ: kẻ xấu có thể gửi một tham số `is_admin` thông qua một request HTTP, sau đó được truyền đến phương thức `create` trong model của bạn, cho phép người đó có thể nâng quyền lên quyền admin.
 
-Vì vậy, để bắt đầu, bạn nên định nghĩa các thuộc tính  mà bạn muốn mass assignable. Bạn có thể làm điều này bằng cách sử dụng thuộc tính `$fillable` trên model. Ví dụ: hãy tạo thuộc tính `name` trong model `Flight` có thể được sử dụng để mass assignable:
+Vì vậy, để bắt đầu, bạn nên định nghĩa các thuộc tính  mà bạn muốn mass assignable. Bạn có thể làm điều này bằng cách sử dụng thuộc tính `Fillable` trên model. Ví dụ: hãy tạo thuộc tính `name` trong model `Flight` có thể được sử dụng để mass assignable:
 
 ```php
 <?php
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 
+#[Fillable(['name'])]
 class Flight extends Model
 {
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
-    protected $fillable = ['name'];
+    // ...
 }
 ```
 

@@ -6,6 +6,7 @@
     - [Định nghĩa một Mutator](#defining-a-mutator)
 - [Attribute Casting](#attribute-casting)
     - [Array và JSON Casting](#array-and-json-casting)
+    - [Binary Casting](#binary-casting)
     - [Date Casting](#date-casting)
     - [Enum Casting](#enum-casting)
     - [Encrypted Casting](#encrypted-casting)
@@ -523,6 +524,40 @@ class Option implements Arrayable, JsonSerializable
 }
 ```
 
+<a name="binary-casting"></a>
+### Binary Casting
+
+Nếu model Eloquent của bạn có một cột `uuid` hoặc `ulid` theo kiểu [binary](/docs/{{version}}/migrations#column-method-binary) ngoài cột ID tự tăng của model, bạn có thể sử dụng cast `AsBinary` để tự động cast giá trị đến và đi từ dạng nhị phân của nó:
+
+```php
+use Illuminate\Database\Eloquent\Casts\AsBinary;
+
+/**
+ * Get the attributes that should be cast.
+ *
+ * @return array<string, string>
+ */
+protected function casts(): array
+{
+    return [
+        'uuid' => AsBinary::uuid(),
+        'ulid' => AsBinary::ulid(),
+    ];
+}
+```
+
+Sau khi cast đã được định nghĩa trên model, bạn có thể set giá trị cho thuộc tính UUID hoặc ULID thành một instance đối tượng hoặc một chuỗi. Eloquent sẽ tự động cast giá trị về dạng nhị phân của nó. Khi lấy ra giá trị của thuộc tính, bạn sẽ luôn nhận được một giá trị chuỗi:
+
+```php
+use Illuminate\Support\Str;
+
+$user->uuid = Str::uuid();
+
+return $user->uuid;
+
+// "6e8cdeed-2f32-40bd-b109-1e4405be2140"
+```
+
 <a name="date-casting"></a>
 ### Date Casting
 
@@ -558,15 +593,16 @@ protected function serializeDate(DateTimeInterface $date): string
 }
 ```
 
-Để chỉ định định dạng sẽ được sử dụng khi thực sự lưu trữ ngày tháng của model trong cơ sở dữ liệu của bạn, bạn nên định nghĩa một thuộc tính `$dateFormat` trên model của bạn:
+Để chỉ định định dạng sẽ được sử dụng khi thực sự lưu trữ ngày tháng của model trong cơ sở dữ liệu của bạn, bạn nên sử dụng tham số `dateFormat` trên thuộc tính `Table` của model:
 
 ```php
-/**
- * The storage format of the model's date columns.
- *
- * @var string
- */
-protected $dateFormat = 'U';
+use Illuminate\Database\Eloquent\Attributes\Table;
+
+#[Table(dateFormat: 'U')]
+class Flight extends Model
+{
+    // ...
+}
 ```
 
 <a name="date-casting-and-timezones"></a>
@@ -639,7 +675,7 @@ Vì độ dài của văn bản được mã hóa không thể dự đoán đư�
 <a name="key-rotation"></a>
 #### Key Rotation
 
-Như bạn có thể biết, Laravel mã hóa chuỗi bằng cách sử dụng giá trị cấu hình `key` được chỉ định trong file cấu hình `app` trong ứng dụng của bạn. Thông thường, giá trị này tương ứng với giá trị của biến môi trường `APP_KEY`. Nếu cần đổi khóa này của ứng dụng, bạn sẽ cần mã hóa lại các thuộc tính đã được mã hóa, theo cách thủ công bằng khóa mới.
+Như bạn có thể biết, Laravel mã hóa chuỗi bằng cách sử dụng giá trị cấu hình `key` được chỉ định trong file cấu hình `app` trong ứng dụng của bạn. Thông thường, giá trị này tương ứng với giá trị của biến môi trường `APP_KEY`. Nếu cần đổi khóa này của ứng dụng, bạn có thể [thực hiện việc này một cách an toàn](/docs/{{version}}/encryption#gracefully-rotating-encryption-keys).
 
 <a name="query-time-casting"></a>
 ### Query Time Casting

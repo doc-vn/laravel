@@ -429,40 +429,78 @@ public function after(): array
 <a name="request-stopping-on-first-validation-rule-failure"></a>
 #### Stopping On First Validation Failure Attribute
 
-Bằng cách thêm một thuộc tính `stopOnFirstFailure` vào request class của bạn, bạn có thể thông báo cho validator rằng nó sẽ phải ngừng kiểm tra các thuộc tính khác sau khi đã xảy ra một lỗi validation:
+Bằng cách thêm một thuộc tính `StopOnFirstFailure` vào request class của bạn, bạn có thể thông báo cho validator rằng nó sẽ phải ngừng kiểm tra các thuộc tính khác sau khi đã xảy ra một lỗi validation:
 
 ```php
-/**
- * Indicates if the validator should stop on the first rule failure.
- *
- * @var bool
- */
-protected $stopOnFirstFailure = true;
+<?php
+
+namespace App\Http\Requests;
+
+use Illuminate\Foundation\Http\Attributes\StopOnFirstFailure;
+use Illuminate\Foundation\Http\FormRequest;
+
+#[StopOnFirstFailure]
+class StorePostRequest extends FormRequest
+{
+    // ...
+}
 ```
 
 <a name="customizing-the-redirect-location"></a>
 #### Customizing The Redirect Location
 
-Khi xác thực form request không thành công, một response chuyển hướng sẽ được tạo để đưa người dùng quay lại vị trí trước đó của họ. Tuy nhiên, bạn có thể tự do tùy chỉnh hành vi này. Để làm như vậy, hãy định nghĩa một thuộc tính `$redirect` trên form request của bạn:
+Khi xác thực form request không thành công, một response chuyển hướng sẽ được tạo để đưa người dùng quay lại vị trí trước đó của họ. Tuy nhiên, bạn có thể tự do tùy chỉnh hành vi này. Để làm như vậy, bạn có thể sử dụng thuộc tính `RedirectTo` trên form request của bạn:
 
 ```php
-/**
- * The URI that users should be redirected to if validation fails.
- *
- * @var string
- */
-protected $redirect = '/dashboard';
+<?php
+
+namespace App\Http\Requests;
+
+use Illuminate\Foundation\Http\Attributes\RedirectTo;
+use Illuminate\Foundation\Http\FormRequest;
+
+#[RedirectTo('/dashboard')]
+class StorePostRequest extends FormRequest
+{
+    // ...
+}
 ```
 
-Hoặc, nếu bạn muốn chuyển hướng người dùng đến một route đã được đặt tên, thì thay vào đó, bạn có thể định nghĩa một thuộc tính `$redirectRoute`:
+Hoặc, nếu bạn muốn chuyển hướng người dùng đến một route đã được đặt tên, bạn có thể sử dụng thuộc tính `RedirectToRoute` để định nghĩa:
 
 ```php
-/**
- * The route that users should be redirected to if validation fails.
- *
- * @var string
- */
-protected $redirectRoute = 'dashboard';
+<?php
+
+namespace App\Http\Requests;
+
+use Illuminate\Foundation\Http\Attributes\RedirectToRoute;
+use Illuminate\Foundation\Http\FormRequest;
+
+#[RedirectToRoute('dashboard')]
+class StorePostRequest extends FormRequest
+{
+    // ...
+}
+```
+
+<a name="customizing-the-error-bag"></a>
+#### Customizing the Error Bag
+
+Khi xác thực form request mà không thành công, các lỗi sẽ được đưa vào error bag `default`. Nếu bạn cần lưu các lỗi vào trong một [error bag có tên](#named-error-bags) khác, bạn có thể sử dụng attribute `ErrorBag` trên form request của bạn:
+
+```php
+<?php
+
+namespace App\Http\Requests;
+
+use Illuminate\Foundation\Http\Attributes\ErrorBag;
+use Illuminate\Foundation\Http\FormRequest;
+
+#[ErrorBag('login')]
+class LoginRequest extends FormRequest
+{
+    // ...
+}
 ```
 
 <a name="authorizing-form-requests"></a>
@@ -1913,7 +1951,9 @@ Số được validation phải có độ dài tối đa là _value_.
 File được validation phải khớp với một trong các loại MIME đã cho:
 
 ```php
-'video' => 'mimetypes:video/avi,video/mpeg,video/quicktime'
+'video' => 'mimetypes:video/avi,video/mpeg,video/quicktime',
+
+'media' => 'mimetypes:image/*,video/*',
 ```
 
 Để xác định loại MIME của file được tải lên, nội dung của file sẽ được đọc và framework sẽ cố gắng đoán loại MIME, nó có thể khác với loại MIME của client cung cấp.
@@ -2240,6 +2280,22 @@ Field được validation phải bắt đầu bằng một trong các giá trị
 #### string
 
 Field được validation phải là một chuỗi. Nếu bạn muốn cho phép field được `null`, thì bạn nên gán quy tắc `nullable` cho field.
+
+Để giúp thuận tiện hơn cho việc sử dụng, các quy tắc validation string cũng có thể được xây dựng bằng cách sử dụng builder rule `Rule::string()`:
+
+```php
+use Illuminate\Validation\Rule;
+
+'title' => [
+    'required',
+    Rule::string()
+        ->min(3)
+        ->max(255)
+        ->alphaDash(ascii: true),
+],
+```
+
+Builder rule string cung cấp các phương thức cho các ràng buộc chuỗi String phổ biến như: `alpha`, `alphaDash`, `alphaNumeric`, `ascii`, `between`, `doesntEndWith`, `doesntStartWith`, `endsWith`, `exactly`, `lowercase`, `max`, `min`, `startsWith`, và `uppercase`. Vì builder rule này có khả năng áp dụng điều kiện, nên bạn cũng có thể sử dụng các phương thức `when` và `unless` để áp dụng các ràng buộc trên theo một điều kiện nhất định.
 
 <a name="rule-timezone"></a>
 #### timezone

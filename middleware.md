@@ -251,6 +251,7 @@ Laravel đã định nghĩa trước các group middleware `web` và `api`, ch�
 | `Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse` |
 | `Illuminate\Session\Middleware\StartSession`              |
 | `Illuminate\View\Middleware\ShareErrorsFromSession`       |
+| `Illuminate\Foundation\Http\Middleware\PreventRequestForgery` |
 | `Illuminate\Foundation\Http\Middleware\ValidateCsrfToken` |
 | `Illuminate\Routing\Middleware\SubstituteBindings`        |
 
@@ -311,6 +312,7 @@ Nếu bạn muốn tự quản lý tất cả các middleware có trong các gro
         \Illuminate\Cookie\Middleware\EncryptCookies::class,
         \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
         \Illuminate\Session\Middleware\StartSession::class,
+        \Illuminate\Foundation\Http\Middleware\PreventRequestForgery::class,
         \Illuminate\View\Middleware\ShareErrorsFromSession::class,
         \Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class,
         \Illuminate\Routing\Middleware\SubstituteBindings::class,
@@ -383,6 +385,7 @@ Hiếm khi, bạn cần middleware của bạn thực thi theo một thứ tự 
         \Illuminate\Foundation\Http\Middleware\HandlePrecognitiveRequests::class,
         \Illuminate\Cookie\Middleware\EncryptCookies::class,
         \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
+        \Illuminate\Foundation\Http\Middleware\PreventRequestForgery::class,
         \Illuminate\Session\Middleware\StartSession::class,
         \Illuminate\View\Middleware\ShareErrorsFromSession::class,
         \Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class,

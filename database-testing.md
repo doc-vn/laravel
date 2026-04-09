@@ -155,37 +155,41 @@ class ExampleTest extends TestCase
 }
 ```
 
-Ngoài ra, bạn có thể hướng dẫn Laravel tự động khởi tạo cơ sở dữ liệu trước mỗi lần kiểm tra bằng cách sử dụng trait `RefreshDatabase`. Bạn có thể thực hiện việc này bằng cách định nghĩa thuộc tính `$seed` trên class test cơ sở của bạn:
+Ngoài ra, bạn có thể hướng dẫn Laravel tự động khởi tạo cơ sở dữ liệu trước mỗi lần kiểm tra bằng cách sử dụng trait `RefreshDatabase`. Bạn có thể thực hiện việc này bằng cách thêm thuộc tính `Seed` vào class test cơ sở của bạn:
 
 ```php
 <?php
 
 namespace Tests;
 
+use Illuminate\Foundation\Testing\Attributes\Seed;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 
+#[Seed]
 abstract class TestCase extends BaseTestCase
 {
-    /**
-     * Indicates whether the default seeder should run before each test.
-     *
-     * @var bool
-     */
-    protected $seed = true;
 }
 ```
 
-Khi thuộc tính `$seed` là `true`, thì bài test sẽ chạy class `Database\Seeders\DatabaseSeeder` trước mỗi bài test và sử dụng trait `RefreshDatabase`. Tuy nhiên, bạn có thể chỉ định một seeder cụ thể sẽ được thực thi bằng cách định nghĩa thuộc tính `$seeder` trên class test của bạn:
+Khi thuộc tính `Seed` đã được thêm vào, bài test sẽ chạy class `Database\Seeders\DatabaseSeeder` trước mỗi bài test và sử dụng trait `RefreshDatabase`. Tuy nhiên, bạn có thể chỉ định một seeder cụ thể sẽ được thực thi bằng cách dùng thuộc tính `Seeder` trên class test của bạn:
 
 ```php
-use Database\Seeders\OrderStatusSeeder;
+<?php
 
-/**
- * Run a specific seeder before each test.
- *
- * @var string
- */
-protected $seeder = OrderStatusSeeder::class;
+namespace Tests\Feature;
+
+use Database\Seeders\OrderStatusSeeder;
+use Illuminate\Foundation\Testing\Attributes\Seeder;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
+
+#[Seeder(OrderStatusSeeder::class)]
+class OrderTest extends TestCase
+{
+    use RefreshDatabase;
+
+    // ...
+}
 ```
 
 <a name="available-assertions"></a>

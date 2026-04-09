@@ -287,10 +287,10 @@ $response = Http::retry([100, 200])->post(/* ... */);
 Nếu cần, bạn có thể truyền tham số thứ ba cho phương thức `retry`. Tham số thứ ba phải là một tham số callable để xác định xem có thực sự nên thử lại hay không. Ví dụ: bạn có thể chỉ muốn thử lại request nếu request ban đầu gặp phải lỗi `ConnectionException`:
 
 ```php
-use Exception;
 use Illuminate\Http\Client\PendingRequest;
+use Throwable;
 
-$response = Http::retry(3, 100, function (Exception $exception, PendingRequest $request) {
+$response = Http::retry(3, 100, function (Throwable $exception, PendingRequest $request) {
     return $exception instanceof ConnectionException;
 })->post(/* ... */);
 ```
@@ -298,11 +298,11 @@ $response = Http::retry(3, 100, function (Exception $exception, PendingRequest $
 Nếu lần thử của request bị thất bại, bạn có thể muốn thực hiện một thay đổi đối với request trước khi nó được thực hiện lại. Bạn có thể đạt được điều này bằng cách sửa tham số request được cung cấp cho lệnh callable mà bạn đã cung cấp cho phương thức `retry`. Ví dụ: bạn có thể muốn thử lại request bằng một mã authorization token mới nếu lần thử đầu tiên trả về lỗi authentication:
 
 ```php
-use Exception;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\Client\RequestException;
+use Throwable;
 
-$response = Http::withToken($this->getToken())->retry(2, 0, function (Exception $exception, PendingRequest $request) {
+$response = Http::withToken($this->getToken())->retry(2, 0, function (Throwable $exception, PendingRequest $request) {
     if (! $exception instanceof RequestException || $exception->response->status() !== 401) {
         return false;
     }
@@ -588,7 +588,7 @@ $responses = Http::batch(fn (Batch $batch) => [
 })->then(function (Batch $batch, array $results) {
     // All requests completed successfully...
 })->catch(function (Batch $batch, int|string $key, Response|RequestException|ConnectionException $response) {
-    // First batch request failure detected...
+    // Batch request failure detected...
 })->finally(function (Batch $batch, array $results) {
     // The batch has finished executing...
 })->send();
@@ -752,9 +752,11 @@ Http::fake([
 Để kiểm tra hành vi của ứng dụng nếu một exception `Illuminate\Http\Client\RequestException` được đưa ra, bạn có thể sử dụng phương thức `failedRequest`:
 
 ```php
-Http::fake([
-    'github.com/*' => Http::failedRequest(['code' => 'not_found'], 404),
-]);
+$this->mock(GithubService::class);
+    ->shouldReceive('getUser')
+    ->andThrow(
+        Http::failedRequest(['code' => 'not_found'], 404)
+    );
 ```
 
 <a name="faking-response-sequences"></a>

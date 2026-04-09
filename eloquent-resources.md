@@ -10,6 +10,13 @@
     - [Điều kiện cho thuộc tính](#conditional-attributes)
     - [Điều kiện cho quan hệ](#conditional-relationships)
     - [Thêm Meta Data](#adding-meta-data)
+- [JSON:API Resources](#jsonapi-resources)
+    - [Tạo JSON:API Resources](#generating-jsonapi-resources)
+    - [Định nghĩa thuộc tính](#defining-jsonapi-attributes)
+    - [Định nghĩa quan hệ](#defining-jsonapi-relationships)
+    - [Resource Type và ID](#jsonapi-resource-type-and-id)
+    - [Sparse Fieldsets và Includes](#jsonapi-sparse-fieldsets-and-includes)
+    - [Links và Meta](#jsonapi-links-and-meta)
 - [Resource Responses](#resource-responses)
 
 <a name="introduction"></a>
@@ -228,27 +235,24 @@ Khi gọi phương thức `toResourceCollection`, Laravel sẽ cố gắng tìm 
 <a name="preserving-collection-keys"></a>
 #### Preserving Collection Keys
 
-Khi trả về một resource collection từ một route, Laravel sẽ reset lại các khóa của collection để chúng có thứ tự sắp xếp từ 0. Tuy nhiên, bạn có thể thêm thuộc tính `preserveKeys` vào class resource của bạn để cho biết liệu khóa collection có được giữ nguyên hay không:
+Khi trả về một resource collection từ một route, Laravel sẽ reset lại các khóa của collection để chúng có thứ tự sắp xếp từ 0. Tuy nhiên, bạn có thể dùng thuộc tính `PreserveKeys` trên class resource của bạn để cho biết liệu khóa collection có được giữ nguyên hay không:
 
 ```php
 <?php
 
 namespace App\Http\Resources;
 
+use Illuminate\Http\Resources\Attributes\PreserveKeys;
 use Illuminate\Http\Resources\Json\JsonResource;
 
+#[PreserveKeys]
 class UserResource extends JsonResource
 {
-    /**
-     * Indicates if the resource's collection keys should be preserved.
-     *
-     * @var bool
-     */
-    public $preserveKeys = true;
+    // ...
 }
 ```
 
-Khi thuộc tính `secureKeys` được set thành `true`, các khóa của collection sẽ được giữ nguyên khi collection được trả về từ mmột route hoặc một controller:
+Khi thuộc tính `preserveKeys` được set thành `true`, các khóa của collection sẽ được giữ nguyên khi collection được trả về từ mmột route hoặc một controller:
 
 ```php
 use App\Http\Resources\UserResource;
@@ -264,23 +268,20 @@ Route::get('/users', function () {
 
 Thông thường, thuộc tính `$this->collection` của một resource collection sẽ được tự động nối với kết quả của việc ánh xạ của từng item của collection với class resource của nó. Class resource được giả định là tên class của collection mà không có chuỗi `Collection` ở cuối tên class. Ngoài ra, tùy thuộc vào sở thích cá nhân của bạn, resource class có thể có hoặc không có hậu tố `Resource`.
 
-Ví dụ: `UserCollection` sẽ thử ánh xạ các instance user vào một resource có thể `UserResource`. Để tùy biến hành động này, bạn có thể ghi đè thuộc tính `$collects` của resource collection của bạn:
+Ví dụ: `UserCollection` sẽ thử ánh xạ các instance user vào một resource có thể `UserResource`. Để tùy biến hành động này, bạn có thể dùng thuộc tính `Collects` trên resource collection của bạn:
 
 ```php
 <?php
 
 namespace App\Http\Resources;
 
+use Illuminate\Http\Resources\Attributes\Collects;
 use Illuminate\Http\Resources\Json\ResourceCollection;
 
+#[Collects(Member::class)]
 class UserCollection extends ResourceCollection
 {
-    /**
-     * The resource that this resource collects.
-     *
-     * @var string
-     */
-    public $collects = Member::class;
+    // ...
 }
 ```
 
@@ -893,6 +894,347 @@ return User::all()
     ->additional(['meta' => [
         'key' => 'value',
     ]]);
+```
+
+<a name="jsonapi-resources"></a>
+## JSON:API Resources
+
+Laravel có chứa `JsonApiResource`, một resource class giúp tạo ra các response tuân thủ theo [định dạng JSON:API](https://jsonapi.org/). Nó kế thừa class `JsonResource` base và tự động xử lý đối tượng resource, quan hệ, lọc field, thêm đối tượng liên quan, và tự động set header `Content-Type` thành `application/vnd.api+json`.
+
+> [!NOTE]
+> Các JSON:API resource của Laravel sẽ xử lý việc serialization cho các response của bạn. Nếu bạn cũng cần xử lý các tham số truy vấn JSON:API đầu vào như filter và sắp xếp, thì [Laravel Query Builder của Spatie](https://spatie.be/docs/laravel-query-builder/v6/introduction) là một package tuyệt vời cho việc đó.
+
+<a name="generating-jsonapi-resources"></a>
+### Tạo JSON:API Resources
+
+Để tạo một JSON:API resource, hãy sử dụng lệnh Artisan `make:resource` với flag `--json-api`:
+
+```shell
+php artisan make:resource PostResource --json-api
+```
+
+Class được tạo ra sẽ extend `Illuminate\Http\Resources\JsonApi\JsonApiResource` và chứa các thuộc tính `$attributes` và `$relationships` để bạn định nghĩa:
+
+```php
+<?php
+
+namespace App\Http\Resources;
+
+use Illuminate\Http\Request;
+use Illuminate\Http\Resources\JsonApi\JsonApiResource;
+
+class PostResource extends JsonApiResource
+{
+    /**
+     * The resource's attributes.
+     */
+    public $attributes = [
+        // ...
+    ];
+
+    /**
+     * The resource's relationships.
+     */
+    public $relationships = [
+        // ...
+    ];
+}
+```
+
+JSON:API resource có thể được trả về từ các route và controller giống như các resource bình thường khác:
+
+```php
+use App\Http\Resources\PostResource;
+use App\Models\Post;
+
+Route::get('/api/posts/{post}', function (Post $post) {
+    return new PostResource($post);
+});
+```
+
+Hoặc để thuận tiện, bạn có thể sử dụng phương thức `toResource` của model:
+
+```php
+Route::get('/api/posts/{post}', function (Post $post) {
+    return $post->toResource();
+});
+```
+
+Điều này sẽ tạo ra một response tuân thủ theo JSON:API:
+
+```json
+{
+    "data": {
+        "id": "1",
+        "type": "posts",
+        "attributes": {
+            "title": "Hello World",
+            "body": "This is my first post."
+        }
+    }
+}
+```
+
+Để trả về một collection các JSON:API resource, hãy sử dụng phương thức `collection` hoặc phương thức `toResourceCollection`:
+
+```php
+return PostResource::collection(Post::all());
+
+return Post::all()->toResourceCollection();
+```
+
+<a name="defining-jsonapi-attributes"></a>
+### Định nghĩa thuộc tính
+
+Có hai cách để định nghĩa các thuộc tính nào sẽ được đưa vào JSON:API resource của bạn.
+
+Cách đơn giản nhất là định nghĩa vào thuộc tính `$attributes` ở trong resource của bạn. Bạn có thể liệt kê các tên thuộc tính dưới dạng các giá trị, chúng sẽ được đọc trực tiếp từ model tương ứng:
+
+```php
+public $attributes = [
+    'title',
+    'body',
+    'created_at',
+];
+```
+
+Hoặc để toàn quyền kiểm soát các thuộc tính của resource, bạn có thể ghi đè phương thức `toAttributes` trong resource:
+
+```php
+/**
+ * Get the resource's attributes.
+ *
+ * @return array<string, mixed>
+ */
+public function toAttributes(Request $request): array
+{
+    return [
+        'title' => $this->title,
+        'body' => $this->body,
+        'is_published' => $this->published_at !== null,
+        'created_at' => $this->created_at,
+        'updated_at' => $this->updated_at,
+    ];
+}
+```
+
+<a name="defining-jsonapi-relationships"></a>
+### Định nghĩa quan hệ
+
+JSON:API resource hỗ trợ định nghĩa các quan hệ tuân theo định dạng JSON:API. Các quan hệ chỉ được serialize khi client yêu cầu thông qua tham số truy vấn `include`.
+
+#### The `$relationships` Property
+
+Bạn có thể định nghĩa các quan hệ có thể được thêm vào resource thông qua thuộc tính `$relationships` có trong resource:
+
+```php
+public $relationships = [
+    'author',
+    'comments',
+];
+```
+
+Khi liệt kê tên một quan hệ dưới dạng giá trị, Laravel sẽ resolve quan hệ Eloquent tương ứng và tự động tìm class resource phù hợp. Nếu bạn cần chỉ định rõ class resource nào sẽ được thêm vào, thì bạn có thể định nghĩa quan hệ đó dưới dạng cặp key và class:
+
+```php
+use App\Http\Resources\UserResource;
+
+public $relationships = [
+    'author' => UserResource::class,
+    'comments',
+];
+```
+
+Ngoài ra, bạn cũng có thể ghi đè phương thức `toRelationships` trong resource:
+
+```php
+/**
+ * Get the resource's relationships.
+ */
+public function toRelationships(Request $request): array
+{
+    return [
+        'author' => UserResource::class,
+        'comments',
+    ];
+}
+```
+
+#### Including Relationships
+
+Client có thể yêu cầu các resource liên quan bằng cách sử dụng tham số truy vấn `include`:
+
+```
+GET /api/posts/1?include=author,comments
+```
+
+Điều này tạo ra một response gồm các id đối tượng resource ở trong key `relationships` và các đối tượng resource thật ở trong mảng `included` cao hơn:
+
+```json
+{
+    "data": {
+        "id": "1",
+        "type": "posts",
+        "attributes": {
+            "title": "Hello World"
+        },
+        "relationships": {
+            "author": {
+                "data": {
+                    "id": "1",
+                    "type": "users"
+                }
+            },
+            "comments": {
+                "data": [
+                    {
+                        "id": "1",
+                        "type": "comments"
+                    }
+                ]
+            }
+        }
+    },
+    "included": [
+        {
+            "id": "1",
+            "type": "users",
+            "attributes": {
+                "name": "Taylor Otwell"
+            }
+        },
+        {
+            "id": "1",
+            "type": "comments",
+            "attributes": {
+                "body": "Great post!"
+            }
+        }
+    ]
+}
+```
+
+Các quan hệ lồng nhau có thể được thêm vào bằng cách sử dụng cú pháp dấu chấm:
+
+```
+GET /api/posts/1?include=comments.author
+```
+
+<a name="jsonapi-relationship-depth"></a>
+#### Relationship Depth
+
+Mặc định, các quan hệ lồng nhau được thêm vào sẽ bị giới hạn ở một độ sâu tối đa. Bạn có thể tùy chỉnh giới hạn này bằng phương thức `maxRelationshipDepth`, thường được set trong một service provider của ứng dụng:
+
+```php
+use Illuminate\Http\Resources\JsonApi\JsonApiResource;
+
+JsonApiResource::maxRelationshipDepth(3);
+```
+
+<a name="jsonapi-resource-type-and-id"></a>
+### Resource Type và ID
+
+Mặc định, `type` của resource sẽ được lấy từ tên class resource. Ví dụ, `PostResource` sẽ tạo ra type là `posts` và `BlogPostResource` sẽ tạo ra là `blog-posts`. Và `id` của resource sẽ được lấy từ khóa chính của model.
+
+Nếu bạn cần tùy chỉnh các giá trị này, bạn có thể ghi đè các phương thức `toType` và `toId` trong resource của bạn:
+
+```php
+/**
+ * Get the resource's type.
+ */
+public function toType(Request $request): string
+{
+    return 'articles';
+}
+
+/**
+ * Get the resource's ID.
+ */
+public function toId(Request $request): string
+{
+    return (string) $this->uuid;
+}
+```
+
+Điều này đặc biệt hữu ích khi type của resource khác với tên class của nó, chẳng hạn khi một `AuthorResource` chứa một model `User` và nên output ra type là `authors`.
+
+<a name="jsonapi-sparse-fieldsets-and-includes"></a>
+### Sparse Fieldsets và Includes
+
+JSON:API resource có hỗ trợ [lọc field](https://jsonapi.org/format/#fetching-sparse-fieldsets), cho phép client chỉ yêu cầu các thuộc tính cụ thể cho từng loại resource thay vì lấy ra tất cả, bạn có thể thực hiện điều này bằng cách sử dụng tham số truy vấn `fields`:
+
+```
+GET /api/posts?fields[posts]=title,created_at&fields[users]=name
+```
+
+Điều này sẽ chỉ lấy ra các thuộc tính `title` và `created_at` cho các resource `posts`, và thuộc tính `name` cho các resource `users`.
+
+<a name="jsonapi-ignoring-query-string"></a>
+#### Ignoring the Query String
+
+Nếu bạn muốn tắt tính năng lọc field cho một resource response nhất định, bạn có thể gọi phương thức `ignoreFieldsAndIncludesInQueryString`:
+
+```php
+return $post->toResource()
+    ->ignoreFieldsAndIncludesInQueryString();
+```
+
+<a name="jsonapi-including-previously-loaded-relationships"></a>
+#### Including Previously Loaded Relationships
+
+Mặc định, các quan hệ chỉ được đưa vào response khi được yêu cầu qua tham số truy vấn `include`. Nếu bạn muốn đưa vào tất cả các quan hệ đã được eager-load trước đó bất kể query string như thế nào, bạn có thể gọi phương thức `includePreviouslyLoadedRelationships`:
+
+```php
+return $post->load('author', 'comments')
+    ->toResource()
+    ->includePreviouslyLoadedRelationships();
+```
+
+<a name="jsonapi-links-and-meta"></a>
+### Links và Meta
+
+Bạn có thể thêm các link và thông tin meta vào các đối tượng JSON:API resource bằng cách ghi đè các phương thức `toLinks` và `toMeta` trong resource:
+
+```php
+/**
+ * Get the resource's links.
+ */
+public function toLinks(Request $request): array
+{
+    return [
+        'self' => route('api.posts.show', $this->resource),
+    ];
+}
+
+/**
+ * Get the resource's meta information.
+ */
+public function toMeta(Request $request): array
+{
+    return [
+        'readable_created_at' => $this->created_at->diffForHumans(),
+    ];
+}
+```
+
+Điều này sẽ thêm các key gồm có `links` và `meta` vào đối tượng resource trong response:
+
+```json
+{
+    "data": {
+        "id": "1",
+        "type": "posts",
+        "attributes": {
+            "title": "Hello World"
+        },
+        "links": {
+            "self": "https://example.com/api/posts/1"
+        },
+        "meta": {
+            "readable_created_at": "2 hours ago"
+        }
+    }
+}
 ```
 
 <a name="resource-responses"></a>

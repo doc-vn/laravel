@@ -141,7 +141,47 @@ Tuy nhiên, nếu bạn muốn, bạn có thể enable hoặc disable các quy t
     }
 }
 ```
+
 Pint được xây dựng dựa trên [PHP CS Fixer](https://github.com/FriendsOfPHP/PHP-CS-Fixer). Do đó, bạn có thể sử dụng bất kỳ quy tắc nào của PHP-CS-Fixer để khắc phục các lỗi code style trong project của bạn: [PHP CS Fixer Configurator](https://mlocati.github.io/php-cs-fixer-configurator).
+
+<a name="custom-rules"></a>
+#### Custom Rules
+
+Ngoài các rules của PHP CS Fixer, Pint còn cung cấp thêm các rule tùy chỉnh có prefix là `Pint/`. Các rule này mặc định không được enable, nhưng bạn có thể enable chúng trong file `pint.json` của bạn.
+
+<a name="phpdoc-type-annotations-only"></a>
+##### `Pint/phpdoc_type_annotations_only`
+
+Rule này sẽ xóa tất cả các comment và docblock ra khỏi code của bạn, chỉ giữ lại các dòng có chứa các annotation `@` như `@param`, `@return`, `@var`, `@phpstan-type`, vv...:
+
+```php
+/**
+ * Get the posts for the user. [tl! remove]
+ * [tl! remove]
+ * @return HasMany<Post, $this>
+ */
+public function posts(): HasMany
+```
+
+Các comment một dòng và comment block mà không có annotation `@` sẽ bị xóa. Nếu bạn muốn giữ lại một comment cụ thể, bạn có thể thêm prefix `@note`, `@warning`, hoặc `@todo` vào trước comment đó:
+
+```php
+// @note This comment will be preserved.
+```
+
+Để enable rule này, hãy thêm nó vào file `pint.json` của bạn:
+
+```json
+{
+    "preset": "laravel",
+    "rules": {
+        "Pint/phpdoc_type_annotations_only": true
+    }
+}
+```
+
+> [!NOTE]
+> Rule này sẽ tự động bỏ qua các file trong thư mục `config`, vì các file cấu hình thường dựa vào các comment để làm tài liệu hướng dẫn.
 
 <a name="excluding-files-or-folders"></a>
 ### Loại trừ file hoặc folder

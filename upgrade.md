@@ -1,6 +1,7 @@
 # Upgrade Guide
 
-- [Nâng cấp đến 12.0 từ 11.x](#upgrade-12.0)
+- [Nâng cấp đến 13.0 từ 12.x](#upgrade-13.0)
+    - [Nâng cấp dùng AI](#upgrading-using-ai)
 
 <a name="high-impact-changes"></a>
 ## Những thay đổi có tác động lớn
@@ -9,6 +10,7 @@
 
 - [Updating Dependencies](#updating-dependencies)
 - [Updating the Laravel Installer](#updating-the-laravel-installer)
+- [Request Forgery Protection](#request-forgery-protection)
 
 </div>
 
@@ -17,7 +19,7 @@
 
 <div class="content-list" markdown="1">
 
-- [Models and UUIDv7](#models-and-uuidv7)
+- [Cache `serializable_classes` Configuration](#cache-serializable_classes-configuration)
 
 </div>
 
@@ -26,23 +28,31 @@
 
 <div class="content-list" markdown="1">
 
-- [Carbon 3](#carbon-3)
-- [Concurrency Result Index Mapping](#concurrency-result-index-mapping)
-- [Container Class Dependency Resolution](#container-class-dependency-resolution)
-- [Image Validation Now Excludes SVGs](#image-validation)
-- [Local Filesystem Disk Default Root Path](#local-filesystem-disk-default-root-path)
-- [Multi-Schema Database Inspecting](#multi-schema-database-inspecting)
-- [Nested Array Request Merging](#nested-array-request-merging)
+- [Cache Prefixes and Session Cookie Names](#cache-prefixes-and-session-cookie-names)
+- [Collection Model Serialization Restores Eager-Loaded Relations](#collection-model-serialization-restores-eager-loaded-relations)
+- [`Container::call` and Nullable Class Defaults](#containercall-and-nullable-class-defaults)
+- [Domain Route Registration Precedence](#domain-route-registration-precedence)
+- [`JobAttempted` Event Exception Payload](#jobattempted-event-exception-payload)
+- [Manager `extend` Callback Binding](#manager-extend-callback-binding)
+- [MySQL `DELETE` Queries With `JOIN`, `ORDER BY`, and `LIMIT`](#mysql-delete-queries-with-join-order-by-and-limit)
+- [Pagination Bootstrap View Names](#pagination-bootstrap-view-names)
+- [Polymorphic Pivot Table Name Generation](#polymorphic-pivot-table-name-generation)
+- [`QueueBusy` Event Property Rename](#queuebusy-event-property-rename)
+- [`Str` Factories Reset Between Tests](#str-factories-reset-between-tests)
 
 </div>
 
-<a name="upgrade-12.0"></a>
-## Nâng cấp đến 12.0 từ 11.x
+<a name="upgrade-13.0"></a>
+## Nâng cấp đến 13.0 từ 12.x
 
 #### Estimated Upgrade Time: 5 Minutes
 
-> [!NOTE]
-> Chúng tôi sẽ cố gắng ghi lại mọi thay đổi có thể xảy ra. Vì một số thay đổi này nằm trong các phần ẩn của framework, nên chỉ một phần trong những thay đổi này mới có thể thực sự ảnh hưởng đến application của bạn. Bạn muốn tiết kiệm thời gian? Bạn có thể sử dụng [Laravel Shift](https://laravelshift.com/) để giúp tự động hóa việc nâng cấp ứng dụng của bạn.
+> Chúng tôi sẽ cố gắng ghi lại mọi thay đổi có thể xảy ra. Vì một số thay đổi này nằm trong các phần ẩn của framework, nên chỉ một phần trong những thay đổi này mới có thể thực sự ảnh hưởng đến application của bạn. Để tiết kiệm thời gian, bạn có thể sử dụng [Shift](https://laravelshift.com). Shift là một dịch vụ được phát triển bởi cộng đồng giúp bạn tự động hóa việc nâng cấp Laravel.
+
+<a name="upgrading-using-ai"></a>
+### Nâng cấp dùng AI
+
+Bạn có thể tự động hóa việc nâng cấp này bằng cách sử dụng [Laravel Boost](https://github.com/laravel/boost). Boost là một MCP server chính thức cung cấp cho trợ lý AI của bạn các gợi ý nâng cấp có hướng dẫn — sau khi cài đặt trong bất kỳ ứng dụng Laravel 12 nào, hãy sử dụng lệnh `/upgrade-laravel-v13` trong Claude Code, Cursor, OpenCode, Gemini hoặc VS Code để bắt đầu nâng cấp lên Laravel 13. Lệnh này sẽ yêu cầu Laravel Boost `^2.0`.
 
 <a name="updating-dependencies"></a>
 ### Updating Dependencies
@@ -53,205 +63,383 @@ Bạn nên cập nhật các library sau vào file `composer.json` của ứng d
 
 <div class="content-list" markdown="1">
 
-- `laravel/framework` to `^12.0`
-- `phpunit/phpunit` to `^11.0`
-- `pestphp/pest` to `^3.0`
+- `laravel/framework` to `^13.0`
+- `laravel/boost` to `^2.0`
+- `laravel/tinker` to `^3.0`
+- `phpunit/phpunit` to `^12.0`
+- `pestphp/pest` to `^4.0`
 
 </div>
-
-<a name="carbon-3"></a>
-#### Carbon 3
-
-**Likelihood Of Impact: Low**
-
-Sự hỗ trợ cho [Carbon 2.x](https://carbon.nesbot.com/docs/) đã bị loại bỏ. Tất cả các ứng dụng Laravel 12 bây giờ sẽ yêu cầu [Carbon 3.x](https://carbon.nesbot.com/docs/#api-carbon-3).
 
 <a name="updating-the-laravel-installer"></a>
 ### Updating the Laravel Installer
 
-Nếu bạn đang sử dụng công cụ CLI Laravel installer để tạo các ứng dụng Laravel mới, bạn nên cập nhật bản cài đặt installer của bạn để tương thích với Laravel 12.x và [các starter kit Laravel mới](https://laravel.com/starter-kits). Nếu bạn đã cài đặt Laravel installer thông qua `composer global require`, bạn có thể cập nhật installer bằng lệnh `composer global update`:
+Nếu bạn đang sử dụng công cụ CLI Laravel installer để tạo các ứng dụng Laravel mới, bạn nên cập nhật bản cài đặt installer của bạn để tương thích với Laravel 13.x.
+
+Nếu bạn đã cài đặt Laravel installer thông qua `composer global require`, bạn có thể cập nhật installer bằng lệnh `composer global update`:
 
 ```shell
 composer global update laravel/installer
 ```
 
-Nếu ban đầu bạn cài đặt PHP và Laravel thông qua `php.new`, bạn chỉ cần chạy lại các lệnh cài đặt `php.new` cho hệ điều hành của bạn để cài đặt phiên bản PHP mới nhất và Laravel installer:
-
-```shell tab=macOS
-/bin/bash -c "$(curl -fsSL https://php.new/install/mac/8.4)"
-```
-
-```shell tab=Windows PowerShell
-# Run as administrator...
-Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://php.new/install/windows/8.4'))
-```
-
-```shell tab=Linux
-/bin/bash -c "$(curl -fsSL https://php.new/install/linux/8.4)"
-```
-
 Hoặc, nếu bạn đang sử dụng bản copy Laravel installer đi kèm với [Laravel Herd](https://herd.laravel.com), bạn nên cập nhật bản cài đặt Herd của bạn để lên phiên bản mới nhất.
 
-<a name="authentication"></a>
-### Authentication
+<a name="cache"></a>
+### Cache
 
-<a name="updated-databasetokenrepository-constructor-signature"></a>
-#### Updated `DatabaseTokenRepository` Constructor Signature
-
-**Likelihood Of Impact: Very Low**
-
-Constructor của class `Illuminate\Auth\Passwords\DatabaseTokenRepository` hiện tại sẽ yêu cầu tham số `$expires` được tính bằng giây, thay vì bằng phút.
-
-<a name="concurrency"></a>
-### Concurrency
-
-<a name="concurrency-result-index-mapping"></a>
-#### Concurrency Result Index Mapping
+<a name="cache-prefixes-and-session-cookie-names"></a>
+#### Cache Prefixes and Session Cookie Names
 
 **Likelihood Of Impact: Low**
 
-Khi gọi phương thức `Concurrency::run` với một mảng, thì kết quả của các phương thức chạy song song sẽ được trả về cùng với các key của mảng:
+Các prefix mặc định cho cache và Redis của Laravel hiện sử dụng các hậu tố nối bằng dấu gạch ngang. Ngoài ra, tên cookie session mặc định hiện cũng sử dụng `Str::snake(...)` cho tên ứng dụng.
+
+Trong hầu hết các ứng dụng, thay đổi này sẽ không ảnh hưởng vì các file cấu hình cấp ứng dụng đã định nghĩa sẵn các giá trị này. Điều này chủ yếu ảnh hưởng đến các ứng dụng phụ thuộc vào cấu hình dự phòng ở cấp độ framework khi các giá trị cấu hình ứng dụng tương ứng không tồn tại.
+
+Nếu ứng dụng của bạn đang dựa trên các giá trị mặc định được tạo này, thì các key cache và tên cookie session có thể thay đổi sau khi nâng cấp như sau:
 
 ```php
-$result = Concurrency::run([
-    'task-1' => fn () => 1 + 1,
-    'task-2' => fn () => 2 + 2,
-]);
+// Laravel <= 12.x
+Str::slug((string) env('APP_NAME', 'laravel'), '_').'_cache_';
+Str::slug((string) env('APP_NAME', 'laravel'), '_').'_database_';
+Str::slug((string) env('APP_NAME', 'laravel'), '_').'_session';
 
-// ['task-1' => 2, 'task-2' => 4]
+// Laravel >= 13.x
+Str::slug((string) env('APP_NAME', 'laravel')).'-cache-';
+Str::slug((string) env('APP_NAME', 'laravel')).'-database-';
+Str::snake((string) env('APP_NAME', 'laravel')).'_session';
 ```
+
+Để giữ nguyên hành vi trước đó, hãy cấu hình các biến môi trường `CACHE_PREFIX`, `REDIS_PREFIX` và `SESSION_COOKIE` trong file môi trường của bạn.
+
+<a name="store-and-repository-contracts-touch"></a>
+#### `Store` and `Repository` Contracts: `touch`
+
+**Likelihood Of Impact: Very Low**
+
+Các contract cache bây giờ đã chứa thêm phương thức `touch` để gia hạn thời gian TTL cho item. Nếu bạn đang duy trì các implementation lưu trữ cache tùy biến, bạn nên thêm phương thức này:
+
+```php
+// Illuminate\Contracts\Cache\Store
+public function touch($key, $seconds);
+```
+
+<a name="cache-serializable_classes-configuration"></a>
+#### Cache `serializable_classes` Configuration
+
+**Likelihood Of Impact: Medium**
+
+Cấu hình `cache` mặc định của ứng dụng sẽ chứa tùy chọn `serializable_classes` được set thành `false`. Điều này sẽ thắt chặt hành vi chuyển hoá cache để giúp ngăn chặn các cuộc tấn công nối chuỗi có sẵn (gadget chain attack) trong PHP nếu `APP_KEY` của ứng dụng bị rò rỉ. Nếu ứng dụng của bạn muốn lưu các đối tượng PHP vào trong cache, bạn nên liệt kê rõ các class nào có thể được chuyển hoá:
+
+```php
+'serializable_classes' => [
+    App\Data\CachedDashboardStats::class,
+    App\Support\CachedPricingSnapshot::class,
+],
+```
+
+Nếu ứng dụng của bạn trước đây phụ thuộc vào việc chuyển hoá các đối tượng cache tùy ý, bạn sẽ cần chuyển đổi cách sử dụng đó sang cho phép class hoặc sang các payload cache không phải đối tượng (chẳng hạn như mảng).
 
 <a name="container"></a>
 ### Container
 
-<a name="container-class-dependency-resolution"></a>
-#### Container Class Dependency Resolution
+<a name="containercall-and-nullable-class-defaults"></a>
+#### `Container::call` and Nullable Class Defaults
 
 **Likelihood Of Impact: Low**
 
-Dependency injection container hiện tuân thủ giá trị mặc định của các thuộc tính class khi resolve một class instance. Nếu trước đây bạn dựa vào container để resolve một class instance mà không có giá trị mặc định, thì bạn có thể cần phải điều chỉnh lại ứng dụng của bạn để phù hợp với hành vi mới này:
+`Container::call` bây giờ sẽ ưu tiên các giá trị mặc định của tham số class nullable khi không có liên kết nào tồn tại, giống với hành vi injection constructor được giới thiệu trong Laravel 12:
 
 ```php
-class Example
-{
-    public function __construct(public ?Carbon $date = null) {}
-}
+$container->call(function (?Carbon $date = null) {
+    return $date;
+});
 
-$example = resolve(Example::class);
-
-// <= 11.x
-$example->date instanceof Carbon;
-
-// >= 12.x
-$example->date === null;
+// Laravel <= 12.x: Carbon instance
+// Laravel >= 13.x: null
 ```
+
+Nếu logic injection method-call của bạn phụ thuộc vào hành vi trước đó, bạn có thể cần cập nhật lại.
+
+<a name="contracts"></a>
+### Contracts
+
+<a name="dispatcher-contract-dispatchafterresponse"></a>
+#### `Dispatcher` Contract: `dispatchAfterResponse`
+
+**Likelihood Of Impact: Very Low**
+
+Contract `Illuminate\Contracts\Bus\Dispatcher` hiện chứa phương thức `dispatchAfterResponse($command, $handler = null)`.
+
+Nếu bạn đang triển khai một implementation của dispatcher này, hãy thêm phương thức đó vào class của bạn.
+
+<a name="responsefactory-contract-eventstream"></a>
+#### `ResponseFactory` Contract: `eventStream`
+
+**Likelihood Of Impact: Very Low**
+
+Contract `Illuminate\Contracts\Routing\ResponseFactory` hiện chứa một signature `eventStream`.
+
+Nếu bạn đang triển khai một implementation của response factory này, hãy thêm phương thức đó vào class của bạn.
+
+<a name="mustverifyemail-contract-markemailasunverified"></a>
+#### `MustVerifyEmail` Contract: `markEmailAsUnverified`
+
+**Likelihood Of Impact: Very Low**
+
+Contract `Illuminate\Contracts\Auth\MustVerifyEmail` hiện chứa `markEmailAsUnverified()`.
+
+Nếu bạn cung cấp một implementation tùy chỉnh của contract này, hãy thêm phương thức này để duy trì tính tương thích.
 
 <a name="database"></a>
 ### Database
 
-<a name="multi-schema-database-inspecting"></a>
-#### Multi-Schema Database Inspecting
+<a name="mysql-delete-queries-with-join-order-by-and-limit"></a>
+#### MySQL `DELETE` Queries With `JOIN`, `ORDER BY`, and `LIMIT`
 
 **Likelihood Of Impact: Low**
 
-Mặc định các phương thức `Schema::getTables()`, `Schema::getViews()` và `Schema::getTypes()` sẽ chứa kết quả từ tất cả các schema. Bạn có thể truyền tham số `schema` để chỉ lấy kết quả cho schema đó:
+Laravel hiện sẽ biên dịch đầy đủ các truy vấn `DELETE ... JOIN` bao gồm `ORDER BY` và `LIMIT` cho cú pháp MySQL.
 
-```php
-// All tables on all schemas...
-$tables = Schema::getTables();
-
-// All tables on the 'main' schema...
-$tables = Schema::getTables(schema: 'main');
-
-// All tables on the 'main' and 'blog' schemas...
-$tables = Schema::getTables(schema: ['main', 'blog']);
-```
-
-Mặc định phương thức `Schema::getTableListing()` sẽ trả về tên bảng được định danh theo schema. Bạn có thể truyền tham số `schemaQualified` để thay đổi hành vi theo ý muốn:
-
-```php
-$tables = Schema::getTableListing();
-// ['main.migrations', 'main.users', 'blog.posts']
-
-$tables = Schema::getTableListing(schema: 'main');
-// ['main.migrations', 'main.users']
-
-$tables = Schema::getTableListing(schema: 'main', schemaQualified: false);
-// ['migrations', 'users']
-```
-
-Các lệnh `db:table` và `db:show` sẽ xuất ra kết quả của tất cả các schema trên MySQL, MariaDB và SQLite, giống như PostgreSQL và SQL Server.
-
-<a name="updated-blueprint-constructor-signature"></a>
-#### Updated `Blueprint` Constructor Signature
-
-**Likelihood Of Impact: Very Low**
-
-Constructor của class `Illuminate\Database\Schema\Blueprint` sẽ yêu cầu một instance của `Illuminate\Database\Connection` làm tham số đầu tiên của nó.
+Trong các phiên bản trước, các mệnh đề `ORDER BY` / `LIMIT` có thể bị bỏ qua một cách lặng lẽ trong các câu lệnh xóa có join. Trong Laravel 13, các mệnh đề này sẽ được đưa vào câu lệnh SQL được tạo ra. Kết quả là, các database engine không hỗ trợ cú pháp này (chẳng hạn như các biến thể MySQL / MariaDB tiêu chuẩn) có thể đưa ra một `QueryException` thay vì thực hiện một lệnh xóa không kiểm soát.
 
 <a name="eloquent"></a>
 ### Eloquent
 
-<a name="models-and-uuidv7"></a>
-#### Models and UUIDv7
+<a name="model-booting-and-nested-instantiation"></a>
+#### Model Booting and Nested Instantiation
 
-**Likelihood Of Impact: Medium**
+**Likelihood Of Impact: Very Low**
 
-Trait `HasUuids` sẽ trả về UUID tương thích với phiên bản 7 của đặc tả UUID (ordered UUID). Nếu bạn muốn tiếp tục sử dụng chuỗi UUIDv4 có thứ tự cho ID model của bạn, thì bạn nên sử dụng trait `HasVersion4Uuids`:
+Việc tạo một instance model mới trong khi model đó vẫn đang booting hiện sẽ không còn được phép và sẽ đưa ra `LogicException`.
+
+Điều này ảnh hưởng đến code khởi tạo model đến từ bên trong các phương thức `boot` của model hoặc các phương thức `boot*` của trait:
 
 ```php
-use Illuminate\Database\Eloquent\Concerns\HasUuids; // [tl! remove]
-use Illuminate\Database\Eloquent\Concerns\HasVersion4Uuids as HasUuids; // [tl! add]
+protected static function boot()
+{
+    parent::boot();
+
+    // No longer allowed during booting...
+    (new static())->getTable();
+}
 ```
 
-Trait `HasVersion7Uuids` đã bị loại bỏ. Nếu trước đây bạn đã sử dụng trait này, bạn nên sử dụng trait `HasUuids` để thay thế, trait này hiện cung cấp hành vi tương tự.
+Bạn nên di chuyển logic này ra ngoài chu kỳ boot để tránh việc boot lồng nhau.
 
-<a name="requests"></a>
-### Requests
-
-<a name="nested-array-request-merging"></a>
-#### Nested Array Request Merging
+<a name="polymorphic-pivot-table-name-generation"></a>
+#### Polymorphic Pivot Table Name Generation
 
 **Likelihood Of Impact: Low**
 
-Phương thức `$request->mergeIfMissing()` sẽ cho phép merge dữ liệu mảng lồng nhau bằng cách sử dụng ký tự "chấm". Nếu trước đây bạn dựa vào phương thức này để tạo key mảng có chứa ký tự "chấm", thì bạn có thể cần phải điều chỉnh ứng dụng của bạn để phù hợp với hành vi mới này:
+Khi tên bảng được suy luận cho các model pivot đa hình sử dụng các class model pivot tùy biến, Laravel sẽ suy luận tên bảng trên dạng số nhiều.
 
-```php
-$request->mergeIfMissing([
-    'user.last_name' => 'Otwell',
-]);
-```
+Nếu ứng dụng của bạn dùng các tên suy luận ở dạng số ít cho các bảng morph pivot và sử dụng các class pivot tùy chỉnh, bạn nên định nghĩa rõ ràng tên bảng này trên model pivot của bạn.
 
-<a name="storage"></a>
-### Storage
-
-<a name="local-filesystem-disk-default-root-path"></a>
-#### Local Filesystem Disk Default Root Path
+<a name="collection-model-serialization-restores-eager-loaded-relations"></a>
+#### Collection Model Serialization Restores Eager-Loaded Relations
 
 **Likelihood Of Impact: Low**
 
-Nếu ứng dụng của bạn không định nghĩa rõ ràng disk `local` trong cấu hình filesystem, Laravel hiện sẽ để mặc định root của disk local thành `storage/app/private`. Trong các phiên bản trước, giá trị mặc định này là `storage/app`. Do đó, các lệnh gọi đến `Storage::disk('local')` sẽ đọc và ghi vào `storage/app/private` trừ khi được cấu hình khác. Để khôi phục hành vi trước đó, bạn có thể định nghĩa disk `local` theo cách thủ công và set một đường dẫn root khác mà bạn mong muốn.
+Khi các collection model Eloquent được chuyển đổi và khôi phục (chẳng hạn như trong các queued job), các quan hệ eager-load bây giờ sẽ được khôi phục theo các model của collection đó.
 
-<a name="validation"></a>
-### Validation
+Nếu code của bạn có logic về việc kiểm tra quan hệ không tồn tại sau khi khôi phục, thì bạn có thể cần điều chỉnh lại logic đó.
 
-<a name="image-validation"></a>
-#### Image Validation Now Excludes SVGs
+<a name="http-client"></a>
+### HTTP Client
+
+<a name="http-client-response-throw-and-throwif-signatures"></a>
+#### HTTP Client `Response::throw` and `throwIf` Signatures
+
+**Likelihood Of Impact: Very Low**
+
+Các phương thức response của HTTP client bây giờ sẽ khai báo các tham số callback của chúng trong định dạng của phương thức:
+
+```php
+public function throw($callback = null);
+public function throwIf($condition, $callback = null);
+```
+
+Nếu bạn đang ghi đè các phương thức này trong các class response của bạn, bạn hãy đảm bảo các định dạng phương thức của bạn tương thích với định dạng mới.
+
+<a name="notifications"></a>
+### Notifications
+
+<a name="default-password-reset-subject"></a>
+#### Default Password Reset Subject
+
+**Likelihood Of Impact: Very Low**
+
+Tiêu đề email mặc định khi Laravel gửi reset mật khẩu đã được thay đổi:
+
+```text
+// Laravel <= 12.x
+Reset Password Notification
+
+// Laravel >= 13.x
+Reset your password
+```
+
+Nếu các bài test, kiểm tra hoặc các bản dịch của bạn phụ thuộc vào chuỗi mặc định trước đó, bạn hãy cập nhật chúng sao cho tương ứng.
+
+<a name="queued-notifications-and-missing-models"></a>
+#### Queued Notifications and Missing Models
+
+**Likelihood Of Impact: Very Low**
+
+Các queued notification bây giờ sẽ ưu tiên thuộc tính `#[DeleteWhenMissingModels]` và thuộc tính `$deleteWhenMissingModels` được định nghĩa trên class notification.
+
+Trong các phiên bản trước, việc thiếu model có thể là nguyên nhân khiến các queued notification job bị thất bại thay vì bị xóa.
+
+<a name="queue"></a>
+### Queue
+
+<a name="jobattempted-event-exception-payload"></a>
+#### `JobAttempted` Event Exception Payload
 
 **Likelihood Of Impact: Low**
 
-Mặc định, rule validation `image` không còn cho phép hình ảnh SVG. Nếu bạn muốn cho phép SVG khi sử dụng rule `image`, bạn phải cấp phép cho chúng một cách rõ ràng:
+Event `Illuminate\Queue\Events\JobAttempted` hiện sẽ cung cấp đối tượng exception (hoặc `null`) thông qua `$exception`, thay thế cho thuộc tính boolean `$exceptionOccurred` trước đó:
 
 ```php
-use Illuminate\Validation\Rules\File;
+// Laravel <= 12.x
+$event->exceptionOccurred;
 
-'photo' => 'required|image:allow_svg'
-
-// Or...
-'photo' => ['required', File::image(allowSvg: true)],
+// Laravel >= 13.x
+$event->exception;
 ```
+
+Nếu bạn đang lắng nghe event này, thì bạn hãy cập nhật code listener của bạn sao cho tương xứng.
+
+<a name="queuebusy-event-property-rename"></a>
+#### `QueueBusy` Event Property Rename
+
+**Likelihood Of Impact: Low**
+
+Thuộc tính `$connection` của event `Illuminate\Queue\Events\QueueBusy` đã được đổi tên thành `$connectionName` để nhất quán với các event queue khác.
+
+Nếu các listener của bạn tham chiếu đến `$connection`, hãy cập nhật chúng thành `$connectionName`.
+
+<a name="queue-contract-method-additions"></a>
+#### `Queue` Contract Method Additions
+
+**Likelihood Of Impact: Very Low**
+
+Contract `Illuminate\Contracts\Queue\Queue` bây giờ sẽ bao gồm các phương thức kiểm tra kích thước hàng đợi mà trước đây chỉ được khai báo trong comment.
+
+Nếu bạn đang phát triển các implementation driver queue tuỳ biến cho contract này, thì bạn hãy thêm vào implementation các phương thức sau:
+
+<div class="content-list" markdown="1">
+
+- `pendingSize`
+- `delayedSize`
+- `reservedSize`
+- `creationTimeOfOldestPendingJob`
+
+</div>
+
+<a name="routing"></a>
+### Routing
+
+<a name="domain-route-registration-precedence"></a>
+#### Domain Route Registration Precedence
+
+**Likelihood Of Impact: Low**
+
+Các route có domain rõ ràng bây giờ sẽ được ưu tiên hơn các route không có domain trong quá trình tìm route.
+
+Điều này cho phép các route subdomain hoạt động nhất quán ngay cả khi các route không có domain được đăng ký trước. Nếu ứng dụng của bạn phụ thuộc vào thứ tự đăng ký route, giữa các route có domain và không có domain, thì bạn hãy xem lại code của mình.
+
+<a name="scheduling"></a>
+### Scheduling
+
+<a name="withscheduling-registration-timing"></a>
+#### `withScheduling` Registration Timing
+
+**Likelihood Of Impact: Very Low**
+
+Các schedule được đăng ký thông qua `ApplicationBuilder::withScheduling()` bây giờ sẽ phải chờ cho đến khi `Schedule` được resolve.
+
+Nếu ứng dụng của bạn phụ thuộc vào thời điểm đăng ký schedule trong quá trình bootstrap, bạn có thể cần phải điều chỉnh lại logic đó.
+
+<a name="security"></a>
+### Security
+
+<a name="request-forgery-protection"></a>
+#### Request Forgery Protection
+
+**Likelihood Of Impact: High**
+
+Middleware CSRF của Laravel đã được đổi tên từ `VerifyCsrfToken` thành `PreventRequestForgery`, và sẽ chứa thêm việc xác minh request-origin bằng cách sử dụng header `Sec-Fetch-Site`.
+
+`VerifyCsrfToken` và `ValidateCsrfToken` tồn tại dưới dạng bí danh hiện không còn được sử dụng, nhưng các tham chiếu trực tiếp nên được cập nhật thành `PreventRequestForgery`, đặc biệt là khi bỏ qua middleware trong các bài test hoặc định nghĩa route:
+
+```php
+use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
+use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
+
+// Laravel <= 12.x
+->withoutMiddleware([VerifyCsrfToken::class]);
+
+// Laravel >= 13.x
+->withoutMiddleware([PreventRequestForgery::class]);
+```
+
+Middleware cấu hình API hiện cũng cung cấp phương thức `preventRequestForgery(...)`.
+
+<a name="support"></a>
+### Support
+
+<a name="manager-extend-callback-binding"></a>
+#### Manager `extend` Callback Binding
+
+**Likelihood Of Impact: Low**
+
+Các closure driver tùy biến được đăng ký thông qua các phương thức `extend` của manager bây giờ sẽ được liên kết với instance manager.
+
+Nếu trước đây bạn có một đối tượng liên kết khác (chẳng hạn như một instance service provider) dưới dạng `$this` ở bên trong các callback, thì bây giờ bạn nên di chuyển các giá trị đó vào trong closure thông qua cách sử dụng `use (...)`.
+
+<a name="str-factories-reset-between-tests"></a>
+#### `Str` Factories Reset Between Tests
+
+**Likelihood Of Impact: Low**
+
+Laravel bây giờ sẽ reset các custom factory của `Str` trong quá trình dọn dẹp sau các bài test.
+
+Nếu như các bài test của bạn phụ thuộc vào việc các factory UUID, ULID hoặc chuỗi ngẫu nhiên được duy trì giữa các bài test, bạn nên thiết lập chúng trong từng bài test hoặc setup hook.
+
+<a name="jsfrom-uses-unescaped-unicode-by-default"></a>
+#### `Js::from` Uses Unescaped Unicode By Default
+
+**Likelihood Of Impact: Very Low**
+
+Phương thức `Illuminate\Support\Js::from` bây giờ mặc định sử dụng `JSON_UNESCAPED_UNICODE`.
+
+Nếu các bài test hoặc việc so sánh output frontend của bạn phụ thuộc vào các chuỗi Unicode được escape (ví dụ `\u00e8`), hãy cập nhật lại kết quả mà bạn mong đợi.
+
+<a name="views"></a>
+### Views
+
+<a name="pagination-bootstrap-view-names"></a>
+#### Pagination Bootstrap View Names
+
+**Likelihood Of Impact: Low**
+
+Các tên view phân trang mặc định cho Bootstrap 3 hiện đã rõ ràng:
+
+```nothing
+// Laravel <= 12.x
+pagination::default
+pagination::simple-default
+
+// Laravel >= 13.x
+pagination::bootstrap-3
+pagination::simple-bootstrap-3
+```
+
+Nếu ứng dụng của bạn tham chiếu trực tiếp đến tên của các view phân trang này, bạn hãy cập nhật lại các tham chiếu đó.
 
 <a name="miscellaneous"></a>
 ### Miscellaneous
 
-Chúng tôi cũng khuyến cáo bạn nên xem các thay đổi trong `laravel/laravel` [GitHub repository](https://github.com/laravel/laravel). Mặc dù nhiều thay đổi trong số này là không bắt buộc, nhưng có thể bạn muốn giữ các file đó được đồng bộ với ứng dụng của bạn. Một số thay đổi sẽ được đề cập trong hướng dẫn nâng cấp này, nhưng đối với những thay đổi khác, chẳng hạn như thay đổi file cấu hình hoặc comment đều sẽ không được đề cập đến. Bạn có thể dễ dàng xem các thay đổi đó bằng [công cụ so sánh của GitHub](https://github.com/laravel/laravel/compare/11.x...12.x) và chọn bản cập nhật nào quan trọng với bạn.
+Chúng tôi cũng khuyến cáo bạn nên xem các thay đổi trong `laravel/laravel` [GitHub repository](https://github.com/laravel/laravel). Mặc dù nhiều thay đổi trong số này là không bắt buộc, nhưng có thể bạn muốn giữ các file đó được đồng bộ với ứng dụng của bạn. Một số thay đổi sẽ được đề cập trong hướng dẫn nâng cấp này, nhưng đối với những thay đổi khác, chẳng hạn như thay đổi file cấu hình hoặc comment đều sẽ không được đề cập đến. Bạn có thể dễ dàng xem các thay đổi đó bằng [công cụ so sánh của GitHub](https://github.com/laravel/laravel/compare/12.x...13.x) và chọn bản cập nhật nào quan trọng với bạn.

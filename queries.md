@@ -21,6 +21,7 @@
     - [Lệnh where exist](#where-exists-clauses)
     - [Lệnh where cho truy vấn con](#subquery-where-clauses)
     - [Lệnh where full text](#full-text-where-clauses)
+    - [Lệnh Vector Similarity](#vector-similarity-clauses)
 - [Ordering, Grouping, Limit và Offset](#ordering-grouping-limit-and-offset)
     - [Ordering](#ordering)
     - [Grouping](#grouping)
@@ -488,12 +489,12 @@ Query builder cũng cung cấp một phương thức tiện lợi để "union" 
 ```php
 use Illuminate\Support\Facades\DB;
 
-$first = DB::table('users')
+$usersWithoutFirstName = DB::table('users')
     ->whereNull('first_name');
 
 $users = DB::table('users')
     ->whereNull('last_name')
-    ->union($first)
+    ->union($usersWithoutFirstName)
     ->get();
 ```
 
@@ -665,7 +666,7 @@ WHERE published = true AND (
 Phương thức `whereNone` có thể được sử dụng để lấy ra các bản ghi mà không có cột nào khớp với một ràng buộc nhất định:
 
 ```php
-$posts = DB::table('albums')
+$albums = DB::table('albums')
     ->where('published', true)
     ->whereNone([
         'title',
@@ -823,7 +824,7 @@ Bạn cũng có thể cung cấp một đối tượng truy vấn làm tham số
 ```php
 $activeUsers = DB::table('users')->select('id')->where('is_active', 1);
 
-$users = DB::table('comments')
+$comments = DB::table('comments')
     ->whereIn('user_id', $activeUsers)
     ->get();
 ```
@@ -884,7 +885,7 @@ $patients = DB::table('patients')
 Phương thức `whereValueBetween` sẽ xác minh một giá trị cho trước nằm giữa giá trị của hai cột cùng loại trong cùng một hàng của một bảng:
 
 ```php
-$patients = DB::table('products')
+$products = DB::table('products')
     ->whereValueBetween(100, ['min_price', 'max_price'])
     ->get();
 ```
@@ -892,7 +893,7 @@ $patients = DB::table('products')
 Phương thức `whereValueNotBetween` sẽ xác minh một giá trị nằm ngoài giá trị của hai cột cùng loại trong cùng một hàng của một bảng:
 
 ```php
-$patients = DB::table('products')
+$products = DB::table('products')
     ->whereValueNotBetween(100, ['min_price', 'max_price'])
     ->get();
 ```
@@ -1145,6 +1146,58 @@ Các phương thức `whereFullText` và `orWhereFullText` có thể được s�
 $users = DB::table('users')
     ->whereFullText('bio', 'web developer')
     ->get();
+```
+
+<a name="vector-similarity-clauses"></a>
+### Lệnh Vector Similarity
+
+> [!NOTE]
+> Các lệnh Vector Similarity hiện chỉ được hỗ trợ trên các kết nối PostgreSQL sử dụng extension `pgvector`. Để biết thêm thông tin về việc định nghĩa các cột và index vector, vui lòng tham khảo [tài liệu migration](/docs/{{version}}/migrations#available-column-types).
+
+Phương thức `whereVectorSimilarTo` sẽ lọc kết quả theo độ tương ứng cosine đối với một vector và sắp xếp các kết quả theo mức độ liên quan. Ngưỡng `minSimilarity` phải là một giá trị từ `0.0` đến `1.0`, trong đó `1.0` là giống hệt nhau:
+
+```php
+$documents = DB::table('documents')
+    ->whereVectorSimilarTo('embedding', $queryEmbedding, minSimilarity: 0.4)
+    ->limit(10)
+    ->get();
+```
+
+Khi một chuỗi string được cung cấp làm tham số vector, Laravel sẽ tự động tạo embedding cho chuỗi đó bằng [Laravel AI SDK](/docs/{{version}}/ai-sdk#embeddings):
+
+```php
+$documents = DB::table('documents')
+    ->whereVectorSimilarTo('embedding', 'Best wineries in Napa Valley')
+    ->limit(10)
+    ->get();
+```
+
+Mặc định, phương thức `whereVectorSimilarTo` cũng sắp xếp kết quả theo độ khác biệt (gần giống nhất sẽ đứng trước). Bạn có thể disable việc sắp xếp này bằng cách truyền `false` làm tham số `order`:
+
+```php
+$documents = DB::table('documents')
+    ->whereVectorSimilarTo('embedding', $queryEmbedding, minSimilarity: 0.4, order: false)
+    ->orderBy('created_at', 'desc')
+    ->limit(10)
+    ->get();
+```
+
+Nếu bạn cần kiểm soát nhiều hơn, bạn có thể sử dụng riêng các phương thức `selectVectorDistance`, `whereVectorDistanceLessThan`, và `orderByVectorDistance`:
+
+```php
+$documents = DB::table('documents')
+    ->select('*')
+    ->selectVectorDistance('embedding', $queryEmbedding, as: 'distance')
+    ->whereVectorDistanceLessThan('embedding', $queryEmbedding, maxDistance: 0.3)
+    ->orderByVectorDistance('embedding', $queryEmbedding)
+    ->limit(10)
+    ->get();
+```
+
+Khi sử dụng PostgreSQL, extension `pgvector` phải được load trước khi các cột `vector` được tạo:
+
+```php
+Schema::ensureVectorExtensionExists();
 ```
 
 <a name="ordering-grouping-limit-and-offset"></a>

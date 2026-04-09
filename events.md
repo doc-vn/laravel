@@ -13,6 +13,9 @@
     - [Queued Event Listeners và Database Transactions](#queued-event-listeners-and-database-transactions)
     - [Queued Listener Middleware](#queued-listener-middleware)
     - [Encrypted Queued Listeners](#encrypted-queued-listeners)
+    - [Unique Event Listeners](#unique-event-listeners)
+        - [Giữ Listeners Unique cho đến khi Processing Begins](#keeping-listeners-unique-until-processing-begins)
+        - [Unique Listener Locks](#unique-listener-locks)
     - [Xử lý Failed Job](#handling-failed-jobs)
 - [Dispatching Event](#dispatching-events)
     - [Dispatching Events After Database Transactions](#dispatching-events-after-database-transactions)
@@ -308,7 +311,7 @@ Và chỉ có thế! Bây giờ, khi an event handled by this listener is dispat
 <a name="customizing-the-queue-connection-queue-name"></a>
 #### Customizing The Queue Connection, Name, & Delay
 
-Nếu bạn muốn tùy chỉnh kết nối của queue, tên queue hoặc delay time của queue được sử dụng bởi event listener, bạn có thể định nghĩa các thuộc tính `$connection`, `$queue`, hoặc `$delay` trong class listener của bạn:
+Nếu bạn muốn tùy chỉnh kết nối của queue, tên queue hoặc delay time của queue được sử dụng bởi event listener, bạn có thể dùng các thuộc tính `Connection`, `Queue`, và `Delay` trong class listener của bạn:
 
 ```php
 <?php
@@ -317,32 +320,18 @@ namespace App\Listeners;
 
 use App\Events\OrderShipped;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Queue\Attributes\Connection;
+use Illuminate\Queue\Attributes\Delay;
+use Illuminate\Queue\Attributes\Queue;
 
+#[Connection('sqs')]
+#[Queue('listeners')]
+#[Delay(60)]
 class SendShipmentNotification implements ShouldQueue
 {
-    /**
-     * The name of the connection the job should be sent to.
-     *
-     * @var string|null
-     */
-    public $connection = 'sqs';
-
-    /**
-     * The name of the queue the job should be sent to.
-     *
-     * @var string|null
-     */
-    public $queue = 'listeners';
-
-    /**
-     * The time (seconds) before the job should be processed.
-     *
-     * @var int
-     */
-    public $delay = 60;
+    // ...
 }
 ```
-
 Nếu bạn muốn định nghĩa một listener connection của queue, tên queue, hoặc một delay time khi ứng dụng chạy, bạn có thể định nghĩa các phương thức `viaConnection`, `viaQueue`, hoặc `withDelay` trên listener:
 
 ```php
@@ -514,6 +503,122 @@ class SendShipmentNotification implements ShouldQueue, ShouldBeEncrypted
 }
 ```
 
+<a name="unique-event-listeners"></a>
+### Unique Event Listeners
+
+> Các unique listener yêu cầu một cache driver hỗ trợ [khoá atomic](/docs/{{version}}/cache#atomic-locks). Hiện tại, các cache driver `memcached`, `redis`, `dynamodb`, `database`, `file`, và `array` đều hỗ trợ khoá atomic.
+
+Thỉnh thoảng, bạn muốn đảm bảo là chỉ có một instance duy nhất của một listener nằm trong queue tại bất kỳ thời điểm nào. Bạn có thể làm như vậy bằng cách implement interface `ShouldBeUnique` trong class listener của bạn:
+
+```php
+<?php
+
+namespace App\Listeners;
+
+use App\Events\LicenseSaved;
+use Illuminate\Contracts\Queue\ShouldBeUnique;
+use Illuminate\Contracts\Queue\ShouldQueue;
+
+class AcquireProductKey implements ShouldQueue, ShouldBeUnique
+{
+    public function __invoke(LicenseSaved $event): void
+    {
+        // ...
+    }
+}
+```
+
+Trong ví dụ trên, listener `AcquireProductKey` là duy nhất. Vì vậy, listener sẽ không được đưa vào queue nếu một instance khác của listener này đã nằm trong queue và chưa được xử lý xong. Điều này đảm bảo rằng chỉ có một product key duy nhất được tạo cho mỗi license, ngay cả khi license đó được lưu nhiều lần trong thời gian ngắn.
+
+Trong một số trường hợp nhất định, bạn có thể muốn định nghĩa một "key" cụ thể để làm cho listener trở nên duy nhất hoặc bạn muốn chỉ định một khoảng thời gian timeout mà sau thời gian đó listener sẽ không còn là duy nhất nữa. Để thực hiện điều này, bạn có thể khai báo các thuộc tính hoặc phương thức `uniqueId` và `uniqueFor` trong class listener của bạn. Các phương thức này sẽ nhận vào một instance của event, cho phép bạn sử dụng dữ liệu của event để tạo ra giá trị trả về:
+
+```php
+<?php
+
+namespace App\Listeners;
+
+use App\Events\LicenseSaved;
+use Illuminate\Contracts\Queue\ShouldBeUnique;
+use Illuminate\Contracts\Queue\ShouldQueue;
+
+class AcquireProductKey implements ShouldQueue, ShouldBeUnique
+{
+    /**
+     * The number of seconds after which the listener's unique lock will be released.
+     *
+     * @var int
+     */
+    public $uniqueFor = 3600;
+
+    public function __invoke(LicenseSaved $event): void
+    {
+        // ...
+    }
+
+    /**
+     * Get the unique ID for the listener.
+     */
+    public function uniqueId(LicenseSaved $event): string
+    {
+        return 'listener:'.$event->license->id;
+    }
+}
+```
+
+Trong ví dụ trên, listener `AcquireProductKey` là duy nhất dựa theo ID của license. Do đó, bất kỳ lần gửi mới nào của listener cho cùng một license đó sẽ bị bỏ qua cho đến khi listener hiện tại được xử lý xong. Điều này sẽ ngăn chặn việc tạo ra các product key trùng lặp cho cùng một license. Ngoài ra, nếu listener hiện tại không được xử lý trong vòng một giờ, khóa unique đó sẽ được giải phóng và một listener khác với cùng unique key đó có thể được đưa vào queue.
+
+> Nếu ứng dụng của bạn đang gửi event từ nhiều web server hoặc container khác nhau, bạn nên đảm bảo rằng tất cả các server đều giao tiếp với cùng một server cache trung tâm để Laravel có thể xác định chính xác xem một listener có phải là duy nhất hay không.
+
+<a name="keeping-listeners-unique-until-processing-begins"></a>
+#### Giữ Listeners Unique cho đến khi Processing Begins
+
+Mặc định, các unique listener sẽ được "giải phóng khóa" sau khi listener hoàn tất việc xử lý hoặc thất bại trong tất cả các lần thử lại. Tuy nhiên, có thể có những trường hợp bạn muốn listener của bạn giải phóng khóa ngay trước khi nó bắt đầu được xử lý. Để thực hiện điều này, listener của bạn nên implement interface `ShouldBeUniqueUntilProcessing` thay vì `ShouldBeUnique`:
+
+```php
+<?php
+
+namespace App\Listeners;
+
+use App\Events\LicenseSaved;
+use Illuminate\Contracts\Queue\ShouldBeUniqueUntilProcessing;
+use Illuminate\Contracts\Queue\ShouldQueue;
+
+class AcquireProductKey implements ShouldQueue, ShouldBeUniqueUntilProcessing
+{
+    // ...
+}
+```
+
+<a name="unique-listener-locks"></a>
+#### Unique Listener Locks
+
+Ở phía sau, khi một listener `ShouldBeUnique` được gửi, Laravel sẽ cố gắng lấy một [khóa atomic](/docs/{{version}}/cache#atomic-locks) cùng với key là `uniqueId`. Nếu khóa này đã bị giữ, listener sẽ không được gửi đi. Khóa này sẽ được giải phóng khi listener hoàn tất việc xử lý hoặc thất bại trong tất cả các lần thử lại. Mặc định, Laravel sẽ sử dụng cache driver mặc định để lấy khóa này. Tuy nhiên, nếu bạn muốn sử dụng một driver khác để lấy khóa, bạn có thể định nghĩa một phương thức `uniqueVia` trả về cache driver mà bạn muốn sử dụng:
+
+```php
+<?php
+
+namespace App\Listeners;
+
+use App\Events\LicenseSaved;
+use Illuminate\Contracts\Cache\Repository;
+use Illuminate\Support\Facades\Cache;
+
+class AcquireProductKey implements ShouldQueue, ShouldBeUnique
+{
+    // ...
+
+    /**
+     * Get the cache driver for the unique listener lock.
+     */
+    public function uniqueVia(LicenseSaved $event): Repository
+    {
+        return Cache::driver('redis');
+    }
+}
+```
+
+> Nếu bạn chỉ cần giới hạn việc xử lý đồng bộ của một listener, hãy sử dụng middleware job [WithoutOverlapping](/docs/{{version}}/queues#preventing-job-overlaps) để thay thế.
+
 <a name="handling-failed-jobs"></a>
 ### Xử lý Failed Job
 
@@ -556,7 +661,7 @@ class SendShipmentNotification implements ShouldQueue
 
 Nếu một trong những queued listener của bạn gặp phải lỗi, bạn có thể không muốn nó tiếp tục thử lại nó một lần nào nữa. Do đó, Laravel cung cấp nhiều cách khác nhau để chỉ định số lần thử lại hoặc khoảng thời gian của một listener có thể được thử lại.
 
-Bạn có thể định nghĩa một thuộc tính `tries` hoặc phương thức trên class listener của bạn để chỉ định số lần mà listener có thể được thử lại trước khi nó được coi là thất bại:
+Bạn có thể dùng thuộc tính `Tries` trên class listener của bạn để chỉ định số lần mà listener có thể được thử lại trước khi nó được coi là thất bại:
 
 ```php
 <?php
@@ -565,18 +670,15 @@ namespace App\Listeners;
 
 use App\Events\OrderShipped;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Queue\Attributes\Tries;
 use Illuminate\Queue\InteractsWithQueue;
 
+#[Tries(5)]
 class SendShipmentNotification implements ShouldQueue
 {
     use InteractsWithQueue;
 
-    /**
-     * The number of times the queued listener may be attempted.
-     *
-     * @var int
-     */
-    public $tries = 5;
+    // ...
 }
 ```
 
@@ -599,15 +701,21 @@ Nếu cả `retryUntil` và `tries` được định nghĩa, Laravel sẽ ưu ti
 <a name="specifying-queued-listener-backoff"></a>
 #### Specifying Queued Listener Backoff
 
-Nếu bạn muốn cấu hình số giây mà Laravel sẽ đợi trước khi thử lại một listener bị exception, bạn có thể làm như vậy bằng cách định nghĩa thuộc tính `backoff` trên class listener của bạn:
+Nếu bạn muốn cấu hình số giây mà Laravel sẽ đợi trước khi thử lại một listener bị exception, bạn có thể làm như vậy bằng cách dùng thuộc tính `Backoff` trên class listener của bạn:
 
 ```php
-/**
- * The number of seconds to wait before retrying the queued listener.
- *
- * @var int
- */
-public $backoff = 3;
+<?php
+
+namespace App\Listeners;
+
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Queue\Attributes\Backoff;
+
+#[Backoff(3)]
+class SendShipmentNotification implements ShouldQueue
+{
+    // ...
+}
 ```
 
 Nếu bạn muốn yêu cầu một logic phức tạp hơn để xác định thời gian backoff của listener, bạn có thể định nghĩa một phương thức `backoff` trên class listener của bạn:
@@ -639,7 +747,7 @@ public function backoff(): array
 <a name="specifying-queued-listener-max-exceptions"></a>
 #### Specifying Queued Listener Max Exceptions
 
-Thỉnh thoảng bạn có thể muốn chỉ định một queued listener có thể được thử lại nhiều lần, nhưng nó sẽ bị thất bại nếu các lần thử lại đó bị thất bại bởi một số lượng exception nhất định chưa được xử lý (trái ngược với việc được release trực tiếp bởi phương thức `release`). Để thực hiện điều này, bạn có thể định nghĩa thuộc tính `maxExceptions` trên class listener của bạn:
+Thỉnh thoảng bạn có thể muốn chỉ định một queued listener có thể được thử lại nhiều lần, nhưng nó sẽ bị thất bại nếu các lần thử lại đó bị thất bại bởi một số lượng exception nhất định chưa được xử lý (trái ngược với việc được release trực tiếp bởi phương thức `release`). Để thực hiện điều này, bạn có thể sử dụng các thuộc tính `Tries` và `MaxExceptions` trên class listener của bạn:
 
 ```php
 <?php
@@ -648,25 +756,15 @@ namespace App\Listeners;
 
 use App\Events\OrderShipped;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Queue\Attributes\MaxExceptions;
+use Illuminate\Queue\Attributes\Tries;
 use Illuminate\Queue\InteractsWithQueue;
 
+#[Tries(25)]
+#[MaxExceptions(3)]
 class SendShipmentNotification implements ShouldQueue
 {
     use InteractsWithQueue;
-
-    /**
-     * The number of times the queued listener may be attempted.
-     *
-     * @var int
-     */
-    public $tries = 25;
-
-    /**
-     * The maximum number of unhandled exceptions to allow before failing.
-     *
-     * @var int
-     */
-    public $maxExceptions = 3;
 
     /**
      * Handle the event.
@@ -683,7 +781,7 @@ Trong ví dụ này, listener sẽ được thử tối đa 25 lần. Tuy nhiên
 <a name="specifying-queued-listener-timeout"></a>
 #### Specifying Queued Listener Timeout
 
-Thông thường, bạn biết thời gian mà bạn mong muốn các queued listener của bạn được thực hiện. Vì lý do này, Laravel cho phép bạn chỉ định một giá trị "timeout". Nếu một listener đang xử lý lâu hơn số giây được chỉ định bởi giá trị timeout, worker đang xử lý listener đó sẽ thoát với một lỗi. Bạn có thể định nghĩa số giây tối đa mà một listener được phép chạy bằng cách định nghĩa thuộc tính `timeout` trên class listener của bạn:
+Thông thường, bạn biết thời gian mà bạn mong muốn các queued listener của bạn được thực hiện. Vì lý do này, Laravel cho phép bạn chỉ định một giá trị "timeout". Nếu một listener đang xử lý lâu hơn số giây được chỉ định bởi giá trị timeout, worker đang xử lý listener đó sẽ thoát với một lỗi. Bạn có thể định nghĩa số giây tối đa mà một listener được phép chạy bằng cách dùng thuộc tính `Timeout` trên class listener của bạn:
 
 ```php
 <?php
@@ -692,19 +790,16 @@ namespace App\Listeners;
 
 use App\Events\OrderShipped;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Queue\Attributes\Timeout;
 
+#[Timeout(120)]
 class SendShipmentNotification implements ShouldQueue
 {
-    /**
-     * The number of seconds the listener can run before timing out.
-     *
-     * @var int
-     */
-    public $timeout = 120;
+    // ...
 }
 ```
 
-Nếu bạn muốn chỉ định một listener sẽ bị đánh dấu là thất bại khi bị timeout, bạn có thể định nghĩa thuộc tính `failOnTimeout` trên class listener:
+Nếu bạn muốn chỉ định một listener sẽ bị đánh dấu là thất bại khi bị timeout, bạn có thể dùng thuộc tính `FailOnTimeout` trên class listener:
 
 ```php
 <?php
@@ -713,15 +808,12 @@ namespace App\Listeners;
 
 use App\Events\OrderShipped;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Queue\Attributes\FailOnTimeout;
 
+#[FailOnTimeout]
 class SendShipmentNotification implements ShouldQueue
 {
-    /**
-     * Indicate if the listener should be marked as failed on timeout.
-     *
-     * @var bool
-     */
-    public $failOnTimeout = true;
+    // ...
 }
 ```
 

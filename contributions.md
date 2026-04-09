@@ -5,6 +5,7 @@
 - [Các kênh phát triển chính](#core-development-discussion)
 - [Branch nào?](#which-branch)
 - [Biên dịch Asset](#compiled-assets)
+- [Đóng góp do AI tạo ra](#ai-generated-contributions)
 - [Lỗ hổng bảo mật](#security-vulnerabilities)
 - [Coding Style](#coding-style)
     - [PHPDoc](#phpdoc)
@@ -37,7 +38,6 @@ Mã nguồn của Laravel được quản lý trên GitHub và có các reposito
 - [Laravel Envoy](https://github.com/laravel/envoy)
 - [Laravel Folio](https://github.com/laravel/folio)
 - [Laravel Framework](https://github.com/laravel/framework)
-- [Laravel Homestead](https://github.com/laravel/homestead) ([Build Scripts](https://github.com/laravel/settler))
 - [Laravel Horizon](https://github.com/laravel/horizon)
 - [Laravel Passport](https://github.com/laravel/passport)
 - [Laravel Pennant](https://github.com/laravel/pennant)
@@ -51,6 +51,7 @@ Mã nguồn của Laravel được quản lý trên GitHub và có các reposito
 - [Laravel Telescope](https://github.com/laravel/telescope)
 - [Laravel Livewire Starter Kit](https://github.com/laravel/livewire-starter-kit)
 - [Laravel React Starter Kit](https://github.com/laravel/react-starter-kit)
+- [Laravel Svelte Starter Kit](https://github.com/laravel/svelte-starter-kit)
 - [Laravel Vue Starter Kit](https://github.com/laravel/vue-starter-kit)
 
 </div>
@@ -82,9 +83,9 @@ Kênh `#internals` của [Laravel Discord server](https://discord.gg/laravel) s�
 <a name="which-branch"></a>
 ## Branch nào?
 
-**Tất cả** các bản sửa lỗi phải được gửi đến phiên bản mới nhất được hỗ trợ sửa lỗi (hiện tại là `12.x`). Các bản sửa lỗi sẽ **không** được gửi đến branch `master` trừ khi chúng sửa các tính năng đã tồn tại trong bản phát hành sắp tới.
+**Tất cả** các bản sửa lỗi phải được gửi đến phiên bản mới nhất được hỗ trợ sửa lỗi (hiện tại là `13.x`). Các bản sửa lỗi sẽ **không** được gửi đến branch `master` trừ khi chúng sửa các tính năng đã tồn tại trong bản phát hành sắp tới.
 
-Các tính năng **phụ** có **tương thích** với bản phát hành hiện tại thì có thể được gửi đến branch ổn định mới nhất (hiện tại là `12.x`).
+Các tính năng **phụ** có **tương thích** với bản phát hành hiện tại thì có thể được gửi đến branch ổn định mới nhất (hiện tại là `13.x`).
 
 Các tính năng **chính** mới hoặc các tính năng có những thay đổi nghiêm trọng phải luôn được gửi đến branch `master`, nơi chứa code của các bản phát hành sắp tới.
 
@@ -92,6 +93,17 @@ Các tính năng **chính** mới hoặc các tính năng có những thay đổ
 ## Biên dịch Asset
 
 Nếu bạn đang gửi một thay đổi sẽ ảnh hưởng đến các file đã được biên dịch, chẳng hạn như các file ở trong `resources/css` hoặc `resources/js` của repository `laravel/laravel`, thì đừng commit các file đã biên dịch trên. Bởi vì, trên thực tế, do kích thước của file đó quá lớn, nên chúng sẽ không thể được review bởi người quản lý. Và điều này cũng có thể bị khai thác như là một cách để đưa mã độc vào trong source code của Laravel. Để ngăn chặn điều này, tất cả các file đã biên dịch sẽ được tạo và commit bởi những người quản lý source Laravel.
+
+<a name="ai-generated-contributions"></a>
+## Đóng góp do AI tạo ra
+
+Chúng tôi trân trọng mọi pull request được gửi đến Laravel. Tuy nhiên, các đóng góp chủ yếu do AI tạo ra mà không có sự xem xét và đánh giá kỹ lưỡng của con người sẽ không được chấp nhận.
+
+Nếu bạn chọn sử dụng các công cụ AI để hỗ trợ đóng góp của bạn, code kết quả **phải** được bạn xem xét, kiểm tra và hiểu code một cách kỹ lưỡng trước khi gửi.
+
+**Việc mở issue hoặc pull request hoàn toàn do AI tạo ra sẽ không được chấp nhận.** Các pull request như vậy sẽ bị close mà không cần xem xét, và người dùng đóng góp có thể bị chặn khỏi repository.
+
+Chúng tôi khuyến khích những người đóng góp nên làm quen với codebase hiện có, tương tác với cộng đồng và gửi các pull request phản ánh sự hiểu biết và xem xét cẩn thận của chính họ về vấn đề mà họ đang giải quyết.
 
 <a name="security-vulnerabilities"></a>
 ## Lỗ hổng bảo mật

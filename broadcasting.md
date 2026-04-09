@@ -687,22 +687,18 @@ public function broadcastWith(): array
 <a name="broadcast-queue"></a>
 ### Broadcast Queue
 
-Mặc định, mỗi broadcast event sẽ được đặt trên một queue mặc định với một kết nối queue mặc định được định nghĩa trong file cấu hình `queue.php` của bạn. Bạn có thể tùy chỉnh kết nối queue và tên được broadcaster sử dụng bằng cách định nghĩa các thuộc tính `connection` và `queue` trên các event class của bạn:
+Mặc định, mỗi broadcast event sẽ được đặt trên một queue mặc định với một kết nối queue mặc định được định nghĩa trong file cấu hình `queue.php` của bạn. Bạn có thể tùy chỉnh kết nối queue và tên được broadcaster sử dụng bằng cách sử dụng các thuộc tính `Connection` và `Queue` trên class event của bạn:
 
 ```php
-/**
- * The name of the queue connection to use when broadcasting the event.
- *
- * @var string
- */
-public $connection = 'redis';
+use Illuminate\Queue\Attributes\Connection;
+use Illuminate\Queue\Attributes\Queue;
 
-/**
- * The name of the queue on which to place the broadcasting job.
- *
- * @var string
- */
-public $queue = 'default';
+#[Connection('redis')]
+#[Queue('default')]
+class ServerCreated implements ShouldBroadcast
+{
+    // ...
+}
 ```
 
 Ngoài ra, bạn có thể tùy chỉnh tên queue bằng cách định nghĩa phương thức `broadcastQueue` cho event của bạn:
@@ -1282,6 +1278,45 @@ useEchoPresence("posts", "PostPublished", (e) => {
 });
 </script>
 ```
+
+<a name="react-vue-connection-status"></a>
+#### Connection Status
+
+Bạn có thể lấy trạng thái kết nối của WebSocket hiện tại bằng cách sử dụng hook `useConnectionStatus`, nó sẽ tự động cập nhật trạng thái khi trạng thái kết nối thay đổi:
+
+```js tab=React
+import { useConnectionStatus } from "@laravel/echo-react";
+
+function ConnectionIndicator() {
+    const status = useConnectionStatus();
+
+    return <div>Connection: {status}</div>;
+}
+```
+
+```vue tab=Vue
+<script setup lang="ts">
+import { useConnectionStatus } from "@laravel/echo-vue";
+
+const status = useConnectionStatus();
+</script>
+
+<template>
+    <div>Connection: {{ status }}</div>
+</template>
+```
+
+Các giá trị trạng thái có thể có là:
+
+<div class="content-list" markdown="1">
+
+- `connected` - Đã kết nối thành công với server WebSocket.
+- `connecting` - Đang kết nối.
+- `reconnecting` - Đang kết nối lại sau khi bị ngắt kết nối.
+- `disconnected` - Không được kết nối.
+- `failed` - Kết nối thất bại.
+
+</div>
 
 <a name="presence-channels"></a>
 ## Presence Channel

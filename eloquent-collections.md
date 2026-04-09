@@ -325,7 +325,7 @@ $users = $users->unique();
 ```
 
 <a name="method-withoutAppends"></a>
-#### `withoutAppends($attributes)` {.collection-method}
+#### `withoutAppends()` {.collection-method}
 
 Phương thức `withoutAppends` sẽ tạm thời xóa tất cả các [thuộc tính được append](/docs/{{version}}/eloquent-serialization#appending-values-to-json) trên mỗi model có trong collection:
 

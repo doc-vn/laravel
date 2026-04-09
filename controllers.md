@@ -5,6 +5,8 @@
     - [Controller cơ bản](#basic-controllers)
     - [Single Action Controller](#single-action-controllers)
 - [Controller Middleware](#controller-middleware)
+    - [Thuộc tính middleware](#middleware-attributes)
+    - [Thuộc tính authorization](#authorization-attributes)
 - [Resource Controller](#resource-controllers)
     - [Partial Resource Routes](#restful-partial-resource-routes)
     - [Nested Resources](#restful-nested-resources)
@@ -165,6 +167,92 @@ public static function middleware(): array
     ];
 }
 ```
+
+<a name="middleware-attributes"></a>
+### Thuộc tính middleware
+
+Bạn cũng có thể gán middleware cho các controller bằng cách sử dụng thuộc tính PHP:
+
+```php
+<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Routing\Attributes\Controllers\Middleware;
+
+#[Middleware('auth')]
+#[Middleware('log', only: ['index'])]
+#[Middleware('subscribed', except: ['store'])]
+class UserController
+{
+    // ...
+}
+```
+
+Bạn cũng có thể đặt các thuộc tính middleware trên từng phương thức của controller. Những middleware đã được gán cho các phương thức sẽ được nối vào các middleware đã được gán ở class:
+
+```php
+<?php
+
+namespace App\Http\Controllers;
+
+use Closure;
+use Illuminate\Http\Request;
+use Illuminate\Routing\Attributes\Controllers\Middleware;
+
+#[Middleware('auth')]
+class UserController
+{
+    #[Middleware('log')]
+    #[Middleware('subscribed')]
+    public function index()
+    {
+        // ...
+    }
+
+    #[Middleware(static function (Request $request, Closure $next) {
+        // ...
+
+        return $next($request);
+    })]
+    public function store()
+    {
+        // ...
+    }
+}
+```
+
+<a name="authorization-attributes"></a>
+### Thuộc tính authorization
+
+Nếu bạn đang authorize các action của controller thông qua các policy, bạn có thể sử dụng thuộc tính `Authorize` như một lối tắt thuận tiện cho middleware `can`:
+
+```php
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Comment;
+use App\Models\Post;
+use Illuminate\Routing\Attributes\Controllers\Authorize;
+
+class CommentController
+{
+    #[Authorize('create', [Comment::class, 'post'])]
+    public function store(Post $post)
+    {
+        // ...
+    }
+
+    #[Authorize('delete', 'comment')]
+    public function destroy(Comment $comment)
+    {
+        // ...
+    }
+}
+```
+
+Tham số đầu tiên là hành động mà bạn muốn authorize. Tham số thứ hai có thể là class model, tham số route hoặc các tham số cần thiết khác cần được truyền cho policy.
 
 <a name="resource-controllers"></a>
 ## Resource Controllers

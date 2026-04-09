@@ -479,6 +479,43 @@ Bạn có thể huỷ process Horizon bằng lệnh Artisan `horizon:terminate`.
 php artisan horizon:terminate
 ```
 
+<a name="automatically-restarting-horizon"></a>
+#### Automatically Restarting Horizon
+
+Trong quá trình phát triển ở local, bạn có thể chạy lệnh `horizon:listen`. Khi sử dụng lệnh `horizon:listen`, bạn không cần phải khởi động lại Horizon một cách thủ công mỗi khi muốn load lại code đã cập nhật của mình. Trước khi sử dụng tính năng này, bạn nên đảm bảo là [Node](https://nodejs.org) đã được cài đặt trong môi trường phát triển local của bạn. Ngoài ra, bạn cũng nên cài đặt thư viện theo dõi file [Chokidar](https://github.com/paulmillr/chokidar) vào trong dự án của bạn:
+
+```shell
+npm install --save-dev chokidar
+```
+
+Sau khi Chokidar được cài đặt, bạn có thể bắt đầu Horizon bằng lệnh `horizon:listen`:
+
+```shell
+php artisan horizon:listen
+```
+
+Khi chạy trong Docker hoặc Vagrant, bạn nên sử dụng tùy chọn `--poll`:
+
+```shell
+php artisan horizon:listen --poll
+```
+
+Bạn có thể cấu hình các thư mục và file sẽ được theo dõi bằng cách sử dụng tùy chọn cấu hình `watch` trong file cấu hình `config/horizon.php` của ứng dụng:
+
+```php
+'watch' => [
+    'app',
+    'bootstrap',
+    'config',
+    'database',
+    'public/**/*.php',
+    'resources/**/*.php',
+    'routes',
+    'composer.lock',
+    '.env',
+],
+```
+
 <a name="deploying-horizon"></a>
 ### Deploy Horizon
 

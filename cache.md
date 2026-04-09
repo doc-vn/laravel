@@ -7,6 +7,7 @@
     - [Lấy một instance cache](#obtaining-a-cache-instance)
     - [Lấy item trong cache](#retrieving-items-from-the-cache)
     - [Lưu item trong cache](#storing-items-in-the-cache)
+    - [Mở rộng thời hạn của item](#extending-item-lifetime)
     - [Xoá item trong cache](#removing-items-from-the-cache)
     - [Memory cache](#cache-memoization)
     - [Cache helper](#the-cache-helper)
@@ -14,6 +15,7 @@
 - [Atomic Locks](#atomic-locks)
     - [Quản lý Locks](#managing-locks)
     - [Quản lý Locks trong Processes](#managing-locks-across-processes)
+    - [Giới hạn đồng bộ](#concurrency-limiting)
 - [Dự phòng cache](#cache-failover)
 - [Thêm tuỳ biến cache driver](#adding-custom-cache-drivers)
     - [Viết driver](#writing-the-driver)
@@ -284,10 +286,25 @@ Cache::put('key', 'value', now()->plus(minutes: 10));
 <a name="store-if-not-present"></a>
 #### Store If Not Present
 
-Phương thức `add` sẽ chỉ thêm item vào cache nếu giá trị chưa tồn tại trong cache store. Phương thức này sẽ trả về `true` nếu item đó thực sự được thêm vào cache. Nếu không, phương thức sẽ trả về `false`. The `add` method is an atomic operation:
+Phương thức `add` sẽ chỉ thêm item vào cache nếu giá trị chưa tồn tại trong cache store. Phương thức này sẽ trả về `true` nếu item đó thực sự được thêm vào cache. Nếu không, phương thức sẽ trả về `false`. Phương thức `add` là một hành động duy nhất:
 
 ```php
 Cache::add('key', 'value', $seconds);
+```
+
+<a name="extending-item-lifetime"></a>
+### Mở rộng thời hạn của item
+
+Phương thức `touch` cho phép bạn mở rộng thời hạn (TTL) của một item cache hiện có. Phương thức `touch` sẽ trả về `true` nếu item cache đó tồn tại và thời gian hết hạn của nó đã được mở rộng thành công. Nếu item đó không tồn tại trong cache, phương thức sẽ trả về `false`:
+
+```php
+Cache::touch('key', 3600);
+```
+
+Bạn có thể cung cấp một instance `DateTimeInterface`, `DateInterval`, hoặc `Carbon` để chỉ định một thời gian hết hạn cụ thể:
+
+```php
+Cache::touch('key', now()->addHours(2));
 ```
 
 <a name="storing-items-forever"></a>
@@ -323,6 +340,12 @@ Bạn có thể xóa toàn bộ cache bằng phương thức `flush`:
 
 ```php
 Cache::flush();
+```
+
+Bạn có thể xóa tất cả các khoá atomic trong cache bằng cách sử dụng phương thức `flushLocks`:
+
+```php
+Cache::flushLocks();
 ```
 
 > [!WARNING]
@@ -530,6 +553,75 @@ Nếu bạn muốn giải phóng khóa mà bỏ qua owner hiện tại của kho
 Cache::lock('processing')->forceRelease();
 ```
 
+<a name="concurrency-limiting"></a>
+### Giới hạn đồng bộ
+
+Tính năng khoá atomic của Laravel cũng cung cấp một số cách để giới hạn việc chạy đồng bộ của các closure. Hãy sử dụng `withoutOverlapping` khi bạn muốn chỉ cho phép một instance duy nhất được chạy trong toàn bộ hạ tầng của bạn:
+
+```php
+Cache::withoutOverlapping('foo', function () {
+    // Lock acquired after waiting a maximum of 10 seconds...
+});
+```
+
+Mặc định, khoá sẽ được giữ cho đến khi closure được chạy xong và phương thức sẽ đợi tối đa 10 giây để lấy khoá. Bạn có thể tùy chỉnh các giá trị này bằng cách sử dụng thêm các tham số:
+
+```php
+Cache::withoutOverlapping('foo', function () {
+    // Lock acquired for 120 seconds after waiting a maximum of 5 seconds...
+}, lockFor: 120, waitFor: 5);
+```
+
+Nếu không thể lấy được khoá trong thời gian chờ đã được chỉ định, một exception `Illuminate\Contracts\Cache\LockTimeoutException` sẽ được đưa ra.
+
+Nếu bạn muốn kiểm soát số lượng được chạy đồng thời, hãy sử dụng phương thức `funnel` để thiết lập số lượng tối đa được chạy đồng thời. Phương thức `funnel` sẽ hoạt động với bất kỳ driver cache nào có hỗ trợ khoá:
+
+```php
+Cache::funnel('foo')
+    ->limit(3)
+    ->releaseAfter(60)
+    ->block(10)
+    ->then(function () {
+        // Concurrency lock acquired...
+    }, function () {
+        // Could not acquire concurrency lock...
+    });
+```
+
+Key `funnel` giúp xác định resource nào đang bị giới hạn. Phương thức `limit` định nghĩa số lượng tối đa được chạy đồng thời. Phương thức `releaseAfter` thiết lập thời gian chờ tính bằng giây trước khi một chỗ được tự động release. Phương thức `block` thiết lập số giây cần chờ để có một chỗ.
+
+Nếu bạn muốn xử lý việc timeout thông qua exception thay vì cung cấp một closure thất bại, bạn có thể bỏ qua closure thứ hai. Một exception `Illuminate\Cache\Limiters\LimiterTimeoutException` sẽ được đưa ra nếu không thể lấy được khoá trong thời gian chờ đã chỉ định:
+
+```php
+use Illuminate\Cache\Limiters\LimiterTimeoutException;
+
+try {
+    Cache::funnel('foo')
+        ->limit(3)
+        ->releaseAfter(60)
+        ->block(10)
+        ->then(function () {
+            // Concurrency lock acquired...
+        });
+} catch (LimiterTimeoutException $e) {
+    // Unable to acquire concurrency lock...
+}
+```
+
+Nếu bạn muốn sử dụng một cache store cụ thể cho giới hạn đồng bộ, bạn có thể gọi phương thức `funnel` trên store mà bạn mong muốn:
+
+```php
+Cache::store('redis')->funnel('foo')
+    ->limit(3)
+    ->block(10)
+    ->then(function () {
+        // Concurrency lock acquired using the "redis" store...
+    });
+```
+
+> [!NOTE]
+> Phương thức `funnel` yêu cầu cache store phải implement interface `Illuminate\Contracts\Cache\LockProvider`. Nếu bạn cố gắng sử dụng `funnel` với một cache store không hỗ trợ khoá, một `BadMethodCallException` sẽ được đưa ra.
+
 <a name="cache-failover"></a>
 ## Dự phòng cache
 
@@ -646,21 +738,25 @@ Khi extension của bạn đã được đăng ký, hãy cập nhật biến mô
 
 <div class="overflow-auto">
 
-| Event Name                                   |
-|----------------------------------------------|
-| `Illuminate\Cache\Events\CacheFlushed`       |
-| `Illuminate\Cache\Events\CacheFlushing`      |
-| `Illuminate\Cache\Events\CacheHit`           |
-| `Illuminate\Cache\Events\CacheMissed`        |
-| `Illuminate\Cache\Events\ForgettingKey`      |
-| `Illuminate\Cache\Events\KeyForgetFailed`    |
-| `Illuminate\Cache\Events\KeyForgotten`       |
-| `Illuminate\Cache\Events\KeyWriteFailed`     |
-| `Illuminate\Cache\Events\KeyWritten`         |
-| `Illuminate\Cache\Events\RetrievingKey`      |
-| `Illuminate\Cache\Events\RetrievingManyKeys` |
-| `Illuminate\Cache\Events\WritingKey`         |
-| `Illuminate\Cache\Events\WritingManyKeys`    |
+| Event Name                                      |
+|-------------------------------------------------|
+| `Illuminate\Cache\Events\CacheFlushed`          |
+| `Illuminate\Cache\Events\CacheFlushing`         |
+| `Illuminate\Cache\Events\CacheFlushFailed`      |
+| `Illuminate\Cache\Events\CacheLocksFlushed`     |
+| `Illuminate\Cache\Events\CacheLocksFlushing`    |
+| `Illuminate\Cache\Events\CacheLocksFlushFailed` |
+| `Illuminate\Cache\Events\CacheHit`              |
+| `Illuminate\Cache\Events\CacheMissed`           |
+| `Illuminate\Cache\Events\ForgettingKey`         |
+| `Illuminate\Cache\Events\KeyForgetFailed`       |
+| `Illuminate\Cache\Events\KeyForgotten`          |
+| `Illuminate\Cache\Events\KeyWriteFailed`        |
+| `Illuminate\Cache\Events\KeyWritten`            |
+| `Illuminate\Cache\Events\RetrievingKey`         |
+| `Illuminate\Cache\Events\RetrievingManyKeys`    |
+| `Illuminate\Cache\Events\WritingKey`            |
+| `Illuminate\Cache\Events\WritingManyKeys`       |
 
 </div>
 

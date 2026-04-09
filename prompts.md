@@ -5,6 +5,7 @@
 - [Hàm có sẵn](#available-prompts)
     - [Text](#text)
     - [Textarea](#textarea)
+    - [Number](#number)
     - [Password](#password)
     - [Confirm](#confirm)
     - [Select](#select)
@@ -13,12 +14,16 @@
     - [Search](#search)
     - [Multi-search](#multisearch)
     - [Pause](#pause)
+    - [Autocomplete](#autocomplete)
 - [Chuyển đổi input trước khi validate](#transforming-input-before-validation)
 - [Forms](#forms)
 - [Thông tin messages](#informational-messages)
 - [Tables](#tables)
 - [Spin](#spin)
 - [Progress Bar](#progress)
+- [Task](#task)
+- [Stream](#stream)
+- [Terminal Title](#terminal-title)
 - [Clear terminal](#clear)
 - [Cài đặt cho Terminal](#terminal-considerations)
 - [Môi trường không hỗ trợ và cách dự phòng](#fallbacks)
@@ -189,6 +194,76 @@ $story = textarea(
 );
 ```
 
+<a name="number"></a>
+### Number
+
+Hàm `number` sẽ hiển thị cho người dùng một câu hỏi, chấp nhận giá trị số họ nhập vào, và sau đó trả về kết quả đó. Hàm `number` cho phép người dùng sử dụng các phím mũi tên lên và xuống để thay đổi giá trị số:
+
+```php
+use function Laravel\Prompts\number;
+
+$number = number('How many copies would you like?');
+```
+
+Bạn có thể thêm gợi ý câu trả lời, hoặc một giá trị mặc định, và một thông tin gợi ý:
+
+```php
+$name = number(
+    label: 'How many copies would you like?',
+    placeholder: '5',
+    default: 1,
+    hint: 'This will be determine how many copies to create.'
+);
+```
+
+<a name="number-required"></a>
+#### Required Values
+
+Nếu bạn yêu cầu một giá trị phải được nhập vào, bạn có thể truyền tham số:
+
+```php
+$copies = number(
+    label: 'How many copies would you like?',
+    required: true
+);
+```
+
+Nếu bạn muốn tuỳ chỉnh một validation message, bạn cũng có thể truyền thêm vào một chuỗi string:
+
+```php
+$copies = number(
+    label: 'How many copies would you like?',
+    required: 'A number of copies is required.'
+);
+```
+
+<a name="number-validation"></a>
+#### Additional Validation
+
+Cuối cùng, nếu bạn muốn thực hiện thêm các logic validation, bạn có thể truyền vào một closure cho tham số `validate`:
+
+```php
+$copies = number(
+    label: 'How many copies would you like?',
+    validate: fn (?int $value) => match (true) {
+        $value < 1 => 'At least one copy is required.',
+        $value > 100 => 'You may not create more than 100 copies.',
+        default => null
+    }
+);
+```
+
+Closure đó sẽ nhận vào giá trị mà đã được nhập vào và trả về một error message hoặc một giá trị `null` nếu validation được pass.
+
+Ngoài ra, bạn có thể tận dụng sức mạnh của [validator](/docs/{{version}}/validation) trong Laravel. Để làm như vậy, hãy cung cấp một mảng gồm tên thuộc tính và các quy tắc xác thực mà bạn mong muốn cho tham số `validate`:
+
+```php
+$copies = number(
+    label: 'How many copies would you like?',
+    validate: ['copies' => 'required|integer|min:1|max:100']
+);
+```
+
 <a name="password"></a>
 ### Password
 
@@ -350,6 +425,38 @@ $role = select(
 );
 ```
 
+<a name="select-info"></a>
+#### Secondary Information
+
+Tham số `info` có thể được sử dụng để hiển thị thêm thông tin về tùy chọn đang được highlight. Khi một closure được cung cấp, nó sẽ nhận vào giá trị của tùy chọn đang được highlight và trả về một string hoặc `null`:
+
+```php
+$role = select(
+    label: 'What role should the user have?',
+    options: [
+        'member' => 'Member',
+        'contributor' => 'Contributor',
+        'owner' => 'Owner',
+    ],
+    info: fn (string $value) => match ($value) {
+        'member' => 'Can view and comment.',
+        'contributor' => 'Can view, comment, and edit.',
+        'owner' => 'Full access to all resources.',
+        default => null,
+    }
+);
+```
+
+Bạn cũng có thể truyền một chuỗi string vào tham số `info` nếu thông tin đó không phụ thuộc vào tùy chọn đang được highlight:
+
+```php
+$role = select(
+    label: 'What role should the user have?',
+    options: ['Member', 'Contributor', 'Owner'],
+    info: 'The role may be changed at any time.'
+);
+```
+
 <a name="select-validation"></a>
 #### Additional Validation
 
@@ -421,6 +528,30 @@ $categories = multiselect(
     label: 'What categories should be assigned?',
     options: Category::pluck('name', 'id'),
     scroll: 10
+);
+```
+
+<a name="multiselect-info"></a>
+#### Secondary Information
+
+Tham số `info` có thể được sử dụng để hiển thị thêm thông tin về tùy chọn đang được highlight. Khi một closure được cung cấp, nó sẽ nhận vào giá trị của tùy chọn đang được highlight và trả về một string hoặc `null`:
+
+```php
+$permissions = multiselect(
+    label: 'What permissions should be assigned?',
+    options: [
+        'read' => 'Read',
+        'create' => 'Create',
+        'update' => 'Update',
+        'delete' => 'Delete',
+    ],
+    info: fn (string $value) => match ($value) {
+        'read' => 'View resources and their properties.',
+        'create' => 'Create new resources.',
+        'update' => 'Modify existing resources.',
+        'delete' => 'Permanently remove resources.',
+        default => null,
+    }
 );
 ```
 
@@ -499,6 +630,23 @@ $name = suggest(
     placeholder: 'E.g. Taylor',
     default: $user?->name,
     hint: 'This will be displayed on your profile.'
+);
+```
+
+<a name="suggest-info"></a>
+#### Secondary Information
+
+Tham số `info` có thể được sử dụng để hiển thị thêm thông tin về tùy chọn đang được highlight. Khi một closure được cung cấp, nó sẽ nhận vào giá trị của tùy chọn đang được highlight và trả về một string hoặc `null`:
+
+```php
+$name = suggest(
+    label: 'What is your name?',
+    options: ['Taylor', 'Dayle'],
+    info: fn (string $value) => match ($value) {
+        'Taylor' => 'Administrator',
+        'Dayle' => 'Contributor',
+        default => null,
+    }
 );
 ```
 
@@ -611,6 +759,21 @@ $id = search(
 );
 ```
 
+<a name="search-info"></a>
+#### Secondary Information
+
+Tham số `info` có thể được sử dụng để hiển thị thêm thông tin về tùy chọn đang được highlight. Khi một closure được cung cấp, nó sẽ nhận vào giá trị của tùy chọn đang được highlight và trả về một string hoặc `null`:
+
+```php
+$id = search(
+    label: 'Search for the user that should receive the mail',
+    options: fn (string $value) => strlen($value) > 0
+        ? User::whereLike('name', "%{$value}%")->pluck('name', 'id')->all()
+        : [],
+    info: fn (int $userId) => User::find($userId)?->email
+);
+```
+
 <a name="search-validation"></a>
 #### Additional Validation
 
@@ -691,6 +854,21 @@ $ids = multisearch(
 );
 ```
 
+<a name="multisearch-info"></a>
+#### Secondary Information
+
+Tham số `info` có thể được sử dụng để hiển thị thêm thông tin về tùy chọn đang được highlight. Khi một closure được cung cấp, nó sẽ nhận vào giá trị của tùy chọn đang được highlight và trả về một string hoặc `null`:
+
+```php
+$ids = multisearch(
+    label: 'Search for the users that should receive the mail',
+    options: fn (string $value) => strlen($value) > 0
+        ? User::whereLike('name', "%{$value}%")->pluck('name', 'id')->all()
+        : [],
+    info: fn (int $userId) => User::find($userId)?->email
+);
+```
+
 <a name="multisearch-required"></a>
 #### Requiring a Value
 
@@ -751,6 +929,89 @@ use function Laravel\Prompts\pause;
 
 pause('Press ENTER to continue.');
 ```
+
+<a name="autocomplete"></a>
+### Autocomplete
+
+Hàm `autocomplete` có thể giúp cung cấp tính năng auto-completion khi người dùng đang nhập. Khi người dùng nhập, các gợi ý khớp với input của họ sẽ xuất hiện dưới dạng "ghost text" và có thể chấp nhận luôn bằng cách nhấn phím `Tab` hoặc phím mũi tên sang phải:
+
+```php
+use function Laravel\Prompts\autocomplete;
+
+$name = autocomplete(
+    label: 'What is your name?',
+    options: ['Taylor', 'Dayle', 'Jess', 'Nuno', 'Tim']
+);
+```
+
+Bạn có thể thêm gợi ý câu trả lời, hoặc một giá trị mặc định, và một thông tin gợi ý:
+
+```php
+$name = autocomplete(
+    label: 'What is your name?',
+    options: ['Taylor', 'Dayle', 'Jess', 'Nuno', 'Tim'],
+    placeholder: 'E.g. Taylor',
+    default: $user?->name,
+    hint: 'Use tab to accept, up/down to cycle.'
+);
+```
+
+<a name="autocomplete-closure"></a>
+#### Dynamic Options
+
+Bạn cũng có thể truyền vào một closure để tạo ra các lựa chọn một cách linh hoạt dựa vào dữ liệu người dùng nhập. Closure sẽ được gọi mỗi khi người dùng nhập một ký tự và trả về một mảng chứa các tùy chọn để auto-completion:
+
+```php
+$file = autocomplete(
+    label: 'Which file?',
+    options: fn (string $value) => collect($files)
+        ->filter(fn ($file) => str_starts_with(strtolower($file), strtolower($value)))
+        ->values()
+        ->all(),
+);
+```
+
+<a name="autocomplete-required"></a>
+#### Required Values
+
+Nếu bạn yêu cầu một giá trị phải được nhập, bạn có thể truyền tham số `required`:
+
+```php
+$name = autocomplete(
+    label: 'What is your name?',
+    options: ['Taylor', 'Dayle', 'Jess', 'Nuno', 'Tim'],
+    required: true
+);
+```
+
+Nếu bạn muốn tuỳ chỉnh một validation message, bạn cũng có thể truyền vào một string:
+
+```php
+$name = autocomplete(
+    label: 'What is your name?',
+    options: ['Taylor', 'Dayle', 'Jess', 'Nuno', 'Tim'],
+    required: 'Your name is required.'
+);
+```
+
+<a name="autocomplete-validation"></a>
+#### Additional Validation
+
+Cuối cùng, nếu bạn muốn thực hiện thêm các logic validation, bạn có thể truyền một closure vào tham số `validate`:
+
+```php
+$name = autocomplete(
+    label: 'What is your name?',
+    options: ['Taylor', 'Dayle', 'Jess', 'Nuno', 'Tim'],
+    validate: fn (string $value) => match (true) {
+        strlen($value) < 3 => 'The name must be at least 3 characters.',
+        strlen($value) > 255 => 'The name must not exceed 255 characters.',
+        default => null
+    }
+);
+```
+
+Closure sẽ nhận vào giá trị mà đã được nhập vào và trả về một error message hoặc một giá trị `null` nếu validation được pass.
 
 <a name="transforming-input-before-validation"></a>
 ## Chuyển đổi input trước khi validate
@@ -917,6 +1178,157 @@ foreach ($users as $user) {
 }
 
 $progress->finish();
+```
+
+<a name="task"></a>
+## Task
+
+Hàm `task` sẽ hiển thị một công việc, một thanh chờ và một khu vực hiển thị output trực tiếp trong khi một callback được chạy. Nó rất lý tưởng để chứa các process chạy lâu như cài đặt library hoặc script deployment, cung cấp khả năng theo dõi thời gian thực về những gì đang xảy ra cho người dùng bạn biết:
+
+```php
+use function Laravel\Prompts\task;
+
+task(
+    label: 'Installing dependencies',
+    callback: function ($logger) {
+        // Long-running process...
+    }
+);
+```
+
+Callback đó sẽ nhận vào một instance `Logger` mà bạn có thể sử dụng để hiển thị ra các dòng log, thông báo trạng thái và stream text trong khu vực output của task.
+
+> [!WARNING]
+> Hàm `task` yêu cầu PHP extension [PCNTL](https://www.php.net/manual/en/book.pcntl.php) để tạo animation cho thanh chờ. Khi extension này chưa được cài đặt, một phiên bản tĩnh của task sẽ được hiển thị.
+
+<a name="task-logging"></a>
+#### Logging Lines
+
+Phương thức `line` sẽ ghi log một dòng vào vùng output của task:
+
+```php
+task(
+    label: 'Installing dependencies',
+    callback: function ($logger) {
+        $logger->line('Resolving packages...');
+        // ...
+        $logger->line('Downloading laravel/framework');
+        // ...
+    }
+);
+```
+
+<a name="task-status-messages"></a>
+#### Status Messages
+
+Bạn có thể sử dụng các phương thức `success`, `warning`, và `error` để hiển thị các thông báo trạng thái. Những thông báo này sẽ xuất hiện dưới dạng các tin nhắn, được highlight trong vùng log:
+
+```php
+task(
+    label: 'Deploying application',
+    callback: function ($logger) {
+        $logger->line('Pulling latest changes...');
+        // ...
+        $logger->success('Changes pulled!');
+
+        $logger->line('Running migrations...');
+        // ...
+        $logger->warning('No new migrations to run.');
+
+        $logger->line('Clearing cache...');
+        // ...
+        $logger->success('Cache cleared!');
+    }
+);
+```
+
+<a name="task-label"></a>
+#### Updating the Label
+
+Phương thức `label` cho phép bạn cập nhật label của task trong khi nó đang chạy:
+
+```php
+task(
+    label: 'Starting deployment...',
+    callback: function ($logger) {
+        $logger->label('Pulling latest changes...');
+        // ...
+        $logger->label('Running migrations...');
+        // ...
+        $logger->label('Clearing cache...');
+        // ...
+    }
+);
+```
+
+<a name="task-streaming"></a>
+#### Streaming Text
+
+Đối với các process tạo output theo kiểu tăng dần, chẳng hạn như câu trả lời từ AI, phương thức `partial` sẽ cho phép bạn stream văn bản theo từng từ hoặc từng đoạn. Khi quá trình stream hoàn tất, hãy gọi `commitPartial` để hoàn tất output:
+
+```php
+task(
+    label: 'Generating response...',
+    callback: function ($logger) {
+        foreach ($words as $word) {
+            $logger->partial($word . ' ');
+        }
+
+        $logger->commitPartial();
+    }
+);
+```
+
+<a name="task-limit"></a>
+#### Customizing the Output Limit
+
+Mặc định, task hiển thị tối đa 10 dòng output. Bạn có thể tùy chỉnh tính năng này thông qua tham số `limit`:
+
+```php
+task(
+    label: 'Installing dependencies',
+    callback: function ($logger) {
+        // ...
+    },
+    limit: 20
+);
+```
+
+<a name="stream"></a>
+## Stream
+
+Hàm `stream` sẽ hiển thị văn bản được stream vào terminal, rất lý tưởng để hiển thị nội dung do AI tạo ra hoặc bất kỳ văn bản nào được trả về theo kiểu tăng dần:
+
+```php
+use function Laravel\Prompts\stream;
+
+$stream = stream();
+
+foreach ($words as $word) {
+    $stream->append($word . ' ');
+    usleep(25_000); // Simulate delay between chunks...
+}
+
+$stream->close();
+```
+
+Phương thức `append` sẽ thêm văn bản vào stream, hiển thị nó với hiệu ứng hiện dần. Khi tất cả nội dung đã được stream xong, hãy gọi phương thức `close` để hoàn tất output và trả lại con trỏ chuột.
+
+<a name="terminal-title"></a>
+## Terminal Title
+
+Hàm `title` sẽ cập nhật tiêu đề của terminal hoặc tab của terminal:
+
+```php
+use function Laravel\Prompts\title;
+
+title('Installing Dependencies');
+```
+
+Để reset tiêu đề terminal về mặc định, hãy truyền vào một chuỗi string trống:
+
+```php
+title('');
 ```
 
 <a name="clear"></a>

@@ -415,7 +415,7 @@ Bạn cũng có thể sử dụng token Sanctum để xác thực các request c
 <a name="issuing-mobile-api-tokens"></a>
 ### Phát hành API Token
 
-Để bắt đầu, hãy tạo một route chấp nhận email hoặc tên người dùng, mật khẩu và tên thiết bị của người dùng, sau đó kiểm tra các thông tin đăng nhập đó để lấy token Sanctum mới. "Tên thiết bị" được cung cấp cho route này nhằm mục đích cung cấp thông tin và có thể là bất kỳ giá trị nào bạn muốn. Nói chung, giá trị tên thiết bị phải là tên mà người dùng có thể nhận ra, chẳng hạn như "iPhone 12 của Nuno".
+Để bắt đầu, hãy tạo một route chấp nhận email hoặc tên người dùng, mật khẩu và tên thiết bị của người dùng, sau đó kiểm tra các thông tin đăng nhập đó để lấy token Sanctum mới. "Tên thiết bị" được cung cấp cho route này nhằm mục đích cung cấp thông tin và có thể là bất kỳ giá trị nào bạn muốn. Nói chung, giá trị tên thiết bị phải là tên mà người dùng có thể nhận ra, chẳng hạn như "iPhone 17 của Nuno".
 
 Thông thường, bạn sẽ tạo một request tới route token từ màn hình "đăng nhập" ứng dụng di động của bạn. Route sẽ trả về một token Sanctum thật để có thể được lưu trên thiết bị di động và được sử dụng để thực hiện thêm các request API sau đó:
 
