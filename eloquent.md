@@ -183,6 +183,23 @@ class Flight extends Model
 }
 ```
 
+Nếu bạn chỉ cần vô hiệu hóa ID tự động tăng, bạn có thể sử dụng attribute `WithoutIncrementing`:
+
+```php
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Attributes\WithoutIncrementing;
+use Illuminate\Database\Eloquent\Model;
+
+#[WithoutIncrementing]
+class Flight extends Model
+{
+    // ...
+}
+```
+
 <a name="composite-primary-keys"></a>
 #### "Composite" Primary Keys
 
@@ -275,6 +292,23 @@ class Flight extends Model
 }
 ```
 
+Nếu bạn chỉ cần vô hiệu hóa timestamp, bạn có thể sử dụng attribute `WithoutTimestamps`:
+
+```php
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Attributes\WithoutTimestamps;
+use Illuminate\Database\Eloquent\Model;
+
+#[WithoutTimestamps]
+class Flight extends Model
+{
+    // ...
+}
+```
+
 Nếu bạn cần tùy biến định dạng timestamp của model của bạn, bạn có thể sử dụng tham số `dateFormat` trong thuộc tính `Table`. Điều này sẽ định nghĩa cách mà các thuộc tính date được lưu vào trong cơ sở dữ liệu cũng như định dạng của chúng khi model được chuyển đổi thành các loại dữ liệu như một mảng hoặc một dạng JSON:
 
 ```php
@@ -286,6 +320,23 @@ use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Model;
 
 #[Table(dateFormat: 'U')]
+class Flight extends Model
+{
+    // ...
+}
+```
+
+Nếu bạn chỉ cần định nghĩa định dạng ngày, bạn có thể sử dụng attribute `DateFormat`:
+
+```php
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Attributes\DateFormat;
+use Illuminate\Database\Eloquent\Model;
+
+#[DateFormat('U')]
 class Flight extends Model
 {
     // ...
@@ -738,6 +789,12 @@ class FlightController extends Controller
 
 Trong ví dụ này, chúng ta đã gán field `name` trong HTTP request cho một thuộc tính `name` của instance model `App\Flight`. Khi chúng ta gọi phương thức `save`, một bản ghi sẽ được thêm vào cơ sở dữ liệu. Các timestamp `created_at` và `update_at` của model cũng sẽ tự động được set khi gọi phương thức `save`, do đó bạn không cần phải set chúng.
 
+Nếu bạn muốn lưu model trong một database transaction, bạn có thể sử dụng phương thức `saveOrFail`. Nếu một ngoại lệ được đưa ra trong quá trình lưu, transaction sẽ tự động được rollback:
+
+```php
+$flight->saveOrFail();
+```
+
 Ngoài ra, bạn có thể sử dụng phương thức `create` để "lưu" một model mới bằng cách sử dụng một câu lệnh PHP. Instance model được thêmn vào sẽ được trả về cho bạn bằng phương thức `create`:
 
 ```php
@@ -763,6 +820,12 @@ $flight = Flight::find(1);
 $flight->name = 'Paris to London';
 
 $flight->save();
+```
+
+Nếu bạn muốn cập nhật model trong một database transaction, bạn có thể sử dụng phương thức `updateOrFail`. Nếu một ngoại lệ được đưa ra trong quá trình cập nhật, transaction sẽ tự động được rollback:
+
+```php
+$flight->updateOrFail(['name' => 'Paris to London']);
 ```
 
 Đôi khi, bạn có thể cần cập nhật model hiện có hoặc tạo một model mới nếu không có model nào phù hợp. Giống như phương thức `firstOrCreate`, thì phương thức `updateOrCreate` cũng sẽ lưu model, và do đó bạn không cần phải gọi phương thức `save`.
@@ -957,14 +1020,13 @@ $flight->fill(['name' => 'Amsterdam to Frankfurt']);
 Khi gán các cột JSON, mỗi khóa mass assignable của cột đó phải được chỉ định trong mảng `$fillable` trong model của bạn. Để bảo mật, Laravel không hỗ trợ cập nhật các thuộc tính JSON lồng nhau khi sử dụng thuộc tính `guarded`:
 
 ```php
-/**
- * The attributes that are mass assignable.
- *
- * @var array<int, string>
- */
-protected $fillable = [
-    'options->enabled',
-];
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+
+#[Fillable(['options->enabled'])]
+class Flight extends Model
+{
+    // ...
+}
 ```
 
 <a name="allowing-mass-assignment"></a>
@@ -973,12 +1035,18 @@ protected $fillable = [
 Nếu bạn muốn làm cho tất cả các thuộc tính của bạn đều có thể được sử dụng mass assignable, bạn có thể định nghĩa thuộc tính `$guarded` trong model của bạn là một mảng trống. Nếu bạn chọn không dùng guard model, bạn nên đặc biệt cẩn thận với các mảng được truyền cho các phương thức `fill`, `create` và `update` của Eloquent:
 
 ```php
-/**
- * The attributes that aren't mass assignable.
- *
- * @var array<string>|bool
- */
-protected $guarded = [];
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Attributes\Unguarded;
+use Illuminate\Database\Eloquent\Model;
+
+#[Unguarded]
+class Flight extends Model
+{
+    // ...
+}
 ```
 
 <a name="mass-assignment-exceptions"></a>
@@ -1026,6 +1094,12 @@ use App\Models\Flight;
 $flight = Flight::find(1);
 
 $flight->delete();
+```
+
+Nếu bạn muốn xóa model trong một database transaction, bạn có thể sử dụng phương thức `deleteOrFail`. Nếu một ngoại lệ được đưa ra trong quá trình xóa, transaction sẽ tự động được rollback:
+
+```php
+$flight->deleteOrFail();
 ```
 
 <a name="deleting-an-existing-model-by-its-primary-key"></a>
@@ -1714,7 +1788,7 @@ class User extends Model
 }
 ```
 
-Nếu cần, bạn có thể sử dụng một [queue event listener ẩn danh](/docs/{{version}}/events#queuable-anonymous-event-listeners) khi đăng ký event model. Thao tác này sẽ hướng dẫn Laravel thực thi event listener của model trong background bằng cách sử dụng [queue](/docs/{{version}}/queues) của ứng dụng của bạn:
+Nếu cần, bạn có thể sử dụng một [queue event listener ẩn danh](/docs/{{version}}/events#queueable-anonymous-event-listeners) khi đăng ký event model. Thao tác này sẽ hướng dẫn Laravel thực thi event listener của model trong background bằng cách sử dụng [queue](/docs/{{version}}/queues) của ứng dụng của bạn:
 
 ```php
 use function Illuminate\Events\queueable;

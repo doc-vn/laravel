@@ -28,7 +28,7 @@ Khi sủ dụng framework Laravel hoặc các component của nó từ applicati
 | 10      | 8.1 - 8.3 | ngày 14 tháng 2 năm 2023 | ngày 6 tháng 8 năm 2024  | ngày 4 tháng 2 năm 2025    |
 | 11      | 8.2 - 8.4 | ngày 12 tháng 3 năm 2024 | ngày 3 tháng 9 năm 2025  | ngày 12 tháng 3 năm 2026   |
 | 12      | 8.2 - 8.5 | ngày 24 tháng 2 năm 2025 | ngày 13 tháng 8 năm 2026 | ngày 24 tháng 2 năm 2027   |
-| 13      | 8.3 - 8.5 | Q1 2026                  | Q3 2027                  | Q1 2028                    |
+| 13      | 8.3 - 8.5 | Ngày 17 tháng 3 năm 2026 | Quý 3 năm 2027           | Ngày 17 tháng 3 năm 2028   |
 
 </div>
 
@@ -135,7 +135,7 @@ Queue::route(ProcessPodcast::class, connection: 'redis', queue: 'podcasts');
 
 Laravel 13 tiếp tục mở rộng hỗ trợ PHP attribute chính thức trên toàn bộ framework, giúp cho các việc cấu hình và các hành động phổ biến của Laravel trở nên dễ khai báo hơn và được đặt cùng vị trí với các class và phương thức của bạn.
 
-Các attribute đáng chú ý như các attribute cho controller và authorization như [`#[Middleware]`](/docs/{{version}}/controllers#controller-middleware) và [`#[Authorize]`](/docs/{{version}}/controllers#authorize-attribute), cũng như các thuộc tính điều khiển job cho queue như [`#[Tries]`](/docs/{{version}}/queues#max-job-attempts-and-timeout), [`#[Backoff]`](/docs/{{version}}/queues#dealing-with-failed-jobs), [`#[Timeout]`](/docs/{{version}}/queues#max-job-attempts-and-timeout) và [`#[FailOnTimeout]`](/docs/{{version}}/queues#failing-on-timeout).
+Các attribute đáng chú ý như các attribute cho controller và authorization như [`#[Middleware]`](/docs/{{version}}/controllers#controller-middleware) và [`#[Authorize]`](/docs/{{version}}/controllers#authorization-attributes), cũng như các thuộc tính điều khiển job cho queue như [`#[Tries]`](/docs/{{version}}/queues#max-job-attempts-and-timeout), [`#[Backoff]`](/docs/{{version}}/queues#dealing-with-failed-jobs), [`#[Timeout]`](/docs/{{version}}/queues#max-job-attempts-and-timeout) và [`#[FailOnTimeout]`](/docs/{{version}}/queues#failing-on-timeout).
 
 Ví dụ: Các bài kiểm tra middleware và policy của controller hiện có thể được khai báo trực tiếp trên các class và phương thức:
 

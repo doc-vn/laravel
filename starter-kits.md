@@ -17,6 +17,7 @@
     - [Tuỳ chỉnh User Creation và Password Reset](#customizing-actions)
     - [Two-Factor Authentication](#two-factor-authentication)
     - [Rate Limiting](#rate-limiting)
+- [Teams](#teams)
 - [WorkOS AuthKit Authentication](#workos)
 - [Inertia SSR](#inertia-ssr)
 - [Các bộ Starter Kit của cộng đồng](#community-maintained-starter-kits)
@@ -449,6 +450,17 @@ RateLimiter::for('login', function ($request) {
     return Limit::perMinute(5)->by($request->email.$request->ip());
 });
 ```
+
+<a name="teams"></a>
+## Teams
+
+Các bộ khởi tạo starter kit React, Svelte, Vue và Livewire cũng hỗ trợ chức năng team. Khi chức năng này được kích hoạt, mỗi user sẽ thuộc về một hoặc nhiều team và có một team hiện tại làm mặc định. Trong quá trình đăng ký, user mới sẽ tự động được đưa vào một team của cá nhân. Các starter kit cũng chứa các màn hình quản lý team để tạo team, chuyển đổi giữa các team, mời thành viên và cập nhật thông tin team.
+
+Khi một route bị giới hạn trong team hiện tại, thì tên team hiện tại sẽ được nằm trong URL. Ví dụ: route dashboard sẽ trở thành `/{current_team}/dashboard`, trong khi các trang quản lý team sử dụng các route như `settings/teams/{team}`. Khi sử dụng các route parameter là `{current_team}` và `{team}`, các starter kit sẽ tự động đảm bảo các user đã xác thực phải thuộc về team được yêu cầu thì mới cho phép truy cập vào route.
+
+Để việc tạo URL có chứa tên team được thuận tiện hơn, các starter kit sẽ đăng ký cấu hình URL mặc định cho team hiện tại của người dùng đã xác thực. Điều này cho phép các lệnh gọi tới helper như `route('dashboard')` sẽ tự động chứa tên team hiện tại. Khi user đăng nhập, đăng ký hoặc chuyển đổi qua lại giữa các team, các starter kit sẽ cập nhật team hiện tại và refresh cấu hình URL mặc định này để các link được tạo ra sẽ tiếp tục sử dụng đúng nội dung của team.
+
+Khi tạo hoặc đổi tên một team, các starter kit cũng ngăn user tạo ra các tên đặc biệt đã được khai báo cho hệ thống vì chúng có thể tạo ra các thành phần đường dẫn không an toàn hoặc xung đột. Ví dụ, tên có thể xung đột với prefix của route như `settings`, `login` hoặc `dashboard` sẽ không được phép sử dụng.
 
 <a name="workos"></a>
 ## WorkOS AuthKit Authentication

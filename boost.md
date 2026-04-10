@@ -2,8 +2,8 @@
 
 - [Introduction](#introduction)
 - [Installation](#installation)
-    - [Keeping Boost Resources Updated](#keeping-boost-resources-updated)
     - [Set Up Your Agents](#set-up-your-agents)
+    - [Keeping Boost Resources Updated](#keeping-boost-resources-updated)
 - [MCP Server](#mcp-server)
     - [Available MCP Tools](#available-mcp-tools)
     - [Manually Registering the MCP Server](#manually-registering-the-mcp-server)
@@ -113,6 +113,12 @@ Bạn cũng có thể tự động quá trình này bằng cách thêm vào Comp
 }
 ```
 
+Mặc định, lệnh `boost:update` sẽ chỉ cập nhật các resource Boost hiện có đã được export trong ứng dụng của bạn. Nếu bạn muốn Boost quét ứng dụng của bạn để tìm ra bất kỳ package mới được cài đặt và cung cấp tùy chọn export các guideline và skill tương ứng của chúng, bạn có thể sử dụng tùy chọn `--discover`:
+
+```shell
+php artisan boost:update --discover
+```
+
 <a name="mcp-server"></a>
 ## MCP Server
 
@@ -169,7 +175,7 @@ Laravel Boost bao gồm AI guidelines cho các package và framework sau. Guidel
 | Package           | Versions Supported     |
 | ----------------- | ---------------------- |
 | Core & Boost      | core                   |
-| Laravel Framework | core, 10.x, 11.x, 12.x |
+| Laravel Framework | core, 10.x, 11.x, 12.x, 13.x |
 | Livewire          | core, 2.x, 3.x, 4.x    |
 | Flux UI           | core, free, pro        |
 | Folio             | core                   |
@@ -324,7 +330,7 @@ Công cụ MCP `Search Docs` cho phép agent truy vấn tài liệu API do Larav
 
 | Package           | Versions Supported |
 | ----------------- | ------------------ |
-| Laravel Framework | 10.x, 11.x, 12.x   |
+| Laravel Framework | 10.x, 11.x, 12.x, 13.x |
 | Filament          | 2.x, 3.x, 4.x, 5.x |
 | Flux UI           | 2.x Free, 2.x Pro  |
 | Inertia           | 1.x, 2.x           |

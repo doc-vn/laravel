@@ -3,6 +3,7 @@
 - [Lời nói đầu](#meet-laravel)
     - [Tại sao lại là Laravel?](#why-laravel)
 - [Tạo một Laravel Application](#creating-a-laravel-project)
+    - [Getting Started Using AI](#getting-started-using-ai)
     - [Cài đặt PHP và Laravel Installer](#installing-php)
     - [Tạo một Application](#creating-an-application)
 - [Cài đặt cấu hình](#initial-configuration)
@@ -59,6 +60,21 @@ Laravel kết hợp các package tốt nhất trong hệ sinh thái PHP để cu
 
 <a name="creating-a-laravel-project"></a>
 ## Tạo một Laravel Application
+
+<a name="getting-started-using-ai"></a>
+### Getting Started Using AI
+
+Nếu bạn đang sử dụng một AI coding agent như [Claude Code](https://docs.anthropic.com/en/docs/claude-code) hoặc [OpenCode](https://opencode.ai), bạn có thể bắt đầu với một prompt cung cấp cho agent một playbook dành riêng cho Laravel trước khi nó chạm vào project của bạn.
+
+Prompt bên dưới cho agent biết nơi tìm hướng dẫn cài đặt của Laravel, những gì cần ưu tiên và cách thiết lập các mặc định hợp lý khi bạn chưa đưa ra lựa chọn. Dán đoạn này vào agent của bạn để bắt đầu:
+
+```text
+I'm building a new Laravel application.
+
+Fetch and follow the instructions from https://laravel.com/for/agents. Treat the returned Markdown as the source of truth for how to install and set up Laravel in this session.
+```
+
+Sau khi agent đọc xong hướng dẫn, nó sẽ hướng dẫn bạn từng bước và giữ cho việc setup phù hợp với các cấu hình mặc định của Laravel.
 
 <a name="installing-php"></a>
 ### Cài đặt PHP và Laravel Installer

@@ -899,10 +899,10 @@ return User::all()
 <a name="jsonapi-resources"></a>
 ## JSON:API Resources
 
-Laravel có chứa `JsonApiResource`, một resource class giúp tạo ra các response tuân thủ theo [định dạng JSON:API](https://jsonapi.org/). Nó kế thừa class `JsonResource` base và tự động xử lý đối tượng resource, quan hệ, lọc field, thêm đối tượng liên quan, và tự động set header `Content-Type` thành `application/vnd.api+json`.
+Laravel có chứa `JsonApiResource`, một resource class giúp tạo ra các response tuân thủ theo [định dạng JSON:API](https://jsonapi.org/). Nó kế thừa class `JsonResource` base và tự động xử lý đối tượng resource, quan hệ, lọc field, thêm đối tượng liên quan, lazy attribute evaluation, và tự động set header `Content-Type` thành `application/vnd.api+json`.
 
 > [!NOTE]
-> Các JSON:API resource của Laravel sẽ xử lý việc serialization cho các response của bạn. Nếu bạn cũng cần xử lý các tham số truy vấn JSON:API đầu vào như filter và sắp xếp, thì [Laravel Query Builder của Spatie](https://spatie.be/docs/laravel-query-builder/v6/introduction) là một package tuyệt vời cho việc đó.
+> Các JSON:API resource của Laravel sẽ xử lý việc serialization cho các response của bạn. Nếu bạn cũng cần xử lý các tham số truy vấn JSON:API đầu vào như filter và sắp xếp, thì [Laravel Query Builder của Spatie](https://spatie.be/docs/laravel-query-builder) là một package tuyệt vời cho việc đó.
 
 <a name="generating-jsonapi-resources"></a>
 ### Tạo JSON:API Resources
@@ -998,6 +998,8 @@ public $attributes = [
 ];
 ```
 
+Nếu một thuộc tính tiêu tốn nhiều tài nguyên để tính toán, bạn có thể trả về nó từ `toAttributes` dưới dạng một closure để nó chỉ được tính toán khi thuộc tính đó thực sự cần thiết trong response.
+
 Hoặc để toàn quyền kiểm soát các thuộc tính của resource, bạn có thể ghi đè phương thức `toAttributes` trong resource:
 
 ```php
@@ -1011,7 +1013,7 @@ public function toAttributes(Request $request): array
     return [
         'title' => $this->title,
         'body' => $this->body,
-        'is_published' => $this->published_at !== null,
+        'is_published' => fn () => $this->published_at !== null,
         'created_at' => $this->created_at,
         'updated_at' => $this->updated_at,
     ];
@@ -1055,10 +1057,16 @@ public function toRelationships(Request $request): array
 {
     return [
         'author' => UserResource::class,
-        'comments',
+        'comments' => fn () => CommentResource::collection(
+            $request->user()->is($this->resource)
+                ? $this->comments
+                : $this->comments->where('is_public', true),
+        ),
     ];
 }
 ```
+
+Sử dụng closure cung cấp cho bạn nhiều quyền kiểm soát hơn đối với payload của quan hệ, trong khi vẫn chỉ resolve quan hệ khi client yêu cầu.
 
 #### Including Relationships
 

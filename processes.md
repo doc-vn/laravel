@@ -94,6 +94,14 @@ Mặc định, các process sẽ đưa ra một instance `Illuminate\Process\Exc
 $result = Process::timeout(120)->run('bash import.sh');
 ```
 
+Các phương thức `timeout` và `idleTimeout` cũng chấp nhận các instance `CarbonInterval`:
+
+```php
+use function Illuminate\Support\minutes;
+
+$result = Process::timeout(minutes(2))->run('bash import.sh');
+```
+
 Hoặc, nếu bạn muốn disable hoàn toàn thời gian chờ của process, bạn có thể gọi phương thức `forever`:
 
 ```php

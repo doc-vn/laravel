@@ -573,7 +573,7 @@ Schema builder blueprint cung cấp nhiều phương thức tương ứng với 
 
 </div>
 
-<a name="spacifics-method-list"></a>
+<a name="specifics-method-list"></a>
 #### Specialty Types
 
 <div class="collection-method-list" markdown="1">

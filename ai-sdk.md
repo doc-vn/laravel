@@ -372,6 +372,64 @@ $response = (new SalesCoach)->prompt('Analyze this sales transcript...');
 return $response['score'];
 ```
 
+<a name="structured-output-nested-objects"></a>
+#### Nested Objects
+
+Để định nghĩa kết quả output có cấu trúc lồng nhau, hãy sử dụng phương thức `object` với một closure:
+
+```php
+<?php
+
+namespace App\Ai\Agents;
+
+use Illuminate\Contracts\JsonSchema\JsonSchema;
+use Laravel\Ai\Contracts\Agent;
+use Laravel\Ai\Contracts\HasStructuredOutput;
+use Laravel\Ai\Promptable;
+
+class SalesCoach implements Agent, HasStructuredOutput
+{
+    use Promptable;
+
+    // ...
+
+    /**
+     * Get the agent's structured output schema definition.
+     */
+    public function schema(JsonSchema $schema): array
+    {
+        return [
+            'score' => $schema->integer()->required(),
+            'metadata' => $schema->object(fn ($schema) => [
+                'confidence' => $schema->string()->enum(['low', 'medium', 'high'])->required(),
+                'language' => $schema->string()->required(),
+            ])->required(),
+        ];
+    }
+}
+```
+
+<a name="structured-output-arrays-of-objects"></a>
+#### Arrays of Objects
+
+Nếu agent của bạn trả về một danh sách các item có cấu trúc, hãy kết hợp các phương thức `array` và `object`:
+
+```php
+public function schema(JsonSchema $schema): array
+{
+    return [
+        'feedback' => $schema->array()
+            ->items(
+                $schema->object(fn ($schema) => [
+                    'comment' => $schema->string()->required(),
+                    'score' => $schema->integer()->required(),
+                ])
+            )
+            ->required(),
+    ];
+}
+```
+
 <a name="attachments"></a>
 ### Attachments
 
@@ -496,7 +554,7 @@ use Laravel\Ai\Responses\AgentResponse;
 use Throwable;
 
 Route::post('/coach', function (Request $request) {
-    return (new SalesCoach)
+    (new SalesCoach)
         ->queue($request->input('transcript'))
         ->then(function (AgentResponse $response) {
             // ...

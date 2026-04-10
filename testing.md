@@ -47,6 +47,31 @@ Nếu bạn muốn tạo một bài test trong thư mục `tests/Unit`, bạn c�
 php artisan make:test UserTest --unit
 ```
 
+Nếu bạn có một test class chủ yếu dựa vào các tính năng test của Laravel, nhưng một phương thức test nhỏ lại không cần framework phải được khởi động, bạn có thể áp dụng thuộc tính `#[UnitTest]` lên phương thức đó để bỏ qua việc khởi động ứng dụng cho riêng bài test đó.
+
+```php tab=PHPUnit
+<?php
+
+namespace Tests\Feature;
+
+use Illuminate\Foundation\Testing\Attributes\UnitTest;
+use Tests\TestCase;
+
+class LocationServiceTest extends TestCase
+{
+    public function test_get_coordinates_resolves_address(): void
+    {
+        // This test uses Laravel's testing features...
+    }
+
+    #[UnitTest]
+    public function test_get_state_returns_state_from_abbreviation(): void
+    {
+        // This test runs without booting the application...
+    }
+}
+```
+
 > [!NOTE]
 > Các stub của test có thể được tùy chỉnh bằng cách sử dụng [export stub](/docs/{{version}}/artisan#stub-customization).
 

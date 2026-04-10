@@ -30,7 +30,7 @@
     - [Listening cho Event](#listening-for-events)
     - [Rời một Channel](#leaving-a-channel)
     - [Namespaces](#namespaces)
-    - [Sử dụng React hoặc Vue](#using-react-or-vue)
+    - [Sử dụng React, Vue hoặc Svelte](#using-react-or-vue)
 - [Presence Channel](#presence-channels)
     - [Authorizing Presence Channel](#authorizing-presence-channels)
     - [Tham gia Presence Channel](#joining-presence-channels)
@@ -78,7 +78,7 @@ Tất cả các cấu hình event broadcasting cho ứng dụng của bạn đư
 <a name="quickstart-next-steps"></a>
 #### Next Steps
 
-Sau khi bạn đã enable event broadcasting, bạn đã sẵn sàng tìm hiểu thêm về việc [định nghĩa các broadcast event](#defining-broadcast-events) và [listen các event](#listening-for-events) này. Nếu bạn đang sử dụng các [starter kit](/docs/{{version}}/starter-kits) React hoặc Vue của Laravel, bạn có thể listen các event bằng cách sử dụng [hook useEcho](#using-react-or-vue) của Echo.
+Sau khi bạn đã enable event broadcasting, bạn đã sẵn sàng tìm hiểu thêm về việc [định nghĩa các broadcast event](#defining-broadcast-events) và [listen các event](#listening-for-events) này. Nếu bạn đang sử dụng các [starter kit](/docs/{{version}}/starter-kits) React, Vue hoặc Svelte của Laravel, bạn có thể listen các event bằng cách sử dụng [hook useEcho](#using-react-or-vue) của Echo.
 
 > [!NOTE]
 > Trước khi broadcast bất kỳ event nào, đầu tiên bạn nên cấu hình và chạy một [queue worker](/docs/{{version}}/queues). Tất cả các event broadcasting đều được thực hiện thông qua các queued job sẽ giúp thời gian response của ứng dụng của bạn không bị ảnh hưởng bởi các event đang được broadcast.
@@ -259,6 +259,20 @@ configureEcho({
 });
 ```
 
+```js tab=Svelte
+import { configureEcho } from "@laravel/echo-svelte";
+
+configureEcho({
+    broadcaster: "reverb",
+    // key: import.meta.env.VITE_REVERB_APP_KEY,
+    // wsHost: import.meta.env.VITE_REVERB_HOST,
+    // wsPort: import.meta.env.VITE_REVERB_PORT,
+    // wssPort: import.meta.env.VITE_REVERB_PORT,
+    // forceTLS: (import.meta.env.VITE_REVERB_SCHEME ?? 'https') === 'https',
+    // enabledTransports: ['ws', 'wss'],
+});
+```
+
 Tiếp theo, bạn nên compile các asset của ứng dụng:
 
 ```shell
@@ -317,6 +331,21 @@ configureEcho({
 
 ```js tab=Vue
 import { configureEcho } from "@laravel/echo-vue";
+
+configureEcho({
+    broadcaster: "pusher",
+    // key: import.meta.env.VITE_PUSHER_APP_KEY,
+    // cluster: import.meta.env.VITE_PUSHER_APP_CLUSTER,
+    // forceTLS: true,
+    // wsHost: import.meta.env.VITE_PUSHER_HOST,
+    // wsPort: import.meta.env.VITE_PUSHER_PORT,
+    // wssPort: import.meta.env.VITE_PUSHER_PORT,
+    // enabledTransports: ["ws", "wss"],
+});
+```
+
+```js tab=Svelte
+import { configureEcho } from "@laravel/echo-svelte";
 
 configureEcho({
     broadcaster: "pusher",
@@ -443,6 +472,19 @@ configureEcho({
 });
 ```
 
+```js tab=Svelte
+import { configureEcho } from "@laravel/echo-svelte";
+
+configureEcho({
+    broadcaster: "ably",
+    // key: import.meta.env.VITE_ABLY_PUBLIC_KEY,
+    // wsHost: "realtime-pusher.ably.io",
+    // wsPort: 443,
+    // disableStats: true,
+    // encrypted: true,
+});
+```
+
 Bạn có thể đã nhận thấy cấu hình Ably Echo của chúng ta đang tham chiếu đến biến môi trường `VITE_ABLY_PUBLIC_KEY`. Giá trị của biến này phải là khóa công khai Ably của bạn. Khóa công khai của bạn là một phần của khóa Ably xuất hiện trước ký tự `:`.
 
 Khi bạn đã điều chỉnh cấu hình Echo theo nhu cầu của bạn, bạn có thể biên dịch các asset của ứng dụng:
@@ -557,7 +599,7 @@ Tất cả các authorization callback này đều nhận vào tham số đầu 
 <a name="listening-for-event-broadcasts"></a>
 #### Listening For Event Broadcasts
 
-Tiếp theo, tất cả những gì còn lại là listen event trong JavaScript của chúng ta. Chúng ta có thể làm điều này bằng cách sử dụng [Laravel Echo](#client-side-installation). Các hook React và Vue được tích hợp sẵn của Laravel Echo giúp việc bắt đầu trở nên dễ dàng, và, mặc định, tất cả các thuộc tính công khai của event sẽ được đưa vào trong broadcast event:
+Tiếp theo, tất cả những gì còn lại là listen event trong JavaScript của chúng ta. Chúng ta có thể làm điều này bằng cách sử dụng [Laravel Echo](#client-side-installation). Các hook React, Vue và Svelte được tích hợp sẵn của Laravel Echo giúp việc bắt đầu trở nên dễ dàng, và, mặc định, tất cả các thuộc tính công khai của event sẽ được đưa vào trong broadcast event:
 
 ```js tab=React
 import { useEcho } from "@laravel/echo-react";
@@ -574,6 +616,20 @@ useEcho(
 ```vue tab=Vue
 <script setup lang="ts">
 import { useEcho } from "@laravel/echo-vue";
+
+useEcho(
+    `orders.${orderId}`,
+    "OrderShipmentStatusUpdated",
+    (e) => {
+        console.log(e.order);
+    },
+);
+</script>
+```
+
+```svelte tab=Svelte
+<script>
+import { useEcho } from "@laravel/echo-svelte";
 
 useEcho(
     `orders.${orderId}`,
@@ -1119,9 +1175,9 @@ Echo.channel('orders')
 ```
 
 <a name="using-react-or-vue"></a>
-### Sử dụng React hoặc Vue
+### Sử dụng React, Vue hoặc Svelte
 
-Laravel Echo có chứa các hook React và Vue giúp việc lắng nghe các event trở nên dễ dàng. Để bắt đầu, hãy gọi hook `useEcho`, hook này được sử dụng để lắng nghe các event private. Hook `useEcho` sẽ tự động thoát khỏi các channel khi component sử dụng nó bị unmount:
+Laravel Echo có chứa các hook React, Vue và Svelte giúp việc lắng nghe các event trở nên dễ dàng. Để bắt đầu, hãy gọi hook `useEcho`, hook này được sử dụng để lắng nghe các event private. Hook `useEcho` sẽ tự động thoát khỏi các channel khi component sử dụng nó bị unmount:
 
 ```js tab=React
 import { useEcho } from "@laravel/echo-react";
@@ -1138,6 +1194,20 @@ useEcho(
 ```vue tab=Vue
 <script setup lang="ts">
 import { useEcho } from "@laravel/echo-vue";
+
+useEcho(
+    `orders.${orderId}`,
+    "OrderShipmentStatusUpdated",
+    (e) => {
+        console.log(e.order);
+    },
+);
+</script>
+```
+
+```svelte tab=Svelte
+<script>
+import { useEcho } from "@laravel/echo-svelte";
 
 useEcho(
     `orders.${orderId}`,
@@ -1233,6 +1303,32 @@ leave();
 </script>
 ```
 
+```svelte tab=Svelte
+<script>
+import { useEcho } from "@laravel/echo-svelte";
+
+const { leaveChannel, leave, stopListening, listen } = useEcho(
+    `orders.${orderId}`,
+    "OrderShipmentStatusUpdated",
+    (e) => {
+        console.log(e.order);
+    },
+);
+
+// Stop listening without leaving channel...
+stopListening();
+
+// Start listening again...
+listen();
+
+// Leave channel...
+leaveChannel();
+
+// Leave a channel and also its associated private and presence channels...
+leave();
+</script>
+```
+
 <a name="react-vue-connecting-to-public-channels"></a>
 #### Connecting to Public Channels
 
@@ -1256,6 +1352,16 @@ useEchoPublic("posts", "PostPublished", (e) => {
 </script>
 ```
 
+```svelte tab=Svelte
+<script>
+import { useEchoPublic } from "@laravel/echo-svelte";
+
+useEchoPublic("posts", "PostPublished", (e) => {
+    console.log(e.post);
+});
+</script>
+```
+
 <a name="react-vue-connecting-to-presence-channels"></a>
 #### Connecting to Presence Channels
 
@@ -1272,6 +1378,16 @@ useEchoPresence("posts", "PostPublished", (e) => {
 ```vue tab=Vue
 <script setup lang="ts">
 import { useEchoPresence } from "@laravel/echo-vue";
+
+useEchoPresence("posts", "PostPublished", (e) => {
+    console.log(e.post);
+});
+</script>
+```
+
+```svelte tab=Svelte
+<script>
+import { useEchoPresence } from "@laravel/echo-svelte";
 
 useEchoPresence("posts", "PostPublished", (e) => {
     console.log(e.post);
@@ -1304,6 +1420,16 @@ const status = useConnectionStatus();
 <template>
     <div>Connection: {{ status }}</div>
 </template>
+```
+
+```svelte tab=Svelte
+<script>
+import { useConnectionStatus } from "@laravel/echo-svelte";
+
+const status = useConnectionStatus();
+</script>
+
+<div>Connection: {status()}</div>
 ```
 
 Các giá trị trạng thái có thể có là:
@@ -1592,9 +1718,9 @@ Echo.private(`App.Models.User.${this.user.id}`)
 ```
 
 <a name="model-broadcasts-with-react-or-vue"></a>
-#### Sử dụng React hoặc Vue
+#### Sử dụng React, Vue, hoặc Svelte
 
-Nếu bạn đang sử dụng React hoặc Vue, bạn có thể sử dụng hook `useEchoModel` có sẵn của Laravel Echo để dễ dàng lắng nghe các model broadcast:
+Nếu bạn đang sử dụng React, Vue, hoặc Svelte, bạn có thể sử dụng hook `useEchoModel` có sẵn của Laravel Echo để dễ dàng lắng nghe các model broadcast:
 
 ```js tab=React
 import { useEchoModel } from "@laravel/echo-react";
@@ -1607,6 +1733,16 @@ useEchoModel("App.Models.User", userId, ["UserUpdated"], (e) => {
 ```vue tab=Vue
 <script setup lang="ts">
 import { useEchoModel } from "@laravel/echo-vue";
+
+useEchoModel("App.Models.User", userId, ["UserUpdated"], (e) => {
+    console.log(e.model);
+});
+</script>
+```
+
+```svelte tab=Svelte
+<script>
+import { useEchoModel } from "@laravel/echo-svelte";
 
 useEchoModel("App.Models.User", userId, ["UserUpdated"], (e) => {
     console.log(e.model);
@@ -1668,6 +1804,18 @@ channel().whisper('typing', { name: user.name });
 </script>
 ```
 
+```svelte tab=Svelte
+<script>
+import { useEcho } from "@laravel/echo-svelte";
+
+const { channel } = useEcho(`chat.${roomId}`, ['update'], (e) => {
+    console.log('Chat event received:', e);
+});
+
+channel().whisper('typing', { name: user.name });
+</script>
+```
+
 Để listen các client event, bạn có thể sử dụng phương thức `listenForWhisper`:
 
 ```js tab=JavaScript
@@ -1692,6 +1840,20 @@ channel().listenForWhisper('typing', (e) => {
 ```vue tab=Vue
 <script setup lang="ts">
 import { useEcho } from "@laravel/echo-vue";
+
+const { channel } = useEcho(`chat.${roomId}`, ['update'], (e) => {
+    console.log('Chat event received:', e);
+});
+
+channel().listenForWhisper('typing', (e) => {
+    console.log(e.name);
+});
+</script>
+```
+
+```svelte tab=Svelte
+<script>
+import { useEcho } from "@laravel/echo-svelte";
 
 const { channel } = useEcho(`chat.${roomId}`, ['update'], (e) => {
     console.log('Chat event received:', e);
@@ -1730,6 +1892,18 @@ channel().notification((notification) => {
 ```vue tab=Vue
 <script setup lang="ts">
 import { useEchoModel } from "@laravel/echo-vue";
+
+const { channel } = useEchoModel('App.Models.User', userId);
+
+channel().notification((notification) => {
+    console.log(notification.type);
+});
+</script>
+```
+
+```svelte tab=Svelte
+<script>
+import { useEchoModel } from "@laravel/echo-svelte";
 
 const { channel } = useEchoModel('App.Models.User', userId);
 

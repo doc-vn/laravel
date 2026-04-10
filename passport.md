@@ -973,6 +973,9 @@ Route::get('/orders', function (Request $request) {
 })->middleware(EnsureClientIsResourceOwner::using('servers:read', 'servers:create'));
 ```
 
+> [!WARNING]
+> Server [OAuth2](https://oauth2.thephpleague.com/database-setup/#:~:text=Please%20note%20that,the%20bearer%20token.) sẽ set `sub` của token thành ID của client cho các token client credential. Mặc định, Passport sử dụng các UUID cho client, do đó điều này không thể xung đột với khóa chính là số nguyên của user. Tuy nhiên, nếu bạn đã set `Passport::$clientUuids` thành `false`, thì một token client credential có thể vô tình resolve ra một user có ID trùng với ID của client. Trong những trường hợp như vậy, việc sử dụng middleware này không thể đảm bảo token được gửi lên là một token client credential.
+
 <a name="retrieving-tokens"></a>
 ### Retrieving Tokens
 
@@ -1210,6 +1213,37 @@ Route::get('/orders', function () {
     // Access token has either "orders:read" or "orders:create" scope...
 })->middleware(['auth:api', CheckTokenForAnyScope::using('orders:read', 'orders:create')]);
 ```
+
+<a name="scope-attributes"></a>
+#### Scope Attributes
+
+If your application uses [controller middleware attributes](/docs/{{version}}/controllers#middleware-attributes), you may use the `Laravel\Passport\Attributes\AuthorizeToken` attribute as a convenient shortcut for Passport's scope middleware:
+
+```php
+<?php
+
+namespace App\Http\Controllers;
+
+use Laravel\Passport\Attributes\AuthorizeToken;
+
+#[AuthorizeToken('orders:read')]
+#[AuthorizeToken('orders:create', only: ['store'])]
+class OrderController
+{
+    #[AuthorizeToken(['orders:read', 'orders:create'], anyScope: true)]
+    public function index()
+    {
+        // Access token has either "orders:read" or "orders:create" scope...
+    }
+
+    public function store()
+    {
+        // Access token has both "orders:read" and "orders:create" scopes...
+    }
+}
+```
+
+By default, the `AuthorizeToken` attribute requires all given scopes. If you pass `anyScope: true`, the request is authorized when the token has at least one of the given scopes.
 
 <a name="checking-scopes-on-a-token-instance"></a>
 #### Kiểm tra scope On A Token Instance

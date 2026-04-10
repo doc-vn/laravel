@@ -261,6 +261,12 @@ public function __construct(
 }
 ```
 
+Nếu bạn chỉ cần xóa một quan hệ cụ thể trong khi vẫn giữ những quan hệ khác, bạn có thể sử dụng phương thức `withoutRelation`:
+
+```php
+$this->podcast = $podcast->withoutRelation('comments');
+```
+
 Nếu bạn đang sử dụng [chức năng thuộc tính của hàm constructor property promotion PHP](https://www.php.net/manual/en/language.oop5.decon.php#language.oop5.decon.constructor.promotion) và muốn rằng model Eloquent sẽ không serialize các quan hệ của nó, bạn có thể sử dụng thuộc tính `WithoutRelations`:
 
 ```php

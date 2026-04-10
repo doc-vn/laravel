@@ -2,7 +2,6 @@
 
 - [Giới thiệu](#introduction)
 - [Cài đặt và setup](#installation)
-    - [Cài đặt Sail vào trong application hiện tại](#installing-sail-into-existing-applications)
     - [Building lại Sail Images](#rebuilding-sail-images)
     - [Cấu hình một shell alias](#configuring-a-shell-alias)
 - [Starting và Stopping Sail](#starting-and-stopping-sail)
@@ -43,12 +42,7 @@ Laravel Sail được hỗ trợ trên macOS, Linux và Windows (thông qua [WSL
 <a name="installation"></a>
 ## Cài đặt và setup
 
-Laravel Sail được cài đặt tự động cùng với tất cả các ứng dụng Laravel mới nên bạn có thể bắt đầu sử dụng nó ngay lập tức.
-
-<a name="installing-sail-into-existing-applications"></a>
-### Cài đặt Sail vào trong application hiện tại
-
-Nếu bạn quan tâm đến việc sử dụng Sail với ứng dụng Laravel hiện có, bạn có thể chỉ cần cài đặt Sail bằng Composer package manager. Tất nhiên, các bước này giả định rằng môi trường phát triển local hiện tại của bạn cho phép bạn cài đặt các library của Composer:
+Bạn có thể cài đặt Sail bằng cách sử dụng trình quản lý package Composer:
 
 ```shell
 composer require laravel/sail --dev
