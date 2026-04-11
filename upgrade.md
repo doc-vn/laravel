@@ -20,6 +20,7 @@
 <div class="content-list" markdown="1">
 
 - [Cache `serializable_classes` Configuration](#cache-serializable_classes-configuration)
+- [Database `upsert` With MySQL or MariaDB](#database-upsert-mariadb-mysql)
 
 </div>
 
@@ -47,6 +48,7 @@
 
 #### Estimated Upgrade Time: 5 Minutes
 
+> [!NOTE]
 > Chúng tôi sẽ cố gắng ghi lại mọi thay đổi có thể xảy ra. Vì một số thay đổi này nằm trong các phần ẩn của framework, nên chỉ một phần trong những thay đổi này mới có thể thực sự ảnh hưởng đến application của bạn. Để tiết kiệm thời gian, bạn có thể sử dụng [Shift](https://laravelshift.com). Shift là một dịch vụ được phát triển bởi cộng đồng giúp bạn tự động hóa việc nâng cấp Laravel.
 
 <a name="upgrading-using-ai"></a>
@@ -193,6 +195,15 @@ Nếu bạn cung cấp một implementation tùy chỉnh của contract này, h�
 
 <a name="database"></a>
 ### Database
+
+<a name="database-upsert-mariadb-mysql"></a>
+#### Database `upsert` With MySQL or MariaDB
+
+**Likelihood Of Impact: Medium**
+
+Laravel bây giờ sẽ validate câu lệnh upsert phải cung cấp giá trị không rỗng cho tham số  `uniqueBy`, và sẽ đưa ra một `InvalidArgumentException` thay vì tạo ra SQL không hợp lệ.
+
+Mặc dù các database driver MariaDB và MySQL sẽ bỏ qua giá trị `uniqueBy` và luôn sử dụng các index primary và unique của table để phát hiện các bản ghi có tồn tại hay không, nhưng việc validation vẫn được áp dụng. Một `InvalidArgumentException` sẽ được đưa ra nếu `uniqueBy` trống.
 
 <a name="mysql-delete-queries-with-join-order-by-and-limit"></a>
 #### MySQL `DELETE` Queries With `JOIN`, `ORDER BY`, and `LIMIT`

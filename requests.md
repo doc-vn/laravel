@@ -432,6 +432,27 @@ $elapsed = $request->date('elapsed', '!H:i', 'Europe/Madrid');
 
 Nếu có giá trị input nhưng có định dạng không hợp lệ, lỗi `InvalidArgumentException` sẽ được đưa ra; do đó, bạn nên xác thực dữ liệu input trước khi gọi phương thức `date`.
 
+<a name="retrieving-interval-input-values"></a>
+#### Retrieving Interval Input Values
+
+Các giá trị input chứa khoảng thời gian có thể được lấy ra dưới dạng các instance `CarbonInterval` bằng cách sử dụng phương thức `interval`. Nếu request không chứa giá trị input nào với tên đã cho, `null` sẽ được trả về:
+
+```php
+$duration = $request->interval('duration');
+```
+
+Nếu giá trị input là số, bạn có thể cung cấp đơn vị làm tham số thứ hai. Đơn vị này có thể là một string như `second`, `minute`, hoặc `day`, hoặc một instance enum `Carbon\Unit`:
+
+```php
+use Carbon\Unit;
+
+$timeout = $request->interval('timeout', 'second');
+
+$delay = $request->interval('delay', Unit::Minute);
+```
+
+Nếu giá trị input có tồn tại nhưng không phải định dạng hợp lệ, một exception `InvalidArgumentException` sẽ được đưa ra; do đó, bạn nên validate input trước khi gọi phương thức `interval`.
+
 <a name="retrieving-enum-input-values"></a>
 #### Retrieving Enum Input Values
 

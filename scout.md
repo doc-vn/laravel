@@ -810,12 +810,25 @@ $orders = Order::search('Star Trek')
 <a name="where-clauses"></a>
 ### Where Clauses
 
-Scout cho phép bạn thêm các điều kiện "where" vào các truy vấn tìm kiếm của bạn. Hiện tại, các điều kiện này chỉ hỗ trợ so sánh cơ bản và chủ yếu sử dụng cho việc query tìm kiếm theo ID.
+Scout cho phép bạn thêm các mệnh đề "where" vào truy vấn tìm kiếm của bạn. Ví dụ: một kiểm tra so sánh cơ bản rất hữu ích để giới hạn các truy vấn tìm kiếm theo một owner ID:
 
 ```php
 use App\Models\Order;
 
 $orders = Order::search('Star Trek')->where('user_id', 1)->get();
+```
+
+Bạn cũng có thể sử dụng các toán tử so sánh `=`, `!=`, `<`, `>`, `>=`, `<=` để xây dựng các câu truy vấn nâng cao hơn:
+
+```php
+Order::search('Star Trek')
+  ->where('status', '=', 'completed')
+  ->where('is_refunded', '!=', true)
+  ->where('total_price', '>', 100)
+  ->where('shipping_cost', '<', 20)
+  ->where('discount_percent', '>=', 10)
+  ->where('item_count', '<=', 5)
+  ->get();
 ```
 
 Ngoài ra, phương thức `whereIn` có thể được sử dụng để xác minh các giá trị của một cột nhất định có nằm trong một mảng hay không:

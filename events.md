@@ -163,7 +163,7 @@ public function boot(): void
 }
 ```
 
-<a name="queuable-anonymous-event-listeners"></a>
+<a name="queueable-anonymous-event-listeners"></a>
 #### Queueable Anonymous Event Listeners
 
 Khi đăng ký event listener dựa trên closure, bạn có thể bọc listener closure trong hàm `Illuminate\Events\queueable` để hướng dẫn Laravel thực thi listener này bằng cách sử dụng [queue](/docs/{{version}}/queues):
@@ -506,6 +506,7 @@ class SendShipmentNotification implements ShouldQueue, ShouldBeEncrypted
 <a name="unique-event-listeners"></a>
 ### Unique Event Listeners
 
+> [!WARNING]
 > Các unique listener yêu cầu một cache driver hỗ trợ [khoá atomic](/docs/{{version}}/cache#atomic-locks). Hiện tại, các cache driver `memcached`, `redis`, `dynamodb`, `database`, `file`, và `array` đều hỗ trợ khoá atomic.
 
 Thỉnh thoảng, bạn muốn đảm bảo là chỉ có một instance duy nhất của một listener nằm trong queue tại bất kỳ thời điểm nào. Bạn có thể làm như vậy bằng cách implement interface `ShouldBeUnique` trong class listener của bạn:
@@ -567,6 +568,7 @@ class AcquireProductKey implements ShouldQueue, ShouldBeUnique
 
 Trong ví dụ trên, listener `AcquireProductKey` là duy nhất dựa theo ID của license. Do đó, bất kỳ lần gửi mới nào của listener cho cùng một license đó sẽ bị bỏ qua cho đến khi listener hiện tại được xử lý xong. Điều này sẽ ngăn chặn việc tạo ra các product key trùng lặp cho cùng một license. Ngoài ra, nếu listener hiện tại không được xử lý trong vòng một giờ, khóa unique đó sẽ được giải phóng và một listener khác với cùng unique key đó có thể được đưa vào queue.
 
+> [!WARNING]
 > Nếu ứng dụng của bạn đang gửi event từ nhiều web server hoặc container khác nhau, bạn nên đảm bảo rằng tất cả các server đều giao tiếp với cùng một server cache trung tâm để Laravel có thể xác định chính xác xem một listener có phải là duy nhất hay không.
 
 <a name="keeping-listeners-unique-until-processing-begins"></a>
@@ -617,6 +619,7 @@ class AcquireProductKey implements ShouldQueue, ShouldBeUnique
 }
 ```
 
+> [!NOTE]
 > Nếu bạn chỉ cần giới hạn việc xử lý đồng bộ của một listener, hãy sử dụng middleware job [WithoutOverlapping](/docs/{{version}}/queues#preventing-job-overlaps) để thay thế.
 
 <a name="handling-failed-jobs"></a>
@@ -682,15 +685,15 @@ class SendShipmentNotification implements ShouldQueue
 }
 ```
 
-Là một giải pháp thay thế cho việc xác định số lần mà một listener có thể được thử trước khi nó thất bại, bạn có thể định nghĩa thời điểm mà listener không còn được thử lại nữa. Điều này cho phép listener được thử bao nhiêu tuỳ thích trong một khoảng thời gian nhất định. Để định nghĩa khoảng thời gian mà một listener không còn được thử nữa, bạn hãy thêm một phương thức `retryUntil` vào class listener của bạn. Phương thức này sẽ trả về một instance `DateTime`:
+Là một giải pháp thay thế cho việc xác định số lần mà một listener có thể được thử trước khi nó thất bại, bạn có thể định nghĩa thời điểm mà listener không còn được thử lại nữa. Điều này cho phép listener được thử bao nhiêu tuỳ thích trong một khoảng thời gian nhất định. Để định nghĩa khoảng thời gian mà một listener không còn được thử nữa, bạn hãy thêm một phương thức `retryUntil` vào class listener của bạn. Phương thức này sẽ trả về một instance `DateTimeInterface`:
 
 ```php
-use DateTime;
+use DateTimeInterface;
 
 /**
  * Determine the time at which the listener should timeout.
  */
-public function retryUntil(): DateTime
+public function retryUntil(): DateTimeInterface
 {
     return now()->plus(minutes: 5);
 }

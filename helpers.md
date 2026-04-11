@@ -2969,6 +2969,16 @@ return retry(5, function () {
 }, 100);
 ```
 
+Thời gian nghỉ cũng chấp nhận một instance `CarbonInterval`:
+
+```php
+use function Illuminate\Support\seconds;
+
+return retry(5, function () {
+    // Attempt 5 times while resting 5 seconds between attempts...
+}, seconds(5));
+```
+
 Nếu bạn muốn đưa vào một số lượng mili giây để ngủ giữa các lần thử, bạn có thể truyền một closure làm tham số thứ ba cho hàm `retry`:
 
 ```php

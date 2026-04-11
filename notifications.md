@@ -1192,9 +1192,9 @@ Echo.private('App.Models.User.' + userId)
 ```
 
 <a name="using-react-or-vue"></a>
-#### Using React or Vue
+#### Using React, Vue, hoặc Svelte
 
-Laravel Echo có chứa các hook React và Vue giúp việc lắng nghe các notification trở nên dễ dàng. Để bắt đầu, hãy gọi hook `useEchoNotification`, hook này được sử dụng để lắng nghe các notification. Hook `useEchoNotification` sẽ tự động thoát khỏi các channel khi component sử dụng nó bị unmount:
+Laravel Echo có chứa các hook React, Vue, và Svelte giúp việc lắng nghe các notification trở nên dễ dàng. Để bắt đầu, hãy gọi hook `useEchoNotification`, hook này được sử dụng để lắng nghe các notification. Hook `useEchoNotification` sẽ tự động thoát khỏi các channel khi component sử dụng nó bị unmount:
 
 ```js tab=React
 import { useEchoNotification } from "@laravel/echo-react";
@@ -1210,6 +1210,19 @@ useEchoNotification(
 ```vue tab=Vue
 <script setup lang="ts">
 import { useEchoNotification } from "@laravel/echo-vue";
+
+useEchoNotification(
+    `App.Models.User.${userId}`,
+    (notification) => {
+        console.log(notification.type);
+    },
+);
+</script>
+```
+
+```svelte tab=Svelte
+<script>
+import { useEchoNotification } from "@laravel/echo-svelte";
 
 useEchoNotification(
     `App.Models.User.${userId}`,
@@ -1237,6 +1250,20 @@ useEchoNotification(
 ```vue tab=Vue
 <script setup lang="ts">
 import { useEchoNotification } from "@laravel/echo-vue";
+
+useEchoNotification(
+    `App.Models.User.${userId}`,
+    (notification) => {
+        console.log(notification.type);
+    },
+    'App.Notifications.InvoicePaid',
+);
+</script>
+```
+
+```svelte tab=Svelte
+<script>
+import { useEchoNotification } from "@laravel/echo-svelte";
 
 useEchoNotification(
     `App.Models.User.${userId}`,

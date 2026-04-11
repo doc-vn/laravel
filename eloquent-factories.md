@@ -412,6 +412,18 @@ $user = User::factory()
     ->create();
 ```
 
+Bạn cũng có thể truyền nhiều mảng thuộc tính để tạo các model quan hệ tương ứng với state của từng model. Laravel sẽ chạy từng mảng theo thứ tự:
+
+```php
+$user = User::factory()
+    ->hasPosts(
+        ['title' => 'First Post'],
+        ['title' => 'Second Post'],
+        ['title' => 'Third Post'],
+    )
+    ->create();
+```
+
 Bạn có thể cung cấp một closure dựa trên state transformation nếu thay đổi state của bạn yêu cầu quyền truy cập vào model gốc:
 
 ```php

@@ -446,6 +446,58 @@ class StorePostRequest extends FormRequest
 }
 ```
 
+<a name="request-failing-on-unknown-fields"></a>
+#### Failing on Unknown Fields
+
+Bằng cách thêm thuộc tính `FailOnUnknownFields` vào request class của bạn, bạn có thể chỉ định Laravel từ chối bất kỳ field nào gửi lên mà không định nghĩa trước trong các validation rule thuộc request của bạn:
+
+```php
+<?php
+
+namespace App\Http\Requests;
+
+use Illuminate\Foundation\Http\Attributes\FailOnUnknownFields;
+use Illuminate\Foundation\Http\FormRequest;
+
+#[FailOnUnknownFields]
+class StorePostRequest extends FormRequest
+{
+    public function rules(): array
+    {
+        return [
+            'title' => ['required', 'string'],
+            'body' => ['required', 'string'],
+        ];
+    }
+}
+```
+
+Bạn cũng có thể cấu hình để enable hành vi này cho tất cả các form request từ trong `AppServiceProvider`:
+
+```php
+use Illuminate\Foundation\Http\FormRequest;
+
+/**
+ * Bootstrap any application services.
+ */
+public function boot(): void
+{
+    FormRequest::failOnUnknownFields();
+}
+```
+
+Nếu cần, bạn có thể disable hành vi này cho một request cụ thể bằng cách truyền `false` cho thuộc tính:
+
+```php
+#[FailOnUnknownFields(false)]
+class PublicWebhookRequest extends FormRequest
+{
+    // ...
+}
+```
+
+Việc từ chối các unknown field có thể cung cấp thêm một lớp bảo vệ chống lại các vấn đề kiểu mass-assignment bằng cách ngăn các input key không mong muốn truyền sâu hơn vào ứng dụng của bạn. Tuy nhiên, bạn vẫn nên thiết lập các thuộc tính `$fillable` / `$guarded` cho model của bạn và chỉ lưu trữ các input đã được validate đáng tin cậy.
+
 <a name="customizing-the-redirect-location"></a>
 #### Customizing The Redirect Location
 
@@ -1705,6 +1757,21 @@ Validator::make($request->all(), [
 
 Field được validation sẽ bị loại ra khỏi dữ liệu request được trả về từ phương thức `validate` và `validated` trừ khi _một field khác_ có giá trị bằng giá trị _value_. Nếu _value_ là `null` (`exclude_unless:name,null`), thì field được validation sẽ bị loại ra trừ khi field so sánh là `null` hoặc field so sánh không tồn tại trong dữ liệu request.
 
+Nếu cần logic loại bỏ có điều kiện phức tạp hơn, bạn có thể sử dụng phương thức `Rule::excludeUnless`. Phương thức này chấp nhận một giá trị boolean hoặc một closure. Khi được cung cấp một closure, closure nên trả về giá trị `true` hoặc `false` để cho biết liệu field đang được validate có nên không bị loại bỏ hay không:
+
+```php
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
+
+Validator::make($request->all(), [
+    'role_id' => Rule::excludeUnless($request->user()->is_admin),
+]);
+
+Validator::make($request->all(), [
+    'role_id' => Rule::excludeUnless(fn () => $request->user()->is_admin),
+]);
+```
+
 <a name="rule-exclude-with"></a>
 #### exclude_with:_anotherfield_
 
@@ -2149,6 +2216,21 @@ Field được validation phải thiếu hoặc trống trừ khi field _another
 
 </div>
 
+Nếu cần validation cấm có điều kiện phức tạp, bạn có thể sử dụng hàm `Rule::prohibitedUnless`. Hàm này chấp nhận boolean hoặc closure. Khi truyền vào một closure, closure đó nên trả về giá trị `true` hoặc `false` để cho biết liệu trường đang validate có không bị cấm hay không:
+
+```php
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
+
+Validator::make($request->all(), [
+    'role_id' => Rule::prohibitedUnless($request->user()->is_admin),
+]);
+
+Validator::make($request->all(), [
+    'role_id' => Rule::prohibitedUnless(fn () => $request->user()->is_admin),
+]);
+```
+
 <a name="rule-prohibits"></a>
 #### prohibits:_anotherfield_,...
 
@@ -2221,6 +2303,21 @@ Field được validation phải tồn tại và không được trống nếu f
 #### required_unless:_anotherfield_,_value_,...
 
 Field được validation phải có tồn tại và không được trống khi trường _anotherfield_ không bằng với giá trị _value_. Điều này cũng có nghĩa là _anotherfield_ phải có trong dữ liệu request trừ khi _value_ là `null`. Nếu _value_ là `null` (`required_unless:name,null`), thì field được validation phải có trừ khi field so sánh là `null` hoặc field so sánh không tồn tại trong dữ liệu request.
+
+Nếu bạn muốn xây dựng một điều kiện phức tạp hơn cho rule `required_unless`, bạn có thể sử dụng phương thức `Rule::requiredUnless`. Phương thức này chấp nhận một biến boolean hoặc một closure. Khi truyền một closure, closure đó nên trả về giá trị `true` hoặc `false` để cho biết field đang được validate có không bắt buộc hay không:
+
+```php
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
+
+Validator::make($request->all(), [
+    'role_id' => Rule::requiredUnless($request->user()->is_admin),
+]);
+
+Validator::make($request->all(), [
+    'role_id' => Rule::requiredUnless(fn () => $request->user()->is_admin),
+]);
+```
 
 <a name="rule-required-with"></a>
 #### required_with:_foo_,_bar_,...

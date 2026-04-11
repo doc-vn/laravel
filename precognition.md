@@ -20,7 +20,7 @@ Laravel Precognition cho phép bạn dự đoán kết quả của một request
 Khi Laravel nhận được một "request precognitive", nó sẽ thực hiện tất cả các middleware của route và resolve các library controller của route, bao gồm cả validation [request form](/docs/{{version}}/validation#form-request-validation) - nhưng nó sẽ không thực sự thực thi bất kỳ phương thức nào của controller.
 
 > [!NOTE]
-> Kể từ phiên bản Inertia 2.3, hỗ trợ Precognition đã được tích hợp sẵn. Vui lòng tham khảo [tài liệu Inertia Forms](https://inertiajs.com/docs/v2/the-basics/forms) để biết thêm thông tin. Các phiên bản Inertia cũ hơn yêu cầu Precognition 0.x.
+> Kể từ phiên bản Inertia 2.3, hỗ trợ Precognition đã được tích hợp sẵn. Vui lòng tham khảo [tài liệu Inertia Forms](https://inertiajs.com/forms) để biết thêm thông tin. Các phiên bản Inertia cũ hơn yêu cầu Precognition 0.x.
 
 <a name="live-validation"></a>
 ## Validation trực tiếp
