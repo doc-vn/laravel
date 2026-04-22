@@ -1,0 +1,51 @@
+name: "Báo cáo lỗi tài liệu Laravel"
+description: "Sử dụng mẫu này để báo cáo các lỗi có trong tài liệu."
+title: "[Issue]: "
+assignees:
+  - caodangtruong
+body:
+  - type: input
+    id: version
+    attributes:
+      label: 1. Version Laravel
+      placeholder: "Ví dụ: 10.x, 11.x..."
+    validations:
+      required: true
+
+  - type: input
+    id: file_name
+    attributes:
+      label: 2. Tên file
+      placeholder: "Ví dụ: redis.md"
+    validations:
+      required: true
+
+  - type: textarea
+    id: error_content
+    attributes:
+      label: 3. Nội dung lỗi
+      description: "Copy dòng lỗi vào đây."
+      render: text
+    validations:
+      required: true
+
+  - type: textarea
+    id: issue_description
+    attributes:
+      label: 4. Vấn đề
+      placeholder: "Mô tả vấn đề bạn đang gặp phải..."
+      render: text
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: 5. Cách giải quyết (nếu có)
+      placeholder: "Nếu bạn có cách gì thì hãy thêm vào đây."
+      render: text
+
+  - type: input
+    id: url
+    attributes:
+      label: 6. Url (ví dụ https://github.com/doc-vn/laravel/edit/11.x/redis.md)
