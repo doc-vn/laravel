@@ -24,7 +24,7 @@ body:
     id: error_content
     attributes:
       label: 3. Nội dung lỗi
-      description: "Copy dòng lỗi vào đây."
+      placeholder: "Copy dòng lỗi vào đây."
       render: text
     validations:
       required: true
@@ -48,4 +48,5 @@ body:
   - type: input
     id: url
     attributes:
-      label: 6. Url (ví dụ https://github.com/doc-vn/laravel/edit/11.x/redis.md)
+      label: 6. Url (nếu có)
+      description: "Ví dụ: https://github.com/doc-vn/laravel/edit/11.x/redis.md"
