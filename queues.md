@@ -8,6 +8,7 @@
     - [Cấu trúc class](#class-structure)
     - [Unique Jobs](#unique-jobs)
     - [Encrypted Jobs](#encrypted-jobs)
+    - [Debounced Jobs](#debounced-jobs)
 - [Job Middleware](#job-middleware)
     - [Giới hạn tỷ lệ](#rate-limiting)
     - [Chặn Job chồng nhau](#preventing-job-overlaps)
@@ -413,6 +414,76 @@ class UpdateSearchIndex implements ShouldQueue, ShouldBeUnique
 
 > [!NOTE]
 > Nếu bạn chỉ cần giới hạn quá trình xử lý đồng thời của một job, bạn hãy sử dụng middleware job [WithoutOverlapping](/docs/{{version}}/queues#preventing-job-overlaps) thay thế.
+
+<a name="debounced-jobs"></a>
+### Debounced Jobs
+
+Thỉnh thoảng, bạn có thể muốn đảm bảo rằng khi cùng một job được gửi nhiều lần trong một khoảng thời gian ngắn, thì chỉ lần gửi cuối mới được thực thi. Bạn có thể làm như vậy bằng cách thêm thuộc tính `DebounceFor` vào job của bạn:
+
+```php
+<?php
+
+namespace App\Jobs;
+
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Foundation\Queue\Queueable;
+use Illuminate\Queue\Attributes\DebounceFor;
+
+#[DebounceFor(30)]
+class UpdateSearchIndex implements ShouldQueue
+{
+    use Queueable;
+
+    /**
+     * Create a new job instance.
+     */
+    public function __construct(public int $productId)
+    {
+    }
+
+    /**
+     * Get the debounce ID for the job.
+     */
+    public function debounceId(): string
+    {
+        return (string) $this->productId;
+    }
+}
+```
+
+Trong ví dụ trên, việc liên tục gửi `UpdateSearchIndex` cho cùng một sản phẩm trong vòng `30` giây sẽ debounce job đó để chỉ lần gửi cuối cùng mới được thực thi.
+
+Nếu bạn muốn giới hạn thời gian một job thường xuyên được gửi có thể bị hoãn, bạn có thể cung cấp tham số `maxWait` cho thuộc tính `DebounceFor`:
+
+```php
+#[DebounceFor(30, maxWait: 120)]
+class UpdateSearchIndex implements ShouldQueue
+{
+    use Queueable;
+
+    // ...
+}
+```
+
+Bạn có thể tùy chỉnh cache store sẽ được sử dụng để theo dõi debounce bằng cách định nghĩa phương thức `debounceVia` trên job của bạn:
+
+```php
+use Illuminate\Contracts\Cache\Repository;
+use Illuminate\Support\Facades\Cache;
+
+public function debounceVia(): Repository
+{
+    return Cache::driver('redis');
+}
+```
+
+Nếu một debounced job bị thay bởi một lần gửi mới hơn, Laravel sẽ gửi event `Illuminate\Queue\Events\JobDebounced` và xóa job bị thay thế đó ra khỏi queue.
+
+> [!WARNING]
+> Các debounced job và các unique job sẽ loại bỏ lẫn nhau. Một job đang sử dụng thuộc tính `DebounceFor` thì không nên implement `ShouldBeUnique`.
+
+> [!WARNING]
+> Nếu ứng dụng của bạn gửi các debounced job từ nhiều web server hoặc container, bạn nên đảm bảo rằng tất cả các server của bạn đang kết nối đến cùng một cache server trung tâm.
 
 <a name="encrypted-jobs"></a>
 ### Encrypted Jobs
@@ -1498,7 +1569,7 @@ class ProcessPodcast implements ShouldQueue
 <a name="sqs-fifo-and-fair-queues"></a>
 ### SQS FIFO và Fair Queues
 
-Laravel hỗ trợ các queue [Amazon SQS FIFO (First-In-First-Out)](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-fifo-queues.html), cho phép bạn xử lý các job theo đúng thứ tự mà chúng đã được gửi đi, đồng thời đảm bảo việc xử lý chính xác trong một lần duy nhất thông qua việc loại bỏ các job trùng lặp.
+Laravel hỗ trợ các queue [Amazon SQS FIFO (First-In-First-Out)](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-fifo-queues.html) và [fair](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-fair-queues.html), cho phép bạn xử lý các job theo đúng thứ tự mà chúng đã được gửi đi, đồng thời đảm bảo việc xử lý chính xác trong một lần duy nhất thông qua việc loại bỏ các job trùng lặp.
 
 Các queue FIFO yêu cầu một message group ID để xác định xem những job nào có thể được xử lý song song. Các job có cùng group ID sẽ được xử lý theo thứ tự, trong khi các job có group ID khác nhau có thể được xử lý đồng thời.
 
@@ -1531,6 +1602,37 @@ class ProcessSubscriptionRenewal implements ShouldQueue
     public function deduplicationId(): string
     {
         return "renewal-{$this->subscription->id}";
+    }
+}
+```
+
+<a name="fair-queues"></a>
+#### Fair Queues
+
+Nếu bạn đang sử dụng SQS standard queue, việc thiết lập một message group sẽ cho phép bạn bật tính năng fair queueing. Nói cách khác, một khi bạn đã chỉ định group, SQS sẽ sử dụng chúng để duy trì sự phân phối thông qua các tenant và khối lượng công việc. Bạn không cần phải cấu hình gì thêm cho Laravel.
+
+Thay vì gọi `onGroup` tại thời điểm gửi job, bạn cũng có thể định nghĩa phương thức `messageGroup` trực tiếp trên job:
+
+```php
+<?php
+
+namespace App\Jobs;
+
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Foundation\Queue\Queueable;
+
+class ProcessOrder implements ShouldQueue
+{
+    use Queueable;
+
+    // ...
+
+    /**
+     * Get the job's message group.
+     */
+    public function messageGroup(): string
+    {
+        return "customer-{$this->order->customer_id}";
     }
 }
 ```

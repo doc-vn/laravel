@@ -507,7 +507,7 @@ $user = User::factory()
     ->create();
 ```
 
-Bạn có thể cung cấp một closure dựa trên state transformation nếu thay đổi state của bạn yêu cầu quyền truy cập vào model quan hệ:
+Bạn có thể cung cấp một closure dựa trên state nếu thay đổi state của bạn yêu cầu quyền truy cập vào model quan hệ:
 
 ```php
 $user = User::factory()
@@ -518,6 +518,20 @@ $user = User::factory()
                 return ['name' => $user->name.' Role'];
             }),
         ['active' => true]
+    )
+    ->create();
+```
+
+Bạn cũng có thể truyền vào một mảng các thuộc tính pivot để cung cấp dữ liệu cho mỗi model pivot được tạo ra:
+
+```php
+$user = User::factory()
+    ->hasAttached(
+        Role::factory(),
+        [
+            ['active' => true],
+            ['active' => false],
+        ]
     )
     ->create();
 ```

@@ -1261,6 +1261,36 @@ task(
 );
 ```
 
+<a name="task-sub-label"></a>
+#### Displaying a Sub-Label
+
+Phương thức `subLabel` sẽ hiển thị một dòng chữ mờ bên dưới label chính của task, điều này rất hữu ích để thông báo các trạng thái tạm thời như các bước hiện đang được thực hiện. Truyền một chuỗi trống để xóa sub-label:
+
+```php
+task(
+    label: 'Deploying',
+    callback: function ($logger) {
+        $logger->subLabel('Building assets...');
+        // ...
+        $logger->subLabel('Running migrations...');
+        // ...
+        $logger->subLabel('');
+    }
+);
+```
+
+Bạn cũng có thể cung cấp một sub-label đầu tiên thông qua tham số `subLabel`:
+
+```php
+task(
+    label: 'Deploying',
+    callback: function ($logger) {
+        // ...
+    },
+    subLabel: 'Preparing...'
+);
+```
+
 <a name="task-streaming"></a>
 #### Streaming Text
 
@@ -1291,6 +1321,23 @@ task(
         // ...
     },
     limit: 20
+);
+```
+
+<a name="task-keep-summary"></a>
+#### Keeping the Summary
+
+Mặc định, output của task sẽ bị xóa sau khi callback kết thúc. Nếu bạn muốn giữ lại các thông báo trạng thái trên màn hình sau khi task được hoàn thành, bạn có thể truyền tham số `keepSummary`:
+
+```php
+task(
+    label: 'Deploying',
+    callback: function ($logger) {
+        $logger->success('Assets built');
+        // ...
+        $logger->success('Migrations complete');
+    },
+    keepSummary: true,
 );
 ```
 

@@ -94,7 +94,7 @@ Hoặc, nếu bạn đang sử dụng bản copy Laravel installer đi kèm vớ
 
 **Likelihood Of Impact: Low**
 
-Các prefix mặc định cho cache và Redis của Laravel hiện sử dụng các hậu tố nối bằng dấu gạch ngang. Ngoài ra, tên cookie session mặc định hiện cũng sử dụng `Str::snake(...)` cho tên ứng dụng.
+Các prefix mặc định cho cache và Redis của Laravel hiện sử dụng các hậu tố nối bằng dấu gạch ngang.
 
 Trong hầu hết các ứng dụng, thay đổi này sẽ không ảnh hưởng vì các file cấu hình cấp ứng dụng đã định nghĩa sẵn các giá trị này. Điều này chủ yếu ảnh hưởng đến các ứng dụng phụ thuộc vào cấu hình dự phòng ở cấp độ framework khi các giá trị cấu hình ứng dụng tương ứng không tồn tại.
 
@@ -109,7 +109,7 @@ Str::slug((string) env('APP_NAME', 'laravel'), '_').'_session';
 // Laravel >= 13.x
 Str::slug((string) env('APP_NAME', 'laravel')).'-cache-';
 Str::slug((string) env('APP_NAME', 'laravel')).'-database-';
-Str::snake((string) env('APP_NAME', 'laravel')).'_session';
+Str::slug((string) env('APP_NAME', 'laravel')).'-session';
 ```
 
 Để giữ nguyên hành vi trước đó, hãy cấu hình các biến môi trường `CACHE_PREFIX`, `REDIS_PREFIX` và `SESSION_COOKIE` trong file môi trường của bạn.
@@ -338,7 +338,7 @@ Nếu các listener của bạn tham chiếu đến `$connection`, hãy cập nh
 
 Contract `Illuminate\Contracts\Queue\Queue` bây giờ sẽ bao gồm các phương thức kiểm tra kích thước hàng đợi mà trước đây chỉ được khai báo trong comment.
 
-Nếu bạn đang phát triển các implementation driver queue tuỳ biến cho contract này, thì bạn hãy thêm vào implementation các phương thức sau:
+Nếu bạn đang phát triển các implementation driver queue tùy biến cho contract này, thì bạn hãy thêm vào implementation các phương thức sau:
 
 <div class="content-list" markdown="1">
 
@@ -427,6 +427,28 @@ Nếu như các bài test của bạn phụ thuộc vào việc các factory UUI
 Phương thức `Illuminate\Support\Js::from` bây giờ mặc định sử dụng `JSON_UNESCAPED_UNICODE`.
 
 Nếu các bài test hoặc việc so sánh output frontend của bạn phụ thuộc vào các chuỗi Unicode được escape (ví dụ `\u00e8`), hãy cập nhật lại kết quả mà bạn mong đợi.
+
+<a name="utilities"></a>
+### Utilities
+
+<a name="symfony-polyfill"></a>
+#### Symfony PHP 8.5 Polyfill and Global Function Conflicts
+
+**Likelihood Of Impact: Low**
+
+Laravel 13 giới thiệu một phụ thuộc mới là `symfony/polyfill-php85`. Trên các phiên bản PHP thấp hơn 8.5, polyfill này sẽ định nghĩa các hàm global như `array_first()` và `array_last()` trừ khi các hàm này đã được định nghĩa trước trong quá trình bootstrap ứng dụng.
+
+Các hàm này có thể xung đột với các package helper cũ như `laravel/helpers` hoặc các helper global tùy chỉnh có sử dụng cùng tên. Ví dụ, helper `array_first()` trước đây chấp nhận một callback để trả về phần tử khớp đầu tiên, trong khi phiên bản polyfill mới chỉ trả về phần tử đầu tiên của mảng.
+
+Để tránh xung đột và đảm bảo hành vi nhất quán trên tất cả các phiên bản PHP, bạn nên ưu tiên sử dụng các phương thức của `Illuminate\Support\Arr`:
+
+```php
+use Illuminate\Support\Arr;
+
+Arr::first($array, function ($value) {
+  return /* condition */;
+});
+```
 
 <a name="views"></a>
 ### Views

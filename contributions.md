@@ -142,6 +142,8 @@ Các thuộc tính `@param` hoặc `@return` có thể trở nên dư thừa khi
 ```php
 /**
  * Execute the job.
+ * [tl! remove]
+ * @return void [tl! remove]
  */
 public function handle(AudioProcessor $processor): void
 {
@@ -154,8 +156,8 @@ Tuy nhiên, khi khai báo kiểu dữ liệu dạng chung, vui lòng chỉ đị
 ```php
 /**
  * Get the attachments for the message.
- *
- * @return array<int, \Illuminate\Mail\Mailables\Attachment>
+ * [tl! add]
+ * @return array<int, \Illuminate\Mail\Mailables\Attachment> [tl! add]
  */
 public function attachments(): array
 {

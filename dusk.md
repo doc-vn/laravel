@@ -2011,7 +2011,7 @@ Yêu cầu element giống với selector đã cho có giá trị thuộc tính 
 $browser->assertDataAttribute($selector, $attribute, $value);
 ```
 
-Ví dụ: với thẻ tr `<tr id="row-1" data-content="attendees"></tr>`, bạn có thể kiểm tra thuộc tính `data-label` như sau:
+Ví dụ: với thẻ tr `<tr id="row-1" data-content="attendees"></tr>`, bạn có thể kiểm tra thuộc tính `data-content` như sau:
 
 ```php
 $browser->assertDataAttribute('#row-1', 'content', 'attendees');

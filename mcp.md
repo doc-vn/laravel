@@ -32,6 +32,12 @@
     - [Resource Annotations](#resource-annotations)
     - [Đăng ký Conditional Resource](#conditional-resource-registration)
     - [Resource Responses](#resource-responses)
+- [Apps](#apps)
+    - [Tạo App Resources](#creating-app-resources)
+    - [Liên kết Apps từ Tools](#rendering-apps-from-tools)
+    - [App Tool Visibility](#app-tool-visibility)
+    - [Cấu hình App](#app-configuration)
+    - [Tạo Apps cùng Boost](#building-apps-with-boost)
 - [Metadata](#metadata)
 - [Authentication](#authentication)
     - [OAuth 2.1](#oauth)
@@ -1318,6 +1324,161 @@ class WeatherGuidelinesResource extends Resource
 ```php
 return Response::error('Unable to fetch weather data for the specified location.');
 ```
+
+<a name="apps"></a>
+## Apps
+
+Laravel MCP hỗ trợ [MCP Apps](https://modelcontextprotocol.io/extensions/apps/overview), một extension của Model Context Protocol cho phép các tool tạo ra các ứng dụng HTML bên trong các iframe được cô lập trên các host hỗ trợ. Điều này cho phép bạn xây dựng các dashboard, form, hình ảnh trực quan và các trải nghiệm phong phú khác vượt xa các phản hồi bằng văn bản thuần túy.
+
+Một MCP app chứa hai phần hoạt động cùng nhau:
+
+- Một **app resource** trả về HTML độc lập cho ứng dụng của bạn.
+- Một **tool** được liên kết với app resource bằng thuộc tính `#[RendersApp]`. Khi tool được gọi, host sẽ lấy và hiển thị resource được liên kết.
+
+<a name="creating-app-resources"></a>
+### Tạo App Resources
+
+Bạn có thể tạo ra một app resource bằng lệnh Artisan `make:mcp-app-resource`:
+
+```shell
+php artisan make:mcp-app-resource WeatherDashboardApp
+```
+
+Lệnh này sẽ tạo ra hai file: một class PHP trong `app/Mcp/Resources` và một Blade view trong `resources/views/mcp`. Tên view sẽ được suy ra tự động từ tên class. Ví dụ, `WeatherDashboardApp` sẽ ánh xạ tới `mcp.weather-dashboard-app`:
+
+```php
+<?php
+
+namespace App\Mcp\Resources;
+
+use Laravel\Mcp\Request;
+use Laravel\Mcp\Response;
+use Laravel\Mcp\Server\Attributes\AppMeta;
+use Laravel\Mcp\Server\Attributes\Description;
+use Laravel\Mcp\Server\AppResource;
+
+#[Description('An interactive weather dashboard.')]
+#[AppMeta]
+class WeatherDashboardApp extends AppResource
+{
+    /**
+     * Handle the app resource request.
+     */
+    public function handle(Request $request): Response
+    {
+        return Response::view('mcp.weather-dashboard-app', [
+            'title' => $this->title(),
+        ]);
+    }
+}
+```
+
+`AppResource` sẽ kế thừa class `Resource` và tự động cấu hình URI scheme `ui://` và MIME type `text/html;profile=mcp-app` theo yêu cầu của đặc tả MCP Apps. Giống như bất kỳ resource nào khác, bạn phải đăng ký nó trong mảng `$resources` của server.
+
+File blade view được tạo ra sẽ sử dụng component `<x-mcp::app>`, component này sẽ render ra một file HTML hoàn chỉnh với MCP SDK client-side được tích hợp sẵn và sẵn sàng để sử dụng:
+
+```blade
+<x-mcp::app :title="$title">
+    <x-slot:head>
+        <script type="module">
+        createMcpApp(async (app) => {
+            document.getElementById('run-btn').addEventListener('click', async () => {
+                const result = await app.callServerTool('get-weather-data', {});
+                document.getElementById('output').textContent = result.content[0]?.text ?? '';
+            });
+        });
+        </script>
+    </x-slot:head>
+
+    <div id="app">
+        <button id="run-btn">Refresh</button>
+        <p id="output"></p>
+    </div>
+</x-mcp::app>
+```
+
+Biến global `createMcpApp` được cung cấp bởi SDK và sẽ xử lý việc kết nối iframe với server, áp dụng chủ đề của host và cung cấp các helper như `callServerTool`, `sendMessage`, `openLink` và các event callback. Để biết đầy đủ API client-side, hãy tham khảo [đặc tả MCP Apps](https://modelcontextprotocol.io/extensions/apps/overview).
+
+<a name="rendering-apps-from-tools"></a>
+### Liên kết Apps từ Tools
+
+Để hiển thị một app resource, hãy liên kết một tool với nó bằng thuộc tính `#[RendersApp]`. Khi tool được gọi, Laravel MCP sẽ thêm URI của resource vào metadata của tool để host có thể render app trong một iframe được sandbox:
+
+```php
+<?php
+
+namespace App\Mcp\Tools;
+
+use App\Mcp\Resources\WeatherDashboardApp;
+use Laravel\Mcp\Request;
+use Laravel\Mcp\Response;
+use Laravel\Mcp\Server\Attributes\RendersApp;
+use Laravel\Mcp\Server\Tool;
+
+#[RendersApp(resource: WeatherDashboardApp::class)]
+class ShowWeatherDashboard extends Tool
+{
+    /**
+     * Handle the tool request.
+     */
+    public function handle(Request $request): Response
+    {
+        return Response::text('Weather dashboard loaded.');
+    }
+}
+```
+
+Laravel MCP tự động thêm khả năng `io.modelcontextprotocol/ui` vào mỗi khi có bất kỳ `AppResource` nào được đăng ký, vì vậy bạn không cần thêm bất kỳ cấu hình server nào nữa.
+
+<a name="app-tool-visibility"></a>
+### App Tool Visibility
+
+Mỗi tool `#[RendersApp]` có thể giới hạn những ai có thể gọi nó thông qua tham số `visibility`. Điều này hữu ích cho việc hiển thị các tool private, chỉ dành cho app mà UI sẽ gọi để load hoặc làm mới dữ liệu mà không hiển thị các tool đó cho các model:
+
+```php
+use Laravel\Mcp\Server\Attributes\RendersApp;
+use Laravel\Mcp\Server\Ui\Enums\Visibility;
+
+#[RendersApp(resource: WeatherDashboardApp::class, visibility: [Visibility::App])]
+class GetWeatherData extends Tool
+{
+    // ...
+}
+```
+
+Enum `Visibility` có hai trường hợp, `Model` và `App`, và mặc định là cả hai. Sử dụng `[Visibility::App]` cho các hành động backend mà UI gọi trực tiếp, hoặc `[Visibility::Model]` để tạo một tool không hoạt động với UI.
+
+<a name="app-configuration"></a>
+### Cấu hình App
+
+Thuộc tính `#[AppMeta]` trên app resource của bạn sẽ cấu hình Content Security Policy của iframe, các quyền của trình duyệt và bất kỳ script thư viện nào sẽ được thêm vào trong `<head>` của view:
+
+```php
+use Laravel\Mcp\Server\Attributes\AppMeta;
+use Laravel\Mcp\Server\Ui\Enums\Library;
+use Laravel\Mcp\Server\Ui\Enums\Permission;
+
+#[AppMeta(
+    connectDomains: ['https://api.weather.com'],
+    permissions: [Permission::Geolocation],
+    libraries: [Library::Tailwind, Library::Alpine],
+)]
+class WeatherDashboardApp extends AppResource
+{
+    // ...
+}
+```
+
+Enum `Library` sẽ chứa các script CDN được cấu hình sẵn cho một số thư viện front-end phổ biến, chẳng hạn như `Library::Tailwind` và `Library::Alpine`, và các CDN này sẽ được tự động merge vào CSP. Enum `Permission` sẽ chứa các quyền của trình duyệt như `Camera`, `Microphone`, `Geolocation` và `ClipboardWrite`.
+
+Đối với cấu hình cần phải tính toán hoặc động, hãy ghi đè phương thức `appMeta` trên resource của bạn bằng các builder `AppMeta`, `Csp` và `Permissions` từ namespace `Laravel\Mcp\Server\Ui`.
+
+<a name="building-apps-with-boost"></a>
+### Tạo Apps cùng Boost
+
+Laravel MCP có chứa một tham chiếu skill [Boost](/docs/{{version}}/boost) dành riêng cho việc xây dựng MCP Apps. Nếu bạn đã cài đặt [Laravel Boost](/docs/{{version}}/boost), AI coding agent của bạn có thể gọi skill `mcp-development` và yêu cầu nó tạo khung cho app resource, Blade view và tool được liên kết cho bạn.
+
+Để xem tham chiếu protocol đầy đủ, bao gồm toàn bộ API client-side và chi tiết schema, hãy xem [tài liệu MCP Apps](https://modelcontextprotocol.io/extensions/apps/overview) chính thức.
 
 <a name="metadata"></a>
 ## Metadata

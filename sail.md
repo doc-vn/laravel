@@ -428,7 +428,7 @@ sail up
 <a name="sail-node-versions"></a>
 ## Node Versions
 
-Mặc định, Sail cài đặt Node 22. Để thay đổi phiên bản Node được cài đặt khi build image của bạn, bạn có thể cập nhật định nghĩa `build.args` của service `laravel.test` trong file `compose.yaml` của ứng dụng của bạn:
+Mặc định, Sail cài đặt Node 24. Để thay đổi phiên bản Node được cài đặt khi build image của bạn, bạn có thể cập nhật định nghĩa `build.args` của service `laravel.test` trong file `compose.yaml` của ứng dụng của bạn:
 
 ```yaml
 build:

@@ -36,7 +36,7 @@
 <a name="introduction"></a>
 ## Giới thiệu
 
-Gửi email không cần phải phức tạp. Laravel cung cấp một API đơn giản, gọn gàng dựa trên component [Symfony Mailer](https://symfony.com/doc/current/mailer.html). Laravel và Symfony Mailer cung cấp các driver cho việc gửi email như SMTP, Mailgun, Postmark, Resend, Amazon SES và `sendmail`, cho phép bạn nhanh chóng bắt đầu gửi mail thông qua dịch vụ trên đám mây hoặc local mà bạn chọn.
+Gửi email không cần phải phức tạp. Laravel cung cấp một API đơn giản, gọn gàng dựa trên component [Symfony Mailer](https://symfony.com/doc/current/mailer.html). Laravel và Symfony Mailer cung cấp các driver cho việc gửi email như SMTP, Cloudflare, Mailgun, Postmark, Resend, Amazon SES và `sendmail`, cho phép bạn nhanh chóng bắt đầu gửi mail thông qua dịch vụ trên đám mây hoặc local mà bạn chọn.
 
 <a name="configuration"></a>
 ### Cấu hình
@@ -49,6 +49,38 @@ Trong file cấu hình `mail`, bạn sẽ tìm thấy mảng cấu hình `mail`.
 ### Yêu cầu driver / transport
 
 Các driver dựa trên API như Mailgun, Postmark, và Resend thường đơn giản và nhanh hơn là việc gửi mailthông qua các máy chủ SMTP. Bất cứ khi nào có thể, chúng tôi khuyên bạn nên sử dụng một trong những driver này.
+
+<a name="cloudflare-driver"></a>
+#### Cloudflare Driver
+
+Để sử dụng driver Cloudflare, hãy cài đặt HTTP Client của Symfony thông qua Composer:
+
+```shell
+composer require symfony/http-client
+```
+
+Tiếp theo, bạn sẽ cần thực hiện hai thay đổi trong file cấu hình `config/mail.php` của ứng dụng. Đầu tiên, hãy thiết lập mailer mặc định của bạn thành `cloudflare`:
+
+```php
+'default' => env('MAIL_MAILER', 'cloudflare'),
+```
+
+Thứ hai, hãy thêm mảng cấu hình sau vào mảng `mailers` của bạn:
+
+```php
+'cloudflare' => [
+    'transport' => 'cloudflare',
+],
+```
+
+Sau khi cấu hình mailer mặc định cho ứng dụng, hãy thêm các tùy chọn sau vào file cấu hình `config/services.php` của bạn:
+
+```php
+'cloudflare' => [
+    'account_id' => env('CLOUDFLARE_ACCOUNT_ID'),
+    'key' => env('CLOUDFLARE_KEY'),
+],
+```
 
 <a name="mailgun-driver"></a>
 #### Mailgun Driver

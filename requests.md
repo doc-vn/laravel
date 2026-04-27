@@ -165,9 +165,10 @@ $request->fullUrlWithoutQuery(['type']);
 Bạn có thể lấy ra "host" của request đến thông qua các phương thức `host`, `httpHost` và `schemeAndHttpHost`:
 
 ```php
-$request->host();
-$request->httpHost();
-$request->schemeAndHttpHost();
+// http://localhost:8000
+$request->host(); // localhost
+$request->httpHost(); // localhost:8000
+$request->schemeAndHttpHost(); // http://localhost:8000
 ```
 
 <a name="retrieving-the-request-method"></a>
