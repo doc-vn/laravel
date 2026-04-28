@@ -20,7 +20,7 @@
   - [Refreshing On Save](#blade-refreshing-on-save)
   - [Aliases](#blade-aliases)
 - [Tải trước Asset](#asset-prefetching)
-- [Tuỳ biến Base URLs](#custom-base-urls)
+- [Tùy biến Base URLs](#custom-base-urls)
 - [Environment Variables](#environment-variables)
 - [Disabling Vite In Tests](#disabling-vite-in-tests)
 - [Server-Side Rendering (SSR)](#ssr)
@@ -28,7 +28,7 @@
   - [Content Security Policy (CSP) Nonce](#content-security-policy-csp-nonce)
   - [Subresource Integrity (SRI)](#subresource-integrity-sri)
   - [Arbitrary Attributes](#arbitrary-attributes)
-- [Tuỳ biến nâng cao](#advanced-customization)
+- [Tùy biến nâng cao](#advanced-customization)
   - [Dev Server Cross-Origin Resource Sharing (CORS)](#cors)
   - [Correcting Dev Server URLs](#correcting-dev-server-urls)
 
@@ -655,7 +655,7 @@ Với đoạn code ở trên, việc load trước sẽ bắt đầu khi bạn k
 ```
 
 <a name="custom-base-urls"></a>
-## Tuỳ biến Base URLs
+## Tùy biến Base URLs
 
 Nếu asset đã biên dịch Vite của bạn được triển khai tới một domain khác, khác với ứng dụng của bạn, chẳng hạn như thông qua một CDN, thì bạn phải chỉ định biến môi trường `ASSET_URL` trong file `.env` của ứng dụng:
 
@@ -907,7 +907,7 @@ Vite::useStyleTagAttributes(fn (string $src, string $url, array|null $chunk, arr
 > Các tham số `$chunk` và `$manifest` sẽ là `null` khi máy chủ phát triển Vite đang chạy.
 
 <a name="advanced-customization"></a>
-## Tuỳ biến nâng cao
+## Tùy biến nâng cao
 
 Mặc định, plugin Vite của Laravel sẽ sử dụng các quy ước hợp lý có thể áp dụng được cho hầu hết các ứng dụng; tuy nhiên, thỉnh thoảng bạn có thể cần tùy chỉnh hành vi của Vite. Để enable thêm các tùy chọn tùy chỉnh bổ sung, chúng tôi cung cấp các phương thức và các tùy chọn sau có thể được sử dụng thay cho lệnh Blade `@vite`:
 

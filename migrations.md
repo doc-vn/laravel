@@ -643,7 +643,7 @@ $table->char('name', length: 100);
 <a name="column-method-dateTimeTz"></a>
 #### `dateTimeTz()` {.collection-method}
 
-Phương thức `dateTimeTz` sẽ tạo một cột tương ứng với `DATETIME` (cùng timezone) với một tuỳ chọn độ chính xác của giây tính đến hàng phân số phía sau dấu chấm:
+Phương thức `dateTimeTz` sẽ tạo một cột tương ứng với `DATETIME` (cùng timezone) với một tùy chọn độ chính xác của giây tính đến hàng phân số phía sau dấu chấm:
 
 ```php
 $table->dateTimeTz('created_at', precision: 0);
@@ -652,7 +652,7 @@ $table->dateTimeTz('created_at', precision: 0);
 <a name="column-method-dateTime"></a>
 #### `dateTime()` {.collection-method}
 
-Phương thức `dateTime` sẽ tạo một cột tương ứng với `DATETIME` và một tuỳ chọn độ chính xác của giây tính đến hàng phân số phía sau dấu chấm:
+Phương thức `dateTime` sẽ tạo một cột tương ứng với `DATETIME` và một tùy chọn độ chính xác của giây tính đến hàng phân số phía sau dấu chấm:
 
 ```php
 $table->dateTime('created_at', precision: 0);
@@ -1432,7 +1432,7 @@ $table->unique('email', 'unique_email');
 <a name="available-index-types"></a>
 #### Available Index Types
 
-Class schema builder blueprint của Laravel sẽ cung cấp các phương thức khác nhau để tạo ra từng loại index mà được Laravel hỗ trợ. Mỗi phương thức của index chấp nhận một tham số thứ hai tùy chọn để chỉ định tên của index. Nếu bỏ qua tuỳ chọn này, thì tên sẽ được lấy từ tên của (các) bảng và các cột để sử dụng cho index, cũng như loại index. Các phương thức tạo index sẽ được mô tả trong bảng dưới đây:
+Class schema builder blueprint của Laravel sẽ cung cấp các phương thức khác nhau để tạo ra từng loại index mà được Laravel hỗ trợ. Mỗi phương thức của index chấp nhận một tham số thứ hai tùy chọn để chỉ định tên của index. Nếu bỏ qua tùy chọn này, thì tên sẽ được lấy từ tên của (các) bảng và các cột để sử dụng cho index, cũng như loại index. Các phương thức tạo index sẽ được mô tả trong bảng dưới đây:
 
 <div class="overflow-auto">
 

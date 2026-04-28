@@ -305,7 +305,7 @@ Route::get('/user/{id}', function (Request $request, string $id) {
 ```
 
 <a name="parameters-optional-parameters"></a>
-### Tham số tuỳ chọn
+### Tham số tùy chọn
 
 Đôi khi bạn có thể cần chỉ định một route parameter có thể không phải lúc nào cũng có trong URI. Bạn có thể làm như vậy bằng cách đặt dấu `?` sau tên tham số. Và hãy chắc chắn là biến tương ứng trong route có set một giá trị mặc định:
 
@@ -634,7 +634,7 @@ Route::get('/posts/{post:slug}', function (Post $post) {
 });
 ```
 
-Nếu bạn muốn tuỳ biến một liên kết của một model luôn sử dụng một cột khác, khác với cột `id` trong cơ sở dữ liệu, bạn có thể ghi đè phương thức `getRouteKeyName` trong model Eloquent:
+Nếu bạn muốn tùy biến một liên kết của một model luôn sử dụng một cột khác, khác với cột `id` trong cơ sở dữ liệu, bạn có thể ghi đè phương thức `getRouteKeyName` trong model Eloquent:
 
 ```php
 /**
@@ -769,9 +769,9 @@ Vì chúng ta đã liên kết các tham số `{user}` vào trong model `App\Mod
 Nếu không tìm thấy model instance phù hợp trong cơ sở dữ liệu, phản hồi HTTP 404 sẽ được đưa ra.
 
 <a name="customizing-the-resolution-logic"></a>
-#### Tuỳ chỉnh logic phụ thuộc
+#### Tùy chỉnh logic phụ thuộc
 
-Nếu bạn muốn định nghĩa một tuỳ chỉnh logic cho liên kết model của bạn, bạn có thể sử dụng phương thức `Route::bind`. Closure của bạn sẽ được truyền đến phương thức `bind` và nhận vào giá trị của tham số URI, sau đó sẽ trả về một instance của class, và sẽ được inject vào trong route trước đó. Một lần nữa, việc tùy chỉnh này sẽ diễn ra trong phương thức `boot` của `AppServiceProvider` trong ứng dụng của bạn:
+Nếu bạn muốn định nghĩa một tùy chỉnh logic cho liên kết model của bạn, bạn có thể sử dụng phương thức `Route::bind`. Closure của bạn sẽ được truyền đến phương thức `bind` và nhận vào giá trị của tham số URI, sau đó sẽ trả về một instance của class, và sẽ được inject vào trong route trước đó. Một lần nữa, việc tùy chỉnh này sẽ diễn ra trong phương thức `boot` của `AppServiceProvider` trong ứng dụng của bạn:
 
 ```php
 use App\Models\User;

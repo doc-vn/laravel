@@ -10,20 +10,20 @@
     - [On-Demand Notifications](#on-demand-notifications)
 - [Mail Notifications](#mail-notifications)
     - [Formatting Mail Messages](#formatting-mail-messages)
-    - [Tuỳ biến người gửi](#customizing-the-sender)
-    - [Tuỳ biến người nhận](#customizing-the-recipient)
-    - [Tuỳ biến chủ đề](#customizing-the-subject)
-    - [Tuỳ biến Mailer](#customizing-the-mailer)
-    - [Tuỳ biến template](#customizing-the-templates)
+    - [Tùy biến người gửi](#customizing-the-sender)
+    - [Tùy biến người nhận](#customizing-the-recipient)
+    - [Tùy biến chủ đề](#customizing-the-subject)
+    - [Tùy biến Mailer](#customizing-the-mailer)
+    - [Tùy biến template](#customizing-the-templates)
     - [Đính kèm](#mail-attachments)
     - [Thêm tags và metadata](#adding-tags-metadata)
-    - [Tuỳ biến Symfony Message](#customizing-the-symfony-message)
+    - [Tùy biến Symfony Message](#customizing-the-symfony-message)
     - [Dùng Mail](#using-mailables)
     - [Xem trước Mail Notification](#previewing-mail-notifications)
 - [Markdown Mail Notification](#markdown-mail-notifications)
     - [Tạo Message](#generating-the-message)
     - [Viết Message](#writing-the-message)
-    - [Tuỳ biến Component](#customizing-the-components)
+    - [Tùy biến Component](#customizing-the-components)
 - [Database Notifications](#database-notifications)
     - [Yêu cầu](#database-prerequisites)
     - [Formatting Database Notifications](#formatting-database-notifications)
@@ -36,7 +36,7 @@
 - [SMS Notifications](#sms-notifications)
     - [Yêu cầu](#sms-prerequisites)
     - [Formatting SMS Notifications](#formatting-sms-notifications)
-    - [Tuỳ biến "From" Number](#customizing-the-from-number)
+    - [Tùy biến "From" Number](#customizing-the-from-number)
     - [Thêm Client Reference](#adding-a-client-reference)
     - [Routing SMS Notifications](#routing-sms-notifications)
 - [Slack Notifications](#slack-notifications)
@@ -48,7 +48,7 @@
 - [Ngôn ngữ trong Notifications](#localizing-notifications)
 - [Testing](#testing)
 - [Notification Events](#notification-events)
-- [Tuỳ biến Channels](#custom-channels)
+- [Tùy biến Channels](#custom-channels)
 
 <a name="introduction"></a>
 ## Giới thiệu
@@ -512,7 +512,7 @@ Trong ví dụ này, chúng ta đã đăng ký một lời chào, một dòng te
 <img src="https://laravel.com/img/docs/notification-example-2.png">
 
 > [!NOTE]
-> Khi gửi mail notification, hãy đảm bảo là bạn đã set tuỳ chọn cấu hình `name` trong file cấu hình `config/app.php` của bạn. Giá trị này sẽ được sử dụng trong phần header và footer của message mail notification của bạn.
+> Khi gửi mail notification, hãy đảm bảo là bạn đã set tùy chọn cấu hình `name` trong file cấu hình `config/app.php` của bạn. Giá trị này sẽ được sử dụng trong phần header và footer của message mail notification của bạn.
 
 <a name="error-messages"></a>
 #### Error Messages
@@ -579,7 +579,7 @@ public function toMail(object $notifiable): MailMessage
 ```
 
 <a name="customizing-the-sender"></a>
-### Tuỳ biến người gửi
+### Tùy biến người gửi
 
 Mặc định, địa chỉ người gửi hoặc từ địa chỉ email được định nghĩa trong file cấu hình `config/mail.php`. Tuy nhiên, bạn có thể chỉ định một địa chỉ from cho một notification cụ thể bằng cách sử dụng phương thức `from`:
 
@@ -596,7 +596,7 @@ public function toMail(object $notifiable): MailMessage
 ```
 
 <a name="customizing-the-recipient"></a>
-### Tuỳ biến người nhận
+### Tùy biến người nhận
 
 Khi gửi notifications qua channel `mail`, hệ thống notification sẽ tự động tìm kiếm thuộc tính `email` trong thực thể notifiable của bạn. Bạn có thể tùy biến địa chỉ email nào sẽ được sử dụng để gửi notification bằng cách định nghĩa phương thức `routeNotificationForMail` trên thực thể notifiable đó:
 
@@ -630,7 +630,7 @@ class User extends Authenticatable
 ```
 
 <a name="customizing-the-subject"></a>
-### Tuỳ biến chủ đề
+### Tùy biến chủ đề
 
 Mặc định, chủ đề của email là tên class của notification được định dạng theo dạng "Title Case". Vì vậy, nếu class notification của bạn được đặt tên là `InvoicePaid`, thì chủ đề của email sẽ là `Invoice Paid`. Nếu bạn muốn chỉ định một chủ đề khác cho message, bạn có thể gọi phương thức `subject` khi xây dựng message của bạn:
 
@@ -647,7 +647,7 @@ public function toMail(object $notifiable): MailMessage
 ```
 
 <a name="customizing-the-mailer"></a>
-### Tuỳ biến Mailer
+### Tùy biến Mailer
 
 Mặc định, email notification sẽ được gửi bằng mailer mặc định được định nghĩa trong file cấu hình `config/mail.php`. Tuy nhiên, bạn có thể chỉ định một mailer khác trong lúc runtime bằng cách gọi phương thức `mailer` khi tạo message của bạn:
 
@@ -664,7 +664,7 @@ public function toMail(object $notifiable): MailMessage
 ```
 
 <a name="customizing-the-templates"></a>
-### Tuỳ biến template
+### Tùy biến template
 
 Bạn có thể sửa HTML và template được sử dụng bởi mail notification bằng cách export resources của package notification. Sau khi chạy lệnh này, các template mail notification sẽ được lưu ở trong thư mục `resources/views/vendor/notifications`:
 
@@ -787,7 +787,7 @@ Nếu ứng dụng của bạn đang sử dụng driver Mailgun, bạn có thể
 Nếu ứng dụng của bạn sử dụng Amazon SES để gửi email, bạn nên sử dụng phương thức `metadata` để đính kèm ["tags" SES](https://docs.aws.amazon.com/ses/latest/APIReference/API_MessageTag.html) vào tin nhắn.
 
 <a name="customizing-the-symfony-message"></a>
-### Tuỳ biến Symfony Message
+### Tùy biến Symfony Message
 
 Phương thức `withSymfonyMessage` của class `MailMessage` cho phép bạn đăng ký một closure sẽ được gọi cùng với instance Symfony Message trước khi tin nhắn được gửi. Điều này cho bạn có cơ hội tùy chỉnh sâu vào tin nhắn trước khi nó được gửi:
 
@@ -958,7 +958,7 @@ Component table cho phép bạn chuyển đổi một bảng Markdown thành m�
 ```
 
 <a name="customizing-the-components"></a>
-### Tuỳ biến The Compoents
+### Tùy biến The Compoents
 
 Bạn có thể export tất cả các component Markdown mail sang một thư mục riêng của bạn để tùy chỉnh. Để export các component này, hãy sử dụng lệnh Artisan `vendor:publish` để export với nội dung tag `laravel-mail`:
 
@@ -971,7 +971,7 @@ Lệnh này sẽ export các component Markdown mail sang thư mục `resources/
 <a name="customizing-the-css"></a>
 #### Customizing The CSS
 
-Sau khi export các component, thư mục `resources/views/vendor/mail/html/themes` sẽ chứa một file `default.css`. Bạn có thể tùy chỉnh CSS trong file này và các tuỳ chỉnh của bạn sẽ tự động được nhúng vào trong các hiển thị HTML của Markdown notification của bạn.
+Sau khi export các component, thư mục `resources/views/vendor/mail/html/themes` sẽ chứa một file `default.css`. Bạn có thể tùy chỉnh CSS trong file này và các tùy chỉnh của bạn sẽ tự động được nhúng vào trong các hiển thị HTML của Markdown notification của bạn.
 
 Nếu bạn muốn xây dựng một theme mới cho các component Markdown của Laravel, bạn có thể tạo một file CSS mới trong thư mục `html/themes`. Sau khi tạo tên và lưu file CSS của bạn, hãy cập nhật tùy chọn `theme` trong file cấu hình `mail` để khớp với tên theme mới của bạn.
 
@@ -1946,7 +1946,7 @@ public function handle(NotificationSent $event): void
 ```
 
 <a name="custom-channels"></a>
-## Tuỳ biến Channels
+## Tùy biến Channels
 
 Laravel có sẵn với một số notification channel, nhưng bạn có thể muốn viết thêm các driver khác để gửi notification qua các channel riêng của bạn. Laravel làm cho nó trở nên rất đơn giản. Để bắt đầu, hãy định nghĩa một class có chứa phương thức `send`. Phương thức sẽ nhận vào hai tham số: một là `$notifiable` và một là `$notification`.
 

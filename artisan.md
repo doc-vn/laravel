@@ -9,7 +9,7 @@
     - [Isolatable Commands](#isolatable-commands)
 - [Định nghĩa Input](#defining-input-expectations)
     - [Tham số](#arguments)
-    - [Tuỳ chọn](#options)
+    - [Tùy chọn](#options)
     - [Input cho một mảng](#input-arrays)
     - [Thêm mô tả cho Input](#input-descriptions)
     - [Nhắc cho Input thiếu](#prompting-for-missing-input)
@@ -309,9 +309,9 @@ Bạn cũng có thể tạo ra tham số tùy chọn hoặc định nghĩa giá 
 ```
 
 <a name="options"></a>
-### Tuỳ chọn
+### Tùy chọn
 
-Tùy chọn, giống như một tham số, là một dạng khác của input user. Các tùy chọn sẽ được gán tiền tố với hai dấu gạch nối (`--`) khi chúng được cung cấp thông qua cửa sổ dòng lệnh. Có hai loại tùy chọn: loại tùy chọn nhận một giá trị và loại tuỳ chọn không nhận giá trị nào. Các tùy chọn không nhận giá trị đóng vai trò như là một "switch" boolean. Chúng ta hãy xem một ví dụ về loại tùy chọn này:
+Tùy chọn, giống như một tham số, là một dạng khác của input user. Các tùy chọn sẽ được gán tiền tố với hai dấu gạch nối (`--`) khi chúng được cung cấp thông qua cửa sổ dòng lệnh. Có hai loại tùy chọn: loại tùy chọn nhận một giá trị và loại tùy chọn không nhận giá trị nào. Các tùy chọn không nhận giá trị đóng vai trò như là một "switch" boolean. Chúng ta hãy xem một ví dụ về loại tùy chọn này:
 
 ```php
 /**
@@ -329,7 +329,7 @@ php artisan mail:send 1 --queue
 ```
 
 <a name="options-with-values"></a>
-#### Tuỳ chọn với giá trị
+#### Tùy chọn với giá trị
 
 Tiếp theo, chúng ta hãy xem một tùy chọn nhận một giá trị. Nếu người dùng phải chỉ định một giá trị cho một tùy chọn, thì bạn hãy thêm hậu tố vào tên của tùy chọn đó bằng dấu `=`:
 
@@ -624,7 +624,7 @@ $name = $this->anticipate('What is your address?', function (string $input) {
 <a name="multiple-choice-questions"></a>
 #### Multiple Choice Questions
 
-Nếu bạn cần cung cấp cho người dùng một danh sách các lựa chọn khi hỏi một câu hỏi, thì bạn có thể sử dụng phương thức `choice`. Bạn có thể set giá trị mặc định cho phương thức này thông qua index của mảng, và nó sẽ được trả về nếu người dùng không chọn bất kỳ tuỳ chọn nào của bạn index này có thể được chỉ định qua tham số thứ ba:
+Nếu bạn cần cung cấp cho người dùng một danh sách các lựa chọn khi hỏi một câu hỏi, thì bạn có thể sử dụng phương thức `choice`. Bạn có thể set giá trị mặc định cho phương thức này thông qua index của mảng, và nó sẽ được trả về nếu người dùng không chọn bất kỳ tùy chọn nào của bạn index này có thể được chỉ định qua tham số thứ ba:
 
 ```php
 $name = $this->choice(
@@ -736,7 +736,7 @@ $bar->finish();
 <a name="registering-commands"></a>
 ## Đăng ký Command
 
-Mặc định, Laravel sẽ tự động đăng ký tất cả các command có trong thư mục `app/Console/Commands`. Tuy nhiên, bạn có thể tuỳ chỉnh Laravel sẽ đọc các thư mục khác để tìm command Artisan bằng phương thức `withCommands` trong file `bootstrap/app.php` của ứng dụng của bạn:
+Mặc định, Laravel sẽ tự động đăng ký tất cả các command có trong thư mục `app/Console/Commands`. Tuy nhiên, bạn có thể tùy chỉnh Laravel sẽ đọc các thư mục khác để tìm command Artisan bằng phương thức `withCommands` trong file `bootstrap/app.php` của ứng dụng của bạn:
 
 ```php
 ->withCommands([

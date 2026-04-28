@@ -5,7 +5,7 @@
     - [Cấu hình](#configuration)
 - [Bảng điều khiển](#dashboard)
     - [Quyền](#dashboard-authorization)
-    - [Tuỳ chỉnh](#dashboard-customization)
+    - [Tùy chỉnh](#dashboard-customization)
     - [Lấy thông tin User](#dashboard-resolving-users)
     - [Cards](#dashboard-cards)
 - [Ghi lại mục](#capturing-entries)
@@ -17,7 +17,7 @@
     - [Lấy mẫu](#sampling)
     - [Cắt bớt](#trimming)
     - [Xử lý Pulse Exception](#pulse-exceptions)
-- [Tuỳ chỉnh Cards](#custom-cards)
+- [Tùy chỉnh Cards](#custom-cards)
     - [Card Components](#custom-card-components)
     - [Styling](#custom-card-styling)
     - [Thu thập và tổng hợp dữ liệu](#custom-card-data)
@@ -93,7 +93,7 @@ public function boot(): void
 ```
 
 <a name="dashboard-customization"></a>
-### Tuỳ chỉnh
+### Tùy chỉnh
 
 Các card và layout của bảng điều khiển Pulse có thể được cấu hình bằng cách export ra các view. Các view sẽ được export vào `resources/views/vendor/pulse/dashboard.blade.php`:
 
@@ -541,7 +541,7 @@ Pulse::handleExceptionsUsing(function ($e) {
 ```
 
 <a name="custom-cards"></a>
-## Tuỳ chỉnh Cards
+## Tùy chỉnh Cards
 
 Pulse cho phép bạn tự xây dựng các card tùy chỉnh để hiển thị dữ liệu phù hợp với nhu cầu cụ thể của ứng dụng của bạn. Pulse sử dụng [Livewire](https://livewire.laravel.com), vì vậy bạn có thể muốn [xem lại tài liệu hướng dẫn](https://livewire.laravel.com/docs) trước khi xây dựng card tùy chỉnh đầu tiên của bạn.
 
@@ -681,7 +681,7 @@ Bạn cũng sẽ cần phải thêm các thuộc tính `id` hoặc `class` vào 
 Card tùy chỉnh có thể được lấy ra và hiển thị dữ liệu từ bất kỳ đâu; tuy nhiên, bạn có thể muốn tận dụng hệ thống ghi và tổng hợp dữ liệu mạnh mẽ và hiệu quả của Pulse.
 
 <a name="custom-card-data-capture"></a>
-#### Tuỳ chỉnh data của card
+#### Tùy chỉnh data của card
 
 Pulse cho phép bạn ghi lại "các mục" bằng phương thức `Pulse::record`:
 

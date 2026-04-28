@@ -12,16 +12,16 @@
 - [Form Request Validation](#form-request-validation)
     - [Tạo Form Requests](#creating-form-requests)
     - [Authorizing Form Requests](#authorizing-form-requests)
-    - [Tuỳ biến Error Messages](#customizing-the-error-messages)
+    - [Tùy biến Error Messages](#customizing-the-error-messages)
     - [Chuẩn bị dữ liệu cho Validation](#preparing-input-for-validation)
 - [Tạo Validator thủ công](#manually-creating-validators)
     - [Tự dộng chuyển hướng](#automatic-redirection)
     - [Tên của Error Bags](#named-error-bags)
-    - [Tuỳ biến Error Messages](#manual-customizing-the-error-messages)
+    - [Tùy biến Error Messages](#manual-customizing-the-error-messages)
     - [Thực hiện Validation bổ sung](#performing-additional-validation)
 - [Làm việc với Validated Input](#working-with-validated-input)
 - [Làm việc với Error Messages](#working-with-error-messages)
-    - [Chỉ định Message tuỳ chỉnh trong Language Files](#specifying-custom-messages-in-language-files)
+    - [Chỉ định Message tùy chỉnh trong Language Files](#specifying-custom-messages-in-language-files)
     - [Chỉ định Attributes trong Language Files](#specifying-attribute-in-language-files)
     - [Chỉ định Values trong Language Files](#specifying-values-in-language-files)
 - [Các Validation Rule có sẵn](#available-validation-rules)
@@ -31,7 +31,7 @@
     - [Error Message Indexes và Positions](#error-message-indexes-and-positions)
 - [Validating Files](#validating-files)
 - [Validating Passwords](#validating-passwords)
-- [Tuỳ biến Validation Rules](#custom-validation-rules)
+- [Tùy biến Validation Rules](#custom-validation-rules)
     - [Dùng đối tượng Rule](#using-rule-objects)
     - [Using Closures](#using-closures)
     - [Rules ẩn](#implicit-rules)
@@ -210,7 +210,7 @@ Vì vậy, trong ví dụ của chúng ta, người dùng sẽ được chuyển
 ```
 
 <a name="quick-customizing-the-error-messages"></a>
-#### Tuỳ biến Error Messages
+#### Tùy biến Error Messages
 
 Mỗi quy tắc validation có sẵn của Laravel đều có một thông báo lỗi nằm trong file `lang/en/validation.php` trong ứng dụng của bạn. Nếu ứng dụng của bạn không có thư mục `lang`, bạn có thể bắt Laravel tạo thư mục này bằng lệnh Artisan `lang:publish`.
 
@@ -604,7 +604,7 @@ public function authorize(): bool
 > Bạn có thể khai báo bất kỳ phụ thuộc nào mà bạn cần trong phương thức `authorize`. Những phụ thuộc đó sẽ được tự động resolve thông qua Laravel [service container](/docs/{{version}}/container).
 
 <a name="customizing-the-error-messages"></a>
-### Tuỳ biến Error Messages
+### Tùy biến Error Messages
 
 Bạn có thể tùy biến các thông báo lỗi được sử dụng bởi form request bằng cách ghi đè phương thức `messages`. Phương thức này sẽ trả về một mảng gồm các cặp thuộc tính / quy tắc và các thông báo lỗi tương ứng của chúng:
 
@@ -624,7 +624,7 @@ public function messages(): array
 ```
 
 <a name="customizing-the-validation-attributes"></a>
-#### Tuỳ biến thuộc tính Validation
+#### Tùy biến thuộc tính Validation
 
 Nhiều thông báo lỗi của quy tắc validation có sẵn của Laravel chứa phần biến `:attribute`. Nếu bạn muốn biến `:attribute` của message validation được thay thế bằng tên một thuộc tính tùy chỉnh, bạn có thể chỉ định các tên tùy chỉnh đó bằng cách ghi đè phương thức `attributes`. Phương thức này sẽ trả về một mảng gồm thuộc tính và tên:
 
@@ -770,7 +770,7 @@ Sau đó, bạn có thể truy cập vào instance `MessageBag` đã được đ
 ```
 
 <a name="manual-customizing-the-error-messages"></a>
-### Tuỳ biến Error Messages
+### Tùy biến Error Messages
 
 Nếu cần, bạn có thể cung cấp một tùy biến thông báo lỗi cho validation thay vì mặc định. Có một số cách để định nghĩa tùy biến một thông báo lỗi. Đầu tiên, bạn có thể truyền các thông báo lỗi đã được tùy biến làm tham số thứ ba cho phương thức `Validator::make`:
 
@@ -956,7 +956,7 @@ if ($errors->has('email')) {
 ```
 
 <a name="specifying-custom-messages-in-language-files"></a>
-### Chỉ định Message tuỳ chỉnh trong Language Files
+### Chỉ định Message tùy chỉnh trong Language Files
 
 Mỗi quy tắc validation có sẵn của Laravel đều có một thông báo lỗi nằm trong file `lang/en/validation.php` trong ứng dụng của bạn. Nếu ứng dụng của bạn không chứa một thư mục `lang`, bạn có thể hướng dẫn Laravel tạo thư mục đó bằng lệnh Artisan `lang:publish`.
 
@@ -2685,7 +2685,7 @@ $validator = Validator::make($request->all(), [
 ]);
 ```
 
-Tương tự, bạn có thể sử dụng ký tự `*` khi định nghĩa các [tuỳ chỉnh thông báo validation trong các file language của bạn](#custom-messages-for-specific-attributes), giúp dễ dàng sử dụng một thông báo validation duy nhất cho mảng dựa trên các field:
+Tương tự, bạn có thể sử dụng ký tự `*` khi định nghĩa các [tùy chỉnh thông báo validation trong các file language của bạn](#custom-messages-for-specific-attributes), giúp dễ dàng sử dụng một thông báo validation duy nhất cho mảng dựa trên các field:
 
 ```php
 'custom' => [
@@ -2937,7 +2937,7 @@ Password::defaults(function () {
 ```
 
 <a name="custom-validation-rules"></a>
-## Tuỳ biến Validation Rules
+## Tùy biến Validation Rules
 
 <a name="using-rule-objects"></a>
 ### Dùng đối tượng Rule
@@ -3108,7 +3108,7 @@ $input = ['name' => ''];
 Validator::make($input, $rules)->passes(); // true
 ```
 
-Để một quy tắc tuỳ chỉnh chạy ngay cả khi một thuộc tính trống, quy tắc đó phải tưởng tượng rằng thuộc tính là bắt buộc. Để nhanh chóng tạo ra một đối tượng quy tắc ẩn mới, bạn có thể sử dụng lệnh Artisan `make:rule` với tùy chọn `--implicit`:
+Để một quy tắc tùy chỉnh chạy ngay cả khi một thuộc tính trống, quy tắc đó phải tưởng tượng rằng thuộc tính là bắt buộc. Để nhanh chóng tạo ra một đối tượng quy tắc ẩn mới, bạn có thể sử dụng lệnh Artisan `make:rule` với tùy chọn `--implicit`:
 
 ```shell
 php artisan make:rule Uppercase --implicit

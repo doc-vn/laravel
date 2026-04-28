@@ -309,7 +309,7 @@ php artisan config:publish cors
 
 Tiếp theo, bạn nên đảm bảo là cấu hình CORS của ứng dụng của bạn đang trả về header `Access-Control-Allow-Credentials` có giá trị là `True`. Nó có thể hoàn thành bằng cách set tùy chọn `supports_credentials` trong file cấu hình `config/cors.php` của ứng dụng thành `true`.
 
-Ngoài ra, bạn cũng nên thêm tùy chọn `withCredentials` và tuỳ chọn `withXSRFToken` trên instance global `axios` của application của bạn. Thông thường, điều này sẽ được thực hiện trong file `resources/js/bootstrap.js` của bạn. Nếu bạn không sử dụng Axios để thực hiện các request HTTP từ fontend của bạn, bạn nên thực hiện cấu hình tương đương trên HTTP client của riêng bạn:
+Ngoài ra, bạn cũng nên thêm tùy chọn `withCredentials` và tùy chọn `withXSRFToken` trên instance global `axios` của application của bạn. Thông thường, điều này sẽ được thực hiện trong file `resources/js/bootstrap.js` của bạn. Nếu bạn không sử dụng Axios để thực hiện các request HTTP từ fontend của bạn, bạn nên thực hiện cấu hình tương đương trên HTTP client của riêng bạn:
 
 ```js
 axios.defaults.withCredentials = true;

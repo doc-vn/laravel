@@ -52,7 +52,7 @@ php artisan lang:publish
 <a name="configuring-the-locale"></a>
 ### Cấu hình ngôn ngữ
 
-Ngôn ngữ mặc định cho application của bạn được lưu trữ trong tuỳ chọn cấu hình `locale` của file cấu hình `config/app.php`, điều này thường được thiết lập thông qua cách sử dụng biến môi trường `APP_LOCALE`. Bạn hãy thoải mái sửa giá trị này cho phù hợp với nhu cầu application của bạn.
+Ngôn ngữ mặc định cho application của bạn được lưu trữ trong tùy chọn cấu hình `locale` của file cấu hình `config/app.php`, điều này thường được thiết lập thông qua cách sử dụng biến môi trường `APP_LOCALE`. Bạn hãy thoải mái sửa giá trị này cho phù hợp với nhu cầu application của bạn.
 
 Bạn cũng có thể cấu hình một "ngôn ngữ dự phòng", nó sẽ được sử dụng khi ngôn ngữ mặc định không chứa một chuỗi cần dịch. Giống như ngôn ngữ mặc định, ngôn ngữ dự phòng cũng được cấu hình trong file cấu hình `config/app.php` và giá trị của nó thường được thiết lập bằng biến môi trường `APP_FALLBACK_LOCALE`.
 

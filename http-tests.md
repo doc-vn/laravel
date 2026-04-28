@@ -2,7 +2,7 @@
 
 - [Giới thiệu](#introduction)
 - [Tạo request](#making-requests)
-    - [Tuỳ biến Request Header](#customizing-request-headers)
+    - [Tùy biến Request Header](#customizing-request-headers)
     - [Cookies](#cookies)
     - [Session / Authentication](#session-and-authentication)
     - [Debugging Responses](#debugging-responses)
@@ -100,7 +100,7 @@ Nói chung, mỗi bài test của bạn chỉ nên đưa ra một yêu cầu ki�
 > Để thuận tiện, CSRF middleware sẽ tự động bị tắt khi chạy test.
 
 <a name="customizing-request-headers"></a>
-### Tuỳ biến Request Header
+### Tùy biến Request Header
 
 Bạn có thể sử dụng phương thức `withHeaders` để tùy biến các header của request trước khi nó được gửi đến application. Phương thức này cho phép bạn thêm bất kỳ header nào bạn muốn vào trong request:
 

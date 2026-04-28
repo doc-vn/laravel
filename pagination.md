@@ -6,11 +6,11 @@
     - [Phân trang từ Eloquent](#paginating-eloquent-results)
     - [Phân trang từ con trỏ](#cursor-pagination)
     - [Tự tạo một phân trang](#manually-creating-a-paginator)
-    - [Tuỳ biến Pagination URLs](#customizing-pagination-urls)
+    - [Tùy biến Pagination URLs](#customizing-pagination-urls)
 - [Hiển thị kết quả phân trang](#displaying-pagination-results)
     - [Điều chỉnh Pagination Link Window](#adjusting-the-pagination-link-window)
     - [Chuyển kết quả thành JSON](#converting-results-to-json)
-- [Tuỳ biến View của phân trang](#customizing-the-pagination-view)
+- [Tùy biến View của phân trang](#customizing-the-pagination-view)
     - [Dùng Bootstrap](#using-bootstrap)
 - [Paginator và LengthAwarePaginator Instance Methods](#paginator-instance-methods)
 - [Cursor Paginator Instance Methods](#cursor-paginator-instance-methods)
@@ -178,7 +178,7 @@ Nói cách khác, `Paginator` tương ứng với phương thức `simplePaginat
 > Khi tự tạo trình phân trang, bạn nên tự "phân chia" các phần tử có trong mảng kết quả mà bạn truyền nó cho trình phân trang. Nếu bạn không chắc chắn cách thực hiện việc này, hãy xem hàm [array_slice](https://secure.php.net/manual/en/function.array-slice.php).
 
 <a name="customizing-pagination-urls"></a>
-### Tuỳ biến Pagination URLs
+### Tùy biến Pagination URLs
 
 Mặc định, các link do phân trang được tạo ra sẽ giống với URI của request hiện tại. Tuy nhiên, phương thức `withPath` của phân trang cho phép bạn tùy chỉnh các URI mà được trình phân trang sử dụng khi tạo link. Ví dụ: nếu bạn muốn trình phân trang tạo các link như `http://example.com/admin/users?page=N`, thì bạn nên truyền `/admin/users` cho phương thức `withPath`:
 
@@ -295,7 +295,7 @@ JSON từ trình phân trang sẽ chứa thông tin meta như `total`, `current_
 ```
 
 <a name="customizing-the-pagination-view"></a>
-## Tuỳ biến View của phân trang
+## Tùy biến View của phân trang
 
 Mặc định, các view hiển thị các link phân trang tương thích với [Tailwind CSS](https://tailwindcss.com) framework. Tuy nhiên, nếu bạn không sử dụng Tailwind, bạn có thể thoải mái tự định nghĩa các view của riêng bạn để hiển thị các link. Khi gọi phương thức `links` trên một instance phân trang, bạn có thể truyền tên view làm tham số đầu tiên cho phương thức:
 

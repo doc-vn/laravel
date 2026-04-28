@@ -89,7 +89,7 @@ $name = text(
 );
 ```
 
-Nếu bạn muốn tuỳ chỉnh một validation message, bạn cũng có thể truyền vào một string:
+Nếu bạn muốn tùy chỉnh một validation message, bạn cũng có thể truyền vào một string:
 
 ```php
 $name = text(
@@ -158,7 +158,7 @@ $story = textarea(
 );
 ```
 
-Nếu bạn muốn tuỳ chỉnh một validation message, bạn cũng có thể truyền thêm vào một chuỗi string:
+Nếu bạn muốn tùy chỉnh một validation message, bạn cũng có thể truyền thêm vào một chuỗi string:
 
 ```php
 $story = textarea(
@@ -228,7 +228,7 @@ $copies = number(
 );
 ```
 
-Nếu bạn muốn tuỳ chỉnh một validation message, bạn cũng có thể truyền thêm vào một chuỗi string:
+Nếu bạn muốn tùy chỉnh một validation message, bạn cũng có thể truyền thêm vào một chuỗi string:
 
 ```php
 $copies = number(
@@ -297,7 +297,7 @@ $password = password(
 );
 ```
 
-Nếu bạn muốn tuỳ chỉnh một validation message, bạn cũng có thể truyền vào một string:
+Nếu bạn muốn tùy chỉnh một validation message, bạn cũng có thể truyền vào một string:
 
 ```php
 $password = password(
@@ -343,7 +343,7 @@ use function Laravel\Prompts\confirm;
 $confirmed = confirm('Do you accept the terms?');
 ```
 
-Bạn cũng có thể thêm một giá trị mặc định, để tuỳ chỉnh các lựa chọn "Yes" và "No" và thêm thông tin gợi ý:
+Bạn cũng có thể thêm một giá trị mặc định, để tùy chỉnh các lựa chọn "Yes" và "No" và thêm thông tin gợi ý:
 
 ```php
 $confirmed = confirm(
@@ -367,7 +367,7 @@ $confirmed = confirm(
 );
 ```
 
-Nếu bạn muốn tuỳ chỉnh một validation message, bạn cũng có thể truyền vào một string:
+Nếu bạn muốn tùy chỉnh một validation message, bạn cũng có thể truyền vào một string:
 
 ```php
 $confirmed = confirm(
@@ -415,7 +415,7 @@ $role = select(
 );
 ```
 
-Sẽ có năm lựa chọn được hiển thị trước khi danh sách lựa chọn đó bị scroll. Bạn cũng có thể tuỳ chỉnh bằng cách truyền vào tham số `scroll`:
+Sẽ có năm lựa chọn được hiển thị trước khi danh sách lựa chọn đó bị scroll. Bạn cũng có thể tùy chỉnh bằng cách truyền vào tham số `scroll`:
 
 ```php
 $role = select(
@@ -521,7 +521,7 @@ $permissions = multiselect(
 );
 ```
 
-Sẽ có năm lựa chọn được hiển thị trước khi danh sách lựa chọn đó bị scroll. Bạn cũng có thể tuỳ chỉnh bằng cách truyền vào tham số `scroll`:
+Sẽ có năm lựa chọn được hiển thị trước khi danh sách lựa chọn đó bị scroll. Bạn cũng có thể tùy chỉnh bằng cách truyền vào tham số `scroll`:
 
 ```php
 $categories = multiselect(
@@ -663,7 +663,7 @@ $name = suggest(
 );
 ```
 
-Nếu bạn muốn tuỳ chỉnh một validation message, bạn cũng có thể truyền vào một string:
+Nếu bạn muốn tùy chỉnh một validation message, bạn cũng có thể truyền vào một string:
 
 ```php
 $name = suggest(
@@ -718,7 +718,7 @@ $id = search(
 );
 ```
 
-Hàm closure sẽ nhận một text đã được người dùng nhập vào và trả về một mảng các tùy chọn. Nếu bạn trả về một mảng gồm khoá và giá trị, thì khóa của tùy chọn sẽ được trả về, nếu không, giá trị của tuỳ chọn sẽ được trả về.
+Hàm closure sẽ nhận một text đã được người dùng nhập vào và trả về một mảng các tùy chọn. Nếu bạn trả về một mảng gồm khoá và giá trị, thì khóa của tùy chọn sẽ được trả về, nếu không, giá trị của tùy chọn sẽ được trả về.
 
 Khi filter một mảng mà bạn muốn trả về giá trị, thì bạn nên sử dụng hàm `array_values` hoặc phương thức `values` của Collection để đảm bảo mảng đó sẽ không bị trở thành mảng gồm key-value:
 
@@ -747,7 +747,7 @@ $id = search(
 );
 ```
 
-Sẽ có năm lựa chọn được hiển thị trước khi danh sách lựa chọn đó bị scroll. Bạn cũng có thể tuỳ chỉnh bằng cách truyền vào tham số `scroll`:
+Sẽ có năm lựa chọn được hiển thị trước khi danh sách lựa chọn đó bị scroll. Bạn cũng có thể tùy chỉnh bằng cách truyền vào tham số `scroll`:
 
 ```php
 $id = search(
@@ -884,7 +884,7 @@ $ids = multisearch(
 );
 ```
 
-Nếu bạn muốn tuỳ chỉnh một validation message, bạn cũng có thể cung cấp một string cho tham số `required`:
+Nếu bạn muốn tùy chỉnh một validation message, bạn cũng có thể cung cấp một string cho tham số `required`:
 
 ```php
 $ids = multisearch(
@@ -984,7 +984,7 @@ $name = autocomplete(
 );
 ```
 
-Nếu bạn muốn tuỳ chỉnh một validation message, bạn cũng có thể truyền vào một string:
+Nếu bạn muốn tùy chỉnh một validation message, bạn cũng có thể truyền vào một string:
 
 ```php
 $name = autocomplete(

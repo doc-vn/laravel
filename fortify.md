@@ -7,19 +7,19 @@
     - [Fortify Features](#fortify-features)
     - [Disabling Views](#disabling-views)
 - [Authentication](#authentication)
-    - [Tuỳ biến User Authentication](#customizing-user-authentication)
-    - [Tuỳ biến Authentication Pipeline](#customizing-the-authentication-pipeline)
-    - [Tuỳ biến Redirect](#customizing-authentication-redirects)
+    - [Tùy biến User Authentication](#customizing-user-authentication)
+    - [Tùy biến Authentication Pipeline](#customizing-the-authentication-pipeline)
+    - [Tùy biến Redirect](#customizing-authentication-redirects)
 - [Two Factor Authentication](#two-factor-authentication)
     - [Bật Two Factor Authentication](#enabling-two-factor-authentication)
     - [Authenticating cùng với Two Factor Authentication](#authenticating-with-two-factor-authentication)
     - [Tắt Two Factor Authentication](#disabling-two-factor-authentication)
 - [Đăng ký](#registration)
-    - [Tuỳ biến đăng ký](#customizing-registration)
+    - [Tùy biến đăng ký](#customizing-registration)
 - [Password Reset](#password-reset)
     - [Yêu cầu link password reset](#requesting-a-password-reset-link)
     - [Reset password](#resetting-the-password)
-    - [Tuỳ biến password reset](#customizing-password-resets)
+    - [Tùy biến password reset](#customizing-password-resets)
 - [Email Verification](#email-verification)
     - [Bảo vệ route](#protecting-routes)
 - [Xác nhận password](#password-confirmation)
@@ -145,7 +145,7 @@ Nếu thử đăng nhập thành công, Fortify sẽ chuyển hướng bạn đ�
 Nếu request không thành công, người dùng sẽ được chuyển hướng trở lại màn hình đăng nhập và các lỗi xác thực sẽ có sẵn cho bạn thông qua [biến template blade](/docs/{{version}}/validation#quick-displaying-the-validation-errors) `$errors`. Hoặc, trong trường hợp request là XHR, thì lỗi xác thực sẽ được trả về với response HTTP 422.
 
 <a name="customizing-user-authentication"></a>
-### Tuỳ biến User Authentication
+### Tùy biến User Authentication
 
 Fortify sẽ tự động truy xuất và xác thực người dùng dựa trên các thông tin đăng nhập đã được cung cấp và bộ authentication guard được cấu hình trong ứng dụng của bạn. Tuy nhiên, thỉnh thoảng bạn có thể muốn tùy chỉnh toàn bộ về cách xác thực thông tin đăng nhập và truy xuất người dùng. Rất may, Fortify cho phép bạn dễ dàng thực hiện việc này bằng phương thức `Fortify::authenticateUsing`.
 
@@ -181,7 +181,7 @@ public function boot(): void
 Bạn có thể tùy chỉnh bộ authentication guard được sử dụng bởi Fortify trong file cấu hình `fortify` của ứng dụng của bạn. Tuy nhiên, bạn nên đảm bảo là guard đã được cấu hình là một implementation của `Illuminate\Contracts\Auth\StatefulGuard`. Nếu bạn đang thử sử dụng Laravel Fortify để xác thực cho một SPA, bạn nên sử dụng guard `web` mặc định của Laravel kết hợp với [Laravel Sanctum](https://laravel.com/docs/sanctum).
 
 <a name="customizing-the-authentication-pipeline"></a>
-### Tuỳ biến Authentication Pipeline
+### Tùy biến Authentication Pipeline
 
 Laravel Fortify sẽ xác thực các yêu cầu đăng nhập thông qua một hệ thống các class invokable. Nếu muốn, bạn có thể định nghĩa một hệ thống tùy chỉnh gồm các class mà các request đăng nhập sẽ được dẫn qua. Mỗi class phải có một phương thức `__invoke` để nhận vào một instance `Illuminate\Http\Request` và, giống như các [middleware](/docs/{{version}}/middleware) sẽ có một biến `$next` sẽ được gọi trong đó để truyền request đến class tiếp theo trong hệ thống.
 
@@ -220,7 +220,7 @@ Một số ứng dụng có thể yêu cầu một cách tiếp cận khác đ�
 > Việc sử dụng kết hợp giữa các điều tiết, [xác thực hai yếu tố](/docs/{{version}}/fortify#two-factor-authentication), và tường lửa ứng dụng web (WAF) sẽ cung cấp khả năng bảo vệ mạnh mẽ nhất cho người dùng ứng dụng của bạn.
 
 <a name="customizing-authentication-redirects"></a>
-### Tuỳ biến Redirect
+### Tùy biến Redirect
 
 Nếu thử đăng nhập thành công, Fortify sẽ chuyển hướng bạn đến URI đã được cấu hình trước thông qua tùy chọn cấu hình `home` trong file cấu hình `fortify` của ứng dụng của bạn. Nếu yêu cầu đăng nhập là request XHR, response 200 HTTP sẽ được trả về. Sau khi người dùng đăng xuất khỏi ứng dụng của bạn, người dùng sẽ được chuyển hướng đến URI `/`.
 
@@ -388,7 +388,7 @@ Nếu thử đăng ký thành công, Fortify sẽ chuyển hướng người dù
 Nếu request không thành công, người dùng sẽ được chuyển hướng trở lại màn hình đăng ký và các lỗi xác thực sẽ có sẵn cho bạn thông qua [biến template blade](/docs/{{version}}/validation#quick-displaying-the-validation-errors) `$errors`. Hoặc, trong trường hợp request là XHR, thì lỗi xác thực sẽ được trả về với response HTTP 422.
 
 <a name="customizing-registration"></a>
-### Tuỳ biến đăng ký
+### Tùy biến đăng ký
 
 Quá trình xác thực và tạo người dùng có thể được tùy chỉnh bằng cách sửa action `App\Actions\Fortify\CreateNewUser` đã được tạo khi bạn cài đặt Laravel Fortify.
 
@@ -487,7 +487,7 @@ Nếu request là request XHR, phản hồi 200 HTTP sẽ được trả về.
 Nếu request không thành công, người dùng sẽ được chuyển hướng trở lại màn hình set lại mật khẩu và các lỗi xác thực sẽ có sẵn cho bạn thông qua [biến template blade](/docs/{{version}}/validation#quick-displaying-the-validation-errors) `$errors`. Hoặc, trong trường hợp request là XHR, thì lỗi xác thực sẽ được trả về với response HTTP 422.
 
 <a name="customizing-password-resets"></a>
-### Tuỳ biến password reset
+### Tùy biến password reset
 
 Quy trình set lại mật khẩu có thể được tùy chỉnh bằng cách sửa action `App\Actions\ResetUserPassword` đã được tạo ra khi bạn cài đặt Laravel Fortify.
 

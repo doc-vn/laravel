@@ -9,7 +9,7 @@
     - [Requesting The Password Reset Link](#requesting-the-password-reset-link)
     - [Resetting The Password](#resetting-the-password)
 - [Xoá Token hết hạn](#deleting-expired-tokens)
-- [Tuỳ chỉnh](#password-customization)
+- [Tùy chỉnh](#password-customization)
 
 <a name="introduction"></a>
 ## Giới thiệu

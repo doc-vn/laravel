@@ -25,7 +25,7 @@
     - [Where Clauses](#where-clauses)
     - [Pagination](#pagination)
     - [Soft Deleting](#soft-deleting)
-    - [Tuỳ chỉnh Engine Search](#customizing-engine-searches)
+    - [Tùy chỉnh Engine Search](#customizing-engine-searches)
 - [Custom Engines](#custom-engines)
 
 <a name="introduction"></a>
@@ -940,7 +940,7 @@ $orders = Order::search('Star Trek')->onlyTrashed()->get();
 > Khi một model đã bị xóa vĩnh viễn bằng cách sử dụng `forceDelete`, Scout sẽ tự động xóa model đó ra khỏi search index.
 
 <a name="customizing-engine-searches"></a>
-### Tuỳ chỉnh Engine Search
+### Tùy chỉnh Engine Search
 
 Nếu bạn cần thực hiện một tùy chỉnh nâng cao cho hành động tìm kiếm của một engine, bạn có thể truyền một lệnh closure làm tham số thứ hai cho phương thức `search`. Ví dụ: bạn có thể sử dụng lệnh closure này để thêm dữ liệu vị trí vào các tùy chọn tìm kiếm trước khi câu lệnh tìm kiếm được truyền đến Algolia:
 

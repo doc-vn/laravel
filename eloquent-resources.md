@@ -178,7 +178,7 @@ return User::all()->toResourceCollection(CustomUserCollection::class);
 <a name="custom-resource-collections"></a>
 #### Custom Resource Collections
 
-Mặc định, resource collections sẽ không cho phép bạn thêm bất kỳ dữ liệu meta tuỳ chỉnh nào để có thể được trả về cùng với collection của bạn. Nếu bạn muốn tùy chỉnh response của resource collection, bạn có thể tạo một resource chuyên dụng để tạo collection:
+Mặc định, resource collections sẽ không cho phép bạn thêm bất kỳ dữ liệu meta tùy chỉnh nào để có thể được trả về cùng với collection của bạn. Nếu bạn muốn tùy chỉnh response của resource collection, bạn có thể tạo một resource chuyên dụng để tạo collection:
 
 ```shell
 php artisan make:resource UserCollection

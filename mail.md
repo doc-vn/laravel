@@ -15,11 +15,11 @@
     - [Attachable Objects](#attachable-objects)
     - [Headers](#headers)
     - [Tags và Metadata](#tags-and-metadata)
-    - [Tuỳ biến Symfony Message](#customizing-the-symfony-message)
+    - [Tùy biến Symfony Message](#customizing-the-symfony-message)
 - [Markdown Mailables](#markdown-mailables)
     - [Tạo Markdown Mailables](#generating-markdown-mailables)
     - [Viết Markdown Messages](#writing-markdown-messages)
-    - [Tuỳ biến Components](#customizing-the-components)
+    - [Tùy biến Components](#customizing-the-components)
 - [Gửi Mail](#sending-mail)
     - [Queueing Mail](#queueing-mail)
 - [Hiển thị Mailable](#rendering-mailables)
@@ -30,7 +30,7 @@
     - [Test gửi mail](#testing-mailable-sending)
 - [Mail và Local Development](#mail-and-local-development)
 - [Events](#events)
-- [Tuỳ chỉnh transports](#custom-transports)
+- [Tùy chỉnh transports](#custom-transports)
     - [Thêm Symfony Transports](#additional-symfony-transports)
 
 <a name="introduction"></a>
@@ -224,7 +224,7 @@ public function headers(): Headers
 }
 ```
 
-Nếu bạn muốn định nghĩa thêm [các tùy chọn](https://docs.aws.amazon.com/aws-sdk-php/v3/api/api-sesv2-2019-09-27.html#sendemail) thì Laravel sẽ truyền các tuỳ chọn đó cho phương thức `SendEmail` của AWS SDK khi gửi email, bạn có thể định nghĩa mảng `options` trong cấu hình `ses` của bạn:
+Nếu bạn muốn định nghĩa thêm [các tùy chọn](https://docs.aws.amazon.com/aws-sdk-php/v3/api/api-sesv2-2019-09-27.html#sendemail) thì Laravel sẽ truyền các tùy chọn đó cho phương thức `SendEmail` của AWS SDK khi gửi email, bạn có thể định nghĩa mảng `options` trong cấu hình `ses` của bạn:
 
 ```php
 'ses' => [
@@ -730,7 +730,7 @@ return Attachment::fromPath('/path/to/file')
 <a name="headers"></a>
 ### Headers
 
-Thỉnh thoảng bạn có thể cần phải thêm các tiêu đề bổ sung vào tin nhắn gửi đi. Ví dụ, bạn có thể cần phải thiết lập một `Message-Id` tuỳ chỉnh hoặc các tiêu đề văn bản khác.
+Thỉnh thoảng bạn có thể cần phải thêm các tiêu đề bổ sung vào tin nhắn gửi đi. Ví dụ, bạn có thể cần phải thiết lập một `Message-Id` tùy chỉnh hoặc các tiêu đề văn bản khác.
 
 Để thực hiện điều này, hãy định nghĩa một phương thức `headers` trên mailable của bạn. Phương thức `headers` sẽ trả về một instance `Illuminate\Mail\Mailables\Headers`. Class này chấp nhận các tham số `messageId`, `references` và `text`. Tất nhiên, bạn chỉ cần cung cấp các tham số mà bạn cần cho tin nhắn cụ thể của bạn:
 
@@ -899,7 +899,7 @@ Component table cho phép bạn chuyển đổi một bảng Markdown thành m�
 ```
 
 <a name="customizing-the-components"></a>
-### Tuỳ biến Components
+### Tùy biến Components
 
 Bạn có thể export ra tất cả các component mail Markdown sang thư mục riêng của bạn để tùy biến. Để export các component, hãy sử dụng lệnh Artisan `vendor:publish` để export tag nội dung `laravel-mail`:
 
@@ -912,7 +912,7 @@ Lệnh này sẽ export các component mail Markdown sang thư mục `resources/
 <a name="customizing-the-css"></a>
 #### Customizing The CSS
 
-Sau khi export các component, thư mục `resources/views/vendor/mail/html/themes` sẽ chứa một file `default.css`. Bạn có thể tùy biến CSS trong file này và các tuỳ biến này của bạn sẽ tự động được chuyển thành inline CSS trong các hiển thị HTML cho mail Markdown của bạn.
+Sau khi export các component, thư mục `resources/views/vendor/mail/html/themes` sẽ chứa một file `default.css`. Bạn có thể tùy biến CSS trong file này và các tùy biến này của bạn sẽ tự động được chuyển thành inline CSS trong các hiển thị HTML cho mail Markdown của bạn.
 
 Nếu bạn muốn xây dựng một theme mới cho các component Markdown của Laravel, bạn có thể tạo một file CSS mới trong thư mục `html/themes`. Sau khi tạo tên và lưu file CSS của bạn, hãy cập nhật tùy chọn `theme` trong file cấu hình `config/mail.php` trong application của bạn để khớp với tên theme mới của bạn.
 
@@ -1480,7 +1480,7 @@ class LogMessage
 ```
 
 <a name="custom-transports"></a>
-## Tuỳ chỉnh transports
+## Tùy chỉnh transports
 
 Laravel có chứa nhiều mail transport; tuy nhiên, bạn có thể muốn viết transport của riêng bạn để gửi email qua các dịch vụ khác mà Laravel không hỗ trợ mặc định. Để bắt đầu, hãy định nghĩa một class mở rộng class `Symfony\Component\Mailer\Transport\AbstractTransport`. Sau đó, implement các phương thức `doSend` và `__toString` trên transport của bạn:
 

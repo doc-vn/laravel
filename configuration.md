@@ -386,7 +386,7 @@ php artisan up
 ```
 
 > [!NOTE]
-> Bạn cũng có sửa đổi màn hình bảo trì mặc định của Laravel bằng cách tạo thêm màn hình tuỳ biến của bạn vào thư mục có đường dẫn như sau: `resources/views/errors/503.blade.php`.
+> Bạn cũng có sửa đổi màn hình bảo trì mặc định của Laravel bằng cách tạo thêm màn hình tùy biến của bạn vào thư mục có đường dẫn như sau: `resources/views/errors/503.blade.php`.
 
 <a name="maintenance-mode-queues"></a>
 #### Chế độ bảo trì và Queues

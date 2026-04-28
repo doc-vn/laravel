@@ -10,7 +10,7 @@
     - [Reportable và Renderable Exceptions](#renderable-exceptions)
 - [Throttling Reported Exceptions](#throttling-reported-exceptions)
 - [HTTP Exceptions](#http-exceptions)
-    - [Tuỳ biến page HTTP Error](#custom-http-error-pages)
+    - [Tùy biến page HTTP Error](#custom-http-error-pages)
 
 <a name="introduction"></a>
 ## Giới thiệu
@@ -475,9 +475,9 @@ abort(404);
 ```
 
 <a name="custom-http-error-pages"></a>
-### Tuỳ biến page HTTP Error
+### Tùy biến page HTTP Error
 
-Laravel giúp dễ dàng tuỳ biến các trang error có HTTP status code khác nhau. Ví dụ: để tùy biến trang erorr có HTTP status code 404, hãy tạo một file view template `resources/views/errors/404.blade.php`. File view sẽ được hiển thị cho tất cả các erorr 404 do application của bạn tạo ra. Các view trong thư mục này phải được đặt tên khớp với HTTP status code tương ứng. Một instance `Symfony\Component\HttpKernel\Exception\HttpException` sẽ được đưa ra bởi hàm `abort` và sẽ được chuyển đến view như là một biến `$exception`:
+Laravel giúp dễ dàng tùy biến các trang error có HTTP status code khác nhau. Ví dụ: để tùy biến trang erorr có HTTP status code 404, hãy tạo một file view template `resources/views/errors/404.blade.php`. File view sẽ được hiển thị cho tất cả các erorr 404 do application của bạn tạo ra. Các view trong thư mục này phải được đặt tên khớp với HTTP status code tương ứng. Một instance `Symfony\Component\HttpKernel\Exception\HttpException` sẽ được đưa ra bởi hàm `abort` và sẽ được chuyển đến view như là một biến `$exception`:
 
 ```blade
 <h2>{{ $exception->getMessage() }}</h2>

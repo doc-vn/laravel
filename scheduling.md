@@ -5,7 +5,7 @@
     - [Các lệnh Artisan Schedule](#scheduling-artisan-commands)
     - [Schedule Queued Job](#scheduling-queued-jobs)
     - [Lệnh Shell Schedule](#scheduling-shell-commands)
-    - [Tuỳ chọn tần suất Schedule](#schedule-frequency-options)
+    - [Tùy chọn tần suất Schedule](#schedule-frequency-options)
     - [Timezones](#timezones)
     - [Ngăn task chồng nhau](#preventing-task-overlaps)
     - [Chạy task trên một server](#running-tasks-on-one-server)
@@ -134,7 +134,7 @@ Schedule::exec('node /home/forge/script.js')->daily();
 ```
 
 <a name="schedule-frequency-options"></a>
-### Tuỳ chọn tần suất Schedule
+### Tùy chọn tần suất Schedule
 
 Chúng ta đã xem một số ví dụ về cách mà bạn có thể cấu hình task để chạy theo các khoảng thời gian nhất định. Tuy nhiên, có nhiều tần suất task schedule khác mà bạn có thể cấu hình cho một task:
 

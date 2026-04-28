@@ -11,7 +11,7 @@
     - [Tạo Session ID](#regenerating-the-session-id)
 - [Session Cache](#session-cache)
 - [Chặn session](#session-blocking)
-- [Thêm tuỳ chỉnh Session Drivers](#adding-custom-session-drivers)
+- [Thêm tùy chỉnh Session Drivers](#adding-custom-session-drivers)
     - [Implementing Driver](#implementing-the-driver)
     - [Đăng ký Driver](#registering-the-driver)
 
@@ -330,7 +330,7 @@ Route::post('/profile', function () {
 ```
 
 <a name="adding-custom-session-drivers"></a>
-## Thêm tuỳ chỉnh Session Drivers
+## Thêm tùy chỉnh Session Drivers
 
 <a name="implementing-the-driver"></a>
 #### Implementing Driver

@@ -13,7 +13,7 @@
     - [Chia sẻ site trên mạng local](#sharing-sites-on-your-local-network)
 - [Các biến môi trường cho trang web](#site-specific-environment-variables)
 - [Proxying Services](#proxying-services)
-- [Tuỳ chỉnh Valet Driver](#custom-valet-drivers)
+- [Tùy chỉnh Valet Driver](#custom-valet-drivers)
     - [Local Driver](#local-drivers)
 - [Các lệnh Valet khác](#other-valet-commands)
 - [Thư mục và file valet](#valet-directories-and-files)
@@ -376,13 +376,13 @@ valet proxies
 ```
 
 <a name="custom-valet-drivers"></a>
-## Tuỳ chỉnh Valet Drivers
+## Tùy chỉnh Valet Drivers
 
-Bạn có thể viết Valet "driver" của riêng bạn để tạo các application PHP chạy trên framework hoặc CMS mà không được Valet hỗ trợ. Khi bạn cài đặt Valet, một thư mục `~/.config/valet/Drivers` sẽ được tạo và chứa file `SampleValetDriver.php`. File này sẽ chứa một driver mẫu để trình bày cách viết một driver tuỳ chỉnh. Để viết một driver tuỳ chỉnh thì nó chỉ yêu cầu bạn kế thừa 3 phương thức: `serves`, `isStaticFile`, và `frontControllerPath`.
+Bạn có thể viết Valet "driver" của riêng bạn để tạo các application PHP chạy trên framework hoặc CMS mà không được Valet hỗ trợ. Khi bạn cài đặt Valet, một thư mục `~/.config/valet/Drivers` sẽ được tạo và chứa file `SampleValetDriver.php`. File này sẽ chứa một driver mẫu để trình bày cách viết một driver tùy chỉnh. Để viết một driver tùy chỉnh thì nó chỉ yêu cầu bạn kế thừa 3 phương thức: `serves`, `isStaticFile`, và `frontControllerPath`.
 
 Tất cả 3 phương thức này đều nhận các giá trị là `$sitePath`, `$siteName`, và `$uri` làm tham số của chúng. `$sitePath` là đường dẫn đến trang web mà đã được tạo trên máy của bạn, chẳng hạn như `/Users/Lisa/Sites/my-project`. `$siteName` là phần "host" hoặc phần "site name" của tên miền(`my-project`). `$uri` là request URI (`/foo/bar`).
 
-Khi mà bạn đã tuỳ chỉnh xong Valet driver, hãy lưu nó vào trong thư mục `~/.config/valet/Drivers` bằng cách sử dụng quy ước đặt tên như sau `FrameworkValetDriver.php`. Ví dụ: nếu bạn đang viết valet driver cho WordPress, thì nên đặt tên file của bạn phải là `WordPressValetDriver.php`.
+Khi mà bạn đã tùy chỉnh xong Valet driver, hãy lưu nó vào trong thư mục `~/.config/valet/Drivers` bằng cách sử dụng quy ước đặt tên như sau `FrameworkValetDriver.php`. Ví dụ: nếu bạn đang viết valet driver cho WordPress, thì nên đặt tên file của bạn phải là `WordPressValetDriver.php`.
 
 Hãy xem cách làm mẫu của từng phương thức mà driver Valet của bạn nên làm.
 
@@ -487,7 +487,7 @@ class LocalValetDriver extends LaravelValetDriver
 | `valet start` | Khởi động daemon Valet. |
 | `valet stop` | Dừng daemon Valet. |
 | `valet trust` | Thêm quyền sudoer cho Brew và Valet để chạy các lệnh Valet mà không cần hỏi password của bạn. |
-| `valet uninstall` | Gỡ cài đặt Valet: hiển thị hướng dẫn gỡ cài đặt. Truyền thêm tuỳ chọn `--force` để bắt xóa tất cả các resource của Valet. |
+| `valet uninstall` | Gỡ cài đặt Valet: hiển thị hướng dẫn gỡ cài đặt. Truyền thêm tùy chọn `--force` để bắt xóa tất cả các resource của Valet. |
 
 </div>
 

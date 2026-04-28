@@ -17,7 +17,7 @@
     - [Quản lý Locks trong Processes](#managing-locks-across-processes)
     - [Giới hạn đồng bộ](#concurrency-limiting)
 - [Dự phòng cache](#cache-failover)
-- [Thêm tuỳ biến cache driver](#adding-custom-cache-drivers)
+- [Thêm tùy biến cache driver](#adding-custom-cache-drivers)
     - [Viết driver](#writing-the-driver)
     - [Đăng ký driver](#registering-the-driver)
 - [Event](#events)
@@ -648,7 +648,7 @@ CACHE_STORE=failover
 Khi một thao tác cache store thất bại và failover sẽ được kích hoạt, Laravel sẽ gửi đi một event `Illuminate\Cache\Events\CacheFailedOver` cho phép bạn report hoặc ghi log một cache store đã bị lỗi.
 
 <a name="adding-custom-cache-drivers"></a>
-## Thêm tuỳ biến cache driver
+## Thêm tùy biến cache driver
 
 <a name="writing-the-driver"></a>
 ### Viết driver

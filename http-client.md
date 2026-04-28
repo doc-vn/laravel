@@ -476,7 +476,7 @@ Http::globalResponseMiddleware(fn ($response) => $response->withHeader(
 <a name="guzzle-options"></a>
 ### Guzzle Options
 
-Bạn có thể chỉ định thêm các [tuỳ chọn Guzzle request](http://docs.guzzlephp.org/en/stable/request-options.html) cho một request đi bằng cách sử dụng phương thức `withOptions`. Phương thức `withOptions` sẽ chấp nhận một mảng gồm các cặp khóa và giá trị:
+Bạn có thể chỉ định thêm các [tùy chọn Guzzle request](http://docs.guzzlephp.org/en/stable/request-options.html) cho một request đi bằng cách sử dụng phương thức `withOptions`. Phương thức `withOptions` sẽ chấp nhận một mảng gồm các cặp khóa và giá trị:
 
 ```php
 $response = Http::withOptions([

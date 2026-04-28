@@ -9,10 +9,10 @@
 - [Viết Log Messages](#writing-log-messages)
     - [Contextual Information](#contextual-information)
     - [Viết cho một Channel cụ thể](#writing-to-specific-channels)
-- [Tuỳ biến Monolog Channel](#monolog-channel-customization)
-    - [Tuỳ biến Monolog cho Channel](#customizing-monolog-for-channels)
+- [Tùy biến Monolog Channel](#monolog-channel-customization)
+    - [Tùy biến Monolog cho Channel](#customizing-monolog-for-channels)
     - [Tạo Monolog xử lý Channel](#creating-monolog-handler-channels)
-    - [Tạo một channel tuỳ biến thông qua Factory](#creating-custom-channels-via-factories)
+    - [Tạo một channel tùy biến thông qua Factory](#creating-custom-channels-via-factories)
 - [Theo dõi log bằng Pail](#tailing-log-messages-using-pail)
     - [Cài đặt](#pail-installation)
     - [Sử dụng](#pail-usage)
@@ -30,7 +30,7 @@ Laravel sử dụng thư viện [Monolog](https://github.com/Seldaek/monolog) đ
 <a name="configuration"></a>
 ## Cấu hình
 
-Tất cả các tuỳ chọn cấu hình dành cho việc điều khiển các hành động của hệ thống ghi log của ứng dụng của bạn sẽ được lưu trong file cấu hình `config/logging.php`. File này cho phép bạn cấu hình các channel log, vì vậy hãy đảm bảo là bạn đã xem qua các channel hiện có và các tùy chọn của chúng. Chúng ta cũng sẽ xem xét một số tùy chọn phổ biến ở bên dưới.
+Tất cả các tùy chọn cấu hình dành cho việc điều khiển các hành động của hệ thống ghi log của ứng dụng của bạn sẽ được lưu trong file cấu hình `config/logging.php`. File này cho phép bạn cấu hình các channel log, vì vậy hãy đảm bảo là bạn đã xem qua các channel hiện có và các tùy chọn của chúng. Chúng ta cũng sẽ xem xét một số tùy chọn phổ biến ở bên dưới.
 
 Mặc định, Laravel sẽ sử dụng channel `stack` để ghi log. Channel `stack` có thể được sử dụng để tổng hợp nhiều channel log thành một channel. Để biết thêm thông tin về cách xây dựng stack, hãy xem [tài liệu ở bên dưới](#building-log-stacks).
 
@@ -362,10 +362,10 @@ Log::stack(['slack', $channel])->info('Something happened!');
 ```
 
 <a name="monolog-channel-customization"></a>
-## Tuỳ biến Monolog Channel
+## Tùy biến Monolog Channel
 
 <a name="customizing-monolog-for-channels"></a>
-### Tuỳ biến Monolog cho Channel
+### Tùy biến Monolog cho Channel
 
 Thỉnh thoảng bạn có thể cần kiểm soát cách cấu hình Monolog cho một channel. Ví dụ: bạn có thể muốn cấu hình một implementation Monolog `FormatterInterface` tùy biến cho channel `single` có sẵn của Laravel .
 
@@ -482,7 +482,7 @@ Nếu bạn muốn tùy chỉnh bộ xử lý cho driver `monolog`, bạn hãy t
 ```
 
 <a name="creating-custom-channels-via-factories"></a>
-### Tạo một channel tuỳ biến thông qua Factory
+### Tạo một channel tùy biến thông qua Factory
 
 Nếu bạn muốn định nghĩa một channel tùy biến, trong đó bạn có toàn quyền kiểm soát về việc khởi tạo và cấu hình Monolog, bạn có thể chỉ định loại driver `custom` trong file cấu hình `config/logging.php` của bạn. Cấu hình của bạn nên chứa một tùy chọn `via` để chứa tên của class factory sẽ được gọi để tạo instance Monolog:
 

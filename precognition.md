@@ -7,7 +7,7 @@
     - [Dùng với Alpine và Blade](#using-alpine)
     - [Cấu hình Axios](#configuring-axios)
 - [Validating mảng](#validating-arrays)
-- [Tuỳ chỉnh Validation Rules](#customizing-validation-rules)
+- [Tùy chỉnh Validation Rules](#customizing-validation-rules)
 - [Xử lý File Uploads](#handling-file-uploads)
 - [Quản lý Side-Effects](#managing-side-effects)
 - [Testing](#testing)
@@ -569,7 +569,7 @@ form.validate('users.*.*');
 ```
 
 <a name="customizing-validation-rules"></a>
-## Tuỳ chỉnh Validation Rules
+## Tùy chỉnh Validation Rules
 
 Bạn có thể tùy chỉnh các quy tắc xác thực được thực hiện trong một precognitive request bằng cách sử dụng phương thức `isPrecognitive` của request.
 

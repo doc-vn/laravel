@@ -62,7 +62,7 @@ Sau khi export asset của Horizon xong, file cấu hình của nó sẽ đượ
 <a name="environments"></a>
 #### Environments
 
-Sau khi cài đặt, tùy chọn cấu hình Horizon chính mà bạn nên xem là tùy chọn cấu hình `environments`. Tùy chọn cấu hình này là một mảng các môi trường mà ứng dụng của bạn có thể chạy trên đó và ngoài ra, nó còn định nghĩa các tùy chọn worker process cho từng loại môi trường đó. Mặc định, tuỳ chọn này chứa môi trường `production` và `local`. Tuy nhiên, bạn có thể thoải mái thêm nhiều môi trường hơn nếu cần:
+Sau khi cài đặt, tùy chọn cấu hình Horizon chính mà bạn nên xem là tùy chọn cấu hình `environments`. Tùy chọn cấu hình này là một mảng các môi trường mà ứng dụng của bạn có thể chạy trên đó và ngoài ra, nó còn định nghĩa các tùy chọn worker process cho từng loại môi trường đó. Mặc định, tùy chọn này chứa môi trường `production` và `local`. Tuy nhiên, bạn có thể thoải mái thêm nhiều môi trường hơn nếu cần:
 
 ```php
 'environments' => [
@@ -99,7 +99,7 @@ Bạn cũng có thể định nghĩa một wildcard (`*`) cho môi trường, wi
 Khi bạn khởi động Horizon, nó sẽ sử dụng các tùy chọn cấu hình worker process tương ứng với môi trường mà ứng dụng của bạn được chạy. Thông thường, môi trường được xác định bằng giá trị của [biến môi trường](/docs/{{version}}/configuration#determining-the-current-environment) `APP_ENV`. Ví dụ: môi trường Horizon mặc định`local` được cấu hình để bắt đầu với ba worker process và tự động cân bằng số lượng worker process được chỉ định cho mỗi queue. Môi trường `production` mặc định sẽ được cấu hình để bắt đầu tối đa 10 worker process và tự động cân bằng số lượng worker process được chỉ định cho mỗi queue.
 
 > [!WARNING]
-> Bạn nên đảm bảo tuỳ chọn `environments` trong file cấu hình `horizon` chứa các mục cho mỗi [environment](/docs/{{version}}/configuration#environment-configuration) mà bạn định chạy trên Horizon.
+> Bạn nên đảm bảo tùy chọn `environments` trong file cấu hình `horizon` chứa các mục cho mỗi [environment](/docs/{{version}}/configuration#environment-configuration) mà bạn định chạy trên Horizon.
 
 <a name="supervisors"></a>
 #### Supervisors

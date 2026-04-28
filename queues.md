@@ -19,7 +19,7 @@
     - [Đồng bộ gửi](#synchronous-dispatching)
     - [Jobs và Database Transactions](#jobs-and-database-transactions)
     - [Kết hợp Job](#job-chaining)
-    - [Tuỳ biến Queue và Connection](#customizing-the-queue-and-connection)
+    - [Tùy biến Queue và Connection](#customizing-the-queue-and-connection)
     - [Khai báo số lần chạy Job tối đa / giá trị timeout](#max-job-attempts-and-timeout)
     - [SQS FIFO và Fair Queues](#sqs-fifo-and-fair-queues)
     - [Queue Failover](#queue-failover)
@@ -879,7 +879,7 @@ public function middleware(): array
 }
 ```
 
-Nếu bạn muốn các exception bị điều tiết được report cho exception handler của ứng dụng, bạn có thể làm như vậy bằng cách gọi phương thức `report` khi gắn middleware vào job của bạn. Bạn có thể tuỳ ý cung cấp một closure cho phương thức `report` và exception sẽ chỉ được report nếu closure được cung cấp trả về `true`:
+Nếu bạn muốn các exception bị điều tiết được report cho exception handler của ứng dụng, bạn có thể làm như vậy bằng cách gọi phương thức `report` khi gắn middleware vào job của bạn. Bạn có thể tùy ý cung cấp một closure cho phương thức `report` và exception sẽ chỉ được report nếu closure được cung cấp trả về `true`:
 
 ```php
 use Illuminate\Http\Client\HttpClientException;
@@ -1219,7 +1219,7 @@ Bus::chain([
 > Vì các chuỗi callback sẽ được chuyển đổi và thực thi sau đó bởi Laravel queue, nên bạn không nên sử dụng biến `$this` trong các chuỗi callback.
 
 <a name="customizing-the-queue-and-connection"></a>
-### Tuỳ biến Queue và Connection
+### Tùy biến Queue và Connection
 
 <a name="dispatching-to-a-particular-queue"></a>
 #### Dispatching đến một Queue cụ thể
@@ -2561,7 +2561,7 @@ stdout_logfile=/home/forge/app.com/worker.log
 stopwaitsecs=3600
 ```
 
-Trong ví dụ trên, lệnh `numprocs` sẽ hướng dẫn Supervisor chạy tám process `queue:work` và giám sát tất cả chúng, tự động khởi động lại nếu chúng thất bại. Bạn nên thay đổi lệnh `command` của cấu hình để phản ánh queue connection và tuỳ chọn worker mà bạn mong muốn.
+Trong ví dụ trên, lệnh `numprocs` sẽ hướng dẫn Supervisor chạy tám process `queue:work` và giám sát tất cả chúng, tự động khởi động lại nếu chúng thất bại. Bạn nên thay đổi lệnh `command` của cấu hình để phản ánh queue connection và tùy chọn worker mà bạn mong muốn.
 
 > [!WARNING]
 > Bạn nên chắc chắn rằng giá trị của `stopwaitsecs` sẽ luôn lớn hơn số giây lâu nhất mà job của bạn đang chạy. Nếu không, Supervisor có thể kết thúc job đó trước khi nó được xử lý xong.
@@ -2600,7 +2600,7 @@ Khi chạy một process [queue worker](#running-the-queue-worker), bạn có th
 php artisan queue:work redis --tries=3
 ```
 
-Dùng tuỳ chọn `--backoff`, bạn có thể chỉ định cho Laravel biết sẽ đợi bao nhiêu giây trước khi thử lại một job bị gặp ngoại lệ. Mặc định, một job ngay lập tức được đưa trở lại queue để có thể thử lại:
+Dùng tùy chọn `--backoff`, bạn có thể chỉ định cho Laravel biết sẽ đợi bao nhiêu giây trước khi thử lại một job bị gặp ngoại lệ. Mặc định, một job ngay lập tức được đưa trở lại queue để có thể thử lại:
 
 ```shell
 php artisan queue:work redis --tries=3 --backoff=3

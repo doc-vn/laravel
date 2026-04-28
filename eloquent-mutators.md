@@ -879,7 +879,7 @@ class AsAddress implements CastsAttributes
 
 Khi một model Eloquent được chuyển thành một mảng hoặc chuỗi JSON thông qua các phương thức `toArray` hoặc `toJson`, giá trị của các thuộc tính cast tùy chỉnh của bạn thường sẽ được đánh số thứ tự miễn là chúng implement các interface `Illuminate\Contracts\Support\Arrayable` và `JsonSerializable`. Tuy nhiên, khi sử dụng giá trị của các đối tượng do thư viện bên thứ ba cung cấp, bạn có thể không có khả năng thêm các interface này vào cho các đối tượng.
 
-Do đó, bạn có thể chỉ định class cast tùy chỉnh của bạn sẽ chịu trách nhiệm chuyển đổi giá trị của đối tượng. Để làm như vậy, class cast tùy chỉnh của bạn phải implement interface `Illuminate\Contracts\Database\Eloquent\SerializesCastableAttributes`. Interface này sẽ yêu cầu class của bạn phải chứa phương thức `serialize` và sẽ trả về định dạng chuyển đổi mà giá trị của đối tượng mà bạn muốn tuỳ chỉnh:
+Do đó, bạn có thể chỉ định class cast tùy chỉnh của bạn sẽ chịu trách nhiệm chuyển đổi giá trị của đối tượng. Để làm như vậy, class cast tùy chỉnh của bạn phải implement interface `Illuminate\Contracts\Database\Eloquent\SerializesCastableAttributes`. Interface này sẽ yêu cầu class của bạn phải chứa phương thức `serialize` và sẽ trả về định dạng chuyển đổi mà giá trị của đối tượng mà bạn muốn tùy chỉnh:
 
 ```php
 /**
@@ -902,7 +902,7 @@ public function serialize(
 
 Đôi khi, bạn có thể cần viết một class cast tùy chỉnh chỉ biến đổi các giá trị khi được set vào trong model và không thực hiện bất kỳ hoạt động nào khi các thuộc tính đó được lấy ra từ model.
 
-Một inbound cast tuỳ chỉnh nên được implement interface `CastsInboundAttributes`, interface này chỉ yêu cầu phương thức `set` phải được định nghĩa trên class implement. Lệnh `make:cast` của Artisan có thể được gọi với tùy chọn `--inbound` để tạo ra một class cast inbound:
+Một inbound cast tùy chỉnh nên được implement interface `CastsInboundAttributes`, interface này chỉ yêu cầu phương thức `set` phải được định nghĩa trên class implement. Lệnh `make:cast` của Artisan có thể được gọi với tùy chọn `--inbound` để tạo ra một class cast inbound:
 
 ```shell
 php artisan make:cast AsHash --inbound

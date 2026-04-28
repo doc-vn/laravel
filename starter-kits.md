@@ -7,14 +7,14 @@
     - [Svelte](#svelte)
     - [Vue](#vue)
     - [Livewire](#livewire)
-- [Tuỳ chỉnh Starter Kit](#starter-kit-customization)
+- [Tùy chỉnh Starter Kit](#starter-kit-customization)
     - [React](#react-customization)
     - [Svelte](#svelte-customization)
     - [Vue](#vue-customization)
     - [Livewire](#livewire-customization)
 - [Authentication](#authentication)
     - [Enable và disable features](#enabling-and-disabling-features)
-    - [Tuỳ chỉnh User Creation và Password Reset](#customizing-actions)
+    - [Tùy chỉnh User Creation và Password Reset](#customizing-actions)
     - [Two-Factor Authentication](#two-factor-authentication)
     - [Rate Limiting](#rate-limiting)
 - [Teams](#teams)
@@ -95,7 +95,7 @@ Livewire là một cách mạnh mẽ để xây dựng các giao diện frontend
 Bộ công cụ khởi tạo Livewire sử dụng Livewire, Tailwind và thư viện [Flux UI](https://fluxui.dev).
 
 <a name="starter-kit-customization"></a>
-## Tuỳ chỉnh Starter Kit
+## Tùy chỉnh Starter Kit
 
 <a name="react-customization"></a>
 ### React
@@ -399,7 +399,7 @@ use Laravel\Fortify\Features;
 Khi sử dụng bộ công cụ khởi tạo [React](#react), [Svelte](#svelte) hoặc [Vue](#vue), bạn cũng sẽ cần xóa mọi tham chiếu đến các route của chức năng đã bị disable trong code frontend của bạn. Ví dụ: nếu bạn tắt chức năng xác minh email, bạn nên xóa các phần import và tham chiếu đến các route `verification` trong các component React, Svelte, hoặc Vue của bạn. Điều này là cần thiết vì các bộ công cụ khởi tạo này sử dụng Wayfinder để điều hướng an toàn, nó tự động tạo ra các định nghĩa route lúc build. Nhưng nếu bạn tham chiếu đến các route không còn tồn tại, ứng dụng của bạn sẽ không thể build thành công.
 
 <a name="customizing-actions"></a>
-### Tuỳ chỉnh User Creation và Password Reset
+### Tùy chỉnh User Creation và Password Reset
 
 Khi người dùng đăng ký hoặc reset mật khẩu, Fortify sẽ gọi các class action nằm trong thư mục `app/Actions/Fortify` của ứng dụng:
 
@@ -409,7 +409,7 @@ Khi người dùng đăng ký hoặc reset mật khẩu, Fortify sẽ gọi các
 | `ResetUserPassword.php`       | Xác thực và cập nhật mật khẩu người dùng  |
 | `PasswordValidationRules.php` | Định nghĩa các quy tắc xác thực mật khẩu  |
 
-Ví dụ, để tùy chỉnh logic đăng ký của ứng dụng, bạn nên tuỳ chỉnh action `CreateNewUser`:
+Ví dụ, để tùy chỉnh logic đăng ký của ứng dụng, bạn nên tùy chỉnh action `CreateNewUser`:
 
 ```php
 public function create(array $input): User

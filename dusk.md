@@ -1347,7 +1347,7 @@ $browser->waitForEvent('resize', 'window', 5);
 <a name="waiting-with-a-callback"></a>
 #### Waiting With A Callback
 
-Nhiều phương thức "chờ" trong Dusk được dựa trên phương thức `waitUsing` bên dưới. Bạn có thể sử dụng phương thức này trực tiếp để chờ cho đến khi một closure trả về giá trị `true`. Phương thức `waitUsing` nhận vào số giây chờ tối đa mà bài test có thể được thực hiện và một khoảng thời gian lặp cho closure và một closure và một tuỳ chọn thông báo lỗi:
+Nhiều phương thức "chờ" trong Dusk được dựa trên phương thức `waitUsing` bên dưới. Bạn có thể sử dụng phương thức này trực tiếp để chờ cho đến khi một closure trả về giá trị `true`. Phương thức `waitUsing` nhận vào số giây chờ tối đa mà bài test có thể được thực hiện và một khoảng thời gian lặp cho closure và một closure và một tùy chọn thông báo lỗi:
 
 ```php
 $browser->waitUsing(10, 1, function () use ($something) {

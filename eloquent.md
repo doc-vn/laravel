@@ -1326,7 +1326,7 @@ Schedule::command('model:prune', [
 ])->daily();
 ```
 
-Bạn có thể kiểm tra truy vấn `prunable` của bạn bằng cách thực hiện lệnh `model:prune` với tùy chọn `--pretend`. Khi chạy với tuỳ chọn đó, lệnh `model:prune` sẽ chỉ báo cáo ra là có bao nhiêu record sẽ bị pruned nếu lệnh này thực sự chạy:
+Bạn có thể kiểm tra truy vấn `prunable` của bạn bằng cách thực hiện lệnh `model:prune` với tùy chọn `--pretend`. Khi chạy với tùy chọn đó, lệnh `model:prune` sẽ chỉ báo cáo ra là có bao nhiêu record sẽ bị pruned nếu lệnh này thực sự chạy:
 
 ```shell
 php artisan model:prune --pretend

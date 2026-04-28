@@ -3,7 +3,7 @@
 - [Giới thiệu](#introduction)
 - [Cài đặt](#installation)
     - [Cấu hình](#configuration)
-    - [Tuỳ biến Base URLs](#custom-base-urls)
+    - [Tùy biến Base URLs](#custom-base-urls)
     - [Provider Support](#provider-support)
 - [Agents](#agents)
     - [Prompting](#prompting)
@@ -92,11 +92,11 @@ XAI_API_KEY=
 Các model mặc định được sử dụng cho text, hình ảnh, âm thanh, dịch và embeddings cũng có thể được cấu hình trong file `config/ai.php` của ứng dụng.
 
 <a name="custom-base-urls"></a>
-### Tuỳ biến Base URLs
+### Tùy biến Base URLs
 
 Mặc định, Laravel AI SDK sẽ kết nối trực tiếp tới URL API public của từng provider. Tuy nhiên, bạn có thể cần route các request qua một URL khác — chẳng hạn khi sử dụng dịch vụ proxy để quản lý API key tập trung, áp dụng giới hạn chạy, hoặc route lưu lượng qua một gateway của tổ chức.
 
-Bạn có thể cấu hình tuỳ chỉnh URL bằng cách thêm tham số `url` vào cấu hình provider của bạn:
+Bạn có thể cấu hình tùy chỉnh URL bằng cách thêm tham số `url` vào cấu hình provider của bạn:
 
 ```php
 'providers' => [
@@ -116,7 +116,7 @@ Bạn có thể cấu hình tuỳ chỉnh URL bằng cách thêm tham số `url`
 
 Tính năng này hữu ích khi chuyển hướng các request qua dịch vụ proxy (như LiteLLM hoặc Azure OpenAI Gateway) hoặc sử dụng các URL thay thế khác.
 
-Việc tuỳ chỉnh URL được hỗ trợ cho các provider sau: OpenAI, Anthropic, Gemini, Groq, Cohere, DeepSeek, xAI, và OpenRouter.
+Việc tùy chỉnh URL được hỗ trợ cho các provider sau: OpenAI, Anthropic, Gemini, Groq, Cohere, DeepSeek, xAI, và OpenRouter.
 
 <a name="provider-support"></a>
 ### Provider Support

@@ -9,7 +9,7 @@
     - [Xác thực và lưu trữ](#authentication-and-storage)
     - [Truy cập đến Scope](#access-scopes)
     - [Slack Bot Scopes](#slack-bot-scopes)
-    - [Tham số tuỳ chọn](#optional-parameters)
+    - [Tham số tùy chọn](#optional-parameters)
 - [Lấy ra thông tin User](#retrieving-user-details)
 - [Testing](#testing)
 
@@ -161,7 +161,7 @@ $user = Socialite::driver('slack')->asBotUser()->user();
 Khi tạo một bot token, phương thức `user` vẫn sẽ trả về một instance `Laravel\Socialite\Two\User`; tuy nhiên, chỉ có thuộc tính `token` được cung cấp. Token này có thể được lưu lại để [gửi thông báo đến Slack workspace của người dùng đã xác thực](/docs/{{version}}/notifications#notifying-external-slack-workspaces).
 
 <a name="optional-parameters"></a>
-### Tham số tuỳ chọn
+### Tham số tùy chọn
 
 Một số OAuth provider hỗ trợ các tham số tùy chọn khác trong request chuyển hướng. Để thêm bất kỳ tham số tùy chọn nào vào trong request, hãy gọi phương thức `with` với một mảng:
 

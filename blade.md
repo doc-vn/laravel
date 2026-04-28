@@ -43,8 +43,8 @@
 - [Tạo Inline Blade Templates](#rendering-inline-blade-templates)
 - [Tạo Blade Fragments](#rendering-blade-fragments)
 - [Mở rộng blade](#extending-blade)
-    - [Tuỳ chỉnh xử lý hiển thị](#custom-echo-handlers)
-    - [Tuỳ biến lệnh if](#custom-if-statements)
+    - [Tùy chỉnh xử lý hiển thị](#custom-echo-handlers)
+    - [Tùy biến lệnh if](#custom-if-statements)
 
 <a name="introduction"></a>
 ## Giới thiệu
@@ -1987,11 +1987,11 @@ Như bạn có thể thấy, chúng ta sẽ nối phương thức `format` vào 
 > Sau khi cập nhật logic của lệnh Blade, bạn sẽ cần xóa tất cả các view Blade đã được lưu trong bộ nhớ cache. Các view Blade được lưu trong bộ nhớ cache có thể được loại bỏ bằng lệnh Artisan `view:clear`.
 
 <a name="custom-echo-handlers"></a>
-### Tuỳ chỉnh xử lý hiển thị
+### Tùy chỉnh xử lý hiển thị
 
 Nếu bạn cố gắng thử "echo" một đối tượng bằng Blade, thì phương thức `__toString` của đối tượng đó sẽ được gọi. Phương thức [__toString](https://www.php.net/manual/en/language.oop5.magic.php#object.tostring) là một trong những "phương thức magic" được tích hợp sẵn trong PHP. Tuy nhiên, đôi khi bạn có thể không có quyền kiểm soát đối với phương thức `__toString` của một class nhất định, chẳng hạn như khi class mà bạn đang tương tác thuộc về thư viện của third-party.
 
-Trong những trường hợp như vậy, Blade cho phép bạn tuỳ chỉnh xử lý hiển thị cho một loại đối tượng cụ thể đó. Để thực hiện điều này, bạn nên gọi phương thức `stringable` của Blade. Phương thức `stringable` chấp nhận một closure. Closure này sẽ khai báo kiểu đối tượng mà nó chịu trách nhiệm hiển thị. Thông thường, phương thức `stringable` nên được gọi trong phương thức `boot` của class `AppServiceProvider` trong ứng dụng của bạn:
+Trong những trường hợp như vậy, Blade cho phép bạn tùy chỉnh xử lý hiển thị cho một loại đối tượng cụ thể đó. Để thực hiện điều này, bạn nên gọi phương thức `stringable` của Blade. Phương thức `stringable` chấp nhận một closure. Closure này sẽ khai báo kiểu đối tượng mà nó chịu trách nhiệm hiển thị. Thông thường, phương thức `stringable` nên được gọi trong phương thức `boot` của class `AppServiceProvider` trong ứng dụng của bạn:
 
 ```php
 use Illuminate\Support\Facades\Blade;
@@ -2015,7 +2015,7 @@ Cost: {{ $money }}
 ```
 
 <a name="custom-if-statements"></a>
-### Tuỳ biến lệnh if
+### Tùy biến lệnh if
 
 Lập trình một lệnh tùy biến đôi khi lại là phức tạp hơn là định nghĩa một câu lệnh điều kiện tùy biến đơn giản. Vì lý do đó, Blade cung cấp phương thức `Blade::if` cho phép bạn nhanh chóng định nghĩa các lệnh tùy biến có điều kiện bằng cách sử dụng closures. Ví dụ: hãy định nghĩa một điều kiện tùy biến để có thể kiểm tra cấu hình "disk" hiện tại của application. Chúng ta có thể làm điều này trong phương thức `boot` của `AppServiceProvider`:
 

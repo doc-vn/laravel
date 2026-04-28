@@ -8,7 +8,7 @@
     - [Cấu hình Services](#configuring-services)
     - [Chạy The Vagrant Box](#launching-the-vagrant-box)
     - [Per Project Installation](#per-project-installation)
-    - [Cài đặt các chức năng tuỳ chọn](#installing-optional-features)
+    - [Cài đặt các chức năng tùy chọn](#installing-optional-features)
     - [Lối tắt](#aliases)
 - [Cập nhật Homestead](#updating-homestead)
 - [Daily Usage](#daily-usage)
@@ -325,9 +325,9 @@ vendor\\bin\\homestead make
 Tiếp theo, chạy lệnh `vagrant up` trong terminal để có thể truy cập vào project của bạn trên địa chỉ `http://homestead.test` trong web browser. Hãy nhớ rằng, bạn cần phải thêm domain `homestead.test` vào file `/etc/hosts` hoặc tên domain mà bạn thích nếu bạn không muốn sử dụng [hostname resolution](#hostname-resolution)
 
 <a name="installing-optional-features"></a>
-### Cài đặt các chức năng tuỳ chọn
+### Cài đặt các chức năng tùy chọn
 
-Các phần mềm tùy chọn sẽ được cài đặt bằng cách sử dụng tuỳ chọn `features` trong file `Homestead.yaml` của bạn. Hầu hết các chức năng đều có thể được bật hoặc tắt bằng giá trị boolean, trong khi đó có một số chức năng cho phép nhiều tùy chọn cấu hình:
+Các phần mềm tùy chọn sẽ được cài đặt bằng cách sử dụng tùy chọn `features` trong file `Homestead.yaml` của bạn. Hầu hết các chức năng đều có thể được bật hoặc tắt bằng giá trị boolean, trong khi đó có một số chức năng cho phép nhiều tùy chọn cấu hình:
 
 ```yaml
 features:
@@ -742,7 +742,7 @@ Mặc định, Xdebug đã được chạy và sẵn sàng cho viêc kết nối
 <a name="autostarting-xdebug"></a>
 #### Autostarting Xdebug
 
-Khi debug các bài test chức năng thực hiện request đến web server, việc tự động debug sẽ dễ dàng hơn việc sửa các bài test để truyền qua một header hoặc một cookie tuỳ biến để kích hoạt debug. Để yêu cầu Xdebug tự khởi động, hãy sửa file `/etc/php/7.x/fpm/conf.d/20-xdebug.ini` bên trong máy ảo Homestead của bạn và thêm cấu hình sau:
+Khi debug các bài test chức năng thực hiện request đến web server, việc tự động debug sẽ dễ dàng hơn việc sửa các bài test để truyền qua một header hoặc một cookie tùy biến để kích hoạt debug. Để yêu cầu Xdebug tự khởi động, hãy sửa file `/etc/php/7.x/fpm/conf.d/20-xdebug.ini` bên trong máy ảo Homestead của bạn và thêm cấu hình sau:
 
 ```ini
 ; If Homestead.yaml contains a different subnet for the IP address, this address may be different...
@@ -800,7 +800,7 @@ networks:
       bridge: "en1: Wi-Fi (AirPort)"
 ```
 
-Để bật một [DHCP](https://developer.hashicorp.com/vagrant/docs/networking/public_network), chỉ cần xoá tuỳ chọn `ip` từ file cấu hình của bạn:
+Để bật một [DHCP](https://developer.hashicorp.com/vagrant/docs/networking/public_network), chỉ cần xoá tùy chọn `ip` từ file cấu hình của bạn:
 
 ```yaml
 networks:
@@ -846,7 +846,7 @@ Khi sử dụng Homestead trong một team của bạn, bạn có thể muốn �
 <a name="natdnshostresolver"></a>
 #### `natdnshostresolver`
 
-Mặc định, Homestead cấu hình `natdnshostresolver` là `on`. Điều này cho phép Homestead sử dụng DNS của hệ điều hành server. Nếu bạn muốn ghi đè hành vi này, hãy thêm các tuỳ chọn cấu hình sau vào file `Homestead.yaml` của bạn:
+Mặc định, Homestead cấu hình `natdnshostresolver` là `on`. Điều này cho phép Homestead sử dụng DNS của hệ điều hành server. Nếu bạn muốn ghi đè hành vi này, hãy thêm các tùy chọn cấu hình sau vào file `Homestead.yaml` của bạn:
 
 ```yaml
 provider: virtualbox

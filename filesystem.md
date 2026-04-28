@@ -23,7 +23,7 @@
 - [Xoá File](#deleting-files)
 - [Thư mục](#directories)
 - [Testing](#testing)
-- [Tuỳ chỉnh Filesystem](#custom-filesystems)
+- [Tùy chỉnh Filesystem](#custom-filesystems)
 
 <a name="introduction"></a>
 ## Giới thiệu
@@ -33,7 +33,7 @@ Laravel cung cấp một abstraction filesystem mạnh mẽ nhờ package PHP [F
 <a name="configuration"></a>
 ## Cấu hình
 
-File cấu hình filesystem của Laravel được lưu tại `config/filesystems.php`. Trong file này, bạn có thể cấu hình tất cả các filesystem "disks" của bạn. Mỗi disk sẽ được đại diện cho một driver lưu trữ với một vị trí lưu trữ cụ thể. Các cấu hình mẫu cho các driver được hỗ trợ cũng đã được khai báo sẵn vào trong file cấu hình vì vậy bạn có thể sửa cấu hình để đúng với tuỳ chọn lưu trữ của bạn và thông tin của chúng.
+File cấu hình filesystem của Laravel được lưu tại `config/filesystems.php`. Trong file này, bạn có thể cấu hình tất cả các filesystem "disks" của bạn. Mỗi disk sẽ được đại diện cho một driver lưu trữ với một vị trí lưu trữ cụ thể. Các cấu hình mẫu cho các driver được hỗ trợ cũng đã được khai báo sẵn vào trong file cấu hình vì vậy bạn có thể sửa cấu hình để đúng với tùy chọn lưu trữ của bạn và thông tin của chúng.
 
 Driver `local` tương tác với các file được lưu trữ local trên máy chủ đang chạy ứng dụng Laravel, trong khi driver `sftp` sẽ được sử dụng cho FTP dựa trên khóa SSH. Driver `s3` sẽ được sử dụng để ghi vào dịch vụ lưu trữ đám mây S3 của Amazon.
 
@@ -835,11 +835,11 @@ Mặc định, phương thức `fake` sẽ xóa tất cả các file có trong t
 > Phương thức `image` yêu cầu [GD extension](https://www.php.net/manual/en/book.image.php).
 
 <a name="custom-filesystems"></a>
-## Tuỳ chỉnh Filesystem
+## Tùy chỉnh Filesystem
 
 Flysystem tích hợp của Laravel cung cấp hỗ trợ cho một số "driver" mặc đinh; tuy nhiên, Flysystem không chỉ giới hạn ở những điều này mà còn có bộ chuyển đổi cho nhiều hệ thống lưu trữ khác. Bạn có thể tạo driver tùy biến nếu bạn muốn sử dụng một trong những bộ chuyển đổi đó vào trong ứng dụng Laravel của bạn.
 
-Để định nghĩa một tuỳ biến filesystem, bạn sẽ cần một bộ chuyển đổi Flysystem. Hãy thêm một bộ chuyển đổi Dropbox được cộng đồng phát triển vào trong dự án của bạn:
+Để định nghĩa một tùy biến filesystem, bạn sẽ cần một bộ chuyển đổi Flysystem. Hãy thêm một bộ chuyển đổi Dropbox được cộng đồng phát triển vào trong dự án của bạn:
 
 ```shell
 composer require spatie/flysystem-dropbox

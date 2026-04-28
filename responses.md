@@ -327,7 +327,7 @@ return response()
     ->header('Content-Type', $type);
 ```
 
-Và dĩ nhiên, nếu bạn không cần tuỳ chỉnh HTTP status code hoặc custom header, bạn có thể dùng hàm global helper `view`.
+Và dĩ nhiên, nếu bạn không cần tùy chỉnh HTTP status code hoặc custom header, bạn có thể dùng hàm global helper `view`.
 
 <a name="json-responses"></a>
 ### JSON Responses

@@ -23,7 +23,7 @@
     - [Định nghĩa Channel Class](#defining-channel-classes)
 - [Broadcasting Event](#broadcasting-events)
     - [Only To Others](#only-to-others)
-    - [Tuỳ chỉnh Connection](#customizing-the-connection)
+    - [Tùy chỉnh Connection](#customizing-the-connection)
     - [Event ẩn](#anonymous-events)
     - [Xử lý lỗi khi broadcast](#rescuing-broadcasts)
 - [Nhận Broadcast](#receiving-broadcasts)
@@ -985,7 +985,7 @@ var socketId = Echo.socketId();
 ```
 
 <a name="customizing-the-connection"></a>
-### Tuỳ chỉnh Connection
+### Tùy chỉnh Connection
 
 Nếu ứng dụng của bạn tương tác với nhiều kết nối broadcast và bạn muốn broadcast một event bằng cách sử dụng một broadcaster khác, khác với mặc định của bạn, thì bạn có thể chỉ định kết nối đó bằng cách sử dụng phương thức `via`:
 
@@ -1673,7 +1673,7 @@ Vì vậy, ví dụ: cập nhật của model `App\Models\Post` sẽ broadcast r
 
 Việc xóa một model `App\Models\User` sẽ broadcast ra một event có tên là `UserDeleted`.
 
-Nếu muốn, bạn có thể định nghĩa một tuỳ biến tên broadcast và payload của nó bằng cách thêm hai phương thức `broadcastAs` và `broadcastWith` vào model của bạn. Các phương thức này nhận vào tên của event và hoạt động model đang diễn ra, cho phép bạn tùy biến tên và payload của event cho từng hoạt động của model. Nếu `null` được trả về từ phương thức `broadcastAs`, Laravel sẽ sử dụng các quy ước tên event model broadcast đã thảo luận ở trên khi broadcasting event:
+Nếu muốn, bạn có thể định nghĩa một tùy biến tên broadcast và payload của nó bằng cách thêm hai phương thức `broadcastAs` và `broadcastWith` vào model của bạn. Các phương thức này nhận vào tên của event và hoạt động model đang diễn ra, cho phép bạn tùy biến tên và payload của event cho từng hoạt động của model. Nếu `null` được trả về từ phương thức `broadcastAs`, Laravel sẽ sử dụng các quy ước tên event model broadcast đã thảo luận ở trên khi broadcasting event:
 
 ```php
 /**

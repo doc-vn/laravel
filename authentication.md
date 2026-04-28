@@ -20,9 +20,9 @@
     - [Cấu hình](#password-confirmation-configuration)
     - [Routing](#password-confirmation-routing)
     - [Bảo vệ route](#password-confirmation-protecting-routes)
-- [Thêm tuỳ biến guard](#adding-custom-guards)
+- [Thêm tùy biến guard](#adding-custom-guards)
     - [Closure Request Guards](#closure-request-guards)
-- [Thêm tuỳ biến user provider](#adding-custom-user-providers)
+- [Thêm tùy biến user provider](#adding-custom-user-providers)
     - [User Provider Contract](#the-user-provider-contract)
     - [Authenticatable Contract](#the-authenticatable-contract)
 - [Tự động rehash mật khẩu](#automatic-password-rehashing)
@@ -599,7 +599,7 @@ Route::post('/settings', function () {
 ```
 
 <a name="adding-custom-guards"></a>
-## Thêm tuỳ biến guard
+## Thêm tùy biến guard
 
 Bạn có thể định nghĩa các guard authentication của riêng bạn bằng cách sử dụng phương thức `extend` trên facade `Auth`. Bạn nên gọi tới phương thức `extend` trong một [service provider](/docs/{{version}}/providers). Vì Laravel đã có sẵn một `AppServiceProvider`, nên chúng ta có thể đặt code đó vào trong provider này:
 
@@ -684,7 +684,7 @@ Route::middleware('auth:api')->group(function () {
 ```
 
 <a name="adding-custom-user-providers"></a>
-## Thêm tuỳ biến user provider
+## Thêm tùy biến user provider
 
 Nếu bạn không sử dụng cơ sở dữ liệu quan hệ để lưu trữ thông tin người dùng của bạn, bạn sẽ cần mở rộng Laravel với một user provider authentication của riêng bạn. Chúng ta sẽ sử dụng phương thức `provider` trên facade `Auth` để định nghĩa user provider tùy chỉnh mới này. User provider resolver sẽ trả về một implementation của `Illuminate\Contracts\Auth\UserProvider`:
 

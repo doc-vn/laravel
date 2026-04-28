@@ -174,4 +174,4 @@ Trong một application mới, thư mục này sẽ chứa sẵn một `AppServi
 <a name="the-rules-directory"></a>
 ### Thư mục Rules
 
-Mặc định, thư mục này không tồn tại, nhưng nó sẽ được tạo ra cho bạn, nếu bạn chạy lệnh Artisan `make:rule`. Thư mục `Rules` chứa các tuỳ biến của các đối tượng validation rule. Rules được sử dụng để đóng gói các logic kiểm tra phức tạp trong một đối tượng đơn giản. Để có thêm thông tin, hãy đọc thêm ở [validation documentation](/docs/{{version}}/validation).
+Mặc định, thư mục này không tồn tại, nhưng nó sẽ được tạo ra cho bạn, nếu bạn chạy lệnh Artisan `make:rule`. Thư mục `Rules` chứa các tùy biến của các đối tượng validation rule. Rules được sử dụng để đóng gói các logic kiểm tra phức tạp trong một đối tượng đơn giản. Để có thêm thông tin, hãy đọc thêm ở [validation documentation](/docs/{{version}}/validation).

@@ -28,7 +28,7 @@
 - [Debugging With Xdebug](#debugging-with-xdebug)
   - [Xdebug CLI Usage](#xdebug-cli-usage)
   - [Xdebug Browser Usage](#xdebug-browser-usage)
-- [Tuỳ chỉnh](#sail-customization)
+- [Tùy chỉnh](#sail-customization)
 
 <a name="introduction"></a>
 ## Giới thiệu
@@ -543,7 +543,7 @@ Nếu bạn đang sử dụng PhpStorm, thì vui lòng xem lại tài liệu c�
 > Laravel Sail dựa vào `artisan Serve` để chạy ứng dụng của bạn. Lệnh `artisan Serve` chỉ chấp nhận các biến `XDEBUG_CONFIG` và `XDEBUG_MODE` kể từ phiên bản Laravel 8.53.0. Các phiên bản cũ hơn của Laravel (8.52.0 trở xuống) sẽ không hỗ trợ các biến này và sẽ không chấp nhận khi kết nối debug.
 
 <a name="sail-customization"></a>
-## Tuỳ chỉnh
+## Tùy chỉnh
 
 Vì Sail chỉ là Docker nên bạn có thể tự do tùy chỉnh hầu hết mọi thứ về nó. Để export Dockerfiles của Sail, bạn có thể chạy lệnh `sail:publish`:
 

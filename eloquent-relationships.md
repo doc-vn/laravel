@@ -19,7 +19,7 @@
     - [Một - Nhiều](#one-to-many-polymorphic-relations)
     - [Một trong nhiều](#one-of-many-polymorphic-relations)
     - [Nhiều - Nhiều](#many-to-many-polymorphic-relations)
-    - [Tuỳ biến quan hệ đa hình](#custom-polymorphic-types)
+    - [Tùy biến quan hệ đa hình](#custom-polymorphic-types)
     - [Quan hệ động](#dynamic-relationships)
 - [Query theo quan hệ](#querying-relations)
     - [Phương thức quan hệ và thuộc tính động](#relationship-methods-vs-dynamic-properties)
@@ -958,7 +958,7 @@ return $this->belongsToMany(Badge::class)
 
 Nếu bạn muốn định nghĩa một model tùy biến, để biểu diễn bảng trung gian của quan hệ của bạn, bạn có thể gọi phương thức `using` khi định nghĩa quan hệ. Các model trung gian này cho bạn cơ hội để định nghĩa thêm các hành động trên model trung gian, như thêm phương thức và cast.
 
-Để tuỳ biến một model pivot nhiều-nhiều bạn cần extend từ class `Illuminate\Database\Eloquent\Relations\Pivot`, còn nếu bạn muốn tuỳ biến model theo đa hình nhiều-nhiều, thì bạn cần extend từ class `Illuminate\Database\Eloquent\Relations\MorphPivot`. Ví dụ: chúng ta có thể định nghĩa một `Role` sử dụng model pivot `RoleUser` tùy biến như sau:
+Để tùy biến một model pivot nhiều-nhiều bạn cần extend từ class `Illuminate\Database\Eloquent\Relations\Pivot`, còn nếu bạn muốn tùy biến model theo đa hình nhiều-nhiều, thì bạn cần extend từ class `Illuminate\Database\Eloquent\Relations\MorphPivot`. Ví dụ: chúng ta có thể định nghĩa một `Role` sử dụng model pivot `RoleUser` tùy biến như sau:
 
 ```php
 <?php

@@ -8,7 +8,7 @@
 <a name="introduction"></a>
 ## Giới thiệu
 
-Ngoài việc đơn giản hóa cách kiểm tra HTTP, Laravel cung cấp một API đơn giản để kiểm tra [các lệnh console tuỳ chỉnh](/docs/{{version}}/artisan) của application của bạn.
+Ngoài việc đơn giản hóa cách kiểm tra HTTP, Laravel cung cấp một API đơn giản để kiểm tra [các lệnh console tùy chỉnh](/docs/{{version}}/artisan) của application của bạn.
 
 <a name="success-failure-expectations"></a>
 ## Kỳ vọng thành công hay thất bai
