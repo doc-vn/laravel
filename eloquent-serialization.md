@@ -217,6 +217,12 @@ return $user->mergeAppends(['is_admin', 'status'])->toArray();
 return $user->setAppends(['is_admin'])->toArray();
 ```
 
+Tương tự như vậy, nếu bạn muốn xóa tất cả các thuộc tính đã được thêm vào từ một model, bạn có thể sử dụng phương thức `withoutAppends`:
+
+```php
+return $user->withoutAppends()->toArray();
+```
+
 <a name="date-serialization"></a>
 ## Date Serialization
 

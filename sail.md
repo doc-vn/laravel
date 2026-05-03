@@ -278,9 +278,9 @@ Từ máy local của bạn, bạn có thể truy cập API của Typesense qua 
 <a name="file-storage"></a>
 ## File Storage
 
-Nếu bạn dự định sử dụng Amazon S3 để lưu trữ file trong khi chạy ứng dụng của bạn trong môi trường production, bạn có thể muốn cài đặt service [MinIO](https://min.io) khi cài đặt Sail. MinIO cung cấp API tương thích với S3 mà bạn có thể sử dụng để phát triển local bằng driver storage file `s3` của Laravel mà không cần tạo bucket lưu trữ "thử nghiệm" trong môi trường S3 production của bạn. Nếu bạn muốn chọn cài đặt MinIO trong khi cài đặt Sail, phần cấu hình MinIO sẽ được thêm vào file `compose.yaml` của ứng dụng của bạn.
+Nếu bạn dự định sử dụng Amazon S3 để lưu trữ file trong khi chạy ứng dụng của bạn trong môi trường production, bạn có thể muốn cài đặt service [RustFS](https://rustfs.com) khi cài đặt Sail. RustFS cung cấp API tương thích với S3 mà bạn có thể sử dụng để phát triển local bằng driver storage file `s3` của Laravel mà không cần tạo bucket lưu trữ "thử nghiệm" trong môi trường S3 production của bạn. Nếu bạn muốn chọn cài đặt RustFS trong khi cài đặt Sail, phần cấu hình RustFS sẽ được thêm vào file `compose.yaml` của ứng dụng của bạn.
 
-Mặc định, file cấu hình `filesystems` của ứng dụng của bạn đã chứa cấu hình disk cho disk `s3`. Ngoài việc sử dụng disk này để tương tác với Amazon S3, bạn có thể sử dụng disk này để tương tác với bất kỳ dịch vụ lưu trữ file nào mà tương thích với S3 chẳng hạn như MinIO bằng cách sửa các biến môi trường liên quan đến kiểm soát cấu hình của nó. Ví dụ: khi sử dụng MinIO, cấu hình biến môi trường filesystem của bạn phải được định nghĩa như sau:
+Mặc định, file cấu hình `filesystems` của ứng dụng của bạn đã chứa cấu hình disk cho disk `s3`. Ngoài việc sử dụng disk này để tương tác với Amazon S3, bạn có thể sử dụng disk này để tương tác với bất kỳ dịch vụ lưu trữ file nào mà tương thích với S3 chẳng hạn như RustFS bằng cách sửa các biến môi trường liên quan đến kiểm soát cấu hình của nó. Ví dụ: khi sử dụng RustFS, cấu hình biến môi trường filesystem của bạn phải được định nghĩa như sau:
 
 ```ini
 FILESYSTEM_DISK=s3
@@ -288,20 +288,9 @@ AWS_ACCESS_KEY_ID=sail
 AWS_SECRET_ACCESS_KEY=password
 AWS_DEFAULT_REGION=us-east-1
 AWS_BUCKET=local
-AWS_ENDPOINT=http://minio:9000
+AWS_ENDPOINT=http://rustfs:9000
 AWS_USE_PATH_STYLE_ENDPOINT=true
 ```
-
-Để tích hợp Flysystem của Laravel vào để tạo ra các URL phù hợp khi sử dụng MinIO, bạn phải định nghĩa biến môi trường `AWS_URL` sao cho nó khớp với URL local của ứng dụng và chứa tên bucket trong đường dẫn URL:
-
-```ini
-AWS_URL=http://localhost:9000/local
-```
-
-Bạn có thể tạo bucket thông qua bảng điều khiển của MinIO tại `http://localhost:8900`. Tên người dùng mặc định cho bảng điều khiển MinIO là `sail` và mật khẩu mặc định là `password`.
-
-> [!WARNING]
-> Việc tạo URL tạm thời thông qua phương thức `temporaryUrl` sẽ không được hỗ trợ khi sử dụng MinIO.
 
 <a name="running-tests"></a>
 ## Running Tests
@@ -406,9 +395,12 @@ sail tinker
 <a name="sail-php-versions"></a>
 ## PHP Versions
 
-Sail hiện hỗ trợ chạy ứng dụng của bạn thông qua PHP 8.4, 8.3, 8.2, 8.1, hoặc PHP 8.0. Phiên bản PHP mặc định được Sail sử dụng hiện tại là PHP 8.4. Để thay đổi phiên bản PHP được sử dụng để chạy ứng dụng của bạn, bạn nên cập nhật định nghĩa `build` của container `laravel.test` trong file `compose.yaml` của ứng dụng:
+Sail hiện hỗ trợ chạy ứng dụng của bạn thông qua PHP 8.5, 8.4, 8.3, 8.2, 8.1, hoặc PHP 8.0. Phiên bản PHP mặc định được Sail sử dụng hiện tại là PHP 8.5. Để thay đổi phiên bản PHP được sử dụng để chạy ứng dụng của bạn, bạn nên cập nhật định nghĩa `build` của container `laravel.test` trong file `compose.yaml` của ứng dụng:
 
 ```yaml
+# PHP 8.5
+context: ./vendor/laravel/sail/runtimes/8.5
+
 # PHP 8.4
 context: ./vendor/laravel/sail/runtimes/8.4
 

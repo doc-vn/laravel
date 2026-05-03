@@ -73,6 +73,8 @@ Route::get('/user', function (Request $request) {
 })->middleware('auth:sanctum');
 ```
 
+Tất nhiên, bạn hoàn toàn có thể bỏ middleware `auth:sanctum` ra khỏi các route mà cần cho phép truy cập công khai.
+
 Các route có trong `routes/api.php` là stateless và được gán vào [group middleware](/docs/{{version}}/middleware#laravels-default-middleware-groups) `api`. Ngoài ra, prefix URI `/api` được tự động áp dụng cho các route này, vì vậy bạn không cần phải tự áp dụng cho từng route có trong file. Bạn có thể thay đổi prefix này bằng cách sửa file `bootstrap/app.php` của ứng dụng:
 
 ```php

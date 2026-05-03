@@ -2,7 +2,7 @@
 
 - [Giới thiệu](#introduction)
 - [Các phương thức có sẵn](#available-methods)
-- [Tuỳ biến Collection](#custom-collections)
+- [Tùy biến Collection](#custom-collections)
 
 <a name="introduction"></a>
 ## Giới thiệu
@@ -325,7 +325,7 @@ $users = $users->unique();
 ```
 
 <a name="method-withoutAppends"></a>
-#### `withoutAppends($attributes)` {.collection-method}
+#### `withoutAppends()` {.collection-method}
 
 Phương thức `withoutAppends` sẽ tạm thời xóa tất cả các [thuộc tính được append](/docs/{{version}}/eloquent-serialization#appending-values-to-json) trên mỗi model có trong collection:
 
@@ -334,7 +334,7 @@ $users = $users->withoutAppends();
 ```
 
 <a name="custom-collections"></a>
-## Tuỳ biến Collection
+## Tùy biến Collection
 
 Nếu bạn muốn sử dụng một đối tượng `Collection` tùy biến khi tương tác với một model nhất định, bạn có thể thêm thuộc tính `CollectedBy` vào model của bạn:
 

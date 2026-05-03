@@ -167,6 +167,12 @@ Nếu bạn muốn xem những file migration nào đã chạy và những file 
 php artisan migrate:status
 ```
 
+Nếu bạn cung cấp tùy chọn `--step` cho lệnh `migrate`, lệnh này sẽ chạy mỗi migration dưới dạng một batch riêng, cho phép bạn rollback từng migration bằng lệnh `migrate:rollback`:
+
+```shell
+php artisan migrate --step
+```
+
 Nếu bạn muốn xem các câu lệnh SQL sẽ được chạy bởi lệnh migration trước khi thực sự chạy chúng, bạn có thể cung cấp flag `--pretend` cho lệnh `migrate`:
 
 ```shell
@@ -637,7 +643,7 @@ $table->char('name', length: 100);
 <a name="column-method-dateTimeTz"></a>
 #### `dateTimeTz()` {.collection-method}
 
-Phương thức `dateTimeTz` sẽ tạo một cột tương ứng với `DATETIME` (cùng timezone) với một tuỳ chọn độ chính xác của giây tính đến hàng phân số phía sau dấu chấm:
+Phương thức `dateTimeTz` sẽ tạo một cột tương ứng với `DATETIME` (cùng timezone) với một tùy chọn độ chính xác của giây tính đến hàng phân số phía sau dấu chấm:
 
 ```php
 $table->dateTimeTz('created_at', precision: 0);
@@ -646,7 +652,7 @@ $table->dateTimeTz('created_at', precision: 0);
 <a name="column-method-dateTime"></a>
 #### `dateTime()` {.collection-method}
 
-Phương thức `dateTime` sẽ tạo một cột tương ứng với `DATETIME` và một tuỳ chọn độ chính xác của giây tính đến hàng phân số phía sau dấu chấm:
+Phương thức `dateTime` sẽ tạo một cột tương ứng với `DATETIME` và một tùy chọn độ chính xác của giây tính đến hàng phân số phía sau dấu chấm:
 
 ```php
 $table->dateTime('created_at', precision: 0);
@@ -1146,7 +1152,7 @@ $table->ulidMorphs('taggable');
 
 Phương thức `uuidMorphs` là một phương thức rất tiện lợi, nó sẽ thêm một cột tương ứng với `{column}_id` `CHAR(36)` và một cột khác là `{column}_type` `VARCHAR`.
 
-Mục đích phương thức này là nhằm sử dụng khi định nghĩa các cột cần thiết cho [quan hệ đa hình](/docs/{{version}}/eloquent-relationships). Trong ví dụ dưới, các cột `taggable_id` và `taggable_type` sẽ được tạo:
+Mục đích phương thức này là nhằm sử dụng khi định nghĩa các cột cần thiết cho [quan hệ đa hình](/docs/{{version}}/eloquent-relationships#polymorphic-relationships). Trong ví dụ dưới, các cột `taggable_id` và `taggable_type` sẽ được tạo:
 
 ```php
 $table->uuidMorphs('taggable');
@@ -1177,6 +1183,12 @@ Phương thức `vector` sẽ tạo một cột tương ứng với `vector`:
 
 ```php
 $table->vector('embedding', dimensions: 100);
+```
+
+Khi sử dụng PostgreSQL, extension `pgvector` phải được load trước khi các cột `vector` được tạo:
+
+```php
+Schema::ensureVectorExtensionExists();
 ```
 
 <a name="column-method-year"></a>
@@ -1216,7 +1228,9 @@ div class="overflow-auto">
 | `->default($value)`                 | Khai báo giá trị "default" cho cột.                                                                               |
 | `->first()`                         | Set một column vào vị trí "đầu tiên" trong table (MariaDB / MySQL).                                               |
 | `->from($integer)`                  | Set giá trị bắt đầu của field tự động tăng (MariaDB / MySQL / PostgreSQL).                                        |
+| `->instant()`                       | Thêm hoặc sửa cột dùng thuật toán instant (MySQL).                                                                |
 | `->invisible()`                     | Làm cho cột "ẩn" đi đối với các truy vấn `SELECT *` (MariaDB / MySQL).                                            |
+| `->lock($mode)`                     | Chỉ định một chế độ khóa cho một cột (MySQL).                                                                     |
 | `->nullable($value = true)`         | Cho phép giá trị mặc định là `NULL` khi tạo bản ghi mới.                                                          |
 | `->storedAs($expression)`           | Tạo một cột lấy data từ cột khác lưu vào chính nó (MariaDB / MySQL / PostgreSQL / SQLite).                        |
 | `->unsigned()`                      | Set một cột kiểu `INTEGER` là `UNSIGNED` (MariaDB / MySQL).                                                       |
@@ -1271,6 +1285,36 @@ $table->after('password', function (Blueprint $table) {
     $table->string('address_line2');
     $table->string('city');
 });
+```
+
+<a name="instant-column-operations"></a>
+#### Instant Column Operations
+
+Khi sử dụng MySQL, bạn có thể nối thêm modifier `instant` vào các định nghĩa cột để chỉ ra rằng cột đó nên được thêm hoặc sửa bằng thuật toán "instant" của MySQL. Thuật toán này cho phép thực hiện một số thay đổi schema mà không cần build lại toàn bộ bảng, giúp chúng diễn ra gần như ngay lập tức bất kể kích thước bảng:
+
+```php
+$table->string('name')->nullable()->instant();
+```
+
+Việc thêm cột ngay lập tức chỉ có thể thêm cột vào cuối bảng, vì vậy modifier `instant` không thể kết hợp với các modifier `after` hoặc `first`. Ngoài ra, thuật toán này không hỗ trợ tất cả các loại cột hoặc hành động khác. Nếu hành động được yêu cầu không tương thích, MySQL sẽ báo lỗi.
+
+Vui lòng tham khảo [tài liệu của MySQL](https://dev.mysql.com/doc/refman/8.0/en/innodb-online-ddl-operations.html) để xác định những hành động nào tương thích với việc sửa cột ngay lập tức.
+
+<a name="ddl-locking"></a>
+#### DDL Locking
+
+Khi sử dụng MySQL, bạn có thể thêm modifier `lock` vào các định nghĩa cột, index hoặc khóa ngoại để kiểm soát việc khóa bảng trong các hành động schema. MySQL hỗ trợ vài chế độ khóa: `none` cho phép đọc và ghi đồng thời, `shared` cho phép đọc nhưng chặn ghi, `exclusive` chặn tất cả các truy cập, và `default` để MySQL tự chọn chế độ phù hợp nhất:
+
+```php
+$table->string('name')->lock('none');
+
+$table->index('email')->lock('shared');
+```
+
+Nếu chế độ khóa được yêu cầu không tương thích với hành động khác, MySQL sẽ báo lỗi. Modifier `lock` có thể được kết hợp với modifier `instant` để tối ưu hơn nữa các thay đổi schema:
+
+```php
+$table->string('name')->instant()->lock('none');
 ```
 
 <a name="modifying-columns"></a>
@@ -1388,7 +1432,7 @@ $table->unique('email', 'unique_email');
 <a name="available-index-types"></a>
 #### Available Index Types
 
-Class schema builder blueprint của Laravel sẽ cung cấp các phương thức khác nhau để tạo ra từng loại index mà được Laravel hỗ trợ. Mỗi phương thức của index chấp nhận một tham số thứ hai tùy chọn để chỉ định tên của index. Nếu bỏ qua tuỳ chọn này, thì tên sẽ được lấy từ tên của (các) bảng và các cột để sử dụng cho index, cũng như loại index. Các phương thức tạo index sẽ được mô tả trong bảng dưới đây:
+Class schema builder blueprint của Laravel sẽ cung cấp các phương thức khác nhau để tạo ra từng loại index mà được Laravel hỗ trợ. Mỗi phương thức của index chấp nhận một tham số thứ hai tùy chọn để chỉ định tên của index. Nếu bỏ qua tùy chọn này, thì tên sẽ được lấy từ tên của (các) bảng và các cột để sử dụng cho index, cũng như loại index. Các phương thức tạo index sẽ được mô tả trong bảng dưới đây:
 
 <div class="overflow-auto">
 
@@ -1403,6 +1447,17 @@ Class schema builder blueprint của Laravel sẽ cung cấp các phương thứ
 | `$table->spatialIndex('location');`              | Thêm một spatial index. (trừ SQLite).                          |
 
 </div>
+
+<a name="online-index-creation"></a>
+#### Online Index Creation
+
+Mặc định, việc tạo một index trên một bảng rất lớn có thể khóa bảng và chặn việc đọc hoặc ghi trong khi index đang được tạo. Khi sử dụng PostgreSQL hoặc SQL Server, bạn có thể nối thêm phương thức `online` vào định nghĩa index để tạo index mà không cần khóa bảng, cho phép ứng dụng của bạn tiếp tục đọc và ghi dữ liệu trong quá trình tạo index:
+
+```php
+$table->string('email')->unique()->online();
+```
+
+Khi sử dụng PostgreSQL, điều này sẽ thêm tùy chọn `CONCURRENTLY` vào câu lệnh tạo index. Khi sử dụng SQL Server, điều này sẽ thêm tùy chọn `WITH (online = on)`.
 
 <a name="renaming-indexes"></a>
 ### Đổi tên Index

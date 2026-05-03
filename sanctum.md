@@ -309,7 +309,7 @@ php artisan config:publish cors
 
 Tiếp theo, bạn nên đảm bảo là cấu hình CORS của ứng dụng của bạn đang trả về header `Access-Control-Allow-Credentials` có giá trị là `True`. Nó có thể hoàn thành bằng cách set tùy chọn `supports_credentials` trong file cấu hình `config/cors.php` của ứng dụng thành `true`.
 
-Ngoài ra, bạn cũng nên thêm tùy chọn `withCredentials` và tuỳ chọn `withXSRFToken` trên instance global `axios` của application của bạn. Thông thường, điều này sẽ được thực hiện trong file `resources/js/bootstrap.js` của bạn. Nếu bạn không sử dụng Axios để thực hiện các request HTTP từ fontend của bạn, bạn nên thực hiện cấu hình tương đương trên HTTP client của riêng bạn:
+Ngoài ra, bạn cũng nên thêm tùy chọn `withCredentials` và tùy chọn `withXSRFToken` trên instance global `axios` của application của bạn. Thông thường, điều này sẽ được thực hiện trong file `resources/js/bootstrap.js` của bạn. Nếu bạn không sử dụng Axios để thực hiện các request HTTP từ fontend của bạn, bạn nên thực hiện cấu hình tương đương trên HTTP client của riêng bạn:
 
 ```js
 axios.defaults.withCredentials = true;
@@ -415,7 +415,7 @@ Bạn cũng có thể sử dụng token Sanctum để xác thực các request c
 <a name="issuing-mobile-api-tokens"></a>
 ### Phát hành API Token
 
-Để bắt đầu, hãy tạo một route chấp nhận email hoặc tên người dùng, mật khẩu và tên thiết bị của người dùng, sau đó kiểm tra các thông tin đăng nhập đó để lấy token Sanctum mới. "Tên thiết bị" được cung cấp cho route này nhằm mục đích cung cấp thông tin và có thể là bất kỳ giá trị nào bạn muốn. Nói chung, giá trị tên thiết bị phải là tên mà người dùng có thể nhận ra, chẳng hạn như "iPhone 12 của Nuno".
+Để bắt đầu, hãy tạo một route chấp nhận email hoặc tên người dùng, mật khẩu và tên thiết bị của người dùng, sau đó kiểm tra các thông tin đăng nhập đó để lấy token Sanctum mới. "Tên thiết bị" được cung cấp cho route này nhằm mục đích cung cấp thông tin và có thể là bất kỳ giá trị nào bạn muốn. Nói chung, giá trị tên thiết bị phải là tên mà người dùng có thể nhận ra, chẳng hạn như "iPhone 17 của Nuno".
 
 Thông thường, bạn sẽ tạo một request tới route token từ màn hình "đăng nhập" ứng dụng di động của bạn. Route sẽ trả về một token Sanctum thật để có thể được lưu trên thiết bị di động và được sử dụng để thực hiện thêm các request API sau đó:
 

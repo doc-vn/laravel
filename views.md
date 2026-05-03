@@ -1,7 +1,7 @@
 # Views
 
 - [Giới thiệu](#introduction)
-    - [Viết view trong React và Vue](#writing-views-in-react-or-vue)
+    - [Viết view trong React, Svelte hoặc Vue](#writing-views-in-react-svelte-or-vue)
 - [Tạo và render view](#creating-and-rendering-views)
     - [Thư mục view lồng nhau](#nested-view-directories)
     - [Tạo view có sẵn đầu tiên](#creating-the-first-available-view)
@@ -40,12 +40,12 @@ Route::get('/', function () {
 > [!NOTE]
 > Bạn đang tìm kiếm thêm thông tin về cách viết Blade template? Hãy xem [tài liệu đầy đủ về Blade](/docs/{{version}}/blade) để bắt đầu.
 
-<a name="writing-views-in-react-or-vue"></a>
-### Viết view trong React và Vue
+<a name="writing-views-in-react-svelte-or-vue"></a>
+### Viết view trong React, Svelte hoặc Vue
 
-Thay vì viết các template frontend của mình bằng PHP thông qua Blade, nhiều nhà phát triển đã bắt đầu thích viết các template của họ bằng React hoặc Vue. Laravel giúp việc này trở nên dễ dàng hơn nhờ [Inertia](https://inertiajs.com/), một thư viện sẽ giúp bạn dễ dàng liên kết frontend React hoặc Vue của bạn với backend Laravel mà không cần đến những thứ phức tạp thường thấy khi xây dựng SPA (Single Page Application).
+Thay vì viết các template frontend của mình bằng PHP thông qua Blade, nhiều nhà phát triển đã bắt đầu thích viết các template của họ bằng React, Svelte hoặc Vue. Laravel giúp việc này trở nên dễ dàng hơn nhờ [Inertia](https://inertiajs.com/), một thư viện sẽ giúp bạn dễ dàng liên kết frontend React, Svelte hoặc Vue của bạn với backend Laravel mà không cần đến những thứ phức tạp thường thấy khi xây dựng SPA (Single Page Application).
 
-[Bộ công cụ khởi động](/docs/{{version}}/starter-kits) Breeze và Jetstream của chúng tôi cung cấp cho bạn một điểm khởi đầu tuyệt vời cho ứng dụng Laravel tiếp theo của bạn mà được hỗ trợ bởi Inertia. Ngoài ra, [Laravel Bootcamp](https://bootcamp.laravel.com) cũng cung cấp bản demo đầy đủ về cách xây dựng ứng dụng Laravel được hỗ trợ bởi Inertia, bao gồm các ví dụ trong Vue và React.
+Các bộ [khởi tạo ứng dụng React, Svelte, và Vue](/docs/{{version}}/starter-kits) của chúng tôi mang lại cho bạn một điểm khởi đầu tuyệt vời cho ứng dụng Laravel tiếp theo của bạn được hỗ trợ bởi Inertia.
 
 <a name="creating-and-rendering-views"></a>
 ## Tạo và render view

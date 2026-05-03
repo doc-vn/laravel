@@ -1913,7 +1913,9 @@ Số được validation phải có độ dài tối đa là _value_.
 File được validation phải khớp với một trong các loại MIME đã cho:
 
 ```php
-'video' => 'mimetypes:video/avi,video/mpeg,video/quicktime'
+'video' => 'mimetypes:video/avi,video/mpeg,video/quicktime',
+
+'media' => 'mimetypes:image/*,video/*',
 ```
 
 Để xác định loại MIME của file được tải lên, nội dung của file sẽ được đọc và framework sẽ cố gắng đoán loại MIME, nó có thể khác với loại MIME của client cung cấp.

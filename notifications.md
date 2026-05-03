@@ -444,6 +444,21 @@ public function shouldSend(object $notifiable, string $channel): bool
 }
 ```
 
+<a name="after-sending-notifications"></a>
+#### After Sending Notifications
+
+Nếu bạn muốn thực hiện một code sau khi một thông báo được gửi đi, bạn có thể định nghĩa một phương thức `afterSending` trong class notification. Phương thức này sẽ nhận vào đối tượng notifiable, tên channel và response từ channel đó:
+
+```php
+/**
+ * Handle the notification after it has been sent.
+ */
+public function afterSending(object $notifiable, string $channel, mixed $response): void
+{
+    // ...
+}
+```
+
 <a name="on-demand-notifications"></a>
 ### On-Demand Notifications
 

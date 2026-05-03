@@ -26,14 +26,14 @@
     - [Tạo một password grant client](#creating-a-password-grant-client)
     - [Request token](#requesting-password-grant-tokens)
     - [Request all scope](#requesting-all-scopes)
-    - [Tuỳ biến User Provider](#customizing-the-user-provider)
-    - [Tuỳ biến field username](#customizing-the-username-field)
-    - [Tuỳ biến Password Validation](#customizing-the-password-validation)
+    - [Tùy biến User Provider](#customizing-the-user-provider)
+    - [Tùy biến field username](#customizing-the-username-field)
+    - [Tùy biến Password Validation](#customizing-the-password-validation)
 - [Grant ẩn](#implicit-grant)
 - [Chứng chỉ client grant](#client-credentials-grant)
 - [Access token cá nhân](#personal-access-tokens)
     - [Tạo một access client cá nhân](#creating-a-personal-access-client)
-    - [Tuỳ chỉnh User Provider](#customizing-the-user-provider-for-pat)
+    - [Tùy chỉnh User Provider](#customizing-the-user-provider-for-pat)
     - [Quản lý access token cá nhân](#managing-personal-access-tokens)
 - [Bảo vệ route](#protecting-routes)
     - [Thông qua middleware](#via-middleware)
@@ -832,12 +832,12 @@ $response = Http::asForm()->post('https://passport-app.test/oauth/token', [
 ```
 
 <a name="customizing-the-user-provider"></a>
-### Tuỳ biến User Provider
+### Tùy biến User Provider
 
 Nếu ứng dụng của bạn sử dụng nhiều hơn một [user provider để xác thực](/docs/{{version}}/authentication#introduction), bạn có thể chỉ định user provider nào sẽ được password grant client sử dụng bằng cách cung cấp thêm một tùy chọn `--provider` khi tạo client thông qua lệnh `artisan passport:client --password`. Tên user provider phải khớp với tên một user provider đã được định nghĩa trong file cấu hình `config/auth.php` của application của bạn. Sau đó, bạn có thể [bảo vệ route của bạn thông qua middleware](#multiple-authentication-guards) để đảm bảo rằng chỉ những người dùng từ user provider được chỉ định mới được cấp quyền.
 
 <a name="customizing-the-username-field"></a>
-### Tuỳ biến field username
+### Tùy biến field username
 
 Khi xác thực bằng password grant, Passport sẽ sử dụng thuộc tính `email` của model authenticatable của bạn làm "username". Tuy nhiên, bạn có thể tùy chỉnh hành động này bằng cách định nghĩa phương thức `findForPassport` trên model của bạn:
 
@@ -867,7 +867,7 @@ class User extends Authenticatable implements OAuthenticatable
 ```
 
 <a name="customizing-the-password-validation"></a>
-### Tuỳ biến Password Validation
+### Tùy biến Password Validation
 
 Khi xác thực bằng password grant, Passport sẽ sử dụng thuộc tính `password` trong model của bạn để xác thực mật khẩu đã cho. Nếu model của bạn không có thuộc tính `password` hoặc bạn muốn tùy chỉnh logic xác thực password, bạn có thể định nghĩa phương thức `validateForPassportPasswordGrant` trong model của bạn:
 
@@ -972,6 +972,9 @@ Route::get('/orders', function (Request $request) {
     // Access token is valid, the client is resource owner, and has both "servers:read" and "servers:create" scopes...
 })->middleware(EnsureClientIsResourceOwner::using('servers:read', 'servers:create'));
 ```
+
+> [!WARNING]
+> Server [OAuth2](https://oauth2.thephpleague.com/database-setup/#:~:text=Please%20note%20that,the%20bearer%20token.) sẽ set `sub` của token thành ID của client cho các token client credential. Mặc định, Passport sử dụng các UUID cho client, do đó điều này không thể xung đột với khóa chính là số nguyên của user. Tuy nhiên, nếu bạn đã set `Passport::$clientUuids` thành `false`, thì một token client credential có thể vô tình resolve ra một user có ID trùng với ID của client. Trong những trường hợp như vậy, việc sử dụng middleware này không thể đảm bảo token được gửi lên là một token client credential.
 
 <a name="retrieving-tokens"></a>
 ### Retrieving Tokens

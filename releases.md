@@ -48,7 +48,7 @@ Khi sủ dụng framework Laravel hoặc các component của nó từ applicati
 <a name="laravel-11"></a>
 ## Laravel 12
 
-Laravel 12 tiếp tục những cải tiến đã có trong Laravel 11.x bằng cách cập nhật các thư viện và giới thiệu các starter kit mới cho React, Vue và Livewire, bao gồm các tùy chọn sử dụng [WorkOS AuthKit](https://authkit.com) để xác thực người dùng. Phiên bản WorkOS của các starter kit của chúng tôi sẽ cung cấp các tính năng xác thực qua mạng xã hội, passkey và hỗ trợ SSO.
+Laravel 12 tiếp tục những cải tiến đã có trong Laravel 11.x bằng cách cập nhật các thư viện và giới thiệu các starter kit mới cho React, Svelte, Vue và Livewire, bao gồm các tùy chọn sử dụng [WorkOS AuthKit](https://authkit.com) để xác thực người dùng. Phiên bản WorkOS của các starter kit của chúng tôi sẽ cung cấp các tính năng xác thực qua mạng xã hội, passkey và hỗ trợ SSO.
 
 <a name="minimal-breaking-changes"></a>
 ### Minimal Breaking Changes
@@ -60,9 +60,9 @@ Do đó, bản phát hành Laravel 12 là một "bản phát hành bảo trì" t
 <a name="new-application-starter-kits"></a>
 ### New Application Starter Kits
 
-Laravel 12 giới thiệu các [application starter kits](/docs/{{version}}/starter-kits) mới cho React, Vue và Livewire. Starter kit React và Vue sẽ sử dụng Inertia 2, TypeScript, [shadcn/ui](https://ui.shadcn.com) và Tailwind, trong khi starter kit Livewire sẽ sử dụng thư viện component [Flux UI](https://fluxui.dev) dựa trên Tailwind và Laravel Volt.
+Laravel 12 giới thiệu các [application starter kits](/docs/{{version}}/starter-kits) mới cho React, Svelte, Vue và Livewire. Starter kit React, Svelte và Vue sẽ sử dụng Inertia 2, TypeScript, [shadcn/ui](https://ui.shadcn.com) và Tailwind, trong khi starter kit Livewire sẽ sử dụng thư viện component [Flux UI](https://fluxui.dev) dựa trên Tailwind và Laravel Volt.
 
-Các starter kit React, Vue và Livewire đều sử dụng hệ thống xác thực có sẵn của Laravel để cung cấp các tính năng đăng nhập, đăng ký, reset mật khẩu, xác minh email và hơn thế nữa. Ngoài ra, chúng tôi cũng giới thiệu một biến thể [được hỗ trợ bởi WorkOS AuthKit](https://authkit.com) cho mỗi starter kit, cung cấp các tính năng xác thực qua mạng xã hội, passkey và hỗ trợ SSO. WorkOS cung cấp tính năng xác thực miễn phí cho các ứng dụng có tối đa 1 triệu người dùng hoạt động hàng tháng.
+Các starter kit React, Svelte, Vue và Livewire đều sử dụng hệ thống xác thực có sẵn của Laravel để cung cấp các tính năng đăng nhập, đăng ký, reset mật khẩu, xác minh email và hơn thế nữa. Ngoài ra, chúng tôi cũng giới thiệu một biến thể [được hỗ trợ bởi WorkOS AuthKit](https://authkit.com) cho mỗi starter kit, cung cấp các tính năng xác thực qua mạng xã hội, passkey và hỗ trợ SSO. WorkOS cung cấp tính năng xác thực miễn phí cho các ứng dụng có tối đa 1 triệu người dùng hoạt động hàng tháng.
 
 Với việc giới thiệu các application starter kit mới này, Laravel Breeze và Laravel Jetstream sẽ không còn nhận được các bản cập nhật nữa.
 

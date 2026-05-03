@@ -13,6 +13,9 @@
     - [Queued Event Listeners và Database Transactions](#queued-event-listeners-and-database-transactions)
     - [Queued Listener Middleware](#queued-listener-middleware)
     - [Encrypted Queued Listeners](#encrypted-queued-listeners)
+    - [Unique Event Listeners](#unique-event-listeners)
+        - [Giữ Listeners Unique cho đến khi Processing Begins](#keeping-listeners-unique-until-processing-begins)
+        - [Unique Listener Locks](#unique-listener-locks)
     - [Xử lý Failed Job](#handling-failed-jobs)
 - [Dispatching Event](#dispatching-events)
     - [Dispatching Events After Database Transactions](#dispatching-events-after-database-transactions)
@@ -513,6 +516,125 @@ class SendShipmentNotification implements ShouldQueue, ShouldBeEncrypted
     // ...
 }
 ```
+
+<a name="unique-event-listeners"></a>
+### Unique Event Listeners
+
+> [!WARNING]
+> Các unique listener yêu cầu một cache driver hỗ trợ [khoá atomic](/docs/{{version}}/cache#atomic-locks). Hiện tại, các cache driver `memcached`, `redis`, `dynamodb`, `database`, `file`, và `array` đều hỗ trợ khoá atomic.
+
+Thỉnh thoảng, bạn muốn đảm bảo là chỉ có một instance duy nhất của một listener nằm trong queue tại bất kỳ thời điểm nào. Bạn có thể làm như vậy bằng cách implement interface `ShouldBeUnique` trong class listener của bạn:
+
+```php
+<?php
+
+namespace App\Listeners;
+
+use App\Events\LicenseSaved;
+use Illuminate\Contracts\Queue\ShouldBeUnique;
+use Illuminate\Contracts\Queue\ShouldQueue;
+
+class AcquireProductKey implements ShouldQueue, ShouldBeUnique
+{
+    public function __invoke(LicenseSaved $event): void
+    {
+        // ...
+    }
+}
+```
+
+Trong ví dụ trên, listener `AcquireProductKey` là duy nhất. Vì vậy, listener sẽ không được đưa vào queue nếu một instance khác của listener này đã nằm trong queue và chưa được xử lý xong. Điều này đảm bảo rằng chỉ có một product key duy nhất được tạo cho mỗi license, ngay cả khi license đó được lưu nhiều lần trong thời gian ngắn.
+
+Trong một số trường hợp nhất định, bạn có thể muốn định nghĩa một "key" cụ thể để làm cho listener trở nên duy nhất hoặc bạn muốn chỉ định một khoảng thời gian timeout mà sau thời gian đó listener sẽ không còn là duy nhất nữa. Để thực hiện điều này, bạn có thể khai báo các thuộc tính hoặc phương thức `uniqueId` và `uniqueFor` trong class listener của bạn. Các phương thức này sẽ nhận vào một instance của event, cho phép bạn sử dụng dữ liệu của event để tạo ra giá trị trả về:
+
+```php
+<?php
+
+namespace App\Listeners;
+
+use App\Events\LicenseSaved;
+use Illuminate\Contracts\Queue\ShouldBeUnique;
+use Illuminate\Contracts\Queue\ShouldQueue;
+
+class AcquireProductKey implements ShouldQueue, ShouldBeUnique
+{
+    /**
+     * The number of seconds after which the listener's unique lock will be released.
+     *
+     * @var int
+     */
+    public $uniqueFor = 3600;
+
+    public function __invoke(LicenseSaved $event): void
+    {
+        // ...
+    }
+
+    /**
+     * Get the unique ID for the listener.
+     */
+    public function uniqueId(LicenseSaved $event): string
+    {
+        return 'listener:'.$event->license->id;
+    }
+}
+```
+
+Trong ví dụ trên, listener `AcquireProductKey` là duy nhất dựa theo ID của license. Do đó, bất kỳ lần gửi mới nào của listener cho cùng một license đó sẽ bị bỏ qua cho đến khi listener hiện tại được xử lý xong. Điều này sẽ ngăn chặn việc tạo ra các product key trùng lặp cho cùng một license. Ngoài ra, nếu listener hiện tại không được xử lý trong vòng một giờ, khóa unique đó sẽ được giải phóng và một listener khác với cùng unique key đó có thể được đưa vào queue.
+
+> [!WARNING]
+> Nếu ứng dụng của bạn đang gửi event từ nhiều web server hoặc container khác nhau, bạn nên đảm bảo rằng tất cả các server đều giao tiếp với cùng một server cache trung tâm để Laravel có thể xác định chính xác xem một listener có phải là duy nhất hay không.
+
+<a name="keeping-listeners-unique-until-processing-begins"></a>
+#### Giữ Listeners Unique cho đến khi Processing Begins
+
+Mặc định, các unique listener sẽ được "giải phóng khóa" sau khi listener hoàn tất việc xử lý hoặc thất bại trong tất cả các lần thử lại. Tuy nhiên, có thể có những trường hợp bạn muốn listener của bạn giải phóng khóa ngay trước khi nó bắt đầu được xử lý. Để thực hiện điều này, listener của bạn nên implement interface `ShouldBeUniqueUntilProcessing` thay vì `ShouldBeUnique`:
+
+```php
+<?php
+
+namespace App\Listeners;
+
+use App\Events\LicenseSaved;
+use Illuminate\Contracts\Queue\ShouldBeUniqueUntilProcessing;
+use Illuminate\Contracts\Queue\ShouldQueue;
+
+class AcquireProductKey implements ShouldQueue, ShouldBeUniqueUntilProcessing
+{
+    // ...
+}
+```
+
+<a name="unique-listener-locks"></a>
+#### Unique Listener Locks
+
+Ở phía sau, khi một listener `ShouldBeUnique` được gửi, Laravel sẽ cố gắng lấy một [khóa atomic](/docs/{{version}}/cache#atomic-locks) cùng với key là `uniqueId`. Nếu khóa này đã bị giữ, listener sẽ không được gửi đi. Khóa này sẽ được giải phóng khi listener hoàn tất việc xử lý hoặc thất bại trong tất cả các lần thử lại. Mặc định, Laravel sẽ sử dụng cache driver mặc định để lấy khóa này. Tuy nhiên, nếu bạn muốn sử dụng một driver khác để lấy khóa, bạn có thể định nghĩa một phương thức `uniqueVia` trả về cache driver mà bạn muốn sử dụng:
+
+```php
+<?php
+
+namespace App\Listeners;
+
+use App\Events\LicenseSaved;
+use Illuminate\Contracts\Cache\Repository;
+use Illuminate\Support\Facades\Cache;
+
+class AcquireProductKey implements ShouldQueue, ShouldBeUnique
+{
+    // ...
+
+    /**
+     * Get the cache driver for the unique listener lock.
+     */
+    public function uniqueVia(LicenseSaved $event): Repository
+    {
+        return Cache::driver('redis');
+    }
+}
+```
+
+> [!NOTE]
+> Nếu bạn chỉ cần giới hạn việc xử lý đồng bộ của một listener, hãy sử dụng middleware job [WithoutOverlapping](/docs/{{version}}/queues#preventing-job-overlaps) để thay thế.
 
 <a name="handling-failed-jobs"></a>
 ### Xử lý Failed Job

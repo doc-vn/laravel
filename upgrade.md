@@ -64,7 +64,7 @@ Bạn nên cập nhật các library sau vào file `composer.json` của ứng d
 
 **Likelihood Of Impact: Low**
 
-Sự hỗ trợ cho [Carbon 2.x](https://carbon.nesbot.com/docs/) đã bị loại bỏ. Tất cả các ứng dụng Laravel 12 bây giờ sẽ yêu cầu [Carbon 3.x](https://carbon.nesbot.com/docs/#api-carbon-3).
+Sự hỗ trợ cho Carbon 2.x đã bị loại bỏ. Tất cả các ứng dụng Laravel 12 bây giờ sẽ yêu cầu [Carbon 3.x](https://carbon.nesbot.com/guide/getting-started/migration.html).
 
 <a name="updating-the-laravel-installer"></a>
 ### Updating the Laravel Installer
@@ -182,12 +182,50 @@ $tables = Schema::getTableListing(schema: 'main', schemaQualified: false);
 
 Các lệnh `db:table` và `db:show` sẽ xuất ra kết quả của tất cả các schema trên MySQL, MariaDB và SQLite, giống như PostgreSQL và SQL Server.
 
-<a name="updated-blueprint-constructor-signature"></a>
-#### Updated `Blueprint` Constructor Signature
+<a name="database-constructor-signature-changes"></a>
+#### Database Constructor Signature Changes
 
 **Likelihood Of Impact: Very Low**
 
-Constructor của class `Illuminate\Database\Schema\Blueprint` sẽ yêu cầu một instance của `Illuminate\Database\Connection` làm tham số đầu tiên của nó.
+Trong Laravel 12, một số class database cấp thấp ở trong framework bây giờ sẽ yêu cầu instance `Illuminate\Database\Connection` phải được cung cấp thông qua hàm constructor của chúng.
+
+**Những thay đổi này chủ yếu áp dụng cho những người phát triển package database - khả năng những thay đổi này ảnh hưởng đến việc phát triển ứng dụng thông thường là rất ít.**
+
+`Illuminate\Database\Schema\Blueprint`
+
+Hàm constructor của class `Illuminate\Database\Schema\Blueprint` bây giờ sẽ yêu cầu một instance `Connection` làm tham số đầu tiên của nó. Điều này chủ yếu ảnh hưởng đến các ứng dụng hoặc package tự khởi tạo instance `Blueprint`.
+
+`Illuminate\Database\Grammar`
+
+Hàm constructor của class `Illuminate\Database\Grammar` bây giờ cũng yêu cầu một instance `Connection`. Trong khi ở các phiên bản trước đó, connection sẽ được gán sau khi khởi tạo bằng phương thức `setConnection()`. Phương thức này đã bị xóa trong Laravel 12:
+
+```php
+// Laravel <= 11.x
+$grammar = new MySqlGrammar;
+$grammar->setConnection($connection);
+
+// Laravel >= 12.x
+$grammar = new MySqlGrammar($connection);
+````
+
+Ngoài ra, các API sau cũng đã bị xóa hoặc bị ngừng sử dụng:
+
+<div class="content-list" markdown="1">
+
+- Phương thức `Blueprint::getPrefix()` đã bị ngừng sử dụng.
+- Phương thức `Connection::withTablePrefix()` đã bị xóa.
+- Các phương thức `Grammar::getTablePrefix()` và `setTablePrefix()` đã bị ngừng sử dụng.
+- Phương thức `Grammar::setConnection()` đã bị xóa.
+
+</div>
+
+Khi làm việc với table prefix, bây giờ bạn nên lấy chúng trực tiếp từ database connection:
+
+```php
+$prefix = $connection->getTablePrefix();
+```
+
+Nếu bạn đang phát triển các custom database driver, schema builder hoặc các grammar implementation, bạn nên xem lại hàm constructor của bạn và đảm bảo một instance `Connection` đã được cung cấp.
 
 <a name="eloquent"></a>
 ### Eloquent

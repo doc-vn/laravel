@@ -6,6 +6,7 @@
     - [Định nghĩa một Mutator](#defining-a-mutator)
 - [Attribute Casting](#attribute-casting)
     - [Array và JSON Casting](#array-and-json-casting)
+    - [Binary Casting](#binary-casting)
     - [Date Casting](#date-casting)
     - [Enum Casting](#enum-casting)
     - [Encrypted Casting](#encrypted-casting)
@@ -523,6 +524,40 @@ class Option implements Arrayable, JsonSerializable
 }
 ```
 
+<a name="binary-casting"></a>
+### Binary Casting
+
+Nếu model Eloquent của bạn có một cột `uuid` hoặc `ulid` theo kiểu [binary](/docs/{{version}}/migrations#column-method-binary) ngoài cột ID tự tăng của model, bạn có thể sử dụng cast `AsBinary` để tự động cast giá trị đến và đi từ dạng nhị phân của nó:
+
+```php
+use Illuminate\Database\Eloquent\Casts\AsBinary;
+
+/**
+ * Get the attributes that should be cast.
+ *
+ * @return array<string, string>
+ */
+protected function casts(): array
+{
+    return [
+        'uuid' => AsBinary::uuid(),
+        'ulid' => AsBinary::ulid(),
+    ];
+}
+```
+
+Sau khi cast đã được định nghĩa trên model, bạn có thể set giá trị cho thuộc tính UUID hoặc ULID thành một instance đối tượng hoặc một chuỗi. Eloquent sẽ tự động cast giá trị về dạng nhị phân của nó. Khi lấy ra giá trị của thuộc tính, bạn sẽ luôn nhận được một giá trị chuỗi:
+
+```php
+use Illuminate\Support\Str;
+
+$user->uuid = Str::uuid();
+
+return $user->uuid;
+
+// "6e8cdeed-2f32-40bd-b109-1e4405be2140"
+```
+
 <a name="date-casting"></a>
 ### Date Casting
 
@@ -639,7 +674,7 @@ Vì độ dài của văn bản được mã hóa không thể dự đoán đư�
 <a name="key-rotation"></a>
 #### Key Rotation
 
-Như bạn có thể biết, Laravel mã hóa chuỗi bằng cách sử dụng giá trị cấu hình `key` được chỉ định trong file cấu hình `app` trong ứng dụng của bạn. Thông thường, giá trị này tương ứng với giá trị của biến môi trường `APP_KEY`. Nếu cần đổi khóa này của ứng dụng, bạn sẽ cần mã hóa lại các thuộc tính đã được mã hóa, theo cách thủ công bằng khóa mới.
+Như bạn có thể biết, Laravel mã hóa chuỗi bằng cách sử dụng giá trị cấu hình `key` được chỉ định trong file cấu hình `app` trong ứng dụng của bạn. Thông thường, giá trị này tương ứng với giá trị của biến môi trường `APP_KEY`. Nếu cần đổi khóa này của ứng dụng, bạn có thể [thực hiện việc này một cách an toàn](/docs/{{version}}/encryption#gracefully-rotating-encryption-keys).
 
 <a name="query-time-casting"></a>
 ### Query Time Casting
@@ -843,7 +878,7 @@ class AsAddress implements CastsAttributes
 
 Khi một model Eloquent được chuyển thành một mảng hoặc chuỗi JSON thông qua các phương thức `toArray` hoặc `toJson`, giá trị của các thuộc tính cast tùy chỉnh của bạn thường sẽ được đánh số thứ tự miễn là chúng implement các interface `Illuminate\Contracts\Support\Arrayable` và `JsonSerializable`. Tuy nhiên, khi sử dụng giá trị của các đối tượng do thư viện bên thứ ba cung cấp, bạn có thể không có khả năng thêm các interface này vào cho các đối tượng.
 
-Do đó, bạn có thể chỉ định class cast tùy chỉnh của bạn sẽ chịu trách nhiệm chuyển đổi giá trị của đối tượng. Để làm như vậy, class cast tùy chỉnh của bạn phải implement interface `Illuminate\Contracts\Database\Eloquent\SerializesCastableAttributes`. Interface này sẽ yêu cầu class của bạn phải chứa phương thức `serialize` và sẽ trả về định dạng chuyển đổi mà giá trị của đối tượng mà bạn muốn tuỳ chỉnh:
+Do đó, bạn có thể chỉ định class cast tùy chỉnh của bạn sẽ chịu trách nhiệm chuyển đổi giá trị của đối tượng. Để làm như vậy, class cast tùy chỉnh của bạn phải implement interface `Illuminate\Contracts\Database\Eloquent\SerializesCastableAttributes`. Interface này sẽ yêu cầu class của bạn phải chứa phương thức `serialize` và sẽ trả về định dạng chuyển đổi mà giá trị của đối tượng mà bạn muốn tùy chỉnh:
 
 ```php
 /**
@@ -866,7 +901,7 @@ public function serialize(
 
 Đôi khi, bạn có thể cần viết một class cast tùy chỉnh chỉ biến đổi các giá trị khi được set vào trong model và không thực hiện bất kỳ hoạt động nào khi các thuộc tính đó được lấy ra từ model.
 
-Một inbound cast tuỳ chỉnh nên được implement interface `CastsInboundAttributes`, interface này chỉ yêu cầu phương thức `set` phải được định nghĩa trên class implement. Lệnh `make:cast` của Artisan có thể được gọi với tùy chọn `--inbound` để tạo ra một class cast inbound:
+Một inbound cast tùy chỉnh nên được implement interface `CastsInboundAttributes`, interface này chỉ yêu cầu phương thức `set` phải được định nghĩa trên class implement. Lệnh `make:cast` của Artisan có thể được gọi với tùy chọn `--inbound` để tạo ra một class cast inbound:
 
 ```shell
 php artisan make:cast AsHash --inbound

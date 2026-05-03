@@ -14,8 +14,9 @@
 - [Atomic Locks](#atomic-locks)
     - [Quản lý Locks](#managing-locks)
     - [Quản lý Locks trong Processes](#managing-locks-across-processes)
+    - [Giới hạn đồng bộ](#concurrency-limiting)
 - [Dự phòng cache](#cache-failover)
-- [Thêm tuỳ biến cache driver](#adding-custom-cache-drivers)
+- [Thêm tùy biến cache driver](#adding-custom-cache-drivers)
     - [Viết driver](#writing-the-driver)
     - [Đăng ký driver](#registering-the-driver)
 - [Event](#events)
@@ -284,7 +285,7 @@ Cache::put('key', 'value', now()->plus(minutes: 10));
 <a name="store-if-not-present"></a>
 #### Store If Not Present
 
-Phương thức `add` sẽ chỉ thêm item vào cache nếu giá trị chưa tồn tại trong cache store. Phương thức này sẽ trả về `true` nếu item đó thực sự được thêm vào cache. Nếu không, phương thức sẽ trả về `false`. The `add` method is an atomic operation:
+Phương thức `add` sẽ chỉ thêm item vào cache nếu giá trị chưa tồn tại trong cache store. Phương thức này sẽ trả về `true` nếu item đó thực sự được thêm vào cache. Nếu không, phương thức sẽ trả về `false`. Phương thức `add` là một hành động duy nhất:
 
 ```php
 Cache::add('key', 'value', $seconds);
@@ -530,6 +531,75 @@ Nếu bạn muốn giải phóng khóa mà bỏ qua owner hiện tại của kho
 Cache::lock('processing')->forceRelease();
 ```
 
+<a name="concurrency-limiting"></a>
+### Giới hạn đồng bộ
+
+Tính năng khoá atomic của Laravel cũng cung cấp một số cách để giới hạn việc chạy đồng bộ của các closure. Hãy sử dụng `withoutOverlapping` khi bạn muốn chỉ cho phép một instance duy nhất được chạy trong toàn bộ hạ tầng của bạn:
+
+```php
+Cache::withoutOverlapping('foo', function () {
+    // Lock acquired after waiting a maximum of 10 seconds...
+});
+```
+
+Mặc định, khoá sẽ được giữ cho đến khi closure được chạy xong và phương thức sẽ đợi tối đa 10 giây để lấy khoá. Bạn có thể tùy chỉnh các giá trị này bằng cách sử dụng thêm các tham số:
+
+```php
+Cache::withoutOverlapping('foo', function () {
+    // Lock acquired for 120 seconds after waiting a maximum of 5 seconds...
+}, lockFor: 120, waitFor: 5);
+```
+
+Nếu không thể lấy được khoá trong thời gian chờ đã được chỉ định, một exception `Illuminate\Contracts\Cache\LockTimeoutException` sẽ được đưa ra.
+
+Nếu bạn muốn kiểm soát số lượng được chạy đồng thời, hãy sử dụng phương thức `funnel` để thiết lập số lượng tối đa được chạy đồng thời. Phương thức `funnel` sẽ hoạt động với bất kỳ driver cache nào có hỗ trợ khoá:
+
+```php
+Cache::funnel('foo')
+    ->limit(3)
+    ->releaseAfter(60)
+    ->block(10)
+    ->then(function () {
+        // Concurrency lock acquired...
+    }, function () {
+        // Could not acquire concurrency lock...
+    });
+```
+
+Key `funnel` giúp xác định resource nào đang bị giới hạn. Phương thức `limit` định nghĩa số lượng tối đa được chạy đồng thời. Phương thức `releaseAfter` thiết lập thời gian chờ tính bằng giây trước khi một chỗ được tự động release. Phương thức `block` thiết lập số giây cần chờ để có một chỗ.
+
+Nếu bạn muốn xử lý việc timeout thông qua exception thay vì cung cấp một closure thất bại, bạn có thể bỏ qua closure thứ hai. Một exception `Illuminate\Cache\Limiters\LimiterTimeoutException` sẽ được đưa ra nếu không thể lấy được khoá trong thời gian chờ đã chỉ định:
+
+```php
+use Illuminate\Cache\Limiters\LimiterTimeoutException;
+
+try {
+    Cache::funnel('foo')
+        ->limit(3)
+        ->releaseAfter(60)
+        ->block(10)
+        ->then(function () {
+            // Concurrency lock acquired...
+        });
+} catch (LimiterTimeoutException $e) {
+    // Unable to acquire concurrency lock...
+}
+```
+
+Nếu bạn muốn sử dụng một cache store cụ thể cho giới hạn đồng bộ, bạn có thể gọi phương thức `funnel` trên store mà bạn mong muốn:
+
+```php
+Cache::store('redis')->funnel('foo')
+    ->limit(3)
+    ->block(10)
+    ->then(function () {
+        // Concurrency lock acquired using the "redis" store...
+    });
+```
+
+> [!NOTE]
+> Phương thức `funnel` yêu cầu cache store phải implement interface `Illuminate\Contracts\Cache\LockProvider`. Nếu bạn cố gắng sử dụng `funnel` với một cache store không hỗ trợ khoá, một `BadMethodCallException` sẽ được đưa ra.
+
 <a name="cache-failover"></a>
 ## Dự phòng cache
 
@@ -556,7 +626,7 @@ CACHE_STORE=failover
 Khi một thao tác cache store thất bại và failover sẽ được kích hoạt, Laravel sẽ gửi đi một event `Illuminate\Cache\Events\CacheFailedOver` cho phép bạn report hoặc ghi log một cache store đã bị lỗi.
 
 <a name="adding-custom-cache-drivers"></a>
-## Thêm tuỳ biến cache driver
+## Thêm tùy biến cache driver
 
 <a name="writing-the-driver"></a>
 ### Viết driver

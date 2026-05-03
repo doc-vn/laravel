@@ -158,6 +158,32 @@ Nếu ứng dụng của bạn có nhiều file môi trường, chẳng hạn nh
 php artisan env:encrypt --env=staging
 ```
 
+<a name="readable-variable-names"></a>
+#### Readable Variable Names
+
+Khi mã hóa file môi trường của bạn, bạn có thể sử dụng tùy chọn `--readable` để giữ nguyên tên các biến môi trường trong khi mã hóa giá trị của chúng:
+
+```shell
+php artisan env:encrypt --readable
+```
+
+Điều này sẽ tạo ra một file mã hóa với định dạng như sau:
+
+```ini
+APP_NAME=eyJpdiI6...
+APP_ENV=eyJpdiI6...
+APP_KEY=eyJpdiI6...
+APP_DEBUG=eyJpdiI6...
+APP_URL=eyJpdiI6...
+```
+
+Việc sử dụng định dạng readable cho phép bạn biết những biến môi trường nào đang tồn tại mà không làm lộ dữ liệu nhạy cảm. Nó cũng giúp việc review pull request cũng dễ dàng hơn vì bạn có thể thấy biến nào đã được thêm, xóa hoặc đổi tên mà không cần phải giải mã file.
+
+Khi giải mã các file môi trường, Laravel sẽ tự động phát hiện định dạng nào đã được sử dụng, vì vậy không cần thêm tùy chọn nào cả cho lệnh `env:decrypt`.
+
+> [!NOTE]
+> Khi sử dụng tùy chọn `--readable`, các comment và dòng trống từ file môi trường gốc sẽ không được đưa vào file đã mã hóa.
+
 <a name="decryption"></a>
 #### Decryption
 
@@ -360,7 +386,7 @@ php artisan up
 ```
 
 > [!NOTE]
-> Bạn cũng có sửa đổi màn hình bảo trì mặc định của Laravel bằng cách tạo thêm màn hình tuỳ biến của bạn vào thư mục có đường dẫn như sau: `resources/views/errors/503.blade.php`.
+> Bạn cũng có sửa đổi màn hình bảo trì mặc định của Laravel bằng cách tạo thêm màn hình tùy biến của bạn vào thư mục có đường dẫn như sau: `resources/views/errors/503.blade.php`.
 
 <a name="maintenance-mode-queues"></a>
 #### Chế độ bảo trì và Queues

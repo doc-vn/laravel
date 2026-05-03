@@ -945,12 +945,12 @@ return $this->belongsToMany(Role::class)
 <a name="ordering-queries-via-intermediate-table-columns"></a>
 ### Sắp xếp thông qua bảng trung gian
 
-Bạn có thể sắp xếp các kết quả được trả về bởi quan hệ `belongsToMany` bằng cách sử dụng phương thức `orderByPivot`. Trong ví dụ sau, chúng ta sẽ lấy ra tất cả các huy hiệu mới nhất của người dùng:
+Bạn có thể sắp xếp các kết quả được trả về bởi quan hệ `belongsToMany` bằng cách sử dụng phương thức `orderByPivot` và phương thức `orderByPivotDesc`. Trong ví dụ sau, chúng ta sẽ lấy ra tất cả các huy hiệu mới nhất của người dùng:
 
 ```php
 return $this->belongsToMany(Badge::class)
-                ->where('rank', 'gold')
-                ->orderByPivot('created_at', 'desc');
+    ->where('rank', 'gold')
+    ->orderByPivotDesc('created_at');
 ```
 
 <a name="defining-custom-intermediate-table-models"></a>

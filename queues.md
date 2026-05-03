@@ -587,8 +587,25 @@ public function middleware(): array
 }
 ```
 
-> [!NOTE]
-> Nếu đang sử dụng Redis, bạn có thể sử dụng middleware `Illuminate\Queue\Middleware\RateLimitedWithRedis`, middleware này được tinh chỉnh cho Redis và hiệu quả hơn middleware giới hạn tỷ lệ cơ bản.
+<a name="rate-limiting-with-redis"></a>
+#### Rate Limiting With Redis
+
+Nếu đang sử dụng Redis, bạn có thể sử dụng middleware `Illuminate\Queue\Middleware\RateLimitedWithRedis`, middleware này được tinh chỉnh cho Redis và hiệu quả hơn middleware giới hạn tỷ lệ cơ bản:
+
+```php
+use Illuminate\Queue\Middleware\RateLimitedWithRedis;
+
+public function middleware(): array
+{
+    return [new RateLimitedWithRedis('backups')];
+}
+```
+
+Phương thức `connection` có thể được sử dụng để xác định kết nối Redis nào mà middleware nên sử dụng:
+
+```php
+return [(new RateLimitedWithRedis('backups'))->connection('limiter')];
+```
 
 <a name="preventing-job-overlaps"></a>
 ### Chặn Job chồng nhau
@@ -810,8 +827,25 @@ public function middleware(): array
 }
 ```
 
-> [!NOTE]
-> Nếu bạn đang sử dụng Redis, bạn có thể sử dụng middleware `Illuminate\Queue\Middleware\ThrottlesExceptionsWithRedis`, middleware này được tinh chỉnh cho Redis và hiệu quả hơn middleware bình thường.
+<a name="throttling-exceptions-with-redis"></a>
+#### Throttling Exceptions With Redis
+
+Nếu bạn đang sử dụng Redis, bạn có thể sử dụng middleware `Illuminate\Queue\Middleware\ThrottlesExceptionsWithRedis`, middleware này được tinh chỉnh cho Redis và hiệu quả hơn middleware bình thường:
+
+```php
+use Illuminate\Queue\Middleware\ThrottlesExceptionsWithRedis;
+
+public function middleware(): array
+{
+    return [new ThrottlesExceptionsWithRedis(10, 10 * 60)];
+}
+```
+
+Phương thức `connection` có thể được sử dụng để xác định kết nối Redis nào mà middleware nên sử dụng:
+
+```php
+return [(new ThrottlesExceptionsWithRedis(10, 10 * 60))->connection('limiter')];
+```
 
 <a name="skipping-jobs"></a>
 ### Bỏ qua Job
@@ -1172,6 +1206,9 @@ class ProcessPodcast implements ShouldQueue
     }
 }
 ```
+
+> [!WARNING]
+> Việc chỉ định queue dựa trên hàm constructor thông qua `onQueue` chỉ hoạt động đối với các class job. Đối với các [queued event listener](/docs/{{version}}/events#customizing-the-queue-connection-queue-name), hãy định nghĩa một phương thức `viaQueue` hoặc một thuộc tính `$queue` trên class listener.
 
 <a name="dispatching-to-a-particular-connection"></a>
 #### Dispatching To A Particular Connection
@@ -1682,7 +1719,9 @@ class SyncChatHistory implements ShouldQueue
 <a name="job-batching"></a>
 ## Job Batching
 
-Job batching của Laravel cho phép bạn dễ dàng thực hiện một loạt job và sau đó thực hiện một số hành động khi một loạt job đó đã hoàn thành việc thực thi. Trước khi bắt đầu, bạn nên tạo một migration cơ sở dữ liệu để tạo một bảng mà sẽ chứa các thông tin meta về các batch job của bạn, chẳng hạn như tỷ lệ hoàn thành của chúng. Migration này có thể được tạo bằng lệnh Artisan `make:queue-batches-table`:
+Tính năng job batching của Laravel cho phép bạn dễ dàng thực thi một nhóm các job song song và sau đó thực hiện một số hành động khi một loạt job đó đã hoàn thành việc thực thi.
+
+Trước khi bắt đầu, bạn nên tạo một migration cơ sở dữ liệu để tạo một bảng mà sẽ chứa các thông tin meta về các batch job của bạn, chẳng hạn như tỷ lệ hoàn thành của chúng. Migration này có thể được tạo bằng lệnh Artisan `make:queue-batches-table`:
 
 ```shell
 php artisan make:queue-batches-table
@@ -1752,7 +1791,7 @@ $batch = Bus::batch([
 })->then(function (Batch $batch) {
     // All jobs completed successfully...
 })->catch(function (Batch $batch, Throwable $e) {
-    // First batch job failure detected...
+    // Batch job failure detected...
 })->finally(function (Batch $batch) {
     // The batch has finished executing...
 })->dispatch();
@@ -2022,7 +2061,7 @@ use Illuminate\Support\Facades\Schedule;
 Schedule::command('queue:prune-batches --hours=48')->daily();
 ```
 
-Thỉnh thoảng, bảng `jobs_batches` của bạn có thể tích lũy các record batch cho các batch chưa được hoàn thành, chẳng hạn như các batch có job không thành công và job đó chưa bao giờ được thử lại thành công. Bạn có thể hướng dẫn lệnh `queue:prune-batches` để xoá các record batch chưa hoàn thành này bằng tùy chọn `unfinished`:
+Thỉnh thoảng, bảng `job_batches` của bạn có thể tích lũy các record batch cho các batch chưa được hoàn thành, chẳng hạn như các batch có job không thành công và job đó chưa bao giờ được thử lại thành công. Bạn có thể hướng dẫn lệnh `queue:prune-batches` để xoá các record batch chưa hoàn thành này bằng tùy chọn `unfinished`:
 
 ```php
 use Illuminate\Support\Facades\Schedule;
@@ -2030,7 +2069,7 @@ use Illuminate\Support\Facades\Schedule;
 Schedule::command('queue:prune-batches --hours=48 --unfinished=72')->daily();
 ```
 
-Tương tự như vậy, bảng `jobs_batches` của bạn cũng có thể tích lũy các record batch đã bị hủy một cách rất nhanh. Bạn có thể hướng dẫn lệnh `queue:prune-batches` để xoá bỏ một phần các batch record đã bị hủy bằng tùy chọn `cancelled`:
+Tương tự như vậy, bảng `job_batches` của bạn cũng có thể tích lũy các record batch đã bị hủy một cách rất nhanh. Bạn có thể hướng dẫn lệnh `queue:prune-batches` để xoá bỏ một phần các batch record đã bị hủy bằng tùy chọn `cancelled`:
 
 ```php
 use Illuminate\Support\Facades\Schedule;
@@ -2377,7 +2416,7 @@ Các file cấu hình của Supervisor thường được lưu trong thư mục 
 ```ini
 [program:laravel-worker]
 process_name=%(program_name)s_%(process_num)02d
-command=php /home/forge/app.com/artisan queue:work sqs --sleep=3 --tries=3 --max-time=3600
+command=php /home/forge/app.com/artisan queue:work --sleep=3 --tries=3 --max-time=3600
 autostart=true
 autorestart=true
 stopasgroup=true
@@ -2769,8 +2808,11 @@ test('orders can be shipped', function () {
     // Assert a job was pushed to a given queue...
     Queue::assertPushedOn('queue-name', ShipOrder::class);
 
+    // Assert a job was pushed
+    Queue::assertPushed(ShipOrder::class);
+
     // Assert a job was pushed twice...
-    Queue::assertPushed(ShipOrder::class, 2);
+    Queue::assertPushedTimes(ShipOrder::class, 2);
 
     // Assert a job was not pushed...
     Queue::assertNotPushed(AnotherJob::class);
@@ -2810,8 +2852,11 @@ class ExampleTest extends TestCase
         // Assert a job was pushed to a given queue...
         Queue::assertPushedOn('queue-name', ShipOrder::class);
 
+        // Assert a job was pushed
+        Queue::assertPushed(ShipOrder::class);
+
         // Assert a job was pushed twice...
-        Queue::assertPushed(ShipOrder::class, 2);
+        Queue::assertPushedTimes(ShipOrder::class, 2);
 
         // Assert a job was not pushed...
         Queue::assertNotPushed(AnotherJob::class);
@@ -2856,7 +2901,7 @@ test('orders can be shipped', function () {
     // Perform order shipping...
 
     // Assert a job was pushed twice...
-    Queue::assertPushed(ShipOrder::class, 2);
+    Queue::assertPushedTimes(ShipOrder::class, 2);
 });
 ```
 
@@ -2870,7 +2915,7 @@ public function test_orders_can_be_shipped(): void
     // Perform order shipping...
 
     // Assert a job was pushed twice...
-    Queue::assertPushed(ShipOrder::class, 2);
+    Queue::assertPushedTimes(ShipOrder::class, 2);
 }
 ```
 
@@ -2979,6 +3024,30 @@ Bus::fake();
 Bus::assertBatched(function (PendingBatch $batch) {
     return $batch->name == 'Import CSV' &&
            $batch->jobs->count() === 10;
+});
+```
+
+Phương thức `hasJobs` có thể được sử dụng trên pending batch để xác minh rằng batch đó có chứa các job mà bạn mong muốn hay không. Phương thức này chấp nhận một mảng chứa các instance job, tên class hoặc closure:
+
+```php
+Bus::assertBatched(function (PendingBatch $batch) {
+    return $batch->hasJobs([
+        new ProcessCsvRow(row: 1),
+        new ProcessCsvRow(row: 2),
+        new ProcessCsvRow(row: 3),
+    ]);
+});
+```
+
+Khi sử dụng closure, closure đó sẽ nhận vào instance của job. Loại job mà bạn mong muốn sẽ được suy luận từ khai báo của closure:
+
+```php
+Bus::assertBatched(function (PendingBatch $batch) {
+    return $batch->hasJobs([
+        fn (ProcessCsvRow $job) => $job->row === 1,
+        fn (ProcessCsvRow $job) => $job->row === 2,
+        fn (ProcessCsvRow $job) => $job->row === 3,
+    ]);
 });
 ```
 

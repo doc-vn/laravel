@@ -10,7 +10,7 @@
     - [Reportable và Renderable Exceptions](#renderable-exceptions)
 - [Throttling Reported Exceptions](#throttling-reported-exceptions)
 - [HTTP Exceptions](#http-exceptions)
-    - [Tuỳ biến page HTTP Error](#custom-http-error-pages)
+    - [Tùy biến page HTTP Error](#custom-http-error-pages)
 
 <a name="introduction"></a>
 ## Giới thiệu
@@ -24,7 +24,10 @@ Khi bạn bắt đầu một dự án mới, các xử lý lỗi và các ngoạ
 
 Tùy chọn `debug` trong file cấu hình `config/app.php` của bạn sẽ định nghĩa lượng thông tin về lỗi sẽ được hiển thị cho người dùng. Mặc định, tùy chọn này được khai báo từ giá trị biến môi trường `APP_DEBUG` được lưu trữ trong file `.env` của bạn.
 
-Trong quá trình phát triển ở local, thì bạn nên lưu biến môi trường `APP_DEBUG` thành `true`. **Nếu môi trường chạy product, thì bạn nên lưu giá trị này là `false`. Nếu giá trị được lưu thành `true` trong môi trường product, bạn có thể có nguy cơ lộ các giá trị cấu hình nhạy cảm cho người dùng application.**
+Trong quá trình phát triển ở local, thì bạn nên lưu biến môi trường `APP_DEBUG` thành `true`.
+
+> [!WARNING]
+> Trong môi trường chạy product, giá trị của `APP_DEBUG` lúc nào cũng là `false`. Nếu giá trị được lưu thành `true` trong môi trường product, bạn có thể có nguy cơ lộ các giá trị cấu hình nhạy cảm cho người dùng application.
 
 <a name="handling-exceptions"></a>
 ## Xử lý Exceptions
@@ -217,7 +220,7 @@ use Throwable;
 })
 ```
 
-Mặc định, Laravel đã bỏ qua một số loại lỗi cho bạn, chẳng hạn như các trường hợp ngoại lệ do lỗi 404 HTTP hoặc lỗi HTTP response 419 được tạo bởi do CSRF token không hợp lệ. Nếu bạn muốn Laravel dừng việc bỏ qua một số loại exception, bạn có thể sử dụng phương thức ngoại lệ `stopIgnoring` trong file `bootstrap/app.php` của ứng dụng của bạn:
+Mặc định, Laravel đã bỏ qua một số loại lỗi cho bạn, chẳng hạn như các trường hợp ngoại lệ do lỗi HTTP 404 hoặc lỗi HTTP response 419 được tạo ra do CSRF token không hợp lệ. Nếu bạn muốn Laravel dừng việc bỏ qua một số loại exception, bạn có thể sử dụng phương thức ngoại lệ `stopIgnoring` trong file `bootstrap/app.php` của ứng dụng của bạn:
 
 ```php
 use Symfony\Component\HttpKernel\Exception\HttpException;
@@ -472,9 +475,9 @@ abort(404);
 ```
 
 <a name="custom-http-error-pages"></a>
-### Tuỳ biến page HTTP Error
+### Tùy biến page HTTP Error
 
-Laravel giúp dễ dàng tuỳ biến các trang error có HTTP status code khác nhau. Ví dụ: để tùy biến trang erorr có HTTP status code 404, hãy tạo một file view template `resources/views/errors/404.blade.php`. File view sẽ được hiển thị cho tất cả các erorr 404 do application của bạn tạo ra. Các view trong thư mục này phải được đặt tên khớp với HTTP status code tương ứng. Một instance `Symfony\Component\HttpKernel\Exception\HttpException` sẽ được đưa ra bởi hàm `abort` và sẽ được chuyển đến view như là một biến `$exception`:
+Laravel giúp dễ dàng tùy biến các trang error có HTTP status code khác nhau. Ví dụ: để tùy biến trang erorr có HTTP status code 404, hãy tạo một file view template `resources/views/errors/404.blade.php`. File view sẽ được hiển thị cho tất cả các erorr 404 do application của bạn tạo ra. Các view trong thư mục này phải được đặt tên khớp với HTTP status code tương ứng. Một instance `Symfony\Component\HttpKernel\Exception\HttpException` sẽ được đưa ra bởi hàm `abort` và sẽ được chuyển đến view như là một biến `$exception`:
 
 ```blade
 <h2>{{ $exception->getMessage() }}</h2>

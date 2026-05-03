@@ -157,22 +157,18 @@ $instance = Feature::instance(NewApi::class);
 
 #### Customizing the Stored Feature Name
 
-Mặc định, Pennant sẽ lưu trữ tên class của class chức năng. Nếu bạn muốn tách tên chức năng đã lưu ra khỏi cấu trúc bên trong của ứng dụng, bạn có thể chỉ định thuộc tính `$name` trên class chức năng. Giá trị của thuộc tính này sẽ được lưu thay cho tên class:
+Mặc định, Pennant sẽ lưu trữ tên class của class chức năng. Nếu bạn muốn tách tên chức năng đã lưu ra khỏi cấu trúc bên trong của ứng dụng, bạn có thể thêm thuộc tính `Name` trên class chức năng. Giá trị của thuộc tính này sẽ được lưu thay cho tên class:
 
 ```php
 <?php
 
 namespace App\Features;
 
+use Laravel\Pennant\Attributes\Name;
+
+#[Name('new-api')]
 class NewApi
 {
-    /**
-     * The stored name of the feature.
-     *
-     * @var string
-     */
-    public $name = 'new-api';
-
     // ...
 }
 ```

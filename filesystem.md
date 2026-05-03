@@ -23,7 +23,7 @@
 - [Xoá File](#deleting-files)
 - [Thư mục](#directories)
 - [Testing](#testing)
-- [Tuỳ chỉnh Filesystem](#custom-filesystems)
+- [Tùy chỉnh Filesystem](#custom-filesystems)
 
 <a name="introduction"></a>
 ## Giới thiệu
@@ -33,7 +33,7 @@ Laravel cung cấp một abstraction filesystem mạnh mẽ nhờ package PHP [F
 <a name="configuration"></a>
 ## Cấu hình
 
-File cấu hình filesystem của Laravel được lưu tại `config/filesystems.php`. Trong file này, bạn có thể cấu hình tất cả các filesystem "disks" của bạn. Mỗi disk sẽ được đại diện cho một driver lưu trữ với một vị trí lưu trữ cụ thể. Các cấu hình mẫu cho các driver được hỗ trợ cũng đã được khai báo sẵn vào trong file cấu hình vì vậy bạn có thể sửa cấu hình để đúng với tuỳ chọn lưu trữ của bạn và thông tin của chúng.
+File cấu hình filesystem của Laravel được lưu tại `config/filesystems.php`. Trong file này, bạn có thể cấu hình tất cả các filesystem "disks" của bạn. Mỗi disk sẽ được đại diện cho một driver lưu trữ với một vị trí lưu trữ cụ thể. Các cấu hình mẫu cho các driver được hỗ trợ cũng đã được khai báo sẵn vào trong file cấu hình vì vậy bạn có thể sửa cấu hình để đúng với tùy chọn lưu trữ của bạn và thông tin của chúng.
 
 Driver `local` tương tác với các file được lưu trữ local trên máy chủ đang chạy ứng dụng Laravel, trong khi driver `sftp` sẽ được sử dụng cho FTP dựa trên khóa SSH. Driver `s3` sẽ được sử dụng để ghi vào dịch vụ lưu trữ đám mây S3 của Amazon.
 
@@ -213,25 +213,13 @@ Tiếp theo, bạn có thể thêm tùy chọn cấu hình `read-only` vào tron
 <a name="amazon-s3-compatible-filesystems"></a>
 ### Filesystem tương thích Amazon S3
 
-Mặc định, file cấu hình `filesystems` của ứng dụng sẽ chứa một cấu hình disk cho disk `s3`. Ngoài việc sử dụng disk này để tương tác với [Amazon S3](https://aws.amazon.com/s3/), bạn cũng có thể sử dụng nó để tương tác với bất kỳ dịch vụ lưu trữ file nào tương thích S3 nào, chẳng hạn như [MinIO](https://github.com/minio/minio), [DigitalOcean Spaces](https://www.digitalocean.com/products/spaces/), [Vultr Object Storage](https://www.vultr.com/products/object-storage/), [Cloudflare R2](https://www.cloudflare.com/developer-platform/products/r2/), hoặc [Hetzner Cloud Storage](https://www.hetzner.com/storage/object-storage/).
+Mặc định, file cấu hình `filesystems` của ứng dụng sẽ chứa một cấu hình disk cho disk `s3`. Ngoài việc sử dụng disk này để tương tác với [Amazon S3](https://aws.amazon.com/s3/), bạn cũng có thể sử dụng nó để tương tác với bất kỳ dịch vụ lưu trữ file nào tương thích S3 nào, chẳng hạn như [RustFS](https://github.com/rustfs/rustfs), [DigitalOcean Spaces](https://www.digitalocean.com/products/spaces/), [Vultr Object Storage](https://www.vultr.com/products/object-storage/), [Cloudflare R2](https://www.cloudflare.com/developer-platform/products/r2/), hoặc [Hetzner Cloud Storage](https://www.hetzner.com/storage/object-storage/).
 
 Thông thường, sau khi cập nhật thông tin đăng nhập của disk để khớp với thông tin đăng nhập của dịch vụ mà bạn đang sử dụng, bạn chỉ cần cập nhật giá trị của tùy chọn của cấu hình `endpoint`. Giá trị tùy chọn này thường được định nghĩa thông qua biến môi trường `AWS_ENDPOINT`:
 
 ```php
-'endpoint' => env('AWS_ENDPOINT', 'https://minio:9000'),
+'endpoint' => env('AWS_ENDPOINT', 'https://rustfs:9000'),
 ```
-
-<a name="minio"></a>
-#### MinIO
-
-Để tích hợp Flysystem của Laravel vào việc tạo các URL khi sử dụng MinIO, bạn nên định nghĩa một biến môi trường là `AWS_URL` sao cho nó khớp với URL local của ứng dụng của bạn và chứa tên bucket trong đường dẫn URL:
-
-```ini
-AWS_URL=http://localhost:9000/local
-```
-
-> [!WARNING]
-> Việc tạo URL tạm thời thông qua phương thức `temporaryUrl` có thể không hoạt động khi sử dụng MinIO nếu `endpoint` không thể truy cập được bởi client.
 
 <a name="obtaining-disk-instances"></a>
 ## Lấy Disk Instance
@@ -421,7 +409,7 @@ class AppServiceProvider extends ServiceProvider
 #### Temporary Upload URLs
 
 > [!WARNING]
-> Chức năng URL temporary upload chỉ được hỗ trợ bởi driver `s3`.
+> Chức năng URL temporary upload chỉ được hỗ trợ bởi driver `s3` và driver `local`.
 
 Nếu bạn cần tạo một URL temporary có thể được sử dụng để upload file trực tiếp từ ứng dụng client-side của bạn, bạn có thể sử dụng phương thức `temporaryUploadUrl`. Phương thức này chấp nhận một đường dẫn và một instance `DateTime` chỉ định thời điểm URL sẽ hết hạn. Phương thức `temporaryUploadUrl` sẽ trả về một mảng có cấu trúc là một URL upload và các header cần được chứa trong upload request:
 
@@ -847,11 +835,11 @@ Mặc định, phương thức `fake` sẽ xóa tất cả các file có trong t
 > Phương thức `image` yêu cầu [GD extension](https://www.php.net/manual/en/book.image.php).
 
 <a name="custom-filesystems"></a>
-## Tuỳ chỉnh Filesystem
+## Tùy chỉnh Filesystem
 
 Flysystem tích hợp của Laravel cung cấp hỗ trợ cho một số "driver" mặc đinh; tuy nhiên, Flysystem không chỉ giới hạn ở những điều này mà còn có bộ chuyển đổi cho nhiều hệ thống lưu trữ khác. Bạn có thể tạo driver tùy biến nếu bạn muốn sử dụng một trong những bộ chuyển đổi đó vào trong ứng dụng Laravel của bạn.
 
-Để định nghĩa một tuỳ biến filesystem, bạn sẽ cần một bộ chuyển đổi Flysystem. Hãy thêm một bộ chuyển đổi Dropbox được cộng đồng phát triển vào trong dự án của bạn:
+Để định nghĩa một tùy biến filesystem, bạn sẽ cần một bộ chuyển đổi Flysystem. Hãy thêm một bộ chuyển đổi Dropbox được cộng đồng phát triển vào trong dự án của bạn:
 
 ```shell
 composer require spatie/flysystem-dropbox

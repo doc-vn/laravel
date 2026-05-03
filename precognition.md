@@ -6,7 +6,8 @@
     - [Dùng với React](#using-react)
     - [Dùng với Alpine và Blade](#using-alpine)
     - [Cấu hình Axios](#configuring-axios)
-- [Tuỳ chỉnh Validation Rules](#customizing-validation-rules)
+- [Validating mảng](#validating-arrays)
+- [Tùy chỉnh Validation Rules](#customizing-validation-rules)
 - [Xử lý File Uploads](#handling-file-uploads)
 - [Quản lý Side-Effects](#managing-side-effects)
 - [Testing](#testing)
@@ -551,8 +552,24 @@ window.axios.defaults.headers.common['Authorization'] = authToken;
 client.use(window.axios)
 ```
 
+<a name="validating-arrays"></a>
+## Validating mảng
+
+Bạn có thể sử dụng các ký tự wildcard để validate các field có trong mảng hoặc các đối tượng lồng nhau. Mỗi ký tự `*` sẽ tương đương với một mức lồng nhau:
+
+```js
+// Validate email for all users in an array...
+form.validate('users.*.email');
+
+// Validate all fields in a profile object...
+form.validate('profile.*');
+
+// Validate all fields for all users...
+form.validate('users.*.*');
+```
+
 <a name="customizing-validation-rules"></a>
-## Tuỳ chỉnh Validation Rules
+## Tùy chỉnh Validation Rules
 
 Bạn có thể tùy chỉnh các quy tắc xác thực được thực hiện trong một precognitive request bằng cách sử dụng phương thức `isPrecognitive` của request.
 

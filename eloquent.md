@@ -228,10 +228,10 @@ class Article extends Model
 
 $article = Article::create(['title' => 'Traveling to Europe']);
 
-$article->id; // "8f8e8478-9035-4d23-b9a7-62f4d2612ce5"
+$article->id; // "018f2b5c-6a7f-7b12-9d6f-2f8a4e0c9c11"
 ```
 
-Mặc định, trait `HasUuids` sẽ tạo ra [UUID "có thể sắp xếp"](/docs/{{version}}/strings#method-str-ordered-uuid) cho model của bạn. Các UUID này hiệu quả cho việc lưu trữ index trong cơ sở dữ liệu vì chúng có thể được sắp xếp theo kiểu từ điển.
+Mặc định, trait `HasUuids` sẽ tạo ra id dạng [UUIDv7](/docs/{{version}}/strings#method-str-uuid7) cho model của bạn. Các UUID này hiệu quả cho việc lưu trữ index trong cơ sở dữ liệu vì chúng có thể được sắp xếp theo kiểu từ điển.
 
 Bạn có thể ghi đè process tạo UUID cho một model nhất định bằng cách định nghĩa một phương thức `newUniqueId` trên model. Ngoài ra, bạn có thể chỉ định cột nào đó sẽ nhận UUID bằng cách định nghĩa phương thức `uniqueIds` trên model:
 
@@ -325,8 +325,19 @@ Nếu bạn cần tùy biến tên của các cột được sử dụng để l
 
 class Flight extends Model
 {
-    const CREATED_AT = 'creation_date';
-    const UPDATED_AT = 'updated_date';
+    /**
+     * The name of the "created at" column.
+     *
+     * @var string|null
+     */
+    public const CREATED_AT = 'creation_date';
+
+    /**
+     * The name of the "updated at" column.
+     *
+     * @var string|null
+     */
+    public const UPDATED_AT = 'updated_date';
 }
 ```
 
@@ -997,7 +1008,7 @@ Nếu bạn muốn làm cho tất cả các thuộc tính của bạn đều có
 /**
  * The attributes that aren't mass assignable.
  *
- * @var array<string>|bool
+ * @var array<string>
  */
 protected $guarded = [];
 ```

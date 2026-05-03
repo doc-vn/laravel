@@ -62,7 +62,7 @@ Sau khi export asset của Horizon xong, file cấu hình của nó sẽ đượ
 <a name="environments"></a>
 #### Environments
 
-Sau khi cài đặt, tùy chọn cấu hình Horizon chính mà bạn nên xem là tùy chọn cấu hình `environments`. Tùy chọn cấu hình này là một mảng các môi trường mà ứng dụng của bạn có thể chạy trên đó và ngoài ra, nó còn định nghĩa các tùy chọn worker process cho từng loại môi trường đó. Mặc định, tuỳ chọn này chứa môi trường `production` và `local`. Tuy nhiên, bạn có thể thoải mái thêm nhiều môi trường hơn nếu cần:
+Sau khi cài đặt, tùy chọn cấu hình Horizon chính mà bạn nên xem là tùy chọn cấu hình `environments`. Tùy chọn cấu hình này là một mảng các môi trường mà ứng dụng của bạn có thể chạy trên đó và ngoài ra, nó còn định nghĩa các tùy chọn worker process cho từng loại môi trường đó. Mặc định, tùy chọn này chứa môi trường `production` và `local`. Tuy nhiên, bạn có thể thoải mái thêm nhiều môi trường hơn nếu cần:
 
 ```php
 'environments' => [
@@ -99,7 +99,7 @@ Bạn cũng có thể định nghĩa một wildcard (`*`) cho môi trường, wi
 Khi bạn khởi động Horizon, nó sẽ sử dụng các tùy chọn cấu hình worker process tương ứng với môi trường mà ứng dụng của bạn được chạy. Thông thường, môi trường được xác định bằng giá trị của [biến môi trường](/docs/{{version}}/configuration#determining-the-current-environment) `APP_ENV`. Ví dụ: môi trường Horizon mặc định`local` được cấu hình để bắt đầu với ba worker process và tự động cân bằng số lượng worker process được chỉ định cho mỗi queue. Môi trường `production` mặc định sẽ được cấu hình để bắt đầu tối đa 10 worker process và tự động cân bằng số lượng worker process được chỉ định cho mỗi queue.
 
 > [!WARNING]
-> Bạn nên đảm bảo tuỳ chọn `environments` trong file cấu hình `horizon` chứa các mục cho mỗi [environment](/docs/{{version}}/configuration#environment-configuration) mà bạn định chạy trên Horizon.
+> Bạn nên đảm bảo tùy chọn `environments` trong file cấu hình `horizon` chứa các mục cho mỗi [environment](/docs/{{version}}/configuration#environment-configuration) mà bạn định chạy trên Horizon.
 
 <a name="supervisors"></a>
 #### Supervisors
@@ -477,6 +477,43 @@ Bạn có thể huỷ process Horizon bằng lệnh Artisan `horizon:terminate`.
 
 ```shell
 php artisan horizon:terminate
+```
+
+<a name="automatically-restarting-horizon"></a>
+#### Automatically Restarting Horizon
+
+Trong quá trình phát triển ở local, bạn có thể chạy lệnh `horizon:listen`. Khi sử dụng lệnh `horizon:listen`, bạn không cần phải khởi động lại Horizon một cách thủ công mỗi khi muốn load lại code đã cập nhật của mình. Trước khi sử dụng tính năng này, bạn nên đảm bảo là [Node](https://nodejs.org) đã được cài đặt trong môi trường phát triển local của bạn. Ngoài ra, bạn cũng nên cài đặt thư viện theo dõi file [Chokidar](https://github.com/paulmillr/chokidar) vào trong dự án của bạn:
+
+```shell
+npm install --save-dev chokidar
+```
+
+Sau khi Chokidar được cài đặt, bạn có thể bắt đầu Horizon bằng lệnh `horizon:listen`:
+
+```shell
+php artisan horizon:listen
+```
+
+Khi chạy trong Docker hoặc Vagrant, bạn nên sử dụng tùy chọn `--poll`:
+
+```shell
+php artisan horizon:listen --poll
+```
+
+Bạn có thể cấu hình các thư mục và file sẽ được theo dõi bằng cách sử dụng tùy chọn cấu hình `watch` trong file cấu hình `config/horizon.php` của ứng dụng:
+
+```php
+'watch' => [
+    'app',
+    'bootstrap',
+    'config',
+    'database',
+    'public/**/*.php',
+    'resources/**/*.php',
+    'routes',
+    'composer.lock',
+    '.env',
+],
 ```
 
 <a name="deploying-horizon"></a>
