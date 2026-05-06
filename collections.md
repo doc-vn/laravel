@@ -172,17 +172,17 @@ Trong phần còn lại của tài liệu này, chúng ta sẽ thảo luận v�
 ## Method Listing
 
 <style>
-    #collection-method code {
+    .collection-method code {
         font-size: 14px;
     }
 
-    #collection-method:not(.first-collection-method) {
+    .collection-method:not(.first-collection-method) {
         margin-top: 50px;
     }
 </style>
 
 <a name="method-all"></a>
-#### `all()` {#collection-method .first-collection-method}
+#### `all()` {.collection-method .first-collection-method}
 
 Phương thức `all` sẽ trả về một mảng được biểu thị bởi collection:
 
@@ -191,12 +191,12 @@ Phương thức `all` sẽ trả về một mảng được biểu thị bởi c
     // [1, 2, 3]
 
 <a name="method-average"></a>
-#### `average()` {#collection-method}
+#### `average()` {.collection-method}
 
 Cách gọi khác của phương thức [`avg`](#method-avg).
 
 <a name="method-avg"></a>
-#### `avg()` {#collection-method}
+#### `avg()` {.collection-method}
 
 Phương thức `avg` trả về [giá trị trung bình](https://en.wikipedia.org/wiki/Average) của một key đã cho:
 
@@ -209,7 +209,7 @@ Phương thức `avg` trả về [giá trị trung bình](https://en.wikipedia.o
     // 2
 
 <a name="method-chunk"></a>
-#### `chunk()` {#collection-method}
+#### `chunk()` {.collection-method}
 
 Phương thức `chunk` chia collection thành nhiều collection nhỏ hơn với kích thước nhất định:
 
@@ -232,7 +232,7 @@ Phương thức này đặc biệt hữu ích trong [views](/docs/{{version}}/vi
     @endforeach
 
 <a name="method-collapse"></a>
-#### `collapse()` {#collection-method}
+#### `collapse()` {.collection-method}
 
 Phương thức `collapse` sẽ thu gọn một tập hợp các mảng nhỏ thành một collection chung và ngang hàng với nhau:
 
@@ -245,7 +245,7 @@ Phương thức `collapse` sẽ thu gọn một tập hợp các mảng nhỏ th
     // [1, 2, 3, 4, 5, 6, 7, 8, 9]
 
 <a name="method-combine"></a>
-#### `combine()` {#collection-method}
+#### `combine()` {.collection-method}
 
 Phương thức `combine` sẽ kết hợp các key của collection với các giá trị của một mảng hoặc một collection khác:
 
@@ -258,7 +258,7 @@ Phương thức `combine` sẽ kết hợp các key của collection với các 
     // ['name' => 'George', 'age' => 29]
 
 <a name="method-concat"></a>
-#### `concat()` {#collection-method}
+#### `concat()` {.collection-method}
 
 Phương thức `concat` sẽ gắn thêm các giá trị của một `array` hoặc một collection vào cuối của một collection khác:
 
@@ -271,7 +271,7 @@ Phương thức `concat` sẽ gắn thêm các giá trị của một `array` ho
     // ['John Doe', 'Jane Doe', 'Johnny Doe']
 
 <a name="method-contains"></a>
-#### `contains()` {#collection-method}
+#### `contains()` {.collection-method}
 
 Phương thức `contains` sẽ xác định xem trong collection đó có chứa item đã cho hay không:
 
@@ -309,12 +309,12 @@ Cuối cùng, bạn cũng có thể truyền vào một callback cho phương th
 Phương thức `contains` sử dụng các phép so sánh "lỏng lẻo" khi kiểm tra các giá trị của item, nghĩa là một chuỗi có giá trị integer sẽ được coi là bằng với một số integer có cùng giá trị. Sử dụng phương thức [`containsStrict`](#method-containsstrict) để so sánh "nghiêm ngặt".
 
 <a name="method-containsstrict"></a>
-#### `containsStrict()` {#collection-method}
+#### `containsStrict()` {.collection-method}
 
 Phương thức này có cùng dạng với phương thức [`contains`](#method-contains); tuy nhiên, tất cả các giá trị được so sánh đều sử dụng phép so sánh "nghiêm ngặt".
 
 <a name="method-count"></a>
-#### `count()` {#collection-method}
+#### `count()` {.collection-method}
 
 Phương thức `count` sẽ trả về tổng số các item trong collection:
 
@@ -325,7 +325,7 @@ Phương thức `count` sẽ trả về tổng số các item trong collection:
     // 4
 
 <a name="method-crossjoin"></a>
-#### `crossJoin()` {#collection-method}
+#### `crossJoin()` {.collection-method}
 
 Phương thức `crossJoin` sẽ join chéo các giá trị của collection vào trong các mảng hoặc các collection đã cho, trả về một tích chéo với tất cả các hoán vị có thể có:
 
@@ -364,7 +364,7 @@ Phương thức `crossJoin` sẽ join chéo các giá trị của collection và
     */
 
 <a name="method-dd"></a>
-#### `dd()` {#collection-method}
+#### `dd()` {.collection-method}
 
 Phương thức `dd` sẽ hiển thi các item có trong collection và dừng thực thi lệnh ngay tại đó:
 
@@ -384,7 +384,7 @@ Phương thức `dd` sẽ hiển thi các item có trong collection và dừng t
 Nếu bạn không muốn dừng thực thi lệnh, thì hãy sử dụng phương thức [`dump`](#method-dump) để thay thế.
 
 <a name="method-diff"></a>
-#### `diff()` {#collection-method}
+#### `diff()` {.collection-method}
 
 Phương thức `diff` so sánh collection với một collection khác hoặc một PHP `array` dựa trên các giá trị của nó. Phương thức này sẽ trả về các giá trị trong collection gốc mà không có giá trị trong collection đã cho:
 
@@ -397,7 +397,7 @@ Phương thức `diff` so sánh collection với một collection khác hoặc m
     // [1, 3, 5]
 
 <a name="method-diffassoc"></a>
-#### `diffAssoc()` {#collection-method}
+#### `diffAssoc()` {.collection-method}
 
 Phương thức `diffAssoc` so sánh collection với một collection khác hoặc một PHP `array` dựa trên các key và value của nó. Phương thức này sẽ trả về các cặp key và value trong collection gốc không có trong collection đã cho:
 
@@ -419,7 +419,7 @@ Phương thức `diffAssoc` so sánh collection với một collection khác ho�
     // ['color' => 'orange', 'remain' => 6]
 
 <a name="method-diffkeys"></a>
-#### `diffKeys()` {#collection-method}
+#### `diffKeys()` {.collection-method}
 
 Phương thức `diffKeys` so sánh collection với một collection khác hoặc một PHP `array` dựa trên các key của nó. Phương thức này sẽ trả về các cặp key và value trong collection gốc không có trong collection đã cho:
 
@@ -443,7 +443,7 @@ Phương thức `diffKeys` so sánh collection với một collection khác ho�
     // ['one' => 10, 'three' => 30, 'five' => 50]
 
 <a name="method-dump"></a>
-#### `dump()` {#collection-method}
+#### `dump()` {.collection-method}
 
 Phương thức `dump` sẽ hiển thị các item của collection:
 
@@ -463,7 +463,7 @@ Phương thức `dump` sẽ hiển thị các item của collection:
 Nếu bạn muốn dừng thực thi lệnh sau khi dump collection, hãy sử dụng phương thức [`dd`](#method-dd) để thay thế.
 
 <a name="method-each"></a>
-#### `each()` {#collection-method}
+#### `each()` {.collection-method}
 
 Phương thức `each` sẽ lặp lại các item trong collection và truyền vào từng item đó một callback:
 
@@ -480,7 +480,7 @@ Nếu bạn muốn dừng lặp qua các item, bạn có thể trả về `false
     });
 
 <a name="method-eachspread"></a>
-#### `eachSpread()` {#collection-method}
+#### `eachSpread()` {.collection-method}
 
 Phương thức `eachSpread` sẽ lặp lại các item của collection, và truyền vào từng giá trị item lồng nhau đó một hàm callback đã cho:
 
@@ -497,7 +497,7 @@ Nếu bạn muốn dừng lặp qua các item còn lại, bạn có thể trả 
     });
 
 <a name="method-every"></a>
-#### `every()` {#collection-method}
+#### `every()` {.collection-method}
 
 Phương thức `every` có thể được sử dụng để xác minh rằng tất cả các element của một collection có pass qua một số điều kiện đã cho hay không:
 
@@ -508,7 +508,7 @@ Phương thức `every` có thể được sử dụng để xác minh rằng t�
     // false
 
 <a name="method-except"></a>
-#### `except()` {#collection-method}
+#### `except()` {.collection-method}
 
 Phương thức `except` trả về tất cả các item trong collection ngoại trừ các item có các key được chỉ định:
 
@@ -523,7 +523,7 @@ Phương thức `except` trả về tất cả các item trong collection ngoạ
 Đối ngược với phương thức `except`, hãy xem phương thức [only](#method-only).
 
 <a name="method-filter"></a>
-#### `filter()` {#collection-method}
+#### `filter()` {.collection-method}
 
 Phương thức `filter` sẽ lọc các collection bằng cách dùng một callback đã cho, và chỉ giữ lại những item mà đã pass qua một số điều kiện đã cho:
 
@@ -548,7 +548,7 @@ Nếu không có callback nào được cung cấp, tất cả các item trong c
 Đối ngược với phương thức `filter`, hãy xem phương thức [reject](#method-reject).
 
 <a name="method-first"></a>
-#### `first()` {#collection-method}
+#### `first()` {.collection-method}
 
 Phương thức `first` sẽ trả về phần tử đầu tiên có trong collection mà đã pass qua một số điều kiện đã cho:
 
@@ -565,7 +565,7 @@ Bạn cũng có thể gọi phương thức `first` mà không có tham số đ�
     // 1
 
 <a name="method-first-where"></a>
-#### `firstWhere()` {#collection-method}
+#### `firstWhere()` {.collection-method}
 
 Phương thức `firstWhere` sẽ trả về phần tử đầu tiên có trong collection với cặp key value đã cho:
 
@@ -587,7 +587,7 @@ Bạn cũng có thể gọi phương thức `firstWhere` bằng toán tử:
     // ['name' => 'Diego', 'age' => 23]
 
 <a name="method-flatmap"></a>
-#### `flatMap()` {#collection-method}
+#### `flatMap()` {.collection-method}
 
 Phương thức `flatMap` lặp qua collection và truyền từng value vào trong một callback đã cho. Callback sẽ sửa đổi value đó và trả về value mới, do đó sẽ tạo nên một collection mới với các value đã được sửa đổi. Sau đó, mảng được trả về sẽ được làm ngang hàng ở một mức:
 
@@ -606,7 +606,7 @@ Phương thức `flatMap` lặp qua collection và truyền từng value vào tr
     // ['name' => 'SALLY', 'school' => 'ARKANSAS', 'age' => '28'];
 
 <a name="method-flatten"></a>
-#### `flatten()` {#collection-method}
+#### `flatten()` {.collection-method}
 
 Phương thức `flatten` sẽ làm ngang hàng một collection đa chiều thành một chiều duy nhất:
 
@@ -643,7 +643,7 @@ Bạn có thể tùy ý truyền vào hàm với một tham số "depth":
 Trong ví dụ trên, nếu gọi `flatten` mà không cung cấp "depth" thì nó cũng sẽ làm ngang hàng đến cả mảng lồng nhau và kết quả sẽ là `['iPhone 6S', 'Apple', 'Galaxy S7', 'Samsung']`. Cung cấp giá trị "depth" cho phép bạn hạn chế các mức của các mảng lồng nhau sẽ được làm ngang hàng.
 
 <a name="method-flip"></a>
-#### `flip()` {#collection-method}
+#### `flip()` {.collection-method}
 
 Phương thức `flip` sẽ hoán đổi các key của collection với các giá trị value tương ứng của chúng:
 
@@ -656,7 +656,7 @@ Phương thức `flip` sẽ hoán đổi các key của collection với các gi
     // ['taylor' => 'name', 'laravel' => 'framework']
 
 <a name="method-forget"></a>
-#### `forget()` {#collection-method}
+#### `forget()` {.collection-method}
 
 Phương thức `forget` sẽ xóa một item ra khỏi collection bằng key của nó:
 
@@ -671,7 +671,7 @@ Phương thức `forget` sẽ xóa một item ra khỏi collection bằng key c�
 > {note} Không giống như hầu hết các phương thức collection khác, `forget` không trả về một collection mới; mà nó sẽ sửa trực tiếp lên collection mà nó được gọi.
 
 <a name="method-forpage"></a>
-#### `forPage()` {#collection-method}
+#### `forPage()` {.collection-method}
 
 Phương thức `forPage` sẽ trả về một collection mới chứa các item sẽ xuất hiện trên một số trang nhất định. Phương thức chấp nhận số trang làm tham số đầu tiên và số item sẽ được hiển thị trong mỗi trang làm tham số thứ hai:
 
@@ -684,7 +684,7 @@ Phương thức `forPage` sẽ trả về một collection mới chứa các ite
     // [4, 5, 6]
 
 <a name="method-get"></a>
-#### `get()` {#collection-method}
+#### `get()` {.collection-method}
 
 Phương thức `get` sẽ trả về item tại một key đã cho. Nếu key không tồn tại, `null` được trả về:
 
@@ -711,7 +711,7 @@ Bạn thậm chí cũng có thể truyền vào một callback như là một gi
     // default-value
 
 <a name="method-groupby"></a>
-#### `groupBy()` {#collection-method}
+#### `groupBy()` {.collection-method}
 
 Phương thức `groupBy` sẽ nhóm các item của collection theo một key đã cho:
 
@@ -799,7 +799,7 @@ Nếu bạn có nhiều tiêu chí nhóm, bạn có thể truyền vào dưới 
     */
 
 <a name="method-has"></a>
-#### `has()` {#collection-method}
+#### `has()` {.collection-method}
 
 Phương thức `has` sẽ xác định nếu một key đã cho có tồn tại trong collection hay không:
 
@@ -810,7 +810,7 @@ Phương thức `has` sẽ xác định nếu một key đã cho có tồn tại
     // true
 
 <a name="method-implode"></a>
-#### `implode()` {#collection-method}
+#### `implode()` {.collection-method}
 
 Phương thức `implode` là kết hợp các item trong một collection. Tham số của nó phụ thuộc vào loại item trong collection. Nếu collection chứa các mảng hoặc các đối tượng, bạn nên truyền key của các thuộc tính mà bạn muốn join và chuỗi "glue" bạn muốn đặt vào giữa các giá trị:
 
@@ -830,7 +830,7 @@ Nếu collection chứa các chuỗi hoặc value số đơn giản, hãy truy�
     // '1-2-3-4-5'
 
 <a name="method-intersect"></a>
-#### `intersect()` {#collection-method}
+#### `intersect()` {.collection-method}
 
 Phương thức `intersect` sẽ loại bỏ bất kỳ value nào ra khỏi collection ban đầu nếu không có trong `array` hoặc collection đã cho. Collection kết quả sẽ còn lại các key của collection gốc:
 
@@ -843,7 +843,7 @@ Phương thức `intersect` sẽ loại bỏ bất kỳ value nào ra khỏi col
     // [0 => 'Desk', 2 => 'Chair']
 
 <a name="method-intersectbykeys"></a>
-#### `intersectByKeys()` {#collection-method}
+#### `intersectByKeys()` {.collection-method}
 
 Phương thức `intersectByKeys` loại bỏ bất kỳ key nào ra khỏi collection ban đầu nếu không có trong `array` hoặc collection đã cho:
 
@@ -860,7 +860,7 @@ Phương thức `intersectByKeys` loại bỏ bất kỳ key nào ra khỏi coll
     // ['type' => 'screen', 'year' => 2009]
 
 <a name="method-isempty"></a>
-#### `isEmpty()` {#collection-method}
+#### `isEmpty()` {.collection-method}
 
 Phương thức `isEmpty` sẽ trả về` true` nếu collection trống; ngược lại, `false` được trả về:
     collect([])->isEmpty();
@@ -868,7 +868,7 @@ Phương thức `isEmpty` sẽ trả về` true` nếu collection trống; ngư�
     // true
 
 <a name="method-isnotempty"></a>
-#### `isNotEmpty()` {#collection-method}
+#### `isNotEmpty()` {.collection-method}
 
 Phương thức `isNotEmpty` sẽ trả về `true` nếu collection không trống; ngược lại, `false` được trả về:
 
@@ -877,7 +877,7 @@ Phương thức `isNotEmpty` sẽ trả về `true` nếu collection không tr�
     // false
 
 <a name="method-keyby"></a>
-#### `keyBy()` {#collection-method}
+#### `keyBy()` {.collection-method}
 
 Phương thức `keyBy` sẽ key hoá collection bằng key đã cho. Nếu nhiều item có cùng key, thì chỉ item cuối cùng sẽ được tạo trong collection mới:
 
@@ -913,7 +913,7 @@ Bạn cũng có thể truyền vào một callback cho phương thức. Callback
     */
 
 <a name="method-keys"></a>
-#### `keys()` {#collection-method}
+#### `keys()` {.collection-method}
 
 Phương thức `keys` sẽ trả về tất cả các key của collection:
 
@@ -929,7 +929,7 @@ Phương thức `keys` sẽ trả về tất cả các key của collection:
     // ['prod-100', 'prod-200']
 
 <a name="method-last"></a>
-#### `last()` {#collection-method}
+#### `last()` {.collection-method}
 
 Phương thức `last` sẽ trả về phần tử cuối cùng có trong collection nếu pass qua một số điều kiện đã cho:
 
@@ -946,17 +946,17 @@ Bạn cũng có thể gọi phương thức `last` không có tham số để l�
     // 4
 
 <a name="method-macro"></a>
-#### `macro()` {#collection-method}
+#### `macro()` {.collection-method}
 
 Phương thức tĩnh `macro` cho phép bạn thêm các phương thức mới vào lớp `Collection` trong thời gian chạy. Tham khảo tài liệu về [extending collections](#extending-collections) để biết thêm thông tin chi tiết.
 
 <a name="method-make"></a>
-#### `make()` {#collection-method}
+#### `make()` {.collection-method}
 
 Phương thức tĩnh `make` sẽ tạo ra một instance collection mới. Xem phần [Tạo collection](#creating-collections).
 
 <a name="method-map"></a>
-#### `map()` {#collection-method}
+#### `map()` {.collection-method}
 
 Phương thức `map` sẽ lặp qua collection và truyền từng item trong collection vào hàm callback đã cho. Hàm callback cho phép bạn có thể sửa đổi các item và trả về item mới, do đó sẽ tạo nên một collection mới với các item đã được sửa:
 
@@ -973,7 +973,7 @@ Phương thức `map` sẽ lặp qua collection và truyền từng item trong c
 > {note} Giống như hầu hết các phương thức collection khác, `map` trả về một instance collection mới; nó không sửa trực tiếp vào collection mà nó được gọi. Nếu bạn muốn sửa đổi trực tiếp vào collection gốc, hãy sử dụng phương thức [`transform`](#method-transform).
 
 <a name="method-mapinto"></a>
-#### `mapInto()` {#collection-method}
+#### `mapInto()` {.collection-method}
 
 Phương thức `mapInto()` sẽ lặp qua collectionp, và tạo một instance mới của một class đã cho bằng cách truyền các giá trị đó vào một hàm khởi tạo:
 
@@ -1000,7 +1000,7 @@ Phương thức `mapInto()` sẽ lặp qua collectionp, và tạo một instance
     // [Currency('USD'), Currency('EUR'), Currency('GBP')]
 
 <a name="method-mapspread"></a>
-#### `mapSpread()` {#collection-method}
+#### `mapSpread()` {.collection-method}
 
 Phương thức `mapSpread` sẽ lặp qua các item của collection, và truyền từng giá trị item bị lồng vào nhau vào hàm callback đã cho. Callback cho phép bạn sửa đổi item và trả về item mới, do đó sẽ tạo thành một collection mới với các item đã được sửa:
 
@@ -1017,7 +1017,7 @@ Phương thức `mapSpread` sẽ lặp qua các item của collection, và truy�
     // [1, 5, 9, 13, 17]
 
 <a name="method-maptogroups"></a>
-#### `mapToGroups()` {#collection-method}
+#### `mapToGroups()` {.collection-method}
 
 Phương thức `mapToGroups` sẽ nhóm các item của collection theo hàm callback đã cho. Callback sẽ trả về một mảng kết hợp có chứa một cặp key giá trị duy nhất, do đó tạo thành một collection gồm các giá trị được nhóm mới:
 
@@ -1054,7 +1054,7 @@ Phương thức `mapToGroups` sẽ nhóm các item của collection theo hàm ca
     // ['John Doe', 'Jane Doe']
 
 <a name="method-mapwithkeys"></a>
-#### `mapWithKeys()` {#collection-method}
+#### `mapWithKeys()` {.collection-method}
 
 Phương thức `mapWithKeys` sẽ lặp qua collection và truyền từng item vào hàm callback đã cho. Hàm callback sẽ trả về một mảng kết hợp có chứa một cặp key value duy nhất:
 
@@ -1085,7 +1085,7 @@ Phương thức `mapWithKeys` sẽ lặp qua collection và truyền từng item
     */
 
 <a name="method-max"></a>
-#### `max()` {#collection-method}
+#### `max()` {.collection-method}
 
 Phương thức `max` sẽ trả về giá trị lớn nhất của một key đã cho:
 
@@ -1098,7 +1098,7 @@ Phương thức `max` sẽ trả về giá trị lớn nhất của một key đ
     // 5
 
 <a name="method-median"></a>
-#### `median()` {#collection-method}
+#### `median()` {.collection-method}
 
 Phương thức `median` sẽ trả về [giá trị trung vị](https://vi.wikipedia.org/wiki/S%E1%BB%91_trung_v%E1%BB%8B) của một key đã cho:
 
@@ -1111,7 +1111,7 @@ Phương thức `median` sẽ trả về [giá trị trung vị](https://vi.wiki
     // 1.5
 
 <a name="method-merge"></a>
-#### `merge()` {#collection-method}
+#### `merge()` {.collection-method}
 
 Phương thức `merge` sẽ merge một mảng hoặc một collection đã cho với một collection gốc. Nếu một key trong các item đã cho, khớp với một key trong collection gốc, thì giá trị của item đã cho đó sẽ ghi đè lên giá trị có trong collection gốc:
 
@@ -1134,7 +1134,7 @@ Nếu các key của các item đã cho là số, thì các giá trị sẽ đư
     // ['Desk', 'Chair', 'Bookcase', 'Door']
 
 <a name="method-min"></a>
-#### `min()` {#collection-method}
+#### `min()` {.collection-method}
 
 Phương thức `min` sẽ trả về giá trị nhỏ nhất của một key đã cho:
 
@@ -1147,7 +1147,7 @@ Phương thức `min` sẽ trả về giá trị nhỏ nhất của một key đ
     // 1
 
 <a name="method-mode"></a>
-#### `mode()` {#collection-method}
+#### `mode()` {.collection-method}
 
 Phương thức `mode` sẽ trả về [giá trị yếu vị](https://vi.wikipedia.org/wiki/S%E1%BB%91_y%E1%BA%BFu_v%E1%BB%8B) của một key đã cho:
 
@@ -1160,7 +1160,7 @@ Phương thức `mode` sẽ trả về [giá trị yếu vị](https://vi.wikipe
     // [1]
 
 <a name="method-nth"></a>
-#### `nth()` {#collection-method}
+#### `nth()` {.collection-method}
 
 Phương thức `nth` sẽ tạo ra một collection mới để chứa các phần tử nằm ở những vị trí (an) với n là khoảng cách muốn lấy của bạn và a là một số nguyên tố tăng dần đều từ 0:
 
@@ -1177,7 +1177,7 @@ Bạn có thể truyền vào một phần bù làm tham số thứ hai và côn
     // ['b', 'f']
 
 <a name="method-only"></a>
-#### `only()` {#collection-method}
+#### `only()` {.collection-method}
 
 Phương thức `only` trả về các item có trong collection với một key được chỉ định:
 
@@ -1192,7 +1192,7 @@ Phương thức `only` trả về các item có trong collection với một key
 Đối ngược với phương thức `only`, hãy xem phương thức [except](#method-except).
 
 <a name="method-pad"></a>
-#### `pad()` {#collection-method}
+#### `pad()` {.collection-method}
 
 Phương thức `pad` sẽ thêm vào mảng các giá trị đã cho cho đến khi mảng đạt được kích thước đã chỉ định. Phương thức này hoạt động giống như hàm PHP [array_pad](https://secure.php.net/manual/en/function.array-pad.php).
 
@@ -1213,7 +1213,7 @@ Phương thức `pad` sẽ thêm vào mảng các giá trị đã cho cho đến
     // [0, 0, 'A', 'B', 'C']
 
 <a name="method-partition"></a>
-#### `partition()` {#collection-method}
+#### `partition()` {.collection-method}
 
 Phương thức `partition` có thể được kết hợp với hàm PHP `list` để tách ra các phần tử mà đã pass được qua điều kiện và các phần tử không pass được điều kiện:
 
@@ -1224,7 +1224,7 @@ Phương thức `partition` có thể được kết hợp với hàm PHP `list`
     });
 
 <a name="method-pipe"></a>
-#### `pipe()` {#collection-method}
+#### `pipe()` {.collection-method}
 
 Phương thức `pipe` sẽ truyền collection đến một callback đã cho và trả về kết quả của callback đó:
 
@@ -1237,7 +1237,7 @@ Phương thức `pipe` sẽ truyền collection đến một callback đã cho v
     // 6
 
 <a name="method-pluck"></a>
-#### `pluck()` {#collection-method}
+#### `pluck()` {.collection-method}
 
 Phương thức `pluck` sẽ lấy ra tất cả các giá trị của một key đã cho:
 
@@ -1261,7 +1261,7 @@ Bạn cũng có thể khai báo thêm key mà bạn muốn dùng từ collection
     // ['prod-100' => 'Desk', 'prod-200' => 'Chair']
 
 <a name="method-pop"></a>
-#### `pop()` {#collection-method}
+#### `pop()` {.collection-method}
 
 Phương thức `pop` sẽ xóa và trả về item cuối cùng từ collection:
 
@@ -1276,7 +1276,7 @@ Phương thức `pop` sẽ xóa và trả về item cuối cùng từ collection
     // [1, 2, 3, 4]
 
 <a name="method-prepend"></a>
-#### `prepend()` {#collection-method}
+#### `prepend()` {.collection-method}
 
 Phương thức `prepend` sẽ thêm một item vào đầu collection:
 
@@ -1299,7 +1299,7 @@ Bạn cũng có thể truyền vào một tham số thứ hai để set key củ
     // ['zero' => 0, 'one' => 1, 'two' => 2]
 
 <a name="method-pull"></a>
-#### `pull()` {#collection-method}
+#### `pull()` {.collection-method}
 
 Phương thức `pull` sẽ loại bỏ và trả về một item từ collectionp bằng key của nó:
 
@@ -1314,7 +1314,7 @@ Phương thức `pull` sẽ loại bỏ và trả về một item từ collectio
     // ['product_id' => 'prod-100']
 
 <a name="method-push"></a>
-#### `push()` {#collection-method}
+#### `push()` {.collection-method}
 
 Phương thức `push` sẽ nối thêm một item vào cuối collection:
 
@@ -1327,7 +1327,7 @@ Phương thức `push` sẽ nối thêm một item vào cuối collection:
     // [1, 2, 3, 4, 5]
 
 <a name="method-put"></a>
-#### `put()` {#collection-method}
+#### `put()` {.collection-method}
 
 Phương thức `put` sẽ set key và giá trị của nó vào trong collection:
 
@@ -1340,7 +1340,7 @@ Phương thức `put` sẽ set key và giá trị của nó vào trong collectio
     // ['product_id' => 1, 'name' => 'Desk', 'price' => 100]
 
 <a name="method-random"></a>
-#### `random()` {#collection-method}
+#### `random()` {.collection-method}
 
 Phương thức `Random` sẽ trả về một item ngẫu nhiên từ collection:
 
@@ -1361,7 +1361,7 @@ Bạn có thể thêm một tùy chọn là một số nguyên tố cho hàm `ra
 Nếu collection có ít item hơn yêu cầu, phương thức sẽ đưa ra một exception `InvalidArgumentException`.
 
 <a name="method-reduce"></a>
-#### `reduce()` {#collection-method}
+#### `reduce()` {.collection-method}
 
 Phương thức `reduce` sẽ biến một collection thành một giá trị duy nhất, và nó sẽ chuyển kết quả của lần lặp trước vào trong lần lặp tiếp theo:
 
@@ -1382,7 +1382,7 @@ Giá trị cho `$carry` trong lần lặp đầu tiên là `null`; tuy nhiên, b
     // 10
 
 <a name="method-reject"></a>
-#### `reject()` {#collection-method}
+#### `reject()` {.collection-method}
 
 Phương thức `reject` sẽ lọc một collection bằng cách sử dụng hàm callback đã cho. Hàm callback sẽ trả về `true` nếu item đó sẽ bị xóa bỏ khỏi collection kết quả:
 
@@ -1399,7 +1399,7 @@ Phương thức `reject` sẽ lọc một collection bằng cách sử dụng h�
 Đối ngược với phương thức `reject`, hãy xem phương thức [`filter`](#method-filter).
 
 <a name="method-reverse"></a>
-#### `reverse()` {#collection-method}
+#### `reverse()` {.collection-method}
 
 Phương thức `reverse` sẽ đảo ngược thứ tự của các item của collection, giữ nguyên các key gốc:
 
@@ -1420,7 +1420,7 @@ Phương thức `reverse` sẽ đảo ngược thứ tự của các item của 
     */
 
 <a name="method-search"></a>
-#### `search()` {#collection-method}
+#### `search()` {.collection-method}
 
 Phương thức `search` sẽ tìm kiếm trong collection với một giá trị đã cho và trả về key của nó nếu được tìm thấy. Nếu item không được tìm thấy, `false` được trả về.
 
@@ -1445,7 +1445,7 @@ Ngoài ra, bạn có thể truyền vào một callback của chính bạn để
     // 2
 
 <a name="method-shift"></a>
-#### `shift()` {#collection-method}
+#### `shift()` {.collection-method}
 
 Phương thức `shift` sẽ loại bỏ và trả về item đầu tiên của collection:
 
@@ -1460,7 +1460,7 @@ Phương thức `shift` sẽ loại bỏ và trả về item đầu tiên của 
     // [2, 3, 4, 5]
 
 <a name="method-shuffle"></a>
-#### `shuffle()` {#collection-method}
+#### `shuffle()` {.collection-method}
 
 Phương thức `shuffle` sẽ xáo trộn ngẫu nhiên các item trong collection:
 
@@ -1473,7 +1473,7 @@ Phương thức `shuffle` sẽ xáo trộn ngẫu nhiên các item trong collect
     // [3, 2, 5, 1, 4] - (generated randomly)
 
 <a name="method-slice"></a>
-#### `slice()` {#collection-method}
+#### `slice()` {.collection-method}
 
 Phương thức `slice` sẽ trả về các phần của collection bắt đầu từ index đã cho:
 
@@ -1496,7 +1496,7 @@ Nếu bạn muốn giới hạn kích thước của phần được trả về,
 Phần được trả lại sẽ mặc định giữ nguyên các key. Nếu bạn không muốn giữ các key gốc, bạn có thể sử dụng phương thức [`values`](#method-values) để reindex lại chúng.
 
 <a name="method-sort"></a>
-#### `sort()` {#collection-method}
+#### `sort()` {.collection-method}
 
 Phương thức `sort` sẽ giúp sắp xếp collection. Collection được sắp xếp sẽ giữ nguyên các key gốc, vì vậy trong ví dụ này, chúng ta sẽ sử dụng phương thức [`values`](#method-values) để set lại các key thành các index được đánh số theo thứ tự:
 
@@ -1513,7 +1513,7 @@ Nếu bạn cần xắp sếp nâng cao hơn, bạn có thể truyền vào mộ
 > {tip} Nếu bạn cần sắp xếp một collection là các mảng hoặc các object lồng nhau, hãy xem thêm các phương thức [`sortBy`](#method-sortby) và [`sortByDesc`](#method-sortbydesc).
 
 <a name="method-sortby"></a>
-#### `sortBy()` {#collection-method}
+#### `sortBy()` {.collection-method}
 
 Phương thức `sortBy` sẽ sắp xếp collection theo một key đã cho. Collection đã được sắp xếp sẽ giữ các key gốc, vì vậy trong ví dụ này, chúng tôi sẽ sử dụng phương thức [`values`](#method-values) để set lại các key thành các chỉ mục được đánh số theo thứ tự:
 
@@ -1558,12 +1558,12 @@ Bạn cũng có thể truyền vào một callback của riêng bạn để xác
     */
 
 <a name="method-sortbydesc"></a>
-#### `sortByDesc()` {#collection-method}
+#### `sortByDesc()` {.collection-method}
 
 Phương thức này có cùng chức năng với phương thức [`sortBy`](#method-sortby), nhưng sẽ sắp xếp collection theo thứ tự ngược lại.
 
 <a name="method-splice"></a>
-#### `splice()` {#collection-method}
+#### `splice()` {.collection-method}
 
 Phương thức `splice` sẽ loại bỏ và trả về một phần các item bắt đầu từ index được khai báo:
 
@@ -1608,7 +1608,7 @@ Ngoài ra, bạn có thể truyền vào tham số thứ ba chứa các item m�
     // [1, 2, 10, 11, 4, 5]
 
 <a name="method-split"></a>
-#### `split()` {#collection-method}
+#### `split()` {.collection-method}
 
 Phương thức `split` sẽ chia một collection thành một số nhóm:
 
@@ -1621,7 +1621,7 @@ Phương thức `split` sẽ chia một collection thành một số nhóm:
     // [[1, 2], [3, 4], [5]]
 
 <a name="method-sum"></a>
-#### `sum()` {#collection-method}
+#### `sum()` {.collection-method}
 
 Phương thức `sum` sẽ trả về tổng của tất cả các item trong collection:
 
@@ -1655,7 +1655,7 @@ Ngoài ra, bạn có thể truyền vào một callback của chính bạn để
     // 6
 
 <a name="method-take"></a>
-#### `take()` {#collection-method}
+#### `take()` {.collection-method}
 
 Phương thức `Take` sẽ trả về một collection mới với một số lượng item được chỉ định:
 
@@ -1678,7 +1678,7 @@ Bạn cũng có thể truyền vào một số âm để lấy số lượng ite
     // [4, 5]
 
 <a name="method-tap"></a>
-#### `tap()` {#collection-method}
+#### `tap()` {.collection-method}
 
 Phương thức `tap` sẽ truyền collection đến một callback đã cho, cho phép bạn "tap" vào collection tại một điểm cụ thể và làm một cái gì đó với các item trong khi không ảnh hưởng đến chính collection:
 
@@ -1692,7 +1692,7 @@ Phương thức `tap` sẽ truyền collection đến một callback đã cho, c
     // 1
 
 <a name="method-times"></a>
-#### `times()` {#collection-method}
+#### `times()` {.collection-method}
 
 Phương thức tĩnh `times` sẽ tạo ra một collection mới bằng cách gọi hàm callback với một số lần nhất định:
 
@@ -1721,7 +1721,7 @@ Phương pháp này có thể hữu ích khi được kết hợp với các fac
     */
 
 <a name="method-toarray"></a>
-#### `toArray()` {#collection-method}
+#### `toArray()` {.collection-method}
 
 Phương thức `toArray` sẽ chuyển đổi collection thành một PHP `array`. Nếu các giá trị của collection là các model [Eloquent](/docs/{{version}}/eloquent), thì các mdoel này cũng sẽ được chuyển đổi thành mảng:
 
@@ -1738,7 +1738,7 @@ Phương thức `toArray` sẽ chuyển đổi collection thành một PHP `arra
 > {note} `toArray` cũng sẽ chuyển đổi tất cả các đối tượng có trong collection thành một mảng kể cả các đối tượng nằm sâu bên trong mảng. Nếu bạn muốn lấy một mảng của các đối tượng, thì bạn có thể sử dụng phương thức [`all`](#method-all).
 
 <a name="method-tojson"></a>
-#### `toJson()` {#collection-method}
+#### `toJson()` {.collection-method}
 
 Phương thức `toJson` sẽ chuyển đổi một collection thành một chuỗi JSON:
 
@@ -1749,7 +1749,7 @@ Phương thức `toJson` sẽ chuyển đổi một collection thành một chu�
     // '{"name":"Desk", "price":200}'
 
 <a name="method-transform"></a>
-#### `transform()` {#collection-method}
+#### `transform()` {.collection-method}
 
 Phương thức `Transform` sẽ lặp collection và gọi hàm callback đã cho với từng item có trong collection. Các item có trong collection sẽ được thay thế bằng một giá trị mới được trả về bởi hàm callback:
 
@@ -1766,7 +1766,7 @@ Phương thức `Transform` sẽ lặp collection và gọi hàm callback đã c
 > {note} Không giống như hầu hết các phương thức collection khác, `transform` sẽ trực tiếp sửa vào collection. Nếu bạn muốn tạo một collection mới, hãy sử dụng phương thức [`map`](#method-map).
 
 <a name="method-union"></a>
-#### `union()` {#collection-method}
+#### `union()` {.collection-method}
 
 Phương thức `union` sẽ thêm một mảng đã cho vào collection. Nếu mảng đã cho có chứa các khóa đã có trong collection gốc, thì các giá trị của collection gốc sẽ được ưu tiên:
 
@@ -1779,7 +1779,7 @@ Phương thức `union` sẽ thêm một mảng đã cho vào collection. Nếu 
     // [1 => ['a'], 2 => ['b'], 3 => ['c']]
 
 <a name="method-unique"></a>
-#### `unique()` {#collection-method}
+#### `unique()` {.collection-method}
 
 Phương thức `unique` sẽ trả về tất cả các item duy nhất có trong collection. Collection được trả về sẽ giữ nguyên các key gốc, vì vậy trong ví dụ này, chúng ta sẽ sử dụng phương thức [`values`](#method-values) để set lại các key gốc đó thành các index được đánh số theo thứ tự:
 
@@ -1832,12 +1832,12 @@ Bạn cũng có thể truyền vào một callback của bạn để xác địn
 Phương thức `unique` sử dụng các phép so sánh "lỏng lẻo" khi kiểm tra các giá trị item, nghĩa là một chuỗi có giá trị integer sẽ được coi là bằng với một số integer có cùng giá trị. Sử dụng phương thức [`uniqueStrict`](#method-uniquestrict) để lọc bằng các so sánh "nghiêm ngặt".
 
 <a name="method-uniquestrict"></a>
-#### `uniqueStrict()` {#collection-method}
+#### `uniqueStrict()` {.collection-method}
 
 Phương thức này có cùng chức năng với phương thức [`unique`](#method-unique); tuy nhiên, tất cả các giá trị được so sánh sẽ sử dụng so sánh "nghiêm ngặt".
 
 <a name="method-unless"></a>
-#### `unless()` {#collection-method}
+#### `unless()` {.collection-method}
 
 Phương thức `unless` sẽ chạy hàm callback đã cho nếu như tham số đầu tiên được cung cấp cho phương thức này là khác `true`:
 
@@ -1858,7 +1858,7 @@ Phương thức `unless` sẽ chạy hàm callback đã cho nếu như tham số
 Đối ngược với phương thức `unless`, hãy xem phương thức [`when`](#method-when).
 
 <a name="method-unwrap"></a>
-#### `unwrap()` {#collection-method}
+#### `unwrap()` {.collection-method}
 
 Phương thức tĩnh `unwrap` sẽ trả về các item mà không được bao bọc trong collection:
 
@@ -1875,7 +1875,7 @@ Phương thức tĩnh `unwrap` sẽ trả về các item mà không được bao
     // 'John Doe'
 
 <a name="method-values"></a>
-#### `values()` {#collection-method}
+#### `values()` {.collection-method}
 
 Phương thức `value` trả về một collection mới với các key đã được sắp xếp theo thứ tự:
 
@@ -1896,7 +1896,7 @@ Phương thức `value` trả về một collection mới với các key đã đ
     */
 
 <a name="method-when"></a>
-#### `when()` {#collection-method}
+#### `when()` {.collection-method}
 
 Phương thức `when` sẽ chạy callback đã cho khi mà tham số đầu tiên trả về giá trị `true`:
 
@@ -1917,7 +1917,7 @@ Phương thức `when` sẽ chạy callback đã cho khi mà tham số đầu ti
 Đối ngược với phương thức `when`, hãy xem phương thức [`unless`](#method-unless).
 
 <a name="method-where"></a>
-#### `where()` {#collection-method}
+#### `where()` {.collection-method}
 
 Phương thức `where` sẽ lọc collection theo giá trị của cặp key và value:
 
@@ -1942,12 +1942,12 @@ Phương thức `where` sẽ lọc collection theo giá trị của cặp key v�
 Phương thức `where` sẽ sử dụng phép so sánh "lỏng lẻo" khi kiểm tra các giá trị của item, nghĩa là một chuỗi có giá trị integer sẽ bằng với một số integer có cùng giá trị. Sử dụng phương thức [`whereStrict`](#method-wherestrict) để lọc collection bằng các so sánh "nghiêm ngặt".
 
 <a name="method-wherestrict"></a>
-#### `whereStrict()` {#collection-method}
+#### `whereStrict()` {.collection-method}
 
 Phương thức này có cùng chức năng với phương thức [`where`](#method-where); tuy nhiên, tất cả các giá trị đều được so sánh bằng cách sử dụng so sánh "nghiêm ngặt".
 
 <a name="method-wherein"></a>
-#### `whereIn()` {#collection-method}
+#### `whereIn()` {.collection-method}
 
 Phương thức `whereIn` sẽ lọc collection theo cặp key và value, trong đó value sẽ phải có trong mảng đã cho:
 
@@ -1972,12 +1972,12 @@ Phương thức `whereIn` sẽ lọc collection theo cặp key và value, trong 
 Phương thức `whereIn` sử dụng phép so sánh "lỏng lẻo" khi kiểm tra các giá trị của item, nghĩa là một chuỗi có giá trị integer sẽ bằng với một số integer có cùng giá trị. Sử dụng phương thức [`whereInStrict`](#method-whereinstrict) để lọc collection bằng các so sánh "nghiêm ngặt".
 
 <a name="method-whereinstrict"></a>
-#### `whereInStrict()` {#collection-method}
+#### `whereInStrict()` {.collection-method}
 
 Phương thức này có cùng chức năng với phương thức [`whereIn`](#method-wherein); tuy nhiên, tất cả các giá trị đều được so sánh bằng cách sử dụng so sánh "nghiêm ngặt".
 
 <a name="method-wherenotin"></a>
-#### `whereNotIn()` {#collection-method}
+#### `whereNotIn()` {.collection-method}
 
 Phương thức `whereNotIn` sẽ lọc collection theo cặp key và value, trong đó value sẽ không có trong mảng đã cho:
 
@@ -2002,12 +2002,12 @@ Phương thức `whereNotIn` sẽ lọc collection theo cặp key và value, tro
 Phương thức `whereNotIn` sử dụng phép so sánh "lỏng lẻo" khi kiểm tra các giá trị item, nghĩa là một chuỗi có giá trị integer sẽ bằng với một số integer có cùng giá trị. Sử dụng phương thức [`whereNotInStrict`](#method-wherenotinstrict) để lọc collection bằng các so sánh "nghiêm ngặt".
 
 <a name="method-wherenotinstrict"></a>
-#### `whereNotInStrict()` {#collection-method}
+#### `whereNotInStrict()` {.collection-method}
 
 Phương thức này có cùng chức năng với phương thức [`whereNotIn`](#method-wherenotin); tuy nhiên, tất cả các giá trị đều được so sánh bằng cách sử dụng so sánh "nghiêm ngặt".
 
 <a name="method-wrap"></a>
-#### `wrap()` {#collection-method}
+#### `wrap()` {.collection-method}
 
 Phương thức tĩnh `wrap` sẽ bao bọc giá trị đã cho trong một collection khi được áp dụng:
 
@@ -2030,7 +2030,7 @@ Phương thức tĩnh `wrap` sẽ bao bọc giá trị đã cho trong một coll
     // ['John Doe']
 
 <a name="method-zip"></a>
-#### `zip()` {#collection-method}
+#### `zip()` {.collection-method}
 
 Phương thức `zip` sẽ nối các giá trị của mảng đã cho với các giá trị của collection tại index tương ứng:
 

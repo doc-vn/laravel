@@ -26,11 +26,13 @@ File cấu hình cho session sẽ được lưu trữ tại `config/session.php`
 Tham số `driver` sẽ khai báo nơi mà dữ liệu của session sẽ được lưu trữ cho mỗi request. Mặc định, Laravel đã có sẵn một số driver:
 
 <div class="content-list" markdown="1">
+
 - `file` - sessions được lưu ở file `storage/framework/sessions`.
 - `cookie` - sessions được lưu trữ trong cookie và đã được mã hóa.
 - `database` - sessions được lưu trữ trong cơ sở dữ liệu.
 - `memcached` / `redis` - sessions được lưu trữ ở trong những cache base này.
 - `array` - sessions được lưu trữ trong một mảng PHP và sẽ không được duy trì.
+
 </div>
 
 > {tip} Array driver sẽ được sử dụng trong các [testing](/docs/{{version}}/testing) để ngăn việc dữ liệu được lưu trữ trong session.
@@ -219,12 +221,14 @@ Driver session tùy chỉnh của bạn sẽ cần phải implement từ `Sessio
 Vì mục đích của những phương thức này là không dễ hiểu, chúng ta hãy nhanh chóng xem những gì mà mỗi phương thức làm:
 
 <div class="content-list" markdown="1">
+
 - Phương thức `open` thường được sử dụng trong các hệ thống lưu trữ session dựa trên file. Vì Laravel đã định nghĩa driver session `file`, nên bạn sẽ không cần phải lưu bất cứ thứ gì vào trong phương thức này. Bạn có thể để nó trống. Đó là một thực tế của interface design kém (mà chúng ta sẽ thảo luận sau) nhưng PHP yêu cầu chúng ta implement phương thức này.
 - Phương thức `close`, giống như phương thức` open`, thường có thể bị bỏ qua. Đối với hầu hết các driver, nó là không cần thiết.
 - Phương thức `read` sẽ trả về string của dữ liệu session được liên kết với `$sessionId` đã cho. Bạn sẽ không cần thực hiện bất kỳ việc chuyển đổi hoặc encoding nào khác khi truy xuất hoặc lưu trữ dữ liệu session vào trong driver của bạn, vì Laravel sẽ thực hiện việc chuyển đổi cho bạn.
 - Phương thức `write` sẽ viết chuỗi `$data` đã cho liên kết với một `$sessionId` vào trong một số hệ thống lưu trữ, chẳng hạn như MongoDB, Dynamo, vv. Một lần nữa, bạn không nên thực hiện bất kỳ chuyển đổi nào - Laravel sẽ xử lý điều đó cho bạn.
 - Phương thức `destroy` sẽ xóa dữ liệu được liên kết với `$sessionId` ra khỏi bộ lưu trữ.
 - Phương thức `gc` sẽ hủy tất cả dữ liệu session cũ hơn so với `$lifetime` đã cho, đó là UNIX timestamp. Đối với các hệ thống tự hết hạn như Memcached và Redis, phương thức này có thể bị bỏ trống.
+
 </div>
 
 <a name="registering-the-driver"></a>

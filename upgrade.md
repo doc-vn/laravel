@@ -341,11 +341,13 @@ Helper `request` sẽ không lấy ra các key lồng nhau. Nếu cần, bạn c
 Một số hàm kiểm tra authentication đã được đổi tên để thống nhất với các hàm kiểm tra còn lại của framework:
 
 <div class="content-list" markdown="1">
+
 - `seeIsAuthenticated` đổi thành `assertAuthenticated`.
 - `dontSeeIsAuthenticated` đổi thành `assertGuest`.
 - `seeIsAuthenticatedAs` đổi thành `assertAuthenticatedAs`.
 - `seeCredentials` đổi thành `assertCredentials`.
 - `dontSeeCredentials` đổi thành `assertInvalidCredentials`.
+
 </div>
 
 #### Mail Fake

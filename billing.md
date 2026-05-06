@@ -100,9 +100,11 @@ Cuối cùng, bạn sẽ cần cấu hình key Stripe trong file cấu hình `se
 Đối với nhiều hành động, việc sử dụng Stripe hoặc Braintree cho các chức năng Cashier là như nhau. Cả hai dịch vụ đều cung cấp thanh toán subscription bằng thẻ tín dụng nhưng Braintree thì có hỗ trợ thêm thanh toán qua PayPal. Nhưng, Braintree cũng thiếu một số tính năng mà được Stripe hỗ trợ. Bạn nên đọc những điều sau để quyết định xem nên sử dụng Stripe hay Braintree:
 
 <div class="content-list" markdown="1">
+
 - Braintree hỗ trợ PayPal trong khi Stripe thì không.
 - Braintree không hỗ trợ các phương thức `tăng` hoặc `giảm` các subscription. Đây là một hạn chế của Braintree, không phải là hạn chế của Cashier.
 - Braintree không hỗ trợ giảm giá dựa trên tỷ lệ phần trăm. Đây là một hạn chế của Braintree, không phải là hạn chế của Cashier.
+
 </div>
 
 #### Composer

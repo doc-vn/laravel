@@ -79,9 +79,11 @@ Nếu connection Redis của bạn sử dụng một Cluster Redis, thì tên qu
 Các library sau sẽ cần thiết cho driver queue cũng sẽ được liệt kê:
 
 <div class="content-list" markdown="1">
+
 - Amazon SQS: `aws/aws-sdk-php ~3.0`
 - Beanstalkd: `pda/pheanstalk ~3.0`
 - Redis: `predis/predis ~1.0`
+
 </div>
 
 <a name="creating-jobs"></a>

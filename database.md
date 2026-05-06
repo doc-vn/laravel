@@ -14,10 +14,12 @@
 Laravel làm cho việc tương tác với cơ sở dữ liệu trở nên cực kỳ đơn giản trên nhiều loại cơ sở dữ liệu bằng cách sử dụng raw SQL, [fluent query builder](/docs/{{version}}/queries) và [Eloquent ORM](/docs/{{version}}/eloquent). Hiện tại, Laravel hỗ trợ bốn loại cơ sở dữ liệu:
 
 <div class="content-list" markdown="1">
+
 - MySQL
 - PostgreSQL
 - SQLite
 - SQL Server
+
 </div>
 
 <a name="configuration"></a>

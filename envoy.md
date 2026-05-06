@@ -159,7 +159,6 @@ Nếu bạn muốn được nhắc xác nhận trước khi chạy một task n�
     @endtask
 
 <a name="notifications"></a>
-<a name="hipchat-notifications"></a>
 ## Thông báo
 
 <a name="slack"></a>
@@ -174,7 +173,9 @@ Envoy cũng hỗ trợ gửi thông báo tới [Slack](https://slack.com) sau kh
 Bạn có thể cung cấp thêm một trong số lựa chọn sau đây để làm tham số cho channel:
 
 <div class="content-list" markdown="1">
+
 - Để gửi thông báo tới một channel: `#channel`
 - Để gửi thông báo cho một người dùng: `@user`
+
 </div>
 

@@ -41,6 +41,7 @@ Homestead có thể chạy nhiều hệ điều hành Windows, Mac, hoặc Linux
 ### Software cài đặt sẵn
 
 <div class="content-list" markdown="1">
+
 - Ubuntu 16.04
 - Git
 - PHP 7.2
@@ -61,6 +62,7 @@ Homestead có thể chạy nhiều hệ điều hành Windows, Mac, hoặc Linux
 - Mailhog
 - Elasticsearch (Optional)
 - ngrok
+
 </div>
 
 <a name="installation-and-setup"></a>
