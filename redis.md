@@ -13,7 +13,7 @@
 <a name="introduction"></a>
 ## Giới thiệu
 
-[Redis](https://redis.io) là một dự án mã nguồn mở, dùng để lưu trữ các giá trị key-value. Nó thường được coi như là một server cấu trúc dữ liệu vì các key của nó có thể lưu [strings](https://redis.io/docs/data-types/strings/), [hashes](https://redis.io/docs/data-types/hashes/), [lists](https://redis.io/docs/data-types/lists/), [sets](https://redis.io/docs/data-types/sets/), và [sorted sets](https://redis.io/docs/data-types/sorted-sets/).
+[Redis](https://redis.io) là một dự án mã nguồn mở, dùng để lưu trữ các giá trị key-value. Nó thường được coi như là một server cấu trúc dữ liệu vì các key của nó có thể lưu [strings](https://redis.io/docs/latest/develop/data-types/strings/), [hashes](https://redis.io/docs/latest/develop/data-types/hashes/), [lists](https://redis.io/docs/latest/develop/data-types/lists/), [sets](https://redis.io/docs/latest/develop/data-types/sets/), và [sorted sets](https://redis.io/docs/latest/develop/data-types/sorted-sets/).
 
 Trước khi sử dụng Redis cho Laravel, chúng tôi khuyến khích bạn cài đặt và sử dụng extension [PhpRedis](https://github.com/phpredis/phpredis) của PHP thông qua PECL. Extension này phức tạp hơn để cài đặt compared to "user-land" PHP packages nhưng có thể mang lại hiệu suất tốt hơn cho các ứng dụng mà sử dụng nhiều Redis. Nếu bạn đang sử dụng [Laravel Sail](/docs/{{version}}/sail), thì extension này đã được cài đặt sẵn trong Docker container của ứng dụng của bạn.
 

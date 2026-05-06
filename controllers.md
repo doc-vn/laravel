@@ -114,11 +114,10 @@ Hoặc, bạn có thể thấy thuận tiện hơn khi khai báo middleware đó
 
     namespace App\Http\Controllers;
 
-    use App\Http\Controllers\Controller;
     use Illuminate\Routing\Controllers\HasMiddleware;
     use Illuminate\Routing\Controllers\Middleware;
 
-    class UserController extends Controller implements HasMiddleware
+    class UserController implements HasMiddleware
     {
         /**
          * Get the middleware that should be assigned to the controller.

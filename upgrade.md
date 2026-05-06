@@ -435,7 +435,7 @@ public function scalar($query, $bindings = [], $useReadPdo = true);
 
 **Likelihood Of Impact: Medium**
 
-Laravel 11 hỗ trợ cả Carbon 2 và Carbon 3. Carbon là một thư viện thao tác ngày tháng năm được sử dụng rộng rãi bởi Laravel và các package trong hệ sinh thái. Nếu bạn nâng cấp lên Carbon 3, hãy lưu ý rằng các phương thức `diffIn*` bây giờ sẽ trả về một số float và có thể trả về giá trị âm để chỉ hướng thời gian, đây là một thay đổi đáng kể so với Carbon 2. Hãy xem [change log](https://github.com/briannesbitt/Carbon/releases/tag/3.0.0) và [tài liệu](https://carbon.nesbot.com/docs/#api-carbon-3) của Carbon để biết thông tin chi tiết về cách xử lý những thay đổi này và các thay đổi khác.
+Laravel 11 hỗ trợ cả Carbon 2 và Carbon 3. Carbon là một thư viện thao tác ngày tháng năm được sử dụng rộng rãi bởi Laravel và các package trong hệ sinh thái. Nếu bạn nâng cấp lên Carbon 3, hãy lưu ý rằng các phương thức `diffIn*` bây giờ sẽ trả về một số float và có thể trả về giá trị âm để chỉ hướng thời gian, đây là một thay đổi đáng kể so với Carbon 2. Hãy xem [change log](https://github.com/briannesbitt/Carbon/releases/tag/3.0.0) và [tài liệu](https://carbon.nesbot.com/guide/getting-started/migration.html) của Carbon để biết thông tin chi tiết về cách xử lý những thay đổi này và các thay đổi khác.
 
 <a name="mail"></a>
 ### Mail
