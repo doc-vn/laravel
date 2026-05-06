@@ -13,6 +13,8 @@
     - [Sail trên Linux](#sail-on-linux)
     - [Chọn service Sail bạn dùng](#choosing-your-sail-services)
 - [IDE Support](#ide-support)
+- [Laravel and AI](#laravel-and-ai)
+    - [Installing Laravel Boost](#installing-laravel-boost)
 - [Bước tiếp theo](#next-steps)
     - [Laravel cho Full Stack](#laravel-the-fullstack-framework)
     - [Laravel cho backend api](#laravel-the-api-backend)
@@ -264,6 +266,37 @@ curl -s "https://laravel.build/example-app?with=mysql,redis&devcontainer" | bash
 Bạn có thể thoải mái sử dụng bất kỳ trình code editor nào mà bạn muốn khi phát triển các ứng dụng Laravel; tuy nhiên, [PhpStorm](https://www.jetbrains.com/phpstorm/laravel/) cung cấp hỗ trợ toàn diện cho Laravel và hệ sinh thái của nó, bao gồm cả [Laravel Pint](https://www.jetbrains.com/help/phpstorm/using-laravel-pint.html).
 
 Ngoài ra, cộng đồng cũng duy trì [Laravel Idea](https://laravel-idea.com/), một Plugin PhpStorm cung cấp nhiều tiện ích bổ sung cho IDE, bao gồm việc tạo code, gợi ý cú pháp Eloquent, gợi ý rule validation...
+
+<a name="laravel-and-ai"></a>
+## Laravel and AI
+
+[Laravel Boost](https://github.com/laravel/boost) là một công cụ mạnh mẽ giúp thu hẹp khoảng cách giữa các AI coding agent và các ứng dụng Laravel. Boost cung cấp cho các AI agent cùng với các ngữ cảnh, công cụ và hướng dẫn cụ thể cho Laravel để chúng có thể tạo ra code chính xác hơn, phù hợp với phiên bản và tuân thủ các quy ước của Laravel.
+
+Khi cài đặt Boost vào ứng dụng Laravel, các AI agent sẽ có quyền truy cập vào hơn 15 công cụ chuyên dụng, bao gồm khả năng nhận diện các package đang sử dụng, truy vấn cơ sở dữ liệu, tìm kiếm tài liệu Laravel, đọc log trình duyệt, tạo test và thực thi code thông qua Tinker.
+
+Ngoài ra, Boost cung cấp cho các AI agent quyền truy cập vào hơn 17.000 tài liệu hệ sinh thái Laravel đã được vector hóa, dành riêng cho các phiên bản package mà bạn đã cài đặt. Điều này có nghĩa là các agent có thể cung cấp các hướng dẫn nhắm mục tiêu chính xác hơn đến các phiên bản mà dự án của bạn đang sử dụng.
+
+Boost cũng chứa các hướng dẫn AI do Laravel phát triển nhằm giúp các agent tuân thủ các quy ước của framework, viết các test phù hợp và tránh các lỗi phổ biến khi tạo code Laravel.
+
+<a name="installing-laravel-boost"></a>
+### Installing Laravel Boost
+
+Boost có thể được cài đặt trong các ứng dụng Laravel 10, 11, 12, và 13 chạy PHP 8.1 trở lên. Để bắt đầu, hãy cài đặt Boost như một development dependency:
+
+```shell
+composer require laravel/boost --dev
+```
+
+Sau khi cài đặt, hãy chạy installer:
+
+```shell
+php artisan boost:install
+```
+
+Installer sẽ tự động nhận diện IDE và các AI agent của bạn, cho phép bạn lựa chọn các tính năng phù hợp với dự án của mình. Boost tôn trọng các quy ước dự án hiện có và mặc định không ép buộc các quy tắc style mang tính quan điểm.
+
+> [!NOTE]
+Để tìm hiểu thêm về Boost, hãy xem [repository Laravel Boost trên GitHub](https://github.com/laravel/boost).
 
 <a name="next-steps"></a>
 ## Bước tiếp theo

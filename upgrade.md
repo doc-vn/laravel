@@ -131,7 +131,7 @@ Phương thức `registerPolicies` của `AuthServiceProvider` bây giờ đã �
 
 **Likelihood Of Impact: Medium**
 
-Việc sử dụng `Cache::tags()` chỉ được khuyến cáo cho các ứng dụng sử dụng Memcached. Nếu bạn đang sử dụng Redis làm driver cache cho ứng dụng, bạn nên cân nhắc chuyển sang Memcached hoặc sử dụng một giải pháp thay thế.
+Việc sử dụng `Cache::tags()` chỉ được khuyến cáo cho các ứng dụng sử dụng Memcached. Nếu bạn đang sử dụng Redis làm driver cache cho ứng dụng, bạn nên cân nhắc chuyển sang Memcached hoặc nâng cấp ứng dụng của bạn lên Laravel [12.30.0](https://github.com/laravel/framework/pull/57098).
 
 ### Database
 
