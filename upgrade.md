@@ -423,7 +423,6 @@ Phương thức `shouldReport` [đã được thêm vào contract `Illuminate\Co
 ### Mail
 
 <a name="markdown-file-directory-change"></a>
-<a name="markdown-file-directory-change"></a>
 ### Markdown File Directory Change
 
 **Likelihood Of Impact: High**

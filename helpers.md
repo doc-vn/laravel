@@ -182,11 +182,11 @@ Laravel chứa một loạt các hàm PHP global "helper". Nhiều trong số c�
 ## Method Listing
 
 <style>
-    #collection-method code {
+    .collection-method code {
         font-size: 14px;
     }
 
-    #collection-method:not(.first-collection-method) {
+    .collection-method:not(.first-collection-method) {
         margin-top: 50px;
     }
 </style>
@@ -195,7 +195,7 @@ Laravel chứa một loạt các hàm PHP global "helper". Nhiều trong số c�
 ## Arrays & Objects
 
 <a name="method-array-add"></a>
-#### `Arr::add()` {#collection-method .first-collection-method}
+#### `Arr::add()` {.collection-method .first-collection-method}
 
 Hàm `Arr::add` sẽ thêm một cặp key / giá trị vào một mảng nếu key đó không tồn tại trong mảng hoặc giá trị trong mảng của key đó bằng `null`:
 
@@ -211,7 +211,7 @@ Hàm `Arr::add` sẽ thêm một cặp key / giá trị vào một mảng nếu 
 
 
 <a name="method-array-collapse"></a>
-#### `Arr::collapse()` {#collection-method}
+#### `Arr::collapse()` {.collection-method}
 
 Hàm `Arr::collapse` sẽ thu gọn một mảng gồm nhiều mảng con thành một mảng duy nhất:
 
@@ -222,7 +222,7 @@ Hàm `Arr::collapse` sẽ thu gọn một mảng gồm nhiều mảng con thành
     // [1, 2, 3, 4, 5, 6, 7, 8, 9]
 
 <a name="method-array-divide"></a>
-#### `Arr::divide()` {#collection-method}
+#### `Arr::divide()` {.collection-method}
 
 Hàm `Arr::divide` trả về hai mảng, một mảng chứa các key và một mảng chứa các giá trị của mảng đã cho:
 
@@ -235,7 +235,7 @@ Hàm `Arr::divide` trả về hai mảng, một mảng chứa các key và một
     // $values: ['Desk']
 
 <a name="method-array-dot"></a>
-#### `Arr::dot()` {#collection-method}
+#### `Arr::dot()` {.collection-method}
 
 Hàm `Arr::dot` sẽ làm ngang hàng một mảng nhiều chiều thành một mảng một chiều sử dụng ký hiệu "dot" để biểu thị độ sâu:
 
@@ -248,7 +248,7 @@ Hàm `Arr::dot` sẽ làm ngang hàng một mảng nhiều chiều thành một 
     // ['products.desk.price' => 100]
 
 <a name="method-array-except"></a>
-#### `Arr::except()` {#collection-method}
+#### `Arr::except()` {.collection-method}
 
 Hàm `Arr::except` loại bỏ các cặp key / giá trị đã cho ra khỏi một mảng:
 
@@ -261,7 +261,7 @@ Hàm `Arr::except` loại bỏ các cặp key / giá trị đã cho ra khỏi m�
     // ['name' => 'Desk']
 
 <a name="method-array-first"></a>
-#### `Arr::first()` {#collection-method}
+#### `Arr::first()` {.collection-method}
 
 Hàm `Arr::first` trả về phần tử đầu tiên của mảng pass qua một số điều kiện đã cho:
 
@@ -282,7 +282,7 @@ Một giá trị mặc định cũng có thể được truyền làm tham số 
     $first = Arr::first($array, $callback, $default);
 
 <a name="method-array-flatten"></a>
-#### `Arr::flatten()` {#collection-method}
+#### `Arr::flatten()` {.collection-method}
 
 Hàm `Arr::flatten` làm ngang hàng một mảng nhiều chiều thành một mảng một chiều:
 
@@ -295,7 +295,7 @@ Hàm `Arr::flatten` làm ngang hàng một mảng nhiều chiều thành một m
     // ['Joe', 'PHP', 'Ruby']
 
 <a name="method-array-forget"></a>
-#### `Arr::forget()` {#collection-method}
+#### `Arr::forget()` {.collection-method}
 
 Hàm `Arr::forget` xóa một cặp key / giá trị đã cho ra khỏi một mảng bị lồng vào nhau bằng cách sử dụng ký hiệu "dot":
 
@@ -308,7 +308,7 @@ Hàm `Arr::forget` xóa một cặp key / giá trị đã cho ra khỏi một m�
     // ['products' => []]
 
 <a name="method-array-get"></a>
-#### `Arr::get()` {#collection-method}
+#### `Arr::get()` {.collection-method}
 
 Hàm `Arr::get` lấy một giá trị từ một mảng bị lồng vào nhau bằng cách sử dụng ký hiệu "dot":
 
@@ -329,7 +329,7 @@ Hàm `Arr::get` cũng chấp nhận một giá trị mặc định, sẽ đượ
     // 0
 
 <a name="method-array-has"></a>
-#### `Arr::has()` {#collection-method}
+#### `Arr::has()` {.collection-method}
 
 Hàm `Arr::has` sẽ kiểm tra xem một item hoặc các item đã cho có tồn tại trong một mảng hay không bằng cách sử dụng ký hiệu "dot":
 
@@ -346,7 +346,7 @@ Hàm `Arr::has` sẽ kiểm tra xem một item hoặc các item đã cho có t�
     // false
 
 <a name="method-array-last"></a>
-#### `Arr::last()` {#collection-method}
+#### `Arr::last()` {.collection-method}
 
 Hàm `Arr::last` trả về phần tử cuối cùng của mảng pass qua một số điều kiện đã cho:
 
@@ -367,7 +367,7 @@ Một giá trị mặc định có thể được truyền làm tham số thứ 
     $last = Arr::last($array, $callback, $default);
 
 <a name="method-array-only"></a>
-#### `Arr::only()` {#collection-method}
+#### `Arr::only()` {.collection-method}
 
 Hàm `Arr::only` chỉ trả về các cặp key / giá trị được chỉ định từ mảng đã cho:
 
@@ -380,7 +380,7 @@ Hàm `Arr::only` chỉ trả về các cặp key / giá trị được chỉ đ�
     // ['name' => 'Desk', 'price' => 100]
 
 <a name="method-array-pluck"></a>
-#### `Arr::pluck()` {#collection-method}
+#### `Arr::pluck()` {.collection-method}
 
 Hàm `Arr::pluck` lấy tất cả các giá trị cho một key đã cho từ một mảng:
 
@@ -404,7 +404,7 @@ Bạn cũng có thể khai báo thêm key cho mảng đó:
     // [1 => 'Taylor', 2 => 'Abigail']
 
 <a name="method-array-prepend"></a>
-#### `Arr::prepend()` {#collection-method}
+#### `Arr::prepend()` {.collection-method}
 
 Hàm `Arr::prepend` sẽ thêm một item lên đầu của một mảng:
 
@@ -427,7 +427,7 @@ Nếu cần, bạn có thể khai báo key cho giá trị đó:
     // ['name' => 'Desk', 'price' => 100]
 
 <a name="method-array-pull"></a>
-#### `Arr::pull()` {#collection-method}
+#### `Arr::pull()` {.collection-method}
 
 Hàm `Arr::pull` trả về và xóa một cặp key / giá trị ra khỏi một mảng:
 
@@ -448,7 +448,7 @@ Một giá trị mặc định có thể được truyền làm tham số thứ 
     $value = Arr::pull($array, $key, $default);
 
 <a name="method-array-random"></a>
-#### `Arr::random()` {#collection-method}
+#### `Arr::random()` {.collection-method}
 
 Hàm `Arr::random` sẽ trả về một giá trị ngẫu nhiên từ một mảng:
 
@@ -469,7 +469,7 @@ Bạn cũng có thể chỉ định số lượng item sẽ được trả về 
     // [2, 5] - (retrieved randomly)
 
 <a name="method-array-set"></a>
-#### `Arr::set()` {#collection-method}
+#### `Arr::set()` {.collection-method}
 
 Hàm `Arr::set` sẽ set một giá trị trong một mảng bị lồng nhau bằng cách sử dụng ký hiệu "dot":
 
@@ -482,7 +482,7 @@ Hàm `Arr::set` sẽ set một giá trị trong một mảng bị lồng nhau b�
     // ['products' => ['desk' => ['price' => 200]]]
 
 <a name="method-array-sort"></a>
-#### `Arr::sort()` {#collection-method}
+#### `Arr::sort()` {.collection-method}
 
 Hàm `Arr::sort` sẽ sắp xếp một mảng theo các giá trị của nó:
 
@@ -517,7 +517,7 @@ Bạn cũng có thể sắp xếp mảng theo kết quả của Closure đã cho
     */
 
 <a name="method-array-sort-recursive"></a>
-#### `Arr::sortRecursive()` {#collection-method}
+#### `Arr::sortRecursive()` {.collection-method}
 
 Hàm `Arr::sortRecursive` sẽ sắp xếp đệ quy một mảng bằng cách sử dụng hàm `sort` cho mảng không có key, còn nếu mảng đó có key thì sẽ dùng hàm `ksort`:
 
@@ -540,7 +540,7 @@ Hàm `Arr::sortRecursive` sẽ sắp xếp đệ quy một mảng bằng cách s
     */
 
 <a name="method-array-where"></a>
-#### `Arr::where()` {#collection-method}
+#### `Arr::where()` {.collection-method}
 
 Hàm `Arr::where` sẽ lọc một mảng bằng cách sử dụng Closure:
 
@@ -555,7 +555,7 @@ Hàm `Arr::where` sẽ lọc một mảng bằng cách sử dụng Closure:
     // [1 => '200', 3 => '400']
 
 <a name="method-array-wrap"></a>
-#### `Arr::wrap()` {#collection-method}
+#### `Arr::wrap()` {.collection-method}
 
 Hàm `Arr::wrap` sẽ bao bọc giá trị đã cho vào trong một mảng. Nếu giá trị đã cho là một mảng, nó sẽ không bị thay đổi:
 
@@ -578,7 +578,7 @@ Nếu giá trị đã cho là null, một mảng trống sẽ được trả v�
     // []
 
 <a name="method-data-fill"></a>
-#### `data_fill()` {#collection-method}
+#### `data_fill()` {.collection-method}
 
 Hàm `data_fill` sẽ set một giá trị bị thiếu trong một mảng hoặc một đối tượng lồng nhau bằng cách sử dụng ký hiệu "dot":
 
@@ -613,7 +613,7 @@ Hàm này cũng chấp nhận dấu hoa thị dưới dạng như một ký tự
     */
 
 <a name="method-data-get"></a>
-#### `data_get()` {#collection-method}
+#### `data_get()` {.collection-method}
 
 Hàm `data_get` lấy một giá trị từ một mảng hoặc một đối tượng lồng nhau bằng cách sử dụng ký hiệu "dot":
 
@@ -641,7 +641,7 @@ Phương thức cũng chấp nhận các ký tự đại diện sử dụng bằ
     // ['Desk 1', 'Desk 2'];
 
 <a name="method-data-set"></a>
-#### `data_set()` {#collection-method}
+#### `data_set()` {.collection-method}
 
 Hàm `data_set` sẽ set một giá trị trong một mảng hoặc một đối tượng lồng nhau bằng cách sử dụng ký hiệu "dot":
 
@@ -680,7 +680,7 @@ Mặc định, bất kỳ giá trị hiện có sẽ bị ghi đè. Nếu bạn 
     // ['products' => ['desk' => ['price' => 100]]]
 
 <a name="method-head"></a>
-#### `head()` {#collection-method}
+#### `head()` {.collection-method}
 
 Hàm `head` trả về phần tử đầu tiên trong mảng đã cho:
 
@@ -691,7 +691,7 @@ Hàm `head` trả về phần tử đầu tiên trong mảng đã cho:
     // 100
 
 <a name="method-last"></a>
-#### `last()` {#collection-method}
+#### `last()` {.collection-method}
 
 Hàm `last` trả về phần tử cuối cùng trong mảng đã cho:
 
@@ -705,7 +705,7 @@ Hàm `last` trả về phần tử cuối cùng trong mảng đã cho:
 ## Paths
 
 <a name="method-app-path"></a>
-#### `app_path()` {#collection-method}
+#### `app_path()` {.collection-method}
 
 Hàm `app_path` trả về đường dẫn đến thư mục `app`. Bạn cũng có thể sử dụng hàm `app_path` để tạo đường dẫn đến một file có bắt đầu từ thư mục app:
 
@@ -714,7 +714,7 @@ Hàm `app_path` trả về đường dẫn đến thư mục `app`. Bạn cũng 
     $path = app_path('Http/Controllers/Controller.php');
 
 <a name="method-base-path"></a>
-#### `base_path()` {#collection-method}
+#### `base_path()` {.collection-method}
 
 Hàm `base_path` trả về đường dẫn đến thư mục gốc dự án. Bạn cũng có thể sử dụng hàm `base_path` để tạo đường dẫn đến một file đã cho có bắt đầu từ thư mục gốc của dự án:
 
@@ -723,7 +723,7 @@ Hàm `base_path` trả về đường dẫn đến thư mục gốc dự án. B�
     $path = base_path('vendor/bin');
 
 <a name="method-config-path"></a>
-#### `config_path()` {#collection-method}
+#### `config_path()` {.collection-method}
 
 Hàm `config_path` trả về đường dẫn đến thư mục `config`. Bạn cũng có thể sử dụng hàm `config_path` để tạo đường dẫn đến một file đã cho trong thư mục config của application:
 
@@ -732,7 +732,7 @@ Hàm `config_path` trả về đường dẫn đến thư mục `config`. Bạn 
     $path = config_path('app.php');
 
 <a name="method-database-path"></a>
-#### `database_path()` {#collection-method}
+#### `database_path()` {.collection-method}
 
 Hàm `database_path` trả về đường dẫn đến thư mục `database`. Bạn cũng có thể sử dụng hàm `database_path` để tạo đường dẫn đến một file đã cho trong thư mục database:
 
@@ -741,14 +741,14 @@ Hàm `database_path` trả về đường dẫn đến thư mục `database`. B�
     $path = database_path('factories/UserFactory.php');
 
 <a name="method-mix"></a>
-#### `mix()` {#collection-method}
+#### `mix()` {.collection-method}
 
 Hàm `mix` trả về đường dẫn đến [file Mix đã được version](/docs/{{version}}/mix):
 
     $path = mix('css/app.css');
 
 <a name="method-public-path"></a>
-#### `public_path()` {#collection-method}
+#### `public_path()` {.collection-method}
 
 Hàm `public_path` trả về đường dẫn đến thư mục `public`. Bạn cũng có thể sử dụng hàm `public_path` để tạo đường dẫn đến một file đã cho trong thư mục public:
 
@@ -757,7 +757,7 @@ Hàm `public_path` trả về đường dẫn đến thư mục `public`. Bạn 
     $path = public_path('css/app.css');
 
 <a name="method-resource-path"></a>
-#### `resource_path()` {#collection-method}
+#### `resource_path()` {.collection-method}
 
 Hàm `resource_path` trả về đường dẫn đến thư mục `resource`. Bạn cũng có thể sử dụng hàm `resource_path` để tạo đường dẫn đến một file đã cho trong thư mục resources:
 
@@ -766,7 +766,7 @@ Hàm `resource_path` trả về đường dẫn đến thư mục `resource`. B�
     $path = resource_path('sass/app.scss');
 
 <a name="method-storage-path"></a>
-#### `storage_path()` {#collection-method}
+#### `storage_path()` {.collection-method}
 
 Hàm `storage_path` trả về đường dẫn đến thư mục` storage`. Bạn cũng có thể sử dụng hàm `storage_path` để tạo đường dẫn đến một file đã cho trong thư mục storage:
 
@@ -778,7 +778,7 @@ Hàm `storage_path` trả về đường dẫn đến thư mục` storage`. Bạ
 ## Strings
 
 <a name="method-__"></a>
-#### `__()` {#collection-method}
+#### `__()` {.collection-method}
 
 Hàm `__` sẽ dịch chuỗi cần được dịch hoặc key cần được dịch đã cho bằng cách sử dụng [localization files](/docs/{{version}}/localization) của bạn:
 
@@ -789,7 +789,7 @@ Hàm `__` sẽ dịch chuỗi cần được dịch hoặc key cần được d�
 Nếu chuỗi hoặc key cần được dịch không tồn tại, hàm `__` sẽ trả về giá trị được đưa vào. Vì vậy, nếu sử dụng ví dụ mẫu trên, hàm `__` sẽ trả về `messages.welcome` nếu key cần được dịch đó không tồn tại.
 
 <a name="method-class-basename"></a>
-#### `class_basename()` {#collection-method}
+#### `class_basename()` {.collection-method}
 
 `class_basename` trả về tên class đã cho với namespace của class bị xóa:
 
@@ -798,7 +798,7 @@ Nếu chuỗi hoặc key cần được dịch không tồn tại, hàm `__` s�
     // Baz
 
 <a name="method-e"></a>
-#### `e()` {#collection-method}
+#### `e()` {.collection-method}
 
 Hàm `e` chạy hàm` htmlspecialchars` của PHP với tùy chọn `double_encode` được set mặc định thành `true`:
 
@@ -807,7 +807,7 @@ Hàm `e` chạy hàm` htmlspecialchars` của PHP với tùy chọn `double_enco
     // &lt;html&gt;foo&lt;/html&gt;
 
 <a name="method-preg-replace-array"></a>
-#### `preg_replace_array()` {#collection-method}
+#### `preg_replace_array()` {.collection-method}
 
 Hàm `preg_replace_array` sẽ thay thế một pattern vào trong một chuỗi sequentially bằng cách sử dụng một mảng:
 
@@ -818,7 +818,7 @@ Hàm `preg_replace_array` sẽ thay thế một pattern vào trong một chuỗi
     // The event will take place between 8:30 and 9:00
 
 <a name="method-str-after"></a>
-#### `Str::after()` {#collection-method}
+#### `Str::after()` {.collection-method}
 
 Hàm `Str::after` trả về mọi thứ đứng sau giá trị đã cho có trong một chuỗi:
 
@@ -829,7 +829,7 @@ Hàm `Str::after` trả về mọi thứ đứng sau giá trị đã cho có tro
     // ' my name'
 
 <a name="method-str-before"></a>
-#### `Str::before()` {#collection-method}
+#### `Str::before()` {.collection-method}
 
 Hàm `Str::before` sẽ trả về mọi thứ đứng trước giá trị đã cho có trong một chuỗi:
 
@@ -840,7 +840,7 @@ Hàm `Str::before` sẽ trả về mọi thứ đứng trước giá trị đã 
     // 'This is '
 
 <a name="method-camel-case"></a>
-#### `Str::camel()` {#collection-method}
+#### `Str::camel()` {.collection-method}
 
 Hàm `Str::camel` chuyển đổi chuỗi đã cho thành `camelCase`:
 
@@ -851,7 +851,7 @@ Hàm `Str::camel` chuyển đổi chuỗi đã cho thành `camelCase`:
     // fooBar
 
 <a name="method-str-contains"></a>
-#### `Str::contains()` {#collection-method}
+#### `Str::contains()` {.collection-method}
 
 Hàm `Str::contains` xác định xem chuỗi đã cho có chứa giá trị đã cho hay không (phân biệt chữ hoa chữ thường):
 
@@ -870,7 +870,7 @@ Bạn cũng có thể truyền vào một mảng các giá trị để xác đ�
     // true
 
 <a name="method-str-contains-all"></a>
-#### `Str::containsAll()` {#collection-method}
+#### `Str::containsAll()` {.collection-method}
 
 Phương thức `Str::containsAll` sẽ xác định xem string đã cho có chứa tất cả các giá trị có trong mảng hay không:
 
@@ -881,7 +881,7 @@ Phương thức `Str::containsAll` sẽ xác định xem string đã cho có ch�
     // true
 
 <a name="method-ends-with"></a>
-#### `Str::endsWith()` {#collection-method}
+#### `Str::endsWith()` {.collection-method}
 
 Hàm `Str::endsWith` sẽ kiểm tra chuỗi đã cho có kết thúc bằng giá trị đã cho hay không:
 
@@ -892,7 +892,7 @@ Hàm `Str::endsWith` sẽ kiểm tra chuỗi đã cho có kết thúc bằng gi�
     // true
 
 <a name="method-str-finish"></a>
-#### `Str::finish()` {#collection-method}
+#### `Str::finish()` {.collection-method}
 
 Hàm `Str::finish` sẽ thêm một instance của giá trị đã cho vào một chuỗi nếu nó chưa kết thúc bằng giá trị đó:
 
@@ -907,7 +907,7 @@ Hàm `Str::finish` sẽ thêm một instance của giá trị đã cho vào mộ
     // this/string/
 
 <a name="method-str-is"></a>
-#### `Str::is()` {#collection-method}
+#### `Str::is()` {.collection-method}
 
 Hàm `Str::is` sẽ xác định xem một chuỗi đã cho có khớp với pattern đã cho hay không. Dấu hoa thị có thể được sử dụng để làm ký tự đại diện:
 
@@ -922,7 +922,7 @@ Hàm `Str::is` sẽ xác định xem một chuỗi đã cho có khớp với pat
     // false
 
 <a name="method-kebab-case"></a>
-#### `Str::kebab()` {#collection-method}
+#### `Str::kebab()` {.collection-method}
 
 Hàm `Str::kebab` chuyển đổi chuỗi đã cho thành `kebab-case`:
 
@@ -933,7 +933,7 @@ Hàm `Str::kebab` chuyển đổi chuỗi đã cho thành `kebab-case`:
     // foo-bar
 
 <a name="method-str-limit"></a>
-#### `Str::limit()` {#collection-method}
+#### `Str::limit()` {.collection-method}
 
 Hàm `Str::limit` sẽ cắt ngắn chuỗi đã cho ở độ dài nhất định:
 
@@ -952,7 +952,7 @@ Bạn cũng có thể truyền một tham số thứ ba để thay đổi chuỗ
     // The quick brown fox (...)
 
 <a name="method-str-ordered-uuid"></a>
-#### `Str::orderedUuid()` {#collection-method}
+#### `Str::orderedUuid()` {.collection-method}
 
 Phương thức `Str::orderedUuid` sẽ tạo một UUID "timestamp first" có thể được lưu trữ tốt trong một cột được index trong cơ sở dữ liệu:
 
@@ -961,7 +961,7 @@ Phương thức `Str::orderedUuid` sẽ tạo một UUID "timestamp first" có t
     return (string) Str::orderedUuid();
 
 <a name="method-str-plural"></a>
-#### `Str::plural()` {#collection-method}
+#### `Str::plural()` {.collection-method}
 
 Hàm `Str::plural` sẽ chuyển đổi một chuỗi thành dạng số nhiều của nó. Chức năng này hiện tại chỉ hỗ trợ ngôn ngữ tiếng Anh:
 
@@ -988,7 +988,7 @@ Bạn có thể cung cấp một số nguyên dưới dạng tham số thứ hai
     // child
 
 <a name="method-str-random"></a>
-#### `Str::random()` {#collection-method}
+#### `Str::random()` {.collection-method}
 
 Hàm `Str::random` sẽ tạo ra một chuỗi ngẫu nhiên có độ dài được chỉ định. Hàm này sử dụng hàm `random_bytes` của PHP:
 
@@ -997,7 +997,7 @@ Hàm `Str::random` sẽ tạo ra một chuỗi ngẫu nhiên có độ dài đư
     $random = Str::random(40);
 
 <a name="method-str-replace-array"></a>
-#### `Str::replaceArray()` {#collection-method}
+#### `Str::replaceArray()` {.collection-method}
 
 Hàm `Str::replaceArray` sẽ thay thế một giá trị đã cho vào trong một chuỗi sequentially bằng cách sử dụng một mảng:
 
@@ -1010,7 +1010,7 @@ Hàm `Str::replaceArray` sẽ thay thế một giá trị đã cho vào trong m�
     // The event will take place between 8:30 and 9:00
 
 <a name="method-str-replace-first"></a>
-#### `Str::replaceFirst()` {#collection-method}
+#### `Str::replaceFirst()` {.collection-method}
 
 Hàm `Str::replaceFirst` sẽ thay thế giá trị đầu tiên có trong chuỗi:
 
@@ -1021,7 +1021,7 @@ Hàm `Str::replaceFirst` sẽ thay thế giá trị đầu tiên có trong chu�
     // a quick brown fox jumps over the lazy dog
 
 <a name="method-str-replace-last"></a>
-#### `Str::replaceLast()` {#collection-method}
+#### `Str::replaceLast()` {.collection-method}
 
 Hàm `Str::replaceLast` sẽ thay thế giá trị cuối cùng có trong chuỗi:
 
@@ -1032,7 +1032,7 @@ Hàm `Str::replaceLast` sẽ thay thế giá trị cuối cùng có trong chuỗ
     // the quick brown fox jumps over a lazy dog
 
 <a name="method-str-singular"></a>
-#### `Str::singular()` {#collection-method}
+#### `Str::singular()` {.collection-method}
 
 Hàm `Str::singular` sẽ chuyển đổi một chuỗi thành dạng số ít của nó. Chức năng này hiện tại chỉ hỗ trợ ngôn ngữ tiếng Anh:
 
@@ -1047,7 +1047,7 @@ Hàm `Str::singular` sẽ chuyển đổi một chuỗi thành dạng số ít c
     // child
 
 <a name="method-str-slug"></a>
-#### `Str::slug()` {#collection-method}
+#### `Str::slug()` {.collection-method}
 
 Hàm `Str::slug` sẽ tạo ra một URL "slug" từ chuỗi đã cho:
 
@@ -1058,7 +1058,7 @@ Hàm `Str::slug` sẽ tạo ra một URL "slug" từ chuỗi đã cho:
     // laravel-5-framework
 
 <a name="method-snake-case"></a>
-#### `Str::snake()` {#collection-method}
+#### `Str::snake()` {.collection-method}
 
 Hàm `Str::snake` sẽ chuyển đổi chuỗi đã cho thành `Str::snake`:
 
@@ -1069,7 +1069,7 @@ Hàm `Str::snake` sẽ chuyển đổi chuỗi đã cho thành `Str::snake`:
     // foo_bar
 
 <a name="method-str-start"></a>
-#### `Str::start()` {#collection-method}
+#### `Str::start()` {.collection-method}
 
 Hàm `Str::start` sẽ thêm một instance của giá trị đã cho vào một chuỗi nếu nó chưa bắt đầu bằng giá trị đó:
 
@@ -1084,7 +1084,7 @@ Hàm `Str::start` sẽ thêm một instance của giá trị đã cho vào một
     // /this/string
 
 <a name="method-starts-with"></a>
-#### `Str::startsWith()` {#collection-method}
+#### `Str::startsWith()` {.collection-method}
 
 Hàm `started_with` sẽ kiểm tra chuỗi đã cho có bắt đầu bằng giá trị đã cho hay không:
 
@@ -1095,7 +1095,7 @@ Hàm `started_with` sẽ kiểm tra chuỗi đã cho có bắt đầu bằng gi�
     // true
 
 <a name="method-studly-case"></a>
-#### `Str::studly()` {#collection-method}
+#### `Str::studly()` {.collection-method}
 
 Hàm `Str::studly` chuyển đổi chuỗi đã cho thành` StudlyCase`:
 
@@ -1106,7 +1106,7 @@ Hàm `Str::studly` chuyển đổi chuỗi đã cho thành` StudlyCase`:
     // FooBar
 
 <a name="method-title-case"></a>
-#### `Str::title()` {#collection-method}
+#### `Str::title()` {.collection-method}
 
 Hàm `Str::title` chuyển đổi chuỗi đã cho thành` Title Case`:
 
@@ -1117,7 +1117,7 @@ Hàm `Str::title` chuyển đổi chuỗi đã cho thành` Title Case`:
     // A Nice Title Uses The Correct Case
 
 <a name="method-str-uuid"></a>
-#### `Str::uuid()` {#collection-method}
+#### `Str::uuid()` {.collection-method}
 
 Phương thức `Str::uuid` sẽ tạo ra một UUID (phiên bản 4):
 
@@ -1126,7 +1126,7 @@ Phương thức `Str::uuid` sẽ tạo ra một UUID (phiên bản 4):
     return (string) Str::uuid();
 
 <a name="method-str-words"></a>
-#### `Str::words()` {#collection-method}
+#### `Str::words()` {.collection-method}
 
 Phương thức `Str::words` sẽ giới hạn số lượng từ có trong một chuỗi:
 
@@ -1137,7 +1137,7 @@ Phương thức `Str::words` sẽ giới hạn số lượng từ có trong mộ
     // Perfectly balanced, as >>>
 
 <a name="method-trans"></a>
-#### `trans()` {#collection-method}
+#### `trans()` {.collection-method}
 
 Hàm `trans` sẽ dịch các key cần dịch bằng cách sử dụng [localization files](/docs/{{version}}/localization) của bạn:
 
@@ -1146,7 +1146,7 @@ Hàm `trans` sẽ dịch các key cần dịch bằng cách sử dụng [localiz
 Nếu key cần dịch mà không tồn tại, hàm `trans` sẽ trả về key đó. Vì vậy, nếu sử dụng ví dụ trên, hàm `trans` sẽ trả về `message.welcome` nếu key cần dịch không tồn tại.
 
 <a name="method-trans-choice"></a>
-#### `trans_choice()` {#collection-method}
+#### `trans_choice()` {.collection-method}
 
 Hàm `trans_choice` sẽ dịch các key cần dịch đã cho với một biến số nhiều:
 
@@ -1158,7 +1158,7 @@ Nếu key cần dịch mà không tồn tại, hàm `trans_choice` sẽ trả v�
 ## URLs
 
 <a name="method-action"></a>
-#### `action()` {#collection-method}
+#### `action()` {.collection-method}
 
 Hàm `action` sẽ tạo ra một URL cho một action của controller đã cho. Bạn không cần phải truyền namespace của controller. Thay vào đó, hãy truyền tên class của controller liên kết đến namespace `App\Http\Controllers`:
 
@@ -1171,7 +1171,7 @@ Nếu phương thức chấp nhận tham số cho route, bạn có thể truyề
     $url = action('UserController@profile', ['id' => 1]);
 
 <a name="method-asset"></a>
-#### `asset()` {#collection-method}
+#### `asset()` {.collection-method}
 
 Hàm `asset` sẽ tạo URL cho một asset bằng cách sử dụng scheme hiện tại của request (HTTP hoặc HTTPS):
 
@@ -1184,7 +1184,7 @@ Bạn có thể cấu hình URL host cho asset bằng cách set biến `ASSET_UR
     $url = asset('img/photo.jpg'); // http://example.com/assets/img/photo.jpg
 
 <a name="method-route"></a>
-#### `route()` {#collection-method}
+#### `route()` {.collection-method}
 
 Hàm `route` sẽ tạo một URL cho route đã được đặt tên:
 
@@ -1199,14 +1199,14 @@ Mặc định, hàm `route` sẽ tạo ra một URL tuyệt đối. Nếu bạn 
     $url = route('routeName', ['id' => 1], false);
 
 <a name="method-secure-asset"></a>
-#### `secure_asset()` {#collection-method}
+#### `secure_asset()` {.collection-method}
 
 Hàm `secure_asset` sẽ tạo URL cho một asset bằng HTTPS:
 
     $url = secure_asset('img/photo.jpg');
 
 <a name="method-secure-url"></a>
-#### `secure_url()` {#collection-method}
+#### `secure_url()` {.collection-method}
 
 Hàm `secure_url` tạo URL HTTPS cho đường dẫn đã cho:
 
@@ -1215,7 +1215,7 @@ Hàm `secure_url` tạo URL HTTPS cho đường dẫn đã cho:
     $url = secure_url('user/profile', [1]);
 
 <a name="method-url"></a>
-#### `url()` {#collection-method}
+#### `url()` {.collection-method}
 
 Hàm `url` tạo ra một URL cho đường dẫn đã cho:
 
@@ -1235,7 +1235,7 @@ Nếu không có đường dẫn nào được cung cấp, một instance `Illum
 ## Miscellaneous
 
 <a name="method-abort"></a>
-#### `abort()` {#collection-method}
+#### `abort()` {.collection-method}
 
 Hàm `abort` sẽ đưa ra một [exception HTTP](/docs/{{version}}/errors#http-exceptions) được tạo bởi [exception handler](/docs/{{version}}/errors#the-exception-handler):
 
@@ -1246,7 +1246,7 @@ Bạn cũng có thể cung cấp response text và response header tùy biến c
     abort(403, 'Unauthorized.', $headers);
 
 <a name="method-abort-if"></a>
-#### `abort_if()` {#collection-method}
+#### `abort_if()` {.collection-method}
 
 Hàm `abort_if` sẽ đưa ra một exception HTTP nếu một biểu thức boolean đã cho là `true`:
 
@@ -1255,7 +1255,7 @@ Hàm `abort_if` sẽ đưa ra một exception HTTP nếu một biểu thức boo
 Giống như phương thức `abort`, bạn cũng có thể cung cấp response text cho exception làm tham số thứ ba và một mảng các response header tùy biến làm tham số thứ tư.
 
 <a name="method-abort-unless"></a>
-#### `abort_unless()` {#collection-method}
+#### `abort_unless()` {.collection-method}
 
 Hàm `abort_unless` sẽ đưa ra một exception HTTP nếu một biểu thức boolean đã cho là `false`:
 
@@ -1264,7 +1264,7 @@ Hàm `abort_unless` sẽ đưa ra một exception HTTP nếu một biểu thức
 Giống như phương thức `abort`, bạn cũng có thể cung cấp response text cho exception làm tham số thứ ba và một mảng các response header tùy biến làm tham số thứ tư.
 
 <a name="method-app"></a>
-#### `app()` {#collection-method}
+#### `app()` {.collection-method}
 
 Hàm `app` trả về instance [service container](/docs/{{version}}/container):
 
@@ -1275,7 +1275,7 @@ Bạn có thể truyền một tên class hoặc một tên interface để reso
     $api = app('HelpSpot\API');
 
 <a name="method-auth"></a>
-#### `auth()` {#collection-method}
+#### `auth()` {.collection-method}
 
 Hàm `auth` sẽ trả về một instance [authenticator](/docs/{{version}}/authentication). Bạn có thể sử dụng nó thay vì dùng facade `Auth` cho thuận tiện:
 
@@ -1286,7 +1286,7 @@ Nếu cần, bạn có thể khai báo loại instance guard mà bạn muốn tr
     $user = auth('admin')->user();
 
 <a name="method-back"></a>
-#### `back()` {#collection-method}
+#### `back()` {.collection-method}
 
 Hàm `back` sẽ tạo ra một [response HTTP chuyển hướng](/docs/{{version}}/responses#redirects) đến vị trí trước đó của người dùng:
 
@@ -1295,14 +1295,14 @@ Hàm `back` sẽ tạo ra một [response HTTP chuyển hướng](/docs/{{versio
     return back();
 
 <a name="method-bcrypt"></a>
-#### `bcrypt()` {#collection-method}
+#### `bcrypt()` {.collection-method}
 
 Hàm `bcrypt` sẽ [hashes](/docs/{{version}}/hashing) giá trị đã cho bằng Bcrypt. Bạn có thể sử dụng nó như là một thay thế cho facade `Hash`:
 
     $password = bcrypt('my-secret-password');
 
 <a name="method-blank"></a>
-#### `blank()` {#collection-method}
+#### `blank()` {.collection-method}
 
 Hàm `blank` sẽ trả về giá trị đã cho là "blank" hay không:
 
@@ -1322,14 +1322,14 @@ Hàm `blank` sẽ trả về giá trị đã cho là "blank" hay không:
 Để tìm trái ngược của `blank`, hãy xem phương thức [`filled`](#method-filled).
 
 <a name="method-broadcast"></a>
-#### `broadcast()` {#collection-method}
+#### `broadcast()` {.collection-method}
 
 Hàm `broadcast` sẽ [broadcasts](/docs/{{version}}/broadcasting) một [event](/docs/{{version}}/events) cho listener của nó:
 
     broadcast(new UserRegistered($user));
 
 <a name="method-cache"></a>
-#### `cache()` {#collection-method}
+#### `cache()` {.collection-method}
 
 Hàm `cache` có thể được sử dụng để lấy các giá trị từ [cache](/docs/{{version}}/cache). Nếu key đã cho không tồn tại trong cache, giá trị mặc định sẽ được trả về:
 
@@ -1344,21 +1344,21 @@ Bạn có thể thêm các item vào cache bằng cách truyền một mảng c�
     cache(['key' => 'value'], now()->addSeconds(10));
 
 <a name="method-class-uses-recursive"></a>
-#### `class_uses_recursive()` {#collection-method}
+#### `class_uses_recursive()` {.collection-method}
 
 Hàm `class_uses_recursive` sẽ trả về tất cả các trait được sử dụng bởi một class, bao gồm cả các trait được sử dụng bởi tất cả các class cha của nó:
 
     $traits = class_uses_recursive(App\User::class);
 
 <a name="method-collect"></a>
-#### `collect()` {#collection-method}
+#### `collect()` {.collection-method}
 
 Hàm `collect` tạo ra một instance [collection](/docs/{{version}}/collections) từ giá trị đã cho:
 
     $collection = collect(['taylor', 'abigail']);
 
 <a name="method-config"></a>
-#### `config()` {#collection-method}
+#### `config()` {.collection-method}
 
 Hàm `config` sẽ lấy giá trị của biến [configuration](/docs/{{version}}/configuration). Các giá trị cấu hình có thể được truy cập bằng cú pháp "dot", bao gồm tên của file và option bạn muốn truy cập. Giá trị mặc định có thể được khai báo và được trả về nếu tùy chọn cấu hình không tồn tại:
 
@@ -1371,28 +1371,28 @@ Bạn có thể set các biến cấu hình trong thời gian chạy bằng các
     config(['app.debug' => true]);
 
 <a name="method-cookie"></a>
-#### `cookie()` {#collection-method}
+#### `cookie()` {.collection-method}
 
 Hàm `cookie` tạo một instance [cookie](/docs/{{version}}/requests#cookies) mới:
 
     $cookie = cookie('name', 'value', $minutes);
 
 <a name="method-csrf-field"></a>
-#### `csrf_field()` {#collection-method}
+#### `csrf_field()` {.collection-method}
 
 Hàm `csrf_field` sẽ tạo ra một thẻ input `hidden` HTML chứa giá trị của CSRF token. Ví dụ: sử dụng [Blade syntax](/docs/{{version}}/blade):
 
     {{ csrf_field() }}
 
 <a name="method-csrf-token"></a>
-#### `csrf_token()` {#collection-method}
+#### `csrf_token()` {.collection-method}
 
 Hàm `csrf_token` sẽ lấy ra giá trị của CSRF token hiện tại:
 
     $token = csrf_token();
 
 <a name="method-dd"></a>
-#### `dd()` {#collection-method}
+#### `dd()` {.collection-method}
 
 Hàm `dd` sẽ dump các biến đã cho và dừng thực thi lệnh:
 
@@ -1403,28 +1403,28 @@ Hàm `dd` sẽ dump các biến đã cho và dừng thực thi lệnh:
 Nếu bạn không muốn dừng việc thực thi lệnh của bạn, hãy sử dụng hàm [`dump`](#method-dump) để thay thế.
 
 <a name="method-decrypt"></a>
-#### `decrypt()` {#collection-method}
+#### `decrypt()` {.collection-method}
 
 Hàm `decrypt` sẽ giải mã giá trị đã cho bằng cách sử dụng [encrypter](/docs/{{version}}/encryption) của Laravel:
 
     $decrypted = decrypt($encrypted_value);
 
 <a name="method-dispatch"></a>
-#### `dispatch()` {#collection-method}
+#### `dispatch()` {.collection-method}
 
 Hàm `dispatch` sẽ tạo [job](/docs/{{version}}/queues#creating-jobs) vào Laravel [job queue](/docs/{{version}}/queues):
 
     dispatch(new App\Jobs\SendEmails);
 
 <a name="method-dispatch-now"></a>
-#### `dispatch_now()` {#collection-method}
+#### `dispatch_now()` {.collection-method}
 
 Hàm `dispatch_now` sẽ chạy ngay lập tức [job](/docs/{{version}}/queues#creating-jobs) và trả về giá trị từ phương thức `handle` của nó:
 
     $result = dispatch_now(new App\Jobs\SendEmails);
 
 <a name="method-dump"></a>
-#### `dump()` {#collection-method}
+#### `dump()` {.collection-method}
 
 Hàm `dump` sẽ dump các biến đã cho:
 
@@ -1437,14 +1437,14 @@ Nếu bạn muốn dừng thực thi lệnh sau khi dump các biến, hãy sử 
 > {tip} Bạn có thể sử dụng lệnh `dump-server` của Artisan để chặn tất cả các lệnh `dump` và hiển thị chúng trong console thay vì trình duyệt của bạn.
 
 <a name="method-encrypt"></a>
-#### `encrypt()` {#collection-method}
+#### `encrypt()` {.collection-method}
 
 Hàm `encrypt` sẽ mã hóa giá trị đã cho bằng cách sử dụng [encrypter](/docs/{{version}}/encryption) của Laravel:
 
     $encrypted = encrypt($unencrypted_value);
 
 <a name="method-env"></a>
-#### `env()` {#collection-method}
+#### `env()` {.collection-method}
 
 Hàm `env` sẽ lấy ra giá trị của [environment variable](/docs/{{version}}/configuration#environment-configuration) hoặc trả về giá trị mặc định:
 
@@ -1456,21 +1456,21 @@ Hàm `env` sẽ lấy ra giá trị của [environment variable](/docs/{{version
 > {note} Nếu bạn chạy lệnh `config:cache` trong quá trình deploy của bạn, bạn nên chắc chắn rằng bạn chỉ gọi hàm `env` từ các file cấu hình của bạn. Khi các option cấu hình đã được lưu vào cached, file `.env` sẽ không được load và tất cả các lệnh gọi đến hàm `env` sẽ trả về `null`.
 
 <a name="method-event"></a>
-#### `event()` {#collection-method}
+#### `event()` {.collection-method}
 
 Hàm `event` sẽ dispatch [event](/docs/{{version}}/events) đến listener:
 
     event(new UserRegistered($user));
 
 <a name="method-factory"></a>
-#### `factory()` {#collection-method}
+#### `factory()` {.collection-method}
 
 Hàm `factory` sẽ tạo một model factory builder cho một class, tên và số lượng nhất định. Nó có thể được sử dụng trong khi [testing](/docs/{{version}}/database-testing#writing-factories) hoặc [seeding](/docs/{{version}}/seeding#using-model-factories):
 
     $user = factory(App\User::class)->make();
 
 <a name="method-filled"></a>
-#### `filled()` {#collection-method}
+#### `filled()` {.collection-method}
 
 Hàm `filled` sẽ trả về giá trị đã cho không là "blank" hay không:
 
@@ -1490,7 +1490,7 @@ Hàm `filled` sẽ trả về giá trị đã cho không là "blank" hay không:
 Để tìm trái ngược của `filled`, hãy xem phương thức [`blank`](#method-blank).
 
 <a name="method-info"></a>
-#### `info()` {#collection-method}
+#### `info()` {.collection-method}
 
 Hàm `info` sẽ ghi thông tin vào [log](/docs/{{version}}/logging):
 
@@ -1501,7 +1501,7 @@ Một mảng dữ liệu theo ngữ cảnh cũng có thể được truyền cho
     info('User login attempt failed.', ['id' => $user->id]);
 
 <a name="method-logger"></a>
-#### `logger()` {#collection-method}
+#### `logger()` {.collection-method}
 
 Hàm `logger` có thể được sử dụng để viết một thông báo ở mức `debug` vào [log](/docs/{{version}}/logging):
 
@@ -1516,7 +1516,7 @@ Một instance [logger](/docs/{{version}}/errors#logging) sẽ được trả v�
     logger()->error('You are not allowed here.');
 
 <a name="method-method-field"></a>
-#### `method_field()` {#collection-method}
+#### `method_field()` {.collection-method}
 
 Hàm `method_field` tạo ra thẻ input `hidden` HTML chứa giá trị HTTP action của form. Ví dụ: sử dụng [Blade syntax](/docs/{{version}}/blade):
 
@@ -1525,14 +1525,14 @@ Hàm `method_field` tạo ra thẻ input `hidden` HTML chứa giá trị HTTP ac
     </form>
 
 <a name="method-now"></a>
-#### `now()` {#collection-method}
+#### `now()` {.collection-method}
 
 Hàm `now` sẽ tạo ra một instance `Illuminate\Support\Carbon` mới cho thời điểm hiện tại:
 
     $now = now();
 
 <a name="method-old"></a>
-#### `old()` {#collection-method}
+#### `old()` {.collection-method}
 
 Hàm `old` sẽ [lấy ra](/docs/{{version}}/requests#retrieving-input) một giá trị [old input](/docs/{{version}}/requests#old-input) được flash trong session :
 
@@ -1541,7 +1541,7 @@ Hàm `old` sẽ [lấy ra](/docs/{{version}}/requests#retrieving-input) một gi
     $value = old('value', 'default');
 
 <a name="method-optional"></a>
-#### `optional()` {#collection-method}
+#### `optional()` {.collection-method}
 
 Hàm `optional` nhận vào bất kỳ tham số nào và cho phép bạn truy cập vào các thuộc tính hoặc các phương thức trên đối tượng đó. Nếu đối tượng đã cho là `null`, thì các thuộc tính hoặc các phương thức đó sẽ trả về `null` thay vì gây ra lỗi:
 
@@ -1556,14 +1556,14 @@ Phương thức `optional` cũng chấp nhận một Closure làm tham số th�
     });
 
 <a name="method-policy"></a>
-#### `policy()` {#collection-method}
+#### `policy()` {.collection-method}
 
 Phương thức `policy` sẽ lấy ra một instance [policy](/docs/{{version}}/authorization#creating-policies) cho một class nhất định:
 
     $policy = policy(App\User::class);
 
 <a name="method-redirect"></a>
-#### `redirect()` {#collection-method}
+#### `redirect()` {.collection-method}
 
 Hàm `redirect` sẽ trả về một [response HTTP chuyển hướng](/docs/{{version}}/responses#redirects) hoặc trả về instance chuyển hướng nếu không có tham số được truyền vào:
 
@@ -1574,14 +1574,14 @@ Hàm `redirect` sẽ trả về một [response HTTP chuyển hướng](/docs/{{
     return redirect()->route('route.name');
 
 <a name="method-report"></a>
-#### `report()` {#collection-method}
+#### `report()` {.collection-method}
 
 Hàm `report` sẽ report một exception bằng cách sử dụng phương thức `report` của [exception handler](/docs/{{version}}/errors#the-exception-handler) của bạn:
 
     report($e);
 
 <a name="method-request"></a>
-#### `request()` {#collection-method}
+#### `request()` {.collection-method}
 
 Hàm `request` trả về instance [request](/docs/{{version}}/requests) hiện tại hoặc lấy ra một input item:
 
@@ -1590,7 +1590,7 @@ Hàm `request` trả về instance [request](/docs/{{version}}/requests) hiện 
     $value = request('key', $default);
 
 <a name="method-rescue"></a>
-#### `rescue()` {#collection-method}
+#### `rescue()` {.collection-method}
 
 Hàm `rescue` sẽ thực thi Closure đã cho và catch bất kỳ exception nào xảy ra trong quá trình thực thi. Tất cả các exception bị catch sẽ được gửi đến phương thức `report` của [exception handler](/docs/{{version}}/errors#the-exception-handler) của bạn; tuy nhiên, request sẽ tiếp tục xử lý:
 
@@ -1611,14 +1611,14 @@ Bạn cũng có thể truyền tham số thứ hai cho hàm `rescue`. Tham số 
     });
 
 <a name="method-resolve"></a>
-#### `resolve()` {#collection-method}
+#### `resolve()` {.collection-method}
 
 Hàm `resolve` sẽ resolve một tên class hoặc một interface đã cho thành một instance của nó bằng cách sử dụng [service container](/docs/{{version}}/container):
 
     $api = resolve('HelpSpot\API');
 
 <a name="method-response"></a>
-#### `response()` {#collection-method}
+#### `response()` {.collection-method}
 
 Hàm `response` tạo ra một instance [response](/docs/{{version}}/responses) hoặc lấy ra một instance của response factory:
 
@@ -1627,7 +1627,7 @@ Hàm `response` tạo ra một instance [response](/docs/{{version}}/responses) 
     return response()->json(['foo' => 'bar'], 200, $headers);
 
 <a name="method-retry"></a>
-#### `retry()` {#collection-method}
+#### `retry()` {.collection-method}
 
 Hàm `retry` sẽ thử thực hiện callback đã cho, cho đến khi đạt được ngưỡng thử tối đa nào đó. Nếu callback không đưa ra exception, chính giá trị trả về của nó sẽ được trả về. Nếu callback đưa ra một exception, nó sẽ tự động được thử lại. Nếu vượt quá số lần thử tối đa, exception sẽ bị đưa ra:
 
@@ -1636,7 +1636,7 @@ Hàm `retry` sẽ thử thực hiện callback đã cho, cho đến khi đạt �
     }, 100);
 
 <a name="method-session"></a>
-#### `session()` {#collection-method}
+#### `session()` {.collection-method}
 
 Hàm `session` có thể được sử dụng để lấy hoặc set các giá trị [session](/docs/{{version}}/session) values:
 
@@ -1653,7 +1653,7 @@ Session store sẽ được trả về nếu không có giá trị nào được
     session()->put('key', $value);
 
 <a name="method-tap"></a>
-#### `tap()` {#collection-method}
+#### `tap()` {.collection-method}
 
 Hàm `tap` sẽ nhận vào hai tham số: một là `$value` và một Closure. `$value` sẽ được truyền đến phần Closure và sau đó được trả về bởi hàm `tap`. Giá trị trả về của Closure sẽ không liên quan:
 
@@ -1677,7 +1677,7 @@ Nếu không có Closure nào được truyền đến hàm `tap`, bạn có th�
     });
 
 <a name="method-throw-if"></a>
-#### `throw_if()` {#collection-method}
+#### `throw_if()` {.collection-method}
 
 Hàm `throw_if` sẽ đưa ra exception đã cho nếu một biểu thức boolean đã cho là `true`:
 
@@ -1690,7 +1690,7 @@ Hàm `throw_if` sẽ đưa ra exception đã cho nếu một biểu thức boole
     );
 
 <a name="method-throw-unless"></a>
-#### `throw_unless()` {#collection-method}
+#### `throw_unless()` {.collection-method}
 
 Hàm `throw_unless` sẽ đưa ra exception đã cho nếu một biểu thức boolean đã cho là `false`:
 
@@ -1703,21 +1703,21 @@ Hàm `throw_unless` sẽ đưa ra exception đã cho nếu một biểu thức b
     );
 
 <a name="method-today"></a>
-#### `today()` {#collection-method}
+#### `today()` {.collection-method}
 
 Hàm `today` sẽ tạo ra một instance `Illuminate\Support\Carbon` mới cho ngày hiện tại:
 
     $today = today();
 
 <a name="method-trait-uses-recursive"></a>
-#### `trait_uses_recursive()` {#collection-method}
+#### `trait_uses_recursive()` {.collection-method}
 
 Hàm `trait_uses_recursive` trả về tất cả các trait được sử dụng bởi một trait:
 
     $traits = trait_uses_recursive(\Illuminate\Notifications\Notifiable::class);
 
 <a name="method-transform"></a>
-#### `transform()` {#collection-method}
+#### `transform()` {.collection-method}
 
 Hàm `transform` sẽ thực thi một `Closure` trên một giá trị đã cho nếu giá trị không [blank](#method-blank) và trả về kết quả của một `Closure`:
 
@@ -1736,14 +1736,14 @@ Một giá trị mặc định hoặc một `Closure` cũng có thể được t
     // The value is blank
 
 <a name="method-validator"></a>
-#### `validator()` {#collection-method}
+#### `validator()` {.collection-method}
 
 Hàm `validator` sẽ tạo ra một instance [validator](/docs/{{version}}/validation) mới với các tham số đã cho. Bạn có thể sử dụng nó thay vì facade `Validator` cho thuận tiện:
 
     $validator = validator($data, $rules, $messages);
 
 <a name="method-value"></a>
-#### `value()` {#collection-method}
+#### `value()` {.collection-method}
 
 Hàm `value` sẽ trả về giá trị được cho. Tuy nhiên, nếu bạn truyền một `Closure` cho hàm, thì` Closure` sẽ được thực thi sau đó kết quả của nó sẽ được trả về:
 
@@ -1758,14 +1758,14 @@ Hàm `value` sẽ trả về giá trị được cho. Tuy nhiên, nếu bạn tr
     // false
 
 <a name="method-view"></a>
-#### `view()` {#collection-method}
+#### `view()` {.collection-method}
 
 Hàm `view` sẽ lấy ra một instance [view](/docs/{{version}}/views):
 
     return view('auth.login');
 
 <a name="method-with"></a>
-#### `with()` {#collection-method}
+#### `with()` {.collection-method}
 
 Hàm `with` sẽ trả về giá trị được cho. Nếu một `Closure` được truyền làm tham số thứ hai cho hàm, thì `Closure` đó sẽ được thực thi và sau đó kết quả của nó sẽ được trả về:
 

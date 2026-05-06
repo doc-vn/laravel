@@ -73,11 +73,13 @@ Cả Valet và Homestead đều là những lựa chọn tuyệt vời để c�
 **Valet yêu cầu macOS và [Homebrew](https://brew.sh/). Trước khi cài đặt, bạn nên đảm bảo rằng không có chương trình nào như Apache hoặc Nginx đang chạy ở cổng 80 trên máy local của bạn.**
 
 <div class="content-list" markdown="1">
+
 - Cài đặt hoặc cập nhật [Homebrew](http://brew.sh/) mới nhất bằng cách dùng lệnh `brew update`.
 - Cài đặt PHP 7.3 bằng cách dùng lệnh `brew install php` thông qua Homebrew.
 - Cài đặt [Composer](https://getcomposer.org).
 - Cài đặt Valet bằng Composer thông qua lệnh `composer global require laravel/valet`. Và chắc chắn là thư mục `~/.composer/vendor/bin` này đã có trong "PATH" của máy bạn.
 - Chạy lệnh `valet install`. Lệnh này sẽ cấu hình và cài đặt Valet cùng DnsMasq, ngoài ra cũng sẽ đăng ký Valet's daemon chạy mỗi khi máy bạn khởi động.
+
 </div>
 
 Khi Valet đã được cài đặt xong, hãy thử ping đến bất kỳ tên miền nào có đuôi là `* .test` trên terminal của bạn bằng cách sử dụng một lệnh như sau `ping foobar.test`. Nếu Valet được cài đặt chính xác, bạn sẽ thấy tên miền này phản hồi trên `127.0.0.1`.
@@ -131,7 +133,7 @@ Sau khi nâng cấp, có thể bạn cần phải chạy lại lệnh re-park ho
 Sau khi Valet được cài đặt xong, bạn có thể bắt đầu tạo site của bạn. Valet cung cấp hai lệnh để giúp bạn tạo các trang web: `park` và `link`.
 
 <a name="the-park-command"></a>
-**Lệnh `park`**
+### The `park` Command
 
 <div class="content-list" markdown="1">
 - Tạo một thư mục mới trên máy Mac của bạn, ví dụ như `mkdir ~/Sites`. Tiếp theo, chạy lệnh `cd ~/Sites` và `valet park`. Lệnh `valet park` sẽ đăng ký thư mục hiện tại thành một đường dẫn, mà Valet sẽ tìm kiếm cho site.
@@ -142,7 +144,7 @@ Sau khi Valet được cài đặt xong, bạn có thể bắt đầu tạo site
 **Đó là tất cả** Bây giờ, bất kỳ project Laravel nào bạn mà được tạo trong thư mục mà đã được park thì nó sẽ tự động được tạo một site tương ứng theo quy tắc là `http://folder-name.test`. Để xem danh sách tất cả các trang web có trong thư mục đã park của bạn, bạn có thể thực hiện lệnh `valet parked`.
 
 <a name="the-link-command"></a>
-**Lệnh `link`**
+### The `link` Command
 
 Lệnh `link` cũng được dùng để tạo site cho bạn. Lệnh này hữu ích nếu bạn muốn tạo một site trong một thư mục chứ không phải là toàn bộ thư mục.
 
@@ -156,7 +158,7 @@ Lệnh `link` cũng được dùng để tạo site cho bạn. Lệnh này hữu
 > {tip} Bạn có thể sử dụng `valet link` để tạo nhiều sub domain trong cùng một project. Để thêm một sub domain hoặc một tên miền khác vào project của bạn, hãy chạy `valet link domainomain.app-name` từ thư mục project.
 
 <a name="securing-sites"></a>
-**Bảo vệ site với TLS**
+### Securing Sites With TLS
 
 Mặc định, Valet sẽ tạo site trên HTTP. Tuy nhiên, nếu bạn muốn tạo một trang web được mã hoá TLS bằng HTTP/2, hãy sử dụng lệnh `secure`. Ví dụ: nếu trang web của bạn đang được Valet tạo trên tên miền là `laravel.test`, thì bạn nên chạy lệnh sau để bảo vệ trang web này:
 
