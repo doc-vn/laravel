@@ -31,7 +31,7 @@ Tại thời điểm này, chức năng [đặt tên cho tham số](https://www.
 | 7 | 7.2 - 8.0 | ngày 3 tháng 3 năm 2020 | ngày 6 tháng 10 năm 2020 | ngày 3 tháng 3 năm 2021 |
 | 8 | 7.3 - 8.1 | ngày 8 tháng 9 năm 2020 | ngày 26 tháng 7 năm 2022 | ngày 24 tháng 1 năm 2023 |
 | 9 | 8.0 - 8.1 | ngày 8 tháng 2 năm 2022 | ngày 8 tháng 8 năm 2023 | ngày 6 tháng 2 năm 2024 |
-| 10 | 8.1 | ngày 7 tháng 2 năm 2023 | ngày 6 tháng 8 năm 2024 | ngày 4 tháng 2 năm 2025 |
+| 10 | 8.1 - 8.3 | ngày 14 tháng 2 năm 2023 | ngày 6 tháng 8 năm 2024 | ngày 4 tháng 2 năm 2025 |
 
 <div class="version-colors">
     <div class="end-of-life">
