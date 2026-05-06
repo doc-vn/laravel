@@ -33,6 +33,7 @@
 Các bảng cơ sở dữ liệu thường được quan hệ với nhau. Ví dụ: một bài post trên một blog có thể có nhiều comment hoặc một order có thể có quan hệ với người dùng đã đặt nó. Eloquent giúp quản lý và làm việc với những quan hệ này một cách dễ dàng hơn và hỗ trợ một số loại quan hệ khác nhau như sau:
 
 <div class="content-list" markdown="1">
+
 - [Một - Một](#one-to-one)
 - [Một - Nhiều](#one-to-many)
 - [Nhiều - Nhiều](#many-to-many)
@@ -40,6 +41,7 @@ Các bảng cơ sở dữ liệu thường được quan hệ với nhau. Ví d�
 - [Một - Một (đa hình)](#one-to-one-polymorphic-relations)
 - [Một - Nhiều (đa hình)](#one-to-many-polymorphic-relations)
 - [Nhiều - Nhiều (đa hình)](#many-to-many-polymorphic-relations)
+
 </div>
 
 <a name="defining-relationships"></a>

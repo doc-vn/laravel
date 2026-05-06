@@ -201,10 +201,12 @@ Mix cung cấp một số tính năng để giúp bạn làm việc với các f
 Với chỉ một dòng code duy nhất, giờ đây bạn có thể làm:
 
 <div class="content-list" markdown="1">
+
 - Cú pháp ES2015.
 - Modules
 - Biên dịch các file `.vue`.
 - Thu nhỏ file cho môi trương production.
+
 </div>
 
 <a name="vendor-extraction"></a>
@@ -220,9 +222,11 @@ Nếu bạn thường xuyên cập nhật JavaScript trong application của b�
 Phương thức `extract` chấp nhận một mảng của tất cả các thư viện hoặc modules mà bạn muốn thành một file `vendor.js riêng. Sử dụng đoạn code trên làm ví dụ, Mix sẽ tạo ra các file như sau:
 
 <div class="content-list" markdown="1">
+
 - `public/js/manifest.js`: *The Webpack manifest runtime*
 - `public/js/vendor.js`: *Các vendor library của bạn*
 - `public/js/app.js`: * code application của bạn*
+
 </div>
 
 Để tránh lỗi JavaScript, hãy đảm bảo load các file này theo đúng thứ tự như ở dưới đây:

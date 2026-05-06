@@ -20,6 +20,7 @@ Laravel framework có nhiều yêu cầu về server. Tất cả những yêu c�
 Tuy nhiên, nếu bạn không muốn dùng Homestead, thì bạn hãy chắc chắn là server của bạn đã cài đặt những package dưới đây:
 
 <div class="content-list" markdown="1">
+
 - PHP >= 7.1.3
 - OpenSSL PHP Extension
 - PDO PHP Extension
@@ -29,6 +30,7 @@ Tuy nhiên, nếu bạn không muốn dùng Homestead, thì bạn hãy chắc ch
 - Ctype PHP Extension
 - JSON PHP Extension
 - BCMath PHP Extension
+
 </div>
 
 <a name="installing-laravel"></a>
@@ -45,8 +47,10 @@ Laravel dùng [Composer](https://getcomposer.org) để quản lý các library.
 Hãy chắc chắn rằng laravel installer đã được cài đặt vào trong thư mục global của composer, để bạn có thể chạy lệnh `laravel` này tại bất kỳ thư mục nào mà bạn muốn tạo project. Thư mục global của composer này sẽ tồn tại ở các vị trí khác nhau tuỳ theo hệ điều hành của bạn, nhưng dưới đây là một số vị trí cơ bản theo hệ điều hành:
 
 <div class="content-list" markdown="1">
+
 - macOS: `$HOME/.composer/vendor/bin`
 - GNU / Linux Distributions: `$HOME/.config/composer/vendor/bin`
+
 </div>
 
 Sau khi đã cài đặt xong, lệnh `laravel new` sẽ tạo một project mới tại đúng vị trí thự mục mà bạn đang chạy lệnh này, Ví dụ, khi chạy lệnh `laravel new blog` sẽ tạo a một thư mục mới với tên là `blog` mà trong đó đã cài đặt tất cả cái thứ mà laravel cần để chạy:
@@ -95,9 +99,11 @@ Laravel gần như không yêu cần bạn cấu hình thêm. Bạn có thể th
 Bạn cũng có thể muốn cấu hình thêm nhiều phần khác của laravel, như là:
 
 <div class="content-list" markdown="1">
+
 - [Cache](/docs/{{version}}/cache#configuration)
 - [Database](/docs/{{version}}/database#configuration)
 - [Session](/docs/{{version}}/session#configuration)
+
 </div>
 
 <a name="web-server-configuration"></a>
