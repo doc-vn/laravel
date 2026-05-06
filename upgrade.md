@@ -57,9 +57,11 @@ Nếu bạn đang sử dụng package `laravel/browser-kit-testing`, bạn nên 
 Ngoài ra, nếu bạn đang sử dụng các package sau đây, thì bạn nên nâng cấp chúng lên bản phát hành mới nhất:
 
 <div class="content-list" markdown="1">
+
 - Dusk (Cập nhật tới `^3.0`)
 - Passport (Cập nhật tới `^6.0`)
 - Scout (Cập nhật tới `^4.0`)
+
 </div>
 
 Tất nhiên, đừng quên kiểm tra bất kỳ package của bên thứ 3 nào được ứng dụng của bạn sử dụng và xác nhận rằng bạn đang sử dụng phiên bản thích hợp để hỗ trợ Laravel 5.6.

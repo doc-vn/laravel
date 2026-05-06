@@ -20,6 +20,7 @@ Hãy nhớ rằng, báo bug được tạo ra với hy vọng rằng những ng�
 Mã nguồn của Laravel được quản lý trên GitHub và có các repository cho từng dự án của Laravel:
 
 <div class="content-list" markdown="1">
+
 - [Laravel Application](https://github.com/laravel/laravel)
 - [Laravel Art](https://github.com/laravel/art)
 - [Laravel Documentation](https://github.com/laravel/docs)
@@ -35,6 +36,7 @@ Mã nguồn của Laravel được quản lý trên GitHub và có các reposito
 - [Laravel Scout](https://github.com/laravel/scout)
 - [Laravel Socialite](https://github.com/laravel/socialite)
 - [Laravel Website](https://github.com/laravel/laravel.com)
+
 </div>
 
 <a name="core-development-discussion"></a>

@@ -120,6 +120,7 @@ Một lần nữa, giống như phương thức `less`, bạn có thể biên d�
 ### Stylus
 
 Tương tự như Less và Sass, phương thức `stylus` cho phép bạn biên dịch các file [Stylus](http://stylus-lang.com/) thành CSS:
+
     mix.stylus('resources/assets/stylus/app.styl', 'public/css');
 
 Bạn cũng có thể cài đặt thêm các Stylus plug-in, chẳng hạn như [Rupture](https://github.com/jescalan/rupture). Đầu tiên, cài đặt plug-in này thông qua NPM (`npm install rupture`) và sau đó require nó trong lệnh gọi của bạn `mix.stylus()`:
@@ -200,10 +201,12 @@ Mix cung cấp một số tính năng để giúp bạn làm việc với các f
 Với chỉ một dòng code duy nhất, giờ đây bạn có thể làm:
 
 <div class="content-list" markdown="1">
+
 - Cú pháp ES2015.
 - Modules
 - Biên dịch các file `.vue`.
 - Thu nhỏ file cho môi trương production.
+
 </div>
 
 <a name="vendor-extraction"></a>
@@ -219,9 +222,11 @@ Nếu bạn thường xuyên cập nhật JavaScript trong application của b�
 Phương thức `extract` chấp nhận một mảng của tất cả các thư viện hoặc modules mà bạn muốn thành một file `vendor.js riêng. Sử dụng đoạn code trên làm ví dụ, Mix sẽ tạo ra các file như sau:
 
 <div class="content-list" markdown="1">
+
 - `public/js/manifest.js`: *The Webpack manifest runtime*
 - `public/js/vendor.js`: *Các vendor library của bạn*
 - `public/js/app.js`: * code application của bạn*
+
 </div>
 
 Để tránh lỗi JavaScript, hãy đảm bảo load các file này theo đúng thứ tự như ở dưới đây:

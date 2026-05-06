@@ -46,6 +46,7 @@ Homestead có thể chạy nhiều hệ điều hành Windows, Mac, hoặc Linux
 ### Software cài đặt sẵn
 
 <div class="content-list" markdown="1">
+
 - Ubuntu 18.04
 - Git
 - PHP 7.2
@@ -72,6 +73,7 @@ Homestead có thể chạy nhiều hệ điều hành Windows, Mac, hoặc Linux
 - Zend Z-Ray
 - Go
 - Minio
+
 </div>
 
 <a name="installation-and-setup"></a>
@@ -437,6 +439,7 @@ Cuối cùng, hãy đảm bảo file `.env` của bạn đã có các tùy chọ
 Mặc định, các cổng dưới đây sẽ được thiết lập để chuyển tiếp tới môi trường Homestead của bạn:
 
 <div class="content-list" markdown="1">
+
 - **SSH:** 2222 &rarr; Chuyển tới 22
 - **ngrok UI:** 4040 &rarr; Chuyển tới 4040
 - **HTTP:** 8000 &rarr; Chuyển tới 80
@@ -446,6 +449,7 @@ Mặc định, các cổng dưới đây sẽ được thiết lập để chuy�
 - **MongoDB:** 27017 &rarr; Chuyển tới 27017
 - **Mailhog:** 8025 &rarr; Chuyển tới 8025
 - **Minio:** 9600 &rarr; Chuyển tới 9600
+
 </div>
 
 #### Thêm Port

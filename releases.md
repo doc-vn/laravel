@@ -184,7 +184,7 @@ Laravel 5.6 giới thiệu hai phương thức mới để tạo UUID: `Str::uui
 
 Từ bây giờ, mặc định ứng dụng `laravel/laravel` chứa một phụ thuộc Composer `dev` cho package [Collision](https://github.com/nunomaduro/collision) do Nuno Maduro tạo ra. Package này cung cấp các báo cáo lỗi tuyệt vời khi tương tác với ứng dụng Laravel của bạn trên dòng lệnh:
 
-<img src="https://raw.githubusercontent.com/nunomaduro/collision/stable/docs/example.png" width="600" height="388">
+<img src="https://raw.githubusercontent.com/nunomaduro/collision/v7.x/docs/example.png" width="600" height="388">
 
 ### Bootstrap 4
 
