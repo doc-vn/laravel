@@ -17,6 +17,8 @@
 - [Gửi Job](#dispatching-jobs)
     - [Delay gửi](#delayed-dispatching)
     - [Đồng bộ gửi](#synchronous-dispatching)
+    - [Gửi số lượng lớn](#bulk-dispatching)
+    - [Chuẩn bị Job trước khi gửi](#preparing-jobs-before-dispatch)
     - [Jobs và Database Transactions](#jobs-and-database-transactions)
     - [Kết hợp Job](#job-chaining)
     - [Tùy biến Queue và Connection](#customizing-the-queue-and-connection)
@@ -39,6 +41,7 @@
     - [Lệnh `queue:work`](#the-queue-work-command)
     - [Queue ưu tiên](#queue-priorities)
     - [Queue Worker và Deployment](#queue-workers-and-deployment)
+    - [Reacting to Worker Signals](#reacting-to-worker-signals)
     - [Job hết hạn và timeout](#job-expirations-and-timeouts)
     - [Dừng và tiếp tục Queue Workers](#pausing-and-resuming-queue-workers)
 - [Cấu hình Supervisor](#supervisor-configuration)
@@ -152,6 +155,35 @@ Khi sử dụng queue Redis, bạn có thể sử dụng tùy chọn cấu hình
 
 > [!WARNING]
 > Việc set `block_for` thành `0` sẽ khiến các queue worker chặn vô thời hạn cho đến khi có job. Điều này cũng sẽ chặn các tín hiệu như `SIGTERM` được xử lý cho đến khi job tiếp theo được xử lý.
+
+<a name="sqs-overflow-storage"></a>
+#### SQS Overflow Storage
+
+Amazon SQS giới hạn kích thước tối đa payload của một message trong queue. Nếu bạn cần gửi các job có payload có thể vượt quá giới hạn này, bạn có thể cấu hình Laravel để lưu các SQS payload quá lớn vào một cache store và gửi một con trỏ qua SQS. Để bật tính năng này, hãy thêm mảng `overflow` vào cấu hình kết nối SQS queue của bạn:
+
+```php
+'sqs' => [
+    'driver' => 'sqs',
+    'key' => env('AWS_ACCESS_KEY_ID'),
+    'secret' => env('AWS_SECRET_ACCESS_KEY'),
+    'prefix' => env('SQS_PREFIX', 'https://sqs.us-east-1.amazonaws.com/your-account-id'),
+    'queue' => env('SQS_QUEUE', 'default'),
+    'suffix' => env('SQS_SUFFIX'),
+    'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
+    'after_commit' => false,
+    'overflow' => [
+        'enabled' => env('SQS_OVERFLOW_ENABLED', false),
+        'store' => env('SQS_OVERFLOW_STORE'),
+        'always' => false,
+        'delete_after_processing' => true,
+        'flush_on_clear' => env('SQS_OVERFLOW_FLUSH_ON_CLEAR', false),
+    ],
+],
+```
+
+Khi overflow storage đã được bật, Laravel sẽ lưu các payload có kích thước lớn hơn 1 MB vào cache store đã được cấu hình. Nếu tùy chọn `always` là `true`, thì mọi SQS payload đều sẽ được lưu vào cache store bất kể kích thước. Vì các queued job sẽ cần lấy lại payload từ cache store khi được xử lý, bạn nên chọn một store có thể lưu trữ payload cho đến khi các worker xử lý chúng. Mặc định, các payload đã lưu sẽ bị xóa sau khi job được xử lý thành công và bị xóa khỏi SQS.
+
+Nếu tùy chọn `flush_on_clear` là `true`, thì cache store overflow đã được cấu hình sẽ bị xóa khi lệnh `queue:clear` xóa SQS queue. Vì việc xoá một cache store có thể xóa tất cả các item có trong store đó, bạn nên cấu hình SQS overflow storage sử dụng một cache store riêng biệt khi bật tùy chọn này.
 
 <a name="other-driver-prerequisites"></a>
 #### Other Driver Prerequisites
@@ -827,6 +859,28 @@ public function middleware(): array
 }
 ```
 
+Phương thức `backoff` cũng nhận một closure cùng với một exception được đưa ra, cho phép bạn xác định độ trễ một cách linh hoạt:
+
+```php
+use App\Exceptions\RateLimitedException;
+use Illuminate\Queue\Middleware\ThrottlesExceptions;
+use Throwable;
+
+/**
+ * Get the middleware the job should pass through.
+ *
+ * @return array<int, object>
+ */
+public function middleware(): array
+{
+    return [(new ThrottlesExceptions(10, 5 * 60))->backoff(
+        fn (Throwable $throwable) => $throwable instanceof RateLimitedException
+            ? $throwable->retryAfterMinutes()
+            : 5
+    )];
+}
+```
+
 Ở bên trong, middleware này sẽ sử dụng cache system của Laravel để thực hiện giới hạn tỷ lệ và tên class của job sẽ được sử dụng để làm "khóa" của cache. Bạn có thể ghi đè khóa này bằng cách gọi phương thức `by` khi gắn middleware vào job của bạn. Điều này có thể hữu ích nếu bạn có nhiều job tương tác với cùng một service của bên thứ ba và bạn muốn chúng chia sẻ một "nhóm" điều tiết chung đảm bảo chúng tuân thủ một giới hạn chung duy nhất:
 
 ```php
@@ -1089,6 +1143,58 @@ Tương tự, connection `background` xử lý các job sau khi HTTP response đ
 
 ```php
 RecordDelivery::dispatch($order)->onConnection('background');
+```
+
+<a name="bulk-dispatching"></a>
+### Gửi số lượng lớn
+
+Nếu bạn cần gửi nhiều job độc lập cùng một lúc mà không cần theo dõi [batch](#job-batching) hay callback, bạn có thể sử dụng phương thức `bulk` của facade `Bus`. Laravel sẽ nhóm các job theo kết nối queue và tên queue đã được cấu hình, rồi đẩy từng nhóm job đó vào queue tương ứng:
+
+```php
+use App\Jobs\ProcessUser;
+use Illuminate\Support\Facades\Bus;
+
+Bus::bulk(
+    $users->map(fn ($user) => new ProcessUser($user))
+);
+```
+
+<a name="preparing-jobs-before-dispatch"></a>
+### Chuẩn bị Job trước khi gửi
+
+Nếu một job cần được chuẩn bị hoặc kiểm tra trạng thái của nó trước khi được đẩy vào queue, thì job đó có thể implement interface `Illuminate\Contracts\Queue\PreparesForDispatch`. Laravel sẽ gọi phương thức `prepareForDispatch` của job đó trước khi gửi. Nếu phương thức này trả về `false`, job đó sẽ không được gửi:
+
+```php
+<?php
+
+namespace App\Jobs;
+
+use Illuminate\Contracts\Queue\PreparesForDispatch;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Foundation\Queue\Queueable;
+use Illuminate\Support\Facades\Cache;
+
+class SyncPodcasts implements PreparesForDispatch, ShouldQueue
+{
+    use Queueable;
+
+    /**
+     * Create a new job instance.
+     */
+    public function __construct(
+        public array $podcastIds,
+    ) {}
+
+    /**
+     * Prepare the job before dispatching.
+     */
+    public function prepareForDispatch(): bool
+    {
+        return collect($this->podcastIds)
+            ->reject(fn (int $id) => Cache::has("podcast-syncing:{$id}"))
+            ->isNotEmpty();
+    }
+}
 ```
 
 <a name="jobs-and-database-transactions"></a>
@@ -2439,6 +2545,64 @@ php artisan queue:restart
 > [!NOTE]
 > Queue sẽ sử dụng [cache](/docs/{{version}}/cache) để lưu trữ tín hiệu khởi động lại, vì vậy bạn nên kiểm tra driver cache đã được cấu hình cho application của bạn đúng chưa trước khi sử dụng tính năng này.
 
+<a name="reacting-to-worker-signals"></a>
+### Reacting to Worker Signals
+
+Khi một queue worker nhận được tín hiệu kết thúc như `SIGQUIT`, `SIGTERM` hoặc `SIGINT` trong khi đang xử lý một job, worker sẽ hoàn thành job hiện tại trước khi thoát. Tuy nhiên, job của bạn có thể cần xử lý các tín hiệu đó trước khi process của job bị dừng bởi server hoặc container orchestrator. Ví dụ: một job import chạy lâu dài có thể cần dừng việc lấy bản ghi mới và lưu lại tiến trình hiện tại của nó.
+
+Để xử lý các worker signal từ bên trong một job, hãy implement interface `Illuminate\Contracts\Queue\Interruptible` và định nghĩa phương thức `interrupted` trên job của bạn. Tín hiệu mà worker nhận được sẽ được truyền vào phương thức `interrupted`:
+
+```php
+<?php
+
+namespace App\Jobs;
+
+use App\Models\Import;
+use Illuminate\Contracts\Queue\Interruptible;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Foundation\Queue\Queueable;
+
+class ImportProducts implements ShouldQueue, Interruptible
+{
+    use Queueable;
+
+    protected bool $shouldStop = false;
+
+    /**
+     * Create a new job instance.
+     */
+    public function __construct(
+        public Import $import,
+    ) {}
+
+    /**
+     * Execute the job.
+     */
+    public function handle(): void
+    {
+        foreach ($this->import->pendingRows() as $row) {
+            if ($this->shouldStop) {
+                break;
+            }
+
+            // Import the product row...
+        }
+
+        $this->import->saveProgress();
+    }
+
+    /**
+     * Handle a signal received by the queue worker.
+     */
+    public function interrupted(int $signal): void
+    {
+        $this->shouldStop = true;
+    }
+}
+```
+
+Phương thức `interrupted` chỉ được gọi khi worker nhận được tín hiệu trong khi job đang chạy. Nó không thay thế cho [timeouts](#worker-timeouts) hay [phương thức `failed`](#cleaning-up-after-failed-jobs) của job.
+
 <a name="job-expirations-and-timeouts"></a>
 ### Job hết hạn và timeout
 
@@ -2956,6 +3120,9 @@ test('orders can be shipped', function () {
     // Assert a job was pushed
     Queue::assertPushed(ShipOrder::class);
 
+    // Assert a job was pushed exactly once...
+    Queue::assertPushedOnce(ShipOrder::class);
+
     // Assert a job was pushed twice...
     Queue::assertPushedTimes(ShipOrder::class, 2);
 
@@ -2999,6 +3166,9 @@ class ExampleTest extends TestCase
 
         // Assert a job was pushed
         Queue::assertPushed(ShipOrder::class);
+
+        // Assert a job was pushed exactly once...
+        Queue::assertPushedOnce(ShipOrder::class);
 
         // Assert a job was pushed twice...
         Queue::assertPushedTimes(ShipOrder::class, 2);
@@ -3300,5 +3470,18 @@ Queue::looping(function () {
     while (DB::transactionLevel() > 0) {
         DB::rollBack();
     }
+});
+```
+
+Laravel cũng gửi event `Illuminate\Queue\Events\WorkerIdle` khi một queue worker không thể lấy được job từ queue:
+
+```php
+use Illuminate\Queue\Events\WorkerIdle;
+use Illuminate\Support\Facades\Event;
+
+Event::listen(function (WorkerIdle $event) {
+    // $event->connectionName
+    // $event->queue
+    // $event->workerOptions
 });
 ```

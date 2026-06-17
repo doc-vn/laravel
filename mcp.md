@@ -1290,6 +1290,25 @@ public function handle(Request $request): Response
 }
 ```
 
+<a name="resource-link-responses"></a>
+#### Resource Link Responses
+
+Để trả về một resource link, hãy sử dụng phương thức `resourceLink`, cung cấp URI và tên. Khác với embedded resource, một resource link sẽ trả về một con trỏ URI để AI client sẽ tự lấy về:
+
+```php
+return Response::resourceLink(
+    uri: 'file:///data/report.json',
+    name: 'monthly-report',
+    mimeType: 'application/json',
+);
+```
+
+Bạn cũng có thể truyền vào một class hoặc instance resource đã được đăng ký, resource link sẽ tự động kế thừa URI, tên, tiêu đề, mô tả và MIME type của resource đó:
+
+```php
+return Response::resourceLink(new WeatherForecastResource);
+```
+
 <a name="resource-blob-responses"></a>
 #### Blob Responses
 

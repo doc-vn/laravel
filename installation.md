@@ -84,16 +84,16 @@ Trước khi tạo application Laravel đầu tiên, bạn hãy chắc chắn l�
 Nếu bạn chưa cài đặt PHP và Composer trên máy local của bạn, các lệnh sau sẽ cài đặt PHP, Composer và Laravel installer trên macOS, Windows hoặc Linux:
 
 ```shell tab=macOS
-/bin/bash -c "$(curl -fsSL https://php.new/install/mac/8.4)"
+/bin/bash -c "$(curl -fsSL https://php.new/install/mac/8.5)"
 ```
 
 ```shell tab=Windows PowerShell
 # Run as administrator...
-Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://php.new/install/windows/8.4'))
+Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://php.new/install/windows/8.5'))
 ```
 
 ```shell tab=Linux
-/bin/bash -c "$(curl -fsSL https://php.new/install/linux/8.4)"
+/bin/bash -c "$(curl -fsSL https://php.new/install/linux/8.5)"
 ```
 
 Sau khi bạn đã chạy xong một trong các lệnh trên, bạn nên khởi động lại phiên terminal của bạn. Để cập nhật PHP, Composer và Laravel installer sau khi cài đặt chúng qua `php.new`, bạn có thể chạy lại trong terminal của bạn.

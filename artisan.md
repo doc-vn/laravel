@@ -863,7 +863,7 @@ $this->callSilently('mail:send', [
 <a name="signal-handling"></a>
 ## Xử lý tín hiệu
 
-Như bạn có thể biết, hệ điều hành cho phép gửi tín hiệu đến các process đang chạy. Ví dụ: tín hiệu `SIGTERM` là cách hệ điều hành yêu cầu một chương trình kết thúc. Nếu bạn muốn listen các tín hiệu này trong lệnh Artisan console và chạy code khi chúng xảy ra, bạn có thể sử dụng phương thức `trap`:
+Như bạn có thể biết, hệ điều hành cho phép gửi tín hiệu đến các process đang chạy. Ví dụ: tín hiệu `SIGTERM` là cách hệ điều hành yêu cầu một chương trình kết thúc một cách nhẹ nhàng. Nếu bạn muốn listen các tín hiệu này trong lệnh Artisan console và chạy code khi chúng xảy ra, bạn có thể sử dụng phương thức `trap`:
 
 ```php
 /**

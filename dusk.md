@@ -996,6 +996,13 @@ $browser->controlClick();
 $browser->controlClick('.selector');
 ```
 
+Phương thức `clickWhenVisible` hoặc `clickWhenEnabled` có thể được sử dụng để đợi đến khi một phần tử sẵn sàng trước khi click vào nó chính xác một lần:
+
+```php
+$browser->clickWhenVisible('@save-button');
+$browser->clickWhenEnabled('@submit-button');
+```
+
 <a name="mouseover"></a>
 #### Mouseover
 

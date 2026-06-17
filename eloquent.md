@@ -1651,6 +1651,8 @@ Khi các tham số được thêm vào định dạng của phương thức scop
 $users = User::ofType('admin')->get();
 ```
 
+Các phương thức scope mà sử dụng thêm các tham số nên ở dạng `protected`. Khi gọi một scope có tham số từ bên trong class model, hãy gọi scope đó thông qua một instance query builder, ví dụ như `static::query()->ofType('admin')`, để đảm bảo lệnh gọi này sẽ được chuyển đến xử lý scope của Eloquent.
+
 <a name="pending-attributes"></a>
 ### Pending Attributes
 

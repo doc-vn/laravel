@@ -29,9 +29,9 @@ Nếu không có bảo vệ CSRF, một trang web độc hại có thể tạo r
 </script>
 ```
 
- Nếu trang web độc hại này tự động gửi form đó mỗi khi trang được load, thì kẻ tấn công chỉ cần thu hút người dùng ứng dụng của bạn truy cập vào trang web của kẻ đó và địa chỉ email của người dùng của bạn sẽ được thay đổi ngay trong chính ứng dụng của bạn.
+Nếu trang web độc hại này tự động gửi form đó mỗi khi trang được load, thì kẻ tấn công chỉ cần thu hút người dùng ứng dụng của bạn truy cập vào trang web của kẻ đó và địa chỉ email của người dùng của bạn sẽ được thay đổi ngay trong chính ứng dụng của bạn.
 
- Để ngăn chặn lỗ hổng này, chúng ta cần phải kiểm tra mọi request `POST`, `PUT`, `PATCH` hoặc `DELETE` với một giá trị secret session mà ứng dụng độc hại sẽ không thể truy cập được.
+Để ngăn chặn lỗ hổng này, chúng ta cần phải kiểm tra mọi request `POST`, `PUT`, `PATCH` hoặc `DELETE` với một giá trị secret session mà ứng dụng độc hại sẽ không thể truy cập được.
 
 <a name="preventing-csrf-requests"></a>
 ## Ngăn request CSRF
@@ -145,6 +145,3 @@ $.ajaxSetup({
 Laravel lưu trữ mã token CSRF trong cookie mã hoá `XSRF-TOKEN` được chứa trong mỗi response được tạo bởi framework. Bạn có thể sử dụng giá trị cookie này để set vào request header `X-XSRF-TOKEN`.
 
 Cookie này được gửi về chủ yếu là tạo sự thuận tiện cho nhà phát triển vì một số framework và thư viện JavaScript, như Angular và Axios, sẽ tự động set giá trị của nó vào trong header `X-XSRF-TOKEN` cho các request có cùng origin.
-
-> [!NOTE]
-> Mặc định, file `resources/js/bootstrap.js` đã chứa thư viện Axios HTTP và sẽ tự động gửi header `X-XSRF-TOKEN` cho bạn.

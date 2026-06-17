@@ -100,7 +100,7 @@ Bộ công cụ khởi tạo Livewire sử dụng Livewire, Tailwind và thư vi
 <a name="react-customization"></a>
 ### React
 
-Bộ công cụ khởi tạo React của chúng tôi được xây dựng bằng Inertia 2, React 19, Tailwind 4 và [shadcn/ui](https://ui.shadcn.com). Giống như tất cả các bộ công cụ khởi tạo khác của chúng tôi, toàn bộ code backend và frontend đều nằm trong ứng dụng của bạn để bạn có thể tùy chỉnh bất kỳ thứ gì bạn muốn.
+Bộ công cụ khởi tạo React của chúng tôi được xây dựng bằng Inertia 3, React 19, Tailwind 4 và [shadcn/ui](https://ui.shadcn.com). Giống như tất cả các bộ công cụ khởi tạo khác của chúng tôi, toàn bộ code backend và frontend đều nằm trong ứng dụng của bạn để bạn có thể tùy chỉnh bất kỳ thứ gì bạn muốn.
 
 Phần lớn code frontend nằm trong thư mục `resources/js`. Bạn có thể tự do chỉnh sửa bất kỳ đoạn code nào để tùy chỉnh giao diện và hành vi của ứng dụng:
 
@@ -171,7 +171,7 @@ import AuthLayoutTemplate from '@/layouts/auth/auth-split-layout'; // [tl! add]
 <a name="svelte-customization"></a>
 ### Svelte
 
-Bộ công cụ khởi tạo Svelte của chúng tôi được xây dựng bằng Inertia 2, Svelte 5, Tailwind và [shadcn-svelte](https://www.shadcn-svelte.com/). Giống như tất cả các bộ công cụ khởi tạo khác của chúng tôi, toàn bộ code backend và frontend đều nằm trong ứng dụng của bạn để bạn có thể tùy chỉnh bất kỳ thứ gì bạn muốn.
+Bộ công cụ khởi tạo Svelte của chúng tôi được xây dựng bằng Inertia 3, Svelte 5, Tailwind và [shadcn-svelte](https://www.shadcn-svelte.com/). Giống như tất cả các bộ công cụ khởi tạo khác của chúng tôi, toàn bộ code backend và frontend đều nằm trong ứng dụng của bạn để bạn có thể tùy chỉnh bất kỳ thứ gì bạn muốn.
 
 Phần lớn code frontend nằm trong thư mục `resources/js`. Bạn có thể tự do chỉnh sửa bất kỳ đoạn code nào để tùy chỉnh giao diện và hành vi của ứng dụng:
 
@@ -237,7 +237,7 @@ import AuthLayout from '@/layouts/auth/AuthSplitLayout.svelte'; // [tl! add]
 <a name="vue-customization"></a>
 ### Vue
 
-Bộ công cụ khởi tạo Vue của chúng tôi được xây dựng bằng Inertia 2, Vue 3 Composition API, Tailwind và [shadcn-vue](https://www.shadcn-vue.com/). Giống như tất cả các bộ công cụ khởi tạo khác của chúng tôi, toàn bộ code backend và frontend đều nằm trong ứng dụng của bạn để bạn có thể tùy chỉnh bất kỳ thứ gì bạn muốn.
+Bộ công cụ khởi tạo Vue của chúng tôi được xây dựng bằng Inertia 3, Vue 3 Composition API, Tailwind và [shadcn-vue](https://www.shadcn-vue.com/). Giống như tất cả các bộ công cụ khởi tạo khác của chúng tôi, toàn bộ code backend và frontend đều nằm trong ứng dụng của bạn để bạn có thể tùy chỉnh bất kỳ thứ gì bạn muốn.
 
 Phần lớn code frontend nằm trong thư mục `resources/js`. Bạn có thể tự do chỉnh sửa bất kỳ đoạn code nào để tùy chỉnh giao diện và hành vi của ứng dụng:
 

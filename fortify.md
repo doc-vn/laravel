@@ -14,6 +14,13 @@
     - [Bật Two Factor Authentication](#enabling-two-factor-authentication)
     - [Authenticating cùng với Two Factor Authentication](#authenticating-with-two-factor-authentication)
     - [Tắt Two Factor Authentication](#disabling-two-factor-authentication)
+- [Passkeys](#passkeys)
+    - [Bật Passkeys](#enabling-passkeys)
+    - [JavaScript Client](#passkeys-javascript-client)
+    - [Authenticating cùng Passkeys](#authenticating-with-passkeys)
+    - [Xác nhận password cùng Passkeys](#confirming-password-with-passkeys)
+    - [Đăng ký Passkeys](#registering-passkeys)
+    - [Xoá Passkeys](#deleting-passkeys)
 - [Đăng ký](#registration)
     - [Tùy biến đăng ký](#customizing-registration)
 - [Password Reset](#password-reset)
@@ -355,6 +362,170 @@ Nếu request không thành công, thì người dùng sẽ được chuyển h�
 ### Tắt Two Factor Authentication
 
 Để tắt xác thực hai lớp, ứng dụng của bạn phải thực hiện một request DELETE tới URI `/user/two-factor-authentication`. Hãy nhớ rằng, URI xác thực hai lớp của Fortify  sẽ yêu cầu [xác nhận lại mật khẩu](#password-confirmation) trước khi được gọi.
+
+<a name="passkeys"></a>
+## Passkeys
+
+Fortify hỗ trợ xác thực passkey sử dụng WebAuthn. Passkey cho phép người dùng xác thực mà không cần mật khẩu bằng cách sử dụng các trình xác thực nền tảng như Face ID, Touch ID, Windows Hello, hoặc các khóa bảo mật phần cứng.
+
+<a name="enabling-passkeys"></a>
+### Bật Passkeys
+
+Để bắt đầu, hãy đảm bảo tính năng `passkeys` đã được kích hoạt trong file cấu hình `fortify` của ứng dụng:
+
+```php
+use Laravel\Fortify\Features;
+
+'features' => [
+    // ...
+    Features::passkeys([
+        'confirmPassword' => true,
+    ]),
+],
+```
+
+Tùy chọn `confirmPassword` sẽ quyết định xem Fortify có yêu cầu [xác nhận lại mật khẩu](#password-confirmation) trước khi đăng ký hoặc xóa passkey hay không.
+
+Tiếp theo, hãy đảm bảo model `App\Models\User` của ứng dụng implement interface `Laravel\Fortify\Contracts\PasskeyUser` và sử dụng trait `Laravel\Fortify\PasskeyAuthenticatable`:
+
+```php
+<?php
+
+namespace App\Models;
+
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
+use Laravel\Fortify\Contracts\PasskeyUser;
+use Laravel\Fortify\PasskeyAuthenticatable;
+
+class User extends Authenticatable implements PasskeyUser
+{
+    use Notifiable, PasskeyAuthenticatable;
+}
+```
+
+Các tùy chọn cấu hình passkey của Fortify có thể được tùy chỉnh bằng cách sử dụng mảng cấu hình `passkeys` trong file `config/fortify.php` của ứng dụng:
+
+```php
+'passkeys' => [
+    'relying_party_id' => parse_url(config('app.url'), PHP_URL_HOST),
+    'allowed_origins' => [config('app.url')],
+    'user_handle_secret' => config('app.key'),
+    'timeout' => 60000,
+],
+```
+
+> [!NOTE]
+> Fortify có chứa package Composer `laravel/passkeys` và cấu hình sẵn cho bạn. Nếu bạn đang sử dụng tính năng passkey của Fortify, bạn nên cấu hình passkey bằng cách sử dụng file `config/fortify.php` của ứng dụng. Bạn không cần phải export file cấu hình của `laravel/passkeys`, và bất kỳ giá trị nào được định nghĩa ở đó sẽ bị ghi đè bởi Fortify.
+
+Giá trị của `relying_party_id` phải giống với domain của ứng dụng. Mảng `allowed_origins` sẽ liệt kê ra các origin của trình duyệt được phép hoàn thành việc đăng ký và xác thực passkey. Giá trị của `user_handle_secret` sẽ được sử dụng để tạo ra các mã định danh người dùng, đảm bảo cùng một người dùng sẽ được nhận diện giống nhau qua các lần đăng ký passkey. Tùy chọn `timeout` sẽ kiểm soát thời gian các hoạt động đăng ký và xác thực passkey được phép duy trì hoạt động.
+
+Fortify áp dụng một bộ giới hạn tỷ lệ chuyên dụng cho các route đăng nhập, xác nhận và đăng ký passkey của nó. Nếu cần thiết, bạn có thể tùy chỉnh nó bằng cách sử dụng tùy chọn cấu hình `fortify.limiters.passkeys` và định nghĩa `RateLimiter::for(...)` tương ứng.
+
+<a name="passkeys-javascript-client"></a>
+### JavaScript Client
+
+Nếu bạn đang xây dựng một frontend tùy biến, bao gồm cả ứng dụng Blade với script ở phía trình duyệt, bạn có thể sử dụng package chính thức [`@laravel/passkeys`](https://www.npmjs.com/package/@laravel/passkeys). Package này xử lý các thủ tục WebAuthn của trình duyệt và gửi request đến các endpoint passkey của Fortify.
+
+Cài đặt package thông qua npm:
+
+```shell
+npm install @laravel/passkeys
+```
+
+Sau đó, bạn có thể khởi chạy việc đăng ký và xác thực passkey từ frontend của bạn:
+
+```js
+import { Passkeys } from "@laravel/passkeys";
+
+await Passkeys.register({ name: "MacBook Pro" });
+await Passkeys.verify();
+```
+
+Nếu ứng dụng của bạn sử dụng các URI endpoint passkey tùy biến, bạn có thể ghi đè các route cho từng chức năng cụ thể:
+
+```js
+await Passkeys.verify({
+    routes: {
+        options: "/passkeys/confirm/options",
+        submit: "/passkeys/confirm",
+    },
+});
+
+await Passkeys.register({
+    name: "MacBook Pro",
+    routes: {
+        options: "/user/passkeys/options",
+        submit: "/user/passkeys",
+    },
+});
+```
+
+Package này cũng cung cấp các helper cho React, Vue, và Svelte thông qua `@laravel/passkeys/react`, `@laravel/passkeys/vue`, và `@laravel/passkeys/svelte`.
+
+<a name="authenticating-with-passkeys"></a>
+### Authenticating cùng Passkeys
+
+Để xác thực người dùng bằng passkey, ứng dụng của bạn trước tiên nên gửi một request GET tới endpoint `/passkeys/login/options`. Endpoint này sẽ trả về các thử thách WebAuthn mà frontend của bạn cần truyền vào `navigator.credentials.get(...)`.
+
+Sau khi trình duyệt trả về một thông tin xác thực, ứng dụng của bạn nên gửi một request POST tới `/passkeys/login` kèm theo dữ liệu xác thực đó. Bạn cũng có thể truyền thêm một trường boolean `remember`.
+
+Nếu request thành công, Fortify sẽ đăng nhập người dùng vào guard đã được cấu hình và trả về một trong hai kết quả sau:
+
+<div class="content-list" markdown="1">
+
+- Một response chuyển hướng tới đích đến mong muốn đối với các request thông thường.
+- Một response HTTP 200 chứa dữ liệu JSON có key `redirect` đối với các request dạng JSON.
+
+</div>
+
+<a name="confirming-password-with-passkeys"></a>
+### Xác nhận password cùng Passkeys
+
+Đối với các session đã xác thực, Fortify cung cấp các endpoint xác nhận passkey để đáp ứng các yêu cầu xác nhận mật khẩu của Laravel đối với session hiện tại.
+
+Để xác nhận bằng passkey, trước tiên ứng dụng của bạn nên gửi một request GET tới `/passkeys/confirm/options`. Endpoint này trả về các thử thách WebAuthn mà frontend của bạn cần truyền vào `navigator.credentials.get(...)`.
+
+Sau khi trình duyệt trả về thông tin xác thực, ứng dụng của bạn nên gửi một request POST tới `/passkeys/confirm` kèm theo dữ liệu xác thực đó.
+
+Nếu request thành công, Fortify sẽ đánh dấu session hiện tại là đã xác nhận mật khẩu và trả về một trong hai kết quả sau:
+
+<div class="content-list" markdown="1">
+
+- Một response chuyển hướng tới đích đến mong muốn đối với các request thông thường.
+- Một response HTTP 200 chứa dữ liệu JSON có key `redirect` đối với các request dạng JSON.
+
+</div>
+
+<a name="registering-passkeys"></a>
+### Đăng ký Passkeys
+
+Để đăng ký passkey cho một người dùng đã xác thực, trước tiên ứng dụng của bạn nên gửi một request GET tới `/user/passkeys/options`. Endpoint này trả về các tùy chọn tạo WebAuthn mà frontend của bạn cần truyền vào `navigator.credentials.create(...)`.
+
+Sau khi trình duyệt trả về thông tin xác thực, ứng dụng của bạn nên gửi một request POST tới `/user/passkeys` kèm theo field `name` và field `credential` để chứa đối tượng [`PublicKeyCredential`](https://developer.mozilla.org/en-US/docs/Web/API/PublicKeyCredential) đã được chuyển đổi từ kết quả trả về của `navigator.credentials.create(...)`.
+
+Nếu request thành công, Fortify sẽ trả về một trong hai kết quả sau:
+
+<div class="content-list" markdown="1">
+
+- Một response chuyển hướng quay lại với trạng thái `passkey-registered` trong session đối với các request thông thường.
+- Một response HTTP 200 chứa dữ liệu JSON có key `status`, kèm với `id` và `name` của passkey mới được đăng ký đối với các request dạng JSON.
+
+</div>
+
+<a name="deleting-passkeys"></a>
+### Xoá Passkeys
+
+Để xóa một passkey, ứng dụng của bạn nên gửi một request DELETE tới `/user/passkeys/{passkey}`.
+
+Nếu request thành công, Fortify sẽ trả về một trong hai kết quả sau:
+
+<div class="content-list" markdown="1">
+
+- Một response chuyển hướng quay lại với trạng thái `passkey-deleted` trong session đối với các request thông thường.
+- Một response HTTP 200 chứa dữ liệu JSON có key `status` đối với các request dạng JSON.
+
+</div>
 
 <a name="registration"></a>
 ## Đăng ký

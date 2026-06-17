@@ -15,6 +15,7 @@
     - [Queueing](#queueing)
     - [Tools](#tools)
     - [Provider Tools](#provider-tools)
+    - [Sub-Agents](#sub-agents)
     - [Middleware](#middleware)
     - [Anonymous Agents](#anonymous-agents)
     - [Cấu hình Agent](#agent-configuration)
@@ -125,12 +126,12 @@ AI SDK hỗ trợ nhiều provider khác nhau cho các tính năng của nó. B�
 
 | Feature | Providers |
 |---|---|
-| Text | OpenAI, Anthropic, Gemini, Azure, Groq, xAI, DeepSeek, Mistral, Ollama |
-| Images | OpenAI, Gemini, xAI |
-| TTS | OpenAI, ElevenLabs |
-| STT | OpenAI, ElevenLabs, Mistral |
-| Embeddings | OpenAI, Gemini, Azure, Cohere, Mistral, Jina, VoyageAI |
-| Reranking | Cohere, Jina |
+| Text | OpenAI, Anthropic, Gemini, Azure, Bedrock, Groq, xAI, DeepSeek, Mistral, Ollama, OpenRouter |
+| Images | OpenAI, Gemini, xAI, Azure, Bedrock, OpenRouter |
+| TTS | OpenAI, ElevenLabs, Gemini |
+| STT | OpenAI, ElevenLabs, Mistral, Gemini |
+| Embeddings | OpenAI, Gemini, Azure, Bedrock, Cohere, Mistral, Jina, VoyageAI, Ollama, OpenRouter |
+| Reranking | Cohere, Jina, VoyageAI |
 | Files | OpenAI, Anthropic, Gemini |
 
 Enum `Laravel\Ai\Enums\Lab` có thể được sử dụng để reference đến các provider trong code thay vì dùng chuỗi:
@@ -323,7 +324,29 @@ $response = (new SalesCoach)->forUser($user)->prompt('Hello!');
 $conversationId = $response->conversationId;
 ```
 
-ID của cuộc hội thoại sẽ được trả về trong response và có thể lưu lại để tham chiếu sau, hoặc bạn có thể lấy ra tất cả các cuộc hội thoại của người dùng từ bảng `agent_conversations`.
+ID của cuộc hội thoại sẽ được trả về trong response và có thể lưu lại để tham chiếu sau. Nếu bạn muốn lấy tất cả các cuộc hội thoại của một người dùng bằng Eloquent, bạn có thể thêm trait `HasConversations` vào model user của bạn:
+
+```php
+<?php
+
+namespace App\Models;
+
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Laravel\Ai\Concerns\HasConversations;
+
+class User extends Authenticatable
+{
+    use HasConversations;
+}
+```
+
+Sau khi trait đã được thêm vào model của bạn, bạn có thể lấy và truy vấn các cuộc hội thoại của người dùng thông qua quan hệ `conversations`:
+
+```php
+$conversations = $user->conversations()
+    ->latest('updated_at')
+    ->paginate(20);
+```
 
 Để tiếp tục một cuộc hội thoại hiện có, hãy sử dụng phương thức `continue`:
 
@@ -811,6 +834,108 @@ new FileSearch(stores: ['store_id'], where: fn (FileSearchQuery $query) =>
 );
 ```
 
+<a name="sub-agents"></a>
+### Sub-Agents
+
+Các Agent cũng có thể được trả về từ phương thức `tools` của một agent khác. Khi một agent được trả về như một tool, thì agent cha có thể yêu cầu một tác vụ cho sub-agent đó và sử dụng response của sub-agent trong khi trả lời prompt ban đầu. Điều này sẽ hữu ích khi một agent cha cần truy cập vào một agent chuyên biệt có hướng dẫn, có công cụ, có cấu hình model hoặc nhà cung cấp riêng cho chúng.
+
+Ví dụ: một agent hỗ trợ khách hàng có thể yêu cầu các câu hỏi về điều kiện hoàn tiền cho một agent chuyên phụ trách về hoàn tiền:
+
+```php
+<?php
+
+namespace App\Ai\Agents;
+
+use Laravel\Ai\Contracts\Agent;
+use Laravel\Ai\Contracts\HasTools;
+use Laravel\Ai\Promptable;
+
+class CustomerSupportAgent implements Agent, HasTools
+{
+    use Promptable;
+
+    /**
+     * Get the instructions that the agent should follow.
+     */
+    public function instructions(): string
+    {
+        return 'You help customers with account, order, and billing questions. Delegate refund policy questions to the refunds specialist.';
+    }
+
+    /**
+     * Get the tools available to the agent.
+     *
+     * @return Tool[]
+     */
+    public function tools(): iterable
+    {
+        return [
+            new RefundsAgent,
+        ];
+    }
+}
+```
+
+Để tùy chỉnh cách sub-agent được hiển thị cho agent cha, hãy implement interface `CanActAsTool` trên sub-agent và định nghĩa tên cũng như mô tả mà công cụ sẽ hiển thị:
+
+```php
+<?php
+
+namespace App\Ai\Agents;
+
+use App\Ai\Tools\LookupOrder;
+use Laravel\Ai\Attributes\Provider;
+use Laravel\Ai\Contracts\Agent;
+use Laravel\Ai\Contracts\CanActAsTool;
+use Laravel\Ai\Contracts\HasTools;
+use Laravel\Ai\Enums\Lab;
+use Laravel\Ai\Promptable;
+
+#[Provider(Lab::Anthropic)]
+class RefundsAgent implements Agent, CanActAsTool, HasTools
+{
+    use Promptable;
+
+    /**
+     * Get the instructions that the agent should follow.
+     */
+    public function instructions(): string
+    {
+        return 'You are a refunds specialist. Use order details and the refund policy to give concise eligibility guidance.';
+    }
+
+    /**
+     * Get the agent's tool name.
+     */
+    public function name(): string
+    {
+        return 'refunds_specialist';
+    }
+
+    /**
+     * Get the agent's tool description.
+     */
+    public function description(): string
+    {
+        return 'Determine whether an order is eligible for a refund and explain the next step.';
+    }
+
+    /**
+     * Get the tools available to the agent.
+     *
+     * @return Tool[]
+     */
+    public function tools(): iterable
+    {
+        return [
+            new LookupOrder,
+        ];
+    }
+}
+```
+
+Nếu một sub-agent không implement `CanActAsTool`, Laravel sẽ sử dụng tên class base của agent làm tên công cụ và một mô tả chung là sẽ yêu cầu agent cha phải truyền vào một mô tả tác vụ rõ ràng, độc lập. Mỗi lần gọi sub-agent sẽ chạy trong một môi trường độc lập và không thể lấy lịch sử cuộc hội thoại của agent cha.
+
 <a name="middleware"></a>
 ### Middleware
 
@@ -925,6 +1050,7 @@ Bạn có thể cấu hình các tùy chọn text generation cho một agent b�
 - `Provider`: Provider AI (hoặc các provider cho cơ chế failover) sẽ được agent sử dụng.
 - `Temperature`: Tính sáng tạo để sử dụng cho việc sinh văn bản (từ 0.0 đến 1.0).
 - `Timeout`: Thời gian chờ tính bằng giây cho các request của agent (mặc định: 60).
+- `TopP`: Xác suất giới hạn được sử dụng để tạo văn bản (0.0 đến 1.0).
 - `UseCheapestModel`: Sử dụng model văn bản rẻ nhất của provider để tối ưu chi phí.
 - `UseSmartestModel`: Sử dụng mô hình văn bản thông minh nhất của provider cho các tác vụ phức tạp.
 
@@ -939,6 +1065,7 @@ use Laravel\Ai\Attributes\Model;
 use Laravel\Ai\Attributes\Provider;
 use Laravel\Ai\Attributes\Temperature;
 use Laravel\Ai\Attributes\Timeout;
+use Laravel\Ai\Attributes\TopP;
 use Laravel\Ai\Contracts\Agent;
 use Laravel\Ai\Enums\Lab;
 use Laravel\Ai\Promptable;
@@ -949,6 +1076,7 @@ use Laravel\Ai\Promptable;
 #[MaxTokens(4096)]
 #[Temperature(0.7)]
 #[Timeout(120)]
+#[TopP(0.9)]
 class SalesCoach implements Agent
 {
     use Promptable;
@@ -981,6 +1109,9 @@ class ComplexReasoner implements Agent
     // Will use the most capable model (e.g., Opus)...
 }
 ```
+
+> [!NOTE]
+> Model thực tế được chọn bởi `UseCheapestModel` và `UseSmartestModel` có thể thay đổi giữa các phiên bản của Laravel AI SDK khi các nhà cung cấp phát hành các model mới. Việc đổi các model này có thể dẫn đến những thay đổi về hành vi, các tham số bị xoá hoặc chênh lệch chi phí. Nếu bạn cần một model và mức giá ổn định, dễ dự đoán, hãy chỉ định rõ model mà bạn muốn dùng bằng cách sử dụng thuộc tính `Model`.
 
 <a name="provider-options"></a>
 ### Provider Options
@@ -1016,6 +1147,7 @@ class SalesCoach implements Agent, HasProviderOptions
             ],
             Lab::Anthropic => [
                 'thinking' => ['budget_tokens' => 1024],
+                'cache_control' => ['type' => 'ephemeral'],
             ],
             default => [],
         };
@@ -1024,6 +1156,8 @@ class SalesCoach implements Agent, HasProviderOptions
 ```
 
 Phương thức `providerOptions` nhận vào provider đang được sử dụng (enum `Lab` hoặc string), cho phép bạn trả về các tùy chọn khác nhau cho mỗi provider. Điều này đặc biệt hữu ích khi sử dụng [failover](#failover), vì mỗi provider dự phòng có thể nhận cấu hình riêng của chúng.
+
+Ví dụ Anthropic ở trên cũng kích hoạt [lưu bộ nhớ cache prompt](https://docs.anthropic.com/en/docs/build-with-claude/prompt-caching) thông qua `cache_control`.
 
 <a name="images"></a>
 ## Images
@@ -1105,6 +1239,14 @@ use Laravel\Ai\Audio;
 $audio = Audio::of('I love coding with Laravel.')->generate();
 
 $rawContent = (string) $audio;
+```
+
+Bạn cũng có thể tạo file âm thanh từ một chuỗi bằng phương thức `toAudio` có sẵn thông qua class `Stringable` của Laravel:
+
+```php
+use Illuminate\Support\Str;
+
+$audio = Str::of('I love coding with Laravel.')->toAudio();
 ```
 
 Các phương thức `male`, `female` và `voice` có thể dùng để xác định giọng đọc cho âm thanh được tạo ra:
@@ -1612,6 +1754,7 @@ Khi gửi prompt hoặc tạo các nội dung khác, bạn có thể cung cấp 
 
 ```php
 use App\Ai\Agents\SalesCoach;
+use Laravel\Ai\Enums\Lab;
 use Laravel\Ai\Image;
 
 $response = (new SalesCoach)->prompt(
@@ -1621,6 +1764,22 @@ $response = (new SalesCoach)->prompt(
 
 $image = Image::of('A donut sitting on the kitchen counter')
     ->generate(provider: [Lab::Gemini, Lab::xAI]);
+```
+
+Cơ chế dự phòng chỉ xảy ra khi một ngoại lệ `FailoverableException` được đưa ra — ví dụ như giới hạn lượt yêu cầu (`RateLimitedException`), nhà cung cấp bị quá tải hoặc không khả dụng (`ProviderOverloadedException`), hoặc không đủ số dư tài khoản (`InsufficientCreditsException`). Các lỗi thông thường, chẳng hạn như lỗi xác thực hoặc yêu cầu không hợp lệ, sẽ không kích hoạt dự phòng.
+
+Khi bạn truyền vào một danh sách các nhà cung cấp, chẳng hạn như `[Lab::OpenAI, Lab::Anthropic]`, mỗi nhà cung cấp sẽ sử dụng model mặc định của họ. Để chỉ định một model cụ thể cho từng nhà cung cấp trong danh sách dự phòng, hãy truyền vào một mảng gồm key là nhà cung cấp có sử dụng `value` của enum `Lab` (bởi vì các enum không thể được sử dụng trực tiếp làm key cho mảng PHP):
+
+```php
+use Laravel\Ai\Enums\Lab;
+
+$response = (new SalesCoach)->prompt(
+    'Analyze this sales transcript...',
+    provider: [
+        Lab::Gemini->value => 'gemini-3-flash-preview',
+        Lab::DeepSeek->value => 'deepseek-v4-pro',
+    ],
+);
 ```
 
 <a name="testing"></a>

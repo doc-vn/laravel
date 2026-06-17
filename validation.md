@@ -116,8 +116,8 @@ Nếu validation thất bại trong một request HTTP bình thường, thì m�
 public function store(Request $request): RedirectResponse
 {
     $validated = $request->validate([
-        'title' => 'required|unique:posts|max:255',
-        'body' => 'required',
+        'title' => ['required', 'unique:posts', 'max:255'],
+        'body' => ['required'],
     ]);
 
     // The blog post is valid...
@@ -128,19 +128,10 @@ public function store(Request $request): RedirectResponse
 
 Như bạn có thể thấy, các quy tắc validation đã được truyền vào phương thức `validate`. Đừng lo lắng - tất cả các quy tắc validation có sẵn đều có [tài liệu](#available-validation-rules). Một lần nữa, nếu validation thất bại, một response thích hợp sẽ được tự động trả về. Còn nếu validation thành công, controller của chúng ta sẽ tiếp tục được thực thi bình thường.
 
-Ngoài ra, các quy tắc validation có thể được chỉ định dưới dạng các mảng quy tắc thay vì một chuỗi phân cách bằng dấu `|`:
-
-```php
-$validatedData = $request->validate([
-    'title' => ['required', 'unique:posts', 'max:255'],
-    'body' => ['required'],
-]);
-```
-
 Ngoài ra, bạn có thể sử dụng phương thức `validateWithBag` để kiểm tra một request và lưu bất kỳ thông báo lỗi nào vào trong một [named error bag](#named-error-bags):
 
 ```php
-$validatedData = $request->validateWithBag('post', [
+$validated = $request->validateWithBag('post', [
     'title' => ['required', 'unique:posts', 'max:255'],
     'body' => ['required'],
 ]);
@@ -153,8 +144,8 @@ $validatedData = $request->validateWithBag('post', [
 
 ```php
 $request->validate([
-    'title' => 'bail|required|unique:posts|max:255',
-    'body' => 'required',
+    'title' => ['bail', 'required', 'unique:posts', 'max:255'],
+    'body' => ['required'],
 ]);
 ```
 
@@ -167,9 +158,9 @@ Nếu incoming request HTTP chứa một field dữ liệu "lồng nhau", bạn 
 
 ```php
 $request->validate([
-    'title' => 'required|unique:posts|max:255',
-    'author.name' => 'required',
-    'author.description' => 'required',
+    'title' => ['required', 'unique:posts', 'max:255'],
+    'author.name' => ['required'],
+    'author.description' => ['required'],
 ]);
 ```
 
@@ -177,8 +168,8 @@ Mặt khác, nếu tên field của bạn có chứa dấu chấm, thì bạn c�
 
 ```php
 $request->validate([
-    'title' => 'required|unique:posts|max:255',
-    'v1\.0' => 'required',
+    'title' => ['required', 'unique:posts', 'max:255'],
+    'v1\.0' => ['required'],
 ]);
 ```
 
@@ -278,9 +269,9 @@ Mặc định, Laravel sẽ chứa hai middleware là: `TrimStrings` và `Conver
 
 ```php
 $request->validate([
-    'title' => 'required|unique:posts|max:255',
-    'body' => 'required',
-    'publish_at' => 'nullable|date',
+    'title' => ['required', 'unique:posts', 'max:255'],
+    'body' => ['required'],
+    'publish_at' => ['nullable', 'date'],
 ]);
 ```
 
@@ -339,8 +330,8 @@ Như bạn có thể thấy, phương thức `authorize` sẽ chịu trách nhi�
 public function rules(): array
 {
     return [
-        'title' => 'required|unique:posts|max:255',
-        'body' => 'required',
+        'title' => ['required', 'unique:posts', 'max:255'],
+        'body' => ['required'],
     ];
 }
 ```
@@ -695,8 +686,8 @@ class PostController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $validator = Validator::make($request->all(), [
-            'title' => 'required|unique:posts|max:255',
-            'body' => 'required',
+            'title' => ['required', 'unique:posts', 'max:255'],
+            'body' => ['required'],
         ]);
 
         if ($validator->fails()) {
@@ -740,8 +731,8 @@ Nếu bạn muốn tự tạo một validator instance nhưng vẫn muốn tận
 
 ```php
 Validator::make($request->all(), [
-    'title' => 'required|unique:posts|max:255',
-    'body' => 'required',
+    'title' => ['required', 'unique:posts', 'max:255'],
+    'body' => ['required'],
 ])->validate();
 ```
 
@@ -749,8 +740,8 @@ Bạn có thể sử dụng phương thức `validateWithBag` để lưu thông 
 
 ```php
 Validator::make($request->all(), [
-    'title' => 'required|unique:posts|max:255',
-    'body' => 'required',
+    'title' => ['required', 'unique:posts', 'max:255'],
+    'body' => ['required'],
 ])->validateWithBag('post');
 ```
 
@@ -1002,7 +993,7 @@ Một số thông báo lỗi cua quy tắc validation có sẵn của Laravel c�
 
 ```php
 Validator::make($request->all(), [
-    'credit_card_number' => 'required_if:payment_type,cc'
+    'credit_card_number' => ['required_if:payment_type,cc']
 ]);
 ```
 
@@ -1249,13 +1240,13 @@ Field được validation phải có bản ghi A hoặc AAAA hợp lệ theo hà
 Field được validation phải là một giá trị sau một ngày nhất định. Tham số date sẽ được truyền vào hàm PHP `strtotime` để được chuyển thành instance `DateTime` hợp lệ:
 
 ```php
-'start_date' => 'required|date|after:tomorrow'
+'start_date' => ['required', 'date', 'after:tomorrow']
 ```
 
 Thay vì truyền một chuỗi date được chạy bởi hàm `strtotime`, bạn có thể chỉ định một field khác để so sánh với ngày:
 
 ```php
-'finish_date' => 'required|date|after:start_date'
+'finish_date' => ['required', 'date', 'after:start_date']
 ```
 
 Để thuận tiện, các quy tắc dựa trên date có thể được xây dựng bằng cách sử dụng builder rule `date`:
@@ -1319,7 +1310,7 @@ Field được validation phải hoàn toàn là các ký tự chữ cái Unicod
 Để giới hạn quy tắc validation này đối với các ký tự có trong phạm vi ASCII (`a-z` và `A-Z`), bạn có thể cung cấp thêm tùy chọn `ascii` cho quy tắc validation:
 
 ```php
-'username' => 'alpha:ascii',
+'username' => ['alpha:ascii'],
 ```
 
 <a name="rule-alpha-dash"></a>
@@ -1330,7 +1321,7 @@ Field được validation phải hoàn toàn là các ký tự chữ và số Un
 Để giới hạn quy tắc validation này đối với các ký tự có trong phạm vi ASCII (`a-z`, `A-Z`, và `0-9`), bạn có thể cung cấp thêm tùy chọn `ascii` cho quy tắc validation:
 
 ```php
-'username' => 'alpha_dash:ascii',
+'username' => ['alpha_dash:ascii'],
 ```
 
 <a name="rule-alpha-num"></a>
@@ -1341,7 +1332,7 @@ Field được validation phải hoàn toàn là các ký tự chữ và số Un
 Để giới hạn quy tắc validation này đối với các ký tự có trong phạm vi ASCII (`a-z`, `A-Z`, và `0-9`), bạn có thể cung cấp thêm tùy chọn `ascii` cho quy tắc validation:
 
 ```php
-'username' => 'alpha_num:ascii',
+'username' => ['alpha_num:ascii'],
 ```
 
 <a name="rule-array"></a>
@@ -1363,7 +1354,7 @@ $input = [
 ];
 
 Validator::make($input, [
-    'user' => 'array:name,username',
+    'user' => ['array:name,username'],
 ]);
 ```
 
@@ -1441,7 +1432,7 @@ Field được validation phải có thể được cast là boolean. Input đư
 Bạn có thể sử dụng tham số `strict` để coi field này là hợp lệ khi giá trị của nó chỉ duy nhất là `true` hoặc `false`:
 
 ```php
-'foo' => 'boolean:strict'
+'foo' => ['boolean:strict']
 ```
 
 <a name="rule-confirmed"></a>
@@ -1493,7 +1484,7 @@ Validator::make($data, [
 Field được validation phải khớp với mật khẩu của người dùng hiện tại. Bạn có thể chỉ định [authentication guard](/docs/{{version}}/authentication) bằng cách sử dụng tham số đầu tiên của quy tắc:
 
 ```php
-'password' => 'current_password:api'
+'password' => ['current_password:api']
 ```
 
 <a name="rule-date"></a>
@@ -1529,10 +1520,10 @@ Field được validation phải là số và phải có số chữ số thập 
 
 ```php
 // Must have exactly two decimal places (9.99)...
-'price' => 'decimal:2'
+'price' => ['decimal:2']
 
 // Must have between 2 and 4 decimal places...
-'price' => 'decimal:2,4'
+'price' => ['decimal:2,4']
 ```
 
 <a name="rule-declined"></a>
@@ -1566,15 +1557,21 @@ Số được validation phải có độ dài ở giữa _min_ và _max_ đã c
 File được validation là một image đáp ứng các điều kiện về kích thước hoặc các quy định được tạo bởi các tham số của quy tắc:
 
 ```php
-'avatar' => 'dimensions:min_width=100,min_height=200'
+'avatar' => ['dimensions:min_width=100,min_height=200']
 ```
 
-Các điều kiện có thể được dùng là: _min\_width_, _max\_width_, _min\_height_, _max\_height_, _width_, _height_, _ratio_.
+Các điều kiện có thể được dùng là: _min\_width_, _max\_width_, _min\_height_, _max\_height_, _width_, _height_, _ratio_, _min\_ratio_, _max\_ratio_.
 
 Một điều kiện _ratio_ phải được biểu diễn dưới dạng chiều rộng chia cho chiều cao. Điều này có thể được quy định bằng một phân số như `3/2` hoặc nếu float là `1.5`:
 
 ```php
-'avatar' => 'dimensions:ratio=3/2'
+'avatar' => ['dimensions:ratio=3/2']
+```
+
+Các điều kiện _min\_ratio_ và _max\_ratio_ có thể được sử dụng để định nghĩa một khoảng tỉ lệ khung hình được cho phép:
+
+```php
+'avatar' => ['dimensions:min_ratio=1/2,max_ratio=3/2']
 ```
 
 Vì quy tắc này yêu cầu một số tham số, nên nó thuận tiện hơn khi sử dụng phương thức `Rule::dimensions` để dễ dàng xây dựng các quy tắc:
@@ -1594,25 +1591,31 @@ Validator::make($data, [
 ]);
 ```
 
+Bạn cũng có thể sử dụng các phương thức `minRatio`, `maxRatio` và `ratioBetween` để định nghĩa các điều kiện tỉ lệ này một cách liền mạch:
+
+```php
+Rule::dimensions()->ratioBetween(min: 1 / 2, max: 3 / 2)
+```
+
 <a name="rule-distinct"></a>
 #### distinct
 
 Khi validation mảng, field được validation phải không được có bất kỳ giá trị trùng lặp nào:
 
 ```php
-'foo.*.id' => 'distinct'
+'foo.*.id' => ['distinct']
 ```
 
 Mặc định, Distinct sẽ sử dụng các phép so sánh biến "lỏng lẻo". Để sử dụng so sánh "nghiêm ngặt", bạn có thể thêm tham số `strict` vào định nghĩa quy tắc validation của bạn:
 
 ```php
-'foo.*.id' => 'distinct:strict'
+'foo.*.id' => ['distinct:strict']
 ```
 
 Bạn có thể thêm `ignore_case` vào các tham số của quy tắc validation để làm cho quy tắc bỏ qua các khác biệt về cách viết hoa:
 
 ```php
-'foo.*.id' => 'distinct:ignore_case'
+'foo.*.id' => ['distinct:ignore_case']
 ```
 
 <a name="rule-doesnt-start-with"></a>
@@ -1631,7 +1634,7 @@ Field được validation không được kết thúc bằng một trong các gi
 Field được validation phải ở định dạng một địa chỉ email. Quy tắc validation này sử dụng package [egulias/email-validator](https://github.com/egulias/EmailValidator) để validation. Mặc định, validation `RFCValidation` sẽ được áp dụng, nhưng bạn cũng có thể áp dụng các kiểu validation khác:
 
 ```php
-'email' => 'email:rfc,dns'
+'email' => ['email:rfc,dns']
 ```
 
 Ví dụ trên sẽ áp dụng validation `RFCValidation` và `DNSCheckValidation`. Dưới đây là một danh sách đầy đủ gồm các kiểu validation mà bạn có thể áp dụng:
@@ -1744,11 +1747,11 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 
 Validator::make($request->all(), [
-    'role_id' => Rule::excludeIf($request->user()->is_admin),
+    'role_id' => [Rule::excludeIf($request->user()->is_admin)],
 ]);
 
 Validator::make($request->all(), [
-    'role_id' => Rule::excludeIf(fn () => $request->user()->is_admin),
+    'role_id' => [Rule::excludeIf(fn () => $request->user()->is_admin)],
 ]);
 ```
 
@@ -1764,11 +1767,11 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 
 Validator::make($request->all(), [
-    'role_id' => Rule::excludeUnless($request->user()->is_admin),
+    'role_id' => [Rule::excludeUnless($request->user()->is_admin)],
 ]);
 
 Validator::make($request->all(), [
-    'role_id' => Rule::excludeUnless(fn () => $request->user()->is_admin),
+    'role_id' => [Rule::excludeUnless(fn () => $request->user()->is_admin)],
 ]);
 ```
 
@@ -1791,7 +1794,7 @@ Field được validation phải tồn tại trong một bảng cơ sở dữ li
 #### Cách sử dụng cơ bản của Exists Rule
 
 ```php
-'state' => 'exists:states'
+'state' => ['exists:states']
 ```
 
 Nếu tùy chọn `column` không được chỉ định, thì tên field đó sẽ được sử dụng. Nên, trong trường hợp này, quy tắc sẽ validate rằng bảng cơ sở dữ liệu `state` sẽ chứa bản ghi có giá trị cột `state` khớp với giá trị thuộc tính `state` của request.
@@ -1802,22 +1805,22 @@ Nếu tùy chọn `column` không được chỉ định, thì tên field đó s
 Bạn có thể chỉ rõ tên cột cơ sở dữ liệu sẽ được sử dụng bởi quy tắc validation bằng cách set nó sau tên bảng cơ sở dữ liệu:
 
 ```php
-'state' => 'exists:states,abbreviation'
+'state' => ['exists:states,abbreviation']
 ```
 
 Đôi khi, bạn có thể cần chỉ định một kết nối cơ sở dữ liệu cụ thể sẽ được sử dụng cho truy vấn `exists`. Bạn có thể thực hiện điều này bằng cách thêm tên kết nối vào tên bảng:
 
 ```php
-'email' => 'exists:connection.staff,email'
+'email' => ['exists:connection.staff,email']
 ```
 
 Thay vì chỉ định trực tiếp tên bảng, bạn có thể chỉ định tên model Eloquent sẽ được sử dụng để xác định tên bảng:
 
 ```php
-'user_id' => 'exists:App\Models\User,id'
+'user_id' => ['exists:App\Models\User,id']
 ```
 
-Nếu bạn muốn tùy chỉnh truy vấn được thực thi theo quy tắc validation, bạn có thể sử dụng class `Rule` để dễ dàng định nghĩa các quy tắc. Trong ví dụ này, chúng ta cũng sẽ định nghĩa các quy tắc validation là một mảng thay vì sử dụng ký tự `|` để phân định chúng:
+Nếu bạn muốn tùy chỉnh truy vấn được thực thi theo quy tắc validation, bạn có thể sử dụng class `Rule` để dễ dàng định nghĩa các quy tắc.
 
 ```php
 use Illuminate\Database\Query\Builder;
@@ -1837,7 +1840,7 @@ Validator::make($data, [
 Bạn có thể chỉ định tên cột cơ sở dữ liệu sẽ được sử dụng bởi quy tắc `exists` được tạo bởi phương thức `Rule::exists` bằng cách cung cấp tên cột làm tham số thứ hai cho phương thức `exists`:
 
 ```php
-'state' => Rule::exists('states', 'abbreviation'),
+'state' => [Rule::exists('states', 'abbreviation')],
 ```
 
 Thỉnh thoảng, bạn có thể muốn xác thực một mảng giá trị có tồn tại trong database hay không. Bạn có thể làm như vậy bằng cách thêm cả rule `exists` và rule [array](#rule-array) vào field đang được validate:
@@ -1940,7 +1943,7 @@ Field được validation phải tồn tại trong các giá trị của _anothe
 Field đang được validate phải là một mảng có chứa ít nhất một trong các giá trị _values_ dưới dạng một key có trong mảng:
 
 ```php
-'config' => 'array|in_array_keys:timezone'
+'config' => ['array', 'in_array_keys:timezone']
 ```
 
 <a name="rule-integer"></a>
@@ -1951,7 +1954,7 @@ Field được validation phải là một integer.
 Bạn có thể dùng thêm tham số `strict` để chỉ coi field này sẽ là hợp lệ nếu kiểu dữ liệu của nó là `integer`. Các string mà có chứa giá trị integer cũng sẽ bị coi là không hợp lệ:
 
 ```php
-'age' => 'integer:strict'
+'age' => ['integer:strict']
 ```
 
 > [!WARNING]
@@ -2018,9 +2021,9 @@ Số được validation phải có độ dài tối đa là _value_.
 File được validation phải khớp với một trong các loại MIME đã cho:
 
 ```php
-'video' => 'mimetypes:video/avi,video/mpeg,video/quicktime',
+'video' => ['mimetypes:video/avi,video/mpeg,video/quicktime'],
 
-'media' => 'mimetypes:image/*,video/*',
+'media' => ['mimetypes:image/*,video/*'],
 ```
 
 Để xác định loại MIME của file được tải lên, nội dung của file sẽ được đọc và framework sẽ cố gắng đoán loại MIME, nó có thể khác với loại MIME của client cung cấp.
@@ -2031,7 +2034,7 @@ File được validation phải khớp với một trong các loại MIME đã c
 File được validation phải có loại MIME tương ứng với một trong các extension đã được liệt kê:
 
 ```php
-'photo' => 'mimes:jpeg,bmp,png'
+'photo' => ['mimes:jpg,bmp,png']
 ```
 
 Mặc dù bạn chỉ cần định nghĩa extension của file, nhưng thực ra quy tắc này sẽ validate loại MIME của file bằng cách đọc nội dung của file đó và đoán loại MIME của nó. Một danh sách đầy đủ các loại MIME và các extension tương ứng của chúng có thể được tìm thấy tại vị trí sau:
@@ -2104,10 +2107,7 @@ Validator::make($data, [
 
 Field được validation phải không được khớp với biểu thức chính quy đã cho.
 
-Quy tắc này sử dụng hàm `preg_match` trong PHP. Biểu thức được chỉ định phải tuân theo một định dạng được yêu cầu bởi `preg_match` và do đó, nó cũng chứa các dấu phân cách. Ví dụ: `'email' => 'not_regex:/^.+$/i'`.
-
-> [!WARNING]
-> Khi sử dụng mẫu `regex` hoặc `not_regex`, có thể cần phải khai báo các quy tắc validation của bạn trong một mảng thay vì sử dụng các dấu `|` để phân cách, đặc biệt nếu biểu thức chính quy của bạn cũng có chứa ký tự `|` này.
+Quy tắc này sử dụng hàm `preg_match` trong PHP. Biểu thức được chỉ định phải tuân theo một định dạng được yêu cầu bởi `preg_match` và do đó, nó cũng chứa các dấu phân cách. Ví dụ: `'email' => ['not_regex:/^.+$/i']`.
 
 <a name="rule-nullable"></a>
 #### nullable
@@ -2122,7 +2122,7 @@ Field được validation phải là [numeric](https://www.php.net/manual/en/fun
 Bạn có thể dùng thêm tham số `strict` để chỉ coi field này sẽ là hợp lệ nếu kiểu dữ liệu của nó là integer hoặc float. Các string numeric cũng sẽ bị coi là không hợp lệ:
 
 ```php
-'amount' => 'numeric:strict'
+'amount' => ['numeric:strict']
 ```
 
 <a name="rule-present"></a>
@@ -2185,11 +2185,11 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 
 Validator::make($request->all(), [
-    'role_id' => Rule::prohibitedIf($request->user()->is_admin),
+    'role_id' => [Rule::prohibitedIf($request->user()->is_admin)],
 ]);
 
 Validator::make($request->all(), [
-    'role_id' => Rule::prohibitedIf(fn () => $request->user()->is_admin),
+    'role_id' => [Rule::prohibitedIf(fn () => $request->user()->is_admin)],
 ]);
 ```
 <a name="rule-prohibited-if-accepted"></a>
@@ -2223,11 +2223,11 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 
 Validator::make($request->all(), [
-    'role_id' => Rule::prohibitedUnless($request->user()->is_admin),
+    'role_id' => [Rule::prohibitedUnless($request->user()->is_admin)],
 ]);
 
 Validator::make($request->all(), [
-    'role_id' => Rule::prohibitedUnless(fn () => $request->user()->is_admin),
+    'role_id' => [Rule::prohibitedUnless(fn () => $request->user()->is_admin)],
 ]);
 ```
 
@@ -2250,10 +2250,7 @@ Nếu field đang được validation tồn tại hoặc trống, thì tất c�
 
 Field được validation phải phù hợp với biểu thức chính quy định.
 
-Quy tắc này sử dụng hàm `preg_match` trong PHP. Biểu thức được chỉ định phải tuân theo một định dạng được yêu cầu bởi `preg_match` và do đó, nó cũng chứa các dấu phân cách. Ví dụ: `'email' => 'regex:/^.+@.+$/i'`.
-
-> [!WARNING]
-> Khi sử dụng quy tắc `regex` hoặc `not_regex`, có thể bạn cần phải khai báo các quy tắc đó vào trong một mảng thay vì sử dụng các dấu `|` để phân cách, đặc biệt nếu biểu thức chính quy của bạn có chứa ký tự `|`.
+Quy tắc này sử dụng hàm `preg_match` trong PHP. Biểu thức được chỉ định phải tuân theo một định dạng được yêu cầu bởi `preg_match` và do đó, nó cũng chứa các dấu phân cách. Ví dụ: `'email' => ['regex:/^.+@.+$/i']`.
 
 <a name="rule-required"></a>
 #### required
@@ -2281,11 +2278,11 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 
 Validator::make($request->all(), [
-    'role_id' => Rule::requiredIf($request->user()->is_admin),
+    'role_id' => [Rule::requiredIf($request->user()->is_admin)],
 ]);
 
 Validator::make($request->all(), [
-    'role_id' => Rule::requiredIf(fn () => $request->user()->is_admin),
+    'role_id' => [Rule::requiredIf(fn () => $request->user()->is_admin)],
 ]);
 ```
 
@@ -2311,11 +2308,11 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 
 Validator::make($request->all(), [
-    'role_id' => Rule::requiredUnless($request->user()->is_admin),
+    'role_id' => [Rule::requiredUnless($request->user()->is_admin)],
 ]);
 
 Validator::make($request->all(), [
-    'role_id' => Rule::requiredUnless(fn () => $request->user()->is_admin),
+    'role_id' => [Rule::requiredUnless(fn () => $request->user()->is_admin)],
 ]);
 ```
 
@@ -2356,16 +2353,16 @@ Field được validation phải có kích thước khớp với _value_ đã ch
 
 ```php
 // Validate that a string is exactly 12 characters long...
-'title' => 'size:12';
+'title' => ['size:12'];
 
 // Validate that a provided integer equals 10...
-'seats' => 'integer|size:10';
+'seats' => ['integer', 'size:10'];
 
 // Validate that an array has exactly 5 elements...
-'tags' => 'array|size:5';
+'tags' => ['array', 'size:5'];
 
 // Validate that an uploaded file is exactly 512 kilobytes...
-'image' => 'file|size:512';
+'image' => ['file', 'size:512'];
 ```
 
 <a name="rule-starts-with"></a>
@@ -2402,11 +2399,11 @@ Field được validation phải là một định danh múi giờ hợp lệ th
 Các tham số [được chấp nhận bởi phương thức `DateTimeZone::listIdentifiers`](https://www.php.net/manual/en/datetimezone.listidentifiers.php) cũng có thể được cung cấp cho quy tắc kiểm tra này:
 
 ```php
-'timezone' => 'required|timezone:all';
+'timezone' => ['required', 'timezone:all'];
 
-'timezone' => 'required|timezone:Africa';
+'timezone' => ['required', 'timezone:Africa'];
 
-'timezone' => 'required|timezone:per_country,US';
+'timezone' => ['required', 'timezone:per_country,US'];
 ```
 
 <a name="rule-unique"></a>
@@ -2419,13 +2416,13 @@ Field được validation phải không tồn tại trong một bảng cơ sở 
 Thay vì chỉ định trực tiếp tên bảng, bạn có thể chỉ định tên model Eloquent sẽ được sử dụng để xác định tên bảng:
 
 ```php
-'email' => 'unique:App\Models\User,email_address'
+'email' => ['unique:App\Models\User,email_address']
 ```
 
 Tùy chọn `column` có thể được sử dụng để chỉ định tên cột sẽ được sử dụng trong cơ sở dữ liệu. Nếu tùy chọn `column` không được chỉ định, thì tên field validation sẽ được sử dụng.
 
 ```php
-'email' => 'unique:users,email_address'
+'email' => ['unique:users,email_address']
 ```
 
 **Khai báo database connection cụ thể**
@@ -2433,14 +2430,14 @@ Tùy chọn `column` có thể được sử dụng để chỉ định tên c�
 Đôi khi, bạn có thể cần cài đặt một custom connection cho các truy vấn cơ sở dữ liệu được tạo bởi Validator. TĐể thực hiện điều này, bạn có thể thêm tên connection vào tên bảng:
 
 ```php
-'email' => 'unique:connection.users,email_address'
+'email' => ['unique:connection.users,email_address']
 ```
 
 **Bỏ qua một ID nhất định:**
 
 Đôi khi, bạn có thể muốn bỏ qua một ID nhất định trong khi validation unique. Ví dụ: hãy xem thử màn hình "update profile" bao gồm tên người dùng, địa chỉ email và vị trí. Bạn có thể sẽ muốn kiểm tra rằng địa chỉ email có là unique hay không. Tuy nhiên, nếu người dùng chỉ thay đổi field tên chứ không phải field email, bạn không thể tạo ra lỗi validate vì người dùng đã là chủ sở hữu của địa chỉ email đó.
 
-Để hướng dẫn validator bỏ qua ID của người dùng, chúng ta sẽ sử dụng class `Rule` để dễ dàng khai báo quy tắc. Trong ví dụ này, chúng ta cũng sẽ khai báo các quy tắc validation là một mảng thay vì sử dụng ký tự `|` để phân chia các quy tắc:
+Để hướng dẫn validator bỏ qua ID của người dùng, chúng ta sẽ sử dụng class `Rule` để dễ dàng khai báo quy tắc.
 
 ```php
 use Illuminate\Support\Facades\Validator;
@@ -2510,9 +2507,9 @@ Field được validation phải là một URL hợp lệ.
 Nếu bạn muốn chỉ định các giao thức URL sẽ được coi là hợp lệ, bạn có thể truyền các giao thức này dưới dạng tham số quy tắc kiểm tra:
 
 ```php
-'url' => 'url:http,https',
+'url' => ['url:http,https'],
 
-'game' => 'url:minecraft,steam',
+'game' => ['url:minecraft,steam'],
 ```
 
 <a name="rule-ulid"></a>
@@ -2528,7 +2525,7 @@ Field được validation phải là một mã định danh (UUID) RFC 9562 (phi
 Bạn cũng có thể kiểm tra UUID đã cho phải giống với đặc tả của UUID và phiên bản của chúng:
 
 ```php
-'uuid' => 'uuid:4'
+'uuid' => ['uuid:4']
 ```
 
 <a name="conditionally-adding-rules"></a>
@@ -2543,9 +2540,9 @@ Bạn cũng có thể kiểm tra UUID đã cho phải giống với đặc tả 
 use Illuminate\Support\Facades\Validator;
 
 $validator = Validator::make($data, [
-    'has_appointment' => 'required|boolean',
-    'appointment_date' => 'exclude_if:has_appointment,false|required|date',
-    'doctor_name' => 'exclude_if:has_appointment,false|required|string',
+    'has_appointment' => ['required', 'boolean'],
+    'appointment_date' => ['exclude_if:has_appointment,false', 'required', 'date'],
+    'doctor_name' => ['exclude_if:has_appointment,false', 'required', 'string'],
 ]);
 ```
 
@@ -2553,9 +2550,9 @@ Ngoài ra, bạn có thể sử dụng quy tắc `exclude_unless` để không k
 
 ```php
 $validator = Validator::make($data, [
-    'has_appointment' => 'required|boolean',
-    'appointment_date' => 'exclude_unless:has_appointment,true|required|date',
-    'doctor_name' => 'exclude_unless:has_appointment,true|required|string',
+    'has_appointment' => ['required', 'boolean'],
+    'appointment_date' => ['exclude_unless:has_appointment,true', 'required', 'date'],
+    'doctor_name' => ['exclude_unless:has_appointment,true', 'required', 'string'],
 ]);
 ```
 
@@ -2566,7 +2563,7 @@ Trong một số trường hợp, bạn có thể muốn chạy kiểm tra valid
 
 ```php
 $validator = Validator::make($data, [
-    'email' => 'sometimes|required|email',
+    'email' => ['sometimes', 'required', 'email'],
 ]);
 ```
 
@@ -2584,8 +2581,8 @@ Thỉnh thoảng bạn có thể muốn thêm các quy tắc validation dựa tr
 use Illuminate\Support\Facades\Validator;
 
 $validator = Validator::make($request->all(), [
-    'email' => 'required|email',
-    'games' => 'required|numeric',
+    'email' => ['required', 'email'],
+    'games' => ['required', 'integer', 'min:0'],
 ]);
 ```
 
@@ -2594,7 +2591,7 @@ Giả sử application web của chúng ta là dành cho người sưu tầm tr�
 ```php
 use Illuminate\Support\Fluent;
 
-$validator->sometimes('reason', 'required|max:500', function (Fluent $input) {
+$validator->sometimes('reason', ['required', 'max:500'], function (Fluent $input) {
     return $input->games >= 100;
 });
 ```
@@ -2657,7 +2654,7 @@ $input = [
 ];
 
 Validator::make($input, [
-    'user' => 'array:name,username',
+    'user' => ['array:name,username'],
 ]);
 ```
 
@@ -2672,7 +2669,7 @@ Validate một mảng lồng nhau trên các field từ một form input không 
 use Illuminate\Support\Facades\Validator;
 
 $validator = Validator::make($request->all(), [
-    'photos.profile' => 'required|image',
+    'photos.profile' => ['required', 'image'],
 ]);
 ```
 
@@ -2680,8 +2677,8 @@ Bạn cũng có thể validate từng phần tử trong một mảng. Ví dụ: 
 
 ```php
 $validator = Validator::make($request->all(), [
-    'users.*.email' => 'email|unique:users',
-    'users.*.first_name' => 'required_with:users.*.last_name',
+    'users.*.email' => ['email', 'unique:users'],
+    'users.*.first_name' => ['required_with:users.*.last_name'],
 ]);
 ```
 
@@ -2737,7 +2734,7 @@ $input = [
 ];
 
 Validator::validate($input, [
-    'photos.*.description' => 'required',
+    'photos.*.description' => ['required'],
 ], [
     'photos.*.description.required' => 'Please describe photo #:position.',
 ]);
@@ -2893,6 +2890,17 @@ Password::min(8)
     ->numbers()
     ->symbols()
     ->uncompromised()
+```
+
+Bạn có thể chuyển đổi một đối tượng rule `Password` thành chuỗi string cho thuộc tính HTML `passwordrules` bằng phương thức `toPasswordRulesString`:
+
+```blade
+<input
+    type="password"
+    name="password"
+    autocomplete="new-password"
+    passwordrules="{{ Password::defaults()->toPasswordRulesString() }}"
+/>
 ```
 
 <a name="defining-default-password-rules"></a>
@@ -3101,7 +3109,7 @@ Mặc định, khi một thuộc tính đang được validate không xuất hi�
 ```php
 use Illuminate\Support\Facades\Validator;
 
-$rules = ['name' => 'unique:users,name'];
+$rules = ['name' => ['unique:users,name']];
 
 $input = ['name' => ''];
 

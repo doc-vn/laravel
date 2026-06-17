@@ -597,6 +597,25 @@ Phương thức `assertJsonPath` cũng sẽ chấp nhận một closure, có th�
 $response->assertJsonPath('team.owner.name', fn (string $name) => strlen($name) >= 3);
 ```
 
+Nếu bạn cần kiểm tra nhiều đường dẫn JSON cùng một lúc, bạn có thể sử dụng phương thức `assertJsonPaths`. Giá trị mong muốn cho mỗi đường dẫn cũng có thể là một closure:
+
+```php
+$response->assertJsonPaths([
+    'team.owner.name' => 'Darian',
+    'team.owner.email' => fn (string $email) => str($email)->is('*@laravel.com'),
+    'team.members.0.name' => 'Sally',
+]);
+```
+
+Bạn có thể sử dụng phương thức `assertJsonMissingPaths` để kiểm tra nhiều đường dẫn JSON sẽ không tồn tại trong response:
+
+```php
+$response->assertJsonMissingPaths([
+    'team.owner.password',
+    'team.members.0.api_token',
+]);
+```
+
 <a name="fluent-json-testing"></a>
 ### Fluent JSON Testing
 
@@ -1037,6 +1056,7 @@ Class `Illuminate\Testing\TestResponse` của Laravel cung cấp nhiều phươn
 [assertDownload](#assert-download)
 [assertExactJson](#assert-exact-json)
 [assertExactJsonStructure](#assert-exact-json-structure)
+[assertFailedDependency](#assert-failed-dependency)
 [assertForbidden](#assert-forbidden)
 [assertFound](#assert-found)
 [assertGone](#assert-gone)
@@ -1053,7 +1073,9 @@ Class `Illuminate\Testing\TestResponse` của Laravel cung cấp nhiều phươn
 [assertJsonMissingExact](#assert-json-missing-exact)
 [assertJsonMissingValidationErrors](#assert-json-missing-validation-errors)
 [assertJsonPath](#assert-json-path)
+[assertJsonPaths](#assert-json-paths)
 [assertJsonMissingPath](#assert-json-missing-path)
+[assertJsonMissingPaths](#assert-json-missing-paths)
 [assertJsonStructure](#assert-json-structure)
 [assertJsonValidationErrors](#assert-json-validation-errors)
 [assertJsonValidationErrorFor](#assert-json-validation-error-for)
@@ -1090,6 +1112,7 @@ Class `Illuminate\Testing\TestResponse` của Laravel cung cấp nhiều phươn
 [assertSessionHasNoErrors](#assert-session-has-no-errors)
 [assertSessionDoesntHaveErrors](#assert-session-doesnt-have-errors)
 [assertSessionMissing](#assert-session-missing)
+[assertSessionMissingInput](#assert-session-missing-input)
 [assertStatus](#assert-status)
 [assertSuccessful](#assert-successful)
 [assertTooManyRequests](#assert-too-many-requests)
@@ -1238,6 +1261,15 @@ $response->assertExactJsonStructure(array $data);
 ```
 
 Phương thức này là một biến thể so sánh nghiêm ngặt hơn của [assertJsonStructure](#assert-json-structure). Khác với `assertJsonStructure`, phương thức này sẽ thất bại nếu response chứa bất kỳ khóa nào không có trong cấu trúc JSON mong đợi.
+
+<a name="assert-failed-dependency"></a>
+#### assertFailedDependency
+
+Yêu cầu response phải chứa một HTTP status code failed dependency (424):
+
+```php
+$response->assertFailedDependency();
+```
 
 <a name="assert-forbidden"></a>
 #### assertForbidden
@@ -1414,6 +1446,24 @@ Bạn có thể yêu cầu thuộc tính `name` của đối tượng `user` kh�
 $response->assertJsonPath('user.name', 'Steve Schoger');
 ```
 
+<a name="assert-json-paths"></a>
+#### assertJsonPaths
+
+Yêu cầu response phải chứa dữ liệu đã cho tại các đường dẫn được chỉ định:
+
+```php
+$response->assertJsonPaths(array $paths);
+```
+
+Ví dụ: bạn có thể kiểm tra nhiều giá trị trong response cùng một lúc:
+
+```php
+$response->assertJsonPaths([
+    'user.name' => 'Steve Schoger',
+    'user.email' => fn (string $email) => str($email)->endsWith('@laravel.com'),
+]);
+```
+
 <a name="assert-json-missing-path"></a>
 #### assertJsonMissingPath
 
@@ -1437,6 +1487,24 @@ Bạn có thể yêu cầu nó không chứa thuộc tính `email` trong đối 
 
 ```php
 $response->assertJsonMissingPath('user.email');
+```
+
+<a name="assert-json-missing-paths"></a>
+#### assertJsonMissingPaths
+
+Yêu cầu response không chứa các đường dẫn đã cho:
+
+```php
+$response->assertJsonMissingPaths($paths);
+```
+
+Ví dụ: bạn có thể kiểm tra rằng nhiều đường dẫn sẽ không tồn tại trong response:
+
+```php
+$response->assertJsonMissingPaths([
+    'user.email',
+    'user.password',
+]);
 ```
 
 <a name="assert-json-structure"></a>
@@ -1866,6 +1934,15 @@ Yêu cầu session không chứa key đã cho:
 
 ```php
 $response->assertSessionMissing($key);
+```
+
+<a name="assert-session-missing-input"></a>
+#### assertSessionMissingInput
+
+Yêu cầu session sẽ không chứa key input đã cho trong mảng input đã được flash:
+
+```php
+$response->assertSessionMissingInput($key);
 ```
 
 <a name="assert-status"></a>

@@ -2,6 +2,8 @@
 
 - [Giới thiệu](#introduction)
 - [Chạy các task đồng thời](#running-concurrent-tasks)
+    - [Named Results](#named-results)
+    - [Task Timeouts](#task-timeouts)
 - [Hoãn các task đồng thời](#deferring-concurrent-tasks)
 
 <a name="introduction"></a>
@@ -49,6 +51,49 @@ Hoặc, để thay đổi driver mặc định, bạn có thể export file cấ
 
 ```shell
 php artisan config:publish concurrency
+```
+
+<a name="named-results"></a>
+### Named Results
+
+Nếu bạn muốn truy cập kết quả của các task đồng thời bằng tên thay vì bằng vị trí, bạn có thể truyền vào một mảng chứa các closure. Mỗi kết quả được trả về sẽ sử dụng cùng một key với closure tương ứng của nó:
+
+```php
+use Illuminate\Support\Facades\Concurrency;
+use Illuminate\Support\Facades\DB;
+
+$results = Concurrency::run([
+    'users' => fn () => DB::table('users')->count(),
+    'orders' => fn () => DB::table('orders')->count(),
+]);
+
+$userCount = $results['users'];
+$orderCount = $results['orders'];
+```
+
+<a name="task-timeouts"></a>
+### Task Timeouts
+
+Khi sử dụng driver `process` (mặc định), bạn có thể chỉ định số giây tối đa mà một task đồng thời được phép chạy trước khi nó bị dừng bằng cách truyền vào một giá trị timeout cho phương thức `run`:
+
+```php
+use Illuminate\Support\Facades\Concurrency;
+use Illuminate\Support\Facades\DB;
+
+[$userCount, $orderCount] = Concurrency::run([
+    fn () => DB::table('users')->count(),
+    fn () => DB::table('orders')->count(),
+], timeout: 30);
+```
+
+Bạn cũng có thể cung cấp một instance `CarbonInterval` nếu bạn muốn định nghĩa timeout một cách trực quan hơn:
+
+```php
+use Illuminate\Support\Facades\Concurrency;
+
+use function Illuminate\Support\seconds;
+
+Concurrency::run([...], timeout: seconds(30));
 ```
 
 <a name="deferring-concurrent-tasks"></a>

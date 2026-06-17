@@ -115,6 +115,34 @@ php artisan event:list
 
 Để tăng tốc ứng dụng của bạn, bạn nên cache lại một manifest của tất cả các listener của ứng dụng bằng cách sử dụng lệnh Artisan `optimize` hoặc `event:cache`. Thông thường, lệnh này nên được chạy như một phần của [quy trình triển khai](/docs/{{version}}/deployment#optimization) ứng dụng của bạn. Manifest này sẽ được framework sử dụng để tăng tốc quá trình đăng ký event. Lệnh `event:clear` có thể được sử dụng để hủy bộ nhớ cache của event.
 
+<a name="dynamic-event-discovery"></a>
+#### Dynamic Event Discovery
+
+Để kiểm soát một cách linh hoạt một listener có được tự động đăng ký hay không, bạn có thể implement interface `ShouldBeDiscovered` trên class listener và định nghĩa một phương thức `shouldBeDiscovered` trả về một giá trị boolean. Nếu phương thức này trả về `false`, listener sẽ không được đăng ký trong quá trình tự động tìm kiếm event:
+
+```php
+use Illuminate\Contracts\Events\ShouldBeDiscovered;
+
+class SendPodcastNotification implements ShouldBeDiscovered
+{
+    /**
+     * Handle the event.
+     */
+    public function handle(PodcastProcessed $event): void
+    {
+        // ...
+    }
+
+    /**
+     * Determine if the listener should be discovered.
+     */
+    public static function shouldBeDiscovered(): bool
+    {
+        return app()->environment('production');
+    }
+}
+```
+
 <a name="manually-registering-events"></a>
 ### Đăng ký Event thủ công
 

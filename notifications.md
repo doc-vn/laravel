@@ -709,22 +709,6 @@ public function toMail(object $notifiable): MailMessage
 }
 ```
 
-Không giống như đính kèm file trong các đối tượng mail, bạn không được đính kèm file trực tiếp từ storage disk bằng cách sử dụng `attachFromStorage`. Thay vào đó, bạn nên sử dụng phương thức `attach` với đường dẫn tuyệt đối đến file trên storage disk. Ngoài ra, bạn có thể trả về [mailable](/docs/{{version}}/mail#generating-mailables) từ phương thức `toMail`:
-
-```php
-use App\Mail\InvoicePaid as InvoicePaidMailable;
-
-/**
- * Get the mail representation of the notification.
- */
-public function toMail(object $notifiable): Mailable
-{
-    return (new InvoicePaidMailable($this->invoice))
-        ->to($notifiable->email)
-        ->attachFromStorage('/path/to/file');
-}
-```
-
 Khi cần thiết, có thể đính kèm nhiều file vào một tin nhắn bằng phương thức `attachMany`:
 
 ```php
@@ -741,6 +725,24 @@ public function toMail(object $notifiable): MailMessage
                 'as' => 'Logo.svg',
                 'mime' => 'image/svg+xml',
             ],
+        ]);
+}
+```
+
+Bạn có thể sử dụng phương thức `attachFromStorageDisk` để đính kèm một file ở trên một [filesystem disk](/docs/{{version}}/filesystem). Phương thức này nhận tên disk và đường dẫn đến file trên disk đó:
+
+```php
+use App\Mail\InvoicePaid as InvoicePaidMailable;
+
+/**
+ * Get the mail representation of the notification.
+ */
+public function toMail(object $notifiable): Mailable
+{
+    return (new InvoicePaidMailable($this->invoice))
+        ->to($notifiable->email)
+        ->attachFromStorageDisk('s3', '/path/to/file', 'invoice.pdf', [
+            'mime' => 'application/pdf',
         ]);
 }
 ```

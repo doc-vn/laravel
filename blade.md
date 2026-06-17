@@ -15,6 +15,7 @@
     - [Thêm Subviews](#including-subviews)
     - [Lệnh `@once`](#the-once-directive)
     - [Raw PHP](#raw-php)
+    - [Fonts](#fonts)
     - [Comments](#comments)
 - [Components](#components)
     - [Hiển thị Component](#rendering-components)
@@ -592,6 +593,12 @@ Nếu bạn muốn `@include` một view nếu một biểu thức boolean đã 
 @includeFirst(['custom.admin', 'admin'], ['status' => 'complete'])
 ```
 
+Nếu bạn muốn thêm một view mà không muốn kế thừa bất kỳ biến nào từ view cha, bạn có thể sử dụng lệnh `@includeIsolated`. View được thêm vào sẽ chỉ có quyền truy cập vào các biến mà bạn truyền vào:
+
+```blade
+@includeIsolated('view.name', ['user' => $user])
+```
+
 > [!WARNING]
 > Bạn nên tránh sử dụng các hằng số `__DIR__` và `__FILE__` trong view Blade của bạn, vì chúng sẽ đề cập đến vị trí của view khi được biên dịch và được lưu trong bộ nhớ cache.
 
@@ -702,6 +709,39 @@ Group import cũng được hỗ trợ cho cả function và const, cho phép b�
 ```blade
 @use(function App\Helpers\{format_currency, format_date})
 @use(const App\Constants\{MAX_ATTEMPTS, DEFAULT_TIMEOUT})
+```
+
+<a name="fonts"></a>
+### Fonts
+
+Khi sử dụng [tối ưu hóa font của Laravel Vite](/docs/{{version}}/vite#working-with-fonts), bạn có thể sử dụng lệnh `@fonts` để hiển thị các link preload cho font đã được cấu hình và CSS font trong file layout của ứng dụng:
+
+```blade
+<!doctype html>
+<head>
+    {{-- ... --}}
+
+    @fonts
+    @vite('resources/js/app.js')
+</head>
+```
+
+Lệnh `@fonts` sẽ tạo ra tất cả các font family đã được cấu hình trong file `vite.config.js` của bạn. Lệnh này nên được đặt trong thẻ `<head>` của layout root của ứng dụng trước bất kỳ nội dung nào mà có sử dụng các font đó.
+
+Nếu một trang chỉ cần một số font nhất định trong cấu hình của bạn, bạn có thể truyền một hoặc nhiều alias font vào lệnh:
+
+```blade
+{{-- Load a single font alias... --}}
+@fonts('sans')
+
+{{-- Load multiple font aliases... --}}
+@fonts(['sans', 'mono'])
+```
+
+Các alias font được cấu hình bằng cách sử dụng tùy chọn `alias` khi định nghĩa các font trong cấu hình Vite của bạn. Lệnh `@fonts` sẽ gọi phương thức `fonts` được cung cấp bởi facade `Vite`, phương thức này cũng có thể được gọi trực tiếp:
+
+```blade
+{{ Vite::fonts(['sans', 'mono']) }}
 ```
 
 <a name="comments"></a>

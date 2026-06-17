@@ -916,6 +916,18 @@ $users = DB::table('users')
     ->get();
 ```
 
+**whereNullSafeEquals / orWhereNullSafeEquals**
+
+Các phương thức `whereNullSafeEquals` và `orWhereNullSafeEquals` có thể được sử dụng để so sánh giá trị của một cột với một giá trị nhất định, đồng thời coi hai giá trị `NULL` là bằng nhau:
+
+```php
+$lastLoginIp = $request->input('last_login_ip');
+
+$users = DB::table('users')
+    ->whereNullSafeEquals('last_login_ip', $lastLoginIp)
+    ->get();
+```
+
 **whereDate / whereMonth / whereDay / whereYear / whereTime**
 
 Phương thức `whereDate` có thể được sử dụng để so sánh giá trị của cột với một ngày:

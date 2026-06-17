@@ -1039,8 +1039,8 @@ users
 images
     id - integer
     url - string
-    imageable_id - integer
     imageable_type - string
+    imageable_id - integer
 ```
 
 Hãy chú ý đến các cột `imageable_id` và `imageable_type` trong bảng `images`. Cột `imageable_id` sẽ chứa giá trị ID của post hoặc user, trong khi cột `imageable_type` sẽ chứa tên class của model được kết nối. Cột `imageable_type` sẽ được sử dụng bởi Eloquent để xác định xem "loại" model nào sẽ trả về khi truy xuất quan hệ `imageable`. Trong trường hợp này, cột sẽ chứa `App\Models\Post` hoặc `App\Models\User`.
@@ -1160,8 +1160,8 @@ videos
 comments
     id - integer
     body - text
-    commentable_id - integer
     commentable_type - string
+    commentable_id - integer
 ```
 
 <a name="one-to-many-polymorphic-model-structure"></a>
@@ -1353,8 +1353,8 @@ tags
 
 taggables
     tag_id - integer
-    taggable_id - integer
     taggable_type - string
+    taggable_id - integer
 ```
 
 > [!NOTE]

@@ -212,7 +212,7 @@ Khi cài đặt Laravel Reverb thông qua lệnh Artisan `install:broadcasting`,
 npm install --save-dev laravel-echo pusher-js
 ```
 
-Sau khi Echo được cài đặt xong, bạn đã sẵn sàng tạo một instance Echo mới trong JavaScript của ứng dụng. Một vị trí tuyệt vời để thực hiện việc này là ở cuối file `resources/js/bootstrap.js` được chứa sẵn trong framework Laravel:
+Sau khi Echo được cài đặt xong, bạn đã sẵn sàng tạo một instance Echo mới trong JavaScript của ứng dụng. Một vị trí tuyệt vời để thực hiện việc này là ở cuối file `resources/js/app.js` được chứa sẵn trong framework Laravel:
 
 ```js tab=JavaScript
 import Echo from 'laravel-echo';
@@ -298,7 +298,7 @@ Khi cài đặt hỗ trợ broadcasting thông qua lệnh Artisan `install:broad
 npm install --save-dev laravel-echo pusher-js
 ```
 
-Sau khi cài đặt Echo, bạn đã sẵn sàng tạo một instance Echo mới trong file `resources/js/bootstrap.js` của ứng dụng:
+Sau khi cài đặt Echo, bạn đã sẵn sàng tạo một instance Echo mới trong file `resources/js/app.js` của ứng dụng:
 
 ```js tab=JavaScript
 import Echo from 'laravel-echo';
@@ -428,7 +428,7 @@ npm install --save-dev laravel-echo pusher-js
 
 **Trước khi tiếp tục, bạn nên bật hỗ trợ giao thức Pusher trong phần cài đặt ứng dụng Ably của bạn. Bạn có thể bật tính năng này trong phần "Protocol Adapter Settings" của dashboard cài đặt ứng dụng Ably.**
 
-Sau khi cài đặt Echo, bạn đã sẵn sàng tạo một instance Echo mới trong file `resources/js/bootstrap.js` của ứng dụng:
+Sau khi cài đặt Echo, bạn đã sẵn sàng tạo một instance Echo mới trong file `resources/js/app.js` của ứng dụng:
 
 ```js tab=JavaScript
 import Echo from 'laravel-echo';
@@ -1443,6 +1443,43 @@ Các giá trị trạng thái có thể có là:
 - `failed` - Kết nối thất bại.
 
 </div>
+
+<a name="react-vue-socket-id"></a>
+#### Socket ID
+
+Bạn có thể lấy socket ID của WebSocket hiện tại bằng cách sử dụng hook `useSocketId`, hook này cung cấp một giá trị tương tác tự động được cập nhật khi kết nối được reconnect với một socket ID mới:
+
+```js tab=React
+import { useSocketId } from "@laravel/echo-react";
+
+function SocketIndicator() {
+    const socketId = useSocketId();
+
+    return <div>Socket ID: {socketId}</div>;
+}
+```
+
+```vue tab=Vue
+<script setup lang="ts">
+import { useSocketId } from "@laravel/echo-vue";
+
+const socketId = useSocketId();
+</script>
+
+<template>
+    <div>Socket ID: {{ socketId }}</div>
+</template>
+```
+
+```svelte tab=Svelte
+<script>
+import { useSocketId } from "@laravel/echo-svelte";
+
+const socketId = useSocketId();
+</script>
+
+<div>Socket ID: {socketId()}</div>
+```
 
 <a name="presence-channels"></a>
 ## Presence Channel

@@ -160,7 +160,7 @@ Nếu bạn lo ngại về việc chuyển sang Inertia vì ứng dụng của b
 <a name="inertia-starter-kits"></a>
 ### Starter Kits
 
-Nếu bạn muốn xây dựng frontend của bạn bằng Inertia và React hoặc Svelte hoặc Vue, bạn có thể tận dụng [application starter kit React hoặc Vue](/docs/{{version}}/starter-kits) của chúng tôi để bắt đầu quá trình phát triển ứng dụng của bạn. Cả hai bộ khởi tạo này đều hỗ trợ flow xác thực cả về backend lẫn frontend cho ứng dụng bằng Inertia, React hoặc Svelte hoặc Vue, [Tailwind](https://tailwindcss.com) và [Vite](https://vitejs.dev) để bạn có thể bắt đầu xây dựng bước tiếp theo của bạn.
+Nếu bạn muốn xây dựng frontend của bạn bằng Inertia và React hoặc Svelte hoặc Vue, bạn có thể tận dụng [application starter kit React hoặc Vue](/docs/{{version}}/starter-kits) của chúng tôi để bắt đầu quá trình phát triển ứng dụng của bạn. Tất cả bộ khởi tạo này đều hỗ trợ flow xác thực cả về backend lẫn frontend cho ứng dụng bằng Inertia, React hoặc Svelte hoặc Vue, [Tailwind](https://tailwindcss.com) và [Vite](https://vitejs.dev) để bạn có thể bắt đầu xây dựng bước tiếp theo của bạn.
 
 <a name="bundling-assets"></a>
 ## Đóng gói assets

@@ -568,6 +568,7 @@ Schema builder blueprint cung cấp nhiều phương thức tương ứng với 
 [foreignIdFor](#column-method-foreignIdFor)
 [foreignUlid](#column-method-foreignUlid)
 [foreignUuid](#column-method-foreignUuid)
+[foreignUuidFor](#column-method-foreignUuidFor)
 [morphs](#column-method-morphs)
 [nullableMorphs](#column-method-nullableMorphs)
 
@@ -747,6 +748,15 @@ Phương thức `foreignUuid` sẽ tạo một cột tương ứng với `UUID`:
 $table->foreignUuid('user_id');
 ```
 
+<a name="column-method-foreignUuidFor"></a>
+#### `foreignUuidFor()` {.collection-method}
+
+Phương thức `foreignUuidFor` sẽ thêm một cột UUID `{column}_id` cho một model class nhất định:
+
+```php
+$table->foreignUuidFor(User::class);
+```
+
 <a name="column-method-geography"></a>
 #### `geography()` {.collection-method}
 
@@ -891,9 +901,9 @@ $table->mediumText('data')->charset('binary'); // MEDIUMBLOB
 <a name="column-method-morphs"></a>
 #### `morphs()` {.collection-method}
 
-Phương thức `morphs` là một phương thức rất tiện lợi, nó sẽ thêm một cột tương ứng với `{column}_id` và một cột khác là `{column}_type` `VARCHAR`. Kiểu cột cho `{column}_id` sẽ là `UNSIGNED BIGINT`, `CHAR(36)` hoặc `CHAR(26)` tùy thuộc vào kiểu khóa của model.
+Phương thức `morphs` là một phương thức rất tiện lợi, nó sẽ thêm một cột tương ứng với `{column}_type` `VARCHAR` và một cột khác là `{column}_id`. Kiểu cột cho `{column}_id` sẽ là `UNSIGNED BIGINT`, `CHAR(36)` hoặc `CHAR(26)` tùy thuộc vào kiểu khóa của model.
 
-Mục đích phương thức này là nhằm sử dụng khi định nghĩa các cột cần thiết cho [quan hệ đa hình](/docs/{{version}}/eloquent-relationships). Trong ví dụ dưới, các cột `taggable_id` và `taggable_type` sẽ được tạo:
+Mục đích phương thức này là nhằm sử dụng khi định nghĩa các cột cần thiết cho [quan hệ đa hình](/docs/{{version}}/eloquent-relationships). Trong ví dụ dưới, các cột `taggable_type` và `taggable_id` sẽ được tạo:
 
 ```php
 $table->morphs('taggable');
@@ -1139,9 +1149,9 @@ $table->unsignedTinyInteger('votes');
 <a name="column-method-ulidMorphs"></a>
 #### `ulidMorphs()` {.collection-method}
 
-Phương thức `ulidMorphs` là một phương thức rất tiện lợi, nó sẽ thêm một cột tương ứng với `{column}_id` `CHAR(26)` và một cột khác là `{column}_type` `VARCHAR`.
+Phương thức `ulidMorphs` là một phương thức rất tiện lợi, nó sẽ thêm một cột tương ứng với `{column}_type` `VARCHAR` và một cột khác là `{column}_id` `CHAR(26)`.
 
-Mục đích phương thức này là nhằm sử dụng khi định nghĩa các cột cần thiết cho [quan hệ đa hình](/docs/{{version}}/eloquent-relationships). Trong ví dụ dưới, các cột `taggable_id` và `taggable_type` sẽ được tạo:
+Mục đích phương thức này là nhằm sử dụng khi định nghĩa các cột cần thiết cho [quan hệ đa hình](/docs/{{version}}/eloquent-relationships). Trong ví dụ dưới, các cột `taggable_type` và `taggable_id` sẽ được tạo:
 
 ```php
 $table->ulidMorphs('taggable');
@@ -1150,9 +1160,9 @@ $table->ulidMorphs('taggable');
 <a name="column-method-uuidMorphs"></a>
 #### `uuidMorphs()` {.collection-method}
 
-Phương thức `uuidMorphs` là một phương thức rất tiện lợi, nó sẽ thêm một cột tương ứng với `{column}_id` `CHAR(36)` và một cột khác là `{column}_type` `VARCHAR`.
+Phương thức `uuidMorphs` là một phương thức rất tiện lợi, nó sẽ thêm một cột tương ứng với `{column}_type` `VARCHAR` và một cột khác là `{column}_id` `CHAR(36)`.
 
-Mục đích phương thức này là nhằm sử dụng khi định nghĩa các cột cần thiết cho [quan hệ đa hình](/docs/{{version}}/eloquent-relationships#polymorphic-relationships). Trong ví dụ dưới, các cột `taggable_id` và `taggable_type` sẽ được tạo:
+Mục đích phương thức này là nhằm sử dụng khi định nghĩa các cột cần thiết cho [quan hệ đa hình](/docs/{{version}}/eloquent-relationships#polymorphic-relationships). Trong ví dụ dưới, các cột `taggable_type` và `taggable_id` sẽ được tạo:
 
 ```php
 $table->uuidMorphs('taggable');
@@ -1385,7 +1395,7 @@ Laravel cung cấp một số phương thức thuận tiện liên quan đến v
 
 | Command                             | Description                                           |
 | ----------------------------------- | ----------------------------------------------------- |
-| `$table->dropMorphs('morphable');`  | Xoá cột `morphable_id` và cột `morphable_type`.       |
+| `$table->dropMorphs('morphable');`  | Xoá cột `morphable_type` và cột `morphable_id`.       |
 | `$table->dropRememberToken();`      | Xoá cột `remember_token`.                             |
 | `$table->dropSoftDeletes();`        | Xoá cột `deleted_at`.                                 |
 | `$table->dropSoftDeletesTz();`      | Lối tắt của phương thức `dropSoftDeletes()`.          |

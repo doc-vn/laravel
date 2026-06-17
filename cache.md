@@ -32,7 +32,7 @@ Rất may, Laravel đã cung cấp một API hợp nhất, rõ ràng cho nhiều
 <a name="configuration"></a>
 ## Cấu hình
 
-Cấu hình cache của application được lưu trong file `config/cache.php`. Trong file này, các bạn có thể chỉ định cache store nào bạn muốn được sử dụng mặc định trong application của bạn. Mặc định, Laravel hỗ trợ các backend caching phổ biến như [Memcached](https://memcached.org), [Redis](https://redis.io), [DynamoDB](https://aws.amazon.com/dynamodb), và mặc định là cơ sở dữ liệu quan hệ. Ngoài ra, có sẵn driver cache dựa trên file, trong khi driver cache `array` và `null` cung cấp backend cache thuận tiện cho các automated test của bạn.
+Cấu hình cache của application được lưu trong file `config/cache.php`. Trong file này, các bạn có thể chỉ định cache store nào bạn muốn được sử dụng mặc định trong application của bạn. Mặc định, Laravel hỗ trợ các backend caching phổ biến như [Memcached](https://memcached.org), [Redis](https://redis.io), [DynamoDB](https://aws.amazon.com/dynamodb), cơ sở dữ liệu quan hệ, và mặc định là filesystem disk. Ngoài ra, có sẵn driver cache dựa trên file, trong khi driver cache `array` và `null` cung cấp backend cache thuận tiện cho các automated test của bạn.
 
 File cấu hình cache cũng chứa nhiều lựa chọn khác mà bạn có thể xem xét. Mặc định, Laravel được cấu hình để sử dụng cache driver `database`, lưu trữ các đối tượng ở dưới dạng byte, và được cache trong cơ sở dữ liệu ứng dụng của bạn.
 
@@ -91,6 +91,19 @@ Nếu cần, bạn có thể set tùy chọn `host` thành một đường dẫn
 Trước khi sử dụng cache Redis với Laravel, bạn sẽ cần cài đặt extension PhpRedis của PHP thông qua PECL hoặc cài đặt package `predis/predis` (~2.0) thông qua Composer. [Laravel Sail](/docs/{{version}}/sail) đã chứa extension này. Ngoài ra, mặc định, các nền tảng ứng dụng Laravel chính thức như [Laravel Cloud](https://cloud.laravel.com) và [Laravel Forge](https://forge.laravel.com) cũng đã được cài đặt extension PhpRedis.
 
 Để biết thêm thông tin về cách cấu hình Redis, hãy tham khảo [tài liệu của Laravel](/docs/{{version}}/redis#configuration).
+
+<a name="storage"></a>
+#### Storage
+
+Driver cache `storage` cho phép bạn lưu các giá trị cache trên bất kỳ [filesystem disk](/docs/{{version}}/filesystem) nào đã cấu hình của ứng dụng. Điều này có thể hữu ích khi bạn muốn sử dụng một disk hiện tại, chẳng hạn như disk S3, làm kho lưu trữ cache key và value:
+
+```php
+'storage' => [
+    'driver' => 'storage',
+    'disk' => env('CACHE_STORAGE_DISK'),
+    'path' => env('CACHE_STORAGE_PATH', 'framework/cache/data'),
+],
+```
 
 <a name="dynamodb"></a>
 #### DynamoDB
@@ -427,7 +440,7 @@ cache()->remember('users', $seconds, function () {
 ## Cache Tags
 
 > [!WARNING]
-> Cache tags không được hỗ trợ khi sử dụng các driver cache `file`, `dynamodb`, hoặc `database`.
+> Cache tags không được hỗ trợ khi sử dụng các driver cache `file`, `dynamodb`, `database`, hoặc `storage`.
 
 <a name="storing-tagged-cache-items"></a>
 ### Storing Tagged Cache Items

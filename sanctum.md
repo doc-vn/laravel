@@ -309,7 +309,7 @@ php artisan config:publish cors
 
 Tiếp theo, bạn nên đảm bảo là cấu hình CORS của ứng dụng của bạn đang trả về header `Access-Control-Allow-Credentials` có giá trị là `True`. Nó có thể hoàn thành bằng cách set tùy chọn `supports_credentials` trong file cấu hình `config/cors.php` của ứng dụng thành `true`.
 
-Ngoài ra, bạn cũng nên thêm tùy chọn `withCredentials` và tùy chọn `withXSRFToken` trên instance global `axios` của application của bạn. Thông thường, điều này sẽ được thực hiện trong file `resources/js/bootstrap.js` của bạn. Nếu bạn không sử dụng Axios để thực hiện các request HTTP từ fontend của bạn, bạn nên thực hiện cấu hình tương đương trên HTTP client của riêng bạn:
+Ngoài ra, bạn cũng nên thêm tùy chọn `withCredentials` và tùy chọn `withXSRFToken` trên instance global `axios` của application của bạn. Điều này có thể được thực hiện trong file `resources/js/app.js` của bạn. Nếu bạn không sử dụng Axios để thực hiện các request HTTP từ fontend của bạn, bạn nên thực hiện cấu hình tương đương trên HTTP client của riêng bạn:
 
 ```js
 axios.defaults.withCredentials = true;
@@ -347,8 +347,10 @@ Nếu request đăng nhập thành công, bạn sẽ được xác thực và c�
 
 Tất nhiên, nếu session người dùng của bạn hết hạn do không hoạt động, thì các request tiếp theo tới ứng dụng Laravel có thể nhận được response lỗi HTTP 401 hoặc 419. Trong trường hợp này, bạn nên chuyển hướng người dùng đến trang đăng nhập SPA của bạn.
 
+Vì cách tiếp cận xác thực SPA này dựa trên session, nên bạn có thể sử dụng các service xác thực cơ bản của Laravel, bao gồm cả chức năng ["remember me"](/docs/{{version}}/authentication#remembering-users).
+
 > [!WARNING]
-> Bạn có thể tự do thoải mái viết bất kỳ endpoint `/login` nào của riêng bạn; tuy nhiên, bạn nên đảm bảo rằng nó xác thực người dùng bằng cách sử dụng tiêu chuẩn [dịch vụ xác thực dựa trên session mà Laravel cung cấp](/docs/{{version}}/authentication#authenticating-users). Thông thường, điều này có nghĩa là sử dụng guard authentication `web`.
+> Bạn có thể tự do thoải mái viết bất kỳ endpoint `/login` nào của riêng bạn; tuy nhiên, bạn nên đảm bảo rằng nó xác thực người dùng bằng cách sử dụng các [service xác thực cơ bản dựa trên session mà Laravel cung cấp](/docs/{{version}}/authentication#authenticating-users). Thông thường, điều này có nghĩa là sử dụng guard authentication `web`.
 
 <a name="protecting-spa-routes"></a>
 ### Bảo vệ route

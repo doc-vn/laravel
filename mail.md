@@ -1028,6 +1028,20 @@ Mail::to($request->user())
     ->queue($message);
 ```
 
+Ngoài ra, bạn có thể chỉ định kết nối và queue bằng cách sử dụng các attribute `Connection` và `Queue` trên class mailable:
+
+```php
+use Illuminate\Queue\Attributes\Connection;
+use Illuminate\Queue\Attributes\Queue;
+
+#[Connection('sqs')]
+#[Queue('emails')]
+class OrderShipped extends Mailable
+{
+    // ...
+}
+```
+
 <a name="queueing-by-default"></a>
 #### Queueing By Default
 
