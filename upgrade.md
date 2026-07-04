@@ -273,7 +273,7 @@ Mặc dù chưa bao giờ được ghi lại chính thức, các bản phát hà
 
 **Likelihood Of Impact: Medium**
 
-Cross-Origin Resource Sharing (CORS) bây giờ sẽ được hỗ trợ và được tích hợp mặc định. Nếu bạn đang sử dụng bất kỳ thư viện CORS nào của bên thứ ba, bạn nên sử dụng [file cấu hình `cors` mới](https://github.com/laravel/laravel/blob/master/config/cors.php).
+Cross-Origin Resource Sharing (CORS) bây giờ sẽ được hỗ trợ và được tích hợp mặc định. Nếu bạn đang sử dụng bất kỳ thư viện CORS nào của bên thứ ba, bạn nên sử dụng [file cấu hình `cors` mới](https://github.com/laravel/laravel/blob/7.x/config/cors.php).
 
 Tiếp theo, cài đặt thư viện CORS ở bên dưới vào ứng dụng của bạn:
 
