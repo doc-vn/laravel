@@ -920,6 +920,39 @@ class ComplexReasoner implements Agent
 }
 ```
 
+Ngoài các thuộc tính `Provider`, `Model` và `Timeout`, bạn cũng có thể định nghĩa các phương thức `provider`, `model` và `timeout` trên agent của bạn để resolve các giá trị này lúc runtime, điều này sẽ hữu ích khi cấu hình của bạn phụ thuộc vào một database record, một giá trị cấu hình hoặc một trạng thái runtime khác. Điều tương tự cũng áp dụng cho `maxSteps`, `maxTokens` và `temperature`:
+
+```php
+<?php
+
+namespace App\Ai\Agents;
+
+use Laravel\Ai\Contracts\Agent;
+use Laravel\Ai\Promptable;
+
+class SalesCoach implements Agent
+{
+    use Promptable;
+
+    public function maxSteps(): int
+    {
+        return config('agents.sales_coach.max_steps', 5);
+    }
+
+    public function maxTokens(): int
+    {
+        return $this->user->plan->maxTokens();
+    }
+
+    public function temperature(): float
+    {
+        return Setting::get('sales_coach_temperature', 0.7);
+    }
+}
+```
+
+Một khi cả phương thức và thuộc tính đều được định nghĩa cho cùng một tùy chọn, phương thức sẽ được ưu tiên hơn.
+
 <a name="provider-options"></a>
 ### Provider Options
 

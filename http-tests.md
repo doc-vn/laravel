@@ -1037,6 +1037,7 @@ Class `Illuminate\Testing\TestResponse` của Laravel cung cấp nhiều phươn
 [assertDownload](#assert-download)
 [assertExactJson](#assert-exact-json)
 [assertExactJsonStructure](#assert-exact-json-structure)
+[assertFailedDependency](#assert-failed-dependency)
 [assertForbidden](#assert-forbidden)
 [assertFound](#assert-found)
 [assertGone](#assert-gone)
@@ -1238,6 +1239,15 @@ $response->assertExactJsonStructure(array $data);
 ```
 
 Phương thức này là một biến thể so sánh nghiêm ngặt hơn của [assertJsonStructure](#assert-json-structure). Khác với `assertJsonStructure`, phương thức này sẽ thất bại nếu response chứa bất kỳ khóa nào không có trong cấu trúc JSON mong đợi.
+
+<a name="assert-failed-dependency"></a>
+#### assertFailedDependency
+
+Yêu cầu response phải chứa một HTTP status code failed dependency (424):
+
+```php
+$response->assertFailedDependency();
+```
 
 <a name="assert-forbidden"></a>
 #### assertForbidden
