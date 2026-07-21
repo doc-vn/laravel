@@ -402,7 +402,7 @@ class PhotoController extends Controller
         #[DB('mysql')] protected Connection $connection,
         #[Give(DatabaseRepository::class)] protected UserRepository $users,
         #[Log('daily')] protected LoggerInterface $log,
-        #[RouteParameter('photo')] protected Photo $photo,
+        #[RouteParameter] protected Photo $photo,
         #[Tag('reports')] protected iterable $reports,
     ) {
         // ...
@@ -410,7 +410,9 @@ class PhotoController extends Controller
 }
 ```
 
-Hơn nữa, Laravel cũng cung cấp thuộc tính `CurrentUser` để đưa người dùng hiện tại vào một route hoặc một class nhất định:
+Thuộc tính `RouteParameter` sẽ resolve tham số của route mà giống với tên biến. Nếu cần, bạn có thể chỉ định luôn tên tham số route: `#[RouteParameter('photo')]`.
+
+Ngoài ra, Laravel cũng cung cấp thuộc tính `CurrentUser` để inject người dùng hiện tại vào một route hoặc một class nhất định:
 
 ```php
 use App\Models\User;
@@ -434,6 +436,7 @@ namespace App\Attributes;
 use Attribute;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Contracts\Container\ContextualAttribute;
+use ReflectionParameter;
 
 #[Attribute(Attribute::TARGET_PARAMETER)]
 class Config implements ContextualAttribute
@@ -450,9 +453,10 @@ class Config implements ContextualAttribute
      *
      * @param  self  $attribute
      * @param  \Illuminate\Contracts\Container\Container  $container
+     * @param  \ReflectionParameter  $parameter
      * @return mixed
      */
-    public static function resolve(self $attribute, Container $container)
+    public static function resolve(self $attribute, Container $container, ReflectionParameter $parameter)
     {
         return $container->make('config')->get($attribute->key, $attribute->default);
     }

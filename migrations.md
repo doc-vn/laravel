@@ -1611,14 +1611,15 @@ Schema::withoutForeignKeyConstraints(function () {
 
 <div class="overflow-auto">
 
-| Class                                            | Description                                      |
-| ------------------------------------------------ | ------------------------------------------------ |
-| `Illuminate\Database\Events\MigrationsStarted`   | Một tập hợp các file migration sắp được thực hiện.   |
-| `Illuminate\Database\Events\MigrationsEnded`     | Một tập hợp các file migration đã thực hiện xong.    |
-| `Illuminate\Database\Events\MigrationStarted`    | Một file migration sắp được thực hiện.      |
-| `Illuminate\Database\Events\MigrationEnded`      | Một file migration đã thực hiện xong.       |
+| Class                                            | Description                                                            |
+| ------------------------------------------------ | ---------------------------------------------------------------------- |
+| `Illuminate\Database\Events\DatabaseRefreshed`   | Lệnh `migrate:refresh` đã hoàn tất.                                    |
+| `Illuminate\Database\Events\MigrationsStarted`   | Một tập hợp các file migration sắp được thực hiện.                     |
+| `Illuminate\Database\Events\MigrationsEnded`     | Một tập hợp các file migration đã hoàn tất.                            |
+| `Illuminate\Database\Events\MigrationStarted`    | Một file migration sắp được thực hiện.                                 |
+| `Illuminate\Database\Events\MigrationEnded`      | Một file migration đã hoàn tất.                                        |
 | `Illuminate\Database\Events\NoPendingMigrations` | Một lệnh migration không tìm thấy bất kỳ migration nào đang chờ xử lý. |
-| `Illuminate\Database\Events\SchemaDumped`        | Một bản sao schema cơ sở dữ liệu đã hoàn thành. |
-| `Illuminate\Database\Events\SchemaLoaded`        | Một bản sao schema cơ sở dữ liệu đã được load. |
+| `Illuminate\Database\Events\SchemaDumped`        | Một bản sao schema cơ sở dữ liệu đã hoàn tất.                          |
+| `Illuminate\Database\Events\SchemaLoaded`        | Một bản sao schema cơ sở dữ liệu đã được load.                         |
 
 </div>

@@ -108,7 +108,7 @@ Chúng tôi khuyến khích những người đóng góp nên làm quen với co
 <a name="security-vulnerabilities"></a>
 ## Lỗ hổng bảo mật
 
-Nếu bạn phát hiện ra lỗ hổng bảo mật trong Laravel, vui lòng gửi email đến Taylor Otwell theo địa chỉ <a href="mailto:taylor@laravel.com">taylor@laravel.com</a>. Tất cả các lỗ hổng bảo mật sẽ được giải quyết kịp thời.
+Nếu bạn phát hiện ra lỗ hổng bảo mật trong Laravel, vui lòng gửi email cho nhóm bảo mật của chúng tôi theo địa chỉ <a href="mailto:security@laravel.com">security@laravel.com</a>. Tất cả các lỗ hổng bảo mật sẽ được giải quyết kịp thời.
 
 <a name="coding-style"></a>
 ## Coding Style

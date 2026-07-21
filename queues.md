@@ -13,6 +13,7 @@
     - [Giới hạn tỷ lệ](#rate-limiting)
     - [Chặn Job chồng nhau](#preventing-job-overlaps)
     - [Ngoại lệ](#throttling-exceptions)
+    - [Releasing Jobs](#releasing-jobs)
     - [Bỏ qua Job](#skipping-jobs)
 - [Gửi Job](#dispatching-jobs)
     - [Delay gửi](#delayed-dispatching)
@@ -972,6 +973,45 @@ Phương thức `connection` có thể được sử dụng để xác định k
 return [(new ThrottlesExceptionsWithRedis(10, 10 * 60))->connection('limiter')];
 ```
 
+<a name="releasing-jobs"></a>
+### Releasing Jobs
+
+Middleware `Release` cho phép bạn release một job trở lại queue mà không cần phải chạy nó. Phương thức `Release::when` sẽ release job nếu điều kiện đã cho có giá trị là `true`, trong khi phương thức `Release::unless` sẽ release job nếu điều kiện có giá trị là `false`:
+
+```php
+use Illuminate\Queue\Middleware\Release;
+
+/**
+ * Get the middleware the job should pass through.
+ */
+public function middleware(): array
+{
+    return [
+        Release::when($condition, releaseAfter: 60),
+    ];
+}
+```
+
+Việc release một job trở lại queue vẫn sẽ làm tăng số lần thử của job đó. Bạn có thể điều chỉnh các thuộc tính `Tries` và `MaxExceptions` trên class job của bạn cho phù hợp.
+
+Bạn cũng có thể truyền một `Closure` vào các phương thức `when` và `unless` để thêm các điều kiện phức tạp hơn:
+
+```php
+use Illuminate\Queue\Middleware\Release;
+
+/**
+ * Get the middleware the job should pass through.
+ */
+public function middleware(): array
+{
+    return [
+        Release::when(function (): bool {
+            return ! $this->order->isPaid();
+        }, releaseAfter: 60),
+    ];
+}
+```
+
 <a name="skipping-jobs"></a>
 ### Bỏ qua Job
 
@@ -1615,6 +1655,35 @@ class ProcessPodcast implements ShouldQueue
 ```
 
 Trong ví dụ này, job sẽ được giải phóng trong 10 giây nếu ứng dụng không thể lấy được Redis lock và sẽ tiếp tục được thử lại tối đa 25 lần. Tuy nhiên, job sẽ thất bại nếu job đưa ra quá ba exception.
+
+<a name="stopping-retries-by-exception"></a>
+#### Stopping Retries by Exception
+
+Thỉnh thoảng, khi một exception xảy ra thì queued job đó nên thất bại ngay thay vì được release để thử lại lần khác. Bạn có thể cấu hình các loại exception để dừng việc thử lại của job bằng phương thức exception `dontRetry` trong file `bootstrap/app.php` của ứng dụng:
+
+```php
+use App\Exceptions\InvalidPodcastSourceException;
+use Illuminate\Foundation\Configuration\Exceptions;
+
+->withExceptions(function (Exceptions $exceptions): void {
+    $exceptions->dontRetry([
+        InvalidPodcastSourceException::class,
+    ]);
+})
+```
+
+Nếu bạn cần kiểm soát nhiều hơn về thời điểm nên dừng việc thử lại job, bạn có thể truyền một closure vào phương thức `dontRetryWhen`. Khi closure trả về `true`, job đó sẽ được đánh dấu là thất bại và sẽ không được thử lại thêm một lần nào nữa:
+
+```php
+use App\Exceptions\PodcastProcessingException;
+use Illuminate\Foundation\Configuration\Exceptions;
+
+->withExceptions(function (Exceptions $exceptions): void {
+    $exceptions->dontRetryWhen(function (PodcastProcessingException $e) {
+        return $e->reason() === 'Subscription expired';
+    });
+})
+```
 
 <a name="timeout"></a>
 #### Timeout

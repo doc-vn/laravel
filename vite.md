@@ -584,9 +584,17 @@ Tùy thuộc vào provider, mà định nghĩa font có thể chấp nhận mộ
 - `display` định nghĩa giá trị `font-display` và mặc định là `swap`.
 - `preload` điều khiển các biến thể WOFF2 nào sẽ được load trước. Tùy chọn này có thể là `true`, `false` hoặc một mảng các selector `{ weight, style }`.
 - `fallbacks` định nghĩa các font dự phòng sẽ được thêm vào font stack đã được tạo.
-- `optimizedFallbacks` cố gắng tạo các font face dự phòng được điều chỉnh theo số liệu metric bằng cách sử dụng package tùy chọn `fontaine` và mặc định là `true`.
+- `optimizedFallbacks` cố gắng tạo các font face fallback được điều chỉnh theo số liệu metric bằng cách sử dụng package tùy chọn `fontaine` và mặc định là `true`.
 
 </div>
+
+Optimized fallback sẽ yêu cầu package `fontaine`, vốn không được cài đặt mặc định. Nếu bạn muốn Laravel tạo các font face fallback được điều chỉnh theo metric, bạn hãy cài đặt `fontaine` như một dev dependency:
+
+```shell
+npm install --save-dev fontaine
+```
+
+Nếu `fontaine` chưa được cài đặt hoặc không thể đọc file font, Laravel sẽ bỏ qua optimized fallback cho font đó và tiếp tục sử dụng các font được cấu hình thông qua tùy chọn `fallbacks`.
 
 Các local font được lấy từ các tùy chọn `src` hoặc `variants` được mô tả ở trên thay vì sử dụng `weights`, `styles` và `subsets`.
 

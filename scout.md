@@ -96,6 +96,22 @@ Tất nhiên, nếu bạn muốn tùy chỉnh kết nối và queue mà các tá
 php artisan queue:work redis --queue=scout
 ```
 
+<a name="unique-jobs"></a>
+#### Unique Jobs
+
+Trong các ứng dụng sử dụng thao tác ghi nhiều, bạn có thể muốn ngăn Scout đưa các job bị trùng cho cùng một bản ghi model vào queue. Bạn có thể chọn sử dụng các unique job indexing bằng cách đăng ký hai class job `MakeSearchableUniquely` và `RemoveFromSearchUniquely`, thường là trong phương thức `boot` của một service provider:
+
+```php
+use Laravel\Scout\Jobs\MakeSearchableUniquely;
+use Laravel\Scout\Jobs\RemoveFromSearchUniquely;
+use Laravel\Scout\Scout;
+
+Scout::makeSearchableUsing(MakeSearchableUniquely::class);
+Scout::removeFromSearchUsing(RemoveFromSearchUniquely::class);
+```
+
+Các job này sử dụng tính năng [khoá unique job](/docs/{{version}}/queues#unique-jobs) của Laravel để tránh gửi đi các thao tác indexing bị trùng vào trong queue cho cùng các bản ghi model trong khi một job khác đã có sẵn trong queue đó.
+
 <a name="driver-prerequisites"></a>
 ### Yêu cầu của driver
 

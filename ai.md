@@ -103,7 +103,7 @@ Boost chứa một API tài liệu mạnh mẽ, cung cấp cho các agent AI quy
 
 Khi agent cần hiểu cách hoạt động của một tính năng, chúng có thể tìm kiếm trong tài liệu API của Boost và nhận được thông tin chính xác, theo phiên bản cụ thể. Điều này loại bỏ một vấn đề phổ biến là các agent AI gợi ý các phương thức đã lỗi thời hoặc cú pháp từ các phiên bản framework trước đó.
 
-<a name="agent-integration"></a>
+<a name="agents-integration"></a>
 ### Tích hợp Agents
 
 Boost tích hợp được với các IDE và công cụ AI phổ biến có hỗ trợ Model Context Protocol. Để xem hướng dẫn cài đặt chi tiết cho Cursor, Claude Code, Codex, Gemini CLI, GitHub Copilot và Junie, xem mục [cấu hình Agent của bạn](/docs/{{version}}/boost#set-up-your-agents) trong tài liệu Boost.

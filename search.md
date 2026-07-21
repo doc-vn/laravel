@@ -108,7 +108,7 @@ Full-text search sẽ dựa vào việc khớp với từ khóa — các từ tr
 Quy trình cơ bản của vector search là: tạo embedding (mảng số) cho từng đoạn nội dung và lưu cùng với dữ liệu, rồi sau đó khi tìm kiếm, tạo embedding cho truy vấn của người dùng và tìm các embedding đã lưu gần nhất trong không gian vector.
 
 > [!NOTE]
-> Tìm kiếm vector cần cơ sở dữ liệu PostgreSQL với extension `pgvector` và [Laravel AI SDK](/docs/{{version}}/ai-sdk). Tất cả các cơ sở dữ liệu Serverless Postgres trên [Laravel Cloud](https://cloud.laravel.com) đều có sẵn `pgvector`.
+> Tìm kiếm vector yêu cầu [Laravel AI SDK](/docs/{{version}}/ai-sdk) và được hỗ trợ bởi PostgreSQL (yêu cầu extension `pgvector`) và MongoDB (yêu cầu [package Laravel MongoDB](https://laravel.com/docs/13.x/mongodb)). Tất cả cơ sở dữ liệu Postgres trên [Laravel Cloud](https://laravel.com/cloud) đều đã được cài đặt sẵn extension `pgvector`.
 
 <a name="generating-embeddings"></a>
 ### Generating Embeddings

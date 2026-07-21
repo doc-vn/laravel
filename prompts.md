@@ -18,6 +18,7 @@
 - [Chuyển đổi input trước khi validate](#transforming-input-before-validation)
 - [Forms](#forms)
 - [Thông tin messages](#informational-messages)
+- [Callouts](#callouts)
 - [Tables](#tables)
 - [Spin](#spin)
 - [Progress Bar](#progress)
@@ -806,7 +807,7 @@ Nếu bạn có nhiều lựa chọn tìm kiếm và cần người dùng chọn
 use function Laravel\Prompts\multisearch;
 
 $ids = multisearch(
-    'Search for the users that should receive the mail',
+    'Search for users who should receive the mail',
     fn (string $value) => strlen($value) > 0
         ? User::whereLike('name', "%{$value}%")->pluck('name', 'id')->all()
         : []
@@ -821,7 +822,7 @@ Khi filter một mảng mà bạn muốn trả về giá trị, thì bạn nên 
 $names = collect(['Taylor', 'Abigail']);
 
 $selected = multisearch(
-    label: 'Search for the users that should receive the mail',
+    label: 'Search for users who should receive the mail',
     options: fn (string $value) => $names
         ->filter(fn ($name) => Str::contains($name, $value, ignoreCase: true))
         ->values()
@@ -833,7 +834,7 @@ Bạn cũng thể thêm text gợi ý câu trả lời và thông tin gợi ý:
 
 ```php
 $ids = multisearch(
-    label: 'Search for the users that should receive the mail',
+    label: 'Search for users who should receive the mail',
     placeholder: 'E.g. Taylor Otwell',
     options: fn (string $value) => strlen($value) > 0
         ? User::whereLike('name', "%{$value}%")->pluck('name', 'id')->all()
@@ -1096,6 +1097,100 @@ use function Laravel\Prompts\info;
 
 info('Package installed successfully.');
 ```
+
+<a name="callouts"></a>
+## Callouts
+
+Hàm `callout` sẽ hiển thị một thông điệp được đóng khung với nhãn label và nội dung. Callout rất hữu ích để hiển thị các thông tin quan trọng cần nổi bật, chẳng hạn như tóm tắt deployment, chi tiết lỗi hoặc cập nhật trạng thái:
+
+```php
+use function Laravel\Prompts\callout;
+
+callout(
+    label: 'Environment Configured',
+    content: 'Your application is running in production mode with 4 workers.',
+);
+```
+
+Bạn có thể truyền `warning` hoặc `error` làm tham số `type` để thay đổi kiểu giao diện hiển thị của callout:
+
+```php
+callout(
+    label: 'Deprecation Notice',
+    content: 'The `--prefer-stable` flag will be removed in v4.0. Use `--stability=stable` instead.',
+    type: 'warning',
+);
+
+callout(
+    label: 'Database Connection Failed',
+    content: 'Could not connect to MySQL on 127.0.0.1:3306.',
+    type: 'error',
+);
+```
+
+Tham số `info` sẽ thêm một dòng footer vào callout, rất hữu ích cho việc hiển thị các metadata như ID hoặc timestamp:
+
+```php
+callout(
+    label: 'Deployment Summary',
+    content: 'Your application was deployed to production.',
+    info: 'deploy-id: d4f8a2c',
+);
+```
+
+<a name="callout-rich-content"></a>
+#### Rich Content
+
+Thay vì truyền một chuỗi, bạn có thể truyền một mảng các chuỗi và các phần tử để xây dựng các callout đẹp và có cấu trúc. Class `Element` sẽ cung cấp các phương thức để tạo tiêu đề, danh sách chấm đầu dòng, danh sách đánh số, danh sách key-value và link:
+
+```php
+use Laravel\Prompts\Elements\Element;
+
+use function Laravel\Prompts\callout;
+
+callout('Deployment Summary', [
+    'Your application was deployed to production at 2024-03-15 14:32 UTC.',
+    Element::heading('What Changed'),
+    Element::bulletedList([
+        'Migrated 3 pending database migrations',
+        'Cleared and rebuilt route cache',
+        'Restarted 4 queue workers',
+    ]),
+    Element::heading('Next Steps'),
+    Element::numberedList([
+        'Verify the health check endpoint at /up',
+        'Monitor error rates for the next 15 minutes',
+        'Confirm background jobs are processing',
+    ]),
+]);
+```
+
+Bạn cũng có thể sử dụng `Element::keyValueList` để hiển thị dữ liệu kèm theo nhãn:
+
+```php
+callout('Database Connection Failed', [
+    'Could not connect to the database server.',
+    Element::keyValueList([
+        'Host' => '127.0.0.1',
+        'Port' => '3306',
+        'Database' => 'forge',
+        'Status' => 'Connection refused',
+    ]),
+], type: 'error');
+```
+
+Phương thức `Element::link` sẽ tạo ra một link có thể nhấn vào trong các terminal hỗ trợ [OSC 8](https://gist.github.com/egmontkob/eb114294efbcd5adb1944c9f3cb5feda). Bạn có thể chỉ cần cung cấp một URL, hoặc một URL kèm theo nhãn tùy muốn:
+
+```php
+callout('Server Health Check', [
+    'Multiple services are reporting degraded performance.',
+    Element::heading('Affected Services'),
+    'Look here: '.Element::link('https://example.com/health', 'Health Dashboard'),
+    Element::link('https://example.com/health'),
+]);
+```
+
+Nếu không có nhãn nào được cung cấp, chính URL đó sẽ được hiển thị làm nhãn của link.
 
 <a name="tables"></a>
 ## Tables

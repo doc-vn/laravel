@@ -649,130 +649,163 @@ $url = $request->user()->billingPortalUrl(route('billing'));
 <a name="storing-payment-methods"></a>
 ### Lưu phương thức thanh toán
 
-Để tạo một subscription hoặc thực hiện tính phí "một lần" với Stripe, bạn sẽ cần lưu phương thức thanh toán và lấy identifier của phương thức đó từ Stripe. Cách tiếp cận được sử dụng theo mục đích khác nhau dựa trên việc bạn sẽ sử dụng phương thức thanh toán này cho việc thanh toán các subscription hay các khoản phí một lần, vì vậy chúng ta sẽ xem xét cả hai ví dụ bên dưới.
+Để tạo một subscription hoặc thực hiện tính phí "một lần" với Stripe, ứng dụng của bạn sẽ cần thu thập thông tin thanh toán từ khách hàng một cách bảo mật. Cách tiếp cận được sử dụng để thực hiện việc này sẽ khác nhau tùy thuộc vào việc bạn dự định lưu phương thức thanh toán cho các subscription trong tương lai hay xử lý ngay lập tức với một khoản phí duy nhất, vì vậy chúng ta sẽ xem xét cả hai ở phần bên dưới.
 
-<a name="payment-methods-for-subscriptions"></a>
-#### Phương thức thanh toán cho Subscription
+[Payment Element](https://stripe.com/docs/payments/payment-element) của Stripe có thể được sử dụng để hỗ trợ nhiều phương thức thanh toán, chẳng hạn như card, Apple Pay, Google Pay và iDEAL.
 
-Khi lưu trữ thông tin thẻ tín dụng của khách hàng để đăng ký sử dụng trong tương lai, "Setup Intent" của Stripe API sẽ phải được sử dụng để thu thập thông tin chi tiết về phương thức thanh toán của khách hàng. "Setup Intent" cho biết ý định tính phí phương thức thanh toán của khách hàng. Trait `Billable` của Cashier có chứa một phương thức `createSetupIntent` để dễ dàng tạo một Setup Intent mới. Bạn nên gọi phương thức này từ route hoặc controller sẽ hiển thị form thu thập chi tiết phương thức thanh toán cho khách hàng của bạn:
+<a name="payment-element-for-subscriptions"></a>
+#### Payment Element for Subscriptions
+
+Đầu tiên, tạo một Setup Intent và truyền nó vào view của bạn:
 
 ```php
-return view('update-payment-method', [
+return view('subscribe', [
     'intent' => $user->createSetupIntent()
 ]);
 ```
 
-Sau khi bạn đã tạo xong Setup Intent và truyền nó đến view, bạn nên gắn secret của intent đó vào trong element sẽ thu thập phương thức thanh toán. Ví dụ: hãy xem xét form "cập nhật phương thức thanh toán" này:
+Mount Payment Element bằng cách sử dụng `client_secret` của Setup Intent:
 
 ```html
-<input id="card-holder-name" type="text">
+<div id="payment-element"></div>
+<button id="submit">Subscribe</button>
 
-<!-- Stripe Elements Placeholder -->
-<div id="card-element"></div>
-
-<button id="card-button" data-secret="{{ $intent->client_secret }}">
-    Update Payment Method
-</button>
-```
-
-Tiếp theo, thư viện Stripe.js có thể sử dụng element đó để gắn các [Stripe Element](https://stripe.com/docs/stripe-js) cần thiết vào form và thu thập chi tiết thanh toán của khách hàng một cách an toàn:
-
-```html
 <script src="https://js.stripe.com/v3/"></script>
-
 <script>
     const stripe = Stripe('stripe-public-key');
 
-    const elements = stripe.elements();
-    const cardElement = elements.create('card');
+    const elements = stripe.elements({
+        clientSecret: '{{ $intent->client_secret }}'
+    });
 
-    cardElement.mount('#card-element');
+    const paymentElement = elements.create('payment');
+
+    paymentElement.mount('#payment-element');
+
+    document.getElementById('submit').addEventListener('click', async () => {
+        const { error } = await stripe.confirmSetup({
+            elements,
+            confirmParams: {
+                return_url: '{{ route("subscription.complete") }}',
+            },
+        });
+
+        if (error) {
+            // Display "error.message" to the user...
+        }
+    });
 </script>
 ```
 
-Tiếp theo, thẻ có thể được xác minh và một "identifier cho phương thức thanh toán" an toàn có thể được lấy ra từ Stripe bằng cách sử dụng [phương thức `confirmCardSetup` của Stripe](https://stripe.com/docs/js/setup_intents/confirm_card_setup):
+Sau khi Stripe chuyển hướng đến `return_url` của bạn, ID `setup_intent` sẽ có sẵn dưới dạng một tham số query string. Bạn có thể sử dụng giá trị này để lấy phương thức thanh toán và tạo subscription:
 
-```js
-const cardHolderName = document.getElementById('card-holder-name');
-const cardButton = document.getElementById('card-button');
-const clientSecret = cardButton.dataset.secret;
+```php
+use Illuminate\Http\Request;
 
-cardButton.addEventListener('click', async (e) => {
-    const { setupIntent, error } = await stripe.confirmCardSetup(
-        clientSecret, {
-            payment_method: {
-                card: cardElement,
-                billing_details: { name: cardHolderName.value }
-            }
-        }
+Route::get('/subscription/complete', function (Request $request) {
+    $setupIntent = $request->user()->findSetupIntent(
+        $request->setup_intent
     );
 
-    if (error) {
-        // Display "error.message" to the user...
-    } else {
-        // The card has been verified successfully...
-    }
+    $paymentMethod = $setupIntent->payment_method;
+
+    $request->user()
+        ->newSubscription('default', 'price_xxx')
+        ->create($paymentMethod);
+
+    return redirect('/dashboard');
+})->name('subscription.complete');
+```
+
+Nếu bạn đang sử dụng Payment Element để cập nhật phương thức thanh toán mặc định của khách hàng thay vì tạo subscription, bạn có thể truyền identifier của phương thức thanh toán vào phương thức [`updateDefaultPaymentMethod`](#updating-the-default-payment-method).
+
+<a name="payment-element-for-single-charges"></a>
+#### Payment Element for Single Charges
+
+Đối với thanh toán một lần, hãy tạo một Payment Intent bằng phương thức `pay` của Cashier. Thông thường, bạn nên lưu ID Payment Intent trên đơn hàng tương ứng của ứng dụng để có thể lấy lại đơn hàng sau khi Stripe chuyển hướng khách hàng trở lại ứng dụng của bạn. Ví dụ sau sẽ giả định ứng dụng của bạn có model `Order` với các cột `user_id`, `amount`, `status` và `stripe_payment_intent_id`:
+
+```php
+use App\Models\Order;
+use Illuminate\Http\Request;
+
+Route::post('/pay', function (Request $request) {
+    $amount = 1000;
+
+    $payment = $request->user()->pay($amount);
+
+    $order = Order::create([
+        'user_id' => $request->user()->id,
+        'amount' => $amount,
+        'status' => 'pending',
+        'stripe_payment_intent_id' => $payment->id,
+    ]);
+
+    return view('checkout', [
+        'clientSecret' => $payment->client_secret,
+        'order' => $order,
+    ]);
 });
 ```
 
-Sau khi thẻ đã được Stripe xác minh, bạn có thể truyền kết quả identifier `setupIntent.payment_method` vào ứng dụng Laravel của bạn, nơi nó có thể được lưu với thông tin khách hàng. Phương thức thanh toán này có thể được [thêm vào như là một phương thức thanh toán mới](#adding-payment-methods) hoặc [được sử dụng để cập nhật một phương thức thanh toán mặc định](#updating-the-default-payment-method). Bạn cũng có thể sử dụng ngay identifier phương thức thanh toán này để [tạo ra một subscription mới](#creating-subscriptions).
-
-> [!NOTE]
-> Nếu bạn muốn biết thêm thông tin về Setup Intent và cách thu thập chi tiết thanh toán của khách hàng, vui lòng [xem lại tài liệu tổng quan do Stripe cung cấp](https://stripe.com/docs/payments/save-and-reuse#php).
-
-<a name="payment-methods-for-single-charges"></a>
-#### Phương thức thanh toán cho phí
-
-Tất nhiên, khi thực hiện một khoản tính phí một lần đối với một phương thức thanh toán của khách hàng, chúng ta sẽ chỉ cần sử dụng một identifier phương thức thanh toán trong một lần duy nhất. Do các giới hạn của Stripe, bạn không thể sử dụng phương thức thanh toán mặc định của khách hàng cho các khoản tính phí một lần. Bạn phải cho phép khách hàng nhập chi tiết phương thức thanh toán của họ bằng thư viện Stripe.js. Ví dụ, hãy xem xét form sau:
+Sau đó, mount Payment Element và xác nhận thanh toán:
 
 ```html
-<input id="card-holder-name" type="text">
+<div id="payment-element"></div>
+<button id="submit">Pay Now</button>
 
-<!-- Stripe Elements Placeholder -->
-<div id="card-element"></div>
-
-<button id="card-button">
-    Process Payment
-</button>
-```
-
-Sau khi định nghĩa một form như vậy, thư viện Stripe.js có thể sử dụng element đó để gắn các [Stripe Element](https://stripe.com/docs/stripe-js) cần thiết vào form và thu thập chi tiết thanh toán của khách hàng một cách an toàn:
-
-```html
 <script src="https://js.stripe.com/v3/"></script>
-
 <script>
     const stripe = Stripe('stripe-public-key');
 
-    const elements = stripe.elements();
-    const cardElement = elements.create('card');
+    const elements = stripe.elements({
+        clientSecret: '{{ $clientSecret }}'
+    });
 
-    cardElement.mount('#card-element');
+    const paymentElement = elements.create('payment');
+
+    paymentElement.mount('#payment-element');
+
+    document.getElementById('submit').addEventListener('click', async () => {
+        const { error } = await stripe.confirmPayment({
+            elements,
+            confirmParams: {
+                return_url: '{{ route("payment.complete") }}',
+            },
+        });
+
+        if (error) {
+            // Display "error.message" to the user...
+        }
+    });
 </script>
 ```
 
-Tiếp theo, thẻ có thể được xác minh và một "identifier cho phương thức thanh toán" an toàn có thể được lấy ra từ Stripe bằng cách sử dụng [phương thức `createPaymentMethod` của Stripe](https://stripe.com/docs/stripe-js/reference#stripe-create-payment-method):
+Sau khi chuyển hướng về ứng dụng của bạn, bạn có thể sử dụng tham số query string `payment_intent` để lấy đơn hàng và Payment Intent tương ứng. Trước khi hoàn tất đơn hàng, bạn nên xác minh rằng đơn hàng thuộc về khách hàng đã được xác thực và Payment Intent của khách hàng đó đã được thanh toán thành công:
 
-```js
-const cardHolderName = document.getElementById('card-holder-name');
-const cardButton = document.getElementById('card-button');
+```php
+use App\Models\Order;
+use Illuminate\Http\Request;
 
-cardButton.addEventListener('click', async (e) => {
-    const { paymentMethod, error } = await stripe.createPaymentMethod(
-        'card', cardElement, {
-            billing_details: { name: cardHolderName.value }
-        }
-    );
+Route::get('/payment/complete', function (Request $request) {
+    $order = Order::where('user_id', $request->user()->id)
+        ->where('stripe_payment_intent_id', $request->payment_intent)
+        ->firstOrFail();
 
-    if (error) {
-        // Display "error.message" to the user...
-    } else {
-        // The card has been verified successfully...
+    $paymentIntent = $request->user()
+        ->stripe()
+        ->paymentIntents
+        ->retrieve($request->payment_intent);
+
+    if ($paymentIntent->customer === $request->user()->stripe_id &&
+        $paymentIntent->status === 'succeeded') {
+        $order->update(['status' => 'paid']);
+
+        // Fulfill the order...
     }
-});
-```
 
-Nếu thẻ được xác minh thành công, bạn có thể truyền `paymentMethod.id` vào ứng dụng Laravel của bạn và xử lý tiếp [các khoản tính phí một lần](#simple-charge).
+    return redirect('/dashboard');
+})->name('payment.complete');
+```
 
 <a name="retrieving-payment-methods"></a>
 ### Lấy phương thức thanh toán
@@ -1972,13 +2005,13 @@ class StripeEventListener
 <a name="simple-charge"></a>
 ### Tính phí một lần
 
-Nếu bạn muốn tính phí một lần đối với khách hàng, bạn có thể sử dụng phương thức `charge` trên một instance billable model. Bạn sẽ cần [cung cấp identifier phương thức thanh toán](#payment-methods-for-single-charges) làm tham số thứ hai cho phương thức `charge`:
+Nếu bạn muốn tính phí một lần đối với khách hàng bằng cách sử dụng identifier phương thức thanh toán, bạn có thể sử dụng phương thức `charge` trên một instance billable model. Nếu bạn cần thu thập thông tin thanh toán từ khách hàng trước khi xử lý khoản phí một lần, hãy xem tài liệu [Payment Element cho tính phí một lần](#payment-element-for-single-charges):
 
 ```php
 use Illuminate\Http\Request;
 
 Route::post('/purchase', function (Request $request) {
-    $stripeCharge = $request->user()->charge(
+    $payment = $request->user()->charge(
         100, $request->paymentMethodId
     );
 
@@ -1986,7 +2019,7 @@ Route::post('/purchase', function (Request $request) {
 });
 ```
 
-Phương thức `charge` chấp nhận một mảng làm tham số thứ ba của nó, cho phép bạn truyền vào bất kỳ tùy chọn nào mà bạn muốn cho việc tạo phí của Stripe. Bạn có thể tìm thêm về các thông tin tùy chọn có sẵn khi tạo khoản phí trong [tài liệu Stripe](https://stripe.com/docs/api/charges/create):
+Phương thức `charge` chấp nhận một mảng làm tham số thứ ba của nó, cho phép bạn truyền vào bất kỳ tùy chọn nào mà bạn muốn cho việc tạo Payment Intent của Stripe. Bạn có thể tìm thêm về các thông tin tùy chọn có sẵn khi tạo Payment Intent trong [tài liệu Stripe](https://stripe.com/docs/api/payment_intents/create):
 
 ```php
 $user->charge(100, $paymentMethod, [
@@ -1999,7 +2032,7 @@ Bạn cũng có thể sử dụng phương thức `charge` mà không cần có 
 ```php
 use App\Models\User;
 
-$stripeCharge = (new User)->charge(100, $paymentMethod);
+$payment = (new User)->charge(100, $paymentMethod);
 ```
 
 Phương thức `charge` sẽ đưa ra một ngoại lệ nếu việc tính phí không thành công. Nếu tính phí thành công, thì một instance của `Laravel\Cashier\Payment` sẽ được trả về từ phương thức:
@@ -2094,7 +2127,7 @@ Route::post('/pay', function (Request $request) {
 <a name="refunding-charges"></a>
 ### Hoàn trả
 
-Nếu bạn cần hoàn trả một phí đã được thanh toán trong Stripe, bạn có thể sử dụng phương thức `refund`. Phương thức này chấp nhận một [ID của Payment Intent Stripe](#payment-methods-for-single-charges) làm tham số đầu tiên của nó:
+Nếu bạn cần hoàn trả một Stripe payment, bạn có thể sử dụng phương thức `refund`. Phương thức này chấp nhận một Stripe Payment Intent ID làm tham số đầu tiên của nó:
 
 ```php
 $payment = $user->charge(100, $paymentMethodId);

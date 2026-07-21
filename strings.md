@@ -47,6 +47,7 @@ Laravel có chứa nhiều hàm khác nhau để thao tác với các giá trị
 [Str::chopEnd](#method-str-chop-end)
 [Str::contains](#method-str-contains)
 [Str::containsAll](#method-str-contains-all)
+[Str::counted](#method-str-counted)
 [Str::doesntContain](#method-str-doesnt-contain)
 [Str::doesntEndWith](#method-str-doesnt-end-with)
 [Str::doesntStartWith](#method-str-doesnt-start-with)
@@ -151,6 +152,7 @@ Laravel có chứa nhiều hàm khác nhau để thao tác với các giá trị
 [chopEnd](#method-fluent-str-chop-end)
 [contains](#method-fluent-str-contains)
 [containsAll](#method-fluent-str-contains-all)
+[counted](#method-fluent-str-counted)
 [decrypt](#method-fluent-str-decrypt)
 [deduplicate](#method-fluent-str-deduplicate)
 [dirname](#method-fluent-str-dirname)
@@ -820,7 +822,7 @@ $matches = Str::is('*.jpg', 'photo.JPG', ignoreCase: true);
 <a name="method-str-is-ascii"></a>
 #### `Str::isAscii()` {.collection-method}
 
-Hàm `Str::isAscii` sẽ xác định xem một chuỗi đã cho có phải là dạng ASCII 7 bit hay không:
+Hàm `Str::isAscii` sẽ xác định xem một chuỗi đã cho có phải là dạng ASCII 7-bit hay không:
 
 ```php
 use Illuminate\Support\Str;
@@ -1198,6 +1200,23 @@ $password = Str::password();
 $password = Str::password(12);
 
 // 'qwuar>#V|i]N'
+```
+
+<a name="method-str-counted"></a>
+#### `Str::counted()` {.collection-method}
+
+Phương thức `Str::counted` sẽ chuyển một chuỗi từ dạng số ít sang dạng số nhiều hoặc vẫn dạng số ít dựa vào số count đã cho và sau đó thêm số count vào làm tiền tố cho kết quả và định dạng lại số count:
+
+```php
+use Illuminate\Support\Str;
+
+$label = Str::counted('order', 1);
+
+// 1 order
+
+$label = Str::counted('order', 1000);
+
+// 1,000 orders
 ```
 
 <a name="method-str-plural"></a>
@@ -3073,6 +3092,23 @@ $closure = Str::of('foo')->pipe(function (Stringable $str) {
 // 'bar'
 ```
 
+<a name="method-fluent-str-counted"></a>
+#### `counted` {.collection-method}
+
+Phương thức `counted` sẽ chuyển một chuỗi từ dạng số ít sang dạng số nhiều hoặc vẫn dạng số ít dựa vào số count đã cho và sau đó thêm số count vào làm tiền tố cho kết quả và định dạng lại số count:
+
+```php
+use Illuminate\Support\Str;
+
+$label = Str::of('order')->counted(1);
+
+// 1 order
+
+$label = Str::of('order')->counted(1000);
+
+// 1,000 orders
+```
+
 <a name="method-fluent-str-plural"></a>
 #### `plural` {.collection-method}
 
@@ -3326,7 +3362,7 @@ $singular = Str::of('children')->singular();
 <a name="method-fluent-str-slug"></a>
 #### `slug` {.collection-method}
 
-Hàm `slug` sẽ tạo ra một "slug" thân thiện với URL từ một chuỗi đã cho:
+Hàm `slug` sẽ tạo ra một URL "slug" từ chuỗi đã cho:
 
 ```php
 use Illuminate\Support\Str;
@@ -3940,7 +3976,7 @@ $string = Str::of('foo/bar')->whenIs('foo/*', function (Stringable $string) {
 <a name="method-fluent-str-when-is-ascii"></a>
 #### `whenIsAscii` {.collection-method}
 
-Hàm `whenIsAscii` sẽ gọi closure đã cho nếu chuỗi là một dạng ASCII 7 bit. Closure sẽ nhận vào instance chuỗi:
+Hàm `whenIsAscii` sẽ gọi closure đã cho nếu chuỗi là một dạng ASCII 7-bit. Closure sẽ nhận vào instance chuỗi:
 
 ```php
 use Illuminate\Support\Str;

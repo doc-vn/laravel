@@ -39,10 +39,18 @@
     - [Cấu hình App](#app-configuration)
     - [Tạo Apps cùng Boost](#building-apps-with-boost)
 - [Metadata](#metadata)
+- [Icons](#icons)
 - [Authentication](#authentication)
     - [OAuth 2.1](#oauth)
     - [Sanctum](#sanctum)
 - [Authorization](#authorization)
+- [MCP Client](#client)
+    - [Kết nối tới server](#client-connecting)
+    - [Named Clients](#named-clients)
+    - [Client Authentication](#client-authentication)
+    - [Tools](#client-tools)
+    - [Prompts](#client-prompts)
+    - [Resources](#client-resources)
 - [Testing Servers](#testing-servers)
     - [MCP Inspector](#mcp-inspector)
     - [Unit Tests](#unit-tests)
@@ -474,12 +482,16 @@ class CurrentWeatherTool extends Tool
 
 Các annotation có sẵn là:
 
+<div class="overflow-auto">
+
 | Annotation         | Type    | Description                                                                                                        |
 | ------------------ | ------- | ------------------------------------------------------------------------------------------------------------------ |
 | `#[IsReadOnly]`    | boolean | Cho biết tool không thay đổi môi trường của nó.                                                                    |
 | `#[IsDestructive]` | boolean | Cho biết tool có thể thực hiện các cập nhật gây mất dữ liệu (chỉ có ý nghĩa khi không phải read-only).             |
 | `#[IsIdempotent]`  | boolean | Cho biết các lần gọi lặp lại với cùng một tham số thì không có tác dụng thêm nào khác (khi không phải read-only).  |
 | `#[IsOpenWorld]`   | boolean | Cho biết tool có thể tương tác với các thực thể bên ngoài.                                                         |
+
+</div>
 
 Giá trị của các annotation có thể được thiết lập một cách rõ ràng bằng các tham số boolean:
 
@@ -1235,11 +1247,15 @@ class UserDashboardResource extends Resource
 
 Các annotation có sẵn là:
 
+<div class="overflow-auto">
+
 | Annotation        | Type              | Description                                                                   |
 | ----------------- | ----------------- | ----------------------------------------------------------------------------- |
 | `#[Audience]`     | Role hoặc mảng    | Chỉ định đối tượng nhắm tới (`Role::User`, `Role::Assistant`, hoặc cả hai).   |
 | `#[Priority]`     | float             | Điểm số bằng số từ 0.0 đến 1.0 thể hiện mức độ quan trọng của resource.       |
 | `#[LastModified]` | string            | Timestamp ISO 8601 cho biết lần cuối resource được cập nhật.                  |
+
+</div>
 
 <a name="conditional-resource-registration"></a>
 ### Đăng ký Conditional Resource
@@ -1556,6 +1572,55 @@ class CurrentWeatherTool extends Tool
 }
 ```
 
+<a name="icons"></a>
+## Icons
+
+Các MCP client có thể hiển thị icon cho server của bạn và cùng các thuộc tính cơ bản. Bạn có thể khai báo các icon trên server, tool, resource, hoặc prompt bằng cách sử dụng thuộc tính `Icon`:
+
+```php
+use Laravel\Mcp\Enums\IconTheme;
+use Laravel\Mcp\Server\Attributes\Icon;
+
+#[Icon('mcp/server.png', mimeType: 'image/png', sizes: ['48x48'])]
+#[Icon('mcp/server-dark.svg', theme: IconTheme::Dark)]
+class WeatherServer extends Server
+{
+    // ...
+}
+```
+
+Thuộc tính `Icon` có thể được lặp, vì vậy bạn có thể khai báo nhiều icon để cung cấp các kích thước khác nhau hoặc là nhiều chế độ giao diện sáng và tối.
+
+Ngoài ra, bạn có thể định nghĩa các icon thông qua code bằng cách ghi đè phương thức `icons`, điều này rất hữu ích khi một icon phụ thuộc vào các điều kiện khi runtime:
+
+```php
+use Laravel\Mcp\Schema\Icon;
+
+class CurrentWeatherTool extends Tool
+{
+    /**
+     * Get the tool's icons.
+     *
+     * @return array<int, Icon>
+     */
+    public function icons(): array
+    {
+        return [
+            Icon::from('mcp/tool.png', mimeType: 'image/png'),
+        ];
+    }
+}
+```
+
+Các icon được định nghĩa thông qua thuộc tính và phương thức `icons` sẽ tự động được kết hợp lại. Đường dẫn icon được resolve như sau:
+
+<div class="content-list" markdown="1">
+
+- Các đường dẫn có URI scheme, chẳng hạn như `https:` hoặc `data:`, sẽ được giữ nguyên.
+- Các đường dẫn tương đối sẽ được resolve thành một URL bằng helper `asset` của Laravel.
+
+</div>
+
 <a name="authentication"></a>
 ## Authentication
 
@@ -1663,6 +1728,256 @@ public function handle(Request $request): Response
 
     // ...
 }
+```
+
+<a name="client"></a>
+## MCP Client
+
+Bên cạnh việc xây dựng server, Laravel MCP còn chứa một client để kết nối tới các MCP server khác, cho dù server đó là của bạn hay là của bên thứ ba. Client này sẽ giúp ứng dụng của bạn khám phá và gọi các tool được hiển thị bởi từ một MCP server khác, điều này đặc biệt hữu ích để cho phép [AI agent](/docs/{{version}}/ai-sdk#mcp-tools) của bạn quyền truy cập vào các khả năng được cung cấp bởi các MCP server bên ngoài.
+
+<a name="client-connecting"></a>
+### Kết nối tới server
+
+Bạn có thể kết nối tới một MCP server có thể truy cập thông qua HTTP bằng phương thức `Client::web`, truyền vào URL của server:
+
+```php
+use Laravel\Mcp\Client;
+
+$client = Client::web('https://mcp.example.com');
+```
+
+Để kết nối tới một MCP server local chạy dưới dạng command, hãy sử dụng phương thức `Client::local`, cung cấp command và bất kỳ tham số nào cần thiết để khởi chạy server:
+
+```php
+use Laravel\Mcp\Client;
+
+$client = Client::local('php', ['artisan', 'mcp:start']);
+```
+
+Client sẽ kết nối dưới dạng lazy, tự động thiết lập kết nối ở lần đầu tiên để lấy danh sách hoặc gọi các tool. Nếu bạn cần quản lý các kết nối này, bạn có thể sử dụng các phương thức `connect`, `connected`, `ping`, và `disconnect`:
+
+```php
+$client->connect();
+
+$client->ping();
+
+if ($client->connected()) {
+    // ...
+}
+
+$client->disconnect();
+```
+
+Bạn có thể tùy chỉnh timeout của request bằng phương thức `withTimeout`:
+
+```php
+$client = Client::web('https://mcp.example.com')->withTimeout(30);
+```
+
+<a name="named-clients"></a>
+### Named Clients
+
+Thay vì khởi tạo một client mỗi khi bạn cần, bạn có thể đăng ký đặt tên cho client để có thể tái sử dụng. Việc này thường được thực hiện trong phương thức `boot` của một service provider bằng cách sử dụng facade `Mcp`:
+
+```php
+use Laravel\Mcp\Client;
+use Laravel\Mcp\Facades\Mcp;
+
+Mcp::registerClient('github', fn () => Client::web('https://mcp.example.com'));
+```
+
+Sau khi đăng ký xong, bạn có thể resolve ra client ở bất kỳ đâu trong ứng dụng của bạn thông qua tên mà bạn đã đặt:
+
+```php
+use Laravel\Mcp\Facades\Mcp;
+
+$client = Mcp::client('github');
+```
+
+Các named client sẽ được resolve một lần cho mỗi request và tự động ngắt kết nối khi kết thúc theo vòng đời của request.
+
+<a name="client-authentication"></a>
+### Client Authentication
+
+Để kết nối tới một web MCP server được bảo vệ bởi một token bearer, hãy sử dụng phương thức `withToken`. Bạn có thể truyền một chuỗi token hoặc một closure để lazy resolve ra token:
+
+```php
+use Illuminate\Support\Facades\Auth;
+use Laravel\Mcp\Client;
+
+$client = Client::web('https://mcp.example.com')->withToken($token);
+
+$client = Client::web('https://mcp.example.com')->withToken(
+    fn () => Auth::user()->mcpToken(),
+);
+```
+
+Đối với các server được bảo vệ bởi [OAuth 2.1](#oauth), hãy cấu hình client bằng phương thức `withOAuth`. Đây là phần tương ứng với phía client trong việc bảo vệ các server của bạn bằng OAuth:
+
+```php
+use Laravel\Mcp\Client;
+use Laravel\Mcp\Facades\Mcp;
+
+Mcp::registerClient('github', fn () => Client::web('https://mcp.example.com')->withOAuth(
+    clientId: config('services.github_mcp.client_id'),
+    clientSecret: config('services.github_mcp.client_secret'),
+));
+```
+
+> [!NOTE]
+> Các tham số `clientId` và `clientSecret` có thể được bỏ qua khi MCP server hỗ trợ [đăng ký dynamic client](https://datatracker.ietf.org/doc/html/rfc7591), trong trường hợp đó client sẽ tự động được đăng ký.
+
+Tiếp theo, hãy đăng ký các route OAuth cho named client trong file `routes/ai.php` của bạn bằng phương thức `oAuthRoutesFor`. Closure mà bạn cung cấp sẽ nhận vào tên client và `TokenSet` là kết quả sau khi authorization code được đổi sang access token:
+
+```php
+use Illuminate\Support\Facades\Auth;
+use Laravel\Mcp\Client\OAuth\TokenSet;
+use Laravel\Mcp\Facades\Mcp;
+
+Mcp::oAuthRoutesFor('github', function (string $client, TokenSet $token) {
+    Auth::user()->update([
+        'github_mcp_token' => $token->accessToken,
+    ]);
+
+    return redirect('/dashboard');
+});
+```
+
+Điều này sẽ đăng ký hai named route: một là connect route (`mcp.oauth.{client}.connect`) sẽ chuyển hướng người dùng đến authorization server, và một là callback route (`mcp.oauth.{client}.callback`) để tiến hành đổi authorization code và gọi handler của bạn. Cả hai route mặc định này sẽ đều sử dụng group middleware `web`, bạn có thể ghi đè group này bằng tham số `middleware`.
+
+Để bắt đầu luồng xác thực, hãy chuyển hướng người dùng đến connect route:
+
+```php
+return redirect()->route('mcp.oauth.github.connect');
+```
+
+<a name="client-tools"></a>
+### Tools
+
+Bạn có thể lấy ra danh sách các tool được cung cấp bởi một MCP server bằng phương thức `tools`, phương thức này trả về một collection các tool có key là tên của tool:
+
+```php
+use Laravel\Mcp\Facades\Mcp;
+
+$tools = Mcp::client('github')->tools();
+
+foreach ($tools as $tool) {
+    $tool->name;
+    $tool->title;
+    $tool->description;
+    $tool->inputSchema;
+}
+```
+
+Client sẽ tự động phân trang qua tất cả các tool có sẵn. Bạn có thể giới hạn số lượng tool trả về bằng tham số `limit`:
+
+```php
+$tools = Mcp::client('github')->tools(limit: 10);
+```
+
+Để gọi một tool, hãy sử dụng phương thức `callTool`, truyền vào tên tool và một mảng các tham số. Instance `ToolResult` sẽ được trả về sẽ chứa response của tool:
+
+```php
+use Laravel\Mcp\Facades\Mcp;
+
+$result = Mcp::client('github')->callTool('current-weather', [
+    'location' => 'New York',
+]);
+
+$result->text(); // The text content of the response...
+(string) $result; // Equivalent to calling text()...
+$result->isError; // Whether the tool reported an error...
+$result->structuredContent;  // Structured content, if any...
+```
+
+Hoặc bạn có thể gọi trực tiếp một tool từ một instance list tool:
+
+```php
+$tools = Mcp::client('github')->tools();
+
+$result = $tools['current-weather']->call([
+    'location' => 'New York',
+]);
+```
+
+Nếu bạn đang xây dựng các agent với [Laravel AI SDK](/docs/{{version}}/ai-sdk), bạn cũng có thể cung cấp trực tiếp các tool từ một MCP client khác cho một agent, cho phép model gọi chúng trong khi phản hồi một prompt. Xem phần [MCP Tools](/docs/{{version}}/ai-sdk#mcp-tools) trong tài liệu AI SDK để biết thêm thông tin.
+
+<a name="client-prompts"></a>
+### Prompts
+
+Bạn có thể lấy ra các prompt được cung cấp bởi một MCP server bằng phương thức `prompts`, phương thức này trả về một collection các prompt có key là tên của prompt:
+
+```php
+use Laravel\Mcp\Facades\Mcp;
+
+$prompts = Mcp::client('github')->prompts();
+
+foreach ($prompts as $prompt) {
+    $prompt->name;
+    $prompt->title;
+    $prompt->description;
+    $prompt->arguments;
+}
+```
+
+Client sẽ tự động phân trang qua tất cả các prompt có sẵn. Bạn có thể giới hạn số lượng prompt trả về bằng tham số `limit`:
+
+```php
+$prompts = Mcp::client('github')->prompts(limit: 10);
+```
+
+Để lấy ra một prompt, hãy sử dụng phương thức `getPrompt`, truyền vào tên prompt và một mảng các tham số. Instance `PromptResult` sẽ được trả về sẽ chứa các message được tạo ra:
+
+```php
+use Laravel\Mcp\Facades\Mcp;
+
+$result = Mcp::client('github')->getPrompt('describe-weather', [
+    'location' => 'New York',
+]);
+
+$result->text(); // The text content of the messages...
+(string) $result; // Equivalent to calling text()...
+$result->messages; // The raw messages returned by the prompt...
+$result->description; // The prompt description, if any...
+```
+
+<a name="client-resources"></a>
+### Resources
+
+Bạn có thể lấy ra các resource được cung cấp bởi một MCP server bằng phương thức `resources`, phương thức này trả về một collection các resource có key là URI của resource:
+
+```php
+use Laravel\Mcp\Facades\Mcp;
+
+$resources = Mcp::client('github')->resources();
+
+foreach ($resources as $resource) {
+    $resource->uri;
+    $resource->name;
+    $resource->title;
+    $resource->description;
+    $resource->mimeType;
+    $resource->size;
+}
+```
+
+Client sẽ tự động phân trang qua tất cả các resource có sẵn. Bạn có thể giới hạn số lượng resource trả về bằng tham số `limit`:
+
+```php
+$resources = Mcp::client('github')->resources(limit: 10);
+```
+
+Để đọc một resource, hãy sử dụng phương thức `readResource`, truyền vào URI của resource. Instance `ResourceReadResult` sẽ được trả về sẽ chứa nội dung của resource:
+
+```php
+use Laravel\Mcp\Facades\Mcp;
+
+$result = Mcp::client('github')->readResource('weather://guidelines');
+
+$result->content(); // The content of the resource, decoding base64 blobs as needed...
+(string) $result; // Equivalent to calling content()...
+$result->mimeType(); // The MIME type of the resource, if any...
+$result->contents; // The raw contents returned by the resource...
 ```
 
 <a name="testing-servers"></a>

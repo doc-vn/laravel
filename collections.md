@@ -199,6 +199,7 @@ Trong phần lớn tài liệu collection còn lại này, chúng ta sẽ thảo
 [random](#method-random)
 [range](#method-range)
 [reduce](#method-reduce)
+[reduceInto](#method-reduce-into)
 [reduceSpread](#method-reduce-spread)
 [reject](#method-reject)
 [replace](#method-replace)
@@ -2498,6 +2499,49 @@ $collection->reduce(function (int $carry, int $value, string $key) use ($ratio) 
 }, 0);
 
 // 4264
+```
+
+<a name="method-reduce-into"></a>
+#### `reduceInto()` {.collection-method}
+
+Phương thức `reduceInto` sẽ giảm collection về một giá trị duy nhất bằng cách thay đổi giá trị được truyền vào. Khác với phương thức `reduce`, callback được cung cấp cho phương thức không cần phải trả về giá trị cộng dồn:
+
+```php
+class OrderStats
+{
+    public int $total = 0;
+
+    public int $count = 0;
+}
+
+$orders = collect([
+    ['amount' => 100],
+    ['amount' => 250],
+    ['amount' => 50],
+]);
+
+$stats = $orders->reduceInto(new OrderStats, function (OrderStats $stats, array $order) {
+    $stats->total += $order['amount'];
+    $stats->count++;
+});
+
+$stats->total;
+
+// 400
+```
+
+Khi giảm về một giá trị duy nhất hoặc là một mảng, bạn nên chấp nhận tham số đó theo dạng tham chiếu (&) trong callback để các thay đổi của bạn được áp dụng vào giá trị đó:
+
+```php
+$collection = collect([1, 2, 3, 4, 5]);
+
+$even = $collection->reduceInto([], function (array &$result, int $value) {
+    if ($value % 2 === 0) {
+        $result[] = $value;
+    }
+});
+
+// [2, 4]
 ```
 
 <a name="method-reduce-spread"></a>

@@ -23,6 +23,7 @@
 - [Previewing Emails](#previewing-emails)
 - [Container CLI](#sail-container-cli)
 - [PHP Versions](#sail-php-versions)
+    - [Thêm các PHP Extension](#sail-php-extensions)
 - [Node Versions](#sail-node-versions)
 - [Sharing Your Site](#sharing-your-site)
 - [Debugging With Xdebug](#debugging-with-xdebug)
@@ -424,6 +425,20 @@ sail build --no-cache
 
 sail up
 ```
+
+<a name="sail-php-extensions"></a>
+### Thêm các PHP Extension
+
+Runtime image của Sail có chứa một bộ PHP extension phổ biến. Nếu ứng dụng của bạn yêu cầu thêm các extension, bạn có thể cài đặt chúng khi build image bằng cách thêm tham số build `PHP_EXTENSIONS` cách nhau bởi dấu cách vào service `laravel.test` trong file `compose.yaml` trong ứng dụng của bạn:
+
+```yaml
+build:
+    args:
+        WWWGROUP: '${WWWGROUP}'
+        PHP_EXTENSIONS: 'gmp imagick'
+```
+
+Sau khi cập nhật file `compose.yaml` của ứng dụng, bạn nên build lại các container image của bạn:
 
 <a name="sail-node-versions"></a>
 ## Node Versions

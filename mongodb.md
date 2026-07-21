@@ -91,9 +91,11 @@ Sau khi quá trình cấu hình hoàn tất, bạn có thể sử dụng package
 
 - [Sử dụng Eloquent](https://www.mongodb.com/docs/drivers/php/laravel-mongodb/current/eloquent-models/), các model có thể được lưu trong các collection của MongoDB. Ngoài các tính năng Eloquent có, package Laravel MongoDB cũng cung cấp thêm các tính năng khác như embedded relationship. Package này cũng cung cấp quyền truy cập trực tiếp vào driver MongoDB, có thể được sử dụng để thực hiện các thao tác như raw queries và aggregation pipelines.
 - [Viết các truy vấn phức tạp](https://www.mongodb.com/docs/drivers/php/laravel-mongodb/current/query-builder/) sử dụng query builder.
+- [Tìm kiếm tương đồng / vector](https://www.mongodb.com/docs/drivers/php/laravel-mongodb/current/fundamentals/vector-search/) bằng cách sử dụng vector embedding và phương thức Eloquent `vectorSearch`.
 - [Cache driver](https://www.mongodb.com/docs/drivers/php/laravel-mongodb/current/cache/) `mongodb` được tối ưu hóa để sử dụng các tính năng của MongoDB như TTL index để tự động xóa các item cache đã hết hạn.
 - [Gửi và xử lý các job trong queue](https://www.mongodb.com/docs/drivers/php/laravel-mongodb/current/queues/) với queue driver `mongodb`.
 - [Lưu trữ file trong GridFS](https://www.mongodb.com/docs/drivers/php/laravel-mongodb/current/filesystems/), thông qua [GridFS Adapter cho Flysystem](https://flysystem.thephpleague.com/docs/adapter/gridfs/).
+- [Tìm kiếm full-text](https://www.mongodb.com/docs/drivers/php/laravel-mongodb/current/scout/) bằng cách sử dụng engine Scout `mongodb`.
 - Hầu hết các package của bên thứ ba sử dụng kết nối cơ sở dữ liệu hoặc Eloquent đều có thể được sử dụng với MongoDB.
 
 Để tiếp tục tìm hiểu về cách sử dụng MongoDB và Laravel, hãy tham khảo [hướng dẫn bắt đầu nhanh](https://www.mongodb.com/docs/drivers/php/laravel-mongodb/current/quick-start/) của MongoDB.

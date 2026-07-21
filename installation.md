@@ -110,7 +110,7 @@ composer global require laravel/installer
 <a name="creating-an-application"></a>
 ### Tạo một Application
 
-Sau khi bạn đã cài đặt PHP, Composer và Laravel installer xong, bạn đã sẵn sàng tạo một application Laravel mới. Laravel installer sẽ hỏi bạn chọn framework testing, cơ sở dữ liệu và bộ khởi tạo ưa thích của bạn:
+Sau khi bạn đã cài đặt PHP, Composer và Laravel installer xong, bạn đã sẵn sàng tạo một application Laravel mới:
 
 ```shell
 laravel new example-app
@@ -124,7 +124,7 @@ npm install && npm run build
 composer run dev
 ```
 
-Sau khi bạn đã khởi động server, ứng dụng của bạn sẽ có thể truy cập được trong trình duyệt web của bạn bằng địa chỉ [http://localhost:8000](http://localhost:8000). Tiếp theo, bạn đã sẵn sàng [bắt đầu thực hiện các bước khác trong hệ sinh thái Laravel](#next-steps). Tất nhiên, bạn cũng có thể muốn [cấu hình cơ sở dữ liệu](#databases-and-migrations).
+Sau khi bạn đã khởi động server, bạn có thể truy cập vào ứng dụng của bạn trong trình duyệt web bằng địa chỉ [http://localhost:8000](http://localhost:8000). Tiếp theo, bạn đã sẵn sàng [bắt đầu thực hiện các bước khác trong hệ sinh thái Laravel](#next-steps). Tất nhiên, bạn cũng có thể muốn [cấu hình cơ sở dữ liệu](#databases-and-migrations) và chạy các migration cần thiết.
 
 > [!NOTE]
 > Nếu bạn muốn có một sự khởi đầu thuận tiện khi phát triển ứng dụng Laravel, thì hãy cân nhắc sử dụng một trong những [bộ khởi tạo](/docs/{{version}}/starter-kits) của chúng tôi. Bộ khởi tạo này cung cấp một nền tảng xác thực có sẵn cả backend và frontend cho ứng dụng Laravel mới của bạn.

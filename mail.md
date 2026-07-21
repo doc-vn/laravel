@@ -119,7 +119,7 @@ Sau khi cấu hình mailer mặc định cho ứng dụng, hãy thêm các tùy 
 ],
 ```
 
-Nếu bạn không sử dụng [Mailgun khu vực](https://documentation.mailgun.com/en/latest/api-intro.html#mailgun-regions) "Hoa Kỳ", thì bạn có thể cần định nghĩa endpoint khu vực của bạn trong file cấu hình `services`:
+Nếu bạn không sử dụng [Mailgun khu vực](https://documentation.mailgun.com/docs/mailgun/api-reference/api-overview#mailgun-regions) "Hoa Kỳ", thì bạn có thể cần định nghĩa endpoint khu vực của bạn trong file cấu hình `services`:
 
 ```php
 'mailgun' => [

@@ -15,6 +15,7 @@
 - [Atomic Locks](#atomic-locks)
     - [Quản lý Locks](#managing-locks)
     - [Quản lý Locks trong Processes](#managing-locks-across-processes)
+    - [Refreshing Locks](#refreshing-locks)
     - [Giới hạn đồng bộ](#concurrency-limiting)
 - [Dự phòng cache](#cache-failover)
 - [Thêm tùy biến cache driver](#adding-custom-cache-drivers)
@@ -95,7 +96,7 @@ Trước khi sử dụng cache Redis với Laravel, bạn sẽ cần cài đặt
 <a name="storage"></a>
 #### Storage
 
-Driver cache `storage` cho phép bạn lưu các giá trị cache trên bất kỳ [filesystem disk](/docs/{{version}}/filesystem) nào đã cấu hình của ứng dụng. Điều này có thể hữu ích khi bạn muốn sử dụng một disk hiện tại, chẳng hạn như disk S3, làm kho lưu trữ cache key và value:
+Driver cache `storage` cho phép bạn lưu các giá trị cache trên bất kỳ [filesystem disk](/docs/{{version}}/filesystem) nào đã cấu hình cho ứng dụng của bạn. Điều này có thể hữu ích khi bạn muốn sử dụng một disk hiện có, chẳng hạn như disk S3, làm nơi lưu trữ cache key và value:
 
 ```php
 'storage' => [
@@ -240,6 +241,14 @@ $value = Cache::remember('users', $seconds, function () {
 ```
 
 Nếu item đó không tồn tại trong cache, thì closure được truyền vào trong phương thức `remember` sẽ được thực thi và kết quả của nó sẽ được lưu vào cache.
+
+Nếu bạn cần biết item được lấy ra từ cache hay là chạy closure đã cho, bạn có thể sử dụng phương thức `rememberWithWarmth`. Phương thức này sẽ trả về một mảng chứa giá trị đã được lưu trong cache và một giá trị boolean cho biết item đó có "warm" hay không, nghĩa là nó đã được lấy ra từ cache và không phải được lấy ra từ closure:
+
+```php
+[$value, $warm] = Cache::rememberWithWarmth('users', $seconds, function () {
+    return DB::table('users')->get();
+});
+```
 
 Bạn có thể sử dụng phương thức `rememberForever` để lấy một item từ cache hoặc lưu trữ nó mãi mãi nếu nó không tồn tại:
 
@@ -564,6 +573,26 @@ Nếu bạn muốn giải phóng khóa mà bỏ qua owner hiện tại của kho
 
 ```php
 Cache::lock('processing')->forceRelease();
+```
+
+<a name="refreshing-locks"></a>
+### Refreshing Locks
+
+Nếu bạn cần gia hạn thời gian hết hạn của một khóa mà bạn hiện đang sở hữu, bạn có thể sử dụng phương thức `refresh`. Nếu số giây không được cung cấp, thì thời gian hết hạn ban đầu của khóa sẽ được sử dụng. Điều này rất hữu ích cho các tác vụ chạy trong thời gian dài mà bạn muốn sở hữu một khóa ngắn và định kỳ gia hạn nó thay vì phải sở hữu một khóa với thời gian hết hạn rất dài:
+
+```php
+$lock = Cache::lock('generate-reports', 60);
+
+if ($lock->get()) {
+    foreach ($reports as $report) {
+        $report->generate();
+
+        // Extend the lock for another 60 seconds...
+        $lock->refresh();
+    }
+
+    $lock->release();
+}
 ```
 
 <a name="concurrency-limiting"></a>

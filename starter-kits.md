@@ -354,6 +354,8 @@ Tất cả các bộ công cụ khởi tạo đều sử dụng [Laravel Fortify
 
 Fortify tự động đăng ký các route xác thực sau đây dựa trên các chức năng được kích hoạt trong file cấu hình `config/fortify.php` của ứng dụng:
 
+<div class="overflow-auto">
+
 | Route                              | Method   | Description                             |
 | ---------------------------------- | -------- | --------------------------------------- |
 | `/login`                           | `GET`    | Hiển thị form đăng nhập               |
@@ -372,6 +374,8 @@ Fortify tự động đăng ký các route xác thực sau đây dựa trên cá
 | `/user/confirm-password`           | `POST`   | Xác nhận mật khẩu                     |
 | `/two-factor-challenge`            | `GET`    | Hiển thị form xác thực 2FA            |
 | `/two-factor-challenge`            | `POST`   | Xác thực mã 2FA                       |
+
+</div>
 
 Lệnh Artisan `php artisan route:list` có thể được sử dụng để hiển thị tất cả các route có trong ứng dụng của bạn.
 
@@ -403,11 +407,15 @@ Khi sử dụng bộ công cụ khởi tạo [React](#react), [Svelte](#svelte) 
 
 Khi người dùng đăng ký hoặc reset mật khẩu, Fortify sẽ gọi các class action nằm trong thư mục `app/Actions/Fortify` của ứng dụng:
 
+<div class="overflow-auto">
+
 | File                          | Description                               |
 | ----------------------------- | ----------------------------------------- |
 | `CreateNewUser.php`           | Xác thực và tạo người dùng mới            |
 | `ResetUserPassword.php`       | Xác thực và cập nhật mật khẩu người dùng  |
 | `PasswordValidationRules.php` | Định nghĩa các quy tắc xác thực mật khẩu  |
+
+</div>
 
 Ví dụ, để tùy chỉnh logic đăng ký của ứng dụng, bạn nên tùy chỉnh action `CreateNewUser`:
 

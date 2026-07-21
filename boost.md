@@ -127,6 +127,8 @@ Laravel Boost cung cấp một server MCP (Model Context Protocol) cho phép cá
 <a name="available-mcp-tools"></a>
 ### Available MCP Tools
 
+<div class="overflow-auto">
+
 | Name                 | Notes                                                                                                                                  |
 | -------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
 | Application Info     | Xem phiên bản PHP và Laravel, database engine, danh sách các package hệ sinh thái Laravel cùng phiên bản của chúng, các Eloquent model |
@@ -138,6 +140,8 @@ Laravel Boost cung cấp một server MCP (Model Context Protocol) cho phép cá
 | Last Error           | Đọc lỗi cuối cùng từ các file log của ứng dụng                                                                                         |
 | Read Log Entries     | Đọc N dòng log cuối cùng                                                                                                               |
 | Search Docs          | Truy vấn tài liệu API của Laravel để lấy ra tài liệu dựa trên các package đã cài đặt                                                   |
+
+</div>
 
 <a name="manually-registering-the-mcp-server"></a>
 ### Manually Registering the MCP Server
@@ -172,6 +176,8 @@ AI guidelines là các file hướng dẫn có thể kết hợp linh hoạt, đ
 
 Laravel Boost bao gồm AI guidelines cho các package và framework sau. Guidelines `core` cung cấp lời khuyên tổng quát cho AI về package đó, áp dụng được cho mọi phiên bản.
 
+<div class="overflow-auto">
+
 | Package           | Versions Supported     |
 | ----------------- | ---------------------- |
 | Core & Boost      | core                   |
@@ -194,6 +200,8 @@ Laravel Boost bao gồm AI guidelines cho các package và framework sau. Guidel
 | Livewire Volt     | core                   |
 | Wayfinder         | core                   |
 | Enforce Tests     | conditional            |
+
+</div>
 
 > **Note:** Để giữ các AI guidelines luôn được cập nhật, bạn hãy xem phần [cập nhật resources Boost](#keeping-boost-resources-updated).
 
@@ -243,6 +251,8 @@ Khi bạn chạy `boost:install` và chọn skills là một chức năng, skill
 <a name="available-skills"></a>
 ### Available Skills
 
+<div class="overflow-auto">
+
 | Skill                      | Package        |
 | -------------------------- | -------------- |
 | fluxui-development         | Flux UI        |
@@ -257,6 +267,8 @@ Khi bạn chạy `boost:install` và chọn skills là một chức năng, skill
 | tailwindcss-development    | Tailwind CSS   |
 | volt-development           | Volt           |
 | wayfinder-development      | Wayfinder      |
+
+</div>
 
 > **Note:** Để giữ các skills luôn được cập nhật, xem phần [Cập nhật resource Boost](#keeping-boost-resources-updated).
 
@@ -315,11 +327,15 @@ Laravel Boost cung cấp hai cách để cung cấp cho agent AI về ứng dụ
 
 **Skills** được kích hoạt theo yêu cầu khi làm việc trên các tác vụ cụ thể, chứa các pattern chi tiết cho các lĩnh vực cụ thể (như Livewire components hoặc Pest tests). Việc chỉ load skills khi cần, sẽ giúp giảm load ngữ cảnh và cải thiện chất lượng code.
 
+<div class="overflow-auto">
+
 | Aspect      | Guidelines                                  | Skills                            |
 | ----------- | ------------------------------------------- | --------------------------------- |
 | **Loaded**  | Load trước, luôn hiện hữu                   | Theo yêu cầu, khi cần thiết       |
 | **Scope**   | Rộng, nền tảng                              | Tập trung, theo task cụ thể       |
 | **Purpose** | Các quy ước cốt lõi và best practice        | Các pattern triển khai chi tiết   |
+
+</div>
 
 <a name="documentation-api"></a>
 ## Documentation API
@@ -327,6 +343,8 @@ Laravel Boost cung cấp hai cách để cung cấp cho agent AI về ứng dụ
 Laravel Boost chứa một API tài liệu cung cấp cho các agent AI quyền truy cập vào một cơ sở kiến thức phong phú chứa hơn 17.000 mảnh thông tin đặc thú về Laravel. API sử dụng tìm kiếm ngữ nghĩa với embeddings để mang lại kết quả chính xác, nhận biết ngữ cảnh.
 
 Công cụ MCP `Search Docs` cho phép agent truy vấn tài liệu API do Laravel lưu trữ để lấy tài liệu dựa trên các package bạn đã cài. Các AI guidelines và skills của Boost sẽ tự động hướng dẫn coding agent của bạn sử dụng API này.
+
+<div class="overflow-auto">
 
 | Package           | Versions Supported |
 | ----------------- | ------------------ |
@@ -338,6 +356,8 @@ Công cụ MCP `Search Docs` cho phép agent truy vấn tài liệu API do Larav
 | Nova              | 4.x, 5.x           |
 | Pest              | 3.x, 4.x           |
 | Tailwind CSS      | 3.x, 4.x           |
+
+</div>
 
 <a name="extending-boost"></a>
 ## Extending Boost

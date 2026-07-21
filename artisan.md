@@ -548,6 +548,28 @@ $queueName = $this->option('queue');
 $options = $this->options();
 ```
 
+Bạn có thể sử dụng phương thức `input` để lấy ra các tham số và tuỳ chọn của command dưới dạng một instance `Illuminate\Console\CommandInput`, instance này sẽ cung cấp các accessor kiểu dữ liệu giống như các accessor có sẵn trên HTTP request và các data container khác:
+
+```php
+use App\Enums\ReportType;
+
+/**
+ * Execute the console command.
+ */
+public function handle(): void
+{
+    $input = $this->input()->date('from');
+
+    // ...
+}
+```
+
+Phương thức `input` cũng có thể được sử dụng để lấy ra một giá trị input đơn lẻ từ tham số hoặc tuỳ chọn:
+
+```php
+$queue = $this->input('queue', 'default');
+```
+
 <a name="prompting-for-input"></a>
 ### Hỏi giá trị input
 

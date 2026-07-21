@@ -4,6 +4,7 @@
 - [Cài đặt](#installation)
     - [Cấu hình](#configuration)
     - [Tùy biến Base URLs](#custom-base-urls)
+    - [Các provider tương thích với OpenAI](#openai-compatible-providers)
     - [Provider Support](#provider-support)
 - [Agents](#agents)
     - [Prompting](#prompting)
@@ -14,6 +15,8 @@
     - [Broadcasting](#broadcasting)
     - [Queueing](#queueing)
     - [Tools](#tools)
+    - [File Storage Tools](#file-storage-tools)
+    - [MCP Tools](#mcp-tools)
     - [Provider Tools](#provider-tools)
     - [Sub-Agents](#sub-agents)
     - [Middleware](#middleware)
@@ -84,6 +87,8 @@ GROQ_API_KEY=
 MISTRAL_API_KEY=
 OLLAMA_API_KEY=
 OPENAI_API_KEY=
+OPENAI_COMPATIBLE_API_KEY=
+OPENAI_COMPATIBLE_URL=
 OPENROUTER_API_KEY=
 JINA_API_KEY=
 VOYAGEAI_API_KEY=
@@ -104,7 +109,7 @@ Bạn có thể cấu hình tùy chỉnh URL bằng cách thêm tham số `url` 
     'openai' => [
         'driver' => 'openai',
         'key' => env('OPENAI_API_KEY'),
-        'url' => env('OPENAI_BASE_URL'),
+        'url' => env('OPENAI_URL'),
     ],
 
     'anthropic' => [
@@ -119,20 +124,62 @@ Tính năng này hữu ích khi chuyển hướng các request qua dịch vụ p
 
 Việc tùy chỉnh URL được hỗ trợ cho các provider sau: OpenAI, Anthropic, Gemini, Groq, Cohere, DeepSeek, xAI, và OpenRouter.
 
+<a name="openai-compatible-providers"></a>
+### Các provider tương thích với OpenAI
+
+Nếu bạn đang sử dụng một API tương thích với OpenAI, chẳng hạn như LM Studio, vLLM, Together, Fireworks hoặc một local gateway, bạn có thể cấu hình một provider `openai-compatible`. Tùy chọn `url` là bắt buộc, trong khi tùy chọn `key` thì không bắt buộc và sẽ được gửi dưới dạng token bearer nếu có:
+
+```php
+'providers' => [
+    'local' => [
+        'driver' => 'openai-compatible',
+        'url' => env('LOCAL_AI_URL'),
+        'key' => env('LOCAL_AI_API_KEY'),
+    ],
+],
+```
+
+Sau khi cấu hình xong, bạn có thể sử dụng thông qua tên provider giống như bất kỳ provider nào khác:
+
+```php
+agent()->prompt('What is Laravel?', provider: 'local', model: 'local-model');
+```
+
+Bạn cũng có thể cấu hình một model text mặc định cho provider đó để bạn không cần phải truyền một model một cách rõ ràng:
+
+```php
+'local' => [
+    'driver' => 'openai-compatible',
+    'url' => env('LOCAL_AI_URL'),
+    'key' => env('LOCAL_AI_API_KEY'),
+    'models' => [
+        'text' => [
+            'default' => env('LOCAL_AI_MODEL'),
+        ],
+    ],
+],
+```
+
+Các provider tương thích với OpenAI sẽ hỗ trợ tạo văn bản, streaming, các tool, structured output và đính kèm hình ảnh. Nếu endpoint của bạn yêu cầu thêm các trường trong body của request, hãy cung cấp chúng bằng cách sử dụng [tùy chọn provider](#provider-options).
+
 <a name="provider-support"></a>
 ### Provider Support
 
 AI SDK hỗ trợ nhiều provider khác nhau cho các tính năng của nó. Bảng dưới đây sẽ tóm tắt các tính năng có sẵn của từng provider:
 
+<div class="overflow-auto">
+
 | Feature | Providers |
 |---|---|
-| Text | OpenAI, Anthropic, Gemini, Azure, Bedrock, Groq, xAI, DeepSeek, Mistral, Ollama, OpenRouter |
+| Text | OpenAI, OpenAI Compatible, Anthropic, Gemini, Azure, Bedrock, Groq, xAI, DeepSeek, Mistral, Ollama, OpenRouter |
 | Images | OpenAI, Gemini, xAI, Azure, Bedrock, OpenRouter |
 | TTS | OpenAI, ElevenLabs, Gemini |
 | STT | OpenAI, ElevenLabs, Mistral, Gemini |
 | Embeddings | OpenAI, Gemini, Azure, Bedrock, Cohere, Mistral, Jina, VoyageAI, Ollama, OpenRouter |
 | Reranking | Cohere, Jina, VoyageAI |
-| Files | OpenAI, Anthropic, Gemini |
+| Files | OpenAI, Anthropic, Gemini, Azure |
+
+</div>
 
 Enum `Laravel\Ai\Enums\Lab` có thể được sử dụng để reference đến các provider trong code thay vì dùng chuỗi:
 
@@ -141,6 +188,7 @@ use Laravel\Ai\Enums\Lab;
 
 Lab::Anthropic;
 Lab::OpenAI;
+Lab::OpenAiCompatible;
 Lab::Gemini;
 // ...
 ```
@@ -316,6 +364,8 @@ class SalesCoach implements Agent, Conversational
 }
 ```
 
+Khi sử dụng trait `RemembersConversations`, bạn không cần định nghĩa thêm phương thức `messages` trong class agent của bạn. Nếu phương thức `messages` tồn tại, nó sẽ được ưu tiên hơn so với implementation của trait và lịch sử hội thoại sẽ không được load ra từ cơ sở dữ liệu.
+
 Để bắt đầu một cuộc hội thoại mới cho một người dùng, hãy gọi phương thức `forUser` trước khi gửi prompt:
 
 ```php
@@ -457,6 +507,26 @@ public function schema(JsonSchema $schema): array
 }
 ```
 
+Nếu một giá trị có thể giống với một trong nhiều schema, hãy sử dụng phương thức `anyOf`:
+
+```php
+public function schema(JsonSchema $schema): array
+{
+    return [
+        'content' => $schema->anyOf([
+            $schema->object(fn ($schema) => [
+                'type' => $schema->string()->enum(['article'])->required(),
+                'title' => $schema->string()->required(),
+            ]),
+            $schema->object(fn ($schema) => [
+                'type' => $schema->string()->enum(['image'])->required(),
+                'url' => $schema->string()->required(),
+            ]),
+        ])->required(),
+    ];
+}
+```
+
 <a name="attachments"></a>
 ### Attachments
 
@@ -569,6 +639,34 @@ Hoặc bạn cũng có thể gọi phương thức `broadcastOnQueue` của agen
     new Channel('channel-name'),
 );
 ```
+
+<a name="skipping-oversized-events"></a>
+#### Skipping Oversized Events
+
+Một số nền tảng broadcasting sẽ giới hạn tin nhắn WebSocket ở khoảng 10KB. Các event stream chứa nhiều dữ liệu, như kết quả của tool, có thể vượt quá giới hạn này và khiến việc broadcasting thất bại. Bạn có thể loại các loại event cụ thể ra khỏi việc broadcasting này bằng thuộc tính `WithoutBroadcasting`:
+
+```php
+<?php
+
+namespace App\Ai\Agents;
+
+use Laravel\Ai\Attributes\WithoutBroadcasting;
+use Laravel\Ai\Contracts\Agent;
+use Laravel\Ai\Contracts\HasTools;
+use Laravel\Ai\Promptable;
+use Laravel\Ai\Streaming\Events\ToolCall;
+use Laravel\Ai\Streaming\Events\ToolResult;
+
+#[WithoutBroadcasting(ToolCall::class, ToolResult::class)]
+class SearchAgent implements Agent, HasTools
+{
+    use Promptable;
+
+    // ...
+}
+```
+
+Các event bị loại sẽ không bao giờ được broadcast, nhưng chúng vẫn sẽ được lưu vào bảng `agent_conversation_messages`, để frontend của bạn có thể load toàn bộ dữ liệu tool sau khi stream kết thúc. Điều này hoạt động cho cả broadcasting trong queue (`broadcastOnQueue`) và broadcasting đồng bộ (`broadcast` / `broadcastNow`).
 
 <a name="queueing"></a>
 ### Queueing
@@ -724,6 +822,94 @@ SimilaritySearch::usingModel(Document::class, 'embedding')
     ->withDescription('Search the knowledge base for relevant articles.'),
 ```
 
+<a name="file-storage-tools"></a>
+### File Storage Tools
+
+Factory tool `FileStorage` cho phép bạn cấp quyền cho agent truy cập vào một [filesystem disk](/docs/{{version}}/filesystem) của Laravel. Phương thức `all` sẽ trả về các tool cho phép agent list, đọc, kiểm tra, tạo URL, ghi, xóa và sao chép các file trên disk đã cho:
+
+```php
+use Laravel\Ai\Tools\FileStorage;
+
+public function tools(): iterable
+{
+    return FileStorage::all('local');
+}
+```
+
+Nếu agent của bạn chỉ có quyền kiểm tra file, hãy sử dụng phương thức `readOnly`:
+
+```php
+return FileStorage::readOnly('local');
+```
+
+Các phương thức này trả về một `Illuminate\Support\Collection`, cho phép bạn lọc thêm các tool sẽ được cung cấp cho agent:
+
+```php
+use Laravel\Ai\Tools\Filesystem\DeleteFile;
+
+return FileStorage::all('s3')
+    ->reject(fn ($tool) => $tool instanceof DeleteFile);
+```
+
+<a name="mcp-tools"></a>
+### MCP Tools
+
+Nếu ứng dụng của bạn sử dụng [Laravel MCP](/docs/{{version}}/mcp), bạn có thể cung cấp cho các agent của bạn các tool được hiển thị bởi server [Model Context Protocol](https://modelcontextprotocol.io). Bằng cách sử dụng [Laravel MCP client](/docs/{{version}}/mcp#client), bạn có thể kết nối với một server MCP remote hoặc local và truyền trực tiếp các tool của nó cho agent của bạn.
+
+> [!NOTE]
+> Các tool MCP yêu cầu package [Laravel MCP](/docs/{{version}}/mcp) phải được cài đặt trong ứng dụng của bạn.
+
+Vì phương thức `tools` của MCP client sẽ trả về một collection, hãy chuyển nó về mảng `tools` của agent bằng toán tử `...`:
+
+```php
+use App\Ai\Tools\RandomNumberGenerator;
+use Laravel\Mcp\Client;
+
+/**
+ * Get the tools available to the agent.
+ *
+ * @return Tool[]
+ */
+public function tools(): iterable
+{
+    return [
+        ...Client::web('https://mcp.example.com')
+            ->withToken($token)
+            ->tools(),
+
+        new RandomNumberGenerator,
+    ];
+}
+```
+
+AI SDK sẽ tự động bọc từng tool MCP để các agent có thể gọi nó giống như bất kỳ tool nào khác. Bạn cũng có thể sử dụng [tên của một MCP client đã được đặt tên](/docs/{{version}}/mcp#named-clients):
+
+```php
+use Laravel\Mcp\Facades\Mcp;
+
+public function tools(): iterable
+{
+    return [
+        ...Mcp::client('github')->tools(),
+    ];
+}
+```
+
+Hoặc kết nối với một [local MCP server](/docs/{{version}}/mcp#client-connecting):
+
+```php
+use Laravel\Mcp\Client;
+
+public function tools(): iterable
+{
+    return [
+        ...Client::local('php', ['artisan', 'mcp:start'])->tools(),
+    ];
+}
+```
+
+Để biết thêm thông tin về việc tạo và xác thực các MCP client, bao gồm cả token bearer và OAuth, hãy tham khảo [tài liệu MCP client](/docs/{{version}}/mcp#client).
+
 <a name="provider-tools"></a>
 ### Provider Tools
 
@@ -736,7 +922,7 @@ Provider tools có thể được trả về từ phương thức `tools` của 
 
 Provider tool `WebSearch` cho phép các agent tìm kiếm web để lấy thông tin thời gian thực. Điều này hữu ích khi trả lời các câu hỏi về các sự kiện hiện tại, dữ liệu mới, hoặc các chủ đề có thể đã bị thay đổi từ thời điểm mô hình được traning dữ liệu.
 
-**Supported Providers:** Anthropic, OpenAI, Gemini
+**Supported providers:** Anthropic, OpenAI, Gemini, OpenRouter
 
 ```php
 use Laravel\Ai\Providers\Tools\WebSearch;
@@ -1615,6 +1801,30 @@ $response = Document::fromPath(
 )->put(provider: Lab::Anthropic);
 ```
 
+Bạn có thể truyền thêm các tùy chọn upload cụ thể cho từng provider bằng cách sử dụng phương thức `withProviderOptions`. Ví dụ: bạn có thể thiết lập thuộc tính `purpose` của file cho OpenAI:
+
+```php
+use Laravel\Ai\Files\Document;
+
+$response = Document::fromPath('/home/laravel/knowledge.txt')
+    ->withProviderOptions(['purpose' => 'assistants'])
+    ->put();
+```
+
+Để giới hạn phạm vi các tùy chọn cho từng provider, hãy truyền một closure nhận provider hiện tại làm tham số:
+
+```php
+use Laravel\Ai\Enums\Lab;
+use Laravel\Ai\Files\Document;
+
+$response = Document::fromPath('/home/laravel/training.jsonl')
+    ->withProviderOptions(fn (Lab|string $provider) => match ($provider) {
+        Lab::OpenAI => ['purpose' => 'fine-tune'],
+        default => [],
+    })
+    ->put();
+```
+
 <a name="using-stored-files-in-conversations"></a>
 ### Using Stored Files in Conversations
 
@@ -1809,7 +2019,15 @@ SalesCoach::fake(function (AgentPrompt $prompt) {
 });
 ```
 
-> **Note:** Khi `Agent::fake()` được gọi trên một agent trả về output có cấu trúc, Laravel sẽ tự động tạo dữ liệu fake giống với schema mà agent đã định nghĩa.
+Khi viết fake cho một agent trả về output có cấu trúc, bạn có thể cung cấp các mảng làm response. Agent sẽ trả về một response có cấu trúc chứa dữ liệu đã cho:
+
+```php
+SalesCoach::fake([
+    ['score' => 87],
+]);
+```
+
+> **Note:** Khi `Agent::fake()` được gọi trên một agent trả về output có cấu trúc và dữ liệu fake không được cung cấp một cách rõ ràng, Laravel sẽ tự động tạo dữ liệu fake giống với schema mà agent đã định nghĩa.
 
 Sau khi gửi prompt, bạn có thể thực hiện các kiểm tra về các prompt đã nhận:
 

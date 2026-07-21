@@ -3,6 +3,7 @@
 - [Giới thiệu](#introduction)
     - [Cấu hình](#configuration)
     - [Đọc và viết thông qua Connection](#read-and-write-connections)
+    - [Pooled PostgreSQL Connections](#pooled-postgresql-connections)
 - [Chạy SQL Query](#running-queries)
     - [Dùng Multiple Database Connection](#using-multiple-database-connections)
     - [Listen cho Query Event](#listening-for-query-events)
@@ -128,6 +129,42 @@ Lưu ý rằng có ba key đã được thêm vào trong mảng cấu hình là:
 #### The `sticky` Option
 
 Tùy chọn `sticky` là một giá trị *tùy chọn* có thể được sử dụng để cho phép đọc các bản ghi đã được ghi vào trong cơ sở dữ liệu ngay trong request hiện tại. Nếu tùy chọn `stick` được bật và các thao tác "write" đã được thực hiện trong cơ sở dữ liệu ở trong request hiện tại, thì các thao tác "read" tiếp theo sẽ được sử dụng kết nối "write". Điều này giúp đảm bảo rằng mọi dữ liệu được ghi vào trong request hiện tại có thể được đọc lại ngay lập tức từ cơ sở dữ liệu trong cùng một request đó. Tùy thuộc vào loại yêu cầu, mà bạn sẽ quyết định xem đây có phải là một hành động mong muốn cho application của bạn hay không.
+
+<a name="pooled-postgresql-connections"></a>
+### Pooled PostgreSQL Connections
+
+Nhiều nhà cung cấp dịch vụ quản lý PostgreSQL cung cấp tính năng connection pooling ở chế độ transaction thông qua các dịch vụ như PgBouncer hoặc connection proxy. Các pooler này rất lý tưởng cho các truy vấn của ứng dụng, nhưng một số thao tác schema, migration và lệnh bảo trì lại yêu cầu kết nối trực tiếp tới cơ sở dữ liệu.
+
+Để sử dụng transaction pooler với PostgreSQL, hãy cấu hình kết nối pool như bình thường và cung cấp thông tin kết nối trực tiếp thông qua tùy chọn cấu hình `direct`:
+
+```php
+'pgsql' => [
+    'driver' => 'pgsql',
+    // ...
+    'pooled' => env('DB_POOLED', false),
+    'direct' => array_filter([
+        'host' => env('DB_DIRECT_HOST'),
+        'port' => env('DB_DIRECT_PORT'),
+        'username' => env('DB_DIRECT_USERNAME'),
+        'password' => env('DB_DIRECT_PASSWORD'),
+        'sslmode' => env('DB_DIRECT_SSLMODE'),
+    ]),
+],
+```
+
+Khi kết nối PostgreSQL được cấu hình dưới dạng pooled, Laravel tự động bật chế độ emulated prepares cho kết nối pooled đó. Kết nối trực tiếp sẽ kế thừa bất kỳ tùy chọn nào chưa được định nghĩa trong cấu hình `direct` và mặc định là sử dụng chế độ native prepares.
+
+Laravel tự động sử dụng kết nối trực tiếp cho các lệnh migration, dump và restore schema, `db:wipe`, `db:show`, và `db:table`. Lệnh `db` cũng mặc định sử dụng kết nối trực tiếp khi chế độ pooled được bật; bạn có thể tùy chọn truyền thêm tham số `--pooled` để kết nối tới kết nối pooled:
+
+```shell
+php artisan db --pooled
+```
+
+Nếu bạn cần sử dụng kết nối trực tiếp một cách rõ ràng trong ứng dụng của bạn, hãy thêm hậu tố `::direct` vào sau tên kết nối:
+
+```php
+DB::connection('pgsql::direct')->statement('create extension if not exists "uuid-ossp"');
+```
 
 <a name="running-queries"></a>
 ## Chạy SQL Query

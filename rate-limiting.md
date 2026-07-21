@@ -30,7 +30,7 @@ Thông thường, bộ giới hạn tỷ lệ sẽ sử dụng bộ nhớ cache 
 
 Facade `Illuminate\Support\Facades\RateLimiter` có thể được sử dụng để tương tác với bộ giới hạn tỷ lệ. Phương thức đơn giản nhất được cung cấp bởi bộ giới hạn tỷ lệ là phương thức `attempt`, phương thức này giới hạn tỷ lệ một callback nhất định trong một số giây nhất định.
 
-Phương thức `attempt` sẽ trả về `false` khi lệnh callback không còn lần thử nào nữa; nếu không, phương thức `attempt` vẫn sẽ trả về kết quả của lệnh callback hoặc `true`. Tham số đầu tiên được phương thức `attempt` chấp nhận là một "khóa" giới hạn tốc độ, có thể là bất kỳ chuỗi nào bạn chọn để thể hiện hành động bị giới hạn tốc độ:
+Phương thức `attempt` sẽ trả về `false` khi lệnh callback không còn lần thử nào nữa; nếu không, phương thức `attempt` vẫn sẽ trả về kết quả của lệnh callback hoặc `true`. Tham số đầu tiên được phương thức `attempt` chấp nhận là một "khóa" giới hạn tỷ lệ, có thể là bất kỳ chuỗi nào bạn chọn để thể hiện hành động bị giới hạn tỷ lệ:
 
 ```php
 use Illuminate\Support\Facades\RateLimiter;
@@ -74,6 +74,20 @@ if (RateLimiter::tooManyAttempts('send-message:'.$user->id, $perMinute = 5)) {
 }
 
 RateLimiter::increment('send-message:'.$user->id);
+
+// Send message...
+```
+
+Khi giới hạn tỷ lệ cho một endpoint có thể nhận nhiều request cùng một lúc, bạn có thể muốn kiểm tra luôn giá trị trả về của phương thức `increment` thay vì sử dụng hai phương thức `tooManyAttempts` và `increment` ra làm hai thao tác riêng biệt. Khi sử dụng các cache store `redis`, `memcached`, hoặc `database`, giá trị này sẽ được tăng theo một cách atomic, đảm bảo mỗi request đến cùng một lúc sẽ nhận được một lần đếm duy nhất:
+
+```php
+use Illuminate\Support\Facades\RateLimiter;
+
+$perMinute = 5;
+
+if (RateLimiter::increment('send-message:'.$user->id) > $perMinute) {
+    return 'Too many attempts!';
+}
 
 // Send message...
 ```
