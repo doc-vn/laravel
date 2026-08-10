@@ -40,7 +40,7 @@ Phương thức `get` sẽ trả về một instance của `Illuminate\Http\Clie
 
 ```php
 $response->body() : string;
-$response->json($key = null, $default = null) : mixed;
+$response->json($key = null, $default = null, $flags = null) : mixed;
 $response->object() : object;
 $response->collect($key = null) : Illuminate\Support\Collection;
 $response->resource() : resource;
